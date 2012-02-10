@@ -1,0 +1,83 @@
+
+body	{margin: 0; padding: 10px 0px 0px 0px; background-color: #DFDFDF;}
+form	{margin: 0;}
+ul	{margin-top:0; margin-bottom:1em;}
+.dump	{font-size: 1px;}
+tr.spacer td	{padding:0; height:1px;}
+p       {text-align: justify;}
+
+a:link {color: #007700;}
+a:visited {color: #BB0000;}
+
+
+input:disabled {color: #000000;}
+
+
+h1	{font-size: 150%; font-weight: normal; margin: 0 0 0.8em 0;}
+h2	{font-size: 120%; font-weight: bold; margin: 0 0 0.5em 0;}
+h3	{font-size: 100%; font-weight: normal; margin: 0;}
+
+tr.gray {background-color: #CCCCCC;}
+/*
+tr.yellow {background-color:#FFFF99;}
+*/
+tr.yellow {background-color:#DFDFDF;}
+/*
+tr.green {background-color: #CCFFCC;}
+*/
+tr.green {background-color: #EEEEEE;}
+
+
+table.body  {margin: 0px 0px 0px 0px;}
+
+table.status      {margin: 0px 0px 10px 0px; background-color: #D6D6D6;}
+table.status td   {padding: 3px 0px 3px 0px;}
+
+table.menu        {margin: 5px 0px 0px 0px; width: 100%}
+table.menu td     {padding: 5px 0px 0px 0px;}
+table.menu td.input    {padding: 5px 0px 0px 0px; font-size: 80%;}
+
+table.bottom      {margin: 20px 0px 0px 0px; background-color: #D6D6D6;}
+table.bottom td   {padding: 3px 0px 3px 0px;}
+
+table.content td.body {padding: 0 0 0 0;}
+table.content td.label {padding: 0px 10px 0px 5px;}
+table.content td.input {padding: 1px 5px 1px 5px; font-size: 80%;}
+table.content td.header {padding: 5px 10px 5px 5px; font-weight: normal;}
+
+.leftmargin  {margin: 0px 0px 0px 5px;}
+
+.hline {margin: 0; padding: 0; font-size: 1px;}
+
+div.vline {margin: 0; padding: 0;  font-size: 1px; line-height: 1px; width: 1px;}
+div.hline {margin: 0; padding: 0; font-size: 1px; line-height: 1px;}
+
+/* color: #000088;
+*/
+
+div.HeadText {font-family: Arial, Sans-Serif; font-size: 150%; font-weight: bold; color: #000000; }
+
+/*
+Отступ сверху 10 px
+*/
+div.StatusText  {font-family: Times New Roman, Serif; font-size: 100%; font-weight: normal; padding-top: 15px; padding-bottom: 10px; }
+
+div.ErrorText  {font-family: Times New Roman, Serif; font-size: 100%; font-weight: normal; color: #000000; 
+                margin-top: 15px; margin-bottom: 10px; 
+                padding-top: 5px; padding-bottom: 5px; 
+                border-top-style: dotted; border-top-width: 2px; border-top-color: #CC0000;
+                border-bottom-style: dotted; border-bottom-width: 2px; border-bottom-color: #CC0000;
+	       }
+
+div.MenuText  {font-family: Arial, Sans-Serif; font-size: 120%; font-weight: bold; }
+
+div.SubMenuText  {font-family: Arial, Sans-Serif; font-size: 100%; font-weight: bold; }
+
+div.BottomText  {font-family: Times New Roman, Serif; font-size: 80%; font-weight: normal;}
+
+div.FormText  {font-family: Courier New, Monospace; font-size: 80%; font-weight: normal;}
+
+div.comment {font-family: Times New Roman, Serif; font-size: 75%; color: #000088;}
+
+
+
