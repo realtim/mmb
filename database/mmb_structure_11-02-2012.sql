@@ -1,12 +1,3 @@
--- phpMyAdmin SQL Dump
--- version 3.4.7.1
--- http://www.phpmyadmin.net
---
--- Хост: mysql.lintres.ru
--- Время создания: Фев 11 2012 г., 10:28
--- Версия сервера: 5.1.22
--- Версия PHP: 5.2.8
-
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
@@ -24,14 +15,6 @@ DELIMITER $$
 --
 -- Процедуры
 --
-DROP PROCEDURE IF EXISTS `p_GetRaid`$$
-CREATE DEFINER=`mmb`@`j97.lintres.ru` PROCEDURE `p_GetRaid`(IN nRaidId INT)
-BEGIN
-  SELECT * FROM Raids WHERE raid_id =  nRaidId;
-END$$
-
-DELIMITER ;
-
 -- --------------------------------------------------------
 
 --
