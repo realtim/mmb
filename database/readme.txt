@@ -1,0 +1,1 @@
+mmb_structure_<дата>.sql содержит структуру БД mmb (MySql)
