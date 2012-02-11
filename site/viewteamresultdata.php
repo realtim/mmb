@@ -32,35 +32,39 @@
 	   return;
         }
 
-        print('<table style = "font-size:80%;">'."\r\n");
+        print('<table style = "text-align: center; font-size: 100%; border-style: solid; border-width: 1px; border-color: #000000;">'."\r\n");
 	print('<tr>'."\r\n");
-
-	print('<td>'."\r\n");
+	print('<td align = "left">Не взяты: &nbsp; </td>'."\r\n");
+	print('<td style = "border-left-style: solid; border-left-width: 1px; border-left-color: #000000;">'."\r\n");
 
         // Проверяем, что не отмечены все checkbox
         // ===  а не == - так написано в инструкции к функции
         //if (strpos($TeamLevelPoints, '0') === false)
-        if (!strstr($TeamLevelPoints, '0'))
+        if (!strstr($TeamLevelPoints, '0') && !empty($TeamLevelPoints))
         {
               $AllChecked = 'checked';
         } else {
               $AllChecked = '';
         }
         // Прописываем javascript, который ставит или сбрасывает все checkbox-ы
-        print('Все</br>&nbsp;</br><input type = "checkbox" name = "chkall" '.$AllChecked.' OnClick = "javascript:'."\r\n");
+        print('Все</br><input type = "checkbox" name = "chkall" '.$AllChecked.' OnClick = "javascript:'."\r\n");
+		
         for ($i = 0; $i < count($Names); $i++)
         {
           print('document.TeamResultDataForm.Level'.$LevelId.'_chk'.$i.'.checked = this.checked;'."\r\n");
         } 
         print('">'."\r\n");
+        print('</br>&nbsp;'."\r\n");
 	print('</td>'."\r\n");
 	
 	for ($i = 0; $i < count($Names); $i++) 
         {
-		print('<td>'.$Names[$i].'</br>('.$Penalties[$i].')'."\r\n");
+		//print('<td>'.$Names[$i].'</br>('.$Penalties[$i].')'."\r\n");
+                print('<td style = "border-left-style: solid; border-left-width: 1px; border-left-color: #000000;">'.$Names[$i]."\r\n");
                 $Checked =  ($TeamPoints[$i] == 1) ? 'checked' : '';
-                print('<br><input type = "checkbox" name = "Level'.$LevelId.'_chk'.$i.'"  '. $Checked.' OnClick = "">'."\r\n");
-                print('</td>'."\r\n");
+                print('</br><input type = "checkbox" name = "Level'.$LevelId.'_chk'.$i.'"  '. $Checked.' OnClick = "">'."\r\n");
+                print('</br>'.$Penalties[$i]."\r\n");
+		print('</td>'."\r\n");
 	}
 
   
@@ -84,17 +88,28 @@
 //	 $NowUserId = GetSession($SessionId);
 
          // результаты не могут отображаться, если команда только вводится 
+         // Или ещё не закончена регистрация
          if ($viewmode == 'Add')
 	 {
             return;
          }
  
 
+         // Правильнее возможность подтверждать результаты открывать не после окончания регистрации, а после 
+         // старта первого этапа (а м..б. и позже)
+         // М.б. разделить: для модераторов сразу после окончания регистрации,
+          // для остальных - после даты публикации результатов
+           // Не, ещё круче: модераторам сразу после открытия старата первого этапа,
+           // остальным - сразу после закрытия финиша последнего!
 	      $sql = "select r.raid_resultpublicationdate, r.raid_registrationenddate, 
                         CASE WHEN r.raid_registrationenddate is not null and YEAR(r.raid_registrationenddate) <= 2011 
                              THEN 1 
                              ELSE 0 
                         END as oldmmb,
+			CASE WHEN r.raid_registrationenddate is not null and r.raid_registrationenddate <= NOW() 
+                             THEN 1 
+                             ELSE 0 
+                        END as showresultfield,
                         r.raid_id,
                         t.team_moderatorconfirmresult,
                         t.team_confirmresult
@@ -114,8 +129,15 @@
                 $OldMmb = $Row['oldmmb'];
 		$ModeratorConfirmResult = $Row['team_moderatorconfirmresult'];
 		$TeamConfirmResult = $Row['team_confirmresult'];
+		$RaidShowResultField = $Row['showresultfield'];
 
             // Тут надо проверить глобальный запрет на правку данных по ММБ
+
+         if ($RaidShowResultField <> 1)
+	 {
+            return;
+         }
+
 
             // нужна, возможно, доп проверка на время,чтобы не показывать пустые результаты с данными этапа
 
@@ -200,11 +222,19 @@
   print('<input type = "hidden" name = "view" value = "'.(($viewmode == "Add") ? 'ViewRaidTeams' : 'ViewTeamData').'">'."\r\n");
   print('<input type = "hidden" name = "TeamId" value = "'.$TeamId.'">'."\r\n");
   print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
-  print('<table  style = "font-size: 80%;"  border = "1" cellpadding = "0" cellspacing = "0">'."\r\n");
-
-      print('<tr><td>Этап</td><td>Параметры старта/финиша</td><td>Старт</td><td>Финиш</td>
-                 <td>Невзятые КП</td><td>Штраф</td><td>Комментарий</td></tr>'."\r\n"); 
+  
         
+
+     print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
+		print('<tr class = "gray">'."\r\n");  
+		print('<td width = "100">Этап</td>'."\r\n");  
+		print('<td width = "250">Параметры старта/финиша</td>'."\r\n");  
+		print('<td width = "90">Старт</td>'."\r\n");  
+		print('<td width = "90">Финиш</td>'."\r\n");  
+		print('<td width = "50">Штраф</td>'."\r\n");  
+	//	print('<td width = "200">Невзятые КП</td>'."\r\n");  
+		print('<td width = "150">Комменатрий</td>'."\r\n");  
+	
 
   //$TabIndex = 0;
 
@@ -249,8 +279,10 @@
                                     and tl.teamlevel_hide = 0
                            where l.level_order < COALESCE(l1.level_order, l.level_order + 1) and  t.team_id = ".$TeamId;
 
-//." and l.level_begtime <= now() ";
+//.
 // Пока убрал ограничение по выдаче этапов от времени просмотра
+         // $sql =   $sql." and l.level_begtime <= now() ";
+          $sql =   $sql." order by  l.level_order ";
 
            //echo $sql;
 	   $Result = MySqlQuery($sql);  
@@ -389,8 +421,8 @@
                                         title = "ччмм - часы минуты без разделителя">'."\r\n");
 
               print('</td><td>&nbsp;'."\r\n");
-	      ConvertTeamLevelPointsToHTML($Row['level_pointnames'], $Row['level_pointpenalties'], $Row['teamlevel_points'], $Row['level_id']);
-              print('</td><td>'."\r\n");
+	 //     ConvertTeamLevelPointsToHTML($Row['level_pointnames'], $Row['level_pointpenalties'], $Row['teamlevel_points'], $Row['level_id']);
+          //    print('</td><td>'."\r\n");
               print('<input type="Text" maxlength = "4"  name="Level'.$Row['level_id'].'_penalty" size="3"
                                         value="'.(int)$Row['teamlevel_penalty'].'" 
                                         readonly
@@ -403,6 +435,11 @@
                                         onclick = "this.select();"
                                         title = "">'."\r\n");
               print('</td></tr>'."\r\n"); 
+            
+              // Следующая  строка - невзятые КП
+             print('<tr><td colspan = "6"  style = "padding-top: 0px; border-bottom-style: dotted; border-bottom-width: 1px; border-bottom-color: #000000;">'."\r\n");
+	     ConvertTeamLevelPointsToHTML($Row['level_pointnames'], $Row['level_pointpenalties'], $Row['teamlevel_points'], $Row['level_id']);
+             print('</td></tr>'."\r\n"); 
 
               //$TabIndex = $TabIndex + 5
 

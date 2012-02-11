@@ -166,7 +166,11 @@
                         CASE WHEN r.raid_registrationenddate is not null and YEAR(r.raid_registrationenddate) <= 2011 
                              THEN 1 
                              ELSE 0 
-                        END as oldmmb
+                        END as oldmmb,
+                        CASE WHEN r.raid_registrationenddate is not null and r.raid_registrationenddate <= NOW() 
+                             THEN 1 
+                             ELSE 0 
+                        END as showresultfield
 		 from   Raids r 
 		 where r.raid_id = ".$RaidId; 
 		//echo 'sql '.$sql;
@@ -176,6 +180,7 @@
 		$RaidPublicationResultDate = $Row['raid_resultpublicationdate'];
                 $RaidRegistrationEndDate = $Row['raid_registrationenddate'];
                 $OldMmb = $Row['oldmmb'];
+                $RaidShowResultField = $Row['showresultfield'];
 
                 
 	 if (empty($RaidRegistrationEndDate))
@@ -276,8 +281,8 @@
   print('<input type = "hidden" name = "HideTeamUserId" value = "0">'."\r\n");
   print('<input type = "hidden" name = "UserOutLevelId" value = "0">'."\r\n");
   print('<input type = "hidden" name = "UserId" value = "0">'."\r\n");
-  print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
-
+  //print('<table  style = "font-size: 80%; padding-right: 20px; border-right-style: solid; border-right-width: 1px; border-right-color: #000000;" border = "0" cellpadding = "5" cellspacing = "0">'."\r\n");
+ print('<table  style = "font-size: 80%;" border = "0" cellpadding = "2" cellspacing = "0">'."\r\n");
 
         $TabIndex = 0;
 
@@ -394,7 +399,7 @@
 		  }
 
 			  // Если текущая дата больше времени окончания регистрации - появляются поля схода
-			  if ($viewmode<>"Add" and $RaidRegistrationEndDate < date('Y-m-d'))
+			  if ($viewmode<>"Add" and $RaidShowResultField == 1)
 			  {
 
 			    // Список этапов, чтобы выбрать, на каком сошёл участник
@@ -430,7 +435,6 @@
 
 	print('</td></tr>'."\r\n");
 
-       // Если текущая дата больше времени окончания регистрации - появляются поля подтвержедния
         if ($AllowEdit == 1) 
         {
   	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
@@ -447,7 +451,8 @@
 
 	  print('</td></tr>'."\r\n"); 
 
-       if ($viewmode<>"Add" and $RaidRegistrationEndDate < date('Y-m-d'))
+
+       if ($viewmode<>"Add" and $RaidShowResultField == 1)
        {
 
 
