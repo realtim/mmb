@@ -51,7 +51,11 @@
 				  CASE WHEN raid_registrationenddate is not null and YEAR(raid_registrationenddate) <= 2011 
 				      THEN 1 
 				      ELSE 0 
-				  END as oldmmb 
+				  END as oldmmb,
+				  CASE WHEN  raid_closedate is not null 
+				      THEN 1 
+				      ELSE 0 
+				  END as raidclose
 		           from  Raids where  raid_id = ".$_POST['RaidId'];
            //echo $sql;
 	   $rs = MySqlQuery($sql);  
@@ -63,6 +67,7 @@
            //echo $RaidId.' '.$RaidRegistrationEndDate;
            $OldMmb = $Row['oldmmb'];
  	   $NowDt = $row['nowdt'];
+ 	   $RaidClose = $row['raidclose'];
  
 	   if (empty($RaidId) or empty($RaidRegistrationEndDate))
            {
@@ -374,6 +379,7 @@
 			 $TeamUserId = MySqlQuery($sql);  
    
                          $TeamActionTextForEmail = "создана команда";
+                         $SendEmailToAllTeamUsers = 1;
 
 		   // Теперь нужно открыть на просмотр
 		   $viewmode = "";
@@ -385,7 +391,9 @@
               // изменения в уже существующей команде
 
                  $TeamActionTextForEmail = "изменение данных команды";
-		 
+                 $SendEmailToAllTeamUsers = 0;
+	
+	 
 	         $sql = "update  Teams set team_name = trim('".$pTeamName."'), 
 		                              distance_id = ".$pDistanceId.", 
 					      team_usegps = ".$pTeamUseGPS.", 
@@ -483,6 +491,7 @@
             }
 
             // Отправить письмо всем участникам команды об изменениях
+            // кроме того, кто вносил изменения
 	    if ($UserId > 0 and $TeamId > 0)
 	    {
 	    	    $Sql = "select user_name from  Users where user_id = ".$UserId;
@@ -502,8 +511,16 @@
 				 on t.distance_id = d.distance_id
 				 inner join  Raids r
 				 on d.raid_id = r.raid_id
-			    where tu.teamuser_hide = 0 and tu.team_id = ".$TeamId."
-			    order by  tu.teamuser_id asc"; 
+			    where tu.teamuser_hide = 0 and tu.team_id = ".$TeamId;
+
+                     if ($SendEmailToAllTeamUsers <> 1)
+                     {
+		        $sql = $sql." and u.user_id <> ".$UserId;
+	             }
+          
+                     $sql = $sql." order by tu.teamuser_id asc"; 
+
+          		    
                 //echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
 
@@ -676,6 +693,7 @@
 	     } // Конец проверки на последнего участника
 
 	     // Отправить письмо всем участникам команды об удалении
+             // Кроме того, кто удалял
 	    if ($UserId > 0 and $TeamId > 0)
 	    {
 	    	    $Sql = "select user_name from  Users where user_id = ".$UserId;
@@ -701,7 +719,7 @@
 				 on t.distance_id = d.distance_id
 				 inner join  Raids r
 				 on d.raid_id = r.raid_id
-			    where tu.teamuser_id = ".$TeamUserId." or (tu.teamuser_hide = 0 and tu.team_id = ".$TeamId.")
+			    where tu.teamuser_id = ".$TeamUserId." or (tu.teamuser_hide = 0 and tu.team_id = ".$TeamId." and u.user_id <> ".$UserId.")
 			    order by  tu.teamuser_id asc"; 
                      //echo 'sql '.$sql;
 		     $Result = MySqlQuery($sql);
@@ -720,7 +738,7 @@
 	 	                   // Отправляем письмо
 				   SendMail($Row['user_email'], $Msg, $Row['user_name']);
 			     }
-		    } else {
+		    } elseif ($TeamUserCount == 1)  {
 			$Row = mysql_fetch_assoc($Result);
 	                $Msg = "Уважаемый участник ".$Row['user_name']."!\r\n\r\nВаша команда (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).") была удалена.\r\nАвтор изменений: ".$ChangeDataUserName.".\r\nВы можете увидеть результат на сайте и при необходимости внести свои изменения.\r\n\r\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
 	 	        // Отправляем письмо
@@ -809,8 +827,8 @@
 	
 		$view = "ViewTeamData";
 
-                // Письмо об изменениях		
-
+                // Письмо об изменениях	всем, кроме автора изменений	 
+          
 		    $Sql = "select user_name from  Users where user_id = ".$UserId;
 		    $Result = MySqlQuery($Sql);  
 		    $Row = mysql_fetch_assoc($Result);
@@ -828,7 +846,7 @@
 				 on t.distance_id = d.distance_id
 				 inner join  Raids r
 				 on d.raid_id = r.raid_id
-			    where tu.teamuser_hide = 0 and tu.team_id = ".$TeamId."
+			    where tu.teamuser_hide = 0 and tu.team_id = ".$TeamId." and u.user_id <> ".$UserId."
 			    order by  tu.teamuser_id asc"; 
                 //echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
@@ -872,7 +890,7 @@
 	     $SessionId = $_POST['sessionid'];
 	     if ($SessionId <= 0)
 	     {
-	         $statustext = 'Не найдена сесия.';
+	         $statustext = 'Не найдена сессия.';
 		 $alert = 1;
 		 return;
 	     }	 
@@ -901,7 +919,7 @@
                return;
              }
 
-
+             // Уведомление всем. в т.ч тому, кто удалял
 
 	     if ($UserId > 0 and $TeamId > 0)
 	     {
