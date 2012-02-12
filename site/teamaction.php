@@ -111,12 +111,12 @@
 	$view = "ViewTeamData";
 
            // пока валим всё в одну кучу - проверяем ниже
-           $pDistanceId = $_POST['DistanceId'];
-           $RaidId = $_POST['RaidId'];
+           $pDistanceId = (int)$_POST['DistanceId'];
+           $RaidId = (int)$_POST['RaidId'];
            $pTeamNum = (int) $_POST['TeamNum'];
            $pTeamName = $_POST['TeamName'];
            $pTeamUseGPS = ($_POST['TeamUseGPS'] == 'on' ? 1 : 0);
-           $pTeamMapsCount = $_POST['TeamMapsCount'];
+           $pTeamMapsCount = (int)$_POST['TeamMapsCount'];
            $pTeamGreenPeace = ($_POST['TeamGreenPeace'] == 'on' ? 1 : 0);
            $pTeamConfirmResult = ($_POST['TeamConfirmResult'] == 'on' ? 1 : 0);
            $pModeratorConfirmResult = ($_POST['ModeratorConfirmResult'] == 'on' ? 1 : 0);
@@ -560,7 +560,7 @@
 		$sql = "select team_id 
 		        from  Teams t
 			     inner join  Distances d on t.distance_id = d.distance_id
-		        where d.raid_id = ".$RaidId." and t.team_hide = 0 and t.team_num = ".$TeamNum;
+		        where d.raid_id = ".$RaidId." and t.team_hide = 0 and t.team_num = ".(int)$TeamNum;
           // echo $sql;
 	   $rs = MySqlQuery($sql);  
 	   $Row = mysql_fetch_assoc($rs);
@@ -570,7 +570,7 @@
 		 if ($TeamId <= 0)
 		 {
                         
-                        $statustext = 'Команда с номером '.$TeamNum.' не найдена.';
+                        $statustext = 'Команда с номером '.(int)$TeamNum.' не найдена.';
 			$alert = 1;
 			return;
 

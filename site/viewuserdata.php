@@ -24,9 +24,11 @@
 	     if ($viewsubmode == "ReturnAfterError") 
 	     {
 
+              ReverseClearArrays();
+
 	      $UserEmail = $_POST['UserEmail'];
-	      $UserName = $_POST['UserName'];
-	      $UserBirthYear = $_POST['UserBirthYear'];
+	      $UserName = str_replace( '"', '&quot;', $_POST['UserName']);
+	      $UserBirthYear = (int)$_POST['UserBirthYear'];
 	      $UserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
 
              } else {
@@ -69,16 +71,18 @@
 	        if ($viewsubmode == "ReturnAfterError") 
 		{
 
+                  ReverseClearArrays();
+
 		  $UserEmail = $_POST['UserEmail'];
-		  $UserName = $_POST['UserName'];
-		  $UserBirthYear = $_POST['UserBirthYear'];
+		  $UserName = str_replace( '"', '&quot;', $_POST['UserName']);
+		  $UserBirthYear = (int)$_POST['UserBirthYear'];
 		  $UserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
 
                 } else {
 
 		  $UserEmail = $row['user_email'];  
-		  $UserName = $row['user_name']; 
-		  $UserBirthYear = $row['user_birthyear'];  
+		  $UserName = str_replace( '"', '&quot;', $row['user_name']); 
+		  $UserBirthYear = (int)$row['user_birthyear'];  
 		  $UserProhibitAdd = $row['user_prohibitadd'];  
 
                 }

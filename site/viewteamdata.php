@@ -36,12 +36,15 @@
 		// ≈сли вернулись после ошибки переменные не нужно инициализировать
 		if ($viewsubmode == "ReturnAfterError") 
 		{
+                  ReverseClearArrays();
+
 
 		  $TeamNum = (int) $_POST['TeamNum'];
-		  $TeamName = $_POST['TeamName'];
+		//  $TeamName = $_POST['TeamName'];
+		  $TeamName = str_replace( '"', '&quot;', $_POST['TeamName']);
 		  $DistanceId = $_POST['DistanceId'];
 		  $TeamUseGPS = ($_POST['TeamUseGPS'] == 'on' ? 1 : 0);
-		  $TeamMapsCount = $_POST['TeamMapsCount'];
+		  $TeamMapsCount = (int)$_POST['TeamMapsCount'];
 		  $TeamRegisterDt = 0;
 		  $TeamConfirmResult = ($_POST['TeamConfirmResult'] == 'on' ? 1 : 0);
 		  $ModeratorConfirmResult = ($_POST['ModeratorConfirmResult'] == 'on' ? 1 : 0);
@@ -114,12 +117,14 @@
 		// ≈сли вернулись после ошибки переменные не нужно инициализировать
 		if ($viewsubmode == "ReturnAfterError") 
 		{
+                  ReverseClearArrays();
 
 		  $TeamNum = (int) $_POST['TeamNum'];
-		  $TeamName = $_POST['TeamName'];
+//		  $TeamName = $_POST['TeamName'];
+		  $TeamName = str_replace( '"', '&quot;', $_POST['TeamName']);
 		  $DistanceId = $_POST['DistanceId'];
 		  $TeamUseGPS = ($_POST['TeamUseGPS'] == 'on' ? 1 : 0);
-		  $TeamMapsCount = $_POST['TeamMapsCount'];
+		  $TeamMapsCount = (int)$_POST['TeamMapsCount'];
 		  $TeamConfirmResult = ($_POST['TeamConfirmResult'] == 'on' ? 1 : 0);
 		  $ModeratorConfirmResult = ($_POST['ModeratorConfirmResult'] == 'on' ? 1 : 0);
 		  $TeamGreenPeace = ($_POST['TeamGreenPeace'] == 'on' ? 1 : 0);
@@ -128,10 +133,10 @@
                 } else {
 
 		  $TeamNum = $Row['team_num'];
-		  $TeamName = $Row['team_name'];
+		  $TeamName = str_replace( '"', '&quot;', $Row['team_name']);
 		  $DistanceId = $Row['distance_id'];
 		  $TeamUseGPS = $Row['team_usegps'];
-		  $TeamMapsCount = $Row['team_mapscount'];
+		  $TeamMapsCount = (int)$Row['team_mapscount'];
 		  $TeamConfirmResult = $Row['team_confirmresult'];
 		  $ModeratorConfirmResult = $Row['team_moderatorconfirmresult'];
 		  $TeamGreenPeace = $Row['team_greenpeace'];
