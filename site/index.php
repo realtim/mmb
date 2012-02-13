@@ -67,18 +67,8 @@
 				<input type = "hidden" name = "view" value = "MainPage">
 				<input type = "hidden" name = "sessionid" value = "<? echo $_POST['sessionid']; ?>">
 				<input type = "hidden" name = "RaidId" value = "<? echo $_POST['RaidId']; ?>">
-				<a href="javascript:document.StartPageForm.submit();"><img  width = "157" height = "139" border = "0" alt = "ММБ"  src = "http://mmb.progressor.ru/mmbicons/mmb2012v-logo-s_4.png"></a>
+				<a href="javascript:document.StartPageForm.submit();"><img  style = "margin-bottom: 15px;" width = "157" height = "139" border = "0" alt = "ММБ"  src = "http://mmb.progressor.ru/mmbicons/mmb2012v-logo-s_4.png"></a>
                        </form> 
-
-			<!-- сообщение об ошибке -->
-			<?php 
-				if ($alert > 0) { 
-					print('<script language = "JavaScript">alert(\''.$statustext.'\');</script>'."\n");
-					print('<div class = "ErrorText">'.$statustext.'</div>'."\n");
-				} else {
-					print('<div class = "StatusText">'.$statustext.'</div>'."\n");
-				}
-			?>        
 
 			<!-- вставка меню на php -->
 			<?php  include("menu.php"); ?>
@@ -92,9 +82,14 @@
 
                     <div style = "padding-left: 20px; padding-right: 10px;">
 
-  		        <!-- <div class = "HeadText" align="center">Московский Марш-Бросок</div> -->
-
+			<!-- сообщение  -->
 			<?php 
+
+                         if (!empty($statustext))
+                         {
+			    print('<div class = "ErrorText">'.$statustext.'</div>'."\n");
+                            //print('<table width = "100%"><tr><td>'.$statustext.'</td><td style = "border-top-style: dotted; border-top-width: 2px; border-top-color: #CC0000;">&nbsp;</td></tr></table>'."\n");
+                          }
 
                          // вставляем основную часть			
 			 include("mainpart.php"); 

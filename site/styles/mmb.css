@@ -63,7 +63,7 @@ div.HeadText {font-family: Arial, Sans-Serif; font-size: 150%; font-weight: bold
 div.StatusText  {font-family: Times New Roman, Serif; font-size: 100%; font-weight: normal; padding-top: 15px; padding-bottom: 10px; }
 
 div.ErrorText  {font-family: Times New Roman, Serif; font-size: 100%; font-weight: normal; color: #000000; 
-                margin-top: 15px; margin-bottom: 10px; 
+                margin-bottom: 10px; margin-top: 0px;  
                 padding-top: 5px; padding-bottom: 5px; 
                 border-top-style: dotted; border-top-width: 2px; border-top-color: #CC0000;
                 border-bottom-style: dotted; border-bottom-width: 2px; border-bottom-color: #CC0000;
