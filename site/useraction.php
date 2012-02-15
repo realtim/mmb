@@ -471,9 +471,7 @@
 		  $sqlFindString = trim($FindString);
                 }
 
-                $FindString = '';
-
-
+         
         	$sql = "select count(*) as FindUsersCount
 		        from  Users u
 			where ltrim(COALESCE(u.user_password, '')) <> '' 
@@ -493,8 +491,8 @@
 		
 		} else {
 
-                    $statustext = 'Не найдено пользователей, чьи ФИО содержат '.trim($sqlFindString);				     
-
+                    $statustext = 'Не найдено пользователей, чьи ФИО содержат '.trim($FindString);				     
+                    $view = "";
                 }
 
 

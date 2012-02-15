@@ -17,14 +17,23 @@
 
 <?php
 
-
-		if (trim($sqlFindString) == '' or trim($sqlFindString) == 'Часть ФИО')
+		if (trim($FindString) == '' or trim($FindString) == 'Часть ФИО')
                 {
+                  $statustext = 'Не указан критерий поиска.';				     
+                  $view = "";
  		  return;
                 }
 
 
-	
+                if (trim($FindString) == 'все-все' or trim($FindString) == 'все-все-все')
+                {
+		  $sqlFindString = '';
+                  $FindText = 'Пользователи:';
+                } else {
+		  $sqlFindString = trim($FindString);
+                  $FindText = 'Пользователи, чьи ФИО содержат '.trim($FindString).':';
+                }
+   
 	//$FindString = trim($_POST['FindString']); 
 
          if (empty($SessionId))
@@ -33,7 +42,7 @@
 	 } 
 
                 // Выводим спсиок пользователей, которые подошли
-                print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">Пользователи, чьи ФИО содержат "'.trim($FindString).'":</div>'."\r\n");
+                print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">'.$FindText.'</div>'."\r\n");
            	print('<form  name = "UsersForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
                 print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");
