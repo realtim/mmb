@@ -19,18 +19,22 @@
 <?php
 
 
+		if (trim($FindString) == '' or trim($FindString) == 'Часть ФИО')
+                {
+ 		  return;
+                }
+
+
 	
-	$FindString = trim($_POST['FindString']); 
+	//$FindString = trim($_POST['FindString']); 
 
          if (empty($SessionId))
 	 {
 		$SessionId =  $_POST['sessionid'];
 	 } 
 
-?>		
-<? 
                 // Выводим спсиок пользователей, которые подошли
-                print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">Участники, чьи ФИО содержат "'.trim($FindString).'":</div>'."\r\n");
+                print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">Пользователи, чьи ФИО содержат "'.trim($FindString).'":</div>'."\r\n");
            	print('<form  name = "UsersForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
                 print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");
@@ -40,7 +44,9 @@
                  
 		$sql = "select u.user_id, u.user_name 
 		        from  Users u
-			where ltrim(COALESCE(u.user_password, '')) <> '' and u.user_hide = 0 and user_name like '%".trim($FindString)."%'
+			where ltrim(COALESCE(u.user_password, '')) <> '' 
+                              and u.user_hide = 0
+                              and user_name like '%".trim($sqlFindString)."%'
 			order by user_name "; 
                 
 		//echo 'sql '.$sql;
@@ -48,6 +54,7 @@
 		$Result = MySqlQuery($sql);
 
                 $RowsCount = mysql_num_rows($Result);
+	
 		
 		if ($RowsCount > 0)
 		{
@@ -62,6 +69,8 @@
 			  print('<div class= "input" align = "left">Не найдено</div>'."\r\n");
 		}
 	        print('</form>'."\r\n");
+                mysql_free_result($Result);
+
 
 
 ?>
