@@ -11,7 +11,6 @@
 		document.UsersForm.submit();
 	}
 	
-	
 
 	
 </script>
@@ -19,7 +18,7 @@
 <?php
 
 
-		if (trim($FindString) == '' or trim($FindString) == '×àñòü ÔÈÎ')
+		if (trim($sqlFindString) == '' or trim($sqlFindString) == '×àñòü ÔÈÎ')
                 {
  		  return;
                 }

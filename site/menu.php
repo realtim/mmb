@@ -182,12 +182,23 @@
 
 	function RecalcRaidResults()
 	{ 
-		document.AdminServiceForm.action.value = "RecalcRaidResults";
-                document.AdminServiceForm.RaidId.value = document.FindTeamForm.RaidId.value; 
-		document.AdminServiceForm.submit();
+                 alert('11');
+		//document.AdminServiceForm.action.value = "RecalcRaidResults";
+             //   document.AdminServiceForm.RaidId.value = document.FindTeamForm.RaidId.value; 
+		//document.AdminServiceForm.submit();
+             return true;
 	}
 
-        function ClearTables()
+        
+	function RecalcRaid()
+	{ 
+              document.AdminServiceForm.action.value = "RecalcRaidResults";
+              document.AdminServiceForm.RaidId.value = document.FindTeamForm.RaidId.value; 
+	      document.AdminServiceForm.submit();
+              return true;
+	}
+
+	function ClearTables()
 	{ 
 		document.AdminServiceForm.action.value = "ClearTables";
 		document.AdminServiceForm.submit();
@@ -266,7 +277,7 @@
        // Форма сервисов администратора
         if (CheckAdmin($SessionId) == 1) 
 	{
-	  print('<form  name = "AdminServiceForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
+	  print('<form  name = "AdminServiceForm"  action = "'.$MyPHPScript.'" method = "post" onsubmit = "return true;">'."\r\n");
 	  print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
 	  print('<input type = "hidden" name = "action" value = "">'."\r\n"); 
 	  print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
@@ -275,14 +286,14 @@
 
           //  показываем кнопку "Пересчёт результатов" 
           print('<input type="button" style = "width:185px;" name="RecalcRaidResults" value="Пересчитать результаты" 
-                          onclick = "javascript: RecalcRaidResults();"
-                          tabindex = "205">'."\r\n"); 
+                          onclick = "javascript: RecalcRaid();"
+                          tabindex = "401">'."\r\n"); 
 	  print('</br>'."\r\n");
 
           //  показываем кнопку "Очистить таблицы" 
 	  print('<input type="button" style = "width:185px; margin-top:10px;" name="ClearTables" value="Очистить таблицы" 
-                          onclick = "javascript: ClearTables();"
-                          tabindex = "205">'."\r\n"); 
+                          onclick = "ClearTables();"
+                          tabindex = "402">'."\r\n"); 
 
 	  print('</form>'."\r\n");
 	  print('</br>'."\r\n");

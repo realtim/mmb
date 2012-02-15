@@ -176,7 +176,9 @@
 		document.UserTeamsForm.action.value = "TeamInfo";
 		document.UserTeamsForm.submit();
 	}
-	
+/*	
+
+        Вынес эти функции в меню
 	// Функция проверки e-mail
 	function CheckEmail(email) 
 	{
@@ -205,7 +207,7 @@
 	function trimSpaces(str) {
 	  return str.replace(/\s{2,}/g, ' ');
 	}
-	
+*/	
 </script>
 <!-- Конец вывода javascrpit -->
 

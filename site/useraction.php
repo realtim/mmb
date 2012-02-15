@@ -320,6 +320,7 @@
                 mysql_free_result($rs);
 
 		$statustext = 'Пароль '.$NewPassword.' выслан.';
+                $view = "";
 
 	        $Sql = "select user_name from  Users where user_id = ".$NowUserId;
 		$Result = MySqlQuery($Sql);  
@@ -455,7 +456,49 @@
    } elseif ($action == "FindUser")  {
     // Действие вызывается поиском участника
 
-           $view = "ViewUsers";
+                if (trim($FindString) == '' or trim($FindString) == 'Часть ФИО')
+                {
+                  $statustext = 'Не указан критерий поиска.';				     
+                  $view = "";
+ 		  return;
+                }
+
+
+                if (trim($FindString) == 'все-все' or trim($FindString) == 'все-все-все')
+                {
+		  $sqlFindString = '';
+                } else {
+		  $sqlFindString = trim($FindString);
+                }
+
+                $FindString = '';
+
+
+        	$sql = "select count(*) as FindUsersCount
+		        from  Users u
+			where ltrim(COALESCE(u.user_password, '')) <> '' 
+                              and u.user_hide = 0 
+                              and user_name like '%".$sqlFindString."%'";
+                
+		//echo 'sql '.$sql;
+		
+		$Result = MySqlQuery($sql);
+	        $Row = mysql_fetch_assoc($Result);
+		$RowCount = $Row['FindUsersCount'];
+	        mysql_free_result($Result);
+		
+		if ($RowCount > 0)
+		{
+		   $view = "ViewUsers";
+		
+		} else {
+
+                    $statustext = 'Не найдено пользователей, чьи ФИО содержат '.trim($sqlFindString);				     
+
+                }
+
+
+
 
    } else {
    // если никаких действий не требуется

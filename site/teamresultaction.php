@@ -238,6 +238,46 @@
            // Обновляем результат команды
            RecalcTeamResult($TeamId);
 
+   } elseif ($action == 'RecalcRaidResults') {
+
+
+        if ($RaidId <= 0)	   
+	{
+	  $RaidId = $_POST['RaidId']; 
+	}
+
+        if ($RaidId <= 0)	   
+	{
+	  $statustext = 'Не нвйден марш-бросок';
+          $view = ''; 
+	}
+
+	if (!CheckAdmin($SessionId))
+	{
+          return;
+        }
+
+
+
+                $sql = 'select team_id 
+                        from      Teams t
+				  inner join  Distances d 
+				  on t.distance_id = d.distance_id
+			where t.team_hide = 0 and d.raid_id = '.$RaidId.'
+                        order by team_id';
+
+		$Result = MySqlQuery($sql);  
+       
+		// теперь цикл по командам
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+		  $RecalcTeamId = $Row['team_id'];
+		  RecalcTeamResult($RecalcTeamId);
+	        }
+		mysql_free_result($Result);
+
+           $statustext = 'Результаты марш-броска пересчитаны';
+           $view = '';
 
    } else {
    // если никаких действий не требуется
