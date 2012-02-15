@@ -65,8 +65,8 @@
                         <form name = "StartPageForm" action = "<? echo $MyPHPScript; ?>" method = "post">
 				<input type = "hidden" name = "action" value = "StartPage">
 				<input type = "hidden" name = "view" value = "MainPage">
-				<input type = "hidden" name = "sessionid" value = "<? echo $_POST['sessionid']; ?>">
-				<input type = "hidden" name = "RaidId" value = "<? echo $_POST['RaidId']; ?>">
+				<input type = "hidden" name = "sessionid" value = "<? echo (!empty($SessionId) ? $SessionId : $_POST['sessionid']); ?>">
+				<input type = "hidden" name = "RaidId" value = "<? echo (!empty($RaidId) ? $RaidId : $_POST['RaidId']); ?>">
 				<a href="javascript:document.StartPageForm.submit();"><img  style = "margin-bottom: 15px;" width = "157" height = "139" border = "0" alt = "лла"  src = "http://mmb.progressor.ru/mmbicons/mmb2012v-logo-s_4.png"></a>
                        </form> 
 
