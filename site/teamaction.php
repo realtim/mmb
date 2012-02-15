@@ -556,6 +556,13 @@
    } elseif  ($action == 'FindTeam')  {
    // Информация о команде по номеру
    
+             if ($TeamNum == '' or $TeamNum == 'Номер команды')
+             {
+                        $statustext = 'Не указан номер.';
+			$view = "";
+			return;
+             }
+
 	
 		$sql = "select team_id 
 		        from  Teams t
@@ -571,7 +578,7 @@
 		 {
                         
                         $statustext = 'Команда с номером '.(int)$TeamNum.' не найдена.';
-			$alert = 1;
+			$view = "";
 			return;
 
 
