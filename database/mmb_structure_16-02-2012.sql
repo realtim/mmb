@@ -2,11 +2,12 @@
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
+
+
 --
 -- База данных: `mmb`
 --
-CREATE DATABASE `mmb` DEFAULT CHARACTER SET cp1251 COLLATE cp1251_general_ci;
-USE `mmb`;
+
 
 -- --------------------------------------------------------
 
@@ -52,6 +53,20 @@ CREATE TABLE IF NOT EXISTS `Errors` (
 -- --------------------------------------------------------
 
 --
+-- Структура таблицы `LevelMapLinks`
+--
+
+CREATE TABLE IF NOT EXISTS `LevelMapLinks` (
+  `levelmaplink_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Ключ ссылки на карту этапа',
+  `level_id` int(11) NOT NULL COMMENT 'Ключ этапа',
+  `levelmaplink_url` varchar(100) NOT NULL COMMENT 'Адрес сылки на карту',
+  PRIMARY KEY (`levelmaplink_id`),
+  KEY `level_id` (`level_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=cp1251 COMMENT='Таблица ссылок на карты этапов' AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
 -- Структура таблицы `LevelPoints`
 --
 
@@ -85,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `Levels` (
   `level_maplink` varchar(100) DEFAULT NULL COMMENT 'Ссылка на карту этапа',
   PRIMARY KEY (`level_id`),
   KEY `distance_id` (`distance_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=cp1251 COMMENT='Таблица этапов' AUTO_INCREMENT=8 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=cp1251 COMMENT='Таблица этапов' AUTO_INCREMENT=15 ;
 
 -- --------------------------------------------------------
 
@@ -110,7 +125,9 @@ CREATE TABLE IF NOT EXISTS `RaidModerators` (
   `raid_id` int(11) NOT NULL COMMENT 'Ключ марш-броска',
   `user_id` int(11) NOT NULL COMMENT 'Ключ пользователя',
   `raidmoderator_hide` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Признак удаления записи о модераторе',
-  PRIMARY KEY (`raidmoderator_id`)
+  PRIMARY KEY (`raidmoderator_id`),
+  KEY `raid_id` (`raid_id`),
+  KEY `user_id` (`user_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=cp1251 COMMENT='Таблица модераторов' AUTO_INCREMENT=7 ;
 
 -- --------------------------------------------------------
@@ -161,7 +178,8 @@ CREATE TABLE IF NOT EXISTS `Sessions` (
   `session_status` int(11) NOT NULL COMMENT 'Статус сессии',
   `session_starttime` datetime NOT NULL COMMENT 'Время старта сесии',
   `session_updatetime` datetime NOT NULL COMMENT 'Время обновления (последнего обращения к сесии',
-  PRIMARY KEY (`session_id`)
+  PRIMARY KEY (`session_id`),
+  KEY `user_id` (`user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=cp1251 COMMENT='Таблица сессий';
 
 -- --------------------------------------------------------
@@ -204,26 +222,9 @@ CREATE TABLE IF NOT EXISTS `TeamLevels` (
   `teamlevel_hide` tinyint(1) NOT NULL COMMENT 'Признак, что резултат команды по этапу удален',
   PRIMARY KEY (`teamlevel_id`),
   KEY `level_id` (`level_id`),
-  KEY `error_id` (`error_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=cp1251 COMMENT='Таблица результатов этапа для команды' AUTO_INCREMENT=36 ;
-
--- --------------------------------------------------------
-
---
--- Структура таблицы `TeamUsers`
---
-
-CREATE TABLE IF NOT EXISTS `TeamUsers` (
-  `teamuser_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Ключ участника команды',
-  `team_id` int(11) NOT NULL COMMENT 'Ключ команды',
-  `user_id` int(11) NOT NULL COMMENT 'Ключ участника',
-  `teamuser_hide` tinyint(1) NOT NULL COMMENT 'Признак, что  участник удалён из команды (чтобы не делать физическое удаление)',
-  `level_id` int(11) DEFAULT NULL COMMENT 'Ключ этапа на котором сошёл участник',
-  PRIMARY KEY (`teamuser_id`),
-  KEY `team_id` (`team_id`),
-  KEY `user_id` (`user_id`),
-  KEY `level_id` (`level_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=cp1251 COMMENT='Участники команды' AUTO_INCREMENT=116 ;
+  KEY `error_id` (`error_id`),
+  KEY `team_id` (`team_id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=cp1251 COMMENT='Таблица результатов этапа для команды' AUTO_INCREMENT=39 ;
 
 -- --------------------------------------------------------
 
@@ -248,8 +249,27 @@ CREATE TABLE IF NOT EXISTS `Teams` (
   PRIMARY KEY (`team_id`),
   KEY `distance_id` (`distance_id`),
   KEY `team_result` (`team_result`),
-  KEY `team_num` (`team_num`)
-) ENGINE=MyISAM  DEFAULT CHARSET=cp1251 COMMENT='Таблица команд ММБ' AUTO_INCREMENT=71 ;
+  KEY `team_num` (`team_num`),
+  KEY `level_id` (`level_id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=cp1251 COMMENT='Таблица команд ММБ' AUTO_INCREMENT=76 ;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `TeamUsers`
+--
+
+CREATE TABLE IF NOT EXISTS `TeamUsers` (
+  `teamuser_id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Ключ участника команды',
+  `team_id` int(11) NOT NULL COMMENT 'Ключ команды',
+  `user_id` int(11) NOT NULL COMMENT 'Ключ участника',
+  `teamuser_hide` tinyint(1) NOT NULL COMMENT 'Признак, что  участник удалён из команды (чтобы не делать физическое удаление)',
+  `level_id` int(11) DEFAULT NULL COMMENT 'Ключ этапа на котором сошёл участник',
+  PRIMARY KEY (`teamuser_id`),
+  KEY `team_id` (`team_id`),
+  KEY `user_id` (`user_id`),
+  KEY `level_id` (`level_id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=cp1251 COMMENT='Участники команды' AUTO_INCREMENT=121 ;
 
 -- --------------------------------------------------------
 
