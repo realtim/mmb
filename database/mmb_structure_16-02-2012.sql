@@ -97,7 +97,6 @@ CREATE TABLE IF NOT EXISTS `Levels` (
   `level_starttype` tinyint(1) NOT NULL COMMENT 'Тип старта (1 - по готовности, 2 - общий, 3 - )в момент фигиша на предыдущем этапе)',
   `level_pointnames` varchar(150) NOT NULL COMMENT 'Спсиок названий КП этапа',
   `level_pointpenalties` varchar(150) NOT NULL COMMENT 'Список штрафов в минутах за невзятие КП  (в том же порядке, что и список КП)',
-  `level_maplink` varchar(100) DEFAULT NULL COMMENT 'Ссылка на карту этапа',
   PRIMARY KEY (`level_id`),
   KEY `distance_id` (`distance_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=cp1251 COMMENT='Таблица этапов' AUTO_INCREMENT=15 ;
