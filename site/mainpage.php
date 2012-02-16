@@ -17,8 +17,8 @@ print('<p align = "left" style = "text-align: justify;">Московский Марш-бросок п
 
 print('<table cellpadding = "10" border = "0" width = "100%">'."\r\n");
 print('<tr class = "gray">'."\r\n");
-print('<td>Положение</td>'."\r\n");
-print('<td colspan = "2">Время и место, информация о старте</td>'."\r\n");
+print('<td>Марш-бросок</td>'."\r\n");
+print('<td colspan = "2">Время и место</td>'."\r\n");
 print('<td>Результаты и карты, параметры дистанции (<a href = "#help">?</a>)</td>'."\r\n");
 print('</tr>'."\r\n");
 
@@ -30,8 +30,8 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 
         
 	$RaidId = $rowRaids['raid_id'];
-	$RaidName = $rowRaids['raid_name'];
-	$RaidPeriod = $rowRaids['raid_period'];
+	$RaidName = trim($rowRaids['raid_name']);
+	$RaidPeriod = trim($rowRaids['raid_period']);
 	$RaidRulesLink = $rowRaids['raid_ruleslink'];
 	$RaidStartLink = $rowRaids['raid_startlink'];
 	$RaidStartPoint = $rowRaids['raid_startpoint'];
@@ -54,7 +54,9 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 
  
 	//class = "yellow"
-        print('<td><a href = "'.$RaidRulesLink.'">'.$RaidName.'</a></td><td>'.$RaidPeriod.'</td>'."\r\n");
+        print('<td><a href = "javascript:document.FindTeamForm.RaidId.value='.$RaidId.';RaidTeams();">'.$RaidName.'</a></td>'."\r\n");
+
+	print('<td><a href = "'.$RaidRulesLink.'">'.$RaidPeriod.'</td>'."\r\n");
         
 	if (empty($RaidStartLink))
 	{

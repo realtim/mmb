@@ -101,7 +101,9 @@
                                       THEN 'Num' 
                                       ELSE 'Place' 
                                   END as ordertype,
-                                  r.raid_resultpublicationdate
+                                  r.raid_resultpublicationdate,
+                                  COALESCE(r.raid_ruleslink, '') as raid_ruleslink,
+                                  COALESCE(r.raid_startlink, '') as raid_startlink
 			  from  Raids r
 			  where r.raid_id = ".$RaidId."
                           "; 
@@ -111,6 +113,8 @@
 		  mysql_free_result($UserResult);
                 // Скорее всего нужно использоать только в сравнении с текущим временем
                 $RsultPublicated =  $Row['raid_resultpublicationdate'];
+                $RaidRulesLink = trim($Row['raid_ruleslink']);
+                $RaidStartLink = trim($Row['raid_startlink']);
 
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
                 if  (empty($OrderType))
@@ -169,6 +173,8 @@
 	        print('</select>'."\r\n");  
 		print('</div>'."\r\n");
             	print('<div align = "left" style = "margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
+		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidRulesLink.'" target = "_blank">Положение</a> '."\r\n");
+		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidStartLink.'" target = "_blank">Информация о старте</a> '."\r\n");
 		print('<a  style = "font-size:80%;" href = "'.trim(str_replace('index.php','printraidteams.php?RaidId=',$MyPHPScript)).$RaidId.'" target = "_blank">Список для печати</a>'."\r\n");
 		print('</div>'."\r\n");
 
@@ -181,7 +187,7 @@
                                   DATE_FORMAT(l.level_minendtime, '%d.%m %H:%i') as level_sminendtime,  
                                   DATE_FORMAT(l.level_endtime,    '%d.%m %H:%i') as level_sendtime,  
                                 l.level_begtime, l.level_maxbegtime, l.level_minendtime, 
-                                l.level_endtime, l.level_maplink
+                                l.level_endtime
                         from  Levels l  
                               inner join Distances d                              
                               on d.distance_id = l.distance_id 
@@ -204,7 +210,7 @@
 		print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<tr class = "gray">'."\r\n");  
 		print('<td width = "70">Дистанция</td>'."\r\n");  
-		print('<td width = "200">Этап (по ссылке - карта)</td>'."\r\n");  
+		print('<td width = "200">Этап (по ссылкам - карты)</td>'."\r\n");  
 		print('<td width = "400">Тип старта (границы по времени)'."\r\n");  
 		print('<td width = "70">Число КП'."\r\n");  
 		print('</tr>'."\r\n");  
@@ -220,7 +226,7 @@
 		  $LevelStartType = $Row['level_starttype'];
 		  $LevelPointNames =  $Row['level_pointnames'];
 		  $LevelPointPenalties =  $Row['level_pointpenalties'];
-                  $LevelMapLink = $Row['level_maplink'];
+               //   $LevelMapLink = $Row['level_maplink'];
                  
                   $PointsCount = count(explode(',', $LevelPointNames));
 
@@ -272,12 +278,32 @@
        
 		  // сторим строчку для текущего этапа  
 		  print('<tr><td>'.$Row['distance_name'].'</td>'."\r\n"); 
-		  if (trim($LevelMapLink) == '')
+
+                  print('<td>'.$Row['level_name']."\r\n"); 
+
+                  $sql = 'select levelmaplink_url 
+                          from LevelMapLinks
+                          where level_id = '.$Row['level_id'].'
+                          order by levelmaplink_id';
+
+                 // echo $sql;  
+		  $ResultMap = MySqlQuery($sql);  
+       
+                  $MapsCount = 0;
+                  $MapString = ''; 
+		  // теперь цикл обработки данных по этапам 
+		  while ($RowMap = mysql_fetch_assoc($ResultMap))
 		  {
-                    print('<td>'.$Row['level_name'].'</td>'."\r\n"); 
-                  } else {
-                    print('<td><a href = "'.trim($LevelMapLink).'" target = "_blank">'.$Row['level_name'].'</a></td>'."\r\n"); 
-                  }
+			$MapsCount++;
+                        $MapString = $MapString.', <a href = "'.trim($RowMap['levelmaplink_url']).'" target = "_blank">'.$MapsCount.'</a>';
+		  }
+                  mysql_free_result($ResultMap);
+                  if (!empty($MapString))   
+                  {
+		    $MapString = '('.trim(substr(trim($MapString), 1)).')';
+		    print($MapString."\r\n"); 
+		  }
+		  print('</td>'."\r\n"); 
 
 		  print('<td>'.$LevelStartTypeText.'</td>
                          <td>'.$PointsCount.'</td>
