@@ -188,10 +188,16 @@
                          if  ($Point == 'on')
                          {
 			    $TeamLevelPoints = $TeamLevelPoints.',1';
-                            $PenaltyTime = $PenaltyTime + (int)$Penalties[$i];
                          } else {
 			    $TeamLevelPoints = $TeamLevelPoints.',0';
                          }
+                         // Считаем штраф
+                         if  (($Point <> 'on' and (int)$Penalties[$i] > 0) or ($Point == 'on' and (int)$Penalties[$i] < 0))
+                         {
+			    $PenaltyTime = $PenaltyTime + (int)$Penalties[$i];
+                         }
+
+
                     }
                     $TeamLevelPoints = substr(trim($TeamLevelPoints), 1);
 
