@@ -1,0 +1,3 @@
+DefaultLanguage ru
+AddDefaultCharset utf-8
+php_value default_charset "utf-8"
