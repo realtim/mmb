@@ -1,26 +1,26 @@
 <?php
 
-         // По идее, для всех действий должно передаваться SessionId через post
-	// Исключение действия UserLogin и переход по ссылке из письма - там стартует сессия прям на этой странице
-         // и передачи через форму не происходит
-          // м.б. стоит яано прописать для каких action м.б.пустая сессия
+         // РџРѕ РёРґРµРµ, РґР»СЏ РІСЃРµС… РґРµР№СЃС‚РІРёР№ РґРѕР»Р¶РЅРѕ РїРµСЂРµРґР°РІР°С‚СЊСЃСЏ SessionId С‡РµСЂРµР· post
+	// РСЃРєР»СЋС‡РµРЅРёРµ РґРµР№СЃС‚РІРёСЏ UserLogin Рё РїРµСЂРµС…РѕРґ РїРѕ СЃСЃС‹Р»РєРµ РёР· РїРёСЃСЊРјР° - С‚Р°Рј СЃС‚Р°СЂС‚СѓРµС‚ СЃРµСЃСЃРёСЏ РїСЂСЏРј РЅР° СЌС‚РѕР№ СЃС‚СЂР°РЅРёС†Рµ
+         // Рё РїРµСЂРµРґР°С‡Рё С‡РµСЂРµР· С„РѕСЂРјСѓ РЅРµ РїСЂРѕРёСЃС…РѕРґРёС‚
+          // Рј.Р±. СЃС‚РѕРёС‚ СЏР°РЅРѕ РїСЂРѕРїРёСЃР°С‚СЊ РґР»СЏ РєР°РєРёС… action Рј.Р±.РїСѓСЃС‚Р°СЏ СЃРµСЃСЃРёСЏ
 
          if (empty($SessionId))
 	 {
 		$SessionId =  $_POST['sessionid'];
 	 } 
 
-	 // Текущий пользователь
+	 // РўРµРєСѓС‰РёР№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ
 	 $NowUserId = GetSession($SessionId);
 
 
          if ($viewmode == 'Add')
 	 {
-             // Новый пользователь 
+             // РќРѕРІС‹Р№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ 
              $UserId = 0;
-	     // Пока не делал возможности регистрировать пользователя уже авторизованному пользователю
+	     // РџРѕРєР° РЅРµ РґРµР»Р°Р» РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ СѓР¶Рµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅРЅРѕРјСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ
 
-	     // Если вернулись после ошибки переменные не нужно инициализировать
+	     // Р•СЃР»Рё РІРµСЂРЅСѓР»РёСЃСЊ РїРѕСЃР»Рµ РѕС€РёР±РєРё РїРµСЂРµРјРµРЅРЅС‹Рµ РЅРµ РЅСѓР¶РЅРѕ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ
 	     if ($viewsubmode == "ReturnAfterError") 
 	     {
 
@@ -34,31 +34,31 @@
              } else {
 
 	      $UserEmail = 'E-mail';
-	      $UserName = 'Фамилия Имя';
-	      $UserBirthYear = 'Год рождения';
+	      $UserName = 'Р¤Р°РјРёР»РёСЏ РРјСЏ';
+	      $UserBirthYear = 'Р“РѕРґ СЂРѕР¶РґРµРЅРёСЏ';
 	      $UserProhibitAdd = 0;
 
              }
             
             
-             // Всегда разрешаем ввод нового пользователя 
+             // Р’СЃРµРіРґР° СЂР°Р·СЂРµС€Р°РµРј РІРІРѕРґ РЅРѕРІРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ 
 	     $AllowEdit = 1;
-	     // Определяем следующее действие
+	     // РћРїСЂРµРґРµР»СЏРµРј СЃР»РµРґСѓСЋС‰РµРµ РґРµР№СЃС‚РІРёРµ
 	     $NextActionName = 'AddUser';
-             // Действие на текстовом поле по клику
-	     $SaveButtonText = 'Зарегистрировать';
+             // Р”РµР№СЃС‚РІРёРµ РЅР° С‚РµРєСЃС‚РѕРІРѕРј РїРѕР»Рµ РїРѕ РєР»РёРєСѓ
+	     $SaveButtonText = 'Р—Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊ';
 
 
          } else {
 
-           // просмотр существующего
+           // РїСЂРѕСЃРјРѕС‚СЂ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРіРѕ
                 //echo $viewsubmode;
 
 		$UserId = $_POST['UserId']; 
 
 		if ($UserId <= 0)
 		{
-		// должны быть определены пользоатель, которого смотрят
+		// РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕРїСЂРµРґРµР»РµРЅС‹ РїРѕР»СЊР·РѕР°С‚РµР»СЊ, РєРѕС‚РѕСЂРѕРіРѕ СЃРјРѕС‚СЂСЏС‚
 		     return;
 		}
            
@@ -67,7 +67,7 @@
                 $row = mysql_fetch_assoc($rs);
                 mysql_free_result($rs);
 
-	        // Если вернулись после ошибки переменные не нужно инициализировать
+	        // Р•СЃР»Рё РІРµСЂРЅСѓР»РёСЃСЊ РїРѕСЃР»Рµ РѕС€РёР±РєРё РїРµСЂРµРјРµРЅРЅС‹Рµ РЅРµ РЅСѓР¶РЅРѕ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ
 	        if ($viewsubmode == "ReturnAfterError") 
 		{
 
@@ -89,7 +89,7 @@
 
 	        $NextActionName = 'UserChangeData';
 		$AllowEdit = 0;
-		$SaveButtonText = 'Сохранить изменения';
+		$SaveButtonText = 'РЎРѕС…СЂР°РЅРёС‚СЊ РёР·РјРµРЅРµРЅРёСЏ';
 		
 
                 if ($UserId == $NowUserId or CheckAdmin($SessionId) == 1) 
@@ -98,7 +98,7 @@
 		}
 
 	 }
-         // Конец проверки действия с пользователем
+         // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё РґРµР№СЃС‚РІРёСЏ СЃ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј
 
 	 
          if ($AllowEdit == 0) 
@@ -112,47 +112,47 @@
 
 
 
-// Выводим javascrpit
+// Р’С‹РІРѕРґРёРј javascrpit
 ?>
 
-<!-- Выводим javascrpit -->
+<!-- Р’С‹РІРѕРґРёРј javascrpit -->
 <script language = "JavaScript">
 
-        // Функция проверки правильности заполнения формы
+        // Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё Р·Р°РїРѕР»РЅРµРЅРёСЏ С„РѕСЂРјС‹
 	function ValidateUserDataForm()
 	{ 
 		if (document.UserDataForm.UserName.value == '') 
 		{
-			alert('Не указано имя.');           
+			alert('РќРµ СѓРєР°Р·Р°РЅРѕ РёРјСЏ.');           
 			return false;
 		} 
 
 		if (document.UserDataForm.UserEmail.value == '') 
 		{
-			alert('Не указан e-mail.');           
+			alert('РќРµ СѓРєР°Р·Р°РЅ e-mail.');           
 			return false;
 		} 
 
 
 		if (document.UserDataForm.UserBirthYear.value == '') 
 		{
-			alert('Не указан год.');           
+			alert('РќРµ СѓРєР°Р·Р°РЅ РіРѕРґ.');           
 			return false;
 		} 
 		
 		if (!CheckEmail(document.UserDataForm.UserEmail.value)) 
 		{
-			alert('E-mail не проходит проверку формата.');           
+			alert('E-mail РЅРµ РїСЂРѕС…РѕРґРёС‚ РїСЂРѕРІРµСЂРєСѓ С„РѕСЂРјР°С‚Р°.');           
 			return false;
 		} 
 		
 		document.UserDataForm.action.value = "<? echo $NextActionName; ?>";
 		return true;
 	}
-        // Конец проверки правильности заполнения формы
+        // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё Р·Р°РїРѕР»РЅРµРЅРёСЏ С„РѕСЂРјС‹
 
 	
-	// Функция отправки пароля
+	// Р¤СѓРЅРєС†РёСЏ РѕС‚РїСЂР°РІРєРё РїР°СЂРѕР»СЏ
 	function NewPassword()
 	{ 
 		document.UserDataForm.action.value = "SendEmailWithNewPassword";
@@ -160,7 +160,7 @@
 	}
 	// 
 
-        // Функция отмены изменения
+        // Р¤СѓРЅРєС†РёСЏ РѕС‚РјРµРЅС‹ РёР·РјРµРЅРµРЅРёСЏ
 	function Cancel()
 	{ 
 		document.UserDataForm.action.value = "CancelChangeUserData";
@@ -168,7 +168,7 @@
 	}
 	// 
 
-	// Функция просмотра данных о команде
+	// Р¤СѓРЅРєС†РёСЏ РїСЂРѕСЃРјРѕС‚СЂР° РґР°РЅРЅС‹С… Рѕ РєРѕРјР°РЅРґРµ
 	function ViewTeamInfo(teamid, raidid)
 	{ 
 		document.UserTeamsForm.TeamId.value = teamid;
@@ -178,12 +178,12 @@
 	}
 /*	
 
-        Вынес эти функции в меню
-	// Функция проверки e-mail
+        Р’С‹РЅРµСЃ СЌС‚Рё С„СѓРЅРєС†РёРё РІ РјРµРЅСЋ
+	// Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё e-mail
 	function CheckEmail(email) 
 	{
 		var template = /^[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z])+$/;
-//		email = drop_spaces(email); //функцию drop_spaces() см. выше
+//		email = drop_spaces(email); //С„СѓРЅРєС†РёСЋ drop_spaces() СЃРј. РІС‹С€Рµ
 		if (template.test(email)) 
 		{
 		        return true;
@@ -209,12 +209,12 @@
 	}
 */	
 </script>
-<!-- Конец вывода javascrpit -->
+<!-- РљРѕРЅРµС† РІС‹РІРѕРґР° javascrpit -->
 
 
 <?
 
-         // выводим форму с данными пользователя
+         // РІС‹РІРѕРґРёРј С„РѕСЂРјСѓ СЃ РґР°РЅРЅС‹РјРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 	 
 	 print('<form  name = "UserDataForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "'.$OnSubmitFunction.'">'."\r\n");
          print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n");
@@ -223,64 +223,64 @@
 
 	 if ($AllowEdit == 1) 
 	 {
-          print('<div style = "margin-top: 10px; margin-bottom: 10px; font-size: 80%; text-align: left">Всплывающие подсказки появляются при наведении курсора мыши:</div>'."\r\n");
+          print('<div style = "margin-top: 10px; margin-bottom: 10px; font-size: 80%; text-align: left">Р’СЃРїР»С‹РІР°СЋС‰РёРµ РїРѕРґСЃРєР°Р·РєРё РїРѕСЏРІР»СЏСЋС‚СЃСЏ РїСЂРё РЅР°РІРµРґРµРЅРёРё РєСѓСЂСЃРѕСЂР° РјС‹С€Рё:</div>'."\r\n");
 	 } 
 
          print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0" width = "300">'."\r\n");
 
-         // Если не разрешена правка - не показываем адрес почты
+         // Р•СЃР»Рё РЅРµ СЂР°Р·СЂРµС€РµРЅР° РїСЂР°РІРєР° - РЅРµ РїРѕРєР°Р·С‹РІР°РµРј Р°РґСЂРµСЃ РїРѕС‡С‚С‹
          if ($AllowEdit == 1) 
 	 {
 	  print('<tr><td class = "input"><input type="text" name="UserEmail" size="50" value="'.$UserEmail.'" tabindex = "1"  '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserEmail.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserEmail.'\';}"').'
-	         title = "E-mail - Используется для идентификации пользователя"></td></tr>'."\r\n");
+	         title = "E-mail - РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РёРґРµРЅС‚РёС„РёРєР°С†РёРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ"></td></tr>'."\r\n");
          }
 
          print('<tr><td class = "input"><input type="text" name="UserName" size="50" value="'.$UserName.'" tabindex = "2"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserName.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserName.'\';}"').'
-                title = "ФИО - Так будет выглядеть информация о пользователе в протоколах и на сайте"></td></tr>'."\r\n");
+                title = "Р¤РРћ - РўР°Рє Р±СѓРґРµС‚ РІС‹РіР»СЏРґРµС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЏ Рѕ РїРѕР»СЊР·РѕРІР°С‚РµР»Рµ РІ РїСЂРѕС‚РѕРєРѕР»Р°С… Рё РЅР° СЃР°Р№С‚Рµ"></td></tr>'."\r\n");
 
          print('<tr><td class = "input"><input type="text" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "3" '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserBirthYear.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserBirthYear.'\';}"').'
-	        title = "Год рождения"></td></tr>'."\r\n");
+	        title = "Р“РѕРґ СЂРѕР¶РґРµРЅРёСЏ"></td></tr>'."\r\n");
 
          print('<tr><td class = "input"><input type="checkbox" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "4" '.$DisabledText.'
-	        title = "Даже зная адрес e-mail другой пользователь не сможет сделать Вас участником своей команды - только Вы сами или модератор ММБ" /> Нельзя включать в команду другим пользователям</td></tr>'."\r\n");
+	        title = "Р”Р°Р¶Рµ Р·РЅР°СЏ Р°РґСЂРµСЃ e-mail РґСЂСѓРіРѕР№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ СЃРјРѕР¶РµС‚ СЃРґРµР»Р°С‚СЊ Р’Р°СЃ СѓС‡Р°СЃС‚РЅРёРєРѕРј СЃРІРѕРµР№ РєРѕРјР°РЅРґС‹ - С‚РѕР»СЊРєРѕ Р’С‹ СЃР°РјРё РёР»Рё РјРѕРґРµСЂР°С‚РѕСЂ РњРњР‘" /> РќРµР»СЊР·СЏ РІРєР»СЋС‡Р°С‚СЊ РІ РєРѕРјР°РЅРґСѓ РґСЂСѓРіРёРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРј</td></tr>'."\r\n");
 
 
-         // Если не разрешена права - не показываем кнопки
+         // Р•СЃР»Рё РЅРµ СЂР°Р·СЂРµС€РµРЅР° РїСЂР°РІР° - РЅРµ РїРѕРєР°Р·С‹РІР°РµРј РєРЅРѕРїРєРё
 	 if ($AllowEdit == 1) 
 	 {
 	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
 	  print('<input type="button" onClick = "javascript: if (ValidateUserDataForm()) submit();"  name="RegisterButton" value="'.$SaveButtonText.'" tabindex = "5">'."\r\n");
 
-           // Если регистрация нового пользователя - не нужны кнопки "Отмена" и "Сменить пароль"
+           // Р•СЃР»Рё СЂРµРіРёСЃС‚СЂР°С†РёСЏ РЅРѕРІРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ - РЅРµ РЅСѓР¶РЅС‹ РєРЅРѕРїРєРё "РћС‚РјРµРЅР°" Рё "РЎРјРµРЅРёС‚СЊ РїР°СЂРѕР»СЊ"
           if ($viewmode <> 'Add')
 	  {
-            print('<input type="button" onClick = "javascript: Cancel();"  name="CancelButton" value="Отмена" tabindex = "6" title = "Заново считывает данные из базы">'."\r\n");		
+            print('<input type="button" onClick = "javascript: Cancel();"  name="CancelButton" value="РћС‚РјРµРЅР°" tabindex = "6" title = "Р—Р°РЅРѕРІРѕ СЃС‡РёС‚С‹РІР°РµС‚ РґР°РЅРЅС‹Рµ РёР· Р±Р°Р·С‹">'."\r\n");		
 
-	    // 15,01,2012 убрал проверку
-	    // М.б. проверка лишняя и нужно разрешить и администратору высылать запрос о смене пароля
+	    // 15,01,2012 СѓР±СЂР°Р» РїСЂРѕРІРµСЂРєСѓ
+	    // Рњ.Р±. РїСЂРѕРІРµСЂРєР° Р»РёС€РЅСЏСЏ Рё РЅСѓР¶РЅРѕ СЂР°Р·СЂРµС€РёС‚СЊ Рё Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂСѓ РІС‹СЃС‹Р»Р°С‚СЊ Р·Р°РїСЂРѕСЃ Рѕ СЃРјРµРЅРµ РїР°СЂРѕР»СЏ
 	    //if ($UserId > 0 and $UserId == $NowUserId)
 	    //{
-             print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите выслать запрос на адрес '.trim($UserEmail).' для смены пароля: '.trim($UserName).'? \')) { NewPassword(); }"  name="ChangePasswordButton" value="Сменить пароль" tabindex = "7">'."\r\n");		
+             print('<input type="button" onClick = "javascript: if (confirm(\'Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ РІС‹СЃР»Р°С‚СЊ Р·Р°РїСЂРѕСЃ РЅР° Р°РґСЂРµСЃ '.trim($UserEmail).' РґР»СЏ СЃРјРµРЅС‹ РїР°СЂРѕР»СЏ: '.trim($UserName).'? \')) { NewPassword(); }"  name="ChangePasswordButton" value="РЎРјРµРЅРёС‚СЊ РїР°СЂРѕР»СЊ" tabindex = "7">'."\r\n");		
 	    //}
           }
 
           print('</td></tr>'."\r\n"); 
          }
-         // Конец вывода кнопок
+         // РљРѕРЅРµС† РІС‹РІРѕРґР° РєРЅРѕРїРѕРє
 
 	 print('</table></form>'."\r\n"); 
-	 // Конец вывода формы с данными пользователя
+	 // РљРѕРЅРµС† РІС‹РІРѕРґР° С„РѕСЂРјС‹ СЃ РґР°РЅРЅС‹РјРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 
 	 
 
-          // Выводим спсиок команд, в которых участвовал данный пользователь 
-          print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Участвовал в командах:</div>'."\r\n");
+          // Р’С‹РІРѕРґРёРј СЃРїСЃРёРѕРє РєРѕРјР°РЅРґ, РІ РєРѕС‚РѕСЂС‹С… СѓС‡Р°СЃС‚РІРѕРІР°Р» РґР°РЅРЅС‹Р№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ 
+          print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">РЈС‡Р°СЃС‚РІРѕРІР°Р» РІ РєРѕРјР°РЅРґР°С…:</div>'."\r\n");
           print('<form  name = "UserTeamsForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
           print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	  print('<input type = "hidden" name = "RaidId" value = "0">'."\n");
@@ -304,8 +304,8 @@
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-		  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].','.$Row['raid_id'].');"  title = "Переход к карточке команды">'.$Row['team_name'].'</a> 
-		         (N '.$Row['team_num'].', дистанция: '.$Row['distance_name'].', ммб: '.$Row['raid_name'].')</div>'."\r\n");
+		  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].','.$Row['raid_id'].');"  title = "РџРµСЂРµС…РѕРґ Рє РєР°СЂС‚РѕС‡РєРµ РєРѕРјР°РЅРґС‹">'.$Row['team_name'].'</a> 
+		         (N '.$Row['team_num'].', РґРёСЃС‚Р°РЅС†РёСЏ: '.$Row['distance_name'].', РјРјР±: '.$Row['raid_name'].')</div>'."\r\n");
 		}
 
                 mysql_free_result($Result);

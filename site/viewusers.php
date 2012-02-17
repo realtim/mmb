@@ -3,7 +3,7 @@
 <script language = "JavaScript">
 
         
-	// Функция просмотра данных о команде
+	// Р¤СѓРЅРєС†РёСЏ РїСЂРѕСЃРјРѕС‚СЂР° РґР°РЅРЅС‹С… Рѕ РєРѕРјР°РЅРґРµ
 	function ViewUserInfo(userid)
 	{ 
 		document.UsersForm.UserId.value = userid;
@@ -17,21 +17,21 @@
 
 <?php
 
-		if (trim($FindString) == '' or trim($FindString) == 'Часть ФИО')
+		if (trim($FindString) == '' or trim($FindString) == 'Р§Р°СЃС‚СЊ Р¤РРћ')
                 {
-                  $statustext = 'Не указан критерий поиска.';				     
+                  $statustext = 'РќРµ СѓРєР°Р·Р°РЅ РєСЂРёС‚РµСЂРёР№ РїРѕРёСЃРєР°.';				     
                   $view = "";
  		  return;
                 }
 
 
-                if (trim($FindString) == 'все-все' or trim($FindString) == 'все-все-все')
+                if (trim($FindString) == 'РІСЃРµ-РІСЃРµ' or trim($FindString) == 'РІСЃРµ-РІСЃРµ-РІСЃРµ')
                 {
 		  $sqlFindString = '';
-                  $FindText = 'Пользователи:';
+                  $FindText = 'РџРѕР»СЊР·РѕРІР°С‚РµР»Рё:';
                 } else {
 		  $sqlFindString = trim($FindString);
-                  $FindText = 'Пользователи, чьи ФИО содержат '.trim($FindString).':';
+                  $FindText = 'РџРѕР»СЊР·РѕРІР°С‚РµР»Рё, С‡СЊРё Р¤РРћ СЃРѕРґРµСЂР¶Р°С‚ '.trim($FindString).':';
                 }
    
 	//$FindString = trim($_POST['FindString']); 
@@ -41,7 +41,7 @@
 		$SessionId =  $_POST['sessionid'];
 	 } 
 
-                // Выводим спсиок пользователей, которые подошли
+                // Р’С‹РІРѕРґРёРј СЃРїСЃРёРѕРє РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№, РєРѕС‚РѕСЂС‹Рµ РїРѕРґРѕС€Р»Рё
                 print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">'.$FindText.'</div>'."\r\n");
            	print('<form  name = "UsersForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
                 print('<input type = "hidden" name = "action" value = "">'."\r\n");
@@ -74,7 +74,7 @@
 
 		} else {
 
-			  print('<div class= "input" align = "left">Не найдено</div>'."\r\n");
+			  print('<div class= "input" align = "left">РќРµ РЅР°Р№РґРµРЅРѕ</div>'."\r\n");
 		}
 	        print('</form>'."\r\n");
                 mysql_free_result($Result);

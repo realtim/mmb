@@ -1,6 +1,6 @@
 <?php
 
-// функция преобразования вывода данных
+// С„СѓРЅРєС†РёСЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ РІС‹РІРѕРґР° РґР°РЅРЅС‹С…
   function ConvertTeamLevelPointsToHTML ($LevelPointNames,$LevelPointPenalties,$TeamLevelPoints,$LevelId) {
 	
 	  
@@ -12,7 +12,7 @@
 
 	if (count($Names) <> count($Penalties)) 
         {
-           print('Ошибка данных по КП'."\r\n");
+           print('РћС€РёР±РєР° РґР°РЅРЅС‹С… РїРѕ РљРџ'."\r\n");
 	   return;
 	}
 
@@ -28,17 +28,17 @@
 
         if (!empty($TeamLevelPoints) and  count($Names) <> count($TeamPoints))
         {	
-           print('Ошибка данных по КП'."\r\n");
+           print('РћС€РёР±РєР° РґР°РЅРЅС‹С… РїРѕ РљРџ'."\r\n");
 	   return;
         }
 
         print('<table style = "text-align: center; font-size: 100%; border-style: solid; border-width: 1px; border-color: #000000;">'."\r\n");
 	print('<tr>'."\r\n");
-	print('<td align = "left">Не взяты: &nbsp; </td>'."\r\n");
+	print('<td align = "left">РќРµ РІР·СЏС‚С‹: &nbsp; </td>'."\r\n");
 	print('<td style = "border-left-style: solid; border-left-width: 1px; border-left-color: #000000;">'."\r\n");
 
-        // Проверяем, что не отмечены все checkbox
-        // ===  а не == - так написано в инструкции к функции
+        // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РЅРµ РѕС‚РјРµС‡РµРЅС‹ РІСЃРµ checkbox
+        // ===  Р° РЅРµ == - С‚Р°Рє РЅР°РїРёСЃР°РЅРѕ РІ РёРЅСЃС‚СЂСѓРєС†РёРё Рє С„СѓРЅРєС†РёРё
         //if (strpos($TeamLevelPoints, '0') === false)
         if (!strstr($TeamLevelPoints, '0') && !empty($TeamLevelPoints))
         {
@@ -46,8 +46,8 @@
         } else {
               $AllChecked = '';
         }
-        // Прописываем javascript, который ставит или сбрасывает все checkbox-ы
-        print('Все</br><input type = "checkbox" name = "chkall" '.$AllChecked.' OnClick = "javascript:'."\r\n");
+        // РџСЂРѕРїРёСЃС‹РІР°РµРј javascript, РєРѕС‚РѕСЂС‹Р№ СЃС‚Р°РІРёС‚ РёР»Рё СЃР±СЂР°СЃС‹РІР°РµС‚ РІСЃРµ checkbox-С‹
+        print('Р’СЃРµ</br><input type = "checkbox" name = "chkall" '.$AllChecked.' OnClick = "javascript:'."\r\n");
 		
         for ($i = 0; $i < count($Names); $i++)
         {
@@ -74,33 +74,33 @@
 
   return;	
   }
-  // Конец функции вывода данных по КП
+  // РљРѕРЅРµС† С„СѓРЅРєС†РёРё РІС‹РІРѕРґР° РґР°РЅРЅС‹С… РїРѕ РљРџ
 
 	print('<div style = "margin-top: 15px;">&nbsp;</div>'."\r\n");
 
-   // считаем, что все переменные уже определны. если нет - выходим
+   // СЃС‡РёС‚Р°РµРј, С‡С‚Рѕ РІСЃРµ РїРµСЂРµРјРµРЅРЅС‹Рµ СѓР¶Рµ РѕРїСЂРµРґРµР»РЅС‹. РµСЃР»Рё РЅРµС‚ - РІС‹С…РѕРґРёРј
          if (empty($TeamId))
 	 {
 		return;
 	 } 
 
-	 // Текущий пользователь
+	 // РўРµРєСѓС‰РёР№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ
 //	 $NowUserId = GetSession($SessionId);
 
-         // результаты не могут отображаться, если команда только вводится 
-         // Или ещё не закончена регистрация
+         // СЂРµР·СѓР»СЊС‚Р°С‚С‹ РЅРµ РјРѕРіСѓС‚ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊСЃСЏ, РµСЃР»Рё РєРѕРјР°РЅРґР° С‚РѕР»СЊРєРѕ РІРІРѕРґРёС‚СЃСЏ 
+         // РР»Рё РµС‰С‘ РЅРµ Р·Р°РєРѕРЅС‡РµРЅР° СЂРµРіРёСЃС‚СЂР°С†РёСЏ
          if ($viewmode == 'Add')
 	 {
             return;
          }
  
 
-         // Правильнее возможность подтверждать результаты открывать не после окончания регистрации, а после 
-         // старта первого этапа (а м..б. и позже)
-         // М.б. разделить: для модераторов сразу после окончания регистрации,
-          // для остальных - после даты публикации результатов
-           // Не, ещё круче: модераторам сразу после открытия старата первого этапа,
-           // остальным - сразу после закрытия финиша последнего!
+         // РџСЂР°РІРёР»СЊРЅРµРµ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ РїРѕРґС‚РІРµСЂР¶РґР°С‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚С‹ РѕС‚РєСЂС‹РІР°С‚СЊ РЅРµ РїРѕСЃР»Рµ РѕРєРѕРЅС‡Р°РЅРёСЏ СЂРµРіРёСЃС‚СЂР°С†РёРё, Р° РїРѕСЃР»Рµ 
+         // СЃС‚Р°СЂС‚Р° РїРµСЂРІРѕРіРѕ СЌС‚Р°РїР° (Р° Рј..Р±. Рё РїРѕР·Р¶Рµ)
+         // Рњ.Р±. СЂР°Р·РґРµР»РёС‚СЊ: РґР»СЏ РјРѕРґРµСЂР°С‚РѕСЂРѕРІ СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ РѕРєРѕРЅС‡Р°РЅРёСЏ СЂРµРіРёСЃС‚СЂР°С†РёРё,
+          // РґР»СЏ РѕСЃС‚Р°Р»СЊРЅС‹С… - РїРѕСЃР»Рµ РґР°С‚С‹ РїСѓР±Р»РёРєР°С†РёРё СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ
+           // РќРµ, РµС‰С‘ РєСЂСѓС‡Рµ: РјРѕРґРµСЂР°С‚РѕСЂР°Рј СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ РѕС‚РєСЂС‹С‚РёСЏ СЃС‚Р°СЂР°С‚Р° РїРµСЂРІРѕРіРѕ СЌС‚Р°РїР°,
+           // РѕСЃС‚Р°Р»СЊРЅС‹Рј - СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ Р·Р°РєСЂС‹С‚РёСЏ С„РёРЅРёС€Р° РїРѕСЃР»РµРґРЅРµРіРѕ!
 	      $sql = "select r.raid_resultpublicationdate, r.raid_registrationenddate, 
                         CASE WHEN r.raid_registrationenddate is not null and YEAR(r.raid_registrationenddate) <= 2011 
                              THEN 1 
@@ -131,7 +131,7 @@
 		$TeamConfirmResult = $Row['team_confirmresult'];
 		$RaidShowResultField = $Row['showresultfield'];
 
-            // Тут надо проверить глобальный запрет на правку данных по ММБ
+            // РўСѓС‚ РЅР°РґРѕ РїСЂРѕРІРµСЂРёС‚СЊ РіР»РѕР±Р°Р»СЊРЅС‹Р№ Р·Р°РїСЂРµС‚ РЅР° РїСЂР°РІРєСѓ РґР°РЅРЅС‹С… РїРѕ РњРњР‘
 
          if ($RaidShowResultField <> 1)
 	 {
@@ -139,7 +139,7 @@
          }
 
 
-            // нужна, возможно, доп проверка на время,чтобы не показывать пустые результаты с данными этапа
+            // РЅСѓР¶РЅР°, РІРѕР·РјРѕР¶РЅРѕ, РґРѕРї РїСЂРѕРІРµСЂРєР° РЅР° РІСЂРµРјСЏ,С‡С‚РѕР±С‹ РЅРµ РїРѕРєР°Р·С‹РІР°С‚СЊ РїСѓСЃС‚С‹Рµ СЂРµР·СѓР»СЊС‚Р°С‚С‹ СЃ РґР°РЅРЅС‹РјРё СЌС‚Р°РїР°
 
 	    if (CheckModerator($SessionId, $RaidId))
 	    {
@@ -156,10 +156,10 @@
 	    }
 
 
-       // Общая проверка возможности редактирования
-        // 24,01,2012 Добавил ограничение что править результаты участнику команды нельзя, 
-         // если в карточке команды стоит, что они подтверждены (тогда сначала нужно снятья галку оттуда)
-          // 05.02.2012 Убрал для старых ММБ возможности править кому угодно
+       // РћР±С‰Р°СЏ РїСЂРѕРІРµСЂРєР° РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ
+        // 24,01,2012 Р”РѕР±Р°РІРёР» РѕРіСЂР°РЅРёС‡РµРЅРёРµ С‡С‚Рѕ РїСЂР°РІРёС‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚С‹ СѓС‡Р°СЃС‚РЅРёРєСѓ РєРѕРјР°РЅРґС‹ РЅРµР»СЊР·СЏ, 
+         // РµСЃР»Рё РІ РєР°СЂС‚РѕС‡РєРµ РєРѕРјР°РЅРґС‹ СЃС‚РѕРёС‚, С‡С‚Рѕ РѕРЅРё РїРѕРґС‚РІРµСЂР¶РґРµРЅС‹ (С‚РѕРіРґР° СЃРЅР°С‡Р°Р»Р° РЅСѓР¶РЅРѕ СЃРЅСЏС‚СЊСЏ РіР°Р»РєСѓ РѕС‚С‚СѓРґР°)
+          // 05.02.2012 РЈР±СЂР°Р» РґР»СЏ СЃС‚Р°СЂС‹С… РњРњР‘ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё РїСЂР°РІРёС‚СЊ РєРѕРјСѓ СѓРіРѕРґРЅРѕ
 
 	    if ($Moderator or ($TeamUser and !$TeamModeratorConfirmResult and !$TeamConfirmResult))
 	    {
@@ -181,30 +181,30 @@
 
 <script language = "JavaScript">
 
-        // Функция проверки правильности заполнения формы
+        // Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё Р·Р°РїРѕР»РЅРµРЅРёСЏ С„РѕСЂРјС‹
 	function ValidateTeamResultDataForm()
 	{ 
 	        document.TeamResultDataForm.action.value = "<? echo $NextResultActionName; ?>";
 		return true;
 	}
-        // Конец проверки правильности заполнения формы
+        // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё Р·Р°РїРѕР»РЅРµРЅРёСЏ С„РѕСЂРјС‹
 
 
 
-	// Функция отмены изменения
+	// Р¤СѓРЅРєС†РёСЏ РѕС‚РјРµРЅС‹ РёР·РјРµРЅРµРЅРёСЏ
 	function CancelResult()
 	{ 
 		document.TeamResultDataForm.action.value = "CancelChangeTeamResultData";
 		document.TeamResultDataForm.submit();
 	}
 	
-        // Функция выделения
+        // Р¤СѓРЅРєС†РёСЏ РІС‹РґРµР»РµРЅРёСЏ
 	function SelectEntry(loElement)
 	{ 
                  loElement.select();
 	}
 
-        // Выделеить все checkbox-ы 
+        // Р’С‹РґРµР»РµРёС‚СЊ РІСЃРµ checkbox-С‹ 
 	function CheckAll(oForm, chkName, checked)
 	{
 	  for (var i=0; i < oForm[chkName].length; i++) oForm[chkName][i].checked = checked;
@@ -227,19 +227,19 @@
 
      print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<tr class = "gray">'."\r\n");  
-		print('<td width = "100">Этап</td>'."\r\n");  
-		print('<td width = "250">Параметры старта/финиша</td>'."\r\n");  
-		print('<td width = "90">Старт</td>'."\r\n");  
-		print('<td width = "90">Финиш</td>'."\r\n");  
-		print('<td width = "50">Штраф</td>'."\r\n");  
-	//	print('<td width = "200">Невзятые КП</td>'."\r\n");  
-		print('<td width = "150">Комменатрий</td>'."\r\n");  
+		print('<td width = "100">Р­С‚Р°Рї</td>'."\r\n");  
+		print('<td width = "250">РџР°СЂР°РјРµС‚СЂС‹ СЃС‚Р°СЂС‚Р°/С„РёРЅРёС€Р°</td>'."\r\n");  
+		print('<td width = "90">РЎС‚Р°СЂС‚</td>'."\r\n");  
+		print('<td width = "90">Р¤РёРЅРёС€</td>'."\r\n");  
+		print('<td width = "50">РЁС‚СЂР°С„</td>'."\r\n");  
+	//	print('<td width = "200">РќРµРІР·СЏС‚С‹Рµ РљРџ</td>'."\r\n");  
+		print('<td width = "150">РљРѕРјРјРµРЅР°С‚СЂРёР№</td>'."\r\n");  
 	
 
   //$TabIndex = 0;
 
-           //  выводим данные только, когда минимальное время начала этапа меньше или равно текущему
-               // Довольнг своеорбазно определяем год, чтобы не вводить его каждый раз
+           //  РІС‹РІРѕРґРёРј РґР°РЅРЅС‹Рµ С‚РѕР»СЊРєРѕ, РєРѕРіРґР° РјРёРЅРёРјР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ РЅР°С‡Р°Р»Р° СЌС‚Р°РїР° РјРµРЅСЊС€Рµ РёР»Рё СЂР°РІРЅРѕ С‚РµРєСѓС‰РµРјСѓ
+               // Р”РѕРІРѕР»СЊРЅРі СЃРІРѕРµРѕСЂР±Р°Р·РЅРѕ РѕРїСЂРµРґРµР»СЏРµРј РіРѕРґ, С‡С‚РѕР±С‹ РЅРµ РІРІРѕРґРёС‚СЊ РµРіРѕ РєР°Р¶РґС‹Р№ СЂР°Р·
 	   	   $sql = "select l.level_id, l.level_name, l.level_pointnames, l.level_starttype,
                                   l.level_pointpenalties, l.level_order, 
 				  DATE_FORMAT(l.level_begtime,    '%d.%m %H:%i') as level_sbegtime,
@@ -280,18 +280,18 @@
                            where l.level_order < COALESCE(l1.level_order, l.level_order + 1) and  t.team_id = ".$TeamId;
 
 //.
-// Пока убрал ограничение по выдаче этапов от времени просмотра
+// РџРѕРєР° СѓР±СЂР°Р» РѕРіСЂР°РЅРёС‡РµРЅРёРµ РїРѕ РІС‹РґР°С‡Рµ СЌС‚Р°РїРѕРІ РѕС‚ РІСЂРµРјРµРЅРё РїСЂРѕСЃРјРѕС‚СЂР°
          // $sql =   $sql." and l.level_begtime <= now() ";
           $sql =   $sql." order by  l.level_order ";
 
            //echo $sql;
 	   $Result = MySqlQuery($sql);  
        
-           // теперь цикл обработки данных по этапам 
+           // С‚РµРїРµСЂСЊ С†РёРєР» РѕР±СЂР°Р±РѕС‚РєРё РґР°РЅРЅС‹С… РїРѕ СЌС‚Р°РїР°Рј 
           while ($Row = mysql_fetch_assoc($Result))
 	   {
 
-              // По этому ключу потом определяем, есть ли уже строчка в teamLevels или её нужно создать 
+              // РџРѕ СЌС‚РѕРјСѓ РєР»СЋС‡Сѓ РїРѕС‚РѕРј РѕРїСЂРµРґРµР»СЏРµРј, РµСЃС‚СЊ Р»Рё СѓР¶Рµ СЃС‚СЂРѕС‡РєР° РІ teamLevels РёР»Рё РµС‘ РЅСѓР¶РЅРѕ СЃРѕР·РґР°С‚СЊ 
 
               $TeamLevelId = $Row['teamlevel_id'];
               $LevelStartType = $Row['level_starttype'];
@@ -300,18 +300,18 @@
               $TeamLevelPoints = ($TeamLevelId > 0) ?  $Row['teamlevel_points'] : '&nbsp;';
               $TeamLevelComment = $Row['teamlevel_comment'];
 
-              // Если старт не задан - считаем общим 
+              // Р•СЃР»Рё СЃС‚Р°СЂС‚ РЅРµ Р·Р°РґР°РЅ - СЃС‡РёС‚Р°РµРј РѕР±С‰РёРј 
               if (empty($LevelStartType))
               {
 		$LevelStartType = 2;
               }
 
-              // Делаем оформление в зависимости от типа старта и соотношения  гранчиных дат:
-              // Есди даты границ совпадают - выводим только первую
-              // Если есть даты старта и фнишиа и они совпадают - выодим только дату старта              
+              // Р”РµР»Р°РµРј РѕС„РѕСЂРјР»РµРЅРёРµ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° СЃС‚Р°СЂС‚Р° Рё СЃРѕРѕС‚РЅРѕС€РµРЅРёСЏ  РіСЂР°РЅС‡РёРЅС‹С… РґР°С‚:
+              // Р•СЃРґРё РґР°С‚С‹ РіСЂР°РЅРёС† СЃРѕРІРїР°РґР°СЋС‚ - РІС‹РІРѕРґРёРј С‚РѕР»СЊРєРѕ РїРµСЂРІСѓСЋ
+              // Р•СЃР»Рё РµСЃС‚СЊ РґР°С‚С‹ СЃС‚Р°СЂС‚Р° Рё С„РЅРёС€РёР° Рё РѕРЅРё СЃРѕРІРїР°РґР°СЋС‚ - РІС‹РѕРґРёРј С‚РѕР»СЊРєРѕ РґР°С‚Сѓ СЃС‚Р°СЂС‚Р°              
 	      if ($LevelStartType == 1)
               {
-		  $LevelStartTypeText = 'По готовности (';
+		  $LevelStartTypeText = 'РџРѕ РіРѕС‚РѕРІРЅРѕСЃС‚Рё (';
 		  if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_smaxbegtime']), 0, 5))
 		  { 
 		    $LevelStartTypeText = $LevelStartTypeText.$Row['level_sbegtime'].' - '.substr(trim($Row['level_smaxbegtime']), 6);
@@ -321,17 +321,17 @@
 		  $LevelStartTypeText = $LevelStartTypeText.')/('; 
 
               } elseif ($LevelStartType == 2) {
-		$LevelStartTypeText = 'Общий ('.$Row['level_sbegtime'];
+		$LevelStartTypeText = 'РћР±С‰РёР№ ('.$Row['level_sbegtime'];
                 $LevelStartTypeText = $LevelStartTypeText.')/('; 
 
               } elseif ($LevelStartType == 3) {
-		$LevelStartTypeText = 'Во время финиша (';
+		$LevelStartTypeText = 'Р’Рѕ РІСЂРµРјСЏ С„РёРЅРёС€Р° (';
 
               }
 
 
-              // Дополняем рамками финиша
-              // Проверяем на одинаковые даты
+              // Р”РѕРїРѕР»РЅСЏРµРј СЂР°РјРєР°РјРё С„РёРЅРёС€Р°
+              // РџСЂРѕРІРµСЂСЏРµРј РЅР° РѕРґРёРЅР°РєРѕРІС‹Рµ РґР°С‚С‹
                 if (substr(trim($Row['level_sminendtime']), 0, 5) == substr(trim($Row['level_sendtime']), 0, 5))
                 { 
 		  if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_sendtime']), 0, 5))
@@ -348,20 +348,20 @@
        
               //$LevelStartTypeText  = $LevelStartTypeText.' / '.$Row['level_sminendtime'].' - '.$Row['level_sendtime'];
 
-              // сторим строчку для текущего этапа  
+              // СЃС‚РѕСЂРёРј СЃС‚СЂРѕС‡РєСѓ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ СЌС‚Р°РїР°  
 	      print('<tr><td>'.$Row['level_name'].'</td>
                           <td>'.$LevelStartTypeText.'</td>
                           <td>'."\r\n"); 
 
               if ($LevelStartType == 1)
               {
-                // год записываем из данных этапа (макс и мин время старта/финишв
+                // РіРѕРґ Р·Р°РїРёСЃС‹РІР°РµРј РёР· РґР°РЅРЅС‹С… СЌС‚Р°РїР° (РјР°РєСЃ Рё РјРёРЅ РІСЂРµРјСЏ СЃС‚Р°СЂС‚Р°/С„РёРЅРёС€РІ
 		print('<input type="hidden" maxlength = "4" name="Level'.$Row['level_id'].'_begyear" size="3"
                                         value="'.$Row['level_sbegyear'].'" >'."\r\n"); 
 
 
-		// Если даты совпадают - отключаем поле даты с помощью readonly
-		// Нельзя просто ставить disabled, т.к. в этом случае параметр не передается  
+		// Р•СЃР»Рё РґР°С‚С‹ СЃРѕРІРїР°РґР°СЋС‚ - РѕС‚РєР»СЋС‡Р°РµРј РїРѕР»Рµ РґР°С‚С‹ СЃ РїРѕРјРѕС‰СЊСЋ readonly
+		// РќРµР»СЊР·СЏ РїСЂРѕСЃС‚Рѕ СЃС‚Р°РІРёС‚СЊ disabled, С‚.Рє. РІ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ РїР°СЂР°РјРµС‚СЂ РЅРµ РїРµСЂРµРґР°РµС‚СЃСЏ  
                 if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_smaxbegtime']), 0, 5))
                 {
                   $TeamLevelBegDate = substr(trim($Row['level_sbegtime']), 0, 2).substr(trim($Row['level_sbegtime']), 3, 2);
@@ -375,7 +375,7 @@
                 print('<input type="Text" maxlength = "4" name="Level'.$Row['level_id'].'_begdate" size="3"
                                         value="'.$TeamLevelBegDate.'" 
                                         tabindex = "'.(++$TabIndex).'" '.$DisabledResultText.' '.$BegDateReadOnly.' 
-                                        title = "ддмм - день месяц без разделителя"
+                                        title = "РґРґРјРј - РґРµРЅСЊ РјРµСЃСЏС† Р±РµР· СЂР°Р·РґРµР»РёС‚РµР»СЏ"
                                         onclick = "this.select();"
 					onkeydown = "if (event.keyCode == 13 && this.value.length == 4) {document.TeamResultDataForm.Level'.$Row['level_id'].'_begtime.focus();}">'."\r\n");
 
@@ -384,7 +384,7 @@
                                         value="'.$Row['teamlevel_sbegtime'].'" 
                                         tabindex = "'.(++$TabIndex).'" '.$DisabledResultText.' 
                                         onclick = "this.select();"
-                                        title = "ччмм - часы минуты без разделителя">'."\r\n"); 
+                                        title = "С‡С‡РјРј - С‡Р°СЃС‹ РјРёРЅСѓС‚С‹ Р±РµР· СЂР°Р·РґРµР»РёС‚РµР»СЏ">'."\r\n"); 
               } else {
                  print('-'."\r\n"); 
               }
@@ -395,8 +395,8 @@
 	      print('<input type="hidden" maxlength = "4" name="Level'.$Row['level_id'].'_endyear" size="3"
                                         value="'.$Row['level_sendyear'].'" >'."\r\n"); 
 
-              // Если даты совпадают - отключаем поле даты с помощью readonly
-              // Нельзя просто ставить disabled, т.к. в этом случае параметр не передается  
+              // Р•СЃР»Рё РґР°С‚С‹ СЃРѕРІРїР°РґР°СЋС‚ - РѕС‚РєР»СЋС‡Р°РµРј РїРѕР»Рµ РґР°С‚С‹ СЃ РїРѕРјРѕС‰СЊСЋ readonly
+              // РќРµР»СЊР·СЏ РїСЂРѕСЃС‚Рѕ СЃС‚Р°РІРёС‚СЊ disabled, С‚.Рє. РІ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ РїР°СЂР°РјРµС‚СЂ РЅРµ РїРµСЂРµРґР°РµС‚СЃСЏ  
               if (substr(trim($Row['level_sendtime']), 0, 5) == substr(trim($Row['level_sminendtime']), 0, 5))
               {
                   $TeamLevelEndDate = substr(trim($Row['level_sendtime']), 0, 2).substr(trim($Row['level_sendtime']), 3, 2);
@@ -410,7 +410,7 @@
 	      print('<input type="Text" maxlength = "4" name="Level'.$Row['level_id'].'_enddate" size="3"
                                         value="'.$TeamLevelEndDate.'" 
                                         tabindex = "'.(++$TabIndex).'" '.$DisabledResultText.' '.$EndDateReadOnly.' 
-                                        title = "ддмм - день месяц без разделителя"
+                                        title = "РґРґРјРј - РґРµРЅСЊ РјРµСЃСЏС† Р±РµР· СЂР°Р·РґРµР»РёС‚РµР»СЏ"
                                         onclick = "this.select();"
 					onkeydown = "if (event.keyCode == 13 && this.value.length == 4) {document.TeamResultDataForm.Level'.$Row['level_id'].'_endtime.focus();}">'."\r\n");
               
@@ -418,7 +418,7 @@
                                         value="'.$Row['teamlevel_sendtime'].'" 
                                         tabindex = "'.(++$TabIndex).'" '.$DisabledResultText.' 
                                         onclick = "this.select();"
-                                        title = "ччмм - часы минуты без разделителя">'."\r\n");
+                                        title = "С‡С‡РјРј - С‡Р°СЃС‹ РјРёРЅСѓС‚С‹ Р±РµР· СЂР°Р·РґРµР»РёС‚РµР»СЏ">'."\r\n");
 
               print('</td><td>&nbsp;'."\r\n");
 	 //     ConvertTeamLevelPointsToHTML($Row['level_pointnames'], $Row['level_pointpenalties'], $Row['teamlevel_points'], $Row['level_id']);
@@ -436,7 +436,7 @@
                                         title = "">'."\r\n");
               print('</td></tr>'."\r\n"); 
             
-              // Следующая  строка - невзятые КП
+              // РЎР»РµРґСѓСЋС‰Р°СЏ  СЃС‚СЂРѕРєР° - РЅРµРІР·СЏС‚С‹Рµ РљРџ
              print('<tr><td colspan = "6"  style = "padding-top: 0px; border-bottom-style: dotted; border-bottom-width: 1px; border-bottom-color: #000000;">'."\r\n");
 	     ConvertTeamLevelPointsToHTML($Row['level_pointnames'], $Row['level_pointpenalties'], $Row['teamlevel_points'], $Row['level_id']);
              print('</td></tr>'."\r\n"); 
@@ -444,31 +444,31 @@
               //$TabIndex = $TabIndex + 5
 
 	   }
-           // Конец цикла по этапам
+           // РљРѕРЅРµС† С†РёРєР»Р° РїРѕ СЌС‚Р°РїР°Рј
 	   mysql_free_result($Result);      
 
-           // закрываем  таблицу
+           // Р·Р°РєСЂС‹РІР°РµРј  С‚Р°Р±Р»РёС†Сѓ
 	   print('</table>'."\r\n"); 
 
 
 	   if ($AllowEdit == 1) 
            {
-	    // Выводим кнопки
+	    // Р’С‹РІРѕРґРёРј РєРЅРѕРїРєРё
 
             print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 
 	    print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
 	    $TabIndex++;
 	    print('<input type="button" onClick = "javascript: if (ValidateTeamResultDataForm()) submit();"
-                   name="SaveChangeResultButton" value="Сохранить изменения" tabindex = "'.$TabIndex.'">'."\r\n");
+                   name="SaveChangeResultButton" value="РЎРѕС…СЂР°РЅРёС‚СЊ РёР·РјРµРЅРµРЅРёСЏ" tabindex = "'.$TabIndex.'">'."\r\n");
 	    $TabIndex++;
 	    print('<select name="CaseView" onChange = "javascript:document.TeamResultDataForm.view.value = document.TeamResultDataForm.CaseView.value;"  
                     class = "leftmargin" tabindex = "'.$TabIndex.'">'."\r\n"); 
-	    print('<option value = "ViewTeamData"  selected >и остаться на этой странице'."\r\n"); 
-	    print('<option value = "ViewRaidTeams" >и перейти к списку команд'."\r\n"); 
+	    print('<option value = "ViewTeamData"  selected >Рё РѕСЃС‚Р°С‚СЊСЃСЏ РЅР° СЌС‚РѕР№ СЃС‚СЂР°РЅРёС†Рµ'."\r\n"); 
+	    print('<option value = "ViewRaidTeams" >Рё РїРµСЂРµР№С‚Рё Рє СЃРїРёСЃРєСѓ РєРѕРјР°РЅРґ'."\r\n"); 
 	    print('</select>'."\r\n"); 
 	    $TabIndex++;
-	    print('<input type="button" onClick = "javascript: CancelResult();"  name="CancelButton" value="Отмена"
+	    print('<input type="button" onClick = "javascript: CancelResult();"  name="CancelButton" value="РћС‚РјРµРЅР°"
                      tabindex = "'.$TabIndex.'">'."\r\n"); 
 
 	    print('</td></tr>'."\r\n"); 
@@ -476,7 +476,7 @@
 
            }
 
-        // закрываем  форму
+        // Р·Р°РєСЂС‹РІР°РµРј  С„РѕСЂРјСѓ
         print('</form>'."\r\n"); 
 
 ?>

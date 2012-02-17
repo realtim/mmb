@@ -2,33 +2,33 @@
 
 
    $alert = 0; 
-   $statustext = ""; //"Сегодня: ".date("d.m.Y")."  &nbsp; Время: ".date("H:i:s");
+   $statustext = ""; //"РЎРµРіРѕРґРЅСЏ: ".date("d.m.Y")."  &nbsp; Р’СЂРµРјСЏ: ".date("H:i:s");
   echo $action;
-   // Обработчик всех действий   
+   // РћР±СЂР°Р±РѕС‚С‡РёРє РІСЃРµС… РґРµР№СЃС‚РІРёР№   
    
 
-   // проверяем корректность сессии и определяем права на просмотр и бронирование
+   // РїСЂРѕРІРµСЂСЏРµРј РєРѕСЂСЂРµРєС‚РЅРѕСЃС‚СЊ СЃРµСЃСЃРёРё Рё РѕРїСЂРµРґРµР»СЏРµРј РїСЂР°РІР° РЅР° РїСЂРѕСЃРјРѕС‚СЂ Рё Р±СЂРѕРЅРёСЂРѕРІР°РЅРёРµ
   
    if ($action == "UserLogin") {
-       // обработка регистрации
+       // РѕР±СЂР°Р±РѕС‚РєР° СЂРµРіРёСЃС‚СЂР°С†РёРё
 
 	 $action = "";
           
-         // первичная проверка данных 
+         // РїРµСЂРІРёС‡РЅР°СЏ РїСЂРѕРІРµСЂРєР° РґР°РЅРЅС‹С… 
 	 if ($_POST['Login'] == "") {
 
-           $statustext = "Не указан e-mail.";
+           $statustext = "РќРµ СѓРєР°Р·Р°РЅ e-mail.";
            $alert = 1; 
            return;
 
          } elseif ($_POST['Password']== "") {
 
-           $statustext = "Не указан пароль.";
+           $statustext = "РќРµ СѓРєР°Р·Р°РЅ РїР°СЂРѕР»СЊ.";
            $alert = 1; 
            return;
 
          } 
-         // конец первичной проверки входных данных
+         // РєРѕРЅРµС† РїРµСЂРІРёС‡РЅРѕР№ РїСЂРѕРІРµСЂРєРё РІС…РѕРґРЅС‹С… РґР°РЅРЅС‹С…
 
                 $Sql = "select user_id, user_name from mmb.Users where trim(user_email) = trim('".$_POST['Login']."') and user_password = '".md5($_POST['Password'])."'";
 		
@@ -40,41 +40,41 @@
 		
 		if ($UserId <= 0) 
 		 {
-			$statustext = "Неверный email или пароль.";
-			  //.$login." не найден!";
+			$statustext = "РќРµРІРµСЂРЅС‹Р№ email РёР»Рё РїР°СЂРѕР»СЊ.";
+			  //.$login." РЅРµ РЅР°Р№РґРµРЅ!";
 			$password = "";
 			mysql_close($Connection);
 			$alert = 1; 
 			return;  
 		} 
-		//Конец проверки пользователя и пароля
+		//РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ Рё РїР°СЂРѕР»СЏ
 
 
 
 		$SessionId = StartSession($UserId);
 		$view = "MainPage";
-		//$statustext = "Пользователь: ".$UserId.", сессия: ".$SessionId;
+		//$statustext = "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ: ".$UserId.", СЃРµСЃСЃРёСЏ: ".$SessionId;
 		
 
    } elseif ($action == "")  {
 
          $view = "MainPage";
-//         $statustext = "Сотрудник: ".$employeename.", табельный номер: ".$tabnum ;
+//         $statustext = "РЎРѕС‚СЂСѓРґРЅРёРє: ".$employeename.", С‚Р°Р±РµР»СЊРЅС‹Р№ РЅРѕРјРµСЂ: ".$tabnum ;
 
    } elseif ($action == "UserInfo")  {
-    // Действие вызывается ссылкой под имененм пользователя 
+    // Р”РµР№СЃС‚РІРёРµ РІС‹Р·С‹РІР°РµС‚СЃСЏ СЃСЃС‹Р»РєРѕР№ РїРѕРґ РёРјРµРЅРµРЅРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ 
 
   	  $view = "ViewUserData";
-	  //$statustext = "Пользовталель: ".$_SESSION['user_name'].", ключ: ".$_SESSION['user_id']. " сессия". session_id(); 
+	  //$statustext = "РџРѕР»СЊР·РѕРІС‚Р°Р»РµР»СЊ: ".$_SESSION['user_name'].", РєР»СЋС‡: ".$_SESSION['user_id']. " СЃРµСЃСЃРёСЏ". session_id(); 
 
    } elseif ($action == "ViewNewUserForm")  {
-    // Действие вызывается ссылкой Новый пользователь
+    // Р”РµР№СЃС‚РІРёРµ РІС‹Р·С‹РІР°РµС‚СЃСЏ СЃСЃС‹Р»РєРѕР№ РќРѕРІС‹Р№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ
 
            $view = "ViewUserData";
 		
 
    } elseif ($action == "UserChangeData")  {
-     // Действие вызывается либо при регистрации нового пользователя лиюо при сменен данных старого
+     // Р”РµР№СЃС‚РІРёРµ РІС‹Р·С‹РІР°РµС‚СЃСЏ Р»РёР±Рѕ РїСЂРё СЂРµРіРёСЃС‚СЂР°С†РёРё РЅРѕРІРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ Р»РёСЋРѕ РїСЂРё СЃРјРµРЅРµРЅ РґР°РЅРЅС‹С… СЃС‚Р°СЂРѕРіРѕ
 
    	   $view = "ViewUserData";
 
@@ -85,21 +85,21 @@
 
            if (trim($pUserEmail) == '')
 	   {
-		$statustext = "Не указан e-mail.";
+		$statustext = "РќРµ СѓРєР°Р·Р°РЅ e-mail.";
 	        $alert = 1; 
 		return; 
 	   }
 
            if (trim($pUserName) == '')
 	   {
-		$statustext = "Не указано ФИО.";
+		$statustext = "РќРµ СѓРєР°Р·Р°РЅРѕ Р¤РРћ.";
 	        $alert = 1; 
 		return; 
 	   }
 
            if ($pUserBirthYear < 1930 or $pUserBirthYear > date("Y"))
 	   {
-		$statustext = "Год не указан или указан некорректный.";
+		$statustext = "Р“РѕРґ РЅРµ СѓРєР°Р·Р°РЅ РёР»Рё СѓРєР°Р·Р°РЅ РЅРµРєРѕСЂСЂРµРєС‚РЅС‹Р№.";
 	        $alert = 1; 
 		return; 
 	   }
@@ -119,7 +119,7 @@
 	   $Row = mysql_fetch_assoc($rs);
 	   if ($Row['resultcount'] > 0)
 	   {
-   		$statustext = "Уже есть пользователь с таким email.";
+   		$statustext = "РЈР¶Рµ РµСЃС‚СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЃ С‚Р°РєРёРј email.";
 	        $alert = 1; 
                 return; 
 	   }
@@ -131,7 +131,7 @@
 	   $Row = mysql_fetch_assoc($rs);
 	   if ($Row['resultcount'] > 0)
 	   {
-   		$statustext = "Уже есть пользователь с таким именем и годом рождения.";
+   		$statustext = "РЈР¶Рµ РµСЃС‚СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЃ С‚Р°РєРёРј РёРјРµРЅРµРј Рё РіРѕРґРѕРј СЂРѕР¶РґРµРЅРёСЏ.";
 	        $alert = 1; 
                 return; 
 	   }
@@ -140,9 +140,9 @@
       //     echo $UserId; 
 	   if ($UserId > 0)
 	   {
- 	    // Изменения к уже существующему пользователю
+ 	    // РР·РјРµРЅРµРЅРёСЏ Рє СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРјСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ
 
-             // Проверка, что нет таких данных
+             // РџСЂРѕРІРµСЂРєР°, С‡С‚Рѕ РЅРµС‚ С‚Р°РєРёС… РґР°РЅРЅС‹С…
 	         $sql = "update mmb.Users set user_email = trim('".$pUserEmail."'), 
 		                             user_name = trim('".$pUserName."'),
 					     user_birthyear = ".$pUserBirthYear."
@@ -151,29 +151,29 @@
 	//	 echo $sql;
 		 $rs = MySqlQuery($sql);  
 	   } else {
-	     // Новый пользователь
+	     // РќРѕРІС‹Р№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ
 
-                 // Создаём пароь
+                 // РЎРѕР·РґР°С‘Рј РїР°СЂРѕСЊ
                   $NewPassword = GeneratePassword(6);
 
                 //  echo         $NewPassword;           
-                  // Пароль выводим на экран, высылаем по почте и пишем его хэш в базу
-                 // записываем нового пользователя
+                  // РџР°СЂРѕР»СЊ РІС‹РІРѕРґРёРј РЅР° СЌРєСЂР°РЅ, РІС‹СЃС‹Р»Р°РµРј РїРѕ РїРѕС‡С‚Рµ Рё РїРёС€РµРј РµРіРѕ С…СЌС€ РІ Р±Р°Р·Сѓ
+                 // Р·Р°РїРёСЃС‹РІР°РµРј РЅРѕРІРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 		 $sql = "insert into mmb.Users (user_email, user_name, user_birthyear, user_password) values ('".$pUserEmail."', '".$pUserName."', ".$pUserBirthYear.", '".md5($NewPassword)."')";
 //                 echo $sql;  
-                 // При insert должен вернуться послений id - это реализовано в  MySqlQuery
+                 // РџСЂРё insert РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊСЃСЏ РїРѕСЃР»РµРЅРёР№ id - СЌС‚Рѕ СЂРµР°Р»РёР·РѕРІР°РЅРѕ РІ  MySqlQuery
 		 $UserId = MySqlQuery($sql);  
 	
 //	         echo $UserId; 
 //                 $UserId = mysql_insert_id($Connection);
 		 if ($UserId <= 0)
 		 {
-                        $statustext = 'Ошибка записи нового пользователя.';
+                        $statustext = 'РћС€РёР±РєР° Р·Р°РїРёСЃРё РЅРѕРІРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.';
 			$alert = 1;
 			return;
 		 } else {
 
-                   $statustext = 'Пароль: '.$NewPassword;
+                   $statustext = 'РџР°СЂРѕР»СЊ: '.$NewPassword;
 		   SendMail($pUserEmail,'New password: '.$NewPassword);
 		 
 		   $SessionId = StartSession($UserId);
@@ -182,7 +182,7 @@
 	    }
 	   
    } elseif ($action == "SendEmailWithNewPassword")  {
-    // Действие вызывается ссылкой из формы просмотра данных пользователя
+    // Р”РµР№СЃС‚РІРёРµ РІС‹Р·С‹РІР°РµС‚СЃСЏ СЃСЃС‹Р»РєРѕР№ РёР· С„РѕСЂРјС‹ РїСЂРѕСЃРјРѕС‚СЂР° РґР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
   
 	   $view = "ViewUserData";
 
@@ -202,18 +202,18 @@
 	   {
   		$NewPassword = GeneratePassword(6);
 		
-                 // пишем в базу
+                 // РїРёС€РµРј РІ Р±Р°Р·Сѓ
 	         $sql = "update  mmb.Users  set user_password = '".md5($NewPassword)."' where user_id = ".$UserId;
               //   echo $sql;
 		 $rs = MySqlQuery($sql);  
 
-		$statustext = 'Пароль: '.$NewPassword;
+		$statustext = 'РџР°СЂРѕР»СЊ: '.$NewPassword;
 		
 		SendMail($pUserEmail,'New password: '.$NewPassword);
 
             }
    } elseif ($action == "RestorePasswordRequest")  {
-   // Действие вызывается ссылкой "Забыли пароль"
+   // Р”РµР№СЃС‚РІРёРµ РІС‹Р·С‹РІР°РµС‚СЃСЏ СЃСЃС‹Р»РєРѕР№ "Р—Р°Р±С‹Р»Рё РїР°СЂРѕР»СЊ"
   
 	   $view = "";
 
@@ -223,30 +223,30 @@
 
            if (trim($pUserEmail) == '' or trim($pUserEmail) == 'E-mail') 
 	   {
-	              $statustext = 'Не указан e-mail.';
+	              $statustext = 'РќРµ СѓРєР°Р·Р°РЅ e-mail.';
 		      $alert = 1;
 		      return;
 	   }
 
 	   $ChangePasswordSessionId = StartSession();
 
-           // пишем в базу сессию для восстановления пароля
+           // РїРёС€РµРј РІ Р±Р°Р·Сѓ СЃРµСЃСЃРёСЋ РґР»СЏ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ РїР°СЂРѕР»СЏ
            $sql = "update  mmb.Users  set user_sessionfornewpassword = '".$ChangePasswordSessionId."' where user_email = '".$pUserEmail."'";
            //echo $sql;
 	   $rs = MySqlQuery($sql);  
 	
-	   $Message =  'Если Вы хотите поменять пароль - перейдите по ссылке: '.
+	   $Message =  'Р•СЃР»Рё Р’С‹ С…РѕС‚РёС‚Рµ РїРѕРјРµРЅСЏС‚СЊ РїР°СЂРѕР»СЊ - РїРµСЂРµР№РґРёС‚Рµ РїРѕ СЃСЃС‹Р»РєРµ: '.
 	               'http://mmb.progressor.ru'.$MyPHPScript.'?action=sendpasswordafterrequest&changepasswordsessionid='.$ChangePasswordSessionId;
 
 	   //echo $Message;				     
 	   SendMail($pUserEmail, $Message);	
 
-           $statustext = 'Ссылка для получения нового пароля выслана на указанный адрес. Если письмо не пришло - проверьте спам.';				     
+           $statustext = 'РЎСЃС‹Р»РєР° РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РЅРѕРІРѕРіРѕ РїР°СЂРѕР»СЏ РІС‹СЃР»Р°РЅР° РЅР° СѓРєР°Р·Р°РЅРЅС‹Р№ Р°РґСЂРµСЃ. Р•СЃР»Рё РїРёСЃСЊРјРѕ РЅРµ РїСЂРёС€Р»Рѕ - РїСЂРѕРІРµСЂСЊС‚Рµ СЃРїР°Рј.';				     
 
 
 
    } elseif ($action == "sendpasswordafterrequest")  {
-     // Действие вызывается из письма переходом по ссылке
+     // Р”РµР№СЃС‚РІРёРµ РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· РїРёСЃСЊРјР° РїРµСЂРµС…РѕРґРѕРј РїРѕ СЃСЃС‹Р»РєРµ
 	   $view = "";
 
 	   $UserId = 0;
@@ -259,17 +259,17 @@
  	   $UserEmail = $Row['user_email'];
 
             // echo $UserEmail; 
-           // Если идентификаторы совпали - меняем пароль
+           // Р•СЃР»Рё РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ СЃРѕРІРїР°Р»Рё - РјРµРЅСЏРµРј РїР°СЂРѕР»СЊ
 	   if ($UserId > 0)
 	   {
   		$NewPassword = GeneratePassword(6);
 		
-                 // пишем в базу
+                 // РїРёС€РµРј РІ Р±Р°Р·Сѓ
 	         $sql = "update  mmb.Users  set user_password = '".md5($NewPassword)."', user_sessionfornewpassword = '' where user_id = ".$UserId;
               //   echo $sql;
 		 $rs = MySqlQuery($sql);  
 
-		$statustext = 'Пароль: '.$NewPassword;
+		$statustext = 'РџР°СЂРѕР»СЊ: '.$NewPassword;
 		
 		SendMail($UserEmail,'New password: '.$NewPassword);
 
@@ -281,7 +281,7 @@
             $action = "";
                 
    } elseif ($action == "UserLogout")  {
-     // Выход 
+     // Р’С‹С…РѕРґ 
 
 	        CloseSession($_POST['sessionid'], 3);
                 $SessionId = ""; 
@@ -291,11 +291,11 @@
 	
 
    } elseif ($action == "SendRequestForSendPassword")  {
-   // Обработка случая отправки пароля пользователю
+   // РћР±СЂР°Р±РѕС‚РєР° СЃР»СѓС‡Р°СЏ РѕС‚РїСЂР°РІРєРё РїР°СЂРѕР»СЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ
 
          if ($login == "") {
 
-            $statustext = "Вы не задали имя пользователя!";
+            $statustext = "Р’С‹ РЅРµ Р·Р°РґР°Р»Рё РёРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ!";
             $alert = 1; 
             return; 
 
@@ -304,7 +304,7 @@
          $Connection = mssql_connect($ServerName, $WebUserName, $WebUserPassword);
 
          if ($Connection <= 0) {
-               $statustext = "Ошибка соединения с сервером.";
+               $statustext = "РћС€РёР±РєР° СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ СЃРµСЂРІРµСЂРѕРј.";
                $alert = 1; 
                return; 
          }
@@ -320,42 +320,42 @@
 		 $rs = mssql_query($sql, $Connection);  
          $Result =  mssql_result($rs, 0, 'result');  
 
-         // Смотрим результат
+         // РЎРјРѕС‚СЂРёРј СЂРµР·СѓР»СЊС‚Р°С‚
          if ($Result <= 0) {
 
-           $statustext = "Пользователь ".$login." не найден!" ;
+           $statustext = "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ ".$login." РЅРµ РЅР°Р№РґРµРЅ!" ;
            $alert = 1; 
 
          } elseif ($Result == 1 ) {
 
-              $statustext = "Не указан почтовый адрес!";
+              $statustext = "РќРµ СѓРєР°Р·Р°РЅ РїРѕС‡С‚РѕРІС‹Р№ Р°РґСЂРµСЃ!";
               $alert = 1; 
   
          } elseif ($Result == 2 ) {
 
-           $statustext = "Отключен режим отправки пароля по почте" ;
+           $statustext = "РћС‚РєР»СЋС‡РµРЅ СЂРµР¶РёРј РѕС‚РїСЂР°РІРєРё РїР°СЂРѕР»СЏ РїРѕ РїРѕС‡С‚Рµ" ;
            $alert = 1; 
 
          } elseif ($Result == 3 ) {
 
-           $statustext = "Письмо выслано." ;
+           $statustext = "РџРёСЃСЊРјРѕ РІС‹СЃР»Р°РЅРѕ." ;
            $alert = 1; 
 
          } 
-         // Конец проверки
+         // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё
 
          mssql_close($Connection);
 
-         // сбрасываем режим 
+         // СЃР±СЂР°СЃС‹РІР°РµРј СЂРµР¶РёРј 
 	 $action = "";
 
 
    } elseif ($action == "SendPassword")  {
-   // Обработка случая отправки пароля пользователю
+   // РћР±СЂР°Р±РѕС‚РєР° СЃР»СѓС‡Р°СЏ РѕС‚РїСЂР°РІРєРё РїР°СЂРѕР»СЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ
 
          if ($tempemployeeid == "") {
 
-            $statustext = "Нет временного идентификатора пользователя!";
+            $statustext = "РќРµС‚ РІСЂРµРјРµРЅРЅРѕРіРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ!";
             $alert = 1; 
             return; 
 
@@ -364,7 +364,7 @@
          $Connection = mssql_connect($ServerName, $WebUserName, $WebUserPassword);
 
          if ($Connection <= 0) {
-               $statustext = "Ошибка соединения с сервером.";
+               $statustext = "РћС€РёР±РєР° СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ СЃРµСЂРІРµСЂРѕРј.";
                $alert = 1; 
                return; 
          }
@@ -375,93 +375,93 @@
          $rs = mssql_query($sql, $Connection);  
          $Result =  mssql_result($rs, 0, 'result');  
 
-         // Смотрим результат
+         // РЎРјРѕС‚СЂРёРј СЂРµР·СѓР»СЊС‚Р°С‚
          if ($Result <= 0) {
 
-           $statustext = "Пользователь ".$login." не найден!" ;
+           $statustext = "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ ".$login." РЅРµ РЅР°Р№РґРµРЅ!" ;
            $alert = 1; 
 
          } elseif ($Result == 1 ) {
 
-              $statustext = "Не указан почтовый адрес!";
+              $statustext = "РќРµ СѓРєР°Р·Р°РЅ РїРѕС‡С‚РѕРІС‹Р№ Р°РґСЂРµСЃ!";
               $alert = 1; 
   
          } elseif ($Result == 2 ) {
 
-           $statustext = "Отключен режим отправки пароля по почте" ;
+           $statustext = "РћС‚РєР»СЋС‡РµРЅ СЂРµР¶РёРј РѕС‚РїСЂР°РІРєРё РїР°СЂРѕР»СЏ РїРѕ РїРѕС‡С‚Рµ" ;
            $alert = 1; 
 
          } elseif ($Result == 3 ) {
 
-           $statustext = "Ошибка генерации пароля! " ;
+           $statustext = "РћС€РёР±РєР° РіРµРЅРµСЂР°С†РёРё РїР°СЂРѕР»СЏ! " ;
            $alert = 1; 
 
          } elseif ($Result == 4 ) {
 
-           $statustext = "Пароль выслан. Рекомендуется удалить это письмо после прочтения." ;
+           $statustext = "РџР°СЂРѕР»СЊ РІС‹СЃР»Р°РЅ. Р РµРєРѕРјРµРЅРґСѓРµС‚СЃСЏ СѓРґР°Р»РёС‚СЊ СЌС‚Рѕ РїРёСЃСЊРјРѕ РїРѕСЃР»Рµ РїСЂРѕС‡С‚РµРЅРёСЏ." ;
            $alert = 1; 
 
          } elseif ($Result == 5) {
 
-           $statustext = "Новый пароль создан и выслан. Рекомендуется удалить это письмо после прочтения." ;
+           $statustext = "РќРѕРІС‹Р№ РїР°СЂРѕР»СЊ СЃРѕР·РґР°РЅ Рё РІС‹СЃР»Р°РЅ. Р РµРєРѕРјРµРЅРґСѓРµС‚СЃСЏ СѓРґР°Р»РёС‚СЊ СЌС‚Рѕ РїРёСЃСЊРјРѕ РїРѕСЃР»Рµ РїСЂРѕС‡С‚РµРЅРёСЏ." ;
            $alert = 1; 
 
          } 
-         // Конец проверки
+         // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё
 
          mssql_close($Connection);
 
-         // сбрасываем режим 
+         // СЃР±СЂР°СЃС‹РІР°РµРј СЂРµР¶РёРј 
 	 $action = "";
 
 
 
    } elseif ($action == "ViewFormForChangePassword")  {
 
-         // Обработка случая вывода формы для смены пароля
+         // РћР±СЂР°Р±РѕС‚РєР° СЃР»СѓС‡Р°СЏ РІС‹РІРѕРґР° С„РѕСЂРјС‹ РґР»СЏ СЃРјРµРЅС‹ РїР°СЂРѕР»СЏ
         
          $view = "ChangePassword";
          $menupad = "ChangePassword";
-         $statustext = "Сотрудник: ".$employeename.", табельный номер: ".$tabnum ;
+         $statustext = "РЎРѕС‚СЂСѓРґРЅРёРє: ".$employeename.", С‚Р°Р±РµР»СЊРЅС‹Р№ РЅРѕРјРµСЂ: ".$tabnum ;
 
 
 
    } elseif ($action == "ChangePassword")  {
 
-         // Обработка случая смены пароля пользователем
+         // РћР±СЂР°Р±РѕС‚РєР° СЃР»СѓС‡Р°СЏ СЃРјРµРЅС‹ РїР°СЂРѕР»СЏ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј
         
 
          if ($password == "") {
 
-           $statustext = "Вы не ввели пароль!";
+           $statustext = "Р’С‹ РЅРµ РІРІРµР»Рё РїР°СЂРѕР»СЊ!";
            $alert = 1; 
            return;
 
          } elseif ($newpassword == "") {
 
-           $statustext = "Пароль не может быть пустым!";
+           $statustext = "РџР°СЂРѕР»СЊ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј!";
            $alert = 1; 
            return;
 
          } elseif ($newpassword == $login) {
 
-           $statustext = "Пароль не может совпадать с имененм пользователя!";
+           $statustext = "РџР°СЂРѕР»СЊ РЅРµ РјРѕР¶РµС‚ СЃРѕРІРїР°РґР°С‚СЊ СЃ РёРјРµРЅРµРЅРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ!";
            $alert = 1; 
            return;
 
          } elseif (strlen(trim($newpassword)) < 6) {
 
-           $statustext = "Пароль не может содержать меньше 6 символов!";
+           $statustext = "РџР°СЂРѕР»СЊ РЅРµ РјРѕР¶РµС‚ СЃРѕРґРµСЂР¶Р°С‚СЊ РјРµРЅСЊС€Рµ 6 СЃРёРјРІРѕР»РѕРІ!";
            $alert = 1; 
            return;
 
          } 
-         // Конец первичной проверки данных
+         // РљРѕРЅРµС† РїРµСЂРІРёС‡РЅРѕР№ РїСЂРѕРІРµСЂРєРё РґР°РЅРЅС‹С…
 
          $Connection = mssql_connect($ServerName, $WebUserName, $WebUserPassword);
 
          if ($Connection <= 0) {
-              $statustext = "Ошибка соединения с сервером.";
+              $statustext = "РћС€РёР±РєР° СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ СЃРµСЂРІРµСЂРѕРј.";
               $alert = 1; 
               return; 
          }
@@ -474,28 +474,28 @@
 
          $Result =  mssql_result($rs, 0, 'result');  
 
-         // Смотрим результат
+         // РЎРјРѕС‚СЂРёРј СЂРµР·СѓР»СЊС‚Р°С‚
          if ($Result <= 0) {
 
-              $statustext = "Пользователь ".$login." не найден!";
+              $statustext = "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ ".$login." РЅРµ РЅР°Р№РґРµРЅ!";
               $alert = 1; 
  
          } elseif ($Result == 1 ) {
 
-           $statustext = "Неправильный пароль" ;
+           $statustext = "РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ РїР°СЂРѕР»СЊ" ;
            $alert = 1; 
 
          } elseif ($Result >= 2 and $Result <= 4) {
 
-           $statustext = "Пароль изменен." ;
+           $statustext = "РџР°СЂРѕР»СЊ РёР·РјРµРЅРµРЅ." ;
            $alert = 1; 
 
          } elseif ($Result >= 5) {
 
-           $statustext = "Пароль изменен. Выслано письмо с новым паролем." ;
+           $statustext = "РџР°СЂРѕР»СЊ РёР·РјРµРЅРµРЅ. Р’С‹СЃР»Р°РЅРѕ РїРёСЃСЊРјРѕ СЃ РЅРѕРІС‹Рј РїР°СЂРѕР»РµРј." ;
            $alert = 1; 
          } 
-         // Конец проверки
+         // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё
 
          $password = ""; 
          $newpassword = ""; 
@@ -504,24 +504,24 @@
 
    } elseif ($action == "ViewFormForSecurity")  {
 
-         // Обработка случая вывода формы для настроек безопасности
+         // РћР±СЂР°Р±РѕС‚РєР° СЃР»СѓС‡Р°СЏ РІС‹РІРѕРґР° С„РѕСЂРјС‹ РґР»СЏ РЅР°СЃС‚СЂРѕРµРє Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё
         
          $view = "ViewSecurity";
          $menupad = "Security";
-         $statustext = "Сотрудник: ".$employeename.", табельный номер: ".$tabnum ;
+         $statustext = "РЎРѕС‚СЂСѓРґРЅРёРє: ".$employeename.", С‚Р°Р±РµР»СЊРЅС‹Р№ РЅРѕРјРµСЂ: ".$tabnum ;
 
 
 
    } elseif ($action == "ChangeIp")  {
 
-         // Обработка случая смены ip пользователем
+         // РћР±СЂР°Р±РѕС‚РєР° СЃР»СѓС‡Р°СЏ СЃРјРµРЅС‹ ip РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј
         
 
 
          $Connection = mssql_connect($ServerName, $WebUserName, $WebUserPassword);
 
          if ($Connection <= 0) {
-              $statustext = "Ошибка соединения с сервером.";
+              $statustext = "РћС€РёР±РєР° СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ СЃРµСЂРІРµСЂРѕРј.";
               $alert = 1; 
               return; 
          }
@@ -533,38 +533,38 @@
 
          $Result =  mssql_result($rs, 0, 'result');  
 
-         // Смотрим результат
+         // РЎРјРѕС‚СЂРёРј СЂРµР·СѓР»СЊС‚Р°С‚
          if ($Result <= 0) {
 
-              $statustext = "Пользователь не найден!";
+              $statustext = "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ!";
               $alert = 1; 
   
          } elseif ($Result == 1 ) {
 
 
-//         $statustext = "Действие выполнено. " ;
+//         $statustext = "Р”РµР№СЃС‚РІРёРµ РІС‹РїРѕР»РЅРµРЅРѕ. " ;
 
          } 
-         // Конец проверки
+         // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё
 
 
          mssql_close($Connection);
 
          $view = "ViewSecurity";
          $menupad = "Security";
-         $statustext = "Сотрудник: ".$employeename.", табельный номер: ".$tabnum ;
+         $statustext = "РЎРѕС‚СЂСѓРґРЅРёРє: ".$employeename.", С‚Р°Р±РµР»СЊРЅС‹Р№ РЅРѕРјРµСЂ: ".$tabnum ;
 
 
    } elseif ($action == "ChangeSendPasswordFlag")  {
 
-         // Обработка случая смены запрета на отправка пароля по почте
+         // РћР±СЂР°Р±РѕС‚РєР° СЃР»СѓС‡Р°СЏ СЃРјРµРЅС‹ Р·Р°РїСЂРµС‚Р° РЅР° РѕС‚РїСЂР°РІРєР° РїР°СЂРѕР»СЏ РїРѕ РїРѕС‡С‚Рµ
         
 
 
          $Connection = mssql_connect($ServerName, $WebUserName, $WebUserPassword);
 
          if ($Connection <= 0) {
-              $statustext = "Ошибка соединения с сервером.";
+              $statustext = "РћС€РёР±РєР° СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ СЃРµСЂРІРµСЂРѕРј.";
               $alert = 1; 
               return; 
          }
@@ -576,30 +576,30 @@
 
          $Result =  mssql_result($rs, 0, 'result');  
 
-         // Смотрим результат
+         // РЎРјРѕС‚СЂРёРј СЂРµР·СѓР»СЊС‚Р°С‚
          if ($Result <= 0) {
 
-              $statustext = "Пользователь не найден!";
+              $statustext = "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ!";
               $alert = 1; 
  
          } elseif ($Result == 1 ) {
 
 
-//         $statustext = "Действие выполнено. " ;
+//         $statustext = "Р”РµР№СЃС‚РІРёРµ РІС‹РїРѕР»РЅРµРЅРѕ. " ;
 
          } 
-         // Конец проверки
+         // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё
 
 
          mssql_close($Connection);
 
          $view = "ViewSecurity";
          $menupad = "Security";
-         $statustext = "Сотрудник: ".$employeename.", табельный номер: ".$tabnum ;
+         $statustext = "РЎРѕС‚СЂСѓРґРЅРёРє: ".$employeename.", С‚Р°Р±РµР»СЊРЅС‹Р№ РЅРѕРјРµСЂ: ".$tabnum ;
 
 
    } else {
-   // если никаких действий не требуется
+   // РµСЃР»Рё РЅРёРєР°РєРёС… РґРµР№СЃС‚РІРёР№ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 
    //  $statustext = "<br/>";
    }

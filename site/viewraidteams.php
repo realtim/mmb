@@ -2,7 +2,7 @@
 
 <script language = "JavaScript">
 
-        // Посмотреть профиль пользователя
+        // РџРѕСЃРјРѕС‚СЂРµС‚СЊ РїСЂРѕС„РёР»СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 	function ViewUserInfo(userid)
 	{ 
 	  document.RaidTeamsForm.UserId.value = userid;
@@ -12,7 +12,7 @@
 
 
 
-	// Посмотреть профиль команды
+	// РџРѕСЃРјРѕС‚СЂРµС‚СЊ РїСЂРѕС„РёР»СЊ РєРѕРјР°РЅРґС‹
 	function ViewTeamInfo(teamid)
 	{ 
 	  document.RaidTeamsForm.TeamId.value = teamid;
@@ -27,7 +27,7 @@
 
 
 
-    // функция преобразования вывода данных
+    // С„СѓРЅРєС†РёСЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ РІС‹РІРѕРґР° РґР°РЅРЅС‹С…
     function ConvertTeamLevelPoints2 ($LevelPointNames,$LevelPointPenalties,$TeamLevelPoints,$LevelId)
     {
 	
@@ -36,7 +36,7 @@
 
 	  if (count($Names) <> count($Penalties)) 
 	  {
-           print('Ошибка данных по КП'."\r\n");
+           print('РћС€РёР±РєР° РґР°РЅРЅС‹С… РїРѕ РљРџ'."\r\n");
 	   return;
 	  }
 
@@ -47,7 +47,7 @@
 
 	  if (!empty($TeamLevelPoints) and  count($Names) <> count($TeamPoints))
 	  {	
-           print('Ошибка данных по КП'."\r\n");
+           print('РћС€РёР±РєР° РґР°РЅРЅС‹С… РїРѕ РљРџ'."\r\n");
 	   return;
 	  }
 
@@ -68,12 +68,12 @@
 
     return;	
     }
-    // Конец функции вывода данных по КП
+    // РљРѕРЅРµС† С„СѓРЅРєС†РёРё РІС‹РІРѕРґР° РґР°РЅРЅС‹С… РїРѕ РљРџ
 
-        // Проверяем, что передали  идентификатор ММБ
+        // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РїРµСЂРµРґР°Р»Рё  РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РњРњР‘
         if (empty($RaidId)) 
 	{
-		    $statustext = 'Не указан ММБ';
+		    $statustext = 'РќРµ СѓРєР°Р·Р°РЅ РњРњР‘';
 	  	    $alert = 0;
 		    return;
 	
@@ -92,7 +92,7 @@
                 $TabIndex = 0;
 		$DisabledText = '';
 
-                // Разбираемся с сортировкой
+                // Р Р°Р·Р±РёСЂР°РµРјСЃСЏ СЃ СЃРѕСЂС‚РёСЂРѕРІРєРѕР№
                 $OrderType = $_POST['OrderType'];
 		$OrderString = '';
 
@@ -111,25 +111,25 @@
 		  $Result = MySqlQuery($sql);
 		  $Row = mysql_fetch_assoc($Result);
 		  mysql_free_result($UserResult);
-                // Скорее всего нужно использоать только в сравнении с текущим временем
+                // РЎРєРѕСЂРµРµ РІСЃРµРіРѕ РЅСѓР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕР°С‚СЊ С‚РѕР»СЊРєРѕ РІ СЃСЂР°РІРЅРµРЅРёРё СЃ С‚РµРєСѓС‰РёРј РІСЂРµРјРµРЅРµРј
                 $RsultPublicated =  $Row['raid_resultpublicationdate'];
                 $RaidRulesLink = trim($Row['raid_ruleslink']);
                 $RaidStartLink = trim($Row['raid_startlink']);
 
-                // если порядок не задан смотрим на соотношение временени публикации и текущего
+                // РµСЃР»Рё РїРѕСЂСЏРґРѕРє РЅРµ Р·Р°РґР°РЅ СЃРјРѕС‚СЂРёРј РЅР° СЃРѕРѕС‚РЅРѕС€РµРЅРёРµ РІСЂРµРјРµРЅРµРЅРё РїСѓР±Р»РёРєР°С†РёРё Рё С‚РµРєСѓС‰РµРіРѕ
                 if  (empty($OrderType))
                 {
                   $OrderType = trim($Row['ordertype']);
                 }
 
             	print('<div align = "left" style = "font-size: 80%;">'."\r\n");
-		print('Сортировать по '."\r\n");
+		print('РЎРѕСЂС‚РёСЂРѕРІР°С‚СЊ РїРѕ '."\r\n");
 		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;"  onchange = "if (this.value==\'Num\'){document.RaidTeamsForm.LevelId.disabled=true;}else{document.RaidTeamsForm.LevelId.disabled=false;}document.RaidTeamsForm.submit();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
-	        print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >убыванию номера'."\r\n");
-	        print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
+	        print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >СѓР±С‹РІР°РЅРёСЋ РЅРѕРјРµСЂР°'."\r\n");
+	        print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ РјРµСЃС‚Р°'."\r\n");
 	        print('</select>'."\r\n");  
 
-		print('Фильтровать: '."\r\n"); 
+		print('Р¤РёР»СЊС‚СЂРѕРІР°С‚СЊ: '."\r\n"); 
 
 	        $sql = "select distance_id, distance_name
                         from  Distances where raid_id = ".$RaidId." order by distance_name"; 
@@ -138,7 +138,7 @@
                 
 		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px;" onchange = "document.RaidTeamsForm.submit();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
                 $distanceselected =  (0 == $_POST['DistanceId'] ? 'selected' : '');
-		  print('<option value = "0" '.$$distanceselected.' >дистанцию'."\r\n");
+		  print('<option value = "0" '.$$distanceselected.' >РґРёСЃС‚Р°РЅС†РёСЋ'."\r\n");
 	        while ($Row = mysql_fetch_assoc($Result))
 		{
 		  $distanceselected = ($Row['distance_id'] == $_POST['DistanceId'] ? 'selected' : '');
@@ -162,7 +162,7 @@
 
 		print('<select name="LevelId" '.(($OrderType=='Num') ? 'disabled' : '').'  style = "margin-left: 5px; margin-right: 10px;"  onchange = "document.RaidTeamsForm.submit();" tabindex = "'.(++$TabIndex).'" >'."\r\n"); 
 	          $levelselected =  (0 == $_POST['LevelId'] ? 'selected' : '');
-		print('<option value = "0" '.$levelselected.' >этап'."\r\n");
+		print('<option value = "0" '.$levelselected.' >СЌС‚Р°Рї'."\r\n");
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
@@ -173,12 +173,12 @@
 	        print('</select>'."\r\n");  
 		print('</div>'."\r\n");
             	print('<div align = "left" style = "margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
-		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidRulesLink.'" target = "_blank">Положение</a> '."\r\n");
-		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidStartLink.'" target = "_blank">Информация о старте</a> '."\r\n");
-		print('<a  style = "font-size:80%;" href = "'.trim(str_replace('index.php','printraidteams.php?RaidId=',$MyPHPScript)).$RaidId.'" target = "_blank">Список для печати</a>'."\r\n");
+		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidRulesLink.'" target = "_blank">РџРѕР»РѕР¶РµРЅРёРµ</a> '."\r\n");
+		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidStartLink.'" target = "_blank">РРЅС„РѕСЂРјР°С†РёСЏ Рѕ СЃС‚Р°СЂС‚Рµ</a> '."\r\n");
+		print('<a  style = "font-size:80%;" href = "'.trim(str_replace('index.php','printraidteams.php?RaidId=',$MyPHPScript)).$RaidId.'" target = "_blank">РЎРїРёСЃРѕРє РґР»СЏ РїРµС‡Р°С‚Рё</a>'."\r\n");
 		print('</div>'."\r\n");
 
-                // Показываем этапы
+                // РџРѕРєР°Р·С‹РІР°РµРј СЌС‚Р°РїС‹
    	        $sql = "select  d.distance_name, l.level_id, l.level_name, 
                                 l.level_pointnames, l.level_starttype,
                                 l.level_pointpenalties, l.level_order, 
@@ -209,18 +209,18 @@
 
 		print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<tr class = "gray">'."\r\n");  
-		print('<td width = "70">Дистанция</td>'."\r\n");  
-		print('<td width = "200">Этап (по ссылкам - карты)</td>'."\r\n");  
-		print('<td width = "400">Тип старта (границы по времени)'."\r\n");  
-		print('<td width = "70">Число КП'."\r\n");  
+		print('<td width = "70">Р”РёСЃС‚Р°РЅС†РёСЏ</td>'."\r\n");  
+		print('<td width = "200">Р­С‚Р°Рї (РїРѕ СЃСЃС‹Р»РєР°Рј - РєР°СЂС‚С‹)</td>'."\r\n");  
+		print('<td width = "400">РўРёРї СЃС‚Р°СЂС‚Р° (РіСЂР°РЅРёС†С‹ РїРѕ РІСЂРµРјРµРЅРё)'."\r\n");  
+		print('<td width = "70">Р§РёСЃР»Рѕ РљРџ'."\r\n");  
 		print('</tr>'."\r\n");  
 		$Result = MySqlQuery($sql);  
        
-		// теперь цикл обработки данных по этапам 
+		// С‚РµРїРµСЂСЊ С†РёРєР» РѕР±СЂР°Р±РѕС‚РєРё РґР°РЅРЅС‹С… РїРѕ СЌС‚Р°РїР°Рј 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 
-		  // По этому ключу потом определяем, есть ли уже строчка в teamLevels или её нужно создать 
+		  // РџРѕ СЌС‚РѕРјСѓ РєР»СЋС‡Сѓ РїРѕС‚РѕРј РѕРїСЂРµРґРµР»СЏРµРј, РµСЃС‚СЊ Р»Рё СѓР¶Рµ СЃС‚СЂРѕС‡РєР° РІ teamLevels РёР»Рё РµС‘ РЅСѓР¶РЅРѕ СЃРѕР·РґР°С‚СЊ 
 
 		  $TeamLevelId = $Row['teamlevel_id'];
 		  $LevelStartType = $Row['level_starttype'];
@@ -230,18 +230,18 @@
                  
                   $PointsCount = count(explode(',', $LevelPointNames));
 
-		  // Если старт не задан - считаем общим 
+		  // Р•СЃР»Рё СЃС‚Р°СЂС‚ РЅРµ Р·Р°РґР°РЅ - СЃС‡РёС‚Р°РµРј РѕР±С‰РёРј 
 		  if (empty($LevelStartType))
 		  {
 		    $LevelStartType = 2;
 		  }
 
-		  // Делаем оформление в зависимости от типа старта и соотношения  гранчиных дат:
-		  // Есди даты границ совпадают - выводим только первую
-		  // Если есть даты старта и фнишиа и они совпадают - выодим только дату старта              
+		  // Р”РµР»Р°РµРј РѕС„РѕСЂРјР»РµРЅРёРµ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° СЃС‚Р°СЂС‚Р° Рё СЃРѕРѕС‚РЅРѕС€РµРЅРёСЏ  РіСЂР°РЅС‡РёРЅС‹С… РґР°С‚:
+		  // Р•СЃРґРё РґР°С‚С‹ РіСЂР°РЅРёС† СЃРѕРІРїР°РґР°СЋС‚ - РІС‹РІРѕРґРёРј С‚РѕР»СЊРєРѕ РїРµСЂРІСѓСЋ
+		  // Р•СЃР»Рё РµСЃС‚СЊ РґР°С‚С‹ СЃС‚Р°СЂС‚Р° Рё С„РЅРёС€РёР° Рё РѕРЅРё СЃРѕРІРїР°РґР°СЋС‚ - РІС‹РѕРґРёРј С‚РѕР»СЊРєРѕ РґР°С‚Сѓ СЃС‚Р°СЂС‚Р°              
 		  if ($LevelStartType == 1)
 		  {
-		      $LevelStartTypeText = 'По готовности (';
+		      $LevelStartTypeText = 'РџРѕ РіРѕС‚РѕРІРЅРѕСЃС‚Рё (';
 		      if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_smaxbegtime']), 0, 5))
 		      { 
 			$LevelStartTypeText = $LevelStartTypeText.$Row['level_sbegtime'].' - '.substr(trim($Row['level_smaxbegtime']), 6);
@@ -251,17 +251,17 @@
 		      $LevelStartTypeText = $LevelStartTypeText.')/('; 
 
 		  } elseif ($LevelStartType == 2) {
-		    $LevelStartTypeText = 'Общий ('.$Row['level_sbegtime'];
+		    $LevelStartTypeText = 'РћР±С‰РёР№ ('.$Row['level_sbegtime'];
 		    $LevelStartTypeText = $LevelStartTypeText.')/('; 
 
 		  } elseif ($LevelStartType == 3) {
-		    $LevelStartTypeText = 'Во время финиша (';
+		    $LevelStartTypeText = 'Р’Рѕ РІСЂРµРјСЏ С„РёРЅРёС€Р° (';
 
 		  }
 
 
-		  // Дополняем рамками финиша
-		  // Проверяем на одинаковые даты
+		  // Р”РѕРїРѕР»РЅСЏРµРј СЂР°РјРєР°РјРё С„РёРЅРёС€Р°
+		  // РџСЂРѕРІРµСЂСЏРµРј РЅР° РѕРґРёРЅР°РєРѕРІС‹Рµ РґР°С‚С‹
 		  if (substr(trim($Row['level_sminendtime']), 0, 5) == substr(trim($Row['level_sendtime']), 0, 5))
 		  { 
 		    if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_sendtime']), 0, 5))
@@ -276,7 +276,7 @@
 
 		  $LevelStartTypeText = $LevelStartTypeText.')'; 
        
-		  // сторим строчку для текущего этапа  
+		  // СЃС‚РѕСЂРёРј СЃС‚СЂРѕС‡РєСѓ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ СЌС‚Р°РїР°  
 		  print('<tr><td>'.$Row['distance_name'].'</td>'."\r\n"); 
 
                   print('<td>'.$Row['level_name']."\r\n"); 
@@ -291,7 +291,7 @@
        
                   $MapsCount = 0;
                   $MapString = ''; 
-		  // теперь цикл обработки данных по этапам 
+		  // С‚РµРїРµСЂСЊ С†РёРєР» РѕР±СЂР°Р±РѕС‚РєРё РґР°РЅРЅС‹С… РїРѕ СЌС‚Р°РїР°Рј 
 		  while ($RowMap = mysql_fetch_assoc($ResultMap))
 		  {
 			$MapsCount++;
@@ -310,14 +310,14 @@
                          </tr>'."\r\n"); 
 
 		}
-		// конец цикла по этапам
+		// РєРѕРЅРµС† С†РёРєР»Р° РїРѕ СЌС‚Р°РїР°Рј
 		mysql_free_result($Result);
 		print('</table>'."\r\n");
 
 		if  ($OrderType == 'Num')
                 {
 
-                  // Сортировка по номеру (в обратном порядке)
+                  // РЎРѕСЂС‚РёСЂРѕРІРєР° РїРѕ РЅРѕРјРµСЂСѓ (РІ РѕР±СЂР°С‚РЅРѕРј РїРѕСЂСЏРґРєРµ)
 		  $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, 
 		               t.team_mapscount, d.distance_name, d.distance_id,
                                TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
@@ -337,7 +337,7 @@
                     
 
                 } elseif ($OrderType == 'Place') {
-                  // Сортировка по месту требует более хитрого запроса
+                  // РЎРѕСЂС‚РёСЂРѕРІРєР° РїРѕ РјРµСЃС‚Сѓ С‚СЂРµР±СѓРµС‚ Р±РѕР»РµРµ С…РёС‚СЂРѕРіРѕ Р·Р°РїСЂРѕСЃР°
 
 
 		   if (empty($_POST['LevelId']))
@@ -366,7 +366,7 @@
 		      $sql = $sql." order by distance_name, placegroup asc, team_sresult desc "; 
 		    
 		     } else {
-                          // Если фильтруем пожтапу, то другой запрос
+                          // Р•СЃР»Рё С„РёР»СЊС‚СЂСѓРµРј РїРѕР¶С‚Р°РїСѓ, С‚Рѕ РґСЂСѓРіРѕР№ Р·Р°РїСЂРѕСЃ
 
 		      $sql = " select t.team_num, t.team_id, t.team_usegps, t.team_name, 
 				      t.team_mapscount, d.distance_name, d.distance_id,
@@ -431,21 +431,21 @@
 //		print('<table width = "'.(($_POST['LevelId'] > 0 and  $OrderType == 'Place') ? '1015' : '815').'" border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<tr class = "gray">
-		         <td width = "50" style = "'.$thstyle.'">Номер</td>
-			 <td width = "350" style = "'.$thstyle.'">Команда (gps, дистанция, карт)</td>
-			 <td width = "350" style = "'.$thstyle.'">Участники</td>
-			 <td width = "50" style = "'.$thstyle.'">Результат</td>'."\r\n");
+		         <td width = "50" style = "'.$thstyle.'">РќРѕРјРµСЂ</td>
+			 <td width = "350" style = "'.$thstyle.'">РљРѕРјР°РЅРґР° (gps, РґРёСЃС‚Р°РЅС†РёСЏ, РєР°СЂС‚)</td>
+			 <td width = "350" style = "'.$thstyle.'">РЈС‡Р°СЃС‚РЅРёРєРё</td>
+			 <td width = "50" style = "'.$thstyle.'">Р РµР·СѓР»СЊС‚Р°С‚</td>'."\r\n");
                 if ($OrderType == 'Place')   
                 {
-                  // дополнительное поле место
-		  print('  <td width = "50" style = "'.$thstyle.'">Место</td>'."\r\n");
+                  // РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРµ РїРѕР»Рµ РјРµСЃС‚Рѕ
+		  print('  <td width = "50" style = "'.$thstyle.'">РњРµСЃС‚Рѕ</td>'."\r\n");
 
-                  // дополнительные поля в случае вывода  этапа
+                  // РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РїРѕР»СЏ РІ СЃР»СѓС‡Р°Рµ РІС‹РІРѕРґР°  СЌС‚Р°РїР°
                   if ($_POST['LevelId'] > 0)
                   {
-		    print('<td width = "50" style = "'.$thstyle.'">Штраф</td>
-			   <td width = "150" style = "'.$thstyle.'">Комментарий</td>
-			   <td width = "250" style = "'.$thstyle.'">Невзятые КП</td>'."\r\n");
+		    print('<td width = "50" style = "'.$thstyle.'">РЁС‚СЂР°С„</td>
+			   <td width = "150" style = "'.$thstyle.'">РљРѕРјРјРµРЅС‚Р°СЂРёР№</td>
+			   <td width = "250" style = "'.$thstyle.'">РќРµРІР·СЏС‚С‹Рµ РљРџ</td>'."\r\n");
 
                         
 
@@ -471,7 +471,7 @@
 
  			print('<tr class = "'.$TrClass.'"><td style = "'.$tdstyle.'">'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
 			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].')
-                                   '.($Row['level_name'] == '' ? '' : '</br><i>Не вышла на этап: '.$Row['level_name'].'</i>').'</td><td style = "'.$tdstyle.'">'."\r\n");
+                                   '.($Row['level_name'] == '' ? '' : '</br><i>РќРµ РІС‹С€Р»Р° РЅР° СЌС‚Р°Рї: '.$Row['level_name'].'</i>').'</td><td style = "'.$tdstyle.'">'."\r\n");
 		
 			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,
                                        tu.level_id, u.user_id, l.level_name 
@@ -489,7 +489,7 @@
 			  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear']."\r\n");
                           if ($UserRow['level_name'] <> '')
                           {
-			      print('<i>Сход: '.$UserRow['level_name'].'</i>'."\r\n");
+			      print('<i>РЎС…РѕРґ: '.$UserRow['level_name'].'</i>'."\r\n");
                           } 
 			  print('</div>'."\r\n");
 			}  

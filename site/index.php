@@ -1,21 +1,21 @@
 <?php
 
-        // Общие настройки
+        // РћР±С‰РёРµ РЅР°СЃС‚СЂРѕР№РєРё
 	include("settings.php");
-	// Библиотека функций
+	// Р‘РёР±Р»РёРѕС‚РµРєР° С„СѓРЅРєС†РёР№
 	include("functions.php");
 
-        // Пробегаем помассивам POST GET REAUEST COOKIE  и чистим возможные sql инъекции и мусор
+        // РџСЂРѕР±РµРіР°РµРј РїРѕРјР°СЃСЃРёРІР°Рј POST GET REAUEST COOKIE  Рё С‡РёСЃС‚РёРј РІРѕР·РјРѕР¶РЅС‹Рµ sql РёРЅСЉРµРєС†РёРё Рё РјСѓСЃРѕСЂ
         ClearArrays();
 
-        // Флаг ошибки (1 - цвет текста statustext становится красным и всплывает окно с сообщением) 
-	// и текст, который выводится в статусную строку (под логотип)
+        // Р¤Р»Р°Рі РѕС€РёР±РєРё (1 - С†РІРµС‚ С‚РµРєСЃС‚Р° statustext СЃС‚Р°РЅРѕРІРёС‚СЃСЏ РєСЂР°СЃРЅС‹Рј Рё РІСЃРїР»С‹РІР°РµС‚ РѕРєРЅРѕ СЃ СЃРѕРѕР±С‰РµРЅРёРµРј) 
+	// Рё С‚РµРєСЃС‚, РєРѕС‚РѕСЂС‹Р№ РІС‹РІРѕРґРёС‚СЃСЏ РІ СЃС‚Р°С‚СѓСЃРЅСѓСЋ СЃС‚СЂРѕРєСѓ (РїРѕРґ Р»РѕРіРѕС‚РёРї)
 	$alert = 0; 
-	$statustext = ""; //"Сегодня: ".date("d.m.Y")."  &nbsp; Время: ".date("H:i:s");
+	$statustext = ""; //"РЎРµРіРѕРґРЅСЏ: ".date("d.m.Y")."  &nbsp; Р’СЂРµРјСЏ: ".date("H:i:s");
 
 	if ($action == "") 
 	{
-	// Действие не указано
+	// Р”РµР№СЃС‚РІРёРµ РЅРµ СѓРєР°Р·Р°РЅРѕ
 		$view = "MainPage";
 
 	} elseif ($action == "StartPage") {
@@ -23,26 +23,27 @@
                 $view = $_POST['view'];
 
 	} else {	
-	        // Обработчик событий, связанных с пользователем
+	        // РћР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёР№, СЃРІСЏР·Р°РЅРЅС‹С… СЃ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј
 		include ("useraction.php");
 
-	        // Обработчик событий, связанных с командой
+	        // РћР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёР№, СЃРІСЏР·Р°РЅРЅС‹С… СЃ РєРѕРјР°РЅРґРѕР№
 		include ("teamaction.php");
 
-	        // Обработчик событий, связанных с результатами команды
+	        // РћР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёР№, СЃРІСЏР·Р°РЅРЅС‹С… СЃ СЂРµР·СѓР»СЊС‚Р°С‚Р°РјРё РєРѕРјР°РЅРґС‹
 		include ("teamresultaction.php");
 
 	}
 
-    // 15,01,2012 Сбрасываем действие в самом конце, а не здесь 
+    // 15,01,2012 РЎР±СЂР°СЃС‹РІР°РµРј РґРµР№СЃС‚РІРёРµ РІ СЃР°РјРѕРј РєРѕРЅС†Рµ, Р° РЅРµ Р·РґРµСЃСЊ 
     //$action = "";
 
 ?>
 
 <html>
  <head>
-  <title>ММБ</title>
+  <title>РњРњР‘</title>
   <link rel="Stylesheet" type="text/css"  href="styles/mmb.css" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
  </head>
 
@@ -57,7 +58,7 @@
 		</td>
 -->
 		<td  align="left" width = "220" valign = "top" >
-		<!--Левая колонка -->
+		<!--Р›РµРІР°СЏ РєРѕР»РѕРЅРєР° -->
                    <div style = "padding-left: 10px; padding-right: 15px; padding-bottom: 25px;  
 		                 border-right-color: #000000;  border-right-style: solid; border-right-width: 1px;
 				 border-bottom-color: #000000;  border-bottom-style: solid; border-bottom-width: 1px;">
@@ -67,22 +68,22 @@
 				<input type = "hidden" name = "view" value = "MainPage">
 				<input type = "hidden" name = "sessionid" value = "<? echo (!empty($SessionId) ? $SessionId : $_POST['sessionid']); ?>">
 				<input type = "hidden" name = "RaidId" value = "<? echo (!empty($RaidId) ? $RaidId : $_POST['RaidId']); ?>">
-				<a href="javascript:document.StartPageForm.submit();"><img  style = "margin-bottom: 15px;" width = "157" height = "139" border = "0" alt = "ММБ"  src = "http://mmb.progressor.ru/mmbicons/mmb2012v-logo-s_4.png"></a>
+				<a href="javascript:document.StartPageForm.submit();"><img  style = "margin-bottom: 15px;" width = "157" height = "139" border = "0" alt = "РњРњР‘"  src = "http://mmb.progressor.ru/mmbicons/mmb2012v-logo-s_4.png"></a>
                        </form> 
 
-			<!-- вставка меню на php -->
+			<!-- РІСЃС‚Р°РІРєР° РјРµРЅСЋ РЅР° php -->
 			<?php  include("menu.php"); ?>
-			<!-- конец вставки меню на php -->
+			<!-- РєРѕРЅРµС† РІСЃС‚Р°РІРєРё РјРµРЅСЋ РЅР° php -->
 
                    </div>
-		<!--Конец левой колонки -->
+		<!--РљРѕРЅРµС† Р»РµРІРѕР№ РєРѕР»РѕРЅРєРё -->
 		</td>
 		<td align="left" valign = "top">
-		<!--Правая колонка -->
+		<!--РџСЂР°РІР°СЏ РєРѕР»РѕРЅРєР° -->
 
                     <div style = "padding-left: 20px; padding-right: 10px;">
 
-			<!-- сообщение  -->
+			<!-- СЃРѕРѕР±С‰РµРЅРёРµ  -->
 			<?php 
 
                          if (!empty($statustext))
@@ -91,16 +92,16 @@
                             //print('<table width = "100%"><tr><td>'.$statustext.'</td><td style = "border-top-style: dotted; border-top-width: 2px; border-top-color: #CC0000;">&nbsp;</td></tr></table>'."\n");
                           }
 
-                         // вставляем основную часть			
+                         // РІСЃС‚Р°РІР»СЏРµРј РѕСЃРЅРѕРІРЅСѓСЋ С‡Р°СЃС‚СЊ			
 			 include("mainpart.php"); 
 
-                         // сбрасываем действие
+                         // СЃР±СЂР°СЃС‹РІР°РµРј РґРµР№СЃС‚РІРёРµ
 			 $action = "";
-                         // м.б. нужно и view сбрасывать 
+                         // Рј.Р±. РЅСѓР¶РЅРѕ Рё view СЃР±СЂР°СЃС‹РІР°С‚СЊ 
 			 $viewsubmode  = "";
 			?>
 		   </div>
-		<!--Конец правой колонки -->
+		<!--РљРѕРЅРµС† РїСЂР°РІРѕР№ РєРѕР»РѕРЅРєРё -->
 		</td>
 	</tr>
 	</table>

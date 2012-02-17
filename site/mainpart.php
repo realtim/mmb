@@ -1,29 +1,29 @@
 <?php
 
-// Ñîäåðæàíèå ïðàâîãî "ôðåéìà"
+// Ð¡Ð¾Ð´ÐµÑ€Ð¶Ð°Ð½Ð¸Ðµ Ð¿Ñ€Ð°Ð²Ð¾Ð³Ð¾ "Ñ„Ñ€ÐµÐ¹Ð¼Ð°"
 
 	//print('view = ^'.$view.'^ action = '.$action);
 
          
 	if ($view == ""  or  $view == "MainPage") {
-		// Ñòàðòîâàÿ ñòðàíèöà
+		// Ð¡Ñ‚Ð°Ñ€Ñ‚Ð¾Ð²Ð°Ñ ÑÑ‚Ñ€Ð°Ð½Ð¸Ñ†Ð°
 		include("mainpage.php");
 	} elseif ($view == "ViewUserData") {
-		//Äàííûå î ïîëüçîâàòåëå
+		//Ð”Ð°Ð½Ð½Ñ‹Ðµ Ð¾ Ð¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»Ðµ
 		include("viewuserdata.php");
 	} elseif ($view == "ViewTeamData") {
-		// Äàííûå î êîìàíäå 
+		// Ð”Ð°Ð½Ð½Ñ‹Ðµ Ð¾ ÐºÐ¾Ð¼Ð°Ð½Ð´Ðµ 
 		include("viewteamdata.php");
 		include("viewteamresultdata.php");
 	} elseif ($view == "ViewUsers") {
-		// ðåçóëüòàòû ïîèñêà ïîëüçîâàòåëÿ 
+		// Ñ€ÐµÐ·ÑƒÐ»ÑŒÑ‚Ð°Ñ‚Ñ‹ Ð¿Ð¾Ð¸ÑÐºÐ° Ð¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»Ñ 
 		include("viewusers.php");
 	} elseif ($view == "ViewRaidTeams") {
-		// Ðåçóëüòàòû ÌÌÁ (ïî âñåì êîìàíäàì)
+		// Ð ÐµÐ·ÑƒÐ»ÑŒÑ‚Ð°Ñ‚Ñ‹ ÐœÐœÐ‘ (Ð¿Ð¾ Ð²ÑÐµÐ¼ ÐºÐ¾Ð¼Ð°Ð½Ð´Ð°Ð¼)
 		include("viewraidteams.php");
 	}
 
-	// Î÷èùàåì ïåðåìåííóþ
+	// ÐžÑ‡Ð¸Ñ‰Ð°ÐµÐ¼ Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½ÑƒÑŽ
 	$view = "";
 
 ?>

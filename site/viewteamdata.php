@@ -1,15 +1,15 @@
 <?php
 
-         // По идее, для всех действий должно передаваться SessionId через post
-	// Исключение действия UserLogin и переход по ссылке из письма - там стартует сессия прям на этой странице
-         // и передачи через форму не происходит
-          // м.б. стоит яано прописать для каких action м.б.пустая сессия
+         // РџРѕ РёРґРµРµ, РґР»СЏ РІСЃРµС… РґРµР№СЃС‚РІРёР№ РґРѕР»Р¶РЅРѕ РїРµСЂРµРґР°РІР°С‚СЊСЃСЏ SessionId С‡РµСЂРµР· post
+	// РСЃРєР»СЋС‡РµРЅРёРµ РґРµР№СЃС‚РІРёСЏ UserLogin Рё РїРµСЂРµС…РѕРґ РїРѕ СЃСЃС‹Р»РєРµ РёР· РїРёСЃСЊРјР° - С‚Р°Рј СЃС‚Р°СЂС‚СѓРµС‚ СЃРµСЃСЃРёСЏ РїСЂСЏРј РЅР° СЌС‚РѕР№ СЃС‚СЂР°РЅРёС†Рµ
+         // Рё РїРµСЂРµРґР°С‡Рё С‡РµСЂРµР· С„РѕСЂРјСѓ РЅРµ РїСЂРѕРёСЃС…РѕРґРёС‚
+          // Рј.Р±. СЃС‚РѕРёС‚ СЏР°РЅРѕ РїСЂРѕРїРёСЃР°С‚СЊ РґР»СЏ РєР°РєРёС… action Рј.Р±.РїСѓСЃС‚Р°СЏ СЃРµСЃСЃРёСЏ
          if (empty($SessionId))
 	 {
 		$SessionId =  $_POST['sessionid'];
 	 } 
 
-	 // Текущий пользователь
+	 // РўРµРєСѓС‰РёР№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ
 	 $NowUserId = GetSession($SessionId);
 
 
@@ -19,7 +19,7 @@
 		$RaidId = $_POST['RaidId'];
 		if (empty($RaidId) or empty($NowUserId))
 		{
-	            $statustext = 'Для регистрации новой команды обязателен идентификатор пользователя и ММБ';
+	            $statustext = 'Р”Р»СЏ СЂРµРіРёСЃС‚СЂР°С†РёРё РЅРѕРІРѕР№ РєРѕРјР°РЅРґС‹ РѕР±СЏР·Р°С‚РµР»РµРЅ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ Рё РњРњР‘';
 	  	    $alert = 1;
 		    return;
 		}
@@ -30,10 +30,10 @@
 		mysql_free_result($Result);
 		$UserEmail = $Row['user_email'];
 
-                // Новая команда 
+                // РќРѕРІР°СЏ РєРѕРјР°РЅРґР° 
                 $TeamId = 0;
 
-		// Если вернулись после ошибки переменные не нужно инициализировать
+		// Р•СЃР»Рё РІРµСЂРЅСѓР»РёСЃСЊ РїРѕСЃР»Рµ РѕС€РёР±РєРё РїРµСЂРµРјРµРЅРЅС‹Рµ РЅРµ РЅСѓР¶РЅРѕ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ
 		if ($viewsubmode == "ReturnAfterError") 
 		{
                   ReverseClearArrays();
@@ -53,8 +53,8 @@
 
                 } else {
 
-		  $TeamNum = 'Номер';
-		  $TeamName = 'Название команды';
+		  $TeamNum = 'РќРѕРјРµСЂ';
+		  $TeamName = 'РќР°Р·РІР°РЅРёРµ РєРѕРјР°РЅРґС‹';
 		  $DistanceId = 0;
 		  $TeamUseGPS = 0;
 		  $TeamMapsCount = 0;
@@ -68,21 +68,21 @@
 
                 $TeamUser = 0;
 
-		// Всегда разрешаем ввод новой команды?
+		// Р’СЃРµРіРґР° СЂР°Р·СЂРµС€Р°РµРј РІРІРѕРґ РЅРѕРІРѕР№ РєРѕРјР°РЅРґС‹?
 		//$AllowEdit = 1;
-		// Определяем следующее действие
+		// РћРїСЂРµРґРµР»СЏРµРј СЃР»РµРґСѓСЋС‰РµРµ РґРµР№СЃС‚РІРёРµ
 		$NextActionName = 'AddTeam';
-		// Действие на текстовом поле по клику
+		// Р”РµР№СЃС‚РІРёРµ РЅР° С‚РµРєСЃС‚РѕРІРѕРј РїРѕР»Рµ РїРѕ РєР»РёРєСѓ
 		$OnClickText =  'onClick = "javascript:this.value = \'\';"';
-		// Надпись на кнопке
-		$SaveButtonText = 'Зарегистрировать';
+		// РќР°РґРїРёСЃСЊ РЅР° РєРЅРѕРїРєРµ
+		$SaveButtonText = 'Р—Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊ';
 
 
          } else {
 
-           // просмотр существующего
-               // Проверка нужна только для случая регистрация новой команды
-                 // только тогда Id есть в переменной php, но нет в вызывающей форме
+           // РїСЂРѕСЃРјРѕС‚СЂ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРіРѕ
+               // РџСЂРѕРІРµСЂРєР° РЅСѓР¶РЅР° С‚РѕР»СЊРєРѕ РґР»СЏ СЃР»СѓС‡Р°СЏ СЂРµРіРёСЃС‚СЂР°С†РёСЏ РЅРѕРІРѕР№ РєРѕРјР°РЅРґС‹
+                 // С‚РѕР»СЊРєРѕ С‚РѕРіРґР° Id РµСЃС‚СЊ РІ РїРµСЂРµРјРµРЅРЅРѕР№ php, РЅРѕ РЅРµС‚ РІ РІС‹Р·С‹РІР°СЋС‰РµР№ С„РѕСЂРјРµ
 		if (empty($TeamId))
 		{
 			$TeamId = $_POST['TeamId']; 
@@ -90,7 +90,7 @@
 
 		if ($TeamId <= 0)
 		{
-		// должны быть определена команда, которую смотрят
+		// РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕРїСЂРµРґРµР»РµРЅР° РєРѕРјР°РЅРґР°, РєРѕС‚РѕСЂСѓСЋ СЃРјРѕС‚СЂСЏС‚
 		     return;
 		}
 
@@ -108,13 +108,13 @@
 		$Row = mysql_fetch_assoc($Result);
                 mysql_free_result($Result);
 
-                // Эти данные всегда берём из базы
+                // Р­С‚Рё РґР°РЅРЅС‹Рµ РІСЃРµРіРґР° Р±РµСЂС‘Рј РёР· Р±Р°Р·С‹
 		  $RaidId = $Row['raid_id'];
 		  $TeamRegisterDt = $Row['team_registerdt'];
                   $TeamResult = $Row['team_result'];
 
 
-		// Если вернулись после ошибки переменные не нужно инициализировать
+		// Р•СЃР»Рё РІРµСЂРЅСѓР»РёСЃСЊ РїРѕСЃР»Рµ РѕС€РёР±РєРё РїРµСЂРµРјРµРЅРЅС‹Рµ РЅРµ РЅСѓР¶РЅРѕ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ
 		if ($viewsubmode == "ReturnAfterError") 
 		{
                   ReverseClearArrays();
@@ -156,17 +156,17 @@
 	        $NextActionName = 'TeamChangeData';
 		$AllowEdit = 0;
 		$OnClickText = '';
-		$SaveButtonText = 'Сохранить изменения';
+		$SaveButtonText = 'РЎРѕС…СЂР°РЅРёС‚СЊ РёР·РјРµРЅРµРЅРёСЏ';
 		
 
 	 }
-         // Конец проверки действия с командой
+         // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё РґРµР№СЃС‚РІРёСЏ СЃ РєРѕРјР°РЅРґРѕР№
 
-         // Определяем статус пользователя
-	 // К этому моменту, что для новой команды, что для существующей уже известен ммб
+         // РћРїСЂРµРґРµР»СЏРµРј СЃС‚Р°С‚СѓСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+	 // Рљ СЌС‚РѕРјСѓ РјРѕРјРµРЅС‚Сѓ, С‡С‚Рѕ РґР»СЏ РЅРѕРІРѕР№ РєРѕРјР°РЅРґС‹, С‡С‚Рѕ РґР»СЏ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµР№ СѓР¶Рµ РёР·РІРµСЃС‚РµРЅ РјРјР±
 
 
-         // Заготовка под будущие проверки 
+         // Р—Р°РіРѕС‚РѕРІРєР° РїРѕРґ Р±СѓРґСѓС‰РёРµ РїСЂРѕРІРµСЂРєРё 
 	 $sql = "select r.raid_resultpublicationdate, r.raid_registrationenddate, 
                         CASE WHEN r.raid_registrationenddate is not null and YEAR(r.raid_registrationenddate) <= 2011 
                              THEN 1 
@@ -190,7 +190,7 @@
                 
 	 if (empty($RaidRegistrationEndDate))
          {
-	  // должна быть определена дата окончания регистрации
+	  // РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РѕРїСЂРµРґРµР»РµРЅР° РґР°С‚Р° РѕРєРѕРЅС‡Р°РЅРёСЏ СЂРµРіРёСЃС‚СЂР°С†РёРё
 	     return;
          }
 	 
@@ -202,7 +202,7 @@
          }
 
 
-        // Общее правило для возможности редактирования
+        // РћР±С‰РµРµ РїСЂР°РІРёР»Рѕ РґР»СЏ РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ
 	if ($viewmode == "Add" or $Moderator or ($TeamUser and !$TeamModeratorConfirmResult))
         {
           $AllowEdit = 1;
@@ -215,28 +215,28 @@
         }
  
 
-// Выводим javascrpit
+// Р’С‹РІРѕРґРёРј javascrpit
 ?>
 
 <script language = "JavaScript">
 
-        // Функция проверки правильности заполнения формы
+        // Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё Р·Р°РїРѕР»РЅРµРЅРёСЏ С„РѕСЂРјС‹
 	function ValidateTeamDataForm()
 	{ 
 	        document.TeamDataForm.action.value = "<? echo $NextActionName; ?>";
 		return true;
 	}
-        // Конец проверки правильности заполнения формы
+        // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё Р·Р°РїРѕР»РЅРµРЅРёСЏ С„РѕСЂРјС‹
 
 
-        // Удалить команду
+        // РЈРґР°Р»РёС‚СЊ РєРѕРјР°РЅРґСѓ
 	function HideTeam()
 	{ 
 	  document.TeamDataForm.action.value = 'HideTeam';
 	  document.TeamDataForm.submit();
 	}
 
-        // Удалить пользователя
+        // РЈРґР°Р»РёС‚СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 	function HideTeamUser(teamuserid)
 	{ 
           document.TeamDataForm.HideTeamUserId.value = teamuserid;
@@ -245,7 +245,7 @@
           
 	}
 
-	// Функция отмены изменения
+	// Р¤СѓРЅРєС†РёСЏ РѕС‚РјРµРЅС‹ РёР·РјРµРЅРµРЅРёСЏ
 	function Cancel()
 	{ 
 		document.TeamDataForm.action.value = "CancelChangeTeamData";
@@ -253,7 +253,7 @@
 	}
 	
 
-        // Посмотреть профиль пользователя
+        // РџРѕСЃРјРѕС‚СЂРµС‚СЊ РїСЂРѕС„РёР»СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 	function ViewUserInfo(userid)
 	{ 
 	  document.TeamDataForm.UserId.value = userid;
@@ -262,7 +262,7 @@
 	}
 
 
-        // Указать этап схода пользователя
+        // РЈРєР°Р·Р°С‚СЊ СЌС‚Р°Рї СЃС…РѕРґР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 	function TeamUserOut(teamuserid, levelid)
 	{ 
           document.TeamDataForm.HideTeamUserId.value = teamuserid;
@@ -291,44 +291,44 @@
 
         $TabIndex = 0;
 
-         // Номер команды
+         // РќРѕРјРµСЂ РєРѕРјР°РЅРґС‹
 	 if ($viewmode=="Add")
 	 {
-             // Добавляем новую команду
-             // Если старый ММБ - открываем редактирование номера, иначе номер не передаём
+             // Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІСѓСЋ РєРѕРјР°РЅРґСѓ
+             // Р•СЃР»Рё СЃС‚Р°СЂС‹Р№ РњРњР‘ - РѕС‚РєСЂС‹РІР°РµРј СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РЅРѕРјРµСЂР°, РёРЅР°С‡Рµ РЅРѕРјРµСЂ РЅРµ РїРµСЂРµРґР°С‘Рј
              if ($OldMmb == 1)
              {
-                print('<tr><td class = "input">Команда N <input type="text" name="TeamNum" size="10" 
+                print('<tr><td class = "input">РљРѕРјР°РЅРґР° N <input type="text" name="TeamNum" size="10" 
                          value="0" tabindex = "'.(++$TabIndex).'" 
-                         title = "Для прошлых ММБ укажите номер команды"></td></tr>'."\r\n");
+                         title = "Р”Р»СЏ РїСЂРѕС€Р»С‹С… РњРњР‘ СѓРєР°Р¶РёС‚Рµ РЅРѕРјРµСЂ РєРѕРјР°РЅРґС‹"></td></tr>'."\r\n");
               } else {
-		print('<tr><td class = "input"><b>Новая команда!</b>
+		print('<tr><td class = "input"><b>РќРѕРІР°СЏ РєРѕРјР°РЅРґР°!</b>
                             <input type="hidden" name="TeamNum" value="0"></td></tr>'."\r\n");
               } 
 
          } else {
-              // Уже существующая команда
- 	     print('<tr><td class = "input">Команда N <b>'.$TeamNum.'</b>
+              // РЈР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰Р°СЏ РєРѕРјР°РЅРґР°
+ 	     print('<tr><td class = "input">РљРѕРјР°РЅРґР° N <b>'.$TeamNum.'</b>
                             <input type="hidden" name="TeamNum" value="'.$TeamNum.'">'."\r\n");
 
-             // Проверяем права на правку чтобы показать кнопку удаления всей команды
+             // РџСЂРѕРІРµСЂСЏРµРј РїСЂР°РІР° РЅР° РїСЂР°РІРєСѓ С‡С‚РѕР±С‹ РїРѕРєР°Р·Р°С‚СЊ РєРЅРѕРїРєСѓ СѓРґР°Р»РµРЅРёСЏ РІСЃРµР№ РєРѕРјР°РЅРґС‹
              if ($AllowEdit == 1) 
              {
-  	        print(' &nbsp; <input type = "button" style = "margin-left: 180px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите удалить команду: '.trim($TeamName).'? \')) {HideTeam();}" name="HideTeamButton" 
-                                value = "Удалить команду"  tabindex = "'.(++$TabIndex).'">'."\r\n");
+  	        print(' &nbsp; <input type = "button" style = "margin-left: 180px;" onClick = "javascript: if (confirm(\'Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ РєРѕРјР°РЅРґСѓ: '.trim($TeamName).'? \')) {HideTeam();}" name="HideTeamButton" 
+                                value = "РЈРґР°Р»РёС‚СЊ РєРѕРјР°РЅРґСѓ"  tabindex = "'.(++$TabIndex).'">'."\r\n");
              }
 	     print('</td></tr>'."\r\n");
 
-	     print('<tr><td class = "input">Зарегистрирована: '.$TeamRegisterDt.'</td></tr>'."\r\n");
+	     print('<tr><td class = "input">Р—Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅР°: '.$TeamRegisterDt.'</td></tr>'."\r\n");
 
 	 }
 
-  	 print('<tr><td class = "input">Время окончания регистрации: '.$RaidRegistrationEndDate.'</td></tr>'."\r\n");
+  	 print('<tr><td class = "input">Р’СЂРµРјСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ СЂРµРіРёСЃС‚СЂР°С†РёРё: '.$RaidRegistrationEndDate.'</td></tr>'."\r\n");
 
 
         
-         // дистанция 
-	print('<tr><td class = "input">Дистанция'."\r\n"); 
+         // РґРёСЃС‚Р°РЅС†РёСЏ 
+	print('<tr><td class = "input">Р”РёСЃС‚Р°РЅС†РёСЏ'."\r\n"); 
 	print('<select name="DistanceId"  class = "leftmargin" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
 
 	//echo 'RaidId '.$RaidId;
@@ -346,36 +346,36 @@
 	print('</select>'."\r\n");  
 	print('</td></tr>'."\r\n");
 
-        // Название команды
+        // РќР°Р·РІР°РЅРёРµ РєРѕРјР°РЅРґС‹
         print('<tr><td class = "input"><input type="text" name="TeamName" size="50" value="'.$TeamName.'" 
                                         tabindex = "'.(++$TabIndex).'" '.$OnClickText.' '.$DisabledText.' 
-                                        title = "Название команды"></td></tr>'."\r\n");
+                                        title = "РќР°Р·РІР°РЅРёРµ РєРѕРјР°РЅРґС‹"></td></tr>'."\r\n");
 
         print('<tr><td class = "input">'."\r\n");
 
-        // Использование GPS
+        // РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ GPS
         print('GPS <input type="checkbox" name="TeamUseGPS" '.(($TeamUseGPS == 1) ? 'checked="checked"' : '').'
                   tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
-  	           title = "Отметьте, если команда использует для ориентирования GPS"/> &nbsp; '."\r\n");
+  	           title = "РћС‚РјРµС‚СЊС‚Рµ, РµСЃР»Рё РєРѕРјР°РЅРґР° РёСЃРїРѕР»СЊР·СѓРµС‚ РґР»СЏ РѕСЂРёРµРЅС‚РёСЂРѕРІР°РЅРёСЏ GPS"/> &nbsp; '."\r\n");
 
 
-        // Число карт
-        print('  &nbsp;  Число карт <input type="text" name="TeamMapsCount" size="5" value="'.$TeamMapsCount.'" 
+        // Р§РёСЃР»Рѕ РєР°СЂС‚
+        print('  &nbsp;  Р§РёСЃР»Рѕ РєР°СЂС‚ <input type="text" name="TeamMapsCount" size="5" value="'.$TeamMapsCount.'" 
                                         tabindex = "'.(++$TabIndex).'" '.$OnClickText.' '.$DisabledText.' 
                                         title = "">  &nbsp;  '."\r\n");
 
 
-        // Нет сломанным унитазам!
-        print('  &nbsp; Нет сломанным унитазам! <input type="checkbox" name="TeamGreenPeace" '.(($TeamGreenPeace >= 1) ? 'checked="checked"' : '').'
+        // РќРµС‚ СЃР»РѕРјР°РЅРЅС‹Рј СѓРЅРёС‚Р°Р·Р°Рј!
+        print('  &nbsp; РќРµС‚ СЃР»РѕРјР°РЅРЅС‹Рј СѓРЅРёС‚Р°Р·Р°Рј! <input type="checkbox" name="TeamGreenPeace" '.(($TeamGreenPeace >= 1) ? 'checked="checked"' : '').'
                   tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
-  	           title = "Отметьте, если команда берёт повышенные экологические обязательства"/>'."\r\n");
+  	           title = "РћС‚РјРµС‚СЊС‚Рµ, РµСЃР»Рё РєРѕРјР°РЅРґР° Р±РµСЂС‘С‚ РїРѕРІС‹С€РµРЅРЅС‹Рµ СЌРєРѕР»РѕРіРёС‡РµСЃРєРёРµ РѕР±СЏР·Р°С‚РµР»СЊСЃС‚РІР°"/>'."\r\n");
 
         print('</td></tr>'."\r\n");
 
        
-        // Участники 
+        // РЈС‡Р°СЃС‚РЅРёРєРё 
 	print('<tr><td class = "input">'."\r\n");
-        //print('<div style = "margin-top: 20px; margin-bottom: 5px;">Участники:</div>'."\r\n");
+        //print('<div style = "margin-top: 20px; margin-bottom: 5px;">РЈС‡Р°СЃС‚РЅРёРєРё:</div>'."\r\n");
                  
                  
 		$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, tu.level_id, u.user_id 
@@ -392,25 +392,25 @@
                  //    echo 'eee'. $Row['teamuser_id'].','.$Row['level_id'];
 
 		  print('<div style = "margin-top: 5px;">'."\r\n");
-                  // Ссылку удалить ставим только в том случае, если работает модератор или участник команды
+                  // РЎСЃС‹Р»РєСѓ СѓРґР°Р»РёС‚СЊ СЃС‚Р°РІРёРј С‚РѕР»СЊРєРѕ РІ С‚РѕРј СЃР»СѓС‡Р°Рµ, РµСЃР»Рё СЂР°Р±РѕС‚Р°РµС‚ РјРѕРґРµСЂР°С‚РѕСЂ РёР»Рё СѓС‡Р°СЃС‚РЅРёРє РєРѕРјР°РЅРґС‹
                   if ($Moderator or $TeamUser) 
 		  {
-			  //print('<a style = "margin-left: 20px;" href = "javascript:if (confirm(\'Вы уверены, что хотите удалить участника: '.$Row['user_name'].' \')) {HideTeamUser('.c.');}">Удалить</a>'."\r\n");
+			  //print('<a style = "margin-left: 20px;" href = "javascript:if (confirm(\'Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ СѓС‡Р°СЃС‚РЅРёРєР°: '.$Row['user_name'].' \')) {HideTeamUser('.c.');}">РЈРґР°Р»РёС‚СЊ</a>'."\r\n");
 			  print('<input type = "button" style = "margin-right: 15px;" 
-                                  onClick = "javascript:if (confirm(\'Вы уверены, что хотите удалить участника: '.$Row['user_name'].'? \')) { HideTeamUser('.$Row['teamuser_id'].'); }" 
-                                  name = "HideTeamUserButton" tabindex = "'.(++$TabIndex).'" value = "Удалить">'."\r\n");
+                                  onClick = "javascript:if (confirm(\'Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ СѓС‡Р°СЃС‚РЅРёРєР°: '.$Row['user_name'].'? \')) { HideTeamUser('.$Row['teamuser_id'].'); }" 
+                                  name = "HideTeamUserButton" tabindex = "'.(++$TabIndex).'" value = "РЈРґР°Р»РёС‚СЊ">'."\r\n");
 
 
 		  }
 
-			  // Если текущая дата больше времени окончания регистрации - появляются поля схода
+			  // Р•СЃР»Рё С‚РµРєСѓС‰Р°СЏ РґР°С‚Р° Р±РѕР»СЊС€Рµ РІСЂРµРјРµРЅРё РѕРєРѕРЅС‡Р°РЅРёСЏ СЂРµРіРёСЃС‚СЂР°С†РёРё - РїРѕСЏРІР»СЏСЋС‚СЃСЏ РїРѕР»СЏ СЃС…РѕРґР°
 			  if ($viewmode<>"Add" and $RaidShowResultField == 1)
 			  {
 
-			    // Список этапов, чтобы выбрать, на каком сошёл участник
-			    print('Сход: <select name="UserOut'.$Row['teamuser_id'].'" style = "margin-right: 15px;"
-                                    title = "Этап, на котором сошёл участник"
-                                    onChange = "javascript:if (confirm(\'Вы уверены, что хотите отметить сход участника: '.$Row['user_name'].'? \')) { TeamUserOut('.$Row['teamuser_id'].', this.value); }" 
+			    // РЎРїРёСЃРѕРє СЌС‚Р°РїРѕРІ, С‡С‚РѕР±С‹ РІС‹Р±СЂР°С‚СЊ, РЅР° РєР°РєРѕРј СЃРѕС€С‘Р» СѓС‡Р°СЃС‚РЅРёРє
+			    print('РЎС…РѕРґ: <select name="UserOut'.$Row['teamuser_id'].'" style = "margin-right: 15px;"
+                                    title = "Р­С‚Р°Рї, РЅР° РєРѕС‚РѕСЂРѕРј СЃРѕС€С‘Р» СѓС‡Р°СЃС‚РЅРёРє"
+                                    onChange = "javascript:if (confirm(\'Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ РѕС‚РјРµС‚РёС‚СЊ СЃС…РѕРґ СѓС‡Р°СЃС‚РЅРёРєР°: '.$Row['user_name'].'? \')) { TeamUserOut('.$Row['teamuser_id'].', this.value); }" 
                                     tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
                      
 
@@ -430,9 +430,9 @@
 			    print('</select>'."\r\n");  
                          
                           }
-                          // Конец проверки на текущее время
+                          // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё РЅР° С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ
 
-                 // Конец проверки на правку (дополнительные кнопки Удалить, Этапы
+                 // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё РЅР° РїСЂР°РІРєСѓ (РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РєРЅРѕРїРєРё РЈРґР°Р»РёС‚СЊ, Р­С‚Р°РїС‹
 		  print('<a href = "javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a> '.$Row['user_birthyear']."\r\n");
 		  print('</div>'."\r\n");
 		}
@@ -446,12 +446,12 @@
 
 	  if ($viewmode == "Add" and  !$Moderator)
 	  {
-            // Новая команда и заводит не модератор
+            // РќРѕРІР°СЏ РєРѕРјР°РЅРґР° Рё Р·Р°РІРѕРґРёС‚ РЅРµ РјРѕРґРµСЂР°С‚РѕСЂ
 	     print($UserEmail.'<input type="hidden" name="NewTeamUserEmail" size="50" value="'.$UserEmail.'" >'."\r\n");
           } else {
-	     print('<input type="text" name="NewTeamUserEmail" size="50" value="Email нового участника"
+	     print('<input type="text" name="NewTeamUserEmail" size="50" value="Email РЅРѕРІРѕРіРѕ СѓС‡Р°СЃС‚РЅРёРєР°"
                       tabindex = "'.(++$TabIndex).'" onClick = "javascript:this.value = \'\';"
-                      title = "Укажите e-mail пользователя, которого Вы хотите добавить в команду. Пользователь может запретить добавлять себя в команду в настройках своей учетной записи.">'."\r\n");
+                      title = "РЈРєР°Р¶РёС‚Рµ e-mail РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РєРѕС‚РѕСЂРѕРіРѕ Р’С‹ С…РѕС‚РёС‚Рµ РґРѕР±Р°РІРёС‚СЊ РІ РєРѕРјР°РЅРґСѓ. РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РјРѕР¶РµС‚ Р·Р°РїСЂРµС‚РёС‚СЊ РґРѕР±Р°РІР»СЏС‚СЊ СЃРµР±СЏ РІ РєРѕРјР°РЅРґСѓ РІ РЅР°СЃС‚СЂРѕР№РєР°С… СЃРІРѕРµР№ СѓС‡РµС‚РЅРѕР№ Р·Р°РїРёСЃРё.">'."\r\n");
           }
 
 	  print('</td></tr>'."\r\n"); 
@@ -461,11 +461,11 @@
        {
 
 
-          // Список этапов, чтобы выбрать, на какой команда не вышла (по умолчанию считается, что вышла на всё)
-      	  print('<tr><td style = "padding-top: 10px; font-size: 80%;"><b>Результаты:</b></td></tr>'."\r\n");
-         print('<tr><td class = "input">Не вышла на этап: &nbsp; '."\r\n");
+          // РЎРїРёСЃРѕРє СЌС‚Р°РїРѕРІ, С‡С‚РѕР±С‹ РІС‹Р±СЂР°С‚СЊ, РЅР° РєР°РєРѕР№ РєРѕРјР°РЅРґР° РЅРµ РІС‹С€Р»Р° (РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ СЃС‡РёС‚Р°РµС‚СЃСЏ, С‡С‚Рѕ РІС‹С€Р»Р° РЅР° РІСЃС‘)
+      	  print('<tr><td style = "padding-top: 10px; font-size: 80%;"><b>Р РµР·СѓР»СЊС‚Р°С‚С‹:</b></td></tr>'."\r\n");
+         print('<tr><td class = "input">РќРµ РІС‹С€Р»Р° РЅР° СЌС‚Р°Рї: &nbsp; '."\r\n");
 	    print('<select name="TeamNotOnLevelId"  style = "margin-left: 10px;margin-right: 10px;" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
-                     title = "Будьте аккуратны: изменение этого поля влияет на число отображаемых ниже этапов для ввода данных.">'."\r\n"); 
+                     title = "Р‘СѓРґСЊС‚Рµ Р°РєРєСѓСЂР°С‚РЅС‹: РёР·РјРµРЅРµРЅРёРµ СЌС‚РѕРіРѕ РїРѕР»СЏ РІР»РёСЏРµС‚ РЅР° С‡РёСЃР»Рѕ РѕС‚РѕР±СЂР°Р¶Р°РµРјС‹С… РЅРёР¶Рµ СЌС‚Р°РїРѕРІ РґР»СЏ РІРІРѕРґР° РґР°РЅРЅС‹С….">'."\r\n"); 
 	    $sql = "select level_id, level_name from  Levels where distance_id = ".$DistanceId." order by level_order"; 
 	    //echo 'sql '.$sql;
 	    $Result = MySqlQuery($sql);
@@ -480,17 +480,17 @@
 	    }
 	    mysql_free_result($Result);
 	    print('</select>'."\r\n");  
-          print(' &nbsp; Общее время: '.$TeamResult.'</td></tr>'."\r\n");
+          print(' &nbsp; РћР±С‰РµРµ РІСЂРµРјСЏ: '.$TeamResult.'</td></tr>'."\r\n");
 
 
 
-	  print('<tr><td class = "input"> Подтверждение:  &nbsp; '."\r\n");
+	  print('<tr><td class = "input"> РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ:  &nbsp; '."\r\n");
 
-	  // Подтверждение правильности результатов командой
-	  print(' команды
+	  // РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ РєРѕРјР°РЅРґРѕР№
+	  print(' РєРѕРјР°РЅРґС‹
              <input type="checkbox" name="TeamConfirmResult" '.(($TeamConfirmResult == 1) ? 'checked="checked"' : '').'
                   tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
-  	           title = "Заполняется после ввода результатов. Отметьте, если команда проверила все данные и согласна с ними"/>  &nbsp; '."\r\n");
+  	           title = "Р—Р°РїРѕР»РЅСЏРµС‚СЃСЏ РїРѕСЃР»Рµ РІРІРѕРґР° СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ. РћС‚РјРµС‚СЊС‚Рµ, РµСЃР»Рё РєРѕРјР°РЅРґР° РїСЂРѕРІРµСЂРёР»Р° РІСЃРµ РґР°РЅРЅС‹Рµ Рё СЃРѕРіР»Р°СЃРЅР° СЃ РЅРёРјРё"/>  &nbsp; '."\r\n");
 
 	  if ($Moderator)
 	  {
@@ -498,11 +498,11 @@
 	  } else {
 	    $ModeratorConfirmResultDisabledText = 'disabled';
           }
-	  // Подтверждение правильности результатов модератором
-	  print(' модератора
+	  // РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ РјРѕРґРµСЂР°С‚РѕСЂРѕРј
+	  print(' РјРѕРґРµСЂР°С‚РѕСЂР°
 		<input type="checkbox" name="ModeratorConfirmResult" '.(($ModeratorConfirmResult == 1) ? 'checked="checked"' : '').'
 		    tabindex = "'.(++$TabIndex).'" '.$ModeratorConfirmResultDisabledText.'
-		    title = "Заполняется модератором после проверки результатов."/>'."\r\n");
+		    title = "Р—Р°РїРѕР»РЅСЏРµС‚СЃСЏ РјРѕРґРµСЂР°С‚РѕСЂРѕРј РїРѕСЃР»Рµ РїСЂРѕРІРµСЂРєРё СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ."/>'."\r\n");
 	 
 
           print('</td></tr>'."\r\n");
@@ -518,10 +518,10 @@
                    name="RegisterButton" value="'.$SaveButtonText.'" tabindex = "'.(++$TabIndex).'">'."\r\n");
           print('<select name="CaseView" onChange = "javascript:document.TeamDataForm.view.value = document.TeamDataForm.CaseView.value;"  
                     class = "leftmargin" tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-	  print('<option value = "ViewTeamData"  '.(($viewmode <> "Add") ? 'selected' : '').'>и остаться на этой странице'."\r\n"); 
-	  print('<option value = "ViewRaidTeams"  '.(($viewmode == "Add") ? 'selected' : '').'>и перейти к списку команд'."\r\n"); 
+	  print('<option value = "ViewTeamData"  '.(($viewmode <> "Add") ? 'selected' : '').'>Рё РѕСЃС‚Р°С‚СЊСЃСЏ РЅР° СЌС‚РѕР№ СЃС‚СЂР°РЅРёС†Рµ'."\r\n"); 
+	  print('<option value = "ViewRaidTeams"  '.(($viewmode == "Add") ? 'selected' : '').'>Рё РїРµСЂРµР№С‚Рё Рє СЃРїРёСЃРєСѓ РєРѕРјР°РЅРґ'."\r\n"); 
 	  print('</select>'."\r\n"); 
-          print('<input type="button" onClick = "javascript: Cancel();"  name="CancelButton" value="Отмена"
+          print('<input type="button" onClick = "javascript: Cancel();"  name="CancelButton" value="РћС‚РјРµРЅР°"
                      tabindex = "'.(++$TabIndex).'">'."\r\n"); 
 
 	

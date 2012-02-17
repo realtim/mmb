@@ -2,25 +2,25 @@
 
 <script language = "JavaScript">
 
-        // Функция проверки правильности заполнения формы
+        // Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё Р·Р°РїРѕР»РЅРµРЅРёСЏ С„РѕСЂРјС‹
 	function ValidateUserLoginForm()
 	{ 
 		if (document.UserLoginForm.Login.value == '') 
 		{
-			alert('Не указан e-mail.');           
+			alert('РќРµ СѓРєР°Р·Р°РЅ e-mail.');           
 			return false;
 		} 
 
 		if (!CheckEmail(document.UserLoginForm.Login.value)) 
 		{
-			alert('E-mail не проходит проверку формата.');           
+			alert('E-mail РЅРµ РїСЂРѕС…РѕРґРёС‚ РїСЂРѕРІРµСЂРєСѓ С„РѕСЂРјР°С‚Р°.');           
 			return false;
 		} 
 		
 
 		if (document.UserLoginForm.Password.value == '') 
 		{
-			alert('Не указан пароль.');           
+			alert('РќРµ СѓРєР°Р·Р°РЅ РїР°СЂРѕР»СЊ.');           
 			return false;
 		} 
 
@@ -28,7 +28,7 @@
 
 		return true;
 	}
-        // Конец проверки правильности заполнения формы
+        // РљРѕРЅРµС† РїСЂРѕРІРµСЂРєРё РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё Р·Р°РїРѕР»РЅРµРЅРёСЏ С„РѕСЂРјС‹
 
 	
 	function UserLogout()
@@ -44,8 +44,8 @@
 		document.UserLoginForm.submit();
 	}
 
-        // Одинаковые действия при  регистрации поьзователя и обновленииданных.
-	// Не уверен, что правильно так
+        // РћРґРёРЅР°РєРѕРІС‹Рµ РґРµР№СЃС‚РІРёСЏ РїСЂРё  СЂРµРіРёСЃС‚СЂР°С†РёРё РїРѕСЊР·РѕРІР°С‚РµР»СЏ Рё РѕР±РЅРѕРІР»РµРЅРёРёРґР°РЅРЅС‹С….
+	// РќРµ СѓРІРµСЂРµРЅ, С‡С‚Рѕ РїСЂР°РІРёР»СЊРЅРѕ С‚Р°Рє
 	function NewUser()
 	{ 
 		document.UserLoginForm.action.value = "ViewNewUserForm";
@@ -53,7 +53,7 @@
 	}
 
 
-	// Функция отправки письма
+	// Р¤СѓРЅРєС†РёСЏ РѕС‚РїСЂР°РІРєРё РїРёСЃСЊРјР°
 	function RestorePassword()
 	{ 
 		document.UserLoginForm.action.value = "RestorePasswordRequest";
@@ -61,11 +61,11 @@
 	}
 
 
-	// Функция проверки e-mail
+	// Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё e-mail
 	function CheckEmail(email) 
 	{
 		var template = /^[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z])+$/;
-//		email = drop_spaces(email); //функцию drop_spaces() см. выше
+//		email = drop_spaces(email); //С„СѓРЅРєС†РёСЋ drop_spaces() СЃРј. РІС‹С€Рµ
 		if (template.test(email)) 
 		{
 		        return true;
@@ -104,8 +104,8 @@
 	 
 	 $UserId = GetSession($SessionId);
 	 
-//        echo "Пользователь: ".$UserId.", сессия: ".$SessionId;
-        // какое выводить меню
+//        echo "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ: ".$UserId.", СЃРµСЃСЃРёСЏ: ".$SessionId;
+        // РєР°РєРѕРµ РІС‹РІРѕРґРёС‚СЊ РјРµРЅСЋ
 	if ($UserId <= 0)
 	{
 		print('<form  name = "UserLoginForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "return ValidateUserLoginForm();">'."\r\n");
@@ -118,9 +118,9 @@
 		       onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\'E-mail\';}"
                        ></td></tr>'."\r\n"); 
 		print('<tr><td class = "input"><input type="password" name="Password"  style = "width:101px;" size="10" value="" tabindex = "102">
-                            <input type="submit" name="RegisterButton" value="Вход" tabindex = "103"  style = "margin-left: 25px; width: 55px;"></td></tr>'."\r\n"); 
-		print('<tr><td><a href = "javascript:RestorePassword();"  title = "Будет выслан запрос о сменен пароля на указанный выше e-mail">Забыли пароль?</a></td></tr>'."\r\n"); 
-		print('<tr><td><a href = "javascript:NewUser();"  title = "Переход к форме регистрации нового пользователя">Новый пользователь</a></td></tr>'."\r\n"); 
+                            <input type="submit" name="RegisterButton" value="Р’С…РѕРґ" tabindex = "103"  style = "margin-left: 25px; width: 55px;"></td></tr>'."\r\n"); 
+		print('<tr><td><a href = "javascript:RestorePassword();"  title = "Р‘СѓРґРµС‚ РІС‹СЃР»Р°РЅ Р·Р°РїСЂРѕСЃ Рѕ СЃРјРµРЅРµРЅ РїР°СЂРѕР»СЏ РЅР° СѓРєР°Р·Р°РЅРЅС‹Р№ РІС‹С€Рµ e-mail">Р—Р°Р±С‹Р»Рё РїР°СЂРѕР»СЊ?</a></td></tr>'."\r\n"); 
+		print('<tr><td><a href = "javascript:NewUser();"  title = "РџРµСЂРµС…РѕРґ Рє С„РѕСЂРјРµ СЂРµРіРёСЃС‚СЂР°С†РёРё РЅРѕРІРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ">РќРѕРІС‹Р№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ</a></td></tr>'."\r\n"); 
 		print('</table>'."\r\n");
 		print('</form>'."\r\n");
 	} else {
@@ -134,8 +134,8 @@
                 print('<input type = "hidden" name = "UserId" value = "">'."\r\n"); 
 		print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
 		print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
-		print('<tr><td><a href = "javascript:ViewUserInfo('.$UserId.');"  title = "Переход к Вашей карточке пользователя">'.$UserName.'</a></tr>'."\r\n"); 
-		print('<tr><td><a href = "javascript:UserLogout();" style = "font-size: 80%;">Выход</a></td></tr>'."\r\n"); 
+		print('<tr><td><a href = "javascript:ViewUserInfo('.$UserId.');"  title = "РџРµСЂРµС…РѕРґ Рє Р’Р°С€РµР№ РєР°СЂС‚РѕС‡РєРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ">'.$UserName.'</a></tr>'."\r\n"); 
+		print('<tr><td><a href = "javascript:UserLogout();" style = "font-size: 80%;">Р’С‹С…РѕРґ</a></td></tr>'."\r\n"); 
 		print('</table>'."\r\n");
 		print('</form>'."\n");
 	}
@@ -148,18 +148,18 @@
 <script language = "JavaScript">
 
 
-	        // Функция проверки правильности заполнения формы
+	        // Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё РїСЂР°РІРёР»СЊРЅРѕСЃС‚Рё Р·Р°РїРѕР»РЅРµРЅРёСЏ С„РѕСЂРјС‹
 	function ValidateFindTeamForm()
 	{ 
 		if (document.FindTeamForm.TeamNum.value == '') 
 		{
-			alert('Не указан номер команды.');           
+			alert('РќРµ СѓРєР°Р·Р°РЅ РЅРѕРјРµСЂ РєРѕРјР°РЅРґС‹.');           
 			return false;
 		} 
 
 		if (document.FindTeamForm.RaidId.value <= 0) 
 		{
-			alert('Не выбран ММБ.');           
+			alert('РќРµ РІС‹Р±СЂР°РЅ РњРњР‘.');           
 			return false;
 		} 
 
@@ -209,7 +209,7 @@
 
 <?
 	
-	// выводим окно для поиска команды 
+	// РІС‹РІРѕРґРёРј РѕРєРЅРѕ РґР»СЏ РїРѕРёСЃРєР° РєРѕРјР°РЅРґС‹ 
 	print('<form  name = "FindTeamForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "return ValidateFindTeamForm();">'."\r\n");
 
 	if ($UserId > 0)
@@ -219,8 +219,8 @@
 	print('<input type = "hidden" name = "action" value = "FindTeam">'."\r\n"); 
 	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
-	print('<tr><td class = "input">ММБ'."\r\n"); 
-	print('<select name="RaidId"  style = "width: 141px; margin-left: 5px;" tabindex = "201"  title = "Список марш-бросков">'."\r\n"); 
+	print('<tr><td class = "input">РњРњР‘'."\r\n"); 
+	print('<select name="RaidId"  style = "width: 141px; margin-left: 5px;" tabindex = "201"  title = "РЎРїРёСЃРѕРє РјР°СЂС€-Р±СЂРѕСЃРєРѕРІ">'."\r\n"); 
 
                 $Result = MySqlQuery('select raid_id, raid_name from  Raids where raid_registrationenddate is not null order by 1 desc');
 
@@ -234,18 +234,18 @@
 	print('</td></tr>'."\r\n");
 	if ($UserId > 0)
 	{
-		print('<tr><td><a href = "javascript:NewTeam();" title = "Переход к форме регистрации новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n"); 
+		print('<tr><td><a href = "javascript:NewTeam();" title = "РџРµСЂРµС…РѕРґ Рє С„РѕСЂРјРµ СЂРµРіРёСЃС‚СЂР°С†РёРё РЅРѕРІРѕР№ РєРѕРјР°РЅРґС‹ РЅР° РІС‹Р±СЂР°РЅРЅС‹Р№ РІС‹С€Рµ РњРњР‘">РќРѕРІР°СЏ РєРѕРјР°РЅРґР°</a></td></tr>'."\r\n"); 
 	}
-	print('<tr><td><a href = "javascript:RaidTeams();" title = "Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n"); 
-        //print('<tr><td class = "input">Поиск:</td></tr>'."\r\n"); 
-	print('<tr><td style = "padding-top: 15px;"><input  type="text" name="TeamNum" style = "width: 125px;" value="Номер команды" tabindex = "206"  title = "Будет выведена карточка команды с указанным номером для выбранного выше ММБ"
-                       onclick = "javascript: if (trimBoth(this.value) == \'Номер команды\') {this.value=\'\';}"
-		       onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\'Номер команды\';}"
+	print('<tr><td><a href = "javascript:RaidTeams();" title = "РЎРїРёСЃРѕРє РєРѕРјР°РЅРґ РґР»СЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РІС‹С€Рµ РњРњР‘">РљРѕРјР°РЅРґС‹</a></td></tr>'."\r\n"); 
+        //print('<tr><td class = "input">РџРѕРёСЃРє:</td></tr>'."\r\n"); 
+	print('<tr><td style = "padding-top: 15px;"><input  type="text" name="TeamNum" style = "width: 125px;" value="РќРѕРјРµСЂ РєРѕРјР°РЅРґС‹" tabindex = "206"  title = "Р‘СѓРґРµС‚ РІС‹РІРµРґРµРЅР° РєР°СЂС‚РѕС‡РєР° РєРѕРјР°РЅРґС‹ СЃ СѓРєР°Р·Р°РЅРЅС‹Рј РЅРѕРјРµСЂРѕРј РґР»СЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РІС‹С€Рµ РњРњР‘"
+                       onclick = "javascript: if (trimBoth(this.value) == \'РќРѕРјРµСЂ РєРѕРјР°РЅРґС‹\') {this.value=\'\';}"
+		       onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\'РќРѕРјРµСЂ РєРѕРјР°РЅРґС‹\';}"
                  > 
-	       <input type="submit"  name="FindButton" value="Найти"   style = "width: 55px; margin-left: 5px;" tabindex = "207"></td></tr>'."\r\n"); 
+	       <input type="submit"  name="FindButton" value="РќР°Р№С‚Рё"   style = "width: 55px; margin-left: 5px;" tabindex = "207"></td></tr>'."\r\n"); 
 	print('</table>'."\r\n");
 	print('</form>'."\r\n");
-	// Поиск участника
+	// РџРѕРёСЃРє СѓС‡Р°СЃС‚РЅРёРєР°
 	print('<form  name = "FindUserForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "return ValidateFindUserForm();">'."\r\n");
 	if ($UserId > 0)
 	{
@@ -254,18 +254,18 @@
 	print('<input type = "hidden" name = "action" value = "FindUser">'."\r\n"); 
 	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
-	//print('<tr><td class = "input">Поиск пользователя</td></tr>'."\r\n"); 
-	print('<tr><td class = "input"><input  type="text" name="FindString" style = "width:125px;" value="Часть ФИО" tabindex = "301" 
-	       title = "Будет выведен список пользователей, чьи ФИО содержат указанный текст. Для вывода всех наберите: все-все (можно и все-все-все)."
-                       onclick = "javascript: if (trimBoth(this.value) == \'Часть ФИО\') {this.value=\'\';}"
-		       onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\'Часть ФИО\';}"
+	//print('<tr><td class = "input">РџРѕРёСЃРє РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ</td></tr>'."\r\n"); 
+	print('<tr><td class = "input"><input  type="text" name="FindString" style = "width:125px;" value="Р§Р°СЃС‚СЊ Р¤РРћ" tabindex = "301" 
+	       title = "Р‘СѓРґРµС‚ РІС‹РІРµРґРµРЅ СЃРїРёСЃРѕРє РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№, С‡СЊРё Р¤РРћ СЃРѕРґРµСЂР¶Р°С‚ СѓРєР°Р·Р°РЅРЅС‹Р№ С‚РµРєСЃС‚. Р”Р»СЏ РІС‹РІРѕРґР° РІСЃРµС… РЅР°Р±РµСЂРёС‚Рµ: РІСЃРµ-РІСЃРµ (РјРѕР¶РЅРѕ Рё РІСЃРµ-РІСЃРµ-РІСЃРµ)."
+                       onclick = "javascript: if (trimBoth(this.value) == \'Р§Р°СЃС‚СЊ Р¤РРћ\') {this.value=\'\';}"
+		       onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\'Р§Р°СЃС‚СЊ Р¤РРћ\';}"
 		>
-	       <input type="submit"  name="FindButton" value="Найти" style = "width: 55px; margin-left: 5px;"  tabindex = "302"></td></tr>'."\r\n"); 
+	       <input type="submit"  name="FindButton" value="РќР°Р№С‚Рё" style = "width: 55px; margin-left: 5px;"  tabindex = "302"></td></tr>'."\r\n"); 
 	print('</table>'."\r\n");
 	print('</form>'."\r\n");
 	print('</br>'."\r\n");
 
-       // Форма сервисов администратора
+       // Р¤РѕСЂРјР° СЃРµСЂРІРёСЃРѕРІ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°
         if (CheckAdmin($SessionId) == 1) 
 	{
 	  print('<form  name = "AdminServiceForm"  action = "'.$MyPHPScript.'" method = "post" onsubmit = "return true;">'."\r\n");
@@ -275,14 +275,14 @@
 	  print('<input type = "hidden" name = "RaidId" value = "0">'."\r\n");
 
 
-          //  показываем кнопку "Пересчёт результатов" 
-          print('<input type="button" style = "width:185px;" name="RecalcRaidResultsButton" value="Пересчитать результаты" 
+          //  РїРѕРєР°Р·С‹РІР°РµРј РєРЅРѕРїРєСѓ "РџРµСЂРµСЃС‡С‘С‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ" 
+          print('<input type="button" style = "width:185px;" name="RecalcRaidResultsButton" value="РџРµСЂРµСЃС‡РёС‚Р°С‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚С‹" 
                           onclick = "javascript: RecalcRaidResults();"
                           tabindex = "401">'."\r\n"); 
 	  print('</br>'."\r\n");
 
-          //  показываем кнопку "Очистить таблицы" 
-	  print('<input type="button" style = "width:185px; margin-top:10px;" name="ClearTablesButton" value="Очистить таблицы" 
+          //  РїРѕРєР°Р·С‹РІР°РµРј РєРЅРѕРїРєСѓ "РћС‡РёСЃС‚РёС‚СЊ С‚Р°Р±Р»РёС†С‹" 
+	  print('<input type="button" style = "width:185px; margin-top:10px;" name="ClearTablesButton" value="РћС‡РёСЃС‚РёС‚СЊ С‚Р°Р±Р»РёС†С‹" 
                           onclick = "ClearTables();"
                           tabindex = "402">'."\r\n"); 
 
@@ -291,23 +291,23 @@
 
 	} 
 		
-	// Внешние сылки
+	// Р’РЅРµС€РЅРёРµ СЃС‹Р»РєРё
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
-	print('<tr><td><a href="http://www.livejournal.com/community/_mmb_" target = "_blank">ЖЖ</a></td></tr>'."\r\n"); 
-	print('<tr><td><a href="http://slazav.mccme.ru/maps/" target = "_blank">Карты</a></td></tr>'."\r\n"); 
-	print('<tr><td><a href="http://mmb.progressor.ru/vp.html" target = "_blank">Впечатления</a></td></tr>'."\r\n"); 
-	print('<tr><td><a href="http://mmb.progressor.ru/icons.html" target = "_blank">Значки</a></td></tr>'."\r\n"); 
-	print('<tr><td> <a href="http://slazav.mccme.ru/mmb/ludir.htm" target = "_blank">Рейтинг</a></td></tr>'."\r\n"); 
-	print('<tr><td><a href="http://slazav.mccme.ru/mmb/ludi.htm" target = "_blank">Участники</a></td></tr>'."\r\n"); 
+	print('<tr><td><a href="http://www.livejournal.com/community/_mmb_" target = "_blank">Р–Р–</a></td></tr>'."\r\n"); 
+	print('<tr><td><a href="http://slazav.mccme.ru/maps/" target = "_blank">РљР°СЂС‚С‹</a></td></tr>'."\r\n"); 
+	print('<tr><td><a href="http://mmb.progressor.ru/vp.html" target = "_blank">Р’РїРµС‡Р°С‚Р»РµРЅРёСЏ</a></td></tr>'."\r\n"); 
+	print('<tr><td><a href="http://mmb.progressor.ru/icons.html" target = "_blank">Р—РЅР°С‡РєРё</a></td></tr>'."\r\n"); 
+	print('<tr><td> <a href="http://slazav.mccme.ru/mmb/ludir.htm" target = "_blank">Р РµР№С‚РёРЅРі</a></td></tr>'."\r\n"); 
+	print('<tr><td><a href="http://slazav.mccme.ru/mmb/ludi.htm" target = "_blank">РЈС‡Р°СЃС‚РЅРёРєРё</a></td></tr>'."\r\n"); 
 	print('</table>'."\r\n");
 
 	print('</br>'."\r\n");
 
-        // Почта
+        // РџРѕС‡С‚Р°
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
-	print('<tr><td><a style = "font-family: Times New Roman, Serif; font-size: 100%;" href="javascript: ShowEmail();" title = "Адрес латинскими буквами, как в названии сайта">ммб@прогрессор.ру</a> <small>(en)</small></td></tr>'."\r\n");
-        print('<tr><td><a href="https://github.com/realtim/mmb/wiki/%D0%A1%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F-%D0%BE-%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%B5-%D0%9C%D0%9C%D0%91"  target = "_blank">О сервисе</a>, 
-                       <a href="https://github.com/realtim/mmb/wiki/%D0%90%D0%B2%D1%82%D0%BE%D1%80%D1%8B" target = "_blank">Авторы</a>
+	print('<tr><td><a style = "font-family: Times New Roman, Serif; font-size: 100%;" href="javascript: ShowEmail();" title = "РђРґСЂРµСЃ Р»Р°С‚РёРЅСЃРєРёРјРё Р±СѓРєРІР°РјРё, РєР°Рє РІ РЅР°Р·РІР°РЅРёРё СЃР°Р№С‚Р°">РјРјР±@РїСЂРѕРіСЂРµСЃСЃРѕСЂ.СЂСѓ</a> <small>(en)</small></td></tr>'."\r\n");
+        print('<tr><td><a href="https://github.com/realtim/mmb/wiki/%D0%A1%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F-%D0%BE-%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%B5-%D0%9C%D0%9C%D0%91"  target = "_blank">Рћ СЃРµСЂРІРёСЃРµ</a>, 
+                       <a href="https://github.com/realtim/mmb/wiki/%D0%90%D0%B2%D1%82%D0%BE%D1%80%D1%8B" target = "_blank">РђРІС‚РѕСЂС‹</a>
                </td></tr>'."\r\n"); 
 	print('</table>'."\r\n");
 
