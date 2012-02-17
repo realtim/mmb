@@ -1,7 +1,7 @@
 <?php
 
 // функция преобразования вывода данных
-  function ConvertTeamLevelPointsToHTML ($LevelPointNames,$LevelPointPenalties,$TeamLevelPoints,$LevelId) {
+  function ConvertTeamLevelPointsToHTML ($LevelPointNames,$LevelPointPenalties,$TeamLevelPoints,$LevelId, $DisabledResultText) {
 	
 	  
 	  
@@ -34,7 +34,7 @@
 
         print('<table style = "text-align: center; font-size: 100%; border-style: solid; border-width: 1px; border-color: #000000;">'."\r\n");
 	print('<tr>'."\r\n");
-	print('<td align = "left">Не взяты: &nbsp; </td>'."\r\n");
+	print('<td align = "left">Взяты: &nbsp; </td>'."\r\n");
 	print('<td style = "border-left-style: solid; border-left-width: 1px; border-left-color: #000000;">'."\r\n");
 
         // Проверяем, что не отмечены все checkbox
@@ -47,7 +47,7 @@
               $AllChecked = '';
         }
         // Прописываем javascript, который ставит или сбрасывает все checkbox-ы
-        print('Все</br><input type = "checkbox" name = "chkall" '.$AllChecked.' OnClick = "javascript:'."\r\n");
+        print('Все</br><input type = "checkbox" name = "chkall" '.$AllChecked.' '.$DisabledResultText.' OnClick = "javascript:'."\r\n");
 		
         for ($i = 0; $i < count($Names); $i++)
         {
@@ -62,7 +62,7 @@
 		//print('<td>'.$Names[$i].'</br>('.$Penalties[$i].')'."\r\n");
                 print('<td style = "border-left-style: solid; border-left-width: 1px; border-left-color: #000000;">'.$Names[$i]."\r\n");
                 $Checked =  ($TeamPoints[$i] == 1) ? 'checked' : '';
-                print('</br><input type = "checkbox" name = "Level'.$LevelId.'_chk'.$i.'"  '. $Checked.' OnClick = "">'."\r\n");
+                print('</br><input type = "checkbox" name = "Level'.$LevelId.'_chk'.$i.'"  '. $Checked.'  '.$DisabledResultText.' OnClick = "">'."\r\n");
                 print('</br>'.$Penalties[$i]."\r\n");
 		print('</td>'."\r\n");
 	}
@@ -438,7 +438,7 @@
             
               // Следующая  строка - невзятые КП
              print('<tr><td colspan = "6"  style = "padding-top: 0px; border-bottom-style: dotted; border-bottom-width: 1px; border-bottom-color: #000000;">'."\r\n");
-	     ConvertTeamLevelPointsToHTML($Row['level_pointnames'], $Row['level_pointpenalties'], $Row['teamlevel_points'], $Row['level_id']);
+	     ConvertTeamLevelPointsToHTML($Row['level_pointnames'], $Row['level_pointpenalties'], $Row['teamlevel_points'], $Row['level_id'], $DisabledResultText);
              print('</td></tr>'."\r\n"); 
 
               //$TabIndex = $TabIndex + 5
