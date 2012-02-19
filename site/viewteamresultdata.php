@@ -227,13 +227,13 @@
 
      print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<tr class = "gray">'."\r\n");  
-		print('<td width = "100">Этап</td>'."\r\n");  
-		print('<td width = "250">Параметры старта/финиша</td>'."\r\n");  
-		print('<td width = "90">Старт</td>'."\r\n");  
-		print('<td width = "90">Финиш</td>'."\r\n");  
-		print('<td width = "50">Штраф</td>'."\r\n");  
+		print('<td width = "200">Этап</td>'."\r\n");  
+		print('<td width = "350">Параметры старта/финиша</td>'."\r\n");  
+		print('<td width = "100">Старт</td>'."\r\n");  
+		print('<td width = "100">Финиш</td>'."\r\n");  
+		print('<td width = "60">Штраф</td>'."\r\n");  
 	//	print('<td width = "200">Невзятые КП</td>'."\r\n");  
-		print('<td width = "150">Комменатрий</td>'."\r\n");  
+		print('<td width = "150">Комментарий</td>'."\r\n");  
 	
 
   //$TabIndex = 0;
