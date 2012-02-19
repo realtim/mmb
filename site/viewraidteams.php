@@ -209,8 +209,8 @@
 
 		print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<tr class = "gray">'."\r\n");  
-		print('<td width = "70">Дистанция</td>'."\r\n");  
-		print('<td width = "200">Этап (по ссылкам - карты)</td>'."\r\n");  
+		print('<td width = "100">Дистанция</td>'."\r\n");  
+		print('<td width = "300">Этап (по ссылкам - карты)</td>'."\r\n");  
 		print('<td width = "400">Тип старта (границы по времени)'."\r\n");  
 		print('<td width = "70">Число КП'."\r\n");  
 		print('</tr>'."\r\n");  
