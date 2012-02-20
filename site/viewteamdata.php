@@ -98,7 +98,11 @@
 		               t.team_mapscount, d.raid_id, t.team_registerdt, 
 			       t.team_confirmresult, t.team_moderatorconfirmresult,
                                t.team_greenpeace, t.level_id,
-                               TIME_FORMAT(t.team_result, '%H:%i') as team_result 
+                               TIME_FORMAT(t.team_result, '%H:%i') as team_result,
+			       CASE WHEN t.team_registerdt >= r.raid_registrationenddate
+                                    THEN 1
+                                    ELSE 0
+                                END as team_late
 		        from  Teams t
 			      inner join  Distances d on t.distance_id = d.distance_id
 			      inner join  Raids r on d.raid_id = r.raid_id
@@ -112,7 +116,7 @@
 		  $RaidId = $Row['raid_id'];
 		  $TeamRegisterDt = $Row['team_registerdt'];
                   $TeamResult = $Row['team_result'];
-
+                  $TeamLate = (int)$Row['team_late'];
 
 		// Если вернулись после ошибки переменные не нужно инициализировать
 		if ($viewsubmode == "ReturnAfterError") 
@@ -289,7 +293,10 @@
   //print('<table  style = "font-size: 80%; padding-right: 20px; border-right-style: solid; border-right-width: 1px; border-right-color: #000000;" border = "0" cellpadding = "5" cellspacing = "0">'."\r\n");
  print('<table  style = "font-size: 80%;" border = "0" cellpadding = "2" cellspacing = "0">'."\r\n");
 
+
+
         $TabIndex = 0;
+        print('<tr><td class = "input">'."\r\n");
 
          // Номер команды
 	 if ($viewmode=="Add")
@@ -298,58 +305,76 @@
              // Если старый ММБ - открываем редактирование номера, иначе номер не передаём
              if ($OldMmb == 1)
              {
-                print('<tr><td class = "input">Команда N <input type="text" name="TeamNum" size="10" 
+                print('Команда N <input type="text" name="TeamNum" size="10" 
                          value="0" tabindex = "'.(++$TabIndex).'" 
-                         title = "Для прошлых ММБ укажите номер команды"></td></tr>'."\r\n");
+                         title = "Для прошлых ММБ укажите номер команды">'."\r\n");
               } else {
-		print('<tr><td class = "input"><b>Новая команда!</b>
-                            <input type="hidden" name="TeamNum" value="0"></td></tr>'."\r\n");
+		print('<b>Новая команда!</b>
+                            <input type="hidden" name="TeamNum" value="0">'."\r\n");
               } 
 
          } else {
               // Уже существующая команда
- 	     print('<tr><td class = "input">Команда N <b>'.$TeamNum.'</b>
+ 	     print('Команда N <b>'.$TeamNum.'</b>
                             <input type="hidden" name="TeamNum" value="'.$TeamNum.'">'."\r\n");
 
-             // Проверяем права на правку чтобы показать кнопку удаления всей команды
-             if ($AllowEdit == 1) 
-             {
-  	        print(' &nbsp; <input type = "button" style = "margin-left: 180px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите удалить команду: '.trim($TeamName).'? \')) {HideTeam();}" name="HideTeamButton" 
-                                value = "Удалить команду"  tabindex = "'.(++$TabIndex).'">'."\r\n");
-             }
-	     print('</td></tr>'."\r\n");
 
-	     print('<tr><td class = "input">Зарегистрирована: '.$TeamRegisterDt.'</td></tr>'."\r\n");
 
 	 }
 
-  	 print('<tr><td class = "input">Время окончания регистрации: '.$RaidRegistrationEndDate.'</td></tr>'."\r\n");
+         
+    	      // дистанция 
+	  print(' <span style = "margin-left: 30px;"> &nbsp; Дистанция</span>'."\r\n"); 
+	  print('<select name="DistanceId"  class = "leftmargin" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
+
+	  //echo 'RaidId '.$RaidId;
+
+	  $sql = "select distance_id, distance_name from  Distances where raid_id = ".$RaidId; 
+	  //echo 'sql '.$sql;
+	  $Result = MySqlQuery($sql);
+
+	  while ($Row = mysql_fetch_assoc($Result))
+	  {
+	    $distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
+	    print('<option value = "'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."\r\n");
+	  }
+	  mysql_free_result($Result);
+	  print('</select>'."\r\n");  
+
+          
+
+             // Проверяем права на правку чтобы показать кнопку удаления всей команды
+             if ($viewmode<>"Add" and $AllowEdit == 1) 
+             {
+  	        print(' &nbsp; <input type = "button" style = "margin-left: 30px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите удалить команду: '.trim($TeamName).'? \')) {HideTeam();}" name="HideTeamButton" 
+                                value = "Удалить команду"  tabindex = "'.(++$TabIndex).'">'."\r\n");
+             }
 
 
+        print('</td></tr>'."\r\n");
+
+	 if ($viewmode<>"Add")
+	 {
+            if ($TeamLate == 1)
+            {
+                $RegisterDtFontColor = '#BB0000';
+             } else {
+                $RegisterDtFontColor = '#000000';
+	     }
+
+            print('<tr><td class = "input">Зарегистрирована: <span style = "color: '.$RegisterDtFontColor.';">'.$TeamRegisterDt.'</span></td></tr>'."\r\n");
+         }  else {
+
+             print('<tr><td class = "input">Время окончания регистрации: '.$RaidRegistrationEndDate.'</td></tr>'."\r\n");
         
-         // дистанция 
-	print('<tr><td class = "input">Дистанция'."\r\n"); 
-	print('<select name="DistanceId"  class = "leftmargin" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
-
-	//echo 'RaidId '.$RaidId;
-
-        $sql = "select distance_id, distance_name from  Distances where raid_id = ".$RaidId; 
-        //echo 'sql '.$sql;
-	$Result = MySqlQuery($sql);
-
-	while ($Row = mysql_fetch_assoc($Result))
-	{
-	  $distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
-	  print('<option value = "'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."\r\n");
-	}
-	mysql_free_result($Result);
-	print('</select>'."\r\n");  
-	print('</td></tr>'."\r\n");
+          }     
 
         // Название команды
         print('<tr><td class = "input"><input type="text" name="TeamName" size="50" value="'.$TeamName.'" 
-                                        tabindex = "'.(++$TabIndex).'" '.$OnClickText.' '.$DisabledText.' 
-                                        title = "Название команды"></td></tr>'."\r\n");
+                                        tabindex = "'.(++$TabIndex).'" '.$DisabledText.' 
+					'.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$TeamName.'\') {this.value=\'\';}"').'
+                                        '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$TeamName.'\';}"').'
+	                                title = "Название команды"></td></tr>'."\r\n");
 
         print('<tr><td class = "input">'."\r\n");
 
@@ -408,7 +433,7 @@
 			  {
 
 			    // Список этапов, чтобы выбрать, на каком сошёл участник
-			    print('Сход: <select name="UserOut'.$Row['teamuser_id'].'" style = "margin-right: 15px;"
+			    print('Сход: <select name="UserOut'.$Row['teamuser_id'].'" style = "width: 100px; margin-right: 15px;"
                                     title = "Этап, на котором сошёл участник"
                                     onChange = "javascript:if (confirm(\'Вы уверены, что хотите отметить сход участника: '.$Row['user_name'].'? \')) { TeamUserOut('.$Row['teamuser_id'].', this.value); }" 
                                     tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
@@ -450,7 +475,9 @@
 	     print($UserEmail.'<input type="hidden" name="NewTeamUserEmail" size="50" value="'.$UserEmail.'" >'."\r\n");
           } else {
 	     print('<input type="text" name="NewTeamUserEmail" size="50" value="Email нового участника"
-                      tabindex = "'.(++$TabIndex).'" onClick = "javascript:this.value = \'\';"
+                      tabindex = "'.(++$TabIndex).'"
+		      onclick = "javascript: if (trimBoth(this.value) == \'Email нового участника\') {this.value=\'\';}"
+                      onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\'Email нового участника\';}"
                       title = "Укажите e-mail пользователя, которого Вы хотите добавить в команду. Пользователь может запретить добавлять себя в команду в настройках своей учетной записи.">'."\r\n");
           }
 
@@ -462,9 +489,9 @@
 
 
           // Список этапов, чтобы выбрать, на какой команда не вышла (по умолчанию считается, что вышла на всё)
-      	  print('<tr><td style = "padding-top: 10px; font-size: 80%;"><b>Результаты:</b></td></tr>'."\r\n");
+      	  print('<tr><td style = "padding-top: 15px;"><b>Результаты:</b></td></tr>'."\r\n");
          print('<tr><td class = "input">Не вышла на этап: &nbsp; '."\r\n");
-	    print('<select name="TeamNotOnLevelId"  style = "margin-left: 10px;margin-right: 10px;" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+	    print('<select name="TeamNotOnLevelId"  style = "width: 100px; margin-left: 10px;margin-right: 10px;" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
                      title = "Будьте аккуратны: изменение этого поля влияет на число отображаемых ниже этапов для ввода данных.">'."\r\n"); 
 	    $sql = "select level_id, level_name from  Levels where distance_id = ".$DistanceId." order by level_order"; 
 	    //echo 'sql '.$sql;
