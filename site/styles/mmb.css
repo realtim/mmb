@@ -10,7 +10,12 @@ a:link {color: #007700;}
 a:visited {color: #BB0000;}
 
 
-input:disabled {color: #000000;}
+input[disabled] {color: #000000;}
+select[disabled] {color: #000000;}
+
+input[type="checkbox"]:disabled {color: #000000; background-color: #FFFFFF; border-color: #000000;}
+checkbox:disabled {color: #000000; background-color: #FFFFFF; border-color: #000000;}
+checkbox[disabled] {color: #000000; background-color: #FFFFFF; border-color: #000000;}
 
 
 h1	{font-size: 150%; font-weight: normal; margin: 0 0 0.8em 0;}
