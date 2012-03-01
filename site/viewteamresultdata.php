@@ -172,7 +172,8 @@
 	    } else { 
 	      $AllowEditResult = 0;
               $NextResultActionName = '';
-	      $DisabledResultText = 'disabled';
+	      //$DisabledResultText = 'disabled';
+             $DisabledResultText = 'readonly';
 	      $OnSubmitResultFunction = 'return false;';
 	    }
  
@@ -460,7 +461,7 @@
 	    print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
 	    $TabIndex++;
 	    print('<input type="button" onClick = "javascript: if (ValidateTeamResultDataForm()) submit();"
-                   name="SaveChangeResultButton" value="Сохранить изменения" tabindex = "'.$TabIndex.'">'."\r\n");
+                   name="SaveChangeResultButton" value="Сохранить результаты" tabindex = "'.$TabIndex.'">'."\r\n");
 	    $TabIndex++;
 	    print('<select name="CaseView" onChange = "javascript:document.TeamResultDataForm.view.value = document.TeamResultDataForm.CaseView.value;"  
                     class = "leftmargin" tabindex = "'.$TabIndex.'">'."\r\n"); 

@@ -160,7 +160,7 @@
 	        $NextActionName = 'TeamChangeData';
 		$AllowEdit = 0;
 		$OnClickText = '';
-		$SaveButtonText = 'Сохранить изменения';
+		$SaveButtonText = 'Сохранить данные команды';
 		
 
 	 }
@@ -483,14 +483,14 @@
 
 	  print('</td></tr>'."\r\n"); 
 
-
+       // Проверка на отображение секции Результатов
        if ($viewmode<>"Add" and $RaidShowResultField == 1)
        {
 
 
           // Список этапов, чтобы выбрать, на какой команда не вышла (по умолчанию считается, что вышла на всё)
-      	  print('<tr><td style = "padding-top: 15px;"><b>Результаты:</b></td></tr>'."\r\n");
-         print('<tr><td class = "input">Не вышла на этап: &nbsp; '."\r\n");
+      	    print('<tr><td style = "padding-top: 15px;"><b>Результаты:</b></td></tr>'."\r\n");
+            print('<tr><td class = "input">Не вышла на этап: &nbsp; '."\r\n");
 	    print('<select name="TeamNotOnLevelId"  style = "width: 100px; margin-left: 10px;margin-right: 10px;" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
                      title = "Будьте аккуратны: изменение этого поля влияет на число отображаемых ниже этапов для ввода данных.">'."\r\n"); 
 	    $sql = "select level_id, level_name from  Levels where distance_id = ".$DistanceId." order by level_order"; 
@@ -507,37 +507,38 @@
 	    }
 	    mysql_free_result($Result);
 	    print('</select>'."\r\n");  
-          print(' &nbsp; Общее время: '.$TeamResult.'</td></tr>'."\r\n");
+            print(' &nbsp; Общее время: '.$TeamResult.'</td></tr>'."\r\n");
 
 
 
-	  print('<tr><td class = "input"> Подтверждение:  &nbsp; '."\r\n");
+	    print('<tr><td class = "input"> Подтверждение:  &nbsp; '."\r\n");
 
-	  // Подтверждение правильности результатов командой
-	  print(' команды
+	    // Подтверждение правильности результатов командой
+	    print(' команды
              <input type="checkbox" name="TeamConfirmResult" '.(($TeamConfirmResult == 1) ? 'checked="checked"' : '').'
                   tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
   	           title = "Заполняется после ввода результатов. Отметьте, если команда проверила все данные и согласна с ними"/>  &nbsp; '."\r\n");
 
-	  if ($Moderator)
-	  {
-	    $ModeratorConfirmResultDisabledText = '';
-	  } else {
-	    $ModeratorConfirmResultDisabledText = 'disabled';
-          }
-	  // Подтверждение правильности результатов модератором
-	  print(' модератора
+	    if ($Moderator)
+	    {
+	      $ModeratorConfirmResultDisabledText = '';
+	    } else {
+	      $ModeratorConfirmResultDisabledText = 'disabled';
+            }
+
+	    // Подтверждение правильности результатов модератором
+  	    print(' модератора
 		<input type="checkbox" name="ModeratorConfirmResult" '.(($ModeratorConfirmResult == 1) ? 'checked="checked"' : '').'
 		    tabindex = "'.(++$TabIndex).'" '.$ModeratorConfirmResultDisabledText.'
 		    title = "Заполняется модератором после проверки результатов."/>'."\r\n");
 	 
 
-          print('</td></tr>'."\r\n");
-
+            print('</td></tr>'."\r\n");
 
 
        }
-
+       // Конец проверки на отображение секции Результатов
+       
 
 
           print('<tr><td class = "input"  style =  "padding-top: 20px;">'."\r\n");
