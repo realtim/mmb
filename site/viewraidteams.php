@@ -363,7 +363,7 @@
 			$sql = $sql." and d.distance_id = ".$_POST['DistanceId']; 
 		      }
 
-		      $sql = $sql." order by distance_name, placegroup asc, team_sresult asc "; 
+		      $sql = $sql." order by distance_name, placegroup asc, team_result asc "; 
 		    
 		     } else {
                           // Если фильтруем пожтапу, то другой запрос
@@ -410,7 +410,7 @@
 					    ELSE NULL 
 					END
 				      ) > 0
-			    order by  team_sresult asc";
+			    order by  team_result asc";
 
                      }
 
