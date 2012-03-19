@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <LinearLayout
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/global_padding"
+            android:layout_weight="1"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <Button
+                    android:id="@+id/inputTeam_sortByNumberButton"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="15"
+                    android:gravity="left|center_vertical"
+                    android:text="@string/input_team_sort_num" />
+
+                <Button
+                    android:id="@+id/inputTeam_sortByTeamButton"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="45"
+                    android:text="@string/input_team_sort_team" />
+
+                <Button
+                    android:id="@+id/inputTeam_sortByMemberButton"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="40"
+                    android:text="@string/input_team_sort_member" />
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/inputTeam_teamsList"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1" >
+            </ListView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/global_padding"
+            android:layout_marginLeft="@dimen/global_padding"
+            android:layout_marginRight="@dimen/global_padding"
+            android:layout_marginTop="@dimen/global_padding"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <Button
+                    android:id="@+id/inputTeam_filterClearButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/input_team_filter_clear" />
+
+                <Button
+                    android:id="@+id/inputTeam_filterHideButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/global_padding"
+                    android:text="@string/input_team_filter_hide" />
+
+                <Button
+                    android:id="@+id/inputTeam_refreshDataButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/global_padding"
+                    android:text="@string/input_team_refresh_data" >
+                </Button>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/inputTeam_filterStatusTextView"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginTop="@dimen/global_padding"
+                android:gravity="right"
+                android:text="dummy_filter_state" />
+
+            <LinearLayout
+                android:id="@+id/inputTeam_filterEditorsPanel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/global_padding" >
+
+                    <TextView
+                        android:layout_width="75dip"
+                        android:layout_height="wrap_content"
+                        android:text="@string/input_team_filter_number" />
+
+                    <EditText
+                        android:id="@+id/inputTeam_filterNumberEdit"
+                        android:layout_width="100dip"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone|flagNoEnterAction"
+                        android:inputType="number"
+                        android:maxLength="4" >
+                    </EditText>
+
+                    <CheckBox
+                        android:id="@+id/inputTeam_filterNumberExactCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/global_padding"
+                        android:text="@string/input_team_filter_number_exact" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/global_padding" >
+
+                    <TextView
+                        android:layout_width="75dip"
+                        android:layout_height="wrap_content"
+                        android:text="@string/input_team_filter_team" />
+
+                    <EditText
+                        android:id="@+id/inputTeam_filterTeamEdit"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone|flagNoEnterAction"
+                        android:singleLine="true" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/global_padding" >
+
+                    <TextView
+                        android:layout_width="75dip"
+                        android:layout_height="wrap_content"
+                        android:text="@string/input_team_filter_member" />
+
+                    <EditText
+                        android:id="@+id/inputTeam_filterMemberEdit"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone|flagNoEnterAction"
+                        android:singleLine="true" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/inputTeam_proceedInputPanel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/global_padding" >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/inputTeam_selectedTeamTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:text="@string/input_team_no_team" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:layout_marginTop="@dimen/global_padding" >
+                        
+                        <Button
+                            android:id="@+id/inputTeam_withdrawMemberButton"
+                            android:layout_width="100dip"
+                            android:layout_height="wrap_content"
+                            android:text="@string/input_team_withdraw_member" />
+
+                        <Button
+                            android:id="@+id/inputTeam_inputDataButton"
+                            android:layout_width="100dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/global_padding"
+                            android:text="@string/input_team_input_data" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

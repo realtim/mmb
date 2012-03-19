@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/global_padding"
+    android:paddingRight="@dimen/global_padding"
+    android:paddingTop="@dimen/global_padding" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/inputStart_distanceLabel"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:text="@string/input_start_no_distance" />
+
+            <TextView
+                android:id="@+id/inputStart_lapLabel"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_padding"
+                android:text="@string/input_start_no_lap" />
+
+            <TextView
+                android:id="@+id/inputStart_modeLabel"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_padding"
+                android:text="@string/input_start_no_mode" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/inputStart_selectLapBtn"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="@string/input_start_select_lap" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:orientation="vertical" >
+
+        <Button
+            android:id="@+id/inputStart_proceedInputBtn"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="@string/input_start_proceed_input" />
+    </LinearLayout>
+
+</LinearLayout>

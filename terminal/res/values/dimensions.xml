@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="global_padding">15dip</dimen>
+    <dimen name="global_double_padding">30dip</dimen>
+    <dimen name="main_button_width">300dip</dimen>
+    <dimen name="main_button_text_size">32sp</dimen>
+
+</resources>

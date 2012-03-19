@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/main_inputDataBtn"
+        android:layout_width="@dimen/main_button_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/main_input_data" />
+
+    <Button
+        android:id="@+id/main_searchTeamBtn"
+        android:layout_width="@dimen/main_button_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/global_padding"
+        android:text="@string/main_search_team" />
+
+    <Button
+        android:id="@+id/main_loginBtn"
+        android:layout_width="@dimen/main_button_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/global_padding"
+        android:text="@string/main_login" />
+
+</LinearLayout>
