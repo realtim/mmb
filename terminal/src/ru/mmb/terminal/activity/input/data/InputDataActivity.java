@@ -17,6 +17,8 @@ public class InputDataActivity extends Activity implements StateChangeListener
 	private TextView labResult;
 	private Button btnOk;
 
+	private DatePanel datePanel;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
@@ -27,7 +29,7 @@ public class InputDataActivity extends Activity implements StateChangeListener
 
 		setContentView(R.layout.input_data);
 
-		new DatePanel(this, currentState);
+		datePanel = new DatePanel(this, currentState);
 		new CheckpointPanel(this, currentState);
 
 		labTeam = (TextView) findViewById(R.id.inputData_teamNameTextView);
@@ -71,5 +73,12 @@ public class InputDataActivity extends Activity implements StateChangeListener
 			currentState.saveInputDataToDB();
 			finish();
 		}
+	}
+
+	@Override
+	protected void onResume()
+	{
+		super.onResume();
+		datePanel.refreshDateControls();
 	}
 }

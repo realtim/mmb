@@ -54,13 +54,13 @@ public class DatePanel
 	private void initDateControls()
 	{
 		editDate.init(currentState.getInputDate().getYear(), currentState.getInputDate().getMonth(), currentState.getInputDate().getDay(), new EditDateChangeListener());
+		editTime.setIs24HourView(true);
 		editTime.setCurrentHour(currentState.getInputDate().getHour());
 		editTime.setCurrentMinute(currentState.getInputDate().getMinute());
-		editTime.setIs24HourView(true);
 		editTime.setOnTimeChangedListener(new EditTimeChangeListener());
 	}
 
-	private void refreshDateControls()
+	void refreshDateControls()
 	{
 		refreshingControls = true;
 		editDate.updateDate(currentState.getInputDate().getYear(), currentState.getInputDate().getMonth(), currentState.getInputDate().getDay());
