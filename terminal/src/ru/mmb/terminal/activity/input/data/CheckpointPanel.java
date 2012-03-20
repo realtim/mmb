@@ -1,5 +1,7 @@
 package ru.mmb.terminal.activity.input.data;
 
+import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +17,7 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
 
 public class CheckpointPanel
 {
@@ -63,6 +66,11 @@ public class CheckpointPanel
 	private void createCheckpointBoxes()
 	{
 		int colCount = 5;
+		if (inputDataActivity.getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE)
+		{
+			colCount = 7;
+		}
+
 		List<TableRow> rows = new ArrayList<TableRow>();
 
 		List<Checkpoint> checkpoints = currentState.getCurrentLap().getCheckpoints();
@@ -89,6 +97,28 @@ public class CheckpointPanel
 			tableRow.addView(checkpointBox);
 			checkpointBoxes.put(checkpoints.get(i), checkpointBox);
 			boxCheckpoints.put(checkpointBox, checkpoints.get(i));
+
+			if (i == checkpoints.size() - 1)
+			{
+				if (checkpoints.size() % colCount != 0)
+				{
+					addDummyControls(tableRow, colCount, checkpoints.size());
+				}
+			}
+		}
+	}
+
+	private void addDummyControls(TableRow tableRow, int colCount, int checkpointsSize)
+	{
+		int countToAdd = colCount - (checkpointsSize % colCount);
+		for (int i = 0; i < countToAdd; i++)
+		{
+			TextView dummy = new TextView(inputDataActivity);
+			dummy.setText("");
+			TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
+			layoutParams.weight = 1;
+			dummy.setLayoutParams(layoutParams);
+			tableRow.addView(dummy);
 		}
 	}
 
