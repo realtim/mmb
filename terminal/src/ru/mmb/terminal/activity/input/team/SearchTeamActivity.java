@@ -18,8 +18,6 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -36,7 +34,6 @@ public class SearchTeamActivity extends Activity
 	private TextView labSelectedTeam;
 	private Button btnInputData;
 	private Button btnWithdraw;
-	private LinearLayout panelProceedInput;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -55,15 +52,12 @@ public class SearchTeamActivity extends Activity
 		initListAdapters();
 		lvTeams.setOnItemClickListener(new LvTeamsItemClickListener());
 
-		panelProceedInput = (LinearLayout) findViewById(R.id.inputTeam_proceedInputPanel);
 		labSelectedTeam = (TextView) findViewById(R.id.inputTeam_selectedTeamTextView);
 		btnInputData = (Button) findViewById(R.id.inputTeam_inputDataButton);
 		btnWithdraw = (Button) findViewById(R.id.inputTeam_withdrawMemberButton);
 
 		btnInputData.setOnClickListener(new InputDataClickListener());
 		btnWithdraw.setOnClickListener(new WithdrawMemberClickListener());
-
-		initProceedPanelVisibility();
 
 		setTitle(currentState.getTitleText(this));
 
@@ -84,16 +78,6 @@ public class SearchTeamActivity extends Activity
 		items = dataProvider.getTeams(distanceId, SortColumn.MEMBER);
 		adapterByMember = new TeamsAdapter(this, R.layout.input_team_row, items);
 		((TeamFilter) adapterByMember.getFilter()).initialize(items, currentState);
-	}
-
-	private void initProceedPanelVisibility()
-	{
-		if (currentState.getActivityMode() == ActivityMode.SEARCH_TEAM)
-		{
-			panelProceedInput.getLayoutParams().height = 0;
-			((LayoutParams) panelProceedInput.getLayoutParams()).topMargin = 0;
-			((LayoutParams) panelProceedInput.getLayoutParams()).bottomMargin = 0;
-		}
 	}
 
 	public void refreshTeams()

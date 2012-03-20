@@ -6,8 +6,6 @@
     <string name="global_input_mode_finish">Finish</string>
     <string name="main_login">Login</string>
     <string name="main_change_user">Change user</string>
-    <string name="main_refresh_lists">Refresh lists</string>
-    <string name="main_search_team">Search team</string>
     <string name="main_input_data">Input data</string>
     <string name="main_no_active_user">&lt;Not logged in></string>
     <string name="main_progress_loading">Loading...</string>

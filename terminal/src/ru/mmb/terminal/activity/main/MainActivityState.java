@@ -64,7 +64,6 @@ public class MainActivityState extends CurrentState
 		switch (activityRequestId)
 		{
 			case Constants.REQUEST_CODE_LOGIN_ACTIVITY:
-			case Constants.REQUEST_CODE_SEARCH_TEAM_ACTIVITY:
 			case Constants.REQUEST_CODE_DEFAULT_ACTIVITY:
 				if (getActiveUser() != null) intent.putExtra(KEY_ACTIVE_USER, getActiveUser());
 				break;

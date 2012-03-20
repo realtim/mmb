@@ -1,12 +1,10 @@
 package ru.mmb.terminal.activity.input.start;
 
-import static ru.mmb.terminal.activity.Constants.KEY_SEARCH_TEAM_ACTIVITY_MODE;
 import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_LAP_ACTIVITY;
 import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_TEAM_ACTIVITY;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.InputActivityState;
 import ru.mmb.terminal.activity.input.lap.SelectLapActivity;
-import ru.mmb.terminal.activity.input.team.ActivityMode;
 import ru.mmb.terminal.activity.input.team.SearchTeamActivity;
 import android.app.Activity;
 import android.content.Intent;
@@ -116,7 +114,6 @@ public class StartInputActivity extends Activity
 		{
 			Intent intent = new Intent(getApplicationContext(), SearchTeamActivity.class);
 			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_TEAM_ACTIVITY);
-			intent.putExtra(KEY_SEARCH_TEAM_ACTIVITY_MODE, ActivityMode.INPUT_DATA);
 			startActivity(intent);
 		}
 	}

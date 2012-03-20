@@ -1,14 +1,9 @@
 package ru.mmb.terminal.activity.main;
 
-import static ru.mmb.terminal.activity.Constants.KEY_SEARCH_TEAM_ACTIVITY_MODE;
 import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_LOGIN_ACTIVITY;
-import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_SEARCH_TEAM_ACTIVITY;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.start.StartInputActivity;
-import ru.mmb.terminal.activity.input.team.ActivityMode;
-import ru.mmb.terminal.activity.input.team.SearchTeamActivity;
 import ru.mmb.terminal.activity.login.LoginActivity;
-import ru.mmb.terminal.db.TerminalDB;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,7 +17,6 @@ public class MainActivity extends Activity
 	private MainActivityState currentState;
 
 	private Button btnInputData;
-	private Button btnSearchTeam;
 	private Button btnLogin;
 
 	/** Called when the activity is first created. */
@@ -38,15 +32,10 @@ public class MainActivity extends Activity
 		setContentView(R.layout.main);
 
 		btnInputData = (Button) findViewById(R.id.main_inputDataBtn);
-		btnSearchTeam = (Button) findViewById(R.id.main_searchTeamBtn);
 		btnLogin = (Button) findViewById(R.id.main_loginBtn);
 
 		btnLogin.setOnClickListener(new LoginClickListener());
 		btnInputData.setOnClickListener(new InputDataClickListener());
-		btnSearchTeam.setOnClickListener(new SearchTeamClickListener());
-
-		// TODO remove test code
-		TerminalDB.getInstance();
 
 		refreshState();
 	}
@@ -60,7 +49,6 @@ public class MainActivity extends Activity
 		setTitle(userName);
 
 		btnInputData.setEnabled(userLoggedIn);
-		btnSearchTeam.setEnabled(userLoggedIn);
 
 		btnLogin.setEnabled(true);
 		if (userLoggedIn)
@@ -122,25 +110,6 @@ public class MainActivity extends Activity
 			{
 				Intent intent = new Intent(getApplicationContext(), StartInputActivity.class);
 				currentState.prepareStartActivityIntent(intent, REQUEST_CODE_LOGIN_ACTIVITY);
-				startActivity(intent);
-			}
-			else
-			{
-				Toast.makeText(getApplicationContext(), getResources().getString(R.string.main_must_login), Toast.LENGTH_SHORT).show();
-			}
-		}
-	}
-
-	private class SearchTeamClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			if (currentState.getActiveUser() != null)
-			{
-				Intent intent = new Intent(getApplicationContext(), SearchTeamActivity.class);
-				currentState.prepareStartActivityIntent(intent, REQUEST_CODE_SEARCH_TEAM_ACTIVITY);
-				intent.putExtra(KEY_SEARCH_TEAM_ACTIVITY_MODE, ActivityMode.SEARCH_TEAM);
 				startActivity(intent);
 			}
 			else

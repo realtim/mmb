@@ -7,17 +7,13 @@ import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_FILTER_NUMBER_
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_FILTER_TEAM;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_SORT_COLUMN;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_SORT_ORDER;
-import static ru.mmb.terminal.activity.Constants.KEY_SEARCH_TEAM_ACTIVITY_MODE;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.InputActivityState;
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
 public class SearchTeamActivityState extends InputActivityState
 {
-	private ActivityMode activityMode;
-
 	private SortColumn sortColumn = SortColumn.NUMBER;
 	private SortOrder sortOrder = SortOrder.ASC;
 
@@ -62,7 +58,6 @@ public class SearchTeamActivityState extends InputActivityState
 	public void save(Bundle savedInstanceState)
 	{
 		super.save(savedInstanceState);
-		savedInstanceState.putSerializable(KEY_SEARCH_TEAM_ACTIVITY_MODE, activityMode);
 		savedInstanceState.putSerializable(KEY_CURRENT_TEAM_SORT_COLUMN, sortColumn);
 		savedInstanceState.putSerializable(KEY_CURRENT_TEAM_SORT_ORDER, sortOrder);
 		savedInstanceState.putBoolean(KEY_CURRENT_TEAM_FILTER_HIDE, hideFilter);
@@ -79,9 +74,6 @@ public class SearchTeamActivityState extends InputActivityState
 	public void load(Bundle savedInstanceState)
 	{
 		super.load(savedInstanceState);
-		if (savedInstanceState.containsKey(KEY_SEARCH_TEAM_ACTIVITY_MODE))
-		    activityMode =
-		        (ActivityMode) savedInstanceState.getSerializable(KEY_SEARCH_TEAM_ACTIVITY_MODE);
 		if (savedInstanceState.containsKey(KEY_CURRENT_TEAM_SORT_COLUMN))
 		    sortColumn =
 		        (SortColumn) savedInstanceState.getSerializable(KEY_CURRENT_TEAM_SORT_COLUMN);
@@ -229,40 +221,18 @@ public class SearchTeamActivityState extends InputActivityState
 		return result;
 	}
 
-	public ActivityMode getActivityMode()
-	{
-		return activityMode;
-	}
-
-	public void setActivityMode(ActivityMode activityMode)
-	{
-		this.activityMode = activityMode;
-	}
-
 	@Override
 	protected void loadFromExtrasBundle(Bundle extras)
 	{
 		super.loadFromExtrasBundle(extras);
-		if (extras.containsKey(KEY_SEARCH_TEAM_ACTIVITY_MODE))
-		    setActivityMode((ActivityMode) extras.getSerializable(KEY_SEARCH_TEAM_ACTIVITY_MODE));
-	}
-
-	@Override
-	public String getTitleText(Activity activity)
-	{
-		if (getActivityMode() == ActivityMode.INPUT_DATA)
-			return super.getTitleText(activity);
-		else
-			return (getActiveUser() == null) ? "" : getActiveUser().getName();
 	}
 
 	@Override
 	public String toString()
 	{
-		return "SearchTeamActivityState [activityMode=" + activityMode + ", sortColumn="
-		        + sortColumn + ", sortOrder=" + sortOrder + ", hideFilter=" + hideFilter
-		        + ", filterNumberExact=" + filterNumberExact + ", numberFilter=" + numberFilter
-		        + ", teamFilter=" + teamFilter + ", memberFilter=" + memberFilter + ", toString()="
-		        + super.toString() + "]";
+		return "SearchTeamActivityState [sortColumn=" + sortColumn + ", sortOrder=" + sortOrder
+		        + ", hideFilter=" + hideFilter + ", filterNumberExact=" + filterNumberExact
+		        + ", numberFilter=" + numberFilter + ", teamFilter=" + teamFilter
+		        + ", memberFilter=" + memberFilter + "]";
 	}
 }
