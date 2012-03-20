@@ -20,6 +20,36 @@
 	  document.RaidTeamsForm.submit();
 	}
 
+
+        // Смена сортировки
+	function OrderTypeChange()
+	{ 
+            if (this.value=='Num')
+            {
+                 document.RaidTeamsForm.LevelId.disabled=true;
+            }else{
+                 document.RaidTeamsForm.LevelId.disabled=false;
+            }
+	    document.RaidTeamsForm.action.value = "ViewRaidTeams";          
+	    document.RaidTeamsForm.submit();
+	  
+	}
+
+	// Фильтр по дистанции
+	function DistanceIdChange()
+	{ 
+          document.RaidTeamsForm.action.value = "ViewRaidTeams";          
+	  document.RaidTeamsForm.submit();
+        } 
+
+	// Фильтр по этапу
+	function LevelIdChange()
+	{ 
+          document.RaidTeamsForm.action.value = "ViewRaidTeams";          
+	  document.RaidTeamsForm.submit();
+         } 
+
+
 </script>
 
 
@@ -124,7 +154,8 @@
 
             	print('<div align = "left" style = "font-size: 80%;">'."\r\n");
 		print('Сортировать по '."\r\n");
-		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;"  onchange = "if (this.value==\'Num\'){document.RaidTeamsForm.LevelId.disabled=true;}else{document.RaidTeamsForm.LevelId.disabled=false;}document.RaidTeamsForm.submit();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
+		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;" 
+                               onchange = "OrderTypeChange();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
 	        print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >убыванию номера'."\r\n");
 	        print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
 	        print('</select>'."\r\n");  
@@ -136,12 +167,13 @@
 		//echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
                 
-		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px;" onchange = "document.RaidTeamsForm.submit();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
+		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px;" 
+                               onchange = "DistanceIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
                 $distanceselected =  (0 == $_POST['DistanceId'] ? 'selected' : '');
 		  print('<option value = "0" '.$$distanceselected.' >дистанцию'."\r\n");
 	        while ($Row = mysql_fetch_assoc($Result))
 		{
-		  $distanceselected = ($Row['distance_id'] == $_POST['DistanceId'] ? 'selected' : '');
+		  $distanceselected = ($Row['distance_id'] == $_POST['DistanceId']  ? 'selected' : '');
 		  print('<option value = "'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."\r\n");
 		}
 		print('</select>'."\r\n");  
@@ -160,13 +192,15 @@
 		//  echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
 
-		print('<select name="LevelId" '.(($OrderType=='Num') ? 'disabled' : '').'  style = "margin-left: 5px; margin-right: 10px;"  onchange = "document.RaidTeamsForm.submit();" tabindex = "'.(++$TabIndex).'" >'."\r\n"); 
-	          $levelselected =  (0 == $_POST['LevelId'] ? 'selected' : '');
+		print('<select name="LevelId" '.(($OrderType=='Num') ? 'disabled' : '').'
+                                style = "margin-left: 5px; margin-right: 10px;" 
+                                onchange = "LevelIdChange();" tabindex = "'.(++$TabIndex).'" >'."\r\n"); 
+	          $levelselected =  ((0 == $_POST['LevelId'] or $OrderType=='Num') ? 'selected' : '');
 		print('<option value = "0" '.$levelselected.' >этап'."\r\n");
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-		    $levelselected = ($Row['level_id'] == $_POST['LevelId'] ? 'selected' : '');
+		    $levelselected = (($Row['level_id'] == $_POST['LevelId'] and $OrderType<>'Num' )? 'selected' : '');
 		    print('<option value = "'.$Row['level_id'].'" '.$levelselected.' >'.$Row['level_name']."\r\n");
 		}
 		mysql_free_result($Result);
