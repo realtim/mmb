@@ -391,7 +391,7 @@
 
 
         // Нет сломанным унитазам!
-        print('  &nbsp; Нет <a href = "http://community.livejournal.com/_mmb_/2010/09/24/">сломанным унитазам</a>! <input type="checkbox" name="TeamGreenPeace" '.(($TeamGreenPeace >= 1) ? 'checked="checked"' : '').'
+        print('  &nbsp; Нет <a href = "http://community.livejournal.com/_mmb_/2010/09/24/" target = "_blank">сломанным унитазам</a>! <input type="checkbox" name="TeamGreenPeace" '.(($TeamGreenPeace >= 1) ? 'checked="checked"' : '').'
                   tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
   	           title = "Отметьте, если команда берёт повышенные экологические обязательства"/>'."\r\n");
 
