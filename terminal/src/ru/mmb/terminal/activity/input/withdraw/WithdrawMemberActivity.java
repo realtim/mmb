@@ -72,7 +72,8 @@ public class WithdrawMemberActivity extends Activity implements StateChangeListe
 		@Override
 		public void onClick(View v)
 		{
-			currentState.saveCurrWithdrawnToDB();
+			// TODO restore saving
+			// currentState.saveCurrWithdrawnToDB();
 			finish();
 		}
 	}

@@ -2,13 +2,11 @@ package ru.mmb.terminal.model.registry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import ru.mmb.terminal.model.Participant;
+import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.util.ExternalStorage;
 
-public class TeamsRegistry extends AbstractRegistry
+public class TeamsRegistry
 {
 	private static TeamsRegistry instance = null;
 
@@ -32,25 +30,12 @@ public class TeamsRegistry extends AbstractRegistry
 	{
 		try
 		{
-			List<Participant> participants = loadParticipants();
-			Map<Integer, List<Participant>> teamParticipants =
-			    groupChildrenByParentId(participants);
-			teams = loadTeams(teamParticipants);
+			teams = TerminalDB.getInstance().loadTeams();
 		}
 		catch (Exception e)
 		{
 			throw new RuntimeException("Team list load failed.", e);
 		}
-	}
-
-	private List<Participant> loadParticipants() throws Exception
-	{
-		return loadStoredElements(ExternalStorage.getDir() + "/mmb/model/participants.csv", Participant.class);
-	}
-
-	private List<Team> loadTeams(Map<Integer, List<Participant>> teamParticipants) throws Exception
-	{
-		return loadStoredElements(ExternalStorage.getDir() + "/mmb/model/teams.csv", Team.class, teamParticipants);
 	}
 
 	public List<Team> getTeams(int distanceId)
@@ -67,7 +52,7 @@ public class TeamsRegistry extends AbstractRegistry
 	{
 		for (Team team : teams)
 		{
-			if (team.getId() == teamId) return team;
+			if (team.getTeamId() == teamId) return team;
 		}
 		return null;
 	}

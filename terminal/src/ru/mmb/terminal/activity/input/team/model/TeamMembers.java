@@ -15,7 +15,7 @@ public class TeamMembers extends TeamInfo implements TeamListRecord
 		super(team);
 		for (Participant participant : team.getMembers())
 		{
-			memberNames.add(participant.getName());
+			memberNames.add(participant.getUserName());
 		}
 	}
 

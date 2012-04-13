@@ -3,9 +3,9 @@ package ru.mmb.terminal.db;
 import java.util.Date;
 
 import ru.mmb.terminal.activity.input.InputMode;
-import ru.mmb.terminal.model.Lap;
+import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.User;
+import ru.mmb.terminal.util.DateFormat;
 import android.database.sqlite.SQLiteDatabase;
 
 public class InputData
@@ -17,7 +17,6 @@ public class InputData
 	private static final String INPUT_DATA_CHECK_TIME = "check_time";
 	private static final String INPUT_DATA_TAKEN_CHECKPOINTS = "taken_checkpoints";
 	private static final String DIRTY = "dirty";
-	private static final String USER_ID = "user_id";
 	private static final String CREATION_TIME = "creation_time";
 
 	private final SQLiteDatabase db;
@@ -27,8 +26,8 @@ public class InputData
 		this.db = db;
 	}
 
-	public void saveInputData(Lap lap, Team team, InputMode inputMode, Date checkTime,
-	        String checkpoints, User currentUser)
+	public void saveInputData(Level level, Team team, InputMode inputMode, Date checkTime,
+	        String checkpoints)
 	{
 		db.beginTransaction();
 		try
@@ -37,11 +36,10 @@ public class InputData
 			    "insert into " + TABLE_INPUT_DATA + "(" + INPUT_DATA_LAP_ID + ", "
 			            + INPUT_DATA_INPUT_MODE + ", " + INPUT_DATA_TEAM_ID + ", "
 			            + INPUT_DATA_CHECK_TIME + ", " + INPUT_DATA_TAKEN_CHECKPOINTS + ", "
-			            + DIRTY + ", " + USER_ID + ", " + CREATION_TIME + ") values ("
-			            + lap.getId() + ", '" + inputMode.name() + "', " + team.getId() + ", '"
-			            + Constants.DATE_FORMAT.format(checkTime) + "', '" + checkpoints + "', 1, "
-			            + currentUser.getId() + ", '" + Constants.DATE_FORMAT.format(new Date())
-			            + "')";
+			            + DIRTY + ", " + CREATION_TIME + ") values (" + level.getLevelId() + ", '"
+			            + inputMode.name() + "', " + team.getTeamId() + ", '"
+			            + DateFormat.format(checkTime) + "', '" + checkpoints + "', 1, '"
+			            + DateFormat.format(new Date()) + "')";
 			db.execSQL(insertSql);
 			db.setTransactionSuccessful();
 		}

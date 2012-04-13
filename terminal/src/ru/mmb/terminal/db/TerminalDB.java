@@ -4,10 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 import ru.mmb.terminal.activity.input.InputMode;
-import ru.mmb.terminal.model.Lap;
+import ru.mmb.terminal.model.Distance;
+import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.Participant;
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.User;
 import ru.mmb.terminal.util.ExternalStorage;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -18,6 +18,12 @@ public class TerminalDB
 	private final SQLiteDatabase db;
 	private final Withdraw withdraw;
 	private final InputData inputData;
+	private final Raids raids;
+	private final Distances distances;
+	private final Levels levels;
+	private final Teams teams;
+
+	private final IDGenerator idGenerator;
 
 	public static TerminalDB getInstance()
 	{
@@ -34,22 +40,56 @@ public class TerminalDB
 		    SQLiteDatabase.openDatabase(ExternalStorage.getDir() + "/mmb/db/terminal.db", null, SQLiteDatabase.OPEN_READWRITE);
 		withdraw = new Withdraw(db);
 		inputData = new InputData(db);
+		raids = new Raids(db);
+		distances = new Distances(db);
+		levels = new Levels(db);
+		teams = new Teams(db);
+		idGenerator = new IDGenerator(db);
 	}
 
-	public List<Participant> getWithdrawnMembers(Lap lap, Team team)
+	public List<Participant> getWithdrawnMembers(Level level, Team team)
 	{
-		return withdraw.getWithdrawnMembers(lap, team);
+		return withdraw.getWithdrawnMembers(level, team);
 	}
 
-	public void saveWithdrawnMembers(Lap lap, Team team, User currentUser,
-	        List<Participant> withdrawnMembers)
+	public void saveWithdrawnMembers(Level level, Team team, List<Participant> withdrawnMembers)
 	{
-		withdraw.saveWithdrawnMembers(lap, team, currentUser, withdrawnMembers);
+		withdraw.saveWithdrawnMembers(level, team, withdrawnMembers);
 	}
 
-	public void saveInputData(Lap lap, Team team, InputMode inputMode, Date checkTime,
-	        String checkpoints, User currentUser)
+	public void saveInputData(Level level, Team team, InputMode inputMode, Date checkTime,
+	        String checkpoints)
 	{
-		inputData.saveInputData(lap, team, inputMode, checkTime, checkpoints, currentUser);
+		inputData.saveInputData(level, team, inputMode, checkTime, checkpoints);
+	}
+
+	public SQLiteDatabase getDb()
+	{
+		return db;
+	}
+
+	public int getCurrentRaidId()
+	{
+		return raids.getCurrentRaidId();
+	}
+
+	public List<Distance> loadDistances(int raidId)
+	{
+		return distances.loadDistances(raidId);
+	}
+
+	public List<Level> loadLevels(int distanceId)
+	{
+		return levels.loadLevels(distanceId);
+	}
+
+	public List<Team> loadTeams()
+	{
+		return teams.loadTeams();
+	}
+
+	public int getNextId()
+	{
+		return idGenerator.getNextId();
 	}
 }

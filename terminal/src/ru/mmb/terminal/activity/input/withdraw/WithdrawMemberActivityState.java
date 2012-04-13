@@ -75,10 +75,11 @@ public class WithdrawMemberActivityState extends InputActivityState
 
 	private void updatePrevWithdrawnMembers()
 	{
-		if (getCurrentLap() != null && getCurrentTeam() != null)
+		if (getCurrentLevel() != null && getCurrentTeam() != null)
 		{
 			prevWithdrawnMembers.clear();
-			prevWithdrawnMembers.addAll(TerminalDB.getInstance().getWithdrawnMembers(getCurrentLap(), getCurrentTeam()));
+			// TODO restore previously withdrawn request
+			// prevWithdrawnMembers.addAll(TerminalDB.getInstance().getWithdrawnMembers(getCurrentLevel(), getCurrentTeam()));
 		}
 	}
 
@@ -97,7 +98,7 @@ public class WithdrawMemberActivityState extends InputActivityState
 			{
 				if (i > 0) sb.append("; ");
 				Participant member = currWithdrawnMembers.get(i);
-				sb.append(member.getName());
+				sb.append(member.getUserName());
 			}
 		}
 		return sb.toString();
@@ -126,7 +127,7 @@ public class WithdrawMemberActivityState extends InputActivityState
 		List<Integer> result = new ArrayList<Integer>();
 		for (Participant member : currWithdrawnMembers)
 		{
-			result.add(member.getId());
+			result.add(member.getUserId());
 		}
 		return result;
 	}
@@ -149,7 +150,7 @@ public class WithdrawMemberActivityState extends InputActivityState
 	{
 		if (getCurrentTeam() != null)
 		{
-			int teamId = getCurrentTeam().getId();
+			int teamId = getCurrentTeam().getTeamId();
 			Team team = TeamsRegistry.getInstance().getTeamById(teamId);
 			if (team != null)
 			{
@@ -165,6 +166,6 @@ public class WithdrawMemberActivityState extends InputActivityState
 
 	public void saveCurrWithdrawnToDB()
 	{
-		TerminalDB.getInstance().saveWithdrawnMembers(getCurrentLap(), getCurrentTeam(), getActiveUser(), currWithdrawnMembers);
+		TerminalDB.getInstance().saveWithdrawnMembers(getCurrentLevel(), getCurrentTeam(), currWithdrawnMembers);
 	}
 }

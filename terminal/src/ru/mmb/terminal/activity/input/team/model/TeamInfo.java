@@ -10,9 +10,9 @@ public class TeamInfo
 
 	public TeamInfo(Team team)
 	{
-		this.teamId = team.getId();
-		this.teamNumber = team.getNumber();
-		this.teamName = team.getName();
+		this.teamId = team.getTeamId();
+		this.teamNumber = team.getTeamNum();
+		this.teamName = team.getTeamName();
 	}
 
 	public int getTeamId()

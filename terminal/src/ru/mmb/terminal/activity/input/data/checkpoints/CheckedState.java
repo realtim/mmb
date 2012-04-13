@@ -7,44 +7,45 @@ import java.util.List;
 import java.util.Map;
 
 import ru.mmb.terminal.model.Checkpoint;
-import ru.mmb.terminal.model.Lap;
+import ru.mmb.terminal.model.Level;
 
 public class CheckedState implements Serializable
 {
 	private static final long serialVersionUID = -1671058824332140814L;
 
 	private final Map<Integer, Boolean> checkedMap = new LinkedHashMap<Integer, Boolean>();
-	private Lap lap;
+	private Level level;
 
 	public CheckedState()
 	{
 	}
 
-	public void setLap(Lap lap)
+	public void setLevel(Level level)
 	{
-		if (lap != null)
+		if (level != null)
 		{
-			if (this.lap == null || this.lap.getId() != lap.getId()) rebuildCheckedMap(lap);
+			if (this.level == null || this.level.getLevelId() != level.getLevelId())
+			    rebuildCheckedMap(level);
 		}
 		else
 		{
 			checkedMap.clear();
 		}
-		this.lap = lap;
+		this.level = level;
 	}
 
-	private void rebuildCheckedMap(Lap lap)
+	private void rebuildCheckedMap(Level level)
 	{
 		checkedMap.clear();
-		for (Checkpoint checkpoint : lap.getCheckpoints())
+		for (Checkpoint checkpoint : level.getCheckpoints())
 		{
-			checkedMap.put(checkpoint.getOrderNum(), false);
+			checkedMap.put(checkpoint.getCheckpointOrder(), false);
 		}
 	}
 
-	public Lap getLap()
+	public Level getLevel()
 	{
-		return lap;
+		return level;
 	}
 
 	public void setChecked(int orderNum, boolean checked)
@@ -71,7 +72,7 @@ public class CheckedState implements Serializable
 		StringBuilder sb = new StringBuilder();
 		for (Integer checkpointOrderNum : getCheckedList())
 		{
-			sb.append(lap.getCheckpointByOrderNum(checkpointOrderNum).getName());
+			sb.append(level.getCheckpointByOrderNum(checkpointOrderNum).getCheckpointName());
 			sb.append(",");
 		}
 		return (sb.length() == 0) ? "-" : sb.toString().substring(0, sb.length() - 1);
@@ -88,9 +89,9 @@ public class CheckedState implements Serializable
 		List<Interval> intervals = new BuildIntervalsMethod(checkpoints).execute();
 		for (Interval interval : intervals)
 		{
-			sb.append(lap.getCheckpointByOrderNum(interval.getBeginNum()).getName());
+			sb.append(level.getCheckpointByOrderNum(interval.getBeginNum()).getCheckpointName());
 			if (!interval.isSingleElement())
-			    sb.append("-").append(lap.getCheckpointByOrderNum(interval.getEndNum()).getName());
+			    sb.append("-").append(level.getCheckpointByOrderNum(interval.getEndNum()).getCheckpointName());
 			sb.append(",");
 		}
 		return (sb.length() == 0) ? "-" : sb.toString().substring(0, sb.length() - 1);

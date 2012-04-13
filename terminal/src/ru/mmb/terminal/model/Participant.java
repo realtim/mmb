@@ -2,39 +2,46 @@ package ru.mmb.terminal.model;
 
 import java.io.Serializable;
 
-import ru.mmb.terminal.model.registry.Parented;
-
-public class Participant implements Serializable, Parented, Comparable<Participant>
+public class Participant implements Serializable, Comparable<Participant>
 {
 	private static final long serialVersionUID = 1134876440887563801L;
 
 	private transient Team team = null;
-	private int id;
+	private int userId;
 	private int teamId;
-	private String name;
-	private Integer birthYear = null;
-	private boolean withdrawn = false;
+	private String userName;
+	private Integer userBirthYear = null;
 
 	public Participant()
 	{
 	}
 
-	public Participant(int id, int teamId, String name)
+	public Participant(int userId, int teamId, String userName)
 	{
-		this(id, teamId, name, null);
+		this(userId, teamId, userName, null);
 	}
 
-	public Participant(int id, int teamId, String name, Integer birthYear)
+	public Participant(int userId, int teamId, String userName, Integer userBirthYear)
 	{
-		this.id = id;
+		this.userId = userId;
 		this.teamId = teamId;
-		this.name = name;
-		this.birthYear = birthYear;
+		this.userName = userName;
+		this.userBirthYear = userBirthYear;
 	}
 
-	public int getId()
+	public int getUserId()
 	{
-		return id;
+		return userId;
+	}
+
+	public String getUserName()
+	{
+		return userName;
+	}
+
+	public Integer getUserBirthYear()
+	{
+		return userBirthYear;
 	}
 
 	public int getTeamId()
@@ -52,17 +59,7 @@ public class Participant implements Serializable, Parented, Comparable<Participa
 		this.team = team;
 	}
 
-	public String getName()
-	{
-		return name;
-	}
-
-	public Integer getBirthYear()
-	{
-		return birthYear;
-	}
-
-	public static Participant parse(String participantString)
+	/*public static Participant parse(String participantString)
 	{
 		if (ParseUtils.isEmpty(participantString)) return null;
 
@@ -74,34 +71,11 @@ public class Participant implements Serializable, Parented, Comparable<Participa
 		if (!ParseUtils.isNull(strings[3])) birthYear = Integer.parseInt(strings[3]);
 
 		return new Participant(id, teamId, name, birthYear);
-	}
-
-	@Override
-	public Integer getParentId()
-	{
-		return new Integer(getTeamId());
-	}
-
-	public boolean isWithdrawn()
-	{
-		return withdrawn;
-	}
-
-	public void setWithdrawn(boolean withdrawn)
-	{
-		this.withdrawn = withdrawn;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "Participant [id=" + id + ", teamId=" + teamId + ", name=" + name + ", birthYear="
-		        + birthYear + ", withdrawn=" + withdrawn + "]";
-	}
+	}*/
 
 	@Override
 	public int compareTo(Participant another)
 	{
-		return getName().compareTo(another.getName());
+		return getUserName().compareTo(another.getUserName());
 	}
 }

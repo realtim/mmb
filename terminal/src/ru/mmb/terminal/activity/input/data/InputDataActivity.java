@@ -70,7 +70,8 @@ public class InputDataActivity extends Activity implements StateChangeListener
 		@Override
 		public void onClick(View v)
 		{
-			currentState.saveInputDataToDB();
+			// TODO restore data saving
+			// currentState.saveInputDataToDB();
 			finish();
 		}
 	}

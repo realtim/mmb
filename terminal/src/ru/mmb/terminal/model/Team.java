@@ -7,16 +7,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class Team implements Serializable
 {
 	private static final long serialVersionUID = 8964164964196286726L;
 
-	private int id;
+	private int teamId;
 	private int distanceId;
-	private int number;
-	private String name;
+	private int teamNum;
+	private String teamName;
 
 	private transient List<Participant> members = null;
 
@@ -24,17 +23,17 @@ public class Team implements Serializable
 	{
 	}
 
-	public Team(int id, int distanceId, int number, String name)
+	public Team(int teamId, int distanceId, int teamNum, String teamName)
 	{
-		this.id = id;
+		this.teamId = teamId;
 		this.distanceId = distanceId;
-		this.number = number;
-		this.name = name;
+		this.teamNum = teamNum;
+		this.teamName = teamName;
 	}
 
-	public int getId()
+	public int getTeamId()
 	{
-		return id;
+		return teamId;
 	}
 
 	public int getDistanceId()
@@ -42,14 +41,14 @@ public class Team implements Serializable
 		return distanceId;
 	}
 
-	public int getNumber()
+	public int getTeamNum()
 	{
-		return number;
+		return teamNum;
 	}
 
-	public String getName()
+	public String getTeamName()
 	{
-		return name;
+		return teamName;
 	}
 
 	private List<Participant> getMembersInstance()
@@ -68,14 +67,7 @@ public class Team implements Serializable
 		getMembersInstance().add(participant);
 	}
 
-	@Override
-	public String toString()
-	{
-		return "Team [id=" + id + ", distanceId=" + distanceId + ", number=" + number + ", name="
-		        + name + ", members=" + members + "]";
-	}
-
-	public static Team parse(String teamString, Map<Integer, List<Participant>> teamParticipants)
+	/*public static Team parse(String teamString, Map<Integer, List<Participant>> teamParticipants)
 	{
 		if (ParseUtils.isEmpty(teamString)) return null;
 
@@ -97,7 +89,7 @@ public class Team implements Serializable
 		}
 
 		return result;
-	}
+	}*/
 
 	private void writeObject(ObjectOutputStream s) throws IOException
 	{
@@ -127,7 +119,7 @@ public class Team implements Serializable
 	{
 		for (Participant member : members)
 		{
-			if (member.getId() == participantId) return member;
+			if (member.getUserId() == participantId) return member;
 		}
 		return null;
 	}

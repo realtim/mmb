@@ -73,7 +73,7 @@ public class CheckpointPanel
 
 		List<TableRow> rows = new ArrayList<TableRow>();
 
-		List<Checkpoint> checkpoints = currentState.getCurrentLap().getCheckpoints();
+		List<Checkpoint> checkpoints = currentState.getCurrentLevel().getCheckpoints();
 		int rowCount = (int) Math.round(Math.ceil(((double) checkpoints.size()) / colCount));
 
 		for (int i = 0; i < rowCount; i++)
@@ -91,7 +91,7 @@ public class CheckpointPanel
 			TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
 			layoutParams.weight = 1;
 			checkpointBox.setLayoutParams(layoutParams);
-			checkpointBox.setText(checkpoints.get(i).getName());
+			checkpointBox.setText(checkpoints.get(i).getCheckpointName());
 			checkpointBox.setChecked(false);
 			checkpointBox.setOnClickListener(new CheckpointBoxClickListener());
 			tableRow.addView(checkpointBox);
@@ -126,7 +126,7 @@ public class CheckpointPanel
 	{
 		if (!currentState.needInputCheckpoints()) return;
 
-		List<Checkpoint> checkpoints = currentState.getCurrentLap().getCheckpoints();
+		List<Checkpoint> checkpoints = currentState.getCurrentLevel().getCheckpoints();
 		for (Checkpoint checkpoint : checkpoints)
 		{
 			CheckBox checkBox = checkpointBoxes.get(checkpoint);

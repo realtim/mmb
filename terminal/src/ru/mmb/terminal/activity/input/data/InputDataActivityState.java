@@ -12,7 +12,7 @@ import ru.mmb.terminal.activity.input.InputMode;
 import ru.mmb.terminal.activity.input.data.checkpoints.CheckedState;
 import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.Checkpoint;
-import ru.mmb.terminal.model.Lap;
+import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.StartType;
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -30,13 +30,13 @@ public class InputDataActivityState extends InputActivityState
 
 	public void setChecked(Checkpoint checkpoint, boolean checked)
 	{
-		checkedState.setChecked(checkpoint.getOrderNum(), checked);
+		checkedState.setChecked(checkpoint.getCheckpointOrder(), checked);
 		fireStateChanged();
 	}
 
 	public boolean isChecked(Checkpoint checkpoint)
 	{
-		return checkedState.isChecked(checkpoint.getOrderNum());
+		return checkedState.isChecked(checkpoint.getCheckpointOrder());
 	}
 
 	public void setInputDate(int year, int month, int day, int hour, int minute)
@@ -113,7 +113,7 @@ public class InputDataActivityState extends InputActivityState
 	public boolean isCommonStart()
 	{
 		if (getCurrentInputMode() == InputMode.FINISH) return false;
-		return getCurrentLap().getStartType() == StartType.COMMON_START;
+		return getCurrentLevel().getLevelStartType() == StartType.COMMON_START;
 	}
 
 	public boolean needInputCheckpoints()
@@ -129,7 +129,7 @@ public class InputDataActivityState extends InputActivityState
 
 	public void initInputDateFromCommonStart()
 	{
-		inputDate = new DateRecord(getCurrentLap().getCommonStartTime());
+		inputDate = new DateRecord(getCurrentLevel().getLevelBegTime());
 	}
 
 	public String getResultText(Activity context)
@@ -162,17 +162,17 @@ public class InputDataActivityState extends InputActivityState
 	}
 
 	@Override
-	public void setCurrentLap(Lap currentLap)
+	public void setCurrentLevel(Level currentLevel)
 	{
-		super.setCurrentLap(currentLap);
-		checkedState.setLap(currentLap);
+		super.setCurrentLevel(currentLevel);
+		checkedState.setLevel(currentLevel);
 	}
 
 	@Override
 	protected void update()
 	{
 		super.update();
-		checkedState.setLap(getCurrentLap());
+		checkedState.setLevel(getCurrentLevel());
 	}
 
 	public void checkAll()
@@ -189,6 +189,6 @@ public class InputDataActivityState extends InputActivityState
 
 	public void saveInputDataToDB()
 	{
-		TerminalDB.getInstance().saveInputData(getCurrentLap(), getCurrentTeam(), getCurrentInputMode(), inputDate.toDate(), checkedState.getTakenCheckpointsRawText(), getActiveUser());
+		TerminalDB.getInstance().saveInputData(getCurrentLevel(), getCurrentTeam(), getCurrentInputMode(), inputDate.toDate(), checkedState.getTakenCheckpointsRawText());
 	}
 }

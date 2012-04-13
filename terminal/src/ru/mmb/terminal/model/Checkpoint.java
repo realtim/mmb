@@ -2,59 +2,50 @@ package ru.mmb.terminal.model;
 
 import java.io.Serializable;
 
-import ru.mmb.terminal.model.registry.Parented;
-
-public class Checkpoint implements Serializable, Comparable<Checkpoint>, Parented
+public class Checkpoint implements Serializable, Comparable<Checkpoint>
 {
 	private static final long serialVersionUID = 8167279135428904030L;
 
-	private int lapId;
-	private int orderNum;
-	private String name;
-	private int penalty;
+	private int levelId;
+	private int checkpointOrder;
+	private String checkpointName;
+	private int checkpointPenalty;
 
-	private transient Lap lap = null;
+	private transient Level level = null;
 
 	public Checkpoint()
 	{
 	}
 
-	public Checkpoint(int lapId, int orderNum, String name, int penalty)
+	public Checkpoint(int levelId, int checkpointOrder, String checkpointName, int checkpointPenalty)
 	{
-		this.lapId = lapId;
-		this.orderNum = orderNum;
-		this.name = name;
-		this.penalty = penalty;
+		this.levelId = levelId;
+		this.checkpointOrder = checkpointOrder;
+		this.checkpointName = checkpointName;
+		this.checkpointPenalty = checkpointPenalty;
 	}
 
-	public int getLapId()
+	public int getLevelId()
 	{
-		return lapId;
+		return levelId;
 	}
 
-	public int getOrderNum()
+	public int getCheckpointOrder()
 	{
-		return orderNum;
+		return checkpointOrder;
 	}
 
-	public String getName()
+	public String getCheckpointName()
 	{
-		return name;
+		return checkpointName;
 	}
 
-	public int getPenalty()
+	public int getCheckpointPenalty()
 	{
-		return penalty;
+		return checkpointPenalty;
 	}
 
-	@Override
-	public String toString()
-	{
-		return "Checkpoint [lapId=" + lapId + ", orderNum=" + orderNum + ", name=" + name
-		        + ", penalty=" + penalty + "]";
-	}
-
-	public static Checkpoint parse(String checkpointString)
+	/*public static Checkpoint parse(String checkpointString)
 	{
 		if (ParseUtils.isEmpty(checkpointString)) return null;
 
@@ -65,27 +56,21 @@ public class Checkpoint implements Serializable, Comparable<Checkpoint>, Parente
 		int penalty = Integer.parseInt(splitted[3]);
 
 		return new Checkpoint(lapId, orderNum, name, penalty);
+	}*/
+
+	public Level getLevel()
+	{
+		return level;
 	}
 
-	public Lap getLap()
+	public void setLevel(Level level)
 	{
-		return lap;
-	}
-
-	public void setLap(Lap lap)
-	{
-		this.lap = lap;
+		this.level = level;
 	}
 
 	@Override
 	public int compareTo(Checkpoint another)
 	{
-		return new Integer(getOrderNum()).compareTo(new Integer(another.getOrderNum()));
-	}
-
-	@Override
-	public Integer getParentId()
-	{
-		return new Integer(getLapId());
+		return new Integer(getCheckpointOrder()).compareTo(new Integer(another.getCheckpointOrder()));
 	}
 }

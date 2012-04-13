@@ -1,10 +1,10 @@
 package ru.mmb.terminal.activity.input.start;
 
-import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_LAP_ACTIVITY;
+import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_LEVEL_ACTIVITY;
 import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_TEAM_ACTIVITY;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.InputActivityState;
-import ru.mmb.terminal.activity.input.lap.SelectLapActivity;
+import ru.mmb.terminal.activity.input.level.SelectLevelActivity;
 import ru.mmb.terminal.activity.input.team.SearchTeamActivity;
 import android.app.Activity;
 import android.content.Intent;
@@ -18,10 +18,10 @@ public class StartInputActivity extends Activity
 {
 	private InputActivityState currentState;
 
-	private Button btnSelectLap;
+	private Button btnSelectLevel;
 	private Button btnProceedInput;
 	private TextView labDistance;
-	private TextView labLap;
+	private TextView labLevel;
 	private TextView labInputMode;
 
 	@Override
@@ -34,13 +34,13 @@ public class StartInputActivity extends Activity
 
 		setContentView(R.layout.input_start);
 
-		btnSelectLap = (Button) findViewById(R.id.inputStart_selectLapBtn);
+		btnSelectLevel = (Button) findViewById(R.id.inputStart_selectLevelBtn);
 		btnProceedInput = (Button) findViewById(R.id.inputStart_proceedInputBtn);
 		labDistance = (TextView) findViewById(R.id.inputStart_distanceLabel);
-		labLap = (TextView) findViewById(R.id.inputStart_lapLabel);
+		labLevel = (TextView) findViewById(R.id.inputStart_levelLabel);
 		labInputMode = (TextView) findViewById(R.id.inputStart_modeLabel);
 
-		btnSelectLap.setOnClickListener(new SelectLapClickListener());
+		btnSelectLevel.setOnClickListener(new SelectLevelClickListener());
 		btnProceedInput.setOnClickListener(new ProceedInputClickListener());
 
 		refreshState();
@@ -51,23 +51,23 @@ public class StartInputActivity extends Activity
 		setTitle(currentState.getTitleText(this));
 
 		if (currentState.getCurrentDistance() != null)
-		    labDistance.setText(currentState.getCurrentDistance().getName());
-		if (currentState.getCurrentLap() != null)
-		    labLap.setText(currentState.getCurrentLap().getName());
+		    labDistance.setText(currentState.getCurrentDistance().getDistanceName());
+		if (currentState.getCurrentLevel() != null)
+		    labLevel.setText(currentState.getCurrentLevel().getLevelName());
 		if (currentState.getCurrentInputMode() != null)
 		    labInputMode.setText(getResources().getString(currentState.getCurrentInputMode().getDisplayNameId()));
 
-		btnProceedInput.setEnabled(currentState.isLapSelected());
+		btnProceedInput.setEnabled(currentState.isLevelSelected());
 	}
 
-	private class SelectLapClickListener implements OnClickListener
+	private class SelectLevelClickListener implements OnClickListener
 	{
 		@Override
 		public void onClick(View v)
 		{
-			Intent intent = new Intent(getApplicationContext(), SelectLapActivity.class);
-			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_LAP_ACTIVITY);
-			startActivityForResult(intent, REQUEST_CODE_INPUT_LAP_ACTIVITY);
+			Intent intent = new Intent(getApplicationContext(), SelectLevelActivity.class);
+			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_LEVEL_ACTIVITY);
+			startActivityForResult(intent, REQUEST_CODE_INPUT_LEVEL_ACTIVITY);
 		}
 	}
 
@@ -76,15 +76,15 @@ public class StartInputActivity extends Activity
 	{
 		switch (requestCode)
 		{
-			case REQUEST_CODE_INPUT_LAP_ACTIVITY:
-				onSelectLapActivityResult(resultCode, data);
+			case REQUEST_CODE_INPUT_LEVEL_ACTIVITY:
+				onSelectLevelActivityResult(resultCode, data);
 				break;
 			default:
 				super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
 
-	private void onSelectLapActivityResult(int resultCode, Intent data)
+	private void onSelectLevelActivityResult(int resultCode, Intent data)
 	{
 		if (resultCode == RESULT_OK)
 		{

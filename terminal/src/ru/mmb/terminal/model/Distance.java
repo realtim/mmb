@@ -7,66 +7,65 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class Distance implements Serializable
 {
 	private static final long serialVersionUID = 1645090862525665007L;
 
-	private int id;
-	private int mmbId;
-	private String name;
+	private int distanceId;
+	private int raidId;
+	private String distanceName;
 
-	private transient List<Lap> laps = null;
+	private transient List<Level> levels = null;
 
 	public Distance()
 	{
 	}
 
-	public Distance(int id, int mmbId, String name)
+	public Distance(int distanceId, int raidId, String distanceName)
 	{
-		this.id = id;
-		this.mmbId = mmbId;
-		this.name = name;
+		this.distanceId = distanceId;
+		this.raidId = raidId;
+		this.distanceName = distanceName;
 	}
 
-	public int getId()
+	public int getDistanceId()
 	{
-		return id;
+		return distanceId;
 	}
 
-	public int getMmbId()
+	public int getRaidId()
 	{
-		return mmbId;
+		return raidId;
 	}
 
-	public String getName()
+	public String getDistanceName()
 	{
-		return name;
+		return distanceName;
 	}
 
-	private List<Lap> getLapsInstance()
+	private List<Level> getLevelsInstance()
 	{
-		if (laps == null) laps = new ArrayList<Lap>();
-		return laps;
+		if (levels == null) levels = new ArrayList<Level>();
+		return levels;
 	}
 
-	public List<Lap> getLaps()
+	public List<Level> getLevels()
 	{
-		return Collections.unmodifiableList(getLapsInstance());
+		return Collections.unmodifiableList(getLevelsInstance());
 	}
 
-	public void addLap(Lap lap)
+	public void addLevel(Level level)
 	{
-		getLapsInstance().add(lap);
+		getLevelsInstance().add(level);
 	}
 
-	private void sortLaps()
+	private void sortLevels()
 	{
-		Collections.sort(getLapsInstance());
+		Collections.sort(getLevelsInstance());
 	}
 
-	public static Distance parse(String distanceString, Map<Integer, List<Lap>> distanceLaps)
+	/*public static Distance parse(String distanceString, Map<Integer, List<Level>> distanceLaps)
 	{
 		if (ParseUtils.isEmpty(distanceString)) return null;
 
@@ -79,30 +78,16 @@ public class Distance implements Serializable
 		addDistanceLaps(result, distanceLaps);
 
 		return result;
-	}
-
-	private static void addDistanceLaps(Distance distance, Map<Integer, List<Lap>> distanceLaps)
-	{
-		Integer idInteger = new Integer(distance.getId());
-		if (distanceLaps.containsKey(idInteger))
-		{
-			for (Lap lap : distanceLaps.get(idInteger))
-			{
-				distance.addLap(lap);
-				lap.setDistance(distance);
-			}
-		}
-		distance.sortLaps();
-	}
+	}*/
 
 	private void writeObject(ObjectOutputStream s) throws IOException
 	{
 		s.defaultWriteObject();
 
-		s.writeInt(laps.size());
-		for (Lap lap : laps)
+		s.writeInt(levels.size());
+		for (Level level : levels)
 		{
-			s.writeObject(lap);
+			s.writeObject(level);
 		}
 	}
 
@@ -110,49 +95,52 @@ public class Distance implements Serializable
 	{
 		s.defaultReadObject();
 
-		int lapsSize = s.readInt();
-		for (int i = 0; i < lapsSize; i++)
+		int levelsSize = s.readInt();
+		for (int i = 0; i < levelsSize; i++)
 		{
-			Lap lap = (Lap) s.readObject();
-			addLap(lap);
-			lap.setDistance(this);
+			Level level = (Level) s.readObject();
+			addLevel(level);
+			level.setDistance(this);
 		}
-		sortLaps();
+		sortLevels();
 	}
 
-	@Override
-	public String toString()
+	public Level getLevelById(int levelId)
 	{
-		return "Distance [id=" + id + ", mmbId=" + mmbId + ", name=" + name + ", laps=" + laps
-		        + "]";
-	}
-
-	public Lap getLapById(int lapId)
-	{
-		for (Lap lap : laps)
+		for (Level level : levels)
 		{
-			if (lap.getId() == lapId) return lap;
+			if (level.getLevelId() == levelId) return level;
 		}
 		return null;
 	}
 
-	public String[] getLapNamesArray()
+	public String[] getLevelNamesArray()
 	{
-		String[] result = new String[laps.size()];
-		for (int i = 0; i < laps.size(); i++)
+		String[] result = new String[levels.size()];
+		for (int i = 0; i < levels.size(); i++)
 		{
-			result[i] = laps.get(i).getName();
+			result[i] = levels.get(i).getLevelName();
 		}
 		return result;
 	}
 
-	public int getLapIndex(Lap lap)
+	public int getLevelIndex(Level level)
 	{
-		return laps.indexOf(lap);
+		return levels.indexOf(level);
 	}
 
-	public Lap getLapByIndex(int index)
+	public Level getLevelByIndex(int index)
 	{
-		return laps.get(index);
+		return levels.get(index);
+	}
+
+	public void addLoadedLevels(List<Level> levels)
+	{
+		for (Level level : levels)
+		{
+			addLevel(level);
+			level.setDistance(this);
+		}
+		sortLevels();
 	}
 }

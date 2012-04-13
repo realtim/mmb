@@ -12,12 +12,4 @@
         android:layout_gravity="center_horizontal"
         android:text="@string/main_input_data" />
 
-    <Button
-        android:id="@+id/main_loginBtn"
-        android:layout_width="@dimen/main_button_width"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/global_padding"
-        android:text="@string/main_login" />
-
 </LinearLayout>

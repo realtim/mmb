@@ -25,12 +25,12 @@ public class TeamMemberRecord implements Comparable<TeamMemberRecord>
 
 	public int getMemberId()
 	{
-		return member.getId();
+		return member.getUserId();
 	}
 
 	public CharSequence getMemberName()
 	{
-		return member.getName();
+		return member.getUserName();
 	}
 
 	@Override
