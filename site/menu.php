@@ -64,7 +64,7 @@
 	// Функция проверки e-mail
 	function CheckEmail(email) 
 	{
-		var template = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-\_]+\.[A-Za-z0-9]{2,6}$/;
+		var template = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-\_\.]+\.[A-Za-z0-9]{2,6}$/;
 //		var template = /^[A-Za-z0-9_\.]+@[A-Za-z0-9]+\.[A-Za-z0-9]{2,6}$/;
 //		var template = /^[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z])+$/;
 //		email = drop_spaces(email); //функцию drop_spaces() см. выше
