@@ -261,8 +261,15 @@
 		  $LevelPointNames =  $Row['level_pointnames'];
 		  $LevelPointPenalties =  $Row['level_pointpenalties'];
                //   $LevelMapLink = $Row['level_maplink'];
-                 
-                  $PointsCount = count(explode(',', $LevelPointNames));
+
+                  // Проверяем, что строчка с названиями КП указана                 
+                  if (trim($LevelPointNames) <> '')
+                  {
+		    $PointsCount = count(explode(',', $LevelPointNames));
+                  } else {
+		    $PointsCount = 0;
+                  }
+                  
 
 		  // Если старт не задан - считаем общим 
 		  if (empty($LevelStartType))
