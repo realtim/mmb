@@ -56,13 +56,13 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	//class = "yellow"
         print('<td><a href = "javascript:document.FindTeamForm.RaidId.value='.$RaidId.';RaidTeams();">'.$RaidName.'</a></td>'."\r\n");
 
-	print('<td><a href = "'.$RaidRulesLink.'">'.$RaidPeriod.'</td>'."\r\n");
+	print('<td><a href = "'.$RaidRulesLink.'" target = "_blank">'.$RaidPeriod.'</td>'."\r\n");
         
 	if (empty($RaidStartLink))
 	{
 		print('<td>'.$RaidStartPoint.' - '.$RaidFinishPoint.'</td>'."\r\n");
 	} else {
-		print('<td><a href = "'.$RaidStartLink.'">'.$RaidStartPoint.'</a> - '.$RaidFinishPoint.'</td>'."\r\n");
+		print('<td><a href = "'.$RaidStartLink.'"  target = "_blank">'.$RaidStartPoint.'</a> - '.$RaidFinishPoint.'</td>'."\r\n");
 	
 	}	
         
