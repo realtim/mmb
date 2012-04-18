@@ -36,7 +36,6 @@ public class DistancesRegistry
 			for (Distance distance : distances)
 			{
 				List<Level> levels = TerminalDB.getInstance().loadLevels(distance.getDistanceId());
-				;
 				distance.addLoadedLevels(levels);
 			}
 		}
