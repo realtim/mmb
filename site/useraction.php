@@ -354,12 +354,31 @@
 		      return;
 	   }
 
+
+           $sql = "select user_id 
+                   from  Users 
+                   where user_hide = 0 and user_email = '".$pUserEmail."'";
+
+         //  echo $sql;
+	   $rs = MySqlQuery($sql);  
+	   $Row = mysql_fetch_assoc($rs);
+	   mysql_free_result($rs); 
+ 	   $UserId = $Row['user_id'];
+ 	
+	   if ($UserId <= 0) 
+	   {
+	              $statustext = 'Пользователь с  e-mail '.$pUserEmail.' не найден ';
+		      $alert = 1;
+		      return;
+	   }
+
+
 	   $ChangePasswordSessionId = uniqid();
 	   
            // пишем в базу сессию для восстановления пароля
            $sql = "update   Users  set user_sessionfornewpassword = '".$ChangePasswordSessionId."',
 	                               user_sendnewpasswordrequestdt = now()
-	           where user_email = '".$pUserEmail."'";
+	           where user_id = '".$UserId."'";
            //echo $sql;
 	   $rs = MySqlQuery($sql);  
            mysql_free_result($rs); 	
