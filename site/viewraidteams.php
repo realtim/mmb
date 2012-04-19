@@ -123,7 +123,7 @@
 		$DisabledText = '';
 
                 // Разбираемся с сортировкой
-                $OrderType = $_POST['OrderType'];
+                if (isset($_POST['OrderType'])) $OrderType = $_POST['OrderType']; else $OrderType = "";
 		$OrderString = '';
 
 
@@ -140,9 +140,9 @@
             
 		  $Result = MySqlQuery($sql);
 		  $Row = mysql_fetch_assoc($Result);
-		  mysql_free_result($UserResult);
+		  mysql_free_result($Result);
                 // Скорее всего нужно использоать только в сравнении с текущим временем
-                $RsultPublicated =  $Row['raid_resultpublicationdate'];
+                $ResultPublicated =  $Row['raid_resultpublicationdate'];
                 $RaidRulesLink = trim($Row['raid_ruleslink']);
                 $RaidStartLink = trim($Row['raid_startlink']);
 
@@ -171,6 +171,7 @@
                                onchange = "DistanceIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
                 $distanceselected =  (0 == $_POST['DistanceId'] ? 'selected' : '');
 		  print('<option value = "0" '.$$distanceselected.' >дистанцию'."\r\n");
+		if (!isset($_POST['DistanceId'])) $_POST['DistanceId'] = "";
 	        while ($Row = mysql_fetch_assoc($Result))
 		{
 		  $distanceselected = ($Row['distance_id'] == $_POST['DistanceId']  ? 'selected' : '');
@@ -198,6 +199,7 @@
 	          $levelselected =  ((0 == $_POST['LevelId'] or $OrderType=='Num') ? 'selected' : '');
 		print('<option value = "0" '.$levelselected.' >этап'."\r\n");
 
+		if (!isset($_POST['LevelId'])) $_POST['LevelId'] = "";
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 		    $levelselected = (($Row['level_id'] == $_POST['LevelId'] and $OrderType<>'Num' )? 'selected' : '');
@@ -256,7 +258,7 @@
 
 		  // По этому ключу потом определяем, есть ли уже строчка в teamLevels или её нужно создать 
 
-		  $TeamLevelId = $Row['teamlevel_id'];
+		  $TeamLevelId = $Row['level_id'];
 		  $LevelStartType = $Row['level_starttype'];
 		  $LevelPointNames =  $Row['level_pointnames'];
 		  $LevelPointPenalties =  $Row['level_pointpenalties'];

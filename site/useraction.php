@@ -73,6 +73,7 @@
            $pUserEmail = $_POST['UserEmail'];
            $pUserName = $_POST['UserName'];
            $pUserBirthYear = $_POST['UserBirthYear'];
+           if (!isset($_POST['UserProhibitAdd'])) $_POST['UserProhibitAdd'] = "";
            $pUserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
            $pUserId = $_POST['UserId']; 
 
@@ -475,6 +476,7 @@
    } elseif ($action == "FindUser")  {
     // Действие вызывается поиском участника
 
+		if (isset($_POST['FindString'])) $FindString = $_POST['FindString']; else $FindString = "";
                 if (trim($FindString) == '' or trim($FindString) == 'Часть ФИО')
                 {
                   $statustext = 'Не указан критерий поиска.';				     

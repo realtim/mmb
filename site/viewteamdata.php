@@ -12,7 +12,7 @@
 	 // Текущий пользователь
 	 $NowUserId = GetSession($SessionId);
 
-
+         if (!isset($viewmode)) $viewmode = "";
          if ($viewmode == 'Add')
 	 {
 
@@ -83,6 +83,7 @@
            // просмотр существующего
                // Проверка нужна только для случая регистрация новой команды
                  // только тогда Id есть в переменной php, но нет в вызывающей форме
+		if (!isset($_POST['TeamId'])) $_POST['TeamId'] = "";
 		if (empty($TeamId))
 		{
 			$TeamId = $_POST['TeamId']; 

@@ -14,6 +14,7 @@
 	 $NowUserId = GetSession($SessionId);
 
 
+         if (isset($_POST['viewmode'])) $viewmode = $_POST['viewmode']; else $viewmode = "";
          if ($viewmode == 'Add')
 	 {
              // Новый пользователь 
@@ -29,6 +30,7 @@
 	      $UserEmail = $_POST['UserEmail'];
 	      $UserName = str_replace( '"', '&quot;', $_POST['UserName']);
 	      $UserBirthYear = (int)$_POST['UserBirthYear'];
+	      if (!isset($_POST['UserProhibitAdd'])) $_POST['UserProhibitAdd'] = "";
 	      $UserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
 
              } else {

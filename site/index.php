@@ -8,10 +8,28 @@
         // Пробегаем помассивам POST GET REAUEST COOKIE  и чистим возможные sql инъекции и мусор
         ClearArrays();
 
+	// Устанавливаем часовой пояс по умолчанию
+	date_default_timezone_set("Europe/Moscow");
+
         // Флаг ошибки (1 - цвет текста statustext становится красным и всплывает окно с сообщением) 
 	// и текст, который выводится в статусную строку (под логотип)
 	$alert = 0; 
 	$statustext = ""; //"Сегодня: ".date("d.m.Y")."  &nbsp; Время: ".date("H:i:s");
+
+	// Временная инициализация переменной, которая пока больше нигде не устанавливается
+	$TeamModeratorConfirmResult = 0;
+
+	// Инициализуем переменные окружения, если они отсутствуют
+	if (!isset($_POST['sessionid'])) $_POST['sessionid'] = "";
+	if (!isset($_POST['RaidId'])) $_POST['RaidId'] = "";
+	if (!isset($_POST['action'])) $_POST['action'] = "";
+	if (!isset($_POST['RaidId'])) $_POST['RaidId'] = "";
+
+	// Инициализуем переменные сессии, если они отсутствуют
+	if (!isset($view)) $view = "";
+	if (!isset($viewsubmode)) $viewsubmode = "";
+	$action = $_POST['action'];
+	$RaidId = $_POST['RaidId'];
 
 	if ($action == "") 
 	{

@@ -66,8 +66,8 @@
            $RaidRegistrationEndDate = $Row['raid_registrationenddate'];
            //echo $RaidId.' '.$RaidRegistrationEndDate;
            $OldMmb = $Row['oldmmb'];
- 	   $NowDt = $row['nowdt'];
- 	   $RaidClose = $row['raidclose'];
+ 	   $NowDt = $Row['nowdt'];
+ 	   $RaidClose = $Row['raidclose'];
  
 	   if (empty($RaidId) or empty($RaidRegistrationEndDate))
            {
@@ -118,9 +118,12 @@
            $pTeamUseGPS = ($_POST['TeamUseGPS'] == 'on' ? 1 : 0);
            $pTeamMapsCount = (int)$_POST['TeamMapsCount'];
            $pTeamGreenPeace = ($_POST['TeamGreenPeace'] == 'on' ? 1 : 0);
+           if (!isset($_POST['TeamConfirmResult'])) $_POST['TeamConfirmResult'] = "";
            $pTeamConfirmResult = ($_POST['TeamConfirmResult'] == 'on' ? 1 : 0);
+           if (!isset($_POST['ModeratorConfirmResult'])) $_POST['ModeratorConfirmResult'] = "";
            $pModeratorConfirmResult = ($_POST['ModeratorConfirmResult'] == 'on' ? 1 : 0);
            $pNewTeamUserEmail = $_POST['NewTeamUserEmail'];
+           if (!isset($_POST['TeamNotOnLevelId'])) $_POST['TeamNotOnLevelId'] = "";
            $pTeamNotOnLevelId = (int)$_POST['TeamNotOnLevelId'];
 
           //  echo $pTeamUseGPS;
@@ -356,7 +359,7 @@
 						 where d.raid_id = ".$RaidId."
 						)";
                  }
-                 $sql = $sql.", '".$pTeamName."',".$pTeamUseGPS.",".$pTeamMapsCount.", ".$DistanceId.",
+                 $sql = $sql.", '".$pTeamName."',".$pTeamUseGPS.",".$pTeamMapsCount.", ".$pDistanceId.",
                                 NOW(), ".$pTeamGreenPeace.", ".$pTeamConfirmResult.",
                                ".$pModeratorConfirmResult.", ".$pTeamNotOnLevelId." )";
 
@@ -555,7 +558,8 @@
 
    } elseif  ($action == 'FindTeam')  {
    // Информация о команде по номеру
-   
+
+             if (isset($_POST['TeamNum'])) $TeamNum = $_POST['TeamNum']; else $TeamNum = "";
              if ($TeamNum == '' or $TeamNum == 'Номер команды')
              {
                         $statustext = 'Не указан номер.';
@@ -591,6 +595,7 @@
    } elseif  ($action == 'TeamInfo')  {
    // Информация о команде по Id
    
+		 if (isset($_POST['TeamId'])) $TeamId = $_POST['TeamId']; else $TeamId = "";
 		 if ($TeamId <= 0)
 		 {
                         

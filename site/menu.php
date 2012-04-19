@@ -99,11 +99,12 @@
 
 	 $UserId = 0;
 
-         if (empty($SessionId))
+         if (empty($SessionId) && isset($_POST['sessionid']))
 	 {
 		$SessionId =  $_POST['sessionid'];
 	 } 
-	 
+	 if (!isset($SessionId)) $SessionId = "";
+
 	 $UserId = GetSession($SessionId);
 	 
 //        echo "Пользователь: ".$UserId.", сессия: ".$SessionId;

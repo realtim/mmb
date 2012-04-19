@@ -4,7 +4,7 @@
 
 
 
- function MySqlQuery($SqlString,$SessionId,$NonSecure) {
+ function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "") {
  // Можно передавать соединение по ссылке &$ConnectionId  MySqlQuery($SqlString,&$ConnectionId, $SessionId,$NonSecure);
  //
  // вызов  MySqlQuety('...',&$ConnectionId, ...);
@@ -85,16 +85,9 @@
 	      $Result = MySqlQuery("insert into  Sessions (session_id, user_id, session_starttime, session_updatetime, session_status)
 	                            values ('".$SessionId ."',".$UserId.", now(), now(), 0)");
 
-	      mysql_free_result($Result); 
-
               // Записываем время послденей авторизации
 	      $Result = MySqlQuery("update Users set user_lastauthorizationdt = now()
 	                            where user_id = ".$UserId);
-
-	      mysql_free_result($Result); 
-
-
-
       }  else {
           $SessionId = '';
       }   
@@ -111,9 +104,6 @@
         // м.б. потом ещё нужно будет закрывать открытые соединения с БД
        $Result = MySqlQuery("update  Sessions set session_status = 1 
 			    where session_status = 0 and session_updatetime < date_add(now(), interval -".$TimeOutInMinutes." MINUTE)");
-       mysql_free_result($Result); 
-
-
       return;
   }
 
@@ -146,7 +136,6 @@
       {
        $Result = MySqlQuery("update  Sessions set session_updatetime = now()
 			    where session_status = 0 and session_id = '".$SessionId ."'");
-       mysql_free_result($Result); 
       }
       
       return $UserId;

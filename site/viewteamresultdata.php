@@ -21,6 +21,7 @@
         {
 	  $TeamPoints = explode(',', $TeamLevelPoints);
         }
+	else $TeamPoints = array();
 
 //      echo count($Names);
   //  echo count($Penalties);
@@ -61,7 +62,7 @@
         {
 		//print('<td>'.$Names[$i].'</br>('.$Penalties[$i].')'."\r\n");
                 print('<td style = "border-left-style: solid; border-left-width: 1px; border-left-color: #000000;">'.$Names[$i]."\r\n");
-                $Checked =  ($TeamPoints[$i] == 1) ? 'checked' : '';
+                $Checked = (isset($TeamPoints[$i]) && ($TeamPoints[$i] == 1)) ? 'checked' : '';
                 print('</br><input type = "checkbox" name = "Level'.$LevelId.'_chk'.$i.'"  '. $Checked.'  '.$DisabledResultText.' OnClick = "">'."\r\n");
                 print('</br>'.$Penalties[$i]."\r\n");
 		print('</td>'."\r\n");
