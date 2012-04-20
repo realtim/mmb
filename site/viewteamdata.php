@@ -102,7 +102,8 @@
 			       CASE WHEN t.team_registerdt >= r.raid_registrationenddate
                                     THEN 1
                                     ELSE 0
-                                END as team_late
+                                END as team_late,
+                              d.distance_resultlink
 		        from  Teams t
 			      inner join  Distances d on t.distance_id = d.distance_id
 			      inner join  Raids r on d.raid_id = r.raid_id
@@ -117,6 +118,7 @@
 		  $TeamRegisterDt = $Row['team_registerdt'];
                   $TeamResult = $Row['team_result'];
                   $TeamLate = (int)$Row['team_late'];
+                  $DistanceResultLink = $Row['distance_resultlink'];
 
 		// Если вернулись после ошибки переменные не нужно инициализировать
 		if ($viewsubmode == "ReturnAfterError") 
@@ -324,7 +326,14 @@
 
          
     	      // дистанция 
-	  print(' <span style = "margin-left: 30px;"> &nbsp; Дистанция</span>'."\r\n"); 
+         if ($OldMmb == 1)
+         {
+        	  print(' <span style = "margin-left: 30px;"> &nbsp; <a href = "'.trim($DistanceResultLink).'"
+                           title = "Общий протокол (для ММБ до 2012 года)" target = "_blank">Дистанция</a></span>'."\r\n"); 
+         } else {
+        	  print(' <span style = "margin-left: 30px;"> &nbsp; Дистанция</span>'."\r\n"); 
+	 }
+
 	  print('<select name="DistanceId"  class = "leftmargin" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
 
 	  //echo 'RaidId '.$RaidId;
@@ -517,7 +526,7 @@
 	    print(' команды
              <input type="checkbox" name="TeamConfirmResult" '.(($TeamConfirmResult == 1) ? 'checked="checked"' : '').'
                   tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
-  	           title = "Заполняется после ввода результатов. Отметьте, если команда проверила все данные и согласна с ними"/>  &nbsp; '."\r\n");
+  	           title = "Отметьте, если команда проверила результаты и согласна с ними"/>  &nbsp; '."\r\n");
 
 	    if ($Moderator)
 	    {
