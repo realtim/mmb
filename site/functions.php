@@ -304,6 +304,48 @@
     return $Row['userinteam'];
     }
 
+    // Проверка того, что данный марш-бросок уже стартовал
+    // (текущее время больше времени старта хотя бы одного из этапов)
+    function CheckRaidStarted($RaidId) {
+
+	if (!$RaidId || ($RaidId <= 0)) return(0);
+	$sql = "select level_begtime from Levels l
+		inner join Distances d on l.distance_id = d.distance_id
+		where (d.raid_id = " . $RaidId . ") and (NOW() >= l.level_begtime)";
+	$Result = MySqlQuery($sql);
+	if (!$Result) return(0);
+	$Started = mysql_num_rows($Result);
+	mysql_free_result($Result);
+
+    return($Started);
+    }
+
+    // Проверка того, что данный марш-бросок закончился
+    // (текущее время больше времени финиша любого из этапов)
+    function CheckRaidFinished($RaidId) {
+
+	if (!$RaidId || ($RaidId <= 0)) return(0);
+	$sql = "select level_endtime from Levels l
+		inner join Distances d on l.distance_id = d.distance_id
+		where (d.raid_id = " . $RaidId . ") and (NOW() < l.level_endtime)";
+	$Result = MySqlQuery($sql);
+	if (!$Result) return(0);
+	if (mysql_num_rows($Result) > 0) $Finished = 0; else $Finished = 1;
+	mysql_free_result($Result);
+
+    return($Finished);
+    }
+
+    // Проверка того, может ли пользователь уже видеть описания этапов и КП марш-броска
+    function CheckLevelDataVisible($SessionId, $RaidId) {
+
+	if (CheckModerator($SessionId, $RaidId))
+	{
+	    if (CheckRaidStarted($RaidId)) return(1); else return(0);
+	}
+	if (CheckRaidFinished($RaidId)) return(1); else return(0);
+
+    }
 
     // функция 
     // Автор: Григорий Рубцов [rgbeast]  

@@ -102,15 +102,11 @@
           // для остальных - после даты публикации результатов
            // Не, ещё круче: модераторам сразу после открытия старата первого этапа,
            // остальным - сразу после закрытия финиша последнего!
-	      $sql = "select r.raid_resultpublicationdate, r.raid_registrationenddate, 
+	      $sql = "select
                         CASE WHEN r.raid_registrationenddate is not null and YEAR(r.raid_registrationenddate) <= 2011 
                              THEN 1 
                              ELSE 0 
                         END as oldmmb,
-			CASE WHEN r.raid_registrationenddate is not null and r.raid_registrationenddate <= NOW() 
-                             THEN 1 
-                             ELSE 0 
-                        END as showresultfield,
                         r.raid_id,
                         t.team_moderatorconfirmresult,
                         t.team_confirmresult
@@ -125,20 +121,16 @@
                 $Result = MySqlQuery($sql);
 		$Row = mysql_fetch_assoc($Result);
                 mysql_free_result($Result);
-		$RaidPublicationResultDate = $Row['raid_resultpublicationdate'];
 		$RaidId = $Row['raid_id'];
                 $OldMmb = $Row['oldmmb'];
 		$ModeratorConfirmResult = $Row['team_moderatorconfirmresult'];
 		$TeamConfirmResult = $Row['team_confirmresult'];
-		$RaidShowResultField = $Row['showresultfield'];
 
             // Тут надо проверить глобальный запрет на правку данных по ММБ
 
-         if ($RaidShowResultField <> 1)
-	 {
-            return;
-         }
-
+	// Определяем, можно ли показывать карточки с информацией об этапах дистанции
+	$LevelDataVisible = CheckLevelDataVisible($SessionId, $RaidId);
+	if (!$LevelDataVisible) return;
 
             // нужна, возможно, доп проверка на время,чтобы не показывать пустые результаты с данными этапа
 

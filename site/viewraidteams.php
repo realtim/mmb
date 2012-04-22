@@ -157,7 +157,10 @@
 		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;" 
                                onchange = "OrderTypeChange();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
 	        print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >убыванию номера'."\r\n");
-	        print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
+		if (CheckRaidStarted($RaidId))
+		{
+	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
+		}
 	        print('</select>'."\r\n");  
 
 		print('Фильтровать: '."\r\n"); 
@@ -180,33 +183,40 @@
 		print('</select>'."\r\n");  
 		mysql_free_result($Result);		
 
-		$sql = "select level_id, d.distance_name, CONCAT(trim(level_name), ' (', trim(d.distance_name), ')') as level_name
-                          from  Levels l 
-                                inner join Distances d 
-                                on l.distance_id = d.distance_id  
-                           where d.raid_id = ".$RaidId;
-                if (!empty($_POST['DistanceId']))
-                {
-                     $sql = $sql." and d.distance_id = ".$_POST['DistanceId']; 
-                }
-                $sql = $sql." order by d.distance_name, l.level_order "; 
-		//  echo 'sql '.$sql;
-		$Result = MySqlQuery($sql);
-
-		print('<select name="LevelId" '.(($OrderType=='Num') ? 'disabled' : '').'
-                                style = "margin-left: 5px; margin-right: 10px;" 
-                                onchange = "LevelIdChange();" tabindex = "'.(++$TabIndex).'" >'."\r\n"); 
-	          $levelselected =  ((0 == $_POST['LevelId'] or $OrderType=='Num') ? 'selected' : '');
-		print('<option value = "0" '.$levelselected.' >этап'."\r\n");
+		// Определяем, можно ли показывать пользователю информацию об этапах дистанции
+		$LevelDataVisible = CheckLevelDataVisible($SessionId, $RaidId);
 
 		if (!isset($_POST['LevelId'])) $_POST['LevelId'] = "";
-		while ($Row = mysql_fetch_assoc($Result))
+		if ($LevelDataVisible)
 		{
-		    $levelselected = (($Row['level_id'] == $_POST['LevelId'] and $OrderType<>'Num' )? 'selected' : '');
-		    print('<option value = "'.$Row['level_id'].'" '.$levelselected.' >'.$Row['level_name']."\r\n");
+		    $sql = "select level_id, d.distance_name, CONCAT(trim(level_name), ' (', trim(d.distance_name), ')') as level_name
+                            from  Levels l
+                                inner join Distances d
+                                on l.distance_id = d.distance_id
+                            where d.raid_id = ".$RaidId;
+                    if (!empty($_POST['DistanceId']))
+                    {
+			$sql = $sql." and d.distance_id = ".$_POST['DistanceId'];
+                    }
+                    $sql = $sql." order by d.distance_name, l.level_order ";
+		    //  echo 'sql '.$sql;
+		    $Result = MySqlQuery($sql);
+
+		    print('<select name="LevelId" '.(($OrderType=='Num') ? 'disabled' : '').'
+                                style = "margin-left: 5px; margin-right: 10px;"
+                                onchange = "LevelIdChange();" tabindex = "'.(++$TabIndex).'" >'."\r\n");
+	            $levelselected =  ((0 == $_POST['LevelId'] or $OrderType=='Num') ? 'selected' : '');
+		    print('<option value = "0" '.$levelselected.' >этап'."\r\n");
+
+		    while ($Row = mysql_fetch_assoc($Result))
+		    {
+			$levelselected = (($Row['level_id'] == $_POST['LevelId'] and $OrderType<>'Num' )? 'selected' : '');
+			print('<option value = "'.$Row['level_id'].'" '.$levelselected.' >'.$Row['level_name']."\r\n");
+		    }
+		    mysql_free_result($Result);
+	            print('</select>'."\r\n");
 		}
-		mysql_free_result($Result);
-	        print('</select>'."\r\n");  
+
 		print('</div>'."\r\n");
             	print('<div align = "left" style = "margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
 		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidRulesLink.'" target = "_blank">Положение</a> '."\r\n");
@@ -215,147 +225,150 @@
 		print('</div>'."\r\n");
 
                 // Показываем этапы
-   	        $sql = "select  d.distance_name, l.level_id, l.level_name, 
-                                l.level_pointnames, l.level_starttype,
-                                l.level_pointpenalties, l.level_order, 
-				  DATE_FORMAT(l.level_begtime,    '%d.%m %H:%i') as level_sbegtime,
-				  DATE_FORMAT(l.level_maxbegtime, '%d.%m %H:%i') as level_smaxbegtime,
-                                  DATE_FORMAT(l.level_minendtime, '%d.%m %H:%i') as level_sminendtime,  
-                                  DATE_FORMAT(l.level_endtime,    '%d.%m %H:%i') as level_sendtime,  
-                                l.level_begtime, l.level_maxbegtime, l.level_minendtime, 
-                                l.level_endtime
-                        from  Levels l  
-                              inner join Distances d                              
-                              on d.distance_id = l.distance_id 
-                        where   d.raid_id = ".$RaidId;
-
-              //  $sql = $sql." and l.level_begtime <= now() "; 
-
-                if (!empty($_POST['DistanceId']))
-                {
-                     $sql = $sql." and d.distance_id = ".$_POST['DistanceId']; 
-                }
-                if (!empty($_POST['LevelId']))
-                {
-                     $sql = $sql." and l.level_id = ".$_POST['LevelId']; 
-                }
-                $sql = $sql." order by d.distance_name, l.level_order "; 
-
-	   //     echo $sql;
-
-		print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
-		print('<tr class = "gray">'."\r\n");  
-		print('<td width = "100">Дистанция</td>'."\r\n");  
-		print('<td width = "300">Этап (по ссылкам - карты)</td>'."\r\n");  
-		print('<td width = "400">Тип старта (границы по времени)'."\r\n");  
-		print('<td width = "70">Число КП'."\r\n");  
-		print('</tr>'."\r\n");  
-		$Result = MySqlQuery($sql);  
-       
-		// теперь цикл обработки данных по этапам 
-		while ($Row = mysql_fetch_assoc($Result))
+		if ($LevelDataVisible)
 		{
+		    $sql = "select  d.distance_name, l.level_id, l.level_name,
+                                    l.level_pointnames, l.level_starttype,
+                                    l.level_pointpenalties, l.level_order,
+				    DATE_FORMAT(l.level_begtime,    '%d.%m %H:%i') as level_sbegtime,
+				    DATE_FORMAT(l.level_maxbegtime, '%d.%m %H:%i') as level_smaxbegtime,
+                                    DATE_FORMAT(l.level_minendtime, '%d.%m %H:%i') as level_sminendtime,
+                                    DATE_FORMAT(l.level_endtime,    '%d.%m %H:%i') as level_sendtime,
+                                    l.level_begtime, l.level_maxbegtime, l.level_minendtime,
+                                    l.level_endtime
+                            from  Levels l
+                                  inner join Distances d
+                                  on d.distance_id = l.distance_id
+                            where   d.raid_id = ".$RaidId;
 
-		  // По этому ключу потом определяем, есть ли уже строчка в teamLevels или её нужно создать 
+                    // $sql = $sql." and l.level_begtime <= now() ";
 
-		  $TeamLevelId = $Row['level_id'];
-		  $LevelStartType = $Row['level_starttype'];
-		  $LevelPointNames =  $Row['level_pointnames'];
-		  $LevelPointPenalties =  $Row['level_pointpenalties'];
-               //   $LevelMapLink = $Row['level_maplink'];
+                    if (!empty($_POST['DistanceId']))
+                    {
+			$sql = $sql." and d.distance_id = ".$_POST['DistanceId'];
+                    }
+                    if (!empty($_POST['LevelId']))
+                    {
+			$sql = $sql." and l.level_id = ".$_POST['LevelId'];
+                    }
+                    $sql = $sql." order by d.distance_name, l.level_order ";
 
-                  // Проверяем, что строчка с названиями КП указана                 
-                  if (trim($LevelPointNames) <> '')
-                  {
-		    $PointsCount = count(explode(',', $LevelPointNames));
-                  } else {
-		    $PointsCount = 0;
-                  }
+	            // echo $sql;
+
+		    print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");
+		    print('<tr class = "gray">'."\r\n");
+		    print('<td width = "100">Дистанция</td>'."\r\n");
+		    print('<td width = "300">Этап (по ссылкам - карты)</td>'."\r\n");
+		    print('<td width = "400">Тип старта (границы по времени)'."\r\n");
+		    print('<td width = "70">Число КП'."\r\n");
+		    print('</tr>'."\r\n");
+		    $Result = MySqlQuery($sql);
+
+		    // теперь цикл обработки данных по этапам
+		    while ($Row = mysql_fetch_assoc($Result))
+		    {
+
+			// По этому ключу потом определяем, есть ли уже строчка в teamLevels или её нужно создать
+
+			$TeamLevelId = $Row['level_id'];
+			$LevelStartType = $Row['level_starttype'];
+			$LevelPointNames =  $Row['level_pointnames'];
+			$LevelPointPenalties =  $Row['level_pointpenalties'];
+			//   $LevelMapLink = $Row['level_maplink'];
+
+			// Проверяем, что строчка с названиями КП указана
+			if (trim($LevelPointNames) <> '')
+			{
+			    $PointsCount = count(explode(',', $LevelPointNames));
+			} else {
+			    $PointsCount = 0;
+			}
                   
 
-		  // Если старт не задан - считаем общим 
-		  if (empty($LevelStartType))
-		  {
-		    $LevelStartType = 2;
-		  }
+			// Если старт не задан - считаем общим
+			if (empty($LevelStartType))
+			{
+			    $LevelStartType = 2;
+			}
 
-		  // Делаем оформление в зависимости от типа старта и соотношения  гранчиных дат:
-		  // Есди даты границ совпадают - выводим только первую
-		  // Если есть даты старта и фнишиа и они совпадают - выодим только дату старта              
-		  if ($LevelStartType == 1)
-		  {
-		      $LevelStartTypeText = 'По готовности (';
-		      if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_smaxbegtime']), 0, 5))
-		      { 
-			$LevelStartTypeText = $LevelStartTypeText.$Row['level_sbegtime'].' - '.substr(trim($Row['level_smaxbegtime']), 6);
-		      } else {
-			  $LevelStartTypeText = $LevelStartTypeText.$Row['level_sbegtime'].' - '.$Row['level_smaxbegtime'];
-		      }
-		      $LevelStartTypeText = $LevelStartTypeText.')/('; 
+			// Делаем оформление в зависимости от типа старта и соотношения  гранчиных дат:
+			// Есди даты границ совпадают - выводим только первую
+			// Если есть даты старта и фнишиа и они совпадают - выодим только дату старта
+			if ($LevelStartType == 1)
+			{
+			    $LevelStartTypeText = 'По готовности (';
+			    if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_smaxbegtime']), 0, 5))
+			    {
+				$LevelStartTypeText = $LevelStartTypeText.$Row['level_sbegtime'].' - '.substr(trim($Row['level_smaxbegtime']), 6);
+			    } else {
+				$LevelStartTypeText = $LevelStartTypeText.$Row['level_sbegtime'].' - '.$Row['level_smaxbegtime'];
+			    }
+			    $LevelStartTypeText = $LevelStartTypeText.')/(';
 
-		  } elseif ($LevelStartType == 2) {
-		    $LevelStartTypeText = 'Общий ('.$Row['level_sbegtime'];
-		    $LevelStartTypeText = $LevelStartTypeText.')/('; 
+			} elseif ($LevelStartType == 2) {
+			    $LevelStartTypeText = 'Общий ('.$Row['level_sbegtime'];
+			    $LevelStartTypeText = $LevelStartTypeText.')/(';
 
-		  } elseif ($LevelStartType == 3) {
-		    $LevelStartTypeText = 'Во время финиша (';
+			} elseif ($LevelStartType == 3) {
+			    $LevelStartTypeText = 'Во время финиша (';
 
-		  }
+			}
 
 
-		  // Дополняем рамками финиша
-		  // Проверяем на одинаковые даты
-		  if (substr(trim($Row['level_sminendtime']), 0, 5) == substr(trim($Row['level_sendtime']), 0, 5))
-		  { 
-		    if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_sendtime']), 0, 5))
-		    {
-		      $LevelStartTypeText = $LevelStartTypeText.substr(trim($Row['level_sminendtime']), 6).' - '.substr(trim($Row['level_sendtime']), 6);
-		    } else {
-		      $LevelStartTypeText = $LevelStartTypeText.$Row['level_sminendtime'].' - '.substr(trim($Row['level_sendtime']), 6);
+			// Дополняем рамками финиша
+			// Проверяем на одинаковые даты
+			if (substr(trim($Row['level_sminendtime']), 0, 5) == substr(trim($Row['level_sendtime']), 0, 5))
+			{
+			    if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_sendtime']), 0, 5))
+			    {
+				$LevelStartTypeText = $LevelStartTypeText.substr(trim($Row['level_sminendtime']), 6).' - '.substr(trim($Row['level_sendtime']), 6);
+			    } else {
+				$LevelStartTypeText = $LevelStartTypeText.$Row['level_sminendtime'].' - '.substr(trim($Row['level_sendtime']), 6);
+			    }
+			} else {
+			    $LevelStartTypeText = $LevelStartTypeText.$Row['level_sminendtime'].' - '.$Row['level_sendtime'];
+			}
+
+			$LevelStartTypeText = $LevelStartTypeText.')';
+       
+			// сторим строчку для текущего этапа
+			print('<tr><td>'.$Row['distance_name'].'</td>'."\r\n");
+
+			print('<td>'.$Row['level_name']."\r\n");
+
+			$sql = 'select levelmaplink_url
+                                from LevelMapLinks
+                                where level_id = '.$Row['level_id'].'
+                                order by levelmaplink_id';
+
+			// echo $sql;
+			$ResultMap = MySqlQuery($sql);
+       
+			$MapsCount = 0;
+			$MapString = '';
+			// теперь цикл обработки данных по этапам
+			while ($RowMap = mysql_fetch_assoc($ResultMap))
+			{
+			    $MapsCount++;
+			    $MapString = $MapString.', <a href = "'.trim($RowMap['levelmaplink_url']).'" target = "_blank">'.$MapsCount.'</a>';
+			}
+			mysql_free_result($ResultMap);
+			if (!empty($MapString))
+			{
+			    $MapString = '('.trim(substr(trim($MapString), 1)).')';
+			    print($MapString."\r\n");
+			}
+			print('</td>'."\r\n");
+
+			print('<td>'.$LevelStartTypeText.'</td>
+			       <td>'.$PointsCount.'</td>
+			       </tr>'."\r\n");
+
 		    }
-		  } else {
-		    $LevelStartTypeText = $LevelStartTypeText.$Row['level_sminendtime'].' - '.$Row['level_sendtime'];
-		  }
-
-		  $LevelStartTypeText = $LevelStartTypeText.')'; 
-       
-		  // сторим строчку для текущего этапа  
-		  print('<tr><td>'.$Row['distance_name'].'</td>'."\r\n"); 
-
-                  print('<td>'.$Row['level_name']."\r\n"); 
-
-                  $sql = 'select levelmaplink_url 
-                          from LevelMapLinks
-                          where level_id = '.$Row['level_id'].'
-                          order by levelmaplink_id';
-
-                 // echo $sql;  
-		  $ResultMap = MySqlQuery($sql);  
-       
-                  $MapsCount = 0;
-                  $MapString = ''; 
-		  // теперь цикл обработки данных по этапам 
-		  while ($RowMap = mysql_fetch_assoc($ResultMap))
-		  {
-			$MapsCount++;
-                        $MapString = $MapString.', <a href = "'.trim($RowMap['levelmaplink_url']).'" target = "_blank">'.$MapsCount.'</a>';
-		  }
-                  mysql_free_result($ResultMap);
-                  if (!empty($MapString))   
-                  {
-		    $MapString = '('.trim(substr(trim($MapString), 1)).')';
-		    print($MapString."\r\n"); 
-		  }
-		  print('</td>'."\r\n"); 
-
-		  print('<td>'.$LevelStartTypeText.'</td>
-                         <td>'.$PointsCount.'</td>
-                         </tr>'."\r\n"); 
-
+		    // конец цикла по этапам
+		    mysql_free_result($Result);
+		    print('</table>'."\r\n");
 		}
-		// конец цикла по этапам
-		mysql_free_result($Result);
-		print('</table>'."\r\n");
 
 		if  ($OrderType == 'Num')
                 {
