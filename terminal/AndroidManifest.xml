@@ -21,9 +21,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.login.LoginActivity" />
         <activity android:name=".activity.input.start.StartInputActivity" />
-        <activity android:name=".activity.input.lap.SelectLapActivity" />
+        <activity android:name=".activity.input.level.SelectLevelActivity" />
         <activity
             android:name=".activity.input.team.SearchTeamActivity"
             android:windowSoftInputMode="stateHidden" />

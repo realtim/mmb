@@ -1,14 +1,14 @@
-package ru.mmb.terminal.activity.input.lap;
+package ru.mmb.terminal.activity.input.level;
 
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_DISTANCE;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_INPUT_MODE;
-import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_LAP;
+import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_LEVEL;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.StateChangeListener;
 import ru.mmb.terminal.activity.input.InputActivityState;
 import ru.mmb.terminal.activity.input.InputMode;
 import ru.mmb.terminal.model.Distance;
-import ru.mmb.terminal.model.Lap;
+import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.StartType;
 import ru.mmb.terminal.model.registry.DistancesRegistry;
 import android.app.Activity;
@@ -25,12 +25,12 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 
-public class SelectLapActivity extends Activity implements StateChangeListener
+public class SelectLevelActivity extends Activity implements StateChangeListener
 {
 	private InputActivityState currentState;
 
 	private Spinner inputDistance;
-	private Spinner inputLap;
+	private Spinner inputLevel;
 	private RadioButton radioStart;
 	private RadioButton radioFinish;
 	private Button btnOk;
@@ -40,8 +40,8 @@ public class SelectLapActivity extends Activity implements StateChangeListener
 	private int prevSelectedDistancePos = -1;
 	private int currSelectedDistancePos = -1;
 
-	private int prevSelectedLapPos = -1;
-	private int currSelectedLapPos = -1;
+	private int prevSelectedLevelPos = -1;
+	private int currSelectedLevelPos = -1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -50,21 +50,21 @@ public class SelectLapActivity extends Activity implements StateChangeListener
 
 		distances = DistancesRegistry.getInstance();
 
-		currentState = new InputActivityState("input.lap");
+		currentState = new InputActivityState("input.level");
 		currentState.initialize(this, savedInstanceState);
 
-		setContentView(R.layout.input_lap);
+		setContentView(R.layout.input_level);
 
-		inputDistance = (Spinner) findViewById(R.id.inputLap_distanceInput);
-		inputLap = (Spinner) findViewById(R.id.inputLap_lapInput);
-		radioStart = (RadioButton) findViewById(R.id.inputLap_startRadio);
-		radioFinish = (RadioButton) findViewById(R.id.inputLap_finishRadio);
-		btnOk = (Button) findViewById(R.id.inputLap_okBtn);
+		inputDistance = (Spinner) findViewById(R.id.inputLevel_distanceInput);
+		inputLevel = (Spinner) findViewById(R.id.inputLevel_levelInput);
+		radioStart = (RadioButton) findViewById(R.id.inputLevel_startRadio);
+		radioFinish = (RadioButton) findViewById(R.id.inputLevel_finishRadio);
+		btnOk = (Button) findViewById(R.id.inputLevel_okBtn);
 
 		setInputDistanceAdapter();
 
 		inputDistance.setOnItemSelectedListener(new InputDistanceOnItemSelectedListener());
-		inputLap.setOnItemSelectedListener(new InputLapOnItemSelectedListener());
+		inputLevel.setOnItemSelectedListener(new InputLevelOnItemSelectedListener());
 		radioStart.setOnCheckedChangeListener(new RadioOnCheckedChangeListener());
 		radioFinish.setOnCheckedChangeListener(new RadioOnCheckedChangeListener());
 		btnOk.setOnClickListener(new OkBtnClickListener());
@@ -92,12 +92,12 @@ public class SelectLapActivity extends Activity implements StateChangeListener
 		Distance currentDistance = currentState.getCurrentDistance();
 		setInitialDistancePos(currentDistance);
 
-		refreshInputLapState();
+		refreshInputLevelState();
 
-		if (currentState.getCurrentLap() == null)
-		    currentState.setCurrentLap(currentState.getCurrentDistance().getLapByIndex(0));
-		Lap currentLap = currentState.getCurrentLap();
-		setInitialLapPos(currentDistance, currentLap);
+		if (currentState.getCurrentLevel() == null)
+		    currentState.setCurrentLevel(currentState.getCurrentDistance().getLevelByIndex(0));
+		Level currentLevel = currentState.getCurrentLevel();
+		setInitialLevelPos(currentDistance, currentLevel);
 
 		refreshInputModeState();
 	}
@@ -108,10 +108,10 @@ public class SelectLapActivity extends Activity implements StateChangeListener
 		prevSelectedDistancePos = currSelectedDistancePos;
 	}
 
-	private void setInitialLapPos(Distance currentDistance, Lap currentLap)
+	private void setInitialLevelPos(Distance currentDistance, Level currentLevel)
 	{
-		currSelectedLapPos = currentDistance.getLapIndex(currentLap);
-		prevSelectedLapPos = currSelectedLapPos;
+		currSelectedLevelPos = currentDistance.getLevelIndex(currentLevel);
+		prevSelectedLevelPos = currSelectedLevelPos;
 	}
 
 	private void refreshInputDistanceState()
@@ -128,40 +128,41 @@ public class SelectLapActivity extends Activity implements StateChangeListener
 		}
 	}
 
-	private void refreshInputLapState()
+	private void refreshInputLevelState()
 	{
-		setInputLapAdapter();
+		setInputLevelAdapter();
 
-		if (currentState.getCurrentLap() == null || !isLapFromCurrentDistance())
+		if (currentState.getCurrentLevel() == null || !isLevelFromCurrentDistance())
 		{
-			inputLap.setSelection(0);
+			inputLevel.setSelection(0);
 		}
 		else
 		{
-			int pos = currentState.getCurrentDistance().getLapIndex(currentState.getCurrentLap());
+			int pos =
+			    currentState.getCurrentDistance().getLevelIndex(currentState.getCurrentLevel());
 			if (pos == -1) pos = 0;
-			inputLap.setSelection(pos);
+			inputLevel.setSelection(pos);
 		}
 	}
 
-	private void setInputLapAdapter()
+	private void setInputLevelAdapter()
 	{
 		ArrayAdapter<String> adapter =
-		    new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, currentState.getCurrentDistance().getLapNamesArray());
+		    new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, currentState.getCurrentDistance().getLevelNamesArray());
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		inputLap.setAdapter(adapter);
+		inputLevel.setAdapter(adapter);
 	}
 
-	private boolean isLapFromCurrentDistance()
+	private boolean isLevelFromCurrentDistance()
 	{
-		return currentState.getCurrentLap().getDistance() == currentState.getCurrentDistance();
+		return currentState.getCurrentLevel().getDistance() == currentState.getCurrentDistance();
 	}
 
 	private void refreshInputModeState()
 	{
-		Lap lap = currentState.getCurrentLap();
+		Level level = currentState.getCurrentLevel();
 
-		if (lap == null)
+		if (level == null)
 		{
 			radioStart.setEnabled(false);
 			radioFinish.setEnabled(false);
@@ -169,7 +170,7 @@ public class SelectLapActivity extends Activity implements StateChangeListener
 			return;
 		}
 
-		if (lap.getStartType() != StartType.WHEN_READY)
+		if (level.getLevelStartType() != StartType.WHEN_READY)
 		{
 			radioStart.setEnabled(false);
 			radioFinish.setEnabled(true);
@@ -201,7 +202,7 @@ public class SelectLapActivity extends Activity implements StateChangeListener
 			{
 				prevSelectedDistancePos = currSelectedDistancePos;
 				currentState.setCurrentDistance(distances.getDistanceByIndex(pos));
-				refreshInputLapState();
+				refreshInputLevelState();
 			}
 		}
 
@@ -213,17 +214,17 @@ public class SelectLapActivity extends Activity implements StateChangeListener
 		}
 	}
 
-	private class InputLapOnItemSelectedListener implements OnItemSelectedListener
+	private class InputLevelOnItemSelectedListener implements OnItemSelectedListener
 	{
 		@Override
 		public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
 		{
-			currSelectedLapPos = pos;
-			if (currSelectedLapPos != prevSelectedLapPos)
+			currSelectedLevelPos = pos;
+			if (currSelectedLevelPos != prevSelectedLevelPos)
 			{
-				prevSelectedLapPos = currSelectedLapPos;
+				prevSelectedLevelPos = currSelectedLevelPos;
 				Distance distance = currentState.getCurrentDistance();
-				currentState.setCurrentLap(distance.getLapByIndex(pos));
+				currentState.setCurrentLevel(distance.getLevelByIndex(pos));
 				currentState.setCurrentInputMode(null);
 				refreshInputModeState();
 			}
@@ -260,8 +261,8 @@ public class SelectLapActivity extends Activity implements StateChangeListener
 			Intent resultData = new Intent();
 			if (currentState.getCurrentDistance() != null)
 			    resultData.putExtra(KEY_CURRENT_DISTANCE, currentState.getCurrentDistance());
-			if (currentState.getCurrentLap() != null)
-			    resultData.putExtra(KEY_CURRENT_LAP, currentState.getCurrentLap());
+			if (currentState.getCurrentLevel() != null)
+			    resultData.putExtra(KEY_CURRENT_LEVEL, currentState.getCurrentLevel());
 			if (currentState.getCurrentInputMode() != null)
 			    resultData.putExtra(KEY_CURRENT_INPUT_MODE, currentState.getCurrentInputMode());
 			setResult(RESULT_OK, resultData);
@@ -281,6 +282,6 @@ public class SelectLapActivity extends Activity implements StateChangeListener
 	{
 		setTitle(currentState.getTitleText(this));
 
-		btnOk.setEnabled(currentState.isLapSelected());
+		btnOk.setEnabled(currentState.isLevelSelected());
 	}
 }

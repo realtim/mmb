@@ -26,7 +26,7 @@ public class DataProvider
 		{
 			for (Participant participant : team.getMembers())
 			{
-				result.add(new TeamMember(team, participant.getName()));
+				result.add(new TeamMember(team, participant.getUserName()));
 			}
 		}
 		else

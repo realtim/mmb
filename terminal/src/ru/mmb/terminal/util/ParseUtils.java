@@ -1,4 +1,4 @@
-package ru.mmb.terminal.model;
+package ru.mmb.terminal.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

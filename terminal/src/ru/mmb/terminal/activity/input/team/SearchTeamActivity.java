@@ -68,7 +68,7 @@ public class SearchTeamActivity extends Activity
 
 	private void initListAdapters()
 	{
-		int distanceId = currentState.getCurrentDistance().getId();
+		int distanceId = currentState.getCurrentDistance().getDistanceId();
 		DataProvider dataProvider = new DataProvider();
 
 		List<TeamListRecord> items = dataProvider.getTeams(distanceId, SortColumn.NUMBER);

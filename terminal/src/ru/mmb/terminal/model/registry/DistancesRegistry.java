@@ -3,14 +3,12 @@ package ru.mmb.terminal.model.registry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import ru.mmb.terminal.model.Checkpoint;
+import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.Distance;
-import ru.mmb.terminal.model.Lap;
-import ru.mmb.terminal.util.ExternalStorage;
+import ru.mmb.terminal.model.Level;
 
-public class DistancesRegistry extends AbstractRegistry
+public class DistancesRegistry
 {
 	private static DistancesRegistry instance = null;
 
@@ -34,31 +32,17 @@ public class DistancesRegistry extends AbstractRegistry
 	{
 		try
 		{
-			List<Checkpoint> checkpoints = loadCheckpoints();
-			Map<Integer, List<Checkpoint>> lapCheckpoints = groupChildrenByParentId(checkpoints);
-			List<Lap> laps = loadLaps(lapCheckpoints);
-			Map<Integer, List<Lap>> distanceLaps = groupChildrenByParentId(laps);
-			distances = loadDistances(distanceLaps);
+			distances = TerminalDB.getInstance().loadDistances(CurrentRaid.getId());
+			for (Distance distance : distances)
+			{
+				List<Level> levels = TerminalDB.getInstance().loadLevels(distance.getDistanceId());
+				distance.addLoadedLevels(levels);
+			}
 		}
 		catch (Exception e)
 		{
 			distances = new ArrayList<Distance>();
 		}
-	}
-
-	private List<Checkpoint> loadCheckpoints() throws Exception
-	{
-		return loadStoredElements(ExternalStorage.getDir() + "/mmb/model/checkpoints.csv", Checkpoint.class);
-	}
-
-	private List<Lap> loadLaps(Map<Integer, List<Checkpoint>> lapCheckpoints) throws Exception
-	{
-		return loadStoredElements(ExternalStorage.getDir() + "/mmb/model/laps.csv", Lap.class, lapCheckpoints);
-	}
-
-	private List<Distance> loadDistances(Map<Integer, List<Lap>> distanceLaps) throws Exception
-	{
-		return loadStoredElements(ExternalStorage.getDir() + "/mmb/model/distances.csv", Distance.class, distanceLaps);
 	}
 
 	public List<Distance> getDistances()
@@ -75,7 +59,7 @@ public class DistancesRegistry extends AbstractRegistry
 	{
 		for (Distance distance : distances)
 		{
-			if (distance.getId() == id) return distance;
+			if (distance.getDistanceId() == id) return distance;
 		}
 		return null;
 	}
@@ -85,7 +69,7 @@ public class DistancesRegistry extends AbstractRegistry
 		String[] result = new String[distances.size()];
 		for (int i = 0; i < distances.size(); i++)
 		{
-			result[i] = distances.get(i).getName();
+			result[i] = distances.get(i).getDistanceName();
 		}
 		return result;
 	}

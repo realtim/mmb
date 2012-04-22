@@ -23,11 +23,11 @@
                 android:text="@string/input_start_no_distance" />
 
             <TextView
-                android:id="@+id/inputStart_lapLabel"
+                android:id="@+id/inputStart_levelLabel"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/global_padding"
-                android:text="@string/input_start_no_lap" />
+                android:text="@string/input_start_no_level" />
 
             <TextView
                 android:id="@+id/inputStart_modeLabel"
@@ -44,11 +44,11 @@
             android:orientation="vertical" >
 
             <Button
-                android:id="@+id/inputStart_selectLapBtn"
+                android:id="@+id/inputStart_selectLevelBtn"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
-                android:text="@string/input_start_select_lap" />
+                android:text="@string/input_start_select_level" />
         </LinearLayout>
     </LinearLayout>
 
