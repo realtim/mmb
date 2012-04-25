@@ -38,6 +38,8 @@ public class WithdrawMemberActivity extends Activity implements StateChangeListe
 		labResult = (TextView) findViewById(R.id.inputWithdraw_resultTextView);
 		btnOk = (Button) findViewById(R.id.inputWithdraw_okButton);
 
+		setTitle(currentState.getTitleText(this));
+
 		labTeam.setText(currentState.getCurrentTeamText(this));
 		labResult.setText(currentState.getResultText(this));
 
@@ -72,8 +74,7 @@ public class WithdrawMemberActivity extends Activity implements StateChangeListe
 		@Override
 		public void onClick(View v)
 		{
-			// TODO restore saving
-			// currentState.saveCurrWithdrawnToDB();
+			currentState.saveCurrWithdrawnToDB();
 			finish();
 		}
 	}

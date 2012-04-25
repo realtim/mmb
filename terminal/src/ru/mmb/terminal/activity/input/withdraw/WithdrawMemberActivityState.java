@@ -67,9 +67,9 @@ public class WithdrawMemberActivityState extends InputActivityState
 	}
 
 	@Override
-	protected void update()
+	protected void update(boolean fromSavedBundle)
 	{
-		super.update();
+		super.update(fromSavedBundle);
 		updatePrevWithdrawnMembers();
 	}
 
@@ -78,8 +78,7 @@ public class WithdrawMemberActivityState extends InputActivityState
 		if (getCurrentLevel() != null && getCurrentTeam() != null)
 		{
 			prevWithdrawnMembers.clear();
-			// TODO restore previously withdrawn request
-			// prevWithdrawnMembers.addAll(TerminalDB.getInstance().getWithdrawnMembers(getCurrentLevel(), getCurrentTeam()));
+			prevWithdrawnMembers.addAll(TerminalDB.getInstance().getWithdrawnMembers(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam()));
 		}
 	}
 
@@ -166,6 +165,6 @@ public class WithdrawMemberActivityState extends InputActivityState
 
 	public void saveCurrWithdrawnToDB()
 	{
-		TerminalDB.getInstance().saveWithdrawnMembers(getCurrentLevel(), getCurrentTeam(), currWithdrawnMembers);
+		TerminalDB.getInstance().saveWithdrawnMembers(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam(), currWithdrawnMembers);
 	}
 }

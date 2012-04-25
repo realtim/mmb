@@ -26,6 +26,7 @@ public class Teams
 	private static final String USER_ID = "user_id";
 	private static final String USER_NAME = "user_name";
 	private static final String USER_BIRTHYEAR = "user_birthyear";
+	private static final String TEAMUSER_ID = "teamuser_id";
 	private static final String TEAMUSER_HIDE = "teamuser_hide";
 
 	private final SQLiteDatabase db;
@@ -66,13 +67,13 @@ public class Teams
 	{
 		List<Participant> participants = new ArrayList<Participant>();
 		String sql =
-		    "select t." + TEAM_ID + ", u." + USER_ID + ", u." + USER_NAME + ", u." + USER_BIRTHYEAR
-		            + " from " + TABLE_USERS + " as u join " + TABLE_TEAMUSERS + " as tu on (u."
-		            + USER_ID + " = tu." + USER_ID + ") join " + TABLE_TEAMS + " as t on (tu."
-		            + TEAM_ID + " = t." + TEAM_ID + ") where t." + DISTANCE_ID + " in (select d."
-		            + DISTANCE_ID + " from " + TABLE_DISTANCES + " as d where d." + RAID_ID + " = "
-		            + CurrentRaid.getId() + ") and (tu." + TEAMUSER_HIDE + " is NULL or tu."
-		            + TEAMUSER_HIDE + " = 0)";
+		    "select t." + TEAM_ID + ", u." + USER_ID + ", tu." + TEAMUSER_ID + ", u." + USER_NAME
+		            + ", u." + USER_BIRTHYEAR + " from " + TABLE_USERS + " as u join "
+		            + TABLE_TEAMUSERS + " as tu on (u." + USER_ID + " = tu." + USER_ID + ") join "
+		            + TABLE_TEAMS + " as t on (tu." + TEAM_ID + " = t." + TEAM_ID + ") where t."
+		            + DISTANCE_ID + " in (select d." + DISTANCE_ID + " from " + TABLE_DISTANCES
+		            + " as d where d." + RAID_ID + " = " + CurrentRaid.getId() + ") and (tu."
+		            + TEAMUSER_HIDE + " is NULL or tu." + TEAMUSER_HIDE + " = 0)";
 		Cursor resultCursor = db.rawQuery(sql, null);
 
 		resultCursor.moveToFirst();
@@ -80,11 +81,12 @@ public class Teams
 		{
 			int teamId = resultCursor.getInt(0);
 			int userId = resultCursor.getInt(1);
-			String userName = resultCursor.getString(2);
+			int teamUserId = resultCursor.getInt(2);
+			String userName = resultCursor.getString(3);
 			Integer userBirthYear = null;
-			if (!resultCursor.isNull(3)) userBirthYear = resultCursor.getInt(3);
+			if (!resultCursor.isNull(4)) userBirthYear = resultCursor.getInt(4);
 
-			participants.add(new Participant(userId, teamId, userName, userBirthYear));
+			participants.add(new Participant(userId, teamId, teamUserId, userName, userBirthYear));
 			resultCursor.moveToNext();
 		}
 		resultCursor.close();

@@ -26,7 +26,7 @@ public abstract class CurrentState
 
 	public abstract void load(Bundle savedInstanceState);
 
-	protected abstract void update();
+	protected abstract void update(boolean fromSavedBundle);
 
 	public void prepareStartActivityIntent(Intent intent)
 	{
@@ -89,11 +89,12 @@ public abstract class CurrentState
 		{
 			loadFromSharedPreferences(activity.getPreferences(Context.MODE_PRIVATE));
 			loadFromIntent(activity.getIntent());
+			update(Constants.UPDATE_FOR_FIRST_LAUNCH);
 		}
 		else
 		{
 			load(savedInstanceState);
+			update(Constants.UPDATE_FROM_SAVED_BUNDLE);
 		}
-		update();
 	}
 }

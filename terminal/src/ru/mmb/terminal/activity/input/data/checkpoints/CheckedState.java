@@ -75,7 +75,7 @@ public class CheckedState implements Serializable
 			sb.append(level.getCheckpointByOrderNum(checkpointOrderNum).getCheckpointName());
 			sb.append(",");
 		}
-		return (sb.length() == 0) ? "-" : sb.toString().substring(0, sb.length() - 1);
+		return (sb.length() == 0) ? "" : sb.toString().substring(0, sb.length() - 1);
 	}
 
 	public String getMissedCheckpointsText()
@@ -132,6 +132,14 @@ public class CheckedState implements Serializable
 		for (Integer orderNum : checkedMap.keySet())
 		{
 			checkedMap.put(orderNum, value);
+		}
+	}
+
+	public void loadTakenCheckpoints(Map<Integer, Boolean> checkedMap)
+	{
+		for (Integer checkpointOrder : checkedMap.keySet())
+		{
+			setChecked(checkpointOrder, checkedMap.get(checkpointOrder));
 		}
 	}
 }

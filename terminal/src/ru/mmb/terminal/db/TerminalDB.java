@@ -3,9 +3,9 @@ package ru.mmb.terminal.db;
 import java.util.Date;
 import java.util.List;
 
-import ru.mmb.terminal.activity.input.InputMode;
 import ru.mmb.terminal.model.Distance;
 import ru.mmb.terminal.model.Level;
+import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Participant;
 import ru.mmb.terminal.model.Team;
 import ru.mmb.terminal.util.ExternalStorage;
@@ -47,20 +47,21 @@ public class TerminalDB
 		idGenerator = new IDGenerator(db);
 	}
 
-	public List<Participant> getWithdrawnMembers(Level level, Team team)
+	public List<Participant> getWithdrawnMembers(LevelPoint levelPoint, Level level, Team team)
 	{
-		return withdraw.getWithdrawnMembers(level, team);
+		return withdraw.getWithdrawnMembers(levelPoint, level, team);
 	}
 
-	public void saveWithdrawnMembers(Level level, Team team, List<Participant> withdrawnMembers)
+	public void saveWithdrawnMembers(LevelPoint levelPoint, Level level, Team team,
+	        List<Participant> withdrawnMembers)
 	{
-		withdraw.saveWithdrawnMembers(level, team, withdrawnMembers);
+		withdraw.saveWithdrawnMembers(levelPoint, level, team, withdrawnMembers);
 	}
 
-	public void saveInputData(Level level, Team team, InputMode inputMode, Date checkTime,
-	        String checkpoints)
+	public void saveInputData(LevelPoint levelPoint, Team team, Date checkDateTime,
+	        String takenCheckpoints)
 	{
-		inputData.saveInputData(level, team, inputMode, checkTime, checkpoints);
+		inputData.saveInputData(levelPoint, team, checkDateTime, takenCheckpoints);
 	}
 
 	public SQLiteDatabase getDb()
@@ -91,5 +92,11 @@ public class TerminalDB
 	public int getNextId()
 	{
 		return idGenerator.getNextId();
+	}
+
+	public InputDataRecord getExistingTeamLevelPointRecord(LevelPoint levelPoint, Level level,
+	        Team team)
+	{
+		return inputData.getExistingTeamLevelPointRecord(levelPoint, level, team);
 	}
 }

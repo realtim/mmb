@@ -9,6 +9,7 @@ import ru.mmb.terminal.activity.Constants;
 import ru.mmb.terminal.activity.CurrentState;
 import ru.mmb.terminal.model.Distance;
 import ru.mmb.terminal.model.Level;
+import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Team;
 import ru.mmb.terminal.model.registry.DistancesRegistry;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
@@ -91,7 +92,7 @@ public class InputActivityState extends CurrentState
 	}
 
 	@Override
-	protected void update()
+	protected void update(boolean fromSavedBundle)
 	{
 		DistancesRegistry distances = DistancesRegistry.getInstance();
 
@@ -261,5 +262,13 @@ public class InputActivityState extends CurrentState
 		return "InputActivityState [currentDistance=" + currentDistance + ", currentLevel="
 		        + currentLevel + ", currentInputMode=" + currentInputMode + ", currentTeam="
 		        + currentTeam + ", toString()=" + super.toString() + "]";
+	}
+
+	protected LevelPoint getCurrentLevelPoint()
+	{
+		Level level = getCurrentLevel();
+		LevelPoint result = level.getStartPoint();
+		if (getCurrentInputMode() == InputMode.FINISH) result = level.getFinishPoint();
+		return result;
 	}
 }

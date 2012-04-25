@@ -21,7 +21,7 @@ public class MainActivityState extends CurrentState
 	}
 
 	@Override
-	protected void update()
+	protected void update(boolean fromSavedBundle)
 	{
 	}
 }

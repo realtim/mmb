@@ -210,4 +210,13 @@ public class Level implements Serializable, Comparable<Level>
 		}
 		sortCheckpoints();
 	}
+
+	public Checkpoint getCheckpointByName(String checkpointName)
+	{
+		for (Checkpoint checkpoint : getCheckpoints())
+		{
+			if (checkpoint.getCheckpointName().equalsIgnoreCase(checkpointName)) return checkpoint;
+		}
+		return null;
+	}
 }

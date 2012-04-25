@@ -5,7 +5,6 @@ import java.util.List;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.team.model.TeamListRecord;
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -27,9 +26,7 @@ public class TeamsAdapter extends ArrayAdapter<TeamListRecord>
 		View view = convertView;
 		if (view == null)
 		{
-			LayoutInflater inflater =
-			    (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			view = inflater.inflate(R.layout.input_team_row, null);
+			view = new TeamRow(getContext());
 		}
 		TeamListRecord item = getItem(position);
 		if (item != null)

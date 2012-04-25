@@ -10,6 +10,7 @@ import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.InputActivityState;
 import ru.mmb.terminal.activity.input.InputMode;
 import ru.mmb.terminal.activity.input.data.checkpoints.CheckedState;
+import ru.mmb.terminal.db.InputDataRecord;
 import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.Checkpoint;
 import ru.mmb.terminal.model.Level;
@@ -169,10 +170,20 @@ public class InputDataActivityState extends InputActivityState
 	}
 
 	@Override
-	protected void update()
+	protected void update(boolean fromSavedBundle)
 	{
-		super.update();
+		super.update(fromSavedBundle);
 		checkedState.setLevel(getCurrentLevel());
+		if (!fromSavedBundle)
+		{
+			InputDataRecord previousRecord =
+			    TerminalDB.getInstance().getExistingTeamLevelPointRecord(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam());
+			if (previousRecord != null)
+			{
+				checkedState.loadTakenCheckpoints(previousRecord.getCheckedMap());
+				inputDate = new DateRecord(previousRecord.getCheckDateTime());
+			}
+		}
 	}
 
 	public void checkAll()
@@ -189,6 +200,6 @@ public class InputDataActivityState extends InputActivityState
 
 	public void saveInputDataToDB()
 	{
-		TerminalDB.getInstance().saveInputData(getCurrentLevel(), getCurrentTeam(), getCurrentInputMode(), inputDate.toDate(), checkedState.getTakenCheckpointsRawText());
+		TerminalDB.getInstance().saveInputData(getCurrentLevelPoint(), getCurrentTeam(), inputDate.toDate(), checkedState.getTakenCheckpointsRawText());
 	}
 }

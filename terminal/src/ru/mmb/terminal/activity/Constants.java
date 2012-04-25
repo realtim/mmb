@@ -2,6 +2,9 @@ package ru.mmb.terminal.activity;
 
 public class Constants
 {
+	public static final boolean UPDATE_FROM_SAVED_BUNDLE = true;
+	public static final boolean UPDATE_FOR_FIRST_LAUNCH = false;
+
 	public static final String KEY_CURRENT_DISTANCE = "current.distance";
 	public static final String KEY_CURRENT_LEVEL = "current.level";
 	public static final String KEY_CURRENT_INPUT_MODE = "current.input_mode";
