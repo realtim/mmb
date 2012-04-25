@@ -21,15 +21,14 @@
 
 	// Инициализуем переменные окружения, если они отсутствуют
 	if (!isset($_POST['sessionid'])) $_POST['sessionid'] = "";
-	if (!isset($_POST['RaidId'])) $_POST['RaidId'] = "";
-	if (!isset($_POST['action'])) $_POST['action'] = "";
-	if (!isset($_POST['RaidId'])) $_POST['RaidId'] = "";
+	if (!isset($_REQUEST['RaidId'])) $_REQUEST['RaidId'] = "";
+	if (!isset($_REQUEST['action'])) $_REQUEST['action'] = "";
 
 	// Инициализуем переменные сессии, если они отсутствуют
 	if (!isset($view)) $view = "";
 	if (!isset($viewsubmode)) $viewsubmode = "";
-	$action = $_POST['action'];
-	$RaidId = $_POST['RaidId'];
+	$action = $_REQUEST['action'];
+	$RaidId = $_REQUEST['RaidId'];
 
 	if ($action == "") 
 	{
@@ -38,7 +37,7 @@
 
 	} elseif ($action == "StartPage") {
 
-                $view = $_POST['view'];
+                $view = $_REQUEST['view'];
 
 	} else {	
 	        // Обработчик событий, связанных с пользователем
@@ -85,7 +84,7 @@
 				<input type = "hidden" name = "action" value = "StartPage">
 				<input type = "hidden" name = "view" value = "MainPage">
 				<input type = "hidden" name = "sessionid" value = "<? echo (!empty($SessionId) ? $SessionId : $_POST['sessionid']); ?>">
-				<input type = "hidden" name = "RaidId" value = "<? echo (!empty($RaidId) ? $RaidId : $_POST['RaidId']); ?>">
+				<input type = "hidden" name = "RaidId" value = "<? echo (!empty($RaidId) ? $RaidId : $_REQUEST['RaidId']); ?>">
 				<a href="javascript:document.StartPageForm.submit();"><img  style = "margin-bottom: 15px;" width = "157" height = "139" border = "0" alt = "ММБ"  src = "http://mmb.progressor.ru/mmbicons/mmb2012v-logo-s_4.png"></a>
                        </form> 
 

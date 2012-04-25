@@ -595,7 +595,7 @@
    } elseif  ($action == 'TeamInfo')  {
    // Информация о команде по Id
    
-		 if (isset($_POST['TeamId'])) $TeamId = $_POST['TeamId']; else $TeamId = "";
+		 if (isset($_REQUEST['TeamId'])) $TeamId = $_REQUEST['TeamId']; else $TeamId = "";
 		 if ($TeamId <= 0)
 		 {
                         

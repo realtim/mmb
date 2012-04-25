@@ -123,7 +123,7 @@
 		$DisabledText = '';
 
                 // Разбираемся с сортировкой
-                if (isset($_POST['OrderType'])) $OrderType = $_POST['OrderType']; else $OrderType = "";
+                if (isset($_REQUEST['OrderType'])) $OrderType = $_REQUEST['OrderType']; else $OrderType = "";
 		$OrderString = '';
 
 
@@ -172,12 +172,12 @@
                 
 		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px;" 
                                onchange = "DistanceIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-                $distanceselected =  (0 == $_POST['DistanceId'] ? 'selected' : '');
+                $distanceselected =  (0 == $_REQUEST['DistanceId'] ? 'selected' : '');
 		  print('<option value = "0" '.$$distanceselected.' >дистанцию'."\r\n");
-		if (!isset($_POST['DistanceId'])) $_POST['DistanceId'] = "";
+		if (!isset($_REQUEST['DistanceId'])) $_REQUEST['DistanceId'] = "";
 	        while ($Row = mysql_fetch_assoc($Result))
 		{
-		  $distanceselected = ($Row['distance_id'] == $_POST['DistanceId']  ? 'selected' : '');
+		  $distanceselected = ($Row['distance_id'] == $_REQUEST['DistanceId']  ? 'selected' : '');
 		  print('<option value = "'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."\r\n");
 		}
 		print('</select>'."\r\n");  
@@ -186,7 +186,7 @@
 		// Определяем, можно ли показывать пользователю информацию об этапах дистанции
 		$LevelDataVisible = CheckLevelDataVisible($SessionId, $RaidId);
 
-		if (!isset($_POST['LevelId'])) $_POST['LevelId'] = "";
+		if (!isset($_REQUEST['LevelId'])) $_REQUEST['LevelId'] = "";
 		if ($LevelDataVisible)
 		{
 		    $sql = "select level_id, d.distance_name, CONCAT(trim(level_name), ' (', trim(d.distance_name), ')') as level_name
@@ -194,9 +194,9 @@
                                 inner join Distances d
                                 on l.distance_id = d.distance_id
                             where d.raid_id = ".$RaidId;
-                    if (!empty($_POST['DistanceId']))
+                    if (!empty($_REQUEST['DistanceId']))
                     {
-			$sql = $sql." and d.distance_id = ".$_POST['DistanceId'];
+			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
                     }
                     $sql = $sql." order by d.distance_name, l.level_order ";
 		    //  echo 'sql '.$sql;
@@ -205,12 +205,12 @@
 		    print('<select name="LevelId" '.(($OrderType=='Num') ? 'disabled' : '').'
                                 style = "margin-left: 5px; margin-right: 10px;"
                                 onchange = "LevelIdChange();" tabindex = "'.(++$TabIndex).'" >'."\r\n");
-	            $levelselected =  ((0 == $_POST['LevelId'] or $OrderType=='Num') ? 'selected' : '');
+	            $levelselected =  ((0 == $_REQUEST['LevelId'] or $OrderType=='Num') ? 'selected' : '');
 		    print('<option value = "0" '.$levelselected.' >этап'."\r\n");
 
 		    while ($Row = mysql_fetch_assoc($Result))
 		    {
-			$levelselected = (($Row['level_id'] == $_POST['LevelId'] and $OrderType<>'Num' )? 'selected' : '');
+			$levelselected = (($Row['level_id'] == $_REQUEST['LevelId'] and $OrderType<>'Num' )? 'selected' : '');
 			print('<option value = "'.$Row['level_id'].'" '.$levelselected.' >'.$Row['level_name']."\r\n");
 		    }
 		    mysql_free_result($Result);
@@ -243,13 +243,13 @@
 
                     // $sql = $sql." and l.level_begtime <= now() ";
 
-                    if (!empty($_POST['DistanceId']))
+                    if (!empty($_REQUEST['DistanceId']))
                     {
-			$sql = $sql." and d.distance_id = ".$_POST['DistanceId'];
+			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
                     }
-                    if (!empty($_POST['LevelId']))
+                    if (!empty($_REQUEST['LevelId']))
                     {
-			$sql = $sql." and l.level_id = ".$_POST['LevelId'];
+			$sql = $sql." and l.level_id = ".$_REQUEST['LevelId'];
                     }
                     $sql = $sql." order by d.distance_name, l.level_order ";
 
@@ -385,9 +385,9 @@
                              on t.level_id = l.level_id 
 			where t.team_hide = 0 and d.raid_id = ".$RaidId;
 
-		   if (!empty($_POST['DistanceId']))
+		   if (!empty($_REQUEST['DistanceId']))
 		   {
-                     $sql = $sql." and d.distance_id = ".$_POST['DistanceId']; 
+                     $sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
 		   }
 		   $sql = $sql." order by team_num desc"; 
                     
@@ -396,7 +396,7 @@
                   // Сортировка по месту требует более хитрого запроса
 
 
-		   if (empty($_POST['LevelId']))
+		   if (empty($_REQUEST['LevelId']))
 		   {
 
 		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, 
@@ -414,9 +414,9 @@
 				on t.level_id = l.level_id 
 			  where t.team_hide = 0 and d.raid_id = ".$RaidId;
 
-		      if (!empty($_POST['DistanceId']))
+		      if (!empty($_REQUEST['DistanceId']))
 		      {
-			$sql = $sql." and d.distance_id = ".$_POST['DistanceId']; 
+			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
 		      }
 
 		      $sql = $sql." order by distance_name, placegroup asc, team_result asc "; 
@@ -451,7 +451,7 @@
 				  on t.distance_id = d.distance_id
 				  left outer join Levels lout
 				  on t.level_id = lout.level_id 
-			    where tl.teamlevel_hide = 0 and tl.level_id = ".$_POST['LevelId']." 
+			    where tl.teamlevel_hide = 0 and tl.level_id = ".$_REQUEST['LevelId']." 
 				  and timediff(tl.teamlevel_endtime, 
 					CASE l.level_starttype 
 					    WHEN 1 THEN tl.teamlevel_begtime 
@@ -484,7 +484,7 @@
                 $thstyle = 'border-color: #000000; border-style: solid; border-width: 1px 1px 1px 1px; padding: 5px 0px 2px 5px;';		
                 $thstyle = '';		
 
-//		print('<table width = "'.(($_POST['LevelId'] > 0 and  $OrderType == 'Place') ? '1015' : '815').'" border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
+//		print('<table width = "'.(($_REQUEST['LevelId'] > 0 and  $OrderType == 'Place') ? '1015' : '815').'" border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<tr class = "gray">
 		         <td width = "50" style = "'.$thstyle.'">Номер</td>
@@ -497,7 +497,7 @@
 		  print('  <td width = "50" style = "'.$thstyle.'">Место</td>'."\r\n");
 
                   // дополнительные поля в случае вывода  этапа
-                  if ($_POST['LevelId'] > 0)
+                  if ($_REQUEST['LevelId'] > 0)
                   {
 		    print('<td width = "50" style = "'.$thstyle.'">Штраф</td>
 			   <td width = "150" style = "'.$thstyle.'">Комментарий</td>
@@ -525,7 +525,7 @@
 
 			$TeamsCount--;
 
- 			print('<tr class = "'.$TrClass.'"><td style = "'.$tdstyle.'">'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
+ 			print('<tr class = "'.$TrClass.'"><td style = "'.$tdstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
 			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].')
                                    '.($Row['level_name'] == '' ? '' : '</br><i>Не вышла на этап: '.$Row['level_name'].'</i>').'</td><td style = "'.$tdstyle.'">'."\r\n");
 		
@@ -568,12 +568,12 @@
                             }
 			    print('</td>'."\r\n");
 
-			    if ($_POST['LevelId'] > 0)
+			    if ($_REQUEST['LevelId'] > 0)
 			    {
 			      print('<td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_penalty'].'</td>
 				      <td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_comment'].'</td>
 				      <td width = "100" style = "'.$thstyle.'">'."\r\n");
-			      ConvertTeamLevelPoints2($LevelPointNames, $LevelPointPenalties, $Row['teamlevel_points'], $_POST['LevelId']); 
+			      ConvertTeamLevelPoints2($LevelPointNames, $LevelPointPenalties, $Row['teamlevel_points'], $_REQUEST['LevelId']); 
 			      print('</td>'."\r\n");
 
 

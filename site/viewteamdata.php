@@ -13,10 +13,12 @@
 	 $NowUserId = GetSession($SessionId);
 
          if (!isset($viewmode)) $viewmode = "";
+         if (!isset($viewsubmode)) $viewsubmode = "";
+
          if ($viewmode == 'Add')
 	 {
 
-		$RaidId = $_POST['RaidId'];
+		$RaidId = $_REQUEST['RaidId'];
 		if (empty($RaidId) or empty($NowUserId))
 		{
 	            $statustext = 'Для регистрации новой команды обязателен идентификатор пользователя и ММБ';
@@ -80,13 +82,14 @@
 
          } else {
 
+
            // просмотр существующего
                // Проверка нужна только для случая регистрация новой команды
                  // только тогда Id есть в переменной php, но нет в вызывающей форме
-		if (!isset($_POST['TeamId'])) $_POST['TeamId'] = "";
+		if (!isset($_REQUEST['TeamId'])) $_REQUEST['TeamId'] = "";
 		if (empty($TeamId))
 		{
-			$TeamId = $_POST['TeamId']; 
+			$TeamId = $_REQUEST['TeamId']; 
                 }
 
 		if ($TeamId <= 0)
