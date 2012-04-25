@@ -559,7 +559,7 @@
    } elseif  ($action == 'FindTeam')  {
    // Информация о команде по номеру
 
-             if (isset($_POST['TeamNum'])) $TeamNum = $_POST['TeamNum']; else $TeamNum = "";
+             if (isset($_REQUEST['TeamNum'])) $TeamNum = $_REQUEST['TeamNum']; else $TeamNum = "";
              if ($TeamNum == '' or $TeamNum == 'Номер команды')
              {
                         $statustext = 'Не указан номер.';
