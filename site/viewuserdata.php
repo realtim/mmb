@@ -14,7 +14,7 @@
 	 $NowUserId = GetSession($SessionId);
 
 
-         if (isset($_POST['viewmode'])) $viewmode = $_POST['viewmode']; else $viewmode = "";
+       //  if (isset($_POST['viewmode'])) $viewmode = $_POST['viewmode']; else $viewmode = "";
          if ($viewmode == 'Add')
 	 {
              // Новый пользователь 
