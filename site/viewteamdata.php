@@ -45,12 +45,12 @@
 		//  $TeamName = $_POST['TeamName'];
 		  $TeamName = str_replace( '"', '&quot;', $_POST['TeamName']);
 		  $DistanceId = $_POST['DistanceId'];
-		  $TeamUseGPS = ($_POST['TeamUseGPS'] == 'on' ? 1 : 0);
+		  $TeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
 		  $TeamMapsCount = (int)$_POST['TeamMapsCount'];
 		  $TeamRegisterDt = 0;
 		  $TeamConfirmResult = ($_POST['TeamConfirmResult'] == 'on' ? 1 : 0);
 		  $ModeratorConfirmResult = ($_POST['ModeratorConfirmResult'] == 'on' ? 1 : 0);
-		  $TeamGreenPeace = ($_POST['TeamGreenPeace'] == 'on' ? 1 : 0);
+		  $TeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
                   $TeamNotOnLevelId = $_POST['TeamNotOnLevelId'];
 
                 } else {
@@ -332,8 +332,14 @@
     	      // дистанция 
          if ($OldMmb == 1)
          {
-        	  print(' <span style = "margin-left: 30px;"> &nbsp; <a href = "'.trim($DistanceResultLink).'"
-                           title = "Общий протокол (для ММБ до 2012 года)" target = "_blank">Дистанция</a></span>'."\r\n"); 
+		  print('<span style = "margin-left: 30px;"></span>');
+		  $sql = "select distance_resultlink, distance_name from  Distances where raid_id = ".$RaidId;
+		  $Result = MySqlQuery($sql);
+		  while ($Row = mysql_fetch_assoc($Result))
+		  {
+			print('Дистанция <a href = "'.trim($Row['distance_resultlink']).' target = "_blank">' . $Row['distance_name'] . '</a> &nbsp; '."\r\n"); 
+		  }
+		  mysql_free_result($Result);
          } else {
         	  print(' <span style = "margin-left: 30px;"> &nbsp; Дистанция</span>'."\r\n"); 
 	 }

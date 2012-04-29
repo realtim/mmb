@@ -20,6 +20,7 @@
 		//return; 
 	   }
 */
+	   if (isset($_REQUEST['TeamId'])) $TeamId = $_REQUEST['TeamId'];
 	   if (empty($TeamId))
 	   {
              $TeamId = 0;
@@ -115,9 +116,9 @@
            $RaidId = (int)$_POST['RaidId'];
            $pTeamNum = (int) $_POST['TeamNum'];
            $pTeamName = $_POST['TeamName'];
-           $pTeamUseGPS = ($_POST['TeamUseGPS'] == 'on' ? 1 : 0);
+	   $pTeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
            $pTeamMapsCount = (int)$_POST['TeamMapsCount'];
-           $pTeamGreenPeace = ($_POST['TeamGreenPeace'] == 'on' ? 1 : 0);
+	   $pTeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
            if (!isset($_POST['TeamConfirmResult'])) $_POST['TeamConfirmResult'] = "";
            $pTeamConfirmResult = ($_POST['TeamConfirmResult'] == 'on' ? 1 : 0);
            if (!isset($_POST['ModeratorConfirmResult'])) $_POST['ModeratorConfirmResult'] = "";
@@ -410,7 +411,6 @@
 	        // echo $sql;
 	 
                  $rs = MySqlQuery($sql);  
- 	         mysql_free_result($rs);
 
                  // Обработка схода команды в плане влияния на результаты
   		 $sql = "SELECT level_order FROM Levels where level_id = ".$pTeamNotOnLevelId;
@@ -431,7 +431,6 @@
                        
 		 //   echo $sql;
 		    $rs = MySqlQuery($sql);  
-		    mysql_free_result($rs);
 
                     // Очищаем поля дат и КП на тот случай, если после восстановления что-то изменится
                     // Например, граничные условия
@@ -449,7 +448,6 @@
                        
 		   // echo $sql;
 		    $rs = MySqlQuery($sql);  
-		    mysql_free_result($rs);
 
 
                   } else {
@@ -459,7 +457,6 @@
 
 		   // echo $sql;
 		    $rs = MySqlQuery($sql);  
-		    mysql_free_result($rs);
 
 
                   }
@@ -834,7 +831,6 @@
 		$sql = "update  TeamUsers set level_id = ".($LevelId > 0 ?  $LevelId : 'null' )." where teamuser_id = ".$TeamUserId; 
         	// echo $sql;
 	        $rs = MySqlQuery($sql);  
-                mysql_free_result($rs);
 
 	
 		$view = "ViewTeamData";
@@ -968,10 +964,8 @@
 
 		$sql = "update  TeamUsers set teamuser_hide = 1 where team_id = ".$TeamId; 
 		$rs = MySqlQuery($sql);  
-                mysql_free_result($rs);
                 $sql = "update  Teams set team_hide = 1 where team_id = ".$TeamId;
 		$rs = MySqlQuery($sql);  
-                mysql_free_result($rs);
 		
 	      $view = "ViewRaidTeams";
 

@@ -111,11 +111,11 @@
 
 
 		    $Index = 'Level'.$Row['level_id'].'_begyear';
-                    $BegYear = $_POST[$Index];
+                    if (isset($_POST[$Index])) $BegYear = $_POST[$Index]; else $BegYear = "";
                     $Index = 'Level'.$Row['level_id'].'_begdate';
-                    $BegDate = $_POST[$Index];
+                    if (isset($_POST[$Index])) $BegDate = $_POST[$Index]; else $BegDate = "";
                     $Index = 'Level'.$Row['level_id'].'_begtime';
-                    $BegTime = $_POST[$Index];
+                    if (isset($_POST[$Index])) $BegTime = $_POST[$Index]; else $BegTime = "";
 
                     $BegYDTs =  "'".$BegYear."-".substr(trim($BegDate), -2)."-".substr(trim($BegDate), 0, 2)." ".substr(trim($BegTime), 0, 2).":".substr(trim($BegTime), -2).":00'";
       //              echo 'BegYDTs';
@@ -204,6 +204,7 @@
 
 		    $Index = 'Level'.$Row['level_id'].'_comment';
                     $Comment = $_POST[$Index];
+                    if ($Comment == "") $Comment = "NULL"; else $Comment = "'" . mysql_real_escape_string($Comment) . "'";
 
 
               // Есди есть данные - изменяем, нет - вставляем 
@@ -214,7 +215,7 @@
                                                    teamlevel_endtime = ".$EndYDTs.",
                                                    teamlevel_penalty = ".$PenaltyTime.",
                                                    teamlevel_points = '".$TeamLevelPoints."',  
-                                                   teamlevel_comment = '".$Comment."'  
+                                                   teamlevel_comment = ".$Comment."
                            where teamlevel_id = ".$TeamLevelId."";
 
               } else {
@@ -222,7 +223,7 @@
 		  $sql = " insert into  TeamLevels (team_id, level_id, teamlevel_begtime, teamlevel_endtime,
                                                     teamlevel_penalty, teamlevel_points, teamlevel_comment) 
 					 values  (".$TeamId.", ".$Row['level_id'].", ".$BegYDTs.", 
-                                                  ".$EndYDTs.", ".$PenaltyTime.", '".$TeamLevelPoints."', '".$Comment."')";
+                                                  ".$EndYDTs.", ".$PenaltyTime.", '".$TeamLevelPoints."', ".$Comment.")";
 	      }
 
  	      //  echo $sql;

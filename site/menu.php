@@ -229,7 +229,7 @@
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-		  print('<option value = "'.$Row['raid_id'].'"  '.(($Row['raid_id'] == $_POST['RaidId']) ? 'selected' : '').' >'.$Row['raid_name']."\r\n");
+		  print('<option value = "'.$Row['raid_id'].'"  '.(($Row['raid_id'] == $_REQUEST['RaidId']) ? 'selected' : '').' >'.$Row['raid_name']."\r\n");
 		}
 
                 mysql_free_result($Result);
