@@ -158,8 +158,6 @@ if (!isset($MyPHPScript)) return;
        $Result = MySqlQuery("update  Sessions set session_updatetime = now(), session_status = ".$CloseStatus."
 			    where session_status = 0 and session_id = '".$SessionId ."'");
 
-       mysql_free_result($Result); 
-
       return;
    }
 

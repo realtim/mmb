@@ -43,7 +43,7 @@ if (!isset($MyPHPScript)) return;
 		$statustext = "Неверный email или пароль.";
 		  //.$login." не найден!";
 		$password = "";
-		mysql_close($Connection);
+		mysql_close();
 		$alert = 1; 
 		return;  
 	} 
@@ -55,10 +55,11 @@ if (!isset($MyPHPScript)) return;
 		
 
    } elseif ($action == "UserInfo")  {
-    // Действие вызывается ссылкой под имененм пользователя  а также отменой изменений
+    // Действие вызывается ссылкой под имененм пользователя
    
 	$view = "ViewUserData";
-		
+	$viewmode = "";
+
 
    } elseif ($action == "ViewNewUserForm")  {
     // Действие вызывается ссылкой Новый пользователь
@@ -238,7 +239,6 @@ if (!isset($MyPHPScript)) return;
                  
 		// echo $sql;
 		 $rs = MySqlQuery($sql);  
-		 mysql_free_result($rs);
 
 		 // Формируем сообщение
 
@@ -318,10 +318,9 @@ if (!isset($MyPHPScript)) return;
 		                             user_sendnewpassworddt = now(),
 					     user_sessionfornewpassword = null,
 					     user_sendnewpasswordrequestdt = null
-		         where user_id = ".$UserId;
+		         where user_id = ".$pUserId;
               //   echo $sql;
 	        $rs = MySqlQuery($sql);  
-                mysql_free_result($rs);
 
 		$statustext = 'Пароль '.$NewPassword.' выслан.';
                 $view = "";
@@ -338,7 +337,7 @@ if (!isset($MyPHPScript)) return;
 		$Msg =  $Msg."P.S. Изменения можете вносить Вы, а также администратор сайта ММБ.";
 			    
                 // Отправляем письмо
-		SendMail(trim($UserEmail), $Msg, $pUserName);
+		SendMail(trim($UserEmail), $Msg, $UserName);
 
             }
              // Конец проверки на возможность отправки пароля
@@ -407,7 +406,9 @@ if (!isset($MyPHPScript)) return;
 	   $view = "";
 
 	   $UserId = 0;
-	   
+
+	   if (isset($_REQUEST['changepasswordsessionid'])) $changepasswordsessionid = $_REQUEST['changepasswordsessionid'];
+	   else $changepasswordsessionid = "";
 	   if (empty($changepasswordsessionid))
 	   {
               $action = "";
@@ -441,12 +442,11 @@ if (!isset($MyPHPScript)) return;
 		         where user_id = ".$UserId;
               //   echo $sql;
 	        $rs = MySqlQuery($sql);  
-                mysql_free_result($rs);
 
 		$statustext = 'Пароль '.$NewPassword.' выслан.';
 
 		$Msg = "Уважаемый пользователь ".$UserName."!\r\n\r\n";
-		$Msg =  $Msg."Согласно подтверждённому запросу с Вашего адреса e-mail,".".\r\n";
+		$Msg =  $Msg."Согласно подтверждённому запросу с Вашего адреса e-mail,"."\r\n";
 		$Msg =  $Msg."для Вашей учетной записи на сайте ММБ создан пароль: ".$NewPassword."\r\n";
 			    
                 // Отправляем письмо
@@ -475,6 +475,7 @@ if (!isset($MyPHPScript)) return;
     // Действие вызывается ссылкой Отмена
 
            $view = "ViewUserData";
+	   $viewmode = "";
 
    } elseif ($action == "FindUser")  {
     // Действие вызывается поиском участника
