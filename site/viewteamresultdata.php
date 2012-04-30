@@ -1,4 +1,8 @@
 <?php
+// +++++++++++ Показ/редактирование результатов команды +++++++++++++++++++++++
+
+// Выходим, если файл был запрошен напрямую, а не через include
+if (!isset($MyPHPScript)) return;
 
 // ============ Функция преобразования вывода данных
 function ConvertTeamLevelPointsToHTML($LevelPointNames, $LevelPointPenalties, $TeamLevelPoints, $LevelId, $DisabledResultText)
@@ -122,7 +126,7 @@ else
 			oForm[chkName][i].checked = checked;
 	}
 </script>
-<?
+<?php
 
 print('<form name="TeamResultDataForm" action="'.$MyPHPScript.'" method="post" onSubmit="'.$OnSubmitResultFunction.'">'."\n");
 print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");

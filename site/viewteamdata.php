@@ -1,4 +1,8 @@
 <?php
+// +++++++++++ Показ/редактирование данных команды ++++++++++++++++++++++++++++
+
+// Выходим, если файл был запрошен напрямую, а не через include
+if (!isset($MyPHPScript)) return;
 
 // По идее, для всех действий должно передаваться SessionId через post
 // Исключение действия UserLogin и переход по ссылке из письма - там стартует сессия прям на этой странице
@@ -260,7 +264,7 @@ else
 	}
 </script>
 
-<?
+<?php
 // Выводим начало формы с командой
 print('<form name="TeamDataForm" action="'.$MyPHPScript.'" method="post" onSubmit="'.$OnSubmitFunction.'">'."\n");
 print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");

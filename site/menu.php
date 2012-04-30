@@ -1,5 +1,10 @@
+<?php
+// +++++++++++ Левое меню +++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+// Выходим, если файл был запрошен напрямую, а не через include
+if (!isset($MyPHPScript)) return;
 
+?>
 <script language = "JavaScript">
 
         // Функция проверки правильности заполнения формы
@@ -210,7 +215,7 @@
 
 </script>
 
-<?
+<?php
 	
 	// выводим окно для поиска команды 
 	print('<form  name = "FindTeamForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "return ValidateFindTeamForm();">'."\r\n");
