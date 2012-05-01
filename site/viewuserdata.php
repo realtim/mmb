@@ -4,25 +4,10 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
-         // По идее, для всех действий должно передаваться SessionId через post
-	// Исключение действия UserLogin и переход по ссылке из письма - там стартует сессия прям на этой странице
-         // и передачи через форму не происходит
-          // м.б. стоит яано прописать для каких action м.б.пустая сессия
-
-         if (empty($SessionId))
-	 {
-		$SessionId =  $_POST['sessionid'];
-	 } 
-
-	 // Текущий пользователь
-	 $NowUserId = GetSession($SessionId);
-
-
-       //  if (isset($_POST['viewmode'])) $viewmode = $_POST['viewmode']; else $viewmode = "";
          if ($viewmode == 'Add')
 	 {
              // Новый пользователь 
-             $UserId = 0;
+             $pUserId = 0;
 	     // Пока не делал возможности регистрировать пользователя уже авторизованному пользователю
 
 	     // Если вернулись после ошибки переменные не нужно инициализировать
@@ -60,15 +45,15 @@ if (!isset($MyPHPScript)) return;
            // просмотр существующего
                 //echo $viewsubmode;
 
-		$UserId = $_POST['UserId']; 
+		$pUserId = $_POST['UserId'];
 
-		if ($UserId <= 0)
+		if ($pUserId <= 0)
 		{
 		// должны быть определены пользоатель, которого смотрят
 		     return;
 		}
            
-		$sql = "select user_email, user_name, user_birthyear, user_prohibitadd from  Users where user_id = ".$UserId;
+		$sql = "select user_email, user_name, user_birthyear, user_prohibitadd from  Users where user_id = ".$pUserId;
 		$rs = MySqlQuery($sql);  
                 $row = mysql_fetch_assoc($rs);
                 mysql_free_result($rs);
@@ -98,7 +83,7 @@ if (!isset($MyPHPScript)) return;
 		$SaveButtonText = 'Сохранить изменения';
 		
 
-                if ($UserId == $NowUserId or CheckAdmin($SessionId) == 1) 
+                if (($pUserId == $UserId) || $Administrator)
 		{
 		  $AllowEdit = 1;
 		}
@@ -223,7 +208,7 @@ if (!isset($MyPHPScript)) return;
 	 
 	 print('<form  name = "UserDataForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "'.$OnSubmitFunction.'">'."\r\n");
          print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n");
-         print('<input type = "hidden" name = "UserId" value = "'.$UserId.'">'."\r\n");
+         print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\r\n");
          print('<input type = "hidden" name = "action" value = "">'."\r\n");
 
 	 if ($AllowEdit == 1) 
@@ -302,7 +287,7 @@ if (!isset($MyPHPScript)) return;
 			     on t.distance_id = d.distance_id
 			     inner join  Raids r
 			     on d.raid_id = r.raid_id
-			where tu.teamuser_hide = 0 and user_id = ".$UserId."
+			where tu.teamuser_hide = 0 and user_id = ".$pUserId."
 			order by r.raid_id desc "; 
                 //echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);

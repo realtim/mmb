@@ -207,144 +207,241 @@ if (!isset($MyPHPScript)) return;
     return ;
     }
 
+// ----------------------------------------------------------------------------
+// Инициализация всех переменных, отвечающих за уровни доступа
 
+function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator, &$TeamUser, &$Moderator, &$OldMmb, &$RaidStage)
+{
+	// Инициализируем переменные самым низким уровнем доступа
+	$UserId = 0;
+	$Administrator = 0;
+	$TeamUser = 0;
+	$Moderator = 0;
+	$OldMmb = 0;
+	$RaidStage = 0;
 
-    // Проверка, что текущая сессия принадлежит администратору
-    function CheckAdmin($SessionId) {
+	$UserId	= GetSession($SessionId);
 
-        if ($SessionId <= 0) 
+	// Проверяем, не является ли пользователь администратором
+	if ($UserId > 0)
 	{
-	  return 0;
+		$sql = "select user_admin from Users where user_hide = 0 and user_id = ".$UserId;
+		$Result = MySqlQuery($sql);
+		if (!$Result) return;
+		$Row = mysql_fetch_assoc($Result);
+		$Administrator = $Row['user_admin'];
+		mysql_free_result($Result);
 	}
-   
-	$UserId = GetSession($SessionId);
 
-        if ($UserId <= 0) 
+	// Контролируем, что команда есть в базе
+	if ($TeamId > 0)
 	{
-	  return 0;
+		$sql = "select team_id from Teams where team_id = ".$TeamId;
+		$Result = MySqlQuery($sql);
+		if (mysql_num_rows($Result) == 0) $TeamId = 0;
+		mysql_free_result($Result);
 	}
 
-	
-	$sql = "select user_admin  
-		        from  Users
-			where user_hide = 0 and user_id = ".$UserId; 
-      //  echo 'sql '.$sql;
+	// Проверяем, является ли пользователь членом команды
+	if (($UserId > 0) && ($TeamId > 0))
+	{
+		$sql = "select CASE WHEN count(*) > 0 THEN 1 ELSE 0 END as userinteam
+				from TeamUsers tu
+			where teamuser_hide = 0 and team_id = ".$TeamId." and user_id = ".$UserId;
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+		$TeamUser = $Row['userinteam'];
+		mysql_free_result($Result);
+	}
+
+	// Если известна команда, то все дальнейшие действия проводим с тем ММБ,
+	// в который записана команда
+	if ($TeamId > 0)
+	{
+		$sql = "select raid_id from Distances d
+				inner join Teams t on t.distance_id = d.distance_id
+			where t.team_id = ".$TeamId;
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+		$RaidId = (int)$Row['raid_id'];
+		mysql_free_result($Result);
+	}
+
+	// Контролируем, что маршбросок существует в базе
+	if ($RaidId > 0)
+	{
+		$sql = "select raid_id from Raids where raid_id = ".$RaidId;
+		$Result = MySqlQuery($sql);
+		if (mysql_num_rows($Result) == 0) $RaidId = 0;
+		mysql_free_result($Result);
+	}
+
+	// Если неизвестен маршбросок
+	// то модератор и период маршброска считаются по умолчанию
+	if ($RaidId <= 0) return;
+
+	// Проверяем, является ли пользователь модератором марш-броска
+	if ($UserId > 0)
+	{
+		$sql = "select CASE WHEN count(*) > 0 THEN 1 ELSE 0 END as user_moderator
+			from RaidModerators
+			where raidmoderator_hide = 0 and raid_id = ".$RaidId." and user_id = ".$UserId;
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+		$Moderator = $Row['user_moderator'];
+		mysql_free_result($Result);
+	}
+
+	// Определяем, проводился ли марш-бросок до 2012 года
+	$sql = "select CASE WHEN raid_registrationenddate is not null and YEAR(raid_registrationenddate) <= 2011
+			THEN 1
+			ELSE 0
+		END as oldmmb
+		from Raids where raid_id = ".$RaidId;
 	$Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result); 
-		
-
-    return $Row['user_admin'];
-    }
-
-
-    // Проверка, что текущая сессия принадлежит модератору текущего ММБ
-    function CheckModerator($SessionId, $RaidId) {
-   
-   
-        if ($RaidId <= 0) 
-	{
-	  return 0;
-	}
-
-        if ($SessionId <= 0) 
-	{
-	  return 0;
-	}
-
-	$UserId = GetSession($SessionId);
-
-        if ($UserId <= 0) 
-	{
-	  return 0;
-	}
-        
-	$sql = "select CASE WHEN count(*) > 0 THEN 1 ELSE 0 END as user_moderator 
-		        from  RaidModerators
-			where raidmoderator_hide = 0 and raid_id = ".$RaidId." and user_id = ".$UserId; 
-
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result); 
-
-    return $Row['user_moderator'];
-    }
-
-
-    // Проверка, что текущая сессия принадлежит участнику команды
-    function CheckTeamUser($SessionId, $TeamId) {
-   
-   
-        if ($TeamId <= 0) 
-	{
-	  return 0;
-	}
-
-        if ($SessionId <= 0) 
-	{
-	  return 0;
-	}
-
-	$UserId = GetSession($SessionId);
-
-        if ($UserId <= 0) 
-	{
-	  return 0;
-	}
-        
-	$sql = "select CASE WHEN count(*) > 0 THEN 1 ELSE 0 END as userinteam 
-		        from  TeamUsers tu
-			where teamuser_hide = 0 and team_id = ".$TeamId." and user_id = ".$UserId; 
-
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result); 
-
-    return $Row['userinteam'];
-    }
-
-    // Проверка того, что данный марш-бросок уже стартовал
-    // (текущее время больше времени старта хотя бы одного из этапов)
-    function CheckRaidStarted($RaidId) {
-
-	if (!$RaidId || ($RaidId <= 0)) return(0);
-	$sql = "select level_begtime from Levels l
-		inner join Distances d on l.distance_id = d.distance_id
-		where (d.raid_id = " . $RaidId . ") and (NOW() >= l.level_begtime)";
-	$Result = MySqlQuery($sql);
-	if (!$Result) return(0);
-	$Started = mysql_num_rows($Result);
+	$OldMmb = $Row['oldmmb'];
 	mysql_free_result($Result);
 
-    return($Started);
-    }
-
-    // Проверка того, что данный марш-бросок закончился
-    // (текущее время больше времени финиша любого из этапов)
-    function CheckRaidFinished($RaidId) {
-
-	if (!$RaidId || ($RaidId <= 0)) return(0);
-	$sql = "select level_endtime from Levels l
-		inner join Distances d on l.distance_id = d.distance_id
-		where (d.raid_id = " . $RaidId . ") and (NOW() < l.level_endtime)";
+	// RaidStage указывает на то, на какой временной стадии находится ммб
+	// 0 - raid_registrationenddate IS NULL, марш-бросок не показывать
+	// 1 - raid_registrationenddate еще не наступил
+	// 2 - raid_registrationenddate наступил, но первый этап не стартовал
+	// 3 - первый этап стартовал, финиш еще не закрылся
+	// 4 - финиш закрылся, raid_closedate IS NULL или не наступил
+	// 5 - raid_closedate наступил
+	$sql = "select
+		CASE
+			WHEN r.raid_registrationenddate IS NULL THEN 0
+			WHEN r.raid_registrationenddate > NOW() THEN 1
+			ELSE 2
+		END as registration,
+		(select count(*) from Levels l
+			inner join Distances d on l.distance_id = d.distance_id
+			where (d.raid_id = r.raid_id) and (NOW() >= l.level_begtime))
+		as started,
+		(select count(*) from Levels l
+			inner join Distances d on l.distance_id = d.distance_id
+			where (d.raid_id = r.raid_id) and (NOW() < l.level_endtime))
+		as notfinished,
+		CASE
+			WHEN (r.raid_closedate IS NULL) OR (NOW() < r.raid_closedate) THEN 0
+			ELSE 1
+		END as closed
+		from Raids r where r.raid_id=".$RaidId;
 	$Result = MySqlQuery($sql);
-	if (!$Result) return(0);
-	if (mysql_num_rows($Result) > 0) $Finished = 0; else $Finished = 1;
-	mysql_free_result($Result);
-
-    return($Finished);
-    }
-
-    // Проверка того, может ли пользователь уже видеть описания этапов и КП марш-броска
-    function CheckLevelDataVisible($SessionId, $RaidId) {
-
-	if (CheckModerator($SessionId, $RaidId))
+	$Row = mysql_fetch_assoc($Result);
+	if ($Row['registration'] == 0) $RaidStage = 0;
+	elseif ($Row['registration'] == 1) $RaidStage = 1;
+	else
 	{
-	    if (CheckRaidStarted($RaidId)) return(1); else return(0);
+		if ($Row['started'] == 0) $RaidStage = 2;
+		elseif ($Row['notfinished'] > 0) $RaidStage = 3;
+		else
+		{
+			if ($Row['closed'] == 0) $RaidStage = 4;
+			else $RaidStage = 5;
+		}
 	}
-	if (CheckRaidFinished($RaidId)) return(1); else return(0);
+	mysql_free_result($Result);
+}
 
-    }
+// ----------------------------------------------------------------------------
+// Проверка возможности создавать команду
+
+function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage)
+{
+	// Если марш-бросок еще не открыт - никаких созданий команд
+	if ($RaidStage == 0) return(0);
+
+	// Администратор может всегда
+	if ($Administrator) return(1);
+
+	// Если марш-бросок закрыт через raid_closedate - остальным нельзя
+	// (включая модераторов)
+	if ($RaidStage == 5) return(0);
+
+	// В старом марш-броске можно всем, если он открыт через raid_closedate
+	if ($OldMmb) return(1);
+
+	// Модератор может до закрытия редактирования через raid_closedate
+	if ($Moderator && ($RaidStage < 5)) return(1);
+
+	// Обычные пользователи могут до начала марш-броска
+	if ($RaidStage < 3) return(1); else return(0);
+}
+
+// ----------------------------------------------------------------------------
+// Проверка возможности редактировать команду
+
+function CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage)
+{
+	// Если марш-бросок еще не открыт - никаких редактирований
+	if ($RaidStage == 0) return(0);
+
+	// Администратор может всегда
+	if ($Administrator) return(1);
+
+	// Модератор может до закрытия редактирования через raid_closedate
+	if ($Moderator && ($RaidStage < 5)) return(1);
+
+	// Посторонний участник не может никогда
+	if (!$TeamUser) return(0);
+
+	// Здесь и ниже остались только члены команды
+
+	// В старом марш-броске можно, если он открыт через raid_closedate
+	if ($OldMmb && ($RaidStage < 5)) return(1);
+
+	// А в обычном только до начала марш-броска
+	if ($RaidStage < 3) return(1); else return(0);
+}
+
+// ----------------------------------------------------------------------------
+// Проверка возможности видеть результаты
+
+function CanViewResults($Administrator, $Moderator, $RaidStage)
+{
+	// Если марш-бросок еще не открыт - никто его не видит
+	if ($RaidStage == 0) return(0);
+
+	// Администратор и модератор могут после старта марш-броска
+	// (раньше результатов все равно быть не должно)
+	if (($Administrator || $Moderator) && ($RaidStage > 2)) return(1);
+
+	// Все остальные могут после финиша марш-броска
+	if ($RaidStage > 3) return(1); else return(0);
+}
+
+// ----------------------------------------------------------------------------
+// Проверка возможности редактировать результаты
+
+function CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage)
+{
+	// Если марш-бросок еще не открыт - никаких редактирований
+	if ($RaidStage == 0) return(0);
+
+	// Администратор может всегда
+	if ($Administrator) return(1);
+
+	// Посторонний участник, не являющийся модератором, не может никогда
+	if (!$TeamUser && !$Moderator) return(0);
+
+	// После наступления raid_closedate нельзя
+	if ($RaidStage == 5) return(0);
+
+	// В старом марш-броске можно всегда
+	if ($OldMmb) return(1);
+
+	// Модератор может после старта марш-броска
+	if ($Moderator && ($RaidStage > 2)) return(1);
+
+	// Члены команды могут после финиша марш-броска
+	// и до закрытия через raid_closedate
+	if ($RaidStage > 3) return(1); else return(0);
+}
+
+// ----------------------------------------------------------------------------
 
     // функция 
     // Автор: Григорий Рубцов [rgbeast]  

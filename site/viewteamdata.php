@@ -4,40 +4,27 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
-// По идее, для всех действий должно передаваться SessionId через post
-// Исключение действия UserLogin и переход по ссылке из письма - там стартует сессия прям на этой странице
-// и передачи через форму не происходит
-// м.б. стоит яано прописать для каких action м.б.пустая сессия
-if (empty($SessionId))
-{
-	$SessionId = $_POST['sessionid'];
-}
-
-// Текущий пользователь
-$NowUserId = GetSession($SessionId);
-
 if (!isset($viewmode)) $viewmode = "";
 if (!isset($viewsubmode)) $viewsubmode = "";
 
 // ================ Добавляем новую команду ===================================
 if ($viewmode == 'Add')
 {
-	$RaidId = $_REQUEST['RaidId'];
-	if (empty($RaidId) or empty($NowUserId))
+	if (($RaidId <= 0) || ($UserId <= 0))
 	{
 		$statustext = 'Для регистрации новой команды обязателен идентификатор пользователя и ММБ';
 		$alert = 1;
 		return;
 	}
 
-	$Sql = "select user_email from Users where user_id = ".$NowUserId;
+	// Если запрещено создавать команду - молча выходим, сообщение уже выведено в teamaction.php
+	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage)) return;
+
+	$Sql = "select user_email from Users where user_id = ".$UserId;
 	$Result = MySqlQuery($Sql);
 	$Row = mysql_fetch_assoc($Result);
 	mysql_free_result($Result);
 	$UserEmail = $Row['user_email'];
-
-	// Новая команда
-	$TeamId = 0;
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterError")
@@ -69,8 +56,6 @@ if ($viewmode == 'Add')
 		$TeamNotOnLevelId = 0;
 	}
 
-	$TeamUser = 0;
-
 	// Определяем следующее действие
 	$NextActionName = 'AddTeam';
 	// Действие на текстовом поле по клику
@@ -85,12 +70,6 @@ else
 {
 	// Проверка нужна только для случая регистрация новой команды
 	// Только тогда Id есть в переменной php, но нет в вызывающей форме
-	if (!isset($_REQUEST['TeamId'])) $_REQUEST['TeamId'] = "";
-	if (empty($TeamId))
-	{
-		$TeamId = $_REQUEST['TeamId'];
-	}
-
 	if ($TeamId <= 0)
 	{
 		// Должна быть определена команда, которую смотрят
@@ -98,7 +77,7 @@ else
 	}
 
 	$sql = "select t.team_num, t.distance_id, t.team_usegps, t.team_name,
-		t.team_mapscount, d.raid_id, t.team_registerdt,
+		t.team_mapscount, t.team_registerdt,
 		t.team_confirmresult, t.team_moderatorconfirmresult,
 		t.team_greenpeace, t.level_id,
 		TIME_FORMAT(t.team_result, '%H:%i') as team_result,
@@ -114,9 +93,6 @@ else
 	$Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
 	mysql_free_result($Result);
-
-	// Эти данные всегда берём из базы
-	$RaidId = $Row['raid_id'];
 	$TeamRegisterDt = $Row['team_registerdt'];
 	$TeamResult = $Row['team_result'];
 	$TeamLate = (int)$Row['team_late'];
@@ -149,9 +125,6 @@ else
 		$TeamNotOnLevelId = $Row['level_id'];
 	}
 
-	if (CheckTeamUser($SessionId, $TeamId))	$TeamUser = 1;
-	else $TeamUser = 0;
-
 	$NextActionName = 'TeamChangeData';
 	$AllowEdit = 0;
 	$OnClickText = '';
@@ -159,47 +132,8 @@ else
 }
 // ================ Конец инициализации переменных команды =================
 
-
-// Определяем статус пользователя
-// К этому моменту, что для новой команды, что для существующей
-// уже известен ммб
-
-// Получаем данные о временных ограничениях ММБ
-// и о том, не является ли ММБ старым (проводился до 2012 года)
-$sql = "select r.raid_resultpublicationdate, r.raid_registrationenddate,
-	CASE WHEN r.raid_registrationenddate is not null and YEAR(r.raid_registrationenddate) <= 2011
-		THEN 1
-		ELSE 0
-	END as oldmmb,
-	CASE WHEN r.raid_registrationenddate is not null and r.raid_registrationenddate <= NOW()
-		THEN 1
-		ELSE 0
-	END as showresultfield
-	from Raids r
-	where r.raid_id = ".$RaidId;
-$Result = MySqlQuery($sql);
-$Row = mysql_fetch_assoc($Result);
-mysql_free_result($Result);
-$RaidPublicationResultDate = $Row['raid_resultpublicationdate'];
-$RaidRegistrationEndDate = $Row['raid_registrationenddate'];
-$OldMmb = $Row['oldmmb'];
-$RaidShowResultField = $Row['showresultfield'];
-
-// Должна быть определена дата окончания регистрации
-if (empty($RaidRegistrationEndDate))
-{
-	return;
-}
-
-// Является ли пользователь модератором данного ММБ
-if (CheckModerator($SessionId, $RaidId)) $Moderator = 1;
-else $Moderator = 0;
-
-// !!! Нужно сделать запрет создавать/редактировать команду
-// не модераторам после начала ММБ (кроме марш-бросков до 2012 года)
-
-// Общее правило для возможности редактирования
-if (($viewmode == "Add") || $Moderator || ($TeamUser && !$ModeratorConfirmResult))
+// Определяем права по редактированию команды
+if (($viewmode == "Add") || CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
 {
 	$AllowEdit = 1;
 	$DisabledText = '';
@@ -211,6 +145,10 @@ else
 	$DisabledText = ' disabled';
 	$OnSubmitFunction = 'return false;';
 }
+// Определяем права по просмотру результатов
+if (($viewmode <> "Add") && CanViewResults($Administrator, $Moderator, $RaidStage))
+	$AllowViewResults = 1;
+else $AllowViewResults = 0;
 
 // Выводим javascrpit
 ?>
@@ -347,6 +285,11 @@ if ($viewmode <> "Add")
 }
 else
 {
+	$sql = "select r.raid_registrationenddate from Raids r where r.raid_id = ".$RaidId;
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$RaidRegistrationEndDate = $Row['raid_registrationenddate'];
+	mysql_free_result($Result);
 	print('<tr><td class="input">Время окончания регистрации: '.$RaidRegistrationEndDate.'</td></tr>'."\n\n");
 }
 
@@ -386,16 +329,14 @@ $Result = MySqlQuery($sql);
 while ($Row = mysql_fetch_assoc($Result))
 {
 	print('<div style="margin-top: 5px;">'."\n");
-	// Ссылку удалить ставим только в том случае, если работает модератор или участник команды
-	// !!! Удаление нужно разрешать команде только до начала ММБ
-	if ($Moderator or $TeamUser)
+	if ($AllowEdit)
 	{
 		print('<input type="button" style="margin-right: 15px;" onClick="javascript:if (confirm(\'Вы уверены, что хотите удалить участника: '.$Row['user_name'].'? \')) { HideTeamUser('.$Row['teamuser_id'].'); }" name="HideTeamUserButton" tabindex="'.(++$TabIndex).'" value="Удалить">'."\n");
 	}
 
-	// Если текущая дата больше времени окончания регистрации - появляются поля схода
-	// !!! Ввод схода нужно разрешать по тем же правилам, что и ввод результатов
-	if (($viewmode <> "Add") && ($RaidShowResultField == 1))
+	// Показываем только если можно смотреть результаты марш-броска
+	// (так как тут есть список этапов)
+	if ($AllowViewResults)
 	{
 		// Список этапов, чтобы выбрать, на каком сошёл участник
 		print('Сход: <select name="UserOut'.$Row['teamuser_id'].'" style="width: 100px; margin-right: 15px;" title="Этап, на котором сошёл участник" onChange="javascript:if (confirm(\'Вы уверены, что хотите отметить сход участника: '.$Row['user_name'].'? \')) { TeamUserOut('.$Row['teamuser_id'].', this.value); }" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
@@ -439,8 +380,8 @@ if ($AllowEdit == 1)
 
 // ================ Секция результатов ========================================
 
-// !!! Ввод схода нужно разрешать по тем же правилам, что и ввод результатов
-if (($AllowEdit == 1) && ($viewmode <> "Add") && ($RaidShowResultField == 1))
+// !!! Этой секции вообще нечего делать в этом файле, перенести в viewteamresultdata.php
+if ($AllowViewResults)
 {
 	// Список этапов, чтобы выбрать, на какой команда не вышла (по умолчанию считается, что вышла на всё)
 	print('<tr><td style="padding-top: 15px;"><b>Результаты:</b></td></tr>'."\n");

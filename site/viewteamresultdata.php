@@ -59,30 +59,16 @@ function ConvertTeamLevelPointsToHTML($LevelPointNames, $LevelPointPenalties, $T
 print('<div style="margin-top: 15px;">&nbsp;</div>'."\n");
 
 // Считаем, что все переменные уже определны. если нет - выходим
-if (empty($TeamId)) return;
+if ($TeamId <= 0) return;
 
 // Результаты не могут отображаться, если команда только вводится
 if ($viewmode == 'Add') return;
 
-// Результаты отображаются команде сразу после закрытия последнего этапа
-// А модераторам - сразу после старта первого этапа
-if (!CheckLevelDataVisible($SessionId, $RaidId)) return;
+// Проверяем, можно ли показывать результаты в принципе
+if (!CanViewResults($Administrator, $Moderator, $RaidStage)) return;
 
-// Тут надо проверить глобальный запрет на правку данных по ММБ
-
-// Нужна, возможно, доп.проверка на время, чтобы не показывать пустые результаты с данными этапа
-
-// Значения этих переменных уже были получены ранее в viewteamdata.php
-// используем их - $RaidId, $OldMmb, $TeamConfirmResult, $ModeratorConfirmResult,
-// а также $Moderator, $TeamUser
-
-// ============ Общая проверка возможности редактирования
-
-// 24.01.2012 Добавил ограничение, что править результаты участнику команды нельзя,
-// если в карточке команды стоит, что они подтверждены (тогда сначала нужно снять галку оттуда)
-// 05.02.2012 Убрал для старых ММБ возможности править кому угодно
-
-if ($Moderator || ($TeamUser && !$ModeratorConfirmResult && !$TeamConfirmResult))
+// И запоминаем на будущее, можно ли их редактировать
+if (CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
 {
 	$AllowEditResult = 1;
 	$NextResultActionName = 'ChangeTeamResult';
@@ -308,7 +294,7 @@ print('</table>'."\n\n");
 
 
 // ============ Блок кнопок сохранения результатов ============================
-if ($AllowEdit == 1)
+if ($AllowEditResult == 1)
 {
 	print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\n");
 	print('<tr><td class="input" style="padding-top: 10px;">'."\n");

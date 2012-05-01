@@ -73,7 +73,6 @@ if (!isset($MyPHPScript)) return;
    	   $view = "ViewUserData";
            
 
-	   $SessionId =  $_POST['sessionid'];
            $pUserEmail = $_POST['UserEmail'];
            $pUserName = $_POST['UserName'];
            $pUserBirthYear = $_POST['UserBirthYear'];
@@ -170,20 +169,17 @@ if (!isset($MyPHPScript)) return;
 				             '".$ChangePasswordSessionId."', now(), '.$pUserProhibitAdd.')";
 //                 echo $sql;  
                  // При insert должен вернуться послений id - это реализовано в  MySqlQuery
-		 $UserId = MySqlQuery($sql);  
+		 $newUserId = MySqlQuery($sql);
 	
 //	         echo $UserId; 
 //                 $UserId = mysql_insert_id($Connection);
-		 if ($UserId <= 0)
+		 if ($newUserId <= 0)
 		 {
                         $statustext = 'Ошибка записи нового пользователя.';
 			$alert = 1;
 			$viewsubmode = "ReturnAfterError"; 
 			return;
 		 } else {
-
-                   // Сбрасываем идентификатор пользователя
- 		   $UserId = 0;
 
                    // Решил не писать здесь имя - м.б. и в адресе не надо
 		   $Msg = "Здравствуйте!\r\n\r\n";
@@ -209,17 +205,15 @@ if (!isset($MyPHPScript)) return;
 
               // Правка текущего пользователя
 	   
-	     $NowUserId = GetSession($SessionId);
-	
              // Если вызвали с таким действием, должны быть определны оба пользователя
-             if ($pUserId <= 0 or $NowUserId <= 0)
+             if ($pUserId <= 0 or $UserId <= 0)
 	     {
 	      return;
 	     }
 	   
 	     $AllowEdit = 0;
 	     // Права на редактирование
-             if ($pUserId == $NowUserId or CheckAdmin($SessionId) == 1) 
+             if (($pUserId == $UserId) || $Administrator)
 	     {
 		  $AllowEdit = 1;
 	     } else {
@@ -242,7 +236,7 @@ if (!isset($MyPHPScript)) return;
 
 		 // Формируем сообщение
 
-	         $Sql = "select user_name from  Users where user_id = ".$NowUserId;
+	         $Sql = "select user_name from  Users where user_id = ".$UserId;
 		 $Result = MySqlQuery($Sql);  
 		 $Row = mysql_fetch_assoc($Result);
 		 $ChangeDataUserName = $Row['user_name'];
@@ -276,21 +270,18 @@ if (!isset($MyPHPScript)) return;
   	     $view = "ViewUserData";
 
              $pUserId = $_POST['UserId'];
-             $SessionId = $_POST['sessionid'];
-
-	     $NowUserId = GetSession($SessionId);
 
         //     echo 'pUserId '.$pUserId.'now  '.$NowUserId;
 	
              // Если вызвали с таким действием, должны быть определны оба пользователя
-             if ($pUserId <= 0 or $NowUserId <= 0)
+             if ($pUserId <= 0 or $UserId <= 0)
 	     {
 	      return;
 	     }
 	   
 	     $AllowEdit = 0;
 	     // Права на редактирование
-             if ($pUserId == $NowUserId or CheckAdmin($SessionId) == 1) 
+             if (($pUserId == $UserId) || $Administrator)
 	     {
 		  $AllowEdit = 1;
 	     } else {
@@ -325,7 +316,7 @@ if (!isset($MyPHPScript)) return;
 		$statustext = 'Пароль '.$NewPassword.' выслан.';
                 $view = "";
 
-	        $Sql = "select user_name from  Users where user_id = ".$NowUserId;
+	        $Sql = "select user_name from  Users where user_id = ".$UserId;
 		$Result = MySqlQuery($Sql);  
 		$Row = mysql_fetch_assoc($Result);
 		$ChangeDataUserName = $Row['user_name'];
@@ -366,9 +357,9 @@ if (!isset($MyPHPScript)) return;
 	   $rs = MySqlQuery($sql);  
 	   $Row = mysql_fetch_assoc($rs);
 	   mysql_free_result($rs); 
- 	   $UserId = $Row['user_id'];
+	   $pUserId = $Row['user_id'];
  	
-	   if ($UserId <= 0) 
+	   if ($pUserId <= 0)
 	   {
 	              $statustext = 'Пользователь с  e-mail '.$pUserEmail.' не найден ';
 		      $alert = 1;
@@ -381,7 +372,7 @@ if (!isset($MyPHPScript)) return;
            // пишем в базу сессию для восстановления пароля
            $sql = "update   Users  set user_sessionfornewpassword = '".$ChangePasswordSessionId."',
 	                               user_sendnewpasswordrequestdt = now()
-	           where user_id = '".$UserId."'";
+	           where user_id = '".$pUserId."'";
            //echo $sql;
 	   $rs = MySqlQuery($sql);  
            mysql_free_result($rs); 	
@@ -404,8 +395,6 @@ if (!isset($MyPHPScript)) return;
    } elseif ($action == "sendpasswordafterrequest")  {
      // Действие вызывается из письма переходом по ссылке
 	   $view = "";
-
-	   $UserId = 0;
 
 	   if (isset($_REQUEST['changepasswordsessionid'])) $changepasswordsessionid = $_REQUEST['changepasswordsessionid'];
 	   else $changepasswordsessionid = "";
@@ -465,9 +454,8 @@ if (!isset($MyPHPScript)) return;
    } elseif ($action == "UserLogout")  {
      // Выход 
 
-	        CloseSession($_POST['sessionid'], 3);
+	        CloseSession($SessionId, 3);
                 $SessionId = ""; 
-                $_POST['sessionid'] = "";
 		$action = "";
 		$view = "MainPage";
 	

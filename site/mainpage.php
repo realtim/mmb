@@ -33,7 +33,7 @@ $RaidsCount = mysql_num_rows($resultRaids);
 while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 
         
-	$RaidId = $rowRaids['raid_id'];
+	$nextRaidId = $rowRaids['raid_id'];
 	$RaidName = trim($rowRaids['raid_name']);
 	$RaidPeriod = trim($rowRaids['raid_period']);
 	$RaidRulesLink = $rowRaids['raid_ruleslink'];
@@ -58,7 +58,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 
  
 	//class = "yellow"
-        print('<td><a href = "javascript:document.FindTeamForm.RaidId.value='.$RaidId.';RaidTeams();">'.$RaidName.'</a></td>'."\r\n");
+        print('<td><a href = "javascript:document.FindTeamForm.RaidId.value='.$nextRaidId.';RaidTeams();">'.$RaidName.'</a></td>'."\r\n");
 
 	print('<td><a href = "'.$RaidRulesLink.'" target = "_blank">'.$RaidPeriod.'</td>'."\r\n");
         
@@ -96,7 +96,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 					            and tu.teamuser_hide = 0
 					) as teamuserscount
 			            FROM  Distances d 
-				    WHERE raid_id = '.$RaidId.'  ORDER BY distance_name ASC');
+				    WHERE raid_id = '.$nextRaidId.'  ORDER BY distance_name ASC');
 	
         $DistancesCount = 0;
          

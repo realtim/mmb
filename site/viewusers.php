@@ -41,11 +41,6 @@ if (!isset($MyPHPScript)) return;
    
 	//$FindString = trim($_POST['FindString']); 
 
-         if (empty($SessionId))
-	 {
-		$SessionId =  $_POST['sessionid'];
-	 } 
-
                 // Выводим спсиок пользователей, которые подошли
                 print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">'.$FindText.'</div>'."\r\n");
            	print('<form  name = "UsersForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");

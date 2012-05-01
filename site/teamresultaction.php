@@ -13,12 +13,7 @@ if ($action == "ChangeTeamResult")
 	$viewmode = "";
 	if ($TeamId <= 0) return;
 
-	$sql = "select r.raid_resultpublicationdate, r.raid_registrationenddate,
-		CASE WHEN r.raid_registrationenddate is not null and YEAR(r.raid_registrationenddate) <= 2011
-			THEN 1
-			ELSE 0
-		END as oldmmb,
-		r.raid_id,
+	$sql = "select r.raid_registrationenddate,
 		t.team_moderatorconfirmresult
 		from Raids r
 			inner join Distances d on r.raid_id = d.raid_id
@@ -27,27 +22,12 @@ if ($action == "ChangeTeamResult")
 	$Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
 	mysql_free_result($Result);
-	$RaidPublicationResultDate = $Row['raid_resultpublicationdate'];
-	$RaidId = $Row['raid_id'];
-	$OldMmb = $Row['oldmmb'];
 	$ModeratorConfirmResult = $Row['team_moderatorconfirmresult'];
 
-	// Тут надо проверить глобальный запрет на правку данных по ММБ
-	// !!! И вставить стандартную проверку на возможность правки
-
-	if (CheckModerator($SessionId, $RaidId)) $Moderator = 1; $Moderator = 0;
-	if (CheckTeamUser($SessionId, $TeamId)) $TeamUser = 1; $TeamUser = 0;
-
-	// Общая проверка возможности редактирования
-	if ($OldMmb or $Moderator or ($TeamUser and !$ModeratorConfirmResult))
-		$AllowEdit = 1;
-	else
-		$AllowEdit = 0;
-
-	if (!$AllowEdit)
-	// Законопослушный пользователь сюда не попадет, но на всякий случай проверяем
+	// Проверка возможности редактировать результаты
+	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
 	{
-		$statustext = "Запрещённое изменение";
+		$statustext = 'Изменение результатов команды запрещено';
 		return;
 	}
 
@@ -173,7 +153,6 @@ if ($action == "ChangeTeamResult")
 // =============== Пересчет результатов ММБ администратором ===================
 elseif ($action == 'RecalcRaidResults')
 {
-	if ($RaidId <= 0) $RaidId = $_POST['RaidId'];
 	if ($RaidId <= 0)
 	{
 		$statustext = 'Марш-бросок не найден';
@@ -181,7 +160,7 @@ elseif ($action == 'RecalcRaidResults')
 		return;
 	}
 
-	if (!CheckAdmin($SessionId)) return;
+	if (!$Administrator) return;
 
 	$sql = 'select team_id
 		from Teams t

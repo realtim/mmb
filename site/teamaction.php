@@ -6,50 +6,23 @@ if (!isset($MyPHPScript)) return;
 
 // Для всех обработок, кроме ViewRaidTeams,
 // требуем, чтобы пользователь вошёл в систему
-if (empty($SessionId)) $SessionId = $_POST['sessionid'];
-$UserId = GetSession($SessionId);
-
-if (isset($_REQUEST['TeamId'])) $TeamId = $_REQUEST['TeamId'];
-if (empty($TeamId)) $TeamId = 0;
-if (empty($RaidId)) $RaidId = 0;
 
 // ============ Обработка возможности регистрации команды =====================
 if ($action == "RegisterNewTeam")
 {
 	$view = "ViewTeamData";
 	$viewmode = "Add";
-	if (empty($_POST['RaidId']))
+	if ($RaidId <= 0)
 	{
 		$statustext = "Не указан ММБ (выберите из списка).";
 		$alert = 0;
 		return;
 	}
 
-	// Находим ММБ и получаем информацию о нём, необходимую для проверки возможности регистрировтаь команду
-	// !!! Надо использовать стандартную проверку на возможность создания команд
-	$sql = "select raid_id, raid_name, raid_registrationbegdate, raid_registrationbegdate,
-		raid_registrationenddate, raid_resultpublicationdate, now() as nowdt,
-		CASE WHEN raid_registrationenddate is not null and YEAR(raid_registrationenddate) <= 2011
-			THEN 1
-			ELSE 0
-		END as oldmmb,
-		CASE WHEN raid_closedate is not null
-			THEN 1
-			ELSE 0
-		END as raidclose
-		from Raids where raid_id = ".$_POST['RaidId'];
-	$rs = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($rs);
-	mysql_free_result($rs);
-	$RaidId = $Row['raid_id'];
-	$RaidPublicationResultDate = $Row['raid_resultpublicationdate'];
-	$RaidRegistrationEndDate = $Row['raid_registrationenddate'];
-	$OldMmb = $Row['oldmmb'];
-	$NowDt = $Row['nowdt'];
-	$RaidClose = $Row['raidclose'];
-	if (empty($RaidId) or empty($RaidRegistrationEndDate))
+	// Проверка возможности создать команду
+	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage))
 	{
-		$statustext = "ММБ не найден";
+		$statustext = "Регистрация на марш-бросок закрыта";
 		$alert = 0;
 		return;
 	}
@@ -80,7 +53,6 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 
 	// пока валим всё в одну кучу - проверяем ниже
 	$pDistanceId = (int)$_POST['DistanceId'];
-	$RaidId = (int)$_POST['RaidId'];
 	$pTeamNum = (int) $_POST['TeamNum'];
 	$pTeamName = $_POST['TeamName'];
 	$pTeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
@@ -108,7 +80,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
-	if (empty($RaidId))
+	if ($RaidId <= 0)
 	{
 		$statustext = "Не указан ММБ.";
 		$alert = 1;
@@ -162,19 +134,6 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		return;
 	}
 
-	$sql = "select r.raid_resultpublicationdate, r.raid_registrationenddate,
-		CASE WHEN r.raid_registrationenddate is not null and YEAR(r.raid_registrationenddate) <= 2011
-			THEN 1
-			ELSE 0
-		END as oldmmb
-		from Raids r
-		where r.raid_id = ".$RaidId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
-	$RaidPublicationResultDate = $Row['raid_resultpublicationdate'];
-	$RaidRegistrationEndDate = $Row['raid_registrationenddate'];
-	$OldMmb = $Row['oldmmb'];
 	if ($OldMmb and $pTeamNum <= 0)
 	{
 		$statustext = "Для ММБ до 2012 года нужно указывать номер команды.";
@@ -182,15 +141,6 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
-	// !!! Нужна стандартная функция проверки возможности изменения данных
-	if (empty($RaidRegistrationEndDate))
-	{
-		// Должна быть определена дата окончания регистрации
-		return;
-	}
-
-	if (CheckModerator($SessionId, $RaidId)) $Moderator = 1; else $Moderator = 0;
-	if ($action <> "AddTeam" and CheckTeamUser($SessionId, $TeamId)) $TeamUser = 1; else $TeamUser = 0;
 
 	// Проверяем email нового участника команды
 	if (!empty($pNewTeamUserEmail) and trim($pNewTeamUserEmail) <> 'Email нового участника')
@@ -251,16 +201,16 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	} // Конец проверки на корректную передачу email
 
 	// Общая проверка возможности редактирования
-	// !!! Она должна быть в начале и совпадать
-	// с проверкой на показ кнопок редактирования в viewteamdata.php
-	if ($viewmode == "Add" or $Moderator or ($TeamUser and !$pModeratorConfirmResult))
-		$AllowEdit = 1;
-	else
-		$AllowEdit = 0;
-	// Ещё на предыдущем этапе это должно быть выполнено, но на всякий случай проверяем
-	if (!$AllowEdit)
+	if (($viewmode == "Add") && !CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage))
 	{
-		$statustext = "запрещённое изменение.";
+		$statustext = "Регистрация на марш-бросок закрыта";
+		$alert = 0;
+		return;
+	}
+	if (($viewmode <> "Add") && !CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
+	{
+		$statustext = "Изменения в команде запрещены";
+		$alert = 0;
 		return;
 	}
 
@@ -288,6 +238,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			.$pModeratorConfirmResult.", ".$pTeamNotOnLevelId.")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);
+		// Поменялся TeamId, заново определяем права доступа
+		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
 		if ($TeamId <= 0)
 		{
 			$statustext = 'Ошибка записи новой команды.';
@@ -296,7 +248,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			return;
 		}
 		$sql = "insert into TeamUsers (team_id, user_id) values (".$TeamId.", ".$NewUserId.")";
-		$TeamUserId = MySqlQuery($sql);
+		MySqlQuery($sql);
 		$TeamActionTextForEmail = "создана команда";
 		$SendEmailToAllTeamUsers = 1;
 		// Теперь нужно открыть на просмотр
@@ -356,7 +308,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		if ($NewUserId > 0)
 		{
 			$sql = "insert into TeamUsers (team_id, user_id) values (".$TeamId.", ".$NewUserId.")";
-			$TeamUserId = MySqlQuery($sql);
+			MySqlQuery($sql);
 			$sql = "select user_name from Users where user_id = ".$NewUserId;
 			$Result = MySqlQuery($sql);
 			$Row = mysql_fetch_assoc($Result);
@@ -427,6 +379,8 @@ elseif ($action == 'FindTeam')
 	$Row = mysql_fetch_assoc($rs);
 	mysql_free_result($rs);
 	$TeamId = $Row['team_id'];
+	// Поменялся TeamId, заново определяем права доступа
+	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
 	if ($TeamId <= 0)
 	{
 		$statustext = 'Команда с номером '.(int)$TeamNum.' не найдена';
@@ -439,7 +393,6 @@ elseif ($action == 'FindTeam')
 // ============ Информация о команде по Id ====================================
 elseif ($action == 'TeamInfo')
 {
-	if (isset($_REQUEST['TeamId'])) $TeamId = $_REQUEST['TeamId']; else $TeamId = "";
 	if ($TeamId <= 0)
 	{
 		$statustext = 'Id команды не указан';
@@ -453,28 +406,25 @@ elseif ($action == 'TeamInfo')
 // ============ Удаление участника команды ====================================
 elseif ($action == 'HideTeamUser')
 {
-	$TeamUserId = $_POST['HideTeamUserId'];
-	if ($TeamUserId <= 0)
+	$HideTeamUserId = $_POST['HideTeamUserId'];
+	if ($HideTeamUserId <= 0)
 	{
 		$statustext = 'Участник не найден';
 		$alert = 1;
 		return;
 	}
-	$TeamId = $_POST['TeamId'];
 	if ($TeamId <= 0)
 	{
 		$statustext = 'Команда не найдена';
 		$alert = 1;
 		return;
 	}
-	$RaidId = $_POST['RaidId'];
 	if ($RaidId <= 0)
 	{
 		$statustext = 'Марш-бросок не найден';
 		$alert = 1;
 		return;
 	}
-	$SessionId = $_POST['sessionid'];
 	if ($SessionId <= 0)
 	{
 		$statustext = 'Сессия не найдена';
@@ -482,15 +432,11 @@ elseif ($action == 'HideTeamUser')
 		return;
 	}
 
-	if (CheckModerator($SessionId, $RaidId)) $Moderator = 1; else $Moderator = 0;
-	if (CheckTeamUser($SessionId, $TeamId)) $TeamUser = 1; else $TeamUser = 0;
-
-	// Проверка прав. Если нет - выходим
-	// !!! Нужна стандартная проверка на возможность удаления
-	if ($Moderator or $TeamUser) $AllowEdit = 1;
-	else
+	// Проверка возможности редактировать команду
+	if (!CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
 	{
-		$AllowEdit = 0;
+		$statustext = "Изменения в команде запрещены";
+		$alert = 1;
 		return;
 	}
 
@@ -503,14 +449,14 @@ elseif ($action == 'HideTeamUser')
 	if ($TeamUserCount > 1)
 	// Кто-то ещё остается
 	{
-		$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$TeamUserId;
+		$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
 		$rs = MySqlQuery($sql);
 		$view = "ViewTeamData";
 	}
 	else
 	// Это был последний участник
 	{
-		$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$TeamUserId;
+		$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
 		$rs = MySqlQuery($sql);
 		$sql = "update Teams set team_hide = 1 where team_id = ".$TeamId;
 		$rs = MySqlQuery($sql);
@@ -526,7 +472,7 @@ elseif ($action == 'HideTeamUser')
 		$Row = mysql_fetch_assoc($Result);
 		$ChangeDataUserName = $Row['user_name'];
 		mysql_free_result($Result);
-		$sql = "select user_name from Users u inner join TeamUsers tu on tu.user_id = u.user_id where tu.teamuser_id = ".$TeamUserId;
+		$sql = "select user_name from Users u inner join TeamUsers tu on tu.user_id = u.user_id where tu.teamuser_id = ".$HideTeamUserId;
 		$Result = MySqlQuery($sql);
 		$Row = mysql_fetch_assoc($Result);
 		$DelUserName = $Row['user_name'];
@@ -537,7 +483,7 @@ elseif ($action == 'HideTeamUser')
 				inner join Teams t on tu.team_id = t.team_id
 				inner join Distances d on t.distance_id = d.distance_id
 				inner join Raids r on d.raid_id = r.raid_id
-			where tu.teamuser_id = ".$TeamUserId." or (tu.teamuser_hide = 0 and tu.team_id = ".$TeamId." and u.user_id <> ".$UserId.")
+			where tu.teamuser_id = ".$HideTeamUserId." or (tu.teamuser_hide = 0 and tu.team_id = ".$TeamId." and u.user_id <> ".$UserId.")
 			order by tu.teamuser_id asc";
 		$Result = MySqlQuery($sql);
 
@@ -570,8 +516,8 @@ elseif ($action == 'HideTeamUser')
 // ============ Смена этапа схода участника команды ===========================
 elseif ($action == 'TeamUserOut')
 {
-	$TeamUserId = $_POST['HideTeamUserId'];
-	if ($TeamUserId <= 0)
+	$HideTeamUserId = $_POST['HideTeamUserId'];
+	if ($HideTeamUserId <= 0)
 	{
 		$statustext = 'Участник не найден';
 		$alert = 1;
@@ -585,39 +531,34 @@ elseif ($action == 'TeamUserOut')
 		$alert = 1;
 		return;
 	}
-	$TeamId = $_POST['TeamId'];
 	if ($TeamId <= 0)
 	{
 		$statustext = 'Команда не найдена';
 		$alert = 1;
 		return;
 	}
-	$RaidId = $_POST['RaidId'];
 	if ($RaidId <= 0)
 	{
 		$statustext = 'Не найден ММБ.';
 		$alert = 1;
 		return;
 	}
-	$SessionId = $_POST['sessionid'];
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Не найдена сесия.';
+		$statustext = 'Не найдена сессия.';
 		$alert = 1;
 		return;
 	}
-	if (CheckModerator($SessionId, $RaidId)) $Moderator = 1; else $Moderator = 0;
-	if (CheckTeamUser($SessionId, $TeamId)) $TeamUser = 1; else $TeamUser = 0;
-	// Проверка прав. Если нет - выходим
-	// !!! Нужна стандартная проверка на возможность удаления
-	if ($Moderator or $TeamUser) $AllowEdit = 1;
-	else
+
+	// Проверка возможности редактировать результаты
+	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
 	{
-		$AllowEdit = 0;
+		$statustext = 'Изменение результатов команды запрещено';
+		$alert = 1;
 		return;
 	}
 
-	$sql = "update TeamUsers set level_id = ".($LevelId > 0 ? $LevelId : 'null' )." where teamuser_id = ".$TeamUserId;
+	$sql = "update TeamUsers set level_id = ".($LevelId > 0 ? $LevelId : 'null' )." where teamuser_id = ".$HideTeamUserId;
 	$rs = MySqlQuery($sql);
 	$view = "ViewTeamData";
 
@@ -655,36 +596,30 @@ elseif ($action == 'TeamUserOut')
 // ============ Обратимое удаление команды ====================================
 elseif ($action == 'HideTeam')
 {
-	$TeamId = $_POST['TeamId'];
 	if ($TeamId <= 0)
 	{
 		$statustext = 'Команда не найдена';
 		$alert = 1;
 		return;
 	}
-	$RaidId = $_POST['RaidId'];
 	if ($RaidId <= 0)
 	{
 		$statustext = 'Марш-бросок не найден';
 		$alert = 1;
 		return;
 	}
-	$SessionId = $_POST['sessionid'];
 	if ($SessionId <= 0)
 	{
 		$statustext = 'Сессия не найдена';
 		$alert = 1;
 		return;
 	}
-	if (CheckModerator($SessionId, $RaidId)) $Moderator = 1; else $Moderator = 0;
-	if (CheckTeamUser($SessionId, $TeamId)) $TeamUser = 1; else $TeamUser = 0;
 
-	// Проверка прав. Если нет - выходим
-	// !!! Нужна стандартная проверка на возможность удаления
-	if ($Moderator or $TeamUser) $AllowEdit = 1;
-	else
+	// Проверка возможности удалить команду
+	if (!CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
 	{
-		$AllowEdit = 0;
+		$statustext = "Удаление команды запрещено";
+		$alert = 1;
 		return;
 	}
 

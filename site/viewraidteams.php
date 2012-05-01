@@ -105,7 +105,7 @@ if (!isset($MyPHPScript)) return;
     // Конец функции вывода данных по КП
 
         // Проверяем, что передали  идентификатор ММБ
-        if (empty($RaidId)) 
+        if ($RaidId <= 0)
 	{
 		    $statustext = 'Не указан ММБ';
 	  	    $alert = 0;
@@ -131,13 +131,8 @@ if (!isset($MyPHPScript)) return;
 		$OrderString = '';
 
 
-		  $sql = "select CASE WHEN  now() <= COALESCE(r.raid_resultpublicationdate, now()) 
-                                      THEN 'Num' 
-                                      ELSE 'Place' 
-                                  END as ordertype,
-                                  r.raid_resultpublicationdate,
-                                  COALESCE(r.raid_ruleslink, '') as raid_ruleslink,
-                                  COALESCE(r.raid_startlink, '') as raid_startlink
+		  $sql = "select COALESCE(r.raid_ruleslink, '') as raid_ruleslink,
+                                 COALESCE(r.raid_startlink, '') as raid_startlink
 			  from  Raids r
 			  where r.raid_id = ".$RaidId."
                           "; 
@@ -145,15 +140,13 @@ if (!isset($MyPHPScript)) return;
 		  $Result = MySqlQuery($sql);
 		  $Row = mysql_fetch_assoc($Result);
 		  mysql_free_result($Result);
-                // Скорее всего нужно использоать только в сравнении с текущим временем
-                $ResultPublicated =  $Row['raid_resultpublicationdate'];
                 $RaidRulesLink = trim($Row['raid_ruleslink']);
                 $RaidStartLink = trim($Row['raid_startlink']);
 
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
                 if  (empty($OrderType))
                 {
-                  $OrderType = trim($Row['ordertype']);
+                  if ($RaidStage > 2) $OrderType = "Place"; else $OrderType = "Num";
                 }
 
             	print('<div align = "left" style = "font-size: 80%;">'."\r\n");
@@ -161,7 +154,7 @@ if (!isset($MyPHPScript)) return;
 		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;" 
                                onchange = "OrderTypeChange();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
 	        print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >убыванию номера'."\r\n");
-		if (CheckRaidStarted($RaidId))
+		if ($RaidStage > 2)
 		{
 	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
 		}
@@ -188,8 +181,7 @@ if (!isset($MyPHPScript)) return;
 		mysql_free_result($Result);		
 
 		// Определяем, можно ли показывать пользователю информацию об этапах дистанции
-		$LevelDataVisible = CheckLevelDataVisible($SessionId, $RaidId);
-
+		$LevelDataVisible = CanViewResults($Administrator, $Moderator, $RaidStage);
 		if (!isset($_REQUEST['LevelId'])) $_REQUEST['LevelId'] = "";
 		if ($LevelDataVisible)
 		{
