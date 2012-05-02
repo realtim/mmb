@@ -6,18 +6,18 @@ include("settings.php");
 include("functions.php");
 
 // Первичная проверка данных авторизации
-if ($_POST['Login'] == "") 
+if ($_GET['Login'] == "") 
 {
    print("Login is missing");
    return;
 
-} elseif ($_POST['Password']== "") {
+} elseif ($_GET['Password']== "") {
    print("Password is missing");
    return;
 } 
 
 // Аутентификация и авторизация -- проверка прав на получение дампа (администратор)
-$Sql = "select user_id, user_admin from Users where user_hide = 0 and trim(user_email) = trim('".$_POST['Login']."') and user_password = '".md5(trim($_POST['Password']))."'";
+$Sql = "select user_id, user_admin from Users where user_hide = 0 and trim(user_email) = trim('".$_GET['Login']."') and user_password = '".md5(trim($_GET['Password']))."'";
 $Result = MySqlQuery($Sql);  
 $Row = mysql_fetch_assoc($Result);
 
