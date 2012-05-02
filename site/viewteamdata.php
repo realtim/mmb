@@ -378,49 +378,6 @@ if ($AllowEdit == 1)
 	print('</td></tr>'."\n");
 }
 
-// ================ Секция результатов ========================================
-
-// !!! Этой секции вообще нечего делать в этом файле, перенести в viewteamresultdata.php
-if ($AllowViewResults)
-{
-	// Список этапов, чтобы выбрать, на какой команда не вышла (по умолчанию считается, что вышла на всё)
-	print('<tr><td style="padding-top: 15px;"><b>Результаты:</b></td></tr>'."\n");
-	print('<tr><td class="input">Не вышла на этап: &nbsp; '."\n");
-	print('<select name="TeamNotOnLevelId" style="width: 100px; margin-left: 10px;margin-right: 10px;" tabindex="'.(++$TabIndex).'"'.$DisabledText
-		.' title="Будьте аккуратны: изменение этого поля влияет на число отображаемых ниже этапов для ввода данных.">'."\n");
-	$sql = "select level_id, level_name from Levels where distance_id = ".$DistanceId." order by level_order";
-	$Result = MySqlQuery($sql);
-	$teamlevelselected = ($TeamNotOnLevelId == 0 ? ' selected' : '');
-	print('<option value="0"'.$teamlevelselected.'>-</option>'."\n");
-	while ($Row = mysql_fetch_assoc($Result))
-	{
-		$teamlevelselected = ($Row['level_id'] == $TeamNotOnLevelId ? ' selected' : '');
-		print('<option value="'.$Row['level_id'].'"'.$teamlevelselected.'>'.$Row['level_name']."</option>\n");
-	}
-	mysql_free_result($Result);
-	print('</select>'."\n");
-
-	print(' &nbsp; Общее время: '.$TeamResult.'</td></tr>'."\n");
-
-	print('<tr><td class="input"> Подтверждение: &nbsp;'."\n");
-
-	// Подтверждение правильности результатов командой
-	print('команды <input type="checkbox" name="TeamConfirmResult" value="on"'.(($TeamConfirmResult == 1) ? ' checked="checked"' : '')
-		.' tabindex="'.(++$TabIndex).'"'.$DisabledText
-		.' title="Отметьте, если команда проверила результаты и согласна с ними"/> &nbsp;'."\n");
-
-	// Подтверждение правильности результатов модератором
-	if ($Moderator) $ModeratorConfirmResultDisabledText = '';
-	else $ModeratorConfirmResultDisabledText = ' disabled';
-	print('модератора <input type="checkbox" name="ModeratorConfirmResult" value="on"'.(($ModeratorConfirmResult == 1) ? ' checked="checked"' : '')
-		.' tabindex="'.(++$TabIndex).'"'.$ModeratorConfirmResultDisabledText
-		.' title="Заполняется модератором после проверки результатов."/>'."\n");
-
-	print('</td></tr>'."\n\n");
-}
-// Конец проверки на отображение секции Результатов
-
-
 // ================ Submit для формы ==========================================
 if ($AllowEdit == 1)
 {

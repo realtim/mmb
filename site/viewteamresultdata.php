@@ -25,28 +25,27 @@ function ConvertTeamLevelPointsToHTML($LevelPointNames, $LevelPointPenalties, $T
 		return;
 	}
 
-	print('<table style="text-align: center; font-size: 100%; border-style: solid; border-width: 1px; border-color: #000000;">'."\n");
+	print('&nbsp;Взяты КП:'."\n");
+	print('<table style="text-align: center; font-size: 100%; border-style: solid; border-width: 1px; border-color: #000000;" cellspacing="0" cellpadding="1">'."\n");
 	print('<tr>'."\n");
-	print('<td align="left">Взяты: &nbsp;</td>'."\n");
-	print('<td style="border-left-style: solid; border-left-width: 1px; border-left-color: #000000;">'."\n");
 
 	// Проверяем, что не отмечены все checkbox
 	if (!strstr($TeamLevelPoints, '0') && !empty($TeamLevelPoints)) $AllChecked = ' checked';
 	else $AllChecked = '';
 
 	// Прописываем javascript, который ставит или сбрасывает все checkbox-ы
-	print('Все<br /><input type="checkbox" name="chkall" value="on"'.$AllChecked.$DisabledResultText.' OnClick="javascript: ');
+	print('<td>'."\n");
+	print('&nbsp;Все&nbsp;<br /><input type="checkbox" name="chkall" value="on"'.$AllChecked.$DisabledResultText.' OnClick="javascript: ');
 	for ($i = 0; $i < count($Names); $i++)
 		print('document.TeamResultDataForm.Level'.$LevelId.'_chk'.$i.'.checked = this.checked;');
-	print('">'."\n");
-	print('<br />&nbsp;</td>'."\n");
+	print('"></td>'."\n");
 
 	for ($i = 0; $i < count($Names); $i++)
 	{
-		print('<td style="border-left-style: solid; border-left-width: 1px; border-left-color: #000000;">'.$Names[$i].'<br />'."\n");
+		print('<td style="border-left-style: solid; border-left-width: 1px; border-left-color: #000000;" title="'.$Penalties[$i].'">'.$Names[$i].'<br />'."\n");
 		$Checked = (isset($TeamPoints[$i]) && ($TeamPoints[$i] == 1)) ? ' checked' : '';
-		print('<input type="checkbox" name="Level'.$LevelId.'_chk'.$i.'" value="on"'.$Checked.$DisabledResultText.'><br />'."\n");
-		print($Penalties[$i].'</td>'."\n");
+		print('<input type="checkbox" name="Level'.$LevelId.'_chk'.$i.'" value="on"'.$Checked.$DisabledResultText.'>'."\n");
+		print('</td>'."\n");
 	}
 
 	print('</tr>'."\n");
@@ -55,8 +54,6 @@ function ConvertTeamLevelPointsToHTML($LevelPointNames, $LevelPointPenalties, $T
 }
 // ============ Конец функции вывода данных по КП
 
-
-print('<div style="margin-top: 15px;">&nbsp;</div>'."\n");
 
 // Считаем, что все переменные уже определны. если нет - выходим
 if ($TeamId <= 0) return;
@@ -114,6 +111,9 @@ else
 </script>
 <?php
 
+print('<br /><div><b><big>Результаты:</big></b></div>'."\n");
+
+// Форма показа/редактироания результатов
 print('<form name="TeamResultDataForm" action="'.$MyPHPScript.'" method="post" onSubmit="'.$OnSubmitResultFunction.'">'."\n");
 print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 print('<input type="hidden" name="action" value="">'."\n");
@@ -121,15 +121,28 @@ print('<input type="hidden" name="view" value="'.(($viewmode == "Add") ? 'ViewRa
 print('<input type="hidden" name="TeamId" value="'.$TeamId.'">'."\n");
 print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
 
-print('<table border="0" cellpadding="10" style="font-size: 80%">'."\n");
+print('<table border="0" cellpadding="7" style="font-size: 80%">'."\n");
+
+// ============ Общее время команды
+$sql = "select TIME_FORMAT(t.team_result, '%H:%i') as team_result from Teams t where t.team_id = ".$TeamId;
+$Result = MySqlQuery($sql);
+$Row = mysql_fetch_assoc($Result);
+$TeamResult = $Row['team_result'];
+mysql_free_result($Result);
+if ($TeamResult == "00:00") $TeamResult = "-";
+print('<tr><td colspan="5">'."\n");
+print('Общее время с учетом штрафов и бонусов: <b title="Обновляется после сохранения результатов">'.$TeamResult.'</b>'."\n");
+print('</td></tr>'."\n\n");
+
+// ============ Шапка таблицы
 print('<tr class="gray">'."\n");
-print('<td width="200">Этап</td>'."\n");
-print('<td width="350">Параметры старта/финиша</td>'."\n");
-print('<td width="100">Старт</td>'."\n");
-print('<td width="100">Финиш</td>'."\n");
-print('<td width="60">Штраф</td>'."\n");
-print('<td width="150">Комментарий</td>'."\n");
+print('<td>Этап</td>'."\n");
+print('<td>Параметры старта/финиша</td>'."\n");
+print('<td style="text-align: center">Старт</td>'."\n");
+print('<td style="text-align: center">Финиш</td>'."\n");
+print('<td>Комментарий</td>'."\n");
 print('</tr>'."\n\n");
+
 
 // Выводим данные только, когда минимальное время начала этапа меньше или равно текущему
 // Довольно своеорбазно определяем год, чтобы не вводить его каждый раз
@@ -182,7 +195,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	$TeamLevelComment = $Row['teamlevel_comment'];
 
 	// ============ Название этапа
-	print('<tr><td>'.$Row['level_name'].'</td>'."\n");
+	print('<tr><td><b>'.$Row['level_name'].'</b></td>'."\n");
 
 	// ============ Параметры старта/финиша
 	// Делаем оформление в зависимости от типа старта и соотношения гранчиных дат:
@@ -226,7 +239,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	print('<td>'.$LevelStartTypeText.'</td>'."\n");
 
 	// ============ Поля ввода для времени старта (text или hidden)
-	print('<td>');
+	print('<td style="text-align: center">');
 	if ($LevelStartType == 1)
 	{
 		// год записываем из данных этапа (макс и мин время старта/финиша
@@ -253,7 +266,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	print('</td>'."\n");
 
 	// ============ Поля ввода для времени финиша (text или hidden)
-	print('<td>'."\n");
+	print('<td style="text-align: center">'."\n");
 	print('<input type="hidden" name="Level'.$Row['level_id'].'_endyear" value="'.$Row['level_sendyear'].'">'."\n");
 	// Если даты совпадают - отключаем поле даты с помощью readonly
 	// Нельзя просто ставить disabled, т.к. в этом случае параметр не передается
@@ -272,24 +285,30 @@ while ($Row = mysql_fetch_assoc($Result))
 	print('<input type="Text" maxlength="4" name="Level'.$Row['level_id'].'_endtime" size="3" value="'.$Row['teamlevel_sendtime'].'" tabindex="'.(++$TabIndex).'"'.$DisabledResultText.' onclick="this.select();" title="ччмм - часы минуты без разделителя">'."\n");
 	print('</td>'."\n");
 
-	// ============ Штраф
-	print('<td>'."\n");
-	print('<input type="Text" maxlength="4" name="Level'.$Row['level_id'].'_penalty" size="3" value="'.(int)$Row['teamlevel_penalty'].'" readonly tabindex="'.(++$TabIndex).'"'.$DisabledResultText.' title="Вычисляется автоматически">'."\n");
-	print('</td>'."\n");
-
 	// ============ Комментарий
 	print('<td>'."\n");
 	print('<input type="text" name="Level'.$Row['level_id'].'_comment" size="15" value="'.$TeamLevelComment.'" tabindex="'.(++$TabIndex).'"'.$DisabledResultText.' onclick="this.select();" title="Комментарий к этапу">'."\n");
 	print('</td></tr>'."\n\n");
 
+	// ============ Следующая строка - сход команды с этапа
+	$Dismiss = 0;
+	print('<tr><td colspan="5" style="padding-top: 0px">'."\n");
+	print('<select name="Level'.$Row['level_id'].'_dismiss" tabindex="'.(++$TabIndex).'"'.$DisabledResultText.'>'."\n");
+	print('<option value="0"'.(($Dismiss == 0) ? ' selected' : '').'>Не вышла на этап</option>'."\n");
+	print('<option value="1"'.(($Dismiss == 1) ? ' selected' : '').'>Сошла с этапа</option>'."\n");
+	print('<option value="2"'.(($Dismiss == 2) ? ' selected' : '').'>Дошла до конца этапа</option>'."\n");
+	print('</select>'."\n");
+	print('</td></tr>'."\n");
+
 	// ============ Следующая строка - взятые КП
-	print('<tr><td colspan="6" style="padding-top: 0px; border-bottom-style: dotted; border-bottom-width: 1px; border-bottom-color: #000000;">'."\n");
+	print('<tr><td colspan="5" style="padding-top: 0px; border-bottom-style: dotted; border-bottom-width: 1px; border-bottom-color: #000000;">'."\n");
 	ConvertTeamLevelPointsToHTML($Row['level_pointnames'], $Row['level_pointpenalties'], $Row['teamlevel_points'], $Row['level_id'], $DisabledResultText);
 	print('</td></tr>'."\n\n");
 }
 // ============ Конец цикла обработки данных по этапам ========================
 mysql_free_result($Result);
 // Закрываем таблицу
+print('<tr><td colspan="5">*Наведите курсор на ячейку с КП, чтобы узнать штраф за его невзятие</td></tr>'."\n");
 print('</table>'."\n\n");
 
 
