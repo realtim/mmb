@@ -56,13 +56,13 @@ $Sql = "select levelpoint_id, level_id, pointtype_id from LevelPoints";
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row; }
 
-// Teams: team_id, distance_id, team_name, team_num
-$Sql = "select team_id, distance_id, team_name, team_num from Teams";
+// Teams: team_id, distance_id, team_name, team_num // *
+$Sql = "select team_id, distance_id, team_name, team_num from Teams where team_hide = 0";
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
 
-// Users: user_id, user_name, user_birthyear
-$Sql = "select user_id, user_name, user_birthyear from Users";
+// Users: user_id, user_name, user_birthyear // *
+$Sql = "select user_id, user_name, user_birthyear from Users where user_hide = 0";
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Users"][] = $Row; }
 
