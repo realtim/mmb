@@ -169,7 +169,7 @@ $sql = "select l.level_id, l.level_name, l.level_pointnames, l.level_starttype,
 	DATE_FORMAT(tl.teamlevel_endtime, '%d%m') as teamlevel_senddate,
 	DATE_FORMAT(tl.teamlevel_endtime, '%H%i') as teamlevel_sendtime,
 	tl.teamlevel_points, tl.teamlevel_penalty,
-	tl.teamlevel_id, tl.teamlevel_comment, t.level_id as teamnotonlevelid
+	tl.teamlevel_id, tl.teamlevel_comment, tl.teamlevel_progress, t.level_id as teamnotonlevelid
 	from Teams t
 		inner join Distances d on t.distance_id = d.distance_id
 		inner join Levels l on d.distance_id = l.distance_id
@@ -193,6 +193,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	$LevelPointPenalties = $Row['level_pointpenalties'];
 	$TeamLevelPoints = ($TeamLevelId > 0) ? $Row['teamlevel_points'] : '&nbsp;';
 	$TeamLevelComment = $Row['teamlevel_comment'];
+	$TeamLevelProgress = $Row['teamlevel_progress'];
 
 	// ============ Название этапа
 	print('<tr><td><b>'.$Row['level_name'].'</b></td>'."\n");
@@ -291,12 +292,11 @@ while ($Row = mysql_fetch_assoc($Result))
 	print('</td></tr>'."\n\n");
 
 	// ============ Следующая строка - сход команды с этапа
-	$Dismiss = 0;
 	print('<tr><td colspan="5" style="padding-top: 0px">'."\n");
-	print('<select name="Level'.$Row['level_id'].'_dismiss" tabindex="'.(++$TabIndex).'"'.$DisabledResultText.'>'."\n");
-	print('<option value="0"'.(($Dismiss == 0) ? ' selected' : '').'>Не вышла на этап</option>'."\n");
-	print('<option value="1"'.(($Dismiss == 1) ? ' selected' : '').'>Сошла с этапа</option>'."\n");
-	print('<option value="2"'.(($Dismiss == 2) ? ' selected' : '').'>Дошла до конца этапа</option>'."\n");
+	print('<select name="Level'.$Row['level_id'].'_progress" tabindex="'.(++$TabIndex).'"'.$DisabledResultText.'>'."\n");
+	print('<option value="0"'.(($TeamLevelProgress == 0) ? ' selected' : '').'>Не вышла на этап</option>'."\n");
+	print('<option value="1"'.(($TeamLevelProgress == 1) ? ' selected' : '').'>Сошла с этапа</option>'."\n");
+	print('<option value="2"'.(($TeamLevelProgress == 2) ? ' selected' : '').'>Дошла до конца этапа</option>'."\n");
 	print('</select>'."\n");
 	print('</td></tr>'."\n");
 

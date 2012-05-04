@@ -35,7 +35,7 @@ if ($action == "ChangeTeamResult")
 	$sql = "select l.level_id, l.level_name, l.level_pointnames, l.level_starttype, l.level_pointpenalties,
 		l.level_begtime, l.level_maxbegtime, l.level_minendtime, l.level_endtime,
 		tl.teamlevel_begtime, tl.teamlevel_endtime,
-		tl.teamlevel_points, tl.teamlevel_penalty,
+		tl.teamlevel_points, tl.teamlevel_progress, tl.teamlevel_penalty,
 		tl.teamlevel_id
 		from Teams t
 			inner join Distances d on t.distance_id = d.distance_id
@@ -47,10 +47,17 @@ if ($action == "ChangeTeamResult")
 
 	// ================ Цикл обработки данных по этапам
 	$statustext = "";
+	$TeamLevelProgressPrev = 2;
 	while ($Row = mysql_fetch_assoc($rs))
 	{
 		// По этому ключу потом определяем, есть ли уже строчка в TeamLevels или её нужно создать
 		$TeamLevelId = $Row['teamlevel_id'];
+
+		// Обрабатываем сход с этапа
+		$Index = 'Level'.$Row['level_id'].'_progress';
+		if (isset($_POST[$Index])) $TeamLevelProgress = (int)$_POST[$Index]; else $TeamLevelProgress = 0;
+		if ($TeamLevelProgressPrev <> 2) $TeamLevelProgress = 0;
+		$TeamLevelProgressPrev = $TeamLevelProgress;
 
 		// Вычисляем время выхода на этап
 		$Index = 'Level'.$Row['level_id'].'_begyear';
@@ -74,7 +81,8 @@ if ($action == "ChangeTeamResult")
 		{
 			if ($BegYDT < $BegMinYDT or $BegYDT > $BegMaxYDT)
 			{
-				$statustext = $statustext."</br> старта '".$Row['level_name']."'";
+				if ($TeamLevelProgress > 0)
+					$statustext = $statustext."</br> старта '".$Row['level_name']."'";
 				// Теперь не выходим, а ставим время NULL - вдруг пользовател сохранить хотел КП
 				$BegYDTs = "NULL";
 			}
@@ -96,7 +104,8 @@ if ($action == "ChangeTeamResult")
 		if ($EndYDT < $EndMinYDT or $EndYDT > $EndMaxYDT)
 		{
 			$EndYDTs = "NULL";
-			$statustext = $statustext."</br> финиша '".$Row['level_name']."'";
+			if ($TeamLevelProgress > 1)
+				$statustext = $statustext."</br> финиша '".$Row['level_name']."'";
 		}
 
 		// Получаем отметки о невзятых КП переводим его в строку и считаем штраф
@@ -130,13 +139,14 @@ if ($action == "ChangeTeamResult")
 					teamlevel_endtime = ".$EndYDTs.",
 					teamlevel_penalty = ".$PenaltyTime.",
 					teamlevel_points = '".$TeamLevelPoints."',
+					teamlevel_progress = '".$TeamLevelProgress."',
 					teamlevel_comment = ".$Comment."
 				where teamlevel_id = ".$TeamLevelId."";
 		}
 		else
 		{
-			$sql = "insert into TeamLevels (team_id, level_id, teamlevel_begtime, teamlevel_endtime, teamlevel_penalty, teamlevel_points, teamlevel_comment)
-					values (".$TeamId.", ".$Row['level_id'].", ".$BegYDTs.", ".$EndYDTs.", ".$PenaltyTime.", '".$TeamLevelPoints."', ".$Comment.")";
+			$sql = "insert into TeamLevels (team_id, level_id, teamlevel_begtime, teamlevel_endtime, teamlevel_penalty, teamlevel_points, teamlevel_comment, teamlevel_progress)
+					values (".$TeamId.", ".$Row['level_id'].", ".$BegYDTs.", ".$EndYDTs.", ".$PenaltyTime.", '".$TeamLevelPoints."', ".$Comment."', ".$TeamLevelProgress.")";
 		}
 		MySqlQuery($sql);
 	}

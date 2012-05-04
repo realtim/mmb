@@ -398,11 +398,7 @@ if (!isset($MyPHPScript)) return;
 		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, 
 		               t.team_mapscount, d.distance_name, d.distance_id,
                                TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
-			       COALESCE(l.level_name, '') as level_name,
-                               CASE WHEN l.level_id is NULL and t.team_result > 0 THEN 0
-                                    WHEN l.level_id is not NULL and t.team_result > 0 THEN ROUND(1.00/l.level_order, 4)
-                                    ELSE 2
-                               END as placegroup  
+			       COALESCE(l.level_name, '') as level_name
 			  from  Teams t
 				inner join  Distances d 
 				on t.distance_id = d.distance_id
@@ -415,7 +411,7 @@ if (!isset($MyPHPScript)) return;
 			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
 		      }
 
-		      $sql = $sql." order by distance_name, placegroup asc, team_result asc "; 
+		      $sql = $sql." order by distance_name, team_progress desc, team_result asc ";
 		    
 		     } else {
                           // Если фильтруем пожтапу, то другой запрос
@@ -462,7 +458,7 @@ if (!isset($MyPHPScript)) return;
 					    ELSE NULL 
 					END
 				      ) > 0
-			    order by  team_result asc";
+			    order by  tl.teamlevel_progress desc, team_sresult asc";
 
                      }
 

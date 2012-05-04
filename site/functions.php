@@ -518,15 +518,17 @@ send_mime_mail('Автор письма',
 							) 
 					    ELSE NULL 
 					END
-				      )) + COALESCE(tl.teamlevel_penalty, 0)*60) as team_resultinsec 
+				      )) + COALESCE(tl.teamlevel_penalty, 0)*60) as team_resultinsec,
+				    SUM(tl.teamlevel_progress) as sumprogress
 			    from  TeamLevels tl 
 				  inner join Levels l 
 				  on tl.level_id = l.level_id 
-			    where tl.teamlevel_hide = 0 and tl.team_id = ".$teamid." 
+			    where tl.teamlevel_hide = 0 and tl.teamlevel_progress = 2 and tl.team_id = ".$teamid."
 			    group by  tl.team_id
 			   )  a
 			  on  t.team_id = a.team_id
-		  set t.team_result = SEC_TO_TIME(a.team_resultinsec)";
+		  set t.team_result = SEC_TO_TIME(a.team_resultinsec),
+		      t.team_progress = sumprogress";
 
              // echo $sql;
               MySqlQuery($sql);  
@@ -556,7 +558,8 @@ send_mime_mail('Автор письма',
 				      ) is NULL
 			   )  a
 			  on  t.team_id = a.team_id
-		  set t.team_result = NULL";
+		  set t.team_result = NULL,
+		      t.team_progress = 0";
 
              // echo $sql;
               MySqlQuery($sql);  

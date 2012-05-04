@@ -375,7 +375,6 @@ if (!isset($MyPHPScript)) return;
 	           where user_id = '".$pUserId."'";
            //echo $sql;
 	   $rs = MySqlQuery($sql);  
-           mysql_free_result($rs); 	
 
 	   $Msg = "Здравствуйте!\r\n\r\n";
 	   $Msg =  $Msg."Кто-то (возможно, это были Вы) запросил восстановление пароля на сайте ММБ для этого адреса e-mail."."\r\n";
