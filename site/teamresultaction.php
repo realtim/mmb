@@ -146,7 +146,7 @@ if ($action == "ChangeTeamResult")
 		else
 		{
 			$sql = "insert into TeamLevels (team_id, level_id, teamlevel_begtime, teamlevel_endtime, teamlevel_penalty, teamlevel_points, teamlevel_comment, teamlevel_progress)
-					values (".$TeamId.", ".$Row['level_id'].", ".$BegYDTs.", ".$EndYDTs.", ".$PenaltyTime.", '".$TeamLevelPoints."', ".$Comment."', ".$TeamLevelProgress.")";
+					values (".$TeamId.", ".$Row['level_id'].", ".$BegYDTs.", ".$EndYDTs.", ".$PenaltyTime.", '".$TeamLevelPoints."', ".$Comment.", ".$TeamLevelProgress.")";
 		}
 		MySqlQuery($sql);
 	}

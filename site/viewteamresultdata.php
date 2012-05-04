@@ -169,14 +169,13 @@ $sql = "select l.level_id, l.level_name, l.level_pointnames, l.level_starttype,
 	DATE_FORMAT(tl.teamlevel_endtime, '%d%m') as teamlevel_senddate,
 	DATE_FORMAT(tl.teamlevel_endtime, '%H%i') as teamlevel_sendtime,
 	tl.teamlevel_points, tl.teamlevel_penalty,
-	tl.teamlevel_id, tl.teamlevel_comment, tl.teamlevel_progress, t.level_id as teamnotonlevelid
+	tl.teamlevel_id, tl.teamlevel_comment, tl.teamlevel_progress
 	from Teams t
 		inner join Distances d on t.distance_id = d.distance_id
 		inner join Levels l on d.distance_id = l.distance_id
-		left outer join Levels l1 on t.level_id = l1.level_id
 		left outer join TeamLevels tl
 			on l.level_id = tl.level_id and t.team_id = tl.team_id and tl.teamlevel_hide = 0
-	where l.level_order < COALESCE(l1.level_order, l.level_order + 1) and t.team_id = ".$TeamId;
+	where t.team_id = ".$TeamId;
 // Пока убрал ограничение по выдаче этапов от времени просмотра
 // $sql = $sql." and l.level_begtime <= now() ";
 $sql = $sql." order by l.level_order ";
