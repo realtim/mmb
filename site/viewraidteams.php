@@ -366,19 +366,46 @@ if (!isset($MyPHPScript)) return;
 		    print('</table>'."\r\n");
 		}
 
+		// ============ Вывод списка команд ===========================
+
+		// Готовим строчки с описанием схода с этапов
+		$DistanceId = 0;
+		$DismissNames = array();
+		$sql = "select level_name, l.distance_id from Levels l
+				inner join Distances d on l.distance_id = d.distance_id
+			where d.raid_id = ".$RaidId.'
+			order by l.distance_id, level_order';
+                $Result = MySqlQuery($sql);
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+			if ($DistanceId <> $Row['distance_id'])
+			{
+				$DistanceId = $Row['distance_id'];
+				$TeamProgress = 0;
+			}
+			if (!$TeamProgress)
+			{
+				if ($RaidStage < 3) $DismissNames[$DistanceId][0] = '';
+				else $DismissNames[$DistanceId][0] = "\n".'<br><i>Не вышла на старт</i>';
+			}
+			else $DismissNames[$DistanceId][$TeamProgress] = "\n".'<br><i>Не вышла на этап '.$Row['level_name'].'</i>';
+			$DismissNames[$DistanceId][$TeamProgress + 1] = "\n".'<br><i>Сошла с этапа '.$Row['level_name'].'</i>';
+			$DismissNames[$DistanceId][$TeamProgress + 2] = '';
+			$TeamProgress += 2;
+		}
+		mysql_free_result($Result);
+
+		// Выводим список команд
 		if  ($OrderType == 'Num')
                 {
 
                   // Сортировка по номеру (в обратном порядке)
 		  $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, 
-		               t.team_mapscount, d.distance_name, d.distance_id,
-                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
-			       COALESCE(l.level_name, '') as level_name
+		               t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
+                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult
 		        from  Teams t
 			     inner join  Distances d 
 			     on t.distance_id = d.distance_id
-                             left outer join Levels l
-                             on t.level_id = l.level_id 
 			where t.team_hide = 0 and d.raid_id = ".$RaidId;
 
 		   if (!empty($_REQUEST['DistanceId']))
@@ -396,14 +423,11 @@ if (!isset($MyPHPScript)) return;
 		   {
 
 		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, 
-		               t.team_mapscount, d.distance_name, d.distance_id,
-                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
-			       COALESCE(l.level_name, '') as level_name
+		               t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
+                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult
 			  from  Teams t
 				inner join  Distances d 
 				on t.distance_id = d.distance_id
-				left outer join Levels l
-				on t.level_id = l.level_id 
 			  where t.team_hide = 0 and d.raid_id = ".$RaidId;
 
 		      if (!empty($_REQUEST['DistanceId']))
@@ -417,8 +441,7 @@ if (!isset($MyPHPScript)) return;
                           // Если фильтруем пожтапу, то другой запрос
 
 		      $sql = " select t.team_num, t.team_id, t.team_usegps, t.team_name, 
-				      t.team_mapscount, d.distance_name, d.distance_id,
-				      COALESCE(lout.level_name, '') as level_name,
+				      t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
 				      TIME_FORMAT(timediff(tl.teamlevel_endtime, 
 					CASE l.level_starttype 
 					    WHEN 1 THEN tl.teamlevel_begtime 
@@ -441,8 +464,6 @@ if (!isset($MyPHPScript)) return;
                                   on t.team_id = tl.team_id 
 				  inner join  Distances d 
 				  on t.distance_id = d.distance_id
-				  left outer join Levels lout
-				  on t.level_id = lout.level_id 
 			    where tl.teamlevel_hide = 0 and tl.level_id = ".$_REQUEST['LevelId']." 
 				  and timediff(tl.teamlevel_endtime, 
 					CASE l.level_starttype 
@@ -518,8 +539,8 @@ if (!isset($MyPHPScript)) return;
 			$TeamsCount--;
 
  			print('<tr class = "'.$TrClass.'"><td style = "'.$tdstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
-			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].')
-                                   '.($Row['level_name'] == '' ? '' : '</br><i>Не вышла на этап: '.$Row['level_name'].'</i>').'</td><td style = "'.$tdstyle.'">'."\r\n");
+			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].')'.
+                                  $DismissNames[$Row['distance_id']][$Row['team_progress']].'</td><td style = "'.$tdstyle.'">'."\r\n");
 		
 			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,
                                        tu.level_id, u.user_id, l.level_name 

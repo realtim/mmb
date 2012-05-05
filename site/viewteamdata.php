@@ -36,10 +36,7 @@ if ($viewmode == 'Add')
 		$TeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
 		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
 		$TeamRegisterDt = 0;
-		$TeamConfirmResult = ($_POST['TeamConfirmResult'] == 'on' ? 1 : 0);
-		$ModeratorConfirmResult = ($_POST['ModeratorConfirmResult'] == 'on' ? 1 : 0);
 		$TeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
-		$TeamNotOnLevelId = $_POST['TeamNotOnLevelId'];
 	}
 	else
 	// Пробуем создать команду первый раз
@@ -50,10 +47,7 @@ if ($viewmode == 'Add')
 		$TeamUseGPS = 0;
 		$TeamMapsCount = 0;
 		$TeamRegisterDt = 0;
-		$TeamConfirmResult = 0;
-		$ModeratorConfirmResult = 0;
 		$TeamGreenPeace = 0;
-		$TeamNotOnLevelId = 0;
 	}
 
 	// Определяем следующее действие
@@ -78,8 +72,7 @@ else
 
 	$sql = "select t.team_num, t.distance_id, t.team_usegps, t.team_name,
 		t.team_mapscount, t.team_registerdt,
-		t.team_confirmresult, t.team_moderatorconfirmresult,
-		t.team_greenpeace, t.level_id,
+		t.team_greenpeace,
 		TIME_FORMAT(t.team_result, '%H:%i') as team_result,
 		CASE WHEN t.team_registerdt >= r.raid_registrationenddate
 			THEN 1
@@ -107,10 +100,7 @@ else
 		$DistanceId = $_POST['DistanceId'];
 		$TeamUseGPS = ($_POST['TeamUseGPS'] == 'on' ? 1 : 0);
 		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
-		$TeamConfirmResult = ($_POST['TeamConfirmResult'] == 'on' ? 1 : 0);
-		$ModeratorConfirmResult = ($_POST['ModeratorConfirmResult'] == 'on' ? 1 : 0);
 		$TeamGreenPeace = ($_POST['TeamGreenPeace'] == 'on' ? 1 : 0);
-		$TeamNotOnLevelId = $_POST['TeamNotOnLevelId'];
 	}
 	else
 	{
@@ -119,10 +109,7 @@ else
 		$DistanceId = $Row['distance_id'];
 		$TeamUseGPS = $Row['team_usegps'];
 		$TeamMapsCount = (int)$Row['team_mapscount'];
-		$TeamConfirmResult = $Row['team_confirmresult'];
-		$ModeratorConfirmResult = $Row['team_moderatorconfirmresult'];
 		$TeamGreenPeace = $Row['team_greenpeace'];
-		$TeamNotOnLevelId = $Row['level_id'];
 	}
 
 	$NextActionName = 'TeamChangeData';

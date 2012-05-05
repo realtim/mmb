@@ -13,8 +13,7 @@ if ($action == "ChangeTeamResult")
 	$viewmode = "";
 	if ($TeamId <= 0) return;
 
-	$sql = "select r.raid_registrationenddate,
-		t.team_moderatorconfirmresult
+	$sql = "select r.raid_registrationenddate
 		from Raids r
 			inner join Distances d on r.raid_id = d.raid_id
 			inner join Teams t on d.distance_id = t.distance_id
@@ -22,7 +21,6 @@ if ($action == "ChangeTeamResult")
 	$Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
 	mysql_free_result($Result);
-	$ModeratorConfirmResult = $Row['team_moderatorconfirmresult'];
 
 	// Проверка возможности редактировать результаты
 	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
@@ -40,9 +38,8 @@ if ($action == "ChangeTeamResult")
 		from Teams t
 			inner join Distances d on t.distance_id = d.distance_id
 			inner join Levels l on d.distance_id = l.distance_id
-			left outer join Levels l1 on t.level_id = l1.level_id
 			left outer join TeamLevels tl on l.level_id = tl.level_id and t.team_id = tl.team_id and tl.teamlevel_hide = 0
-		where l.level_order < COALESCE(l1.level_order, l.level_order + 1) and t.team_id = ".$TeamId;
+		where t.team_id = ".$TeamId;
 	$rs = MySqlQuery($sql);
 
 	// ================ Цикл обработки данных по этапам

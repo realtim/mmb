@@ -58,10 +58,6 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pTeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
 	$pTeamMapsCount = (int)$_POST['TeamMapsCount'];
 	$pTeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
-	if (!isset($_POST['TeamConfirmResult'])) $_POST['TeamConfirmResult'] = "";
-	$pTeamConfirmResult = ($_POST['TeamConfirmResult'] == 'on' ? 1 : 0);
-	if (!isset($_POST['ModeratorConfirmResult'])) $_POST['ModeratorConfirmResult'] = "";
-	$pModeratorConfirmResult = ($_POST['ModeratorConfirmResult'] == 'on' ? 1 : 0);
 	$pNewTeamUserEmail = $_POST['NewTeamUserEmail'];
 	if (!isset($_POST['TeamNotOnLevelId'])) $_POST['TeamNotOnLevelId'] = "";
 	$pTeamNotOnLevelId = (int)$_POST['TeamNotOnLevelId'];
@@ -220,8 +216,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	// Новая команда
 	{
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
-			team_registerdt, team_greenpeace, team_confirmresult,
-			team_moderatorconfirmresult, level_id)
+			team_registerdt, team_greenpeace)
 			values (";
 		// Номер команды
 		if ($OldMmb) $sql = $sql.$pTeamNum;
@@ -234,8 +229,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		}
 		// Все остальное
 		$sql = $sql.", '".$pTeamName."',".$pTeamUseGPS.",".$pTeamMapsCount.", ".$pDistanceId.",NOW(), "
-			.$pTeamGreenPeace.", ".$pTeamConfirmResult.","
-			.$pModeratorConfirmResult.", ".$pTeamNotOnLevelId.")";
+			.$pTeamGreenPeace.")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);
 		// Поменялся TeamId, заново определяем права доступа
@@ -263,46 +257,9 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 				distance_id = ".$pDistanceId.",
 				team_usegps = ".$pTeamUseGPS.",
 				team_greenpeace = ".$pTeamGreenPeace.",
-				team_confirmresult = ".$pTeamConfirmResult.",
-				team_moderatorconfirmresult = ".$pModeratorConfirmResult.",
-				level_id = ".$pTeamNotOnLevelId.",
 				team_mapscount = ".$pTeamMapsCount."
 			where team_id = ".$TeamId;
 		$rs = MySqlQuery($sql);
-
-		// Обработка схода команды в плане включения/выключения результатов на этапах
-		$sql = "select level_order FROM Levels where level_id = ".$pTeamNotOnLevelId;
-		$rs = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($rs);
-		mysql_free_result($rs);
-		if ($Row['level_order'] > 0)
-		{
-			$sql = "update TeamLevels tl
-				join Levels l1 on tl.level_id = l1.level_id
-				set teamlevel_hide = 0
-				where team_id = ".$TeamId." and l1.level_order < ".$Row['level_order'];
-			$rs = MySqlQuery($sql);
-
-			// Очищаем поля дат и КП на тот случай, если после восстановления что-то изменится
-			// Например, граничные условия
-			// !!! Какой смысл это делать? Тогда уж лучше совсем удалить запись. Все равно вся полезная информация из нее стерта
-			$sql = "update TeamLevels tl
-				join Levels l1 on tl.level_id = l1.level_id
-				set teamlevel_hide = 1,
-					teamlevel_begtime = NULL,
-					teamlevel_endtime = NULL,
-					teamlevel_points = NULL,
-					teamlevel_penalty = NULL,
-					teamlevel_comment = NULL
-				where team_id = ".$TeamId." and l1.level_order >= ".$Row['level_order'];
-			$rs = MySqlQuery($sql);
-		}
-		else
-		{
-			$sql = "update TeamLevels set teamlevel_hide = 0 where team_id = ".$TeamId;
-			$rs = MySqlQuery($sql);
-		}
-		// Конец обработки схода команды и влияния этого на результаты
 
 		// Если добавляли участника
 		if ($NewUserId > 0)
