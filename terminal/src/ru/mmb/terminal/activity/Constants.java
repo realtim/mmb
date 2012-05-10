@@ -30,4 +30,5 @@ public class Constants
 	public static final int REQUEST_CODE_SEARCH_TEAM_ACTIVITY = 4;
 	public static final int REQUEST_CODE_INPUT_DATA_ACTIVITY = 5;
 	public static final int REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY = 6;
+	public static final int REQUEST_CODE_FILE_DIALOG_ACTIVITY = 7;
 }

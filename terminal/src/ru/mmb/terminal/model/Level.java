@@ -25,8 +25,8 @@ public class Level implements Serializable, Comparable<Level>
 	private Date levelMinEndTime = null;
 	private Date levelEndTime = null;
 
-	private LevelPoint startPoint;
-	private LevelPoint finishPoint;
+	private LevelPoint startPoint = null;
+	private LevelPoint finishPoint = null;
 
 	private transient Distance distance = null;
 
@@ -167,8 +167,8 @@ public class Level implements Serializable, Comparable<Level>
 		}
 		sortCheckpoints();
 
-		startPoint.setLevel(this);
-		finishPoint.setLevel(this);
+		if (startPoint != null) startPoint.setLevel(this);
+		if (finishPoint != null) finishPoint.setLevel(this);
 	}
 
 	public Distance getDistance()

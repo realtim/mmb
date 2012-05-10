@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/global_padding"
+    android:paddingLeft="@dimen/global_padding"
+    android:paddingRight="@dimen/global_padding"
+    android:paddingTop="@dimen/global_padding" >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right" >
+
+        <TextView
+            android:id="@+id/transpImport_fileName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="@string/transp_import_no_file_selected" />
+
+        <Button
+            android:id="@+id/transpImport_selectFile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/global_padding"
+            android:text="@string/transp_import_select_file" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="@dimen/global_padding" >
+
+        <Button
+            android:id="@+id/transpImport_startBtn"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:text="@string/transp_import_start" />
+
+        <Button
+            android:id="@+id/transpImport_stopBtn"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/global_padding"
+            android:text="@string/transp_import_stop" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/global_padding" >
+
+        <TextView
+            android:layout_width="150dip"
+            android:layout_height="wrap_content"
+            android:text="@string/transp_import_current_table" />
+
+        <TextView
+            android:id="@+id/transpImport_currentTable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/global_padding"
+            android:text="@string/transp_import_no_table" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/global_padding" >
+
+        <TextView
+            android:layout_width="150dip"
+            android:layout_height="wrap_content"
+            android:text="@string/transp_import_rows_processed" />
+
+        <TextView
+            android:id="@+id/transpImport_rowsProcessed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/global_padding"
+            android:text="@string/transp_import_no_rows" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/transpImport_messagesScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:scrollbars="vertical"
+        android:layout_marginTop="@dimen/global_padding" >
+
+        <TextView
+            android:id="@+id/transpImport_messages"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0" />
+    </ScrollView>
+
+</LinearLayout>

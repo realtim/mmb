@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import ru.mmb.terminal.conf.Configuration;
 import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Team;
+import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.util.DateFormat;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -93,7 +93,7 @@ public class InputData
 	{
 		String selectSql =
 		    "select count(*) from " + TABLE_TEAM_LEVEL_POINTS + " where " + USER_ID + " = "
-		            + Configuration.getInstance().getUserId() + " and " + LEVELPOINT_ID + " = "
+		            + Settings.getInstance().getUserId() + " and " + LEVELPOINT_ID + " = "
 		            + levelPoint.getLevelPointId() + " and " + TEAM_ID + " = " + team.getTeamId();
 		Cursor resultCursor = db.rawQuery(selectSql, null);
 		resultCursor.moveToFirst();
@@ -107,11 +107,11 @@ public class InputData
 	{
 		String updateSql =
 		    "update " + TABLE_TEAM_LEVEL_POINTS + " set " + DEVICE_ID + " = "
-		            + Configuration.getInstance().getDeviceId() + ", " + TEAMLEVELPOINT_DATE
+		            + Settings.getInstance().getDeviceId() + ", " + TEAMLEVELPOINT_DATE
 		            + " = '" + DateFormat.format(new Date()) + "', " + TEAMLEVELPOINT_DATETIME
 		            + " = '" + DateFormat.format(checkDateTime) + "', " + TEAMLEVELPOINT_POINTS
 		            + " = '" + takenCheckpoints + "', " + TEAMLEVELPOINT_COMMENT + " = '' where "
-		            + USER_ID + " = " + Configuration.getInstance().getUserId() + " and "
+		            + USER_ID + " = " + Settings.getInstance().getUserId() + " and "
 		            + LEVELPOINT_ID + " = " + levelPoint.getLevelPointId() + " and " + TEAM_ID
 		            + " = " + team.getTeamId();
 		db.execSQL(updateSql);
@@ -125,8 +125,8 @@ public class InputData
 		            + LEVELPOINT_ID + ", " + TEAM_ID + ", " + TEAMLEVELPOINT_DATE + ", "
 		            + TEAMLEVELPOINT_DATETIME + ", " + TEAMLEVELPOINT_POINTS + ", "
 		            + TEAMLEVELPOINT_COMMENT + ") values ("
-		            + Configuration.getInstance().getUserId() + ", "
-		            + Configuration.getInstance().getDeviceId() + ", "
+		            + Settings.getInstance().getUserId() + ", "
+		            + Settings.getInstance().getDeviceId() + ", "
 		            + levelPoint.getLevelPointId() + ", " + team.getTeamId() + ", '"
 		            + DateFormat.format(new Date()) + "', '" + DateFormat.format(checkDateTime)
 		            + "', '" + takenCheckpoints + "', '')";

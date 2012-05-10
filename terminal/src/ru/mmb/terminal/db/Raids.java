@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 public class Raids
 {
 	private static final String TABLE_RAIDS = "Raids";
+
 	private static final String RAID_ID = "raid_id";
 	private static final String RAID_REGISTRATIONENDDATE = "raid_registrationenddate";
 
@@ -30,11 +31,15 @@ public class Raids
 		while (!resultCursor.isAfterLast())
 		{
 			int raidId = resultCursor.getInt(0);
-			Date raidRegistrationEndDate = DateFormat.parse(resultCursor.getString(1));
-			if (maxRegistrationDate == null || maxRegistrationDate.before(raidRegistrationEndDate))
+			if (!resultCursor.isNull(1))
 			{
-				maxRegistrationDate = raidRegistrationEndDate;
-				result = raidId;
+				Date raidRegistrationEndDate = DateFormat.parse(resultCursor.getString(1));
+				if (maxRegistrationDate == null
+				        || maxRegistrationDate.before(raidRegistrationEndDate))
+				{
+					maxRegistrationDate = raidRegistrationEndDate;
+					result = raidId;
+				}
 			}
 			resultCursor.moveToNext();
 		}

@@ -89,8 +89,11 @@ public class Levels
 		for (Level level : levels)
 		{
 			LevelPoint levelPoint = result.get(level.getLevelId());
-			level.setStartPoint(levelPoint);
-			levelPoint.setLevel(level);
+			if (levelPoint != null)
+			{
+				level.setStartPoint(levelPoint);
+				levelPoint.setLevel(level);
+			}
 		}
 	}
 

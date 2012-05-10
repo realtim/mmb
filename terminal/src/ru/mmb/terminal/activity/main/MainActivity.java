@@ -2,6 +2,9 @@ package ru.mmb.terminal.activity.main;
 
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.start.StartInputActivity;
+import ru.mmb.terminal.activity.settings.SettingsActivity;
+import ru.mmb.terminal.activity.transport.transpexport.TransportExportActivity;
+import ru.mmb.terminal.activity.transport.transpimport.TransportImportActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +17,9 @@ public class MainActivity extends Activity
 	private MainActivityState currentState;
 
 	private Button btnInputData;
+	private Button btnImportData;
+	private Button btnExportData;
+	private Button btnSettings;
 
 	/** Called when the activity is first created. */
 
@@ -28,8 +34,14 @@ public class MainActivity extends Activity
 		setContentView(R.layout.main);
 
 		btnInputData = (Button) findViewById(R.id.main_inputDataBtn);
+		btnImportData = (Button) findViewById(R.id.main_importDataBtn);
+		btnExportData = (Button) findViewById(R.id.main_exportDataBtn);
+		btnSettings = (Button) findViewById(R.id.main_settingsBtn);
 
 		btnInputData.setOnClickListener(new InputDataClickListener());
+		btnImportData.setOnClickListener(new ImportDataClickListener());
+		btnExportData.setOnClickListener(new ExportDataClickListener());
+		btnSettings.setOnClickListener(new SettingsClickListener());
 
 		refreshState();
 	}
@@ -52,6 +64,36 @@ public class MainActivity extends Activity
 		public void onClick(View v)
 		{
 			Intent intent = new Intent(getApplicationContext(), StartInputActivity.class);
+			startActivity(intent);
+		}
+	}
+
+	private class ImportDataClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			Intent intent = new Intent(getApplicationContext(), TransportImportActivity.class);
+			startActivity(intent);
+		}
+	}
+
+	private class ExportDataClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			Intent intent = new Intent(getApplicationContext(), TransportExportActivity.class);
+			startActivity(intent);
+		}
+	}
+
+	private class SettingsClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
 			startActivity(intent);
 		}
 	}

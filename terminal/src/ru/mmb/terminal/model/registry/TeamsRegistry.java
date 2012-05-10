@@ -23,10 +23,10 @@ public class TeamsRegistry
 
 	private TeamsRegistry()
 	{
-		load();
+		refresh();
 	}
 
-	private void load()
+	public void refresh()
 	{
 		try
 		{

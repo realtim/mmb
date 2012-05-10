@@ -25,10 +25,10 @@ public class DistancesRegistry
 
 	private DistancesRegistry()
 	{
-		load();
+		refresh();
 	}
 
-	private void load()
+	public void refresh()
 	{
 		try
 		{
@@ -41,6 +41,7 @@ public class DistancesRegistry
 		}
 		catch (Exception e)
 		{
+			e.printStackTrace();
 			distances = new ArrayList<Distance>();
 		}
 	}

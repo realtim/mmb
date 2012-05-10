@@ -12,4 +12,28 @@
         android:layout_gravity="center_horizontal"
         android:text="@string/main_input_data" />
 
+    <Button
+        android:id="@+id/main_importDataBtn"
+        android:layout_width="@dimen/main_button_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/global_double_padding"
+        android:text="@string/main_import_data" />
+    
+    <Button
+        android:id="@+id/main_exportDataBtn"
+        android:layout_width="@dimen/main_button_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/global_padding"
+        android:text="@string/main_export_data" />
+
+    <Button
+        android:id="@+id/main_settingsBtn"
+        android:layout_width="@dimen/main_button_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/global_double_padding"
+        android:text="@string/main_settings" />
+
 </LinearLayout>

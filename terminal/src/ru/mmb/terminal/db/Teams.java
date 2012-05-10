@@ -103,7 +103,6 @@ public class Teams
 			team.addMember(participant);
 			participant.setTeam(team);
 		}
-
 	}
 
 	private Map<Integer, Team> createTeamsMap(List<Team> teams)

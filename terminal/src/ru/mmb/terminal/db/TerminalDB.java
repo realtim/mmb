@@ -2,12 +2,14 @@ package ru.mmb.terminal.db;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import ru.mmb.terminal.model.Distance;
 import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Participant;
 import ru.mmb.terminal.model.Team;
+import ru.mmb.terminal.transport.model.MetaTable;
 import ru.mmb.terminal.util.ExternalStorage;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -18,10 +20,11 @@ public class TerminalDB
 	private final SQLiteDatabase db;
 	private final Withdraw withdraw;
 	private final InputData inputData;
-	private final Raids raids;
 	private final Distances distances;
 	private final Levels levels;
 	private final Teams teams;
+	private final MetaTables metaTables;
+	private final Settings settings;
 
 	private final IDGenerator idGenerator;
 
@@ -40,11 +43,12 @@ public class TerminalDB
 		    SQLiteDatabase.openDatabase(ExternalStorage.getDir() + "/mmb/db/terminal.db", null, SQLiteDatabase.OPEN_READWRITE);
 		withdraw = new Withdraw(db);
 		inputData = new InputData(db);
-		raids = new Raids(db);
 		distances = new Distances(db);
 		levels = new Levels(db);
 		teams = new Teams(db);
 		idGenerator = new IDGenerator(db);
+		metaTables = new MetaTables(db);
+		settings = new Settings(db);
 	}
 
 	public List<Participant> getWithdrawnMembers(LevelPoint levelPoint, Level level, Team team)
@@ -67,11 +71,6 @@ public class TerminalDB
 	public SQLiteDatabase getDb()
 	{
 		return db;
-	}
-
-	public int getCurrentRaidId()
-	{
-		return raids.getCurrentRaidId();
 	}
 
 	public List<Distance> loadDistances(int raidId)
@@ -98,5 +97,20 @@ public class TerminalDB
 	        Team team)
 	{
 		return inputData.getExistingTeamLevelPointRecord(levelPoint, level, team);
+	}
+
+	public List<MetaTable> loadMetaTables()
+	{
+		return metaTables.loadMetaTables();
+	}
+
+	public Properties loadSettings()
+	{
+		return settings.loadSettings();
+	}
+
+	public void setSettingValue(String settingName, String settingValue)
+	{
+		settings.setSettingValue(settingName, settingValue);
 	}
 }

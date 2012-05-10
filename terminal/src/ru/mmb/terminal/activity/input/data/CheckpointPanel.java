@@ -65,10 +65,10 @@ public class CheckpointPanel
 
 	private void createCheckpointBoxes()
 	{
-		int colCount = 5;
+		int colCount = 7;
 		if (inputDataActivity.getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE)
 		{
-			colCount = 7;
+			colCount = 9;
 		}
 
 		List<TableRow> rows = new ArrayList<TableRow>();

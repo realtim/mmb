@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import ru.mmb.terminal.conf.Configuration;
 import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Participant;
 import ru.mmb.terminal.model.PointType;
 import ru.mmb.terminal.model.Team;
+import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.util.DateFormat;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -88,14 +88,14 @@ public class Withdraw
 	{
 		String selectSql =
 		    "select count(*) from " + TABLE_DISMISS + " where " + USER_ID + " = "
-		            + Configuration.getInstance().getUserId() + " and " + LEVELPOINT_ID + " = "
+		            + Settings.getInstance().getUserId() + " and " + LEVELPOINT_ID + " = "
 		            + levelPoint.getLevelPointId() + " and " + TEAM_ID + " = " + team.getTeamId()
 		            + " and " + TEAMUSER_ID + " = " + TEMPLATE_TEAMUSER_ID;
 		String insertSql =
 		    "insert into " + TABLE_DISMISS + "(" + DISMISS_DATE + ", " + DEVICE_ID + ", " + USER_ID
 		            + ", " + LEVELPOINT_ID + ", " + TEAM_ID + ", " + TEAMUSER_ID + ") values (?, "
-		            + Configuration.getInstance().getDeviceId() + ", "
-		            + Configuration.getInstance().getUserId() + ", " + levelPoint.getLevelPointId()
+		            + Settings.getInstance().getDeviceId() + ", "
+		            + Settings.getInstance().getUserId() + ", " + levelPoint.getLevelPointId()
 		            + ", " + team.getTeamId() + ", ?)";
 		db.beginTransaction();
 		try

@@ -1,10 +1,10 @@
 package ru.mmb.terminal.model.registry;
 
-import ru.mmb.terminal.db.TerminalDB;
 
 public class CurrentRaid
 {
-	private static Integer id = null;
+	// TODO restore raid loading from database
+	/*private static Integer id = null;
 
 	public static int getId()
 	{
@@ -18,5 +18,10 @@ public class CurrentRaid
 	private static Integer loadCurrentRaidId()
 	{
 		return new Integer(TerminalDB.getInstance().getCurrentRaidId());
+	}*/
+
+	public static int getId()
+	{
+		return Settings.getInstance().getCurrentRaidId();
 	}
 }

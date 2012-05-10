@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/global_padding"
+    android:paddingLeft="@dimen/global_padding"
+    android:paddingRight="@dimen/global_padding"
+    android:paddingTop="@dimen/global_padding" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_user_id" />
+
+        <EditText
+            android:id="@+id/settings_userIdEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="numberSigned" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/global_padding" >
+
+        <TextView
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_device_id" />
+
+        <EditText
+            android:id="@+id/settings_deviceIdEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="numberSigned" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/global_padding" >
+
+        <TextView
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_current_raid_id" />
+
+        <EditText
+            android:id="@+id/settings_currentRaidIdEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="numberSigned" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/global_padding" >
+
+        <TextView
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_last_export_date" />
+
+        <EditText
+            android:id="@+id/settings_lastExportDateEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:editable="false" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/global_padding" >
+
+        <TextView
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_transp_user_id" />
+
+        <EditText
+            android:id="@+id/settings_transpUserIdEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="numberSigned" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/global_padding" >
+
+        <TextView
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_transp_user_password" />
+
+        <EditText
+            android:id="@+id/settings_transpUserPasswordEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/settings_saveBtn"
+        android:layout_width="150dip"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="@dimen/global_padding"
+        android:text="@string/settings_save" />
+
+</LinearLayout>
