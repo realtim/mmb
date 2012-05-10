@@ -1,5 +1,10 @@
+<?php
+// +++++++++++ Левое меню +++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+// Выходим, если файл был запрошен напрямую, а не через include
+if (!isset($MyPHPScript)) return;
 
+?>
 <script language = "JavaScript">
 
         // Функция проверки правильности заполнения формы
@@ -95,19 +100,6 @@
 </script>
 
 <?php
-
-
-	 $UserId = 0;
-
-         if (empty($SessionId) && isset($_POST['sessionid']))
-	 {
-		$SessionId =  $_POST['sessionid'];
-	 } 
-	 if (!isset($SessionId)) $SessionId = "";
-
-	 $UserId = GetSession($SessionId);
-	 
-//        echo "Пользователь: ".$UserId.", сессия: ".$SessionId;
         // какое выводить меню
 	if ($UserId <= 0)
 	{
@@ -210,7 +202,7 @@
 
 </script>
 
-<?
+<?php
 	
 	// выводим окно для поиска команды 
 	print('<form  name = "FindTeamForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "return ValidateFindTeamForm();">'."\r\n");
@@ -225,11 +217,11 @@
 	print('<tr><td class = "input">ММБ'."\r\n"); 
 	print('<select name="RaidId"  style = "width: 141px; margin-left: 5px;" tabindex = "201"  title = "Список марш-бросков">'."\r\n"); 
 
-                $Result = MySqlQuery('select raid_id, raid_name from  Raids where raid_registrationenddate is not null order by 1 desc');
+                $Result = MySqlQuery('select raid_id, raid_name from  Raids where raid_registrationenddate is not null order by raid_id desc');
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-		  print('<option value = "'.$Row['raid_id'].'"  '.(($Row['raid_id'] == $_POST['RaidId']) ? 'selected' : '').' >'.$Row['raid_name']."\r\n");
+		  print('<option value = "'.$Row['raid_id'].'"  '.(($Row['raid_id'] == $RaidId) ? 'selected' : '').' >'.$Row['raid_name']."\r\n");
 		}
 
                 mysql_free_result($Result);
@@ -269,7 +261,7 @@
 	print('</br>'."\r\n");
 
        // Форма сервисов администратора
-        if (CheckAdmin($SessionId) == 1) 
+        if ($Administrator)
 	{
 	  print('<form  name = "AdminServiceForm"  action = "'.$MyPHPScript.'" method = "post" onsubmit = "return true;">'."\r\n");
 	  print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
@@ -285,9 +277,9 @@
 	  print('</br>'."\r\n");
 
           //  показываем кнопку "Очистить таблицы" 
-	  print('<input type="button" style = "width:185px; margin-top:10px;" name="ClearTablesButton" value="Очистить таблицы" 
-                          onclick = "ClearTables();"
-                          tabindex = "402">'."\r\n"); 
+	  // print('<input type="button" style = "width:185px; margin-top:10px;" name="ClearTablesButton" value="Очистить таблицы"
+          //                onclick = "ClearTables();"
+          //                tabindex = "402">'."\r\n");
 
 	  print('</form>'."\r\n");
 	  print('</br>'."\r\n");

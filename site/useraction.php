@@ -1,5 +1,8 @@
 <?php
-   // Обработчик действий, связанных с пользователем   
+// +++++++++++ Обработчик действий, связанных с пользователем +++++++++++++++++
+
+// Выходим, если файл был запрошен напрямую, а не через include
+if (!isset($MyPHPScript)) return;
 
   //echo $action;
    
@@ -40,7 +43,7 @@
 		$statustext = "Неверный email или пароль.";
 		  //.$login." не найден!";
 		$password = "";
-		mysql_close($Connection);
+		mysql_close();
 		$alert = 1; 
 		return;  
 	} 
@@ -52,10 +55,11 @@
 		
 
    } elseif ($action == "UserInfo")  {
-    // Действие вызывается ссылкой под имененм пользователя  а также отменой изменений
+    // Действие вызывается ссылкой под имененм пользователя
    
 	$view = "ViewUserData";
-		
+	$viewmode = "";
+
 
    } elseif ($action == "ViewNewUserForm")  {
     // Действие вызывается ссылкой Новый пользователь
@@ -69,7 +73,6 @@
    	   $view = "ViewUserData";
            
 
-	   $SessionId =  $_POST['sessionid'];
            $pUserEmail = $_POST['UserEmail'];
            $pUserName = $_POST['UserName'];
            $pUserBirthYear = $_POST['UserBirthYear'];
@@ -166,20 +169,17 @@
 				             '".$ChangePasswordSessionId."', now(), '.$pUserProhibitAdd.')";
 //                 echo $sql;  
                  // При insert должен вернуться послений id - это реализовано в  MySqlQuery
-		 $UserId = MySqlQuery($sql);  
+		 $newUserId = MySqlQuery($sql);
 	
 //	         echo $UserId; 
 //                 $UserId = mysql_insert_id($Connection);
-		 if ($UserId <= 0)
+		 if ($newUserId <= 0)
 		 {
                         $statustext = 'Ошибка записи нового пользователя.';
 			$alert = 1;
 			$viewsubmode = "ReturnAfterError"; 
 			return;
 		 } else {
-
-                   // Сбрасываем идентификатор пользователя
- 		   $UserId = 0;
 
                    // Решил не писать здесь имя - м.б. и в адресе не надо
 		   $Msg = "Здравствуйте!\r\n\r\n";
@@ -205,17 +205,15 @@
 
               // Правка текущего пользователя
 	   
-	     $NowUserId = GetSession($SessionId);
-	
              // Если вызвали с таким действием, должны быть определны оба пользователя
-             if ($pUserId <= 0 or $NowUserId <= 0)
+             if ($pUserId <= 0 or $UserId <= 0)
 	     {
 	      return;
 	     }
 	   
 	     $AllowEdit = 0;
 	     // Права на редактирование
-             if ($pUserId == $NowUserId or CheckAdmin($SessionId) == 1) 
+             if (($pUserId == $UserId) || $Administrator)
 	     {
 		  $AllowEdit = 1;
 	     } else {
@@ -235,11 +233,10 @@
                  
 		// echo $sql;
 		 $rs = MySqlQuery($sql);  
-		 mysql_free_result($rs);
 
 		 // Формируем сообщение
 
-	         $Sql = "select user_name from  Users where user_id = ".$NowUserId;
+	         $Sql = "select user_name from  Users where user_id = ".$UserId;
 		 $Result = MySqlQuery($Sql);  
 		 $Row = mysql_fetch_assoc($Result);
 		 $ChangeDataUserName = $Row['user_name'];
@@ -273,21 +270,18 @@
   	     $view = "ViewUserData";
 
              $pUserId = $_POST['UserId'];
-             $SessionId = $_POST['sessionid'];
-
-	     $NowUserId = GetSession($SessionId);
 
         //     echo 'pUserId '.$pUserId.'now  '.$NowUserId;
 	
              // Если вызвали с таким действием, должны быть определны оба пользователя
-             if ($pUserId <= 0 or $NowUserId <= 0)
+             if ($pUserId <= 0 or $UserId <= 0)
 	     {
 	      return;
 	     }
 	   
 	     $AllowEdit = 0;
 	     // Права на редактирование
-             if ($pUserId == $NowUserId or CheckAdmin($SessionId) == 1) 
+             if (($pUserId == $UserId) || $Administrator)
 	     {
 		  $AllowEdit = 1;
 	     } else {
@@ -315,15 +309,14 @@
 		                             user_sendnewpassworddt = now(),
 					     user_sessionfornewpassword = null,
 					     user_sendnewpasswordrequestdt = null
-		         where user_id = ".$UserId;
+		         where user_id = ".$pUserId;
               //   echo $sql;
 	        $rs = MySqlQuery($sql);  
-                mysql_free_result($rs);
 
 		$statustext = 'Пароль '.$NewPassword.' выслан.';
                 $view = "";
 
-	        $Sql = "select user_name from  Users where user_id = ".$NowUserId;
+	        $Sql = "select user_name from  Users where user_id = ".$UserId;
 		$Result = MySqlQuery($Sql);  
 		$Row = mysql_fetch_assoc($Result);
 		$ChangeDataUserName = $Row['user_name'];
@@ -335,7 +328,7 @@
 		$Msg =  $Msg."P.S. Изменения можете вносить Вы, а также администратор сайта ММБ.";
 			    
                 // Отправляем письмо
-		SendMail(trim($UserEmail), $Msg, $pUserName);
+		SendMail(trim($UserEmail), $Msg, $UserName);
 
             }
              // Конец проверки на возможность отправки пароля
@@ -364,9 +357,9 @@
 	   $rs = MySqlQuery($sql);  
 	   $Row = mysql_fetch_assoc($rs);
 	   mysql_free_result($rs); 
- 	   $UserId = $Row['user_id'];
+	   $pUserId = $Row['user_id'];
  	
-	   if ($UserId <= 0) 
+	   if ($pUserId <= 0)
 	   {
 	              $statustext = 'Пользователь с  e-mail '.$pUserEmail.' не найден ';
 		      $alert = 1;
@@ -379,10 +372,9 @@
            // пишем в базу сессию для восстановления пароля
            $sql = "update   Users  set user_sessionfornewpassword = '".$ChangePasswordSessionId."',
 	                               user_sendnewpasswordrequestdt = now()
-	           where user_id = '".$UserId."'";
+	           where user_id = '".$pUserId."'";
            //echo $sql;
 	   $rs = MySqlQuery($sql);  
-           mysql_free_result($rs); 	
 
 	   $Msg = "Здравствуйте!\r\n\r\n";
 	   $Msg =  $Msg."Кто-то (возможно, это были Вы) запросил восстановление пароля на сайте ММБ для этого адреса e-mail."."\r\n";
@@ -403,8 +395,8 @@
      // Действие вызывается из письма переходом по ссылке
 	   $view = "";
 
-	   $UserId = 0;
-	   
+	   if (isset($_REQUEST['changepasswordsessionid'])) $changepasswordsessionid = $_REQUEST['changepasswordsessionid'];
+	   else $changepasswordsessionid = "";
 	   if (empty($changepasswordsessionid))
 	   {
               $action = "";
@@ -438,12 +430,11 @@
 		         where user_id = ".$UserId;
               //   echo $sql;
 	        $rs = MySqlQuery($sql);  
-                mysql_free_result($rs);
 
 		$statustext = 'Пароль '.$NewPassword.' выслан.';
 
 		$Msg = "Уважаемый пользователь ".$UserName."!\r\n\r\n";
-		$Msg =  $Msg."Согласно подтверждённому запросу с Вашего адреса e-mail,".".\r\n";
+		$Msg =  $Msg."Согласно подтверждённому запросу с Вашего адреса e-mail,"."\r\n";
 		$Msg =  $Msg."для Вашей учетной записи на сайте ММБ создан пароль: ".$NewPassword."\r\n";
 			    
                 // Отправляем письмо
@@ -462,9 +453,8 @@
    } elseif ($action == "UserLogout")  {
      // Выход 
 
-	        CloseSession($_POST['sessionid'], 3);
+	        CloseSession($SessionId, 3);
                 $SessionId = ""; 
-                $_POST['sessionid'] = "";
 		$action = "";
 		$view = "MainPage";
 	
@@ -472,6 +462,7 @@
     // Действие вызывается ссылкой Отмена
 
            $view = "ViewUserData";
+	   $viewmode = "";
 
    } elseif ($action == "FindUser")  {
     // Действие вызывается поиском участника

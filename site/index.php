@@ -1,5 +1,4 @@
 <?php
-
         // Общие настройки
 	include("settings.php");
 	// Библиотека функций
@@ -16,20 +15,18 @@
 	$alert = 0; 
 	$statustext = ""; //"Сегодня: ".date("d.m.Y")."  &nbsp; Время: ".date("H:i:s");
 
-	// Временная инициализация переменной, которая пока больше нигде не устанавливается
-	$TeamModeratorConfirmResult = 0;
-
-	// Инициализуем переменные окружения, если они отсутствуют
-	if (!isset($_POST['sessionid'])) $_POST['sessionid'] = "";
-	if (!isset($_POST['RaidId'])) $_POST['RaidId'] = "";
-	if (!isset($_POST['action'])) $_POST['action'] = "";
-	if (!isset($_POST['RaidId'])) $_POST['RaidId'] = "";
+	// Инициализируем права доступа пользователя
+	if (isset($_POST['sessionid'])) $SessionId = $_POST['sessionid']; else $SessionId = "";
+	$OldSessionId = $SessionId;
+	if (isset($_REQUEST['RaidId'])) $RaidId = (int)$_REQUEST['RaidId']; else $RaidId = "0";
+	if (isset($_REQUEST['TeamId'])) $TeamId = (int)$_REQUEST['TeamId']; else $TeamId = "0";
+	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
 
 	// Инициализуем переменные сессии, если они отсутствуют
 	if (!isset($view)) $view = "";
 	if (!isset($viewsubmode)) $viewsubmode = "";
-	$action = $_POST['action'];
-	$RaidId = $_POST['RaidId'];
+	if (!isset($_REQUEST['action'])) $_REQUEST['action'] = "";
+	$action = $_REQUEST['action'];
 
 	if ($action == "") 
 	{
@@ -38,11 +35,15 @@
 
 	} elseif ($action == "StartPage") {
 
-                $view = $_POST['view'];
+                $view = $_REQUEST['view'];
 
 	} else {	
 	        // Обработчик событий, связанных с пользователем
 		include ("useraction.php");
+		// Если у нас новая сессия после логина, логаута или
+		// прихода по ссылке - заново определяем права доступа
+		if ($SessionId <> $OldSessionId)
+			GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
 
 	        // Обработчик событий, связанных с командой
 		include ("teamaction.php");
@@ -84,8 +85,8 @@
                         <form name = "StartPageForm" action = "<? echo $MyPHPScript; ?>" method = "post">
 				<input type = "hidden" name = "action" value = "StartPage">
 				<input type = "hidden" name = "view" value = "MainPage">
-				<input type = "hidden" name = "sessionid" value = "<? echo (!empty($SessionId) ? $SessionId : $_POST['sessionid']); ?>">
-				<input type = "hidden" name = "RaidId" value = "<? echo (!empty($RaidId) ? $RaidId : $_POST['RaidId']); ?>">
+				<input type = "hidden" name = "sessionid" value = "<? echo $SessionId; ?>">
+				<input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
 				<a href="javascript:document.StartPageForm.submit();"><img  style = "margin-bottom: 15px;" width = "157" height = "139" border = "0" alt = "ММБ"  src = "http://mmb.progressor.ru/mmbicons/mmb2012v-logo-s_4.png"></a>
                        </form> 
 
@@ -117,6 +118,9 @@
 			 $action = "";
                          // м.б. нужно и view сбрасывать 
 			 $viewsubmode  = "";
+
+			 // закрываем соединение с базой
+			 mysql_close();
 			?>
 		   </div>
 		<!--Конец правой колонки -->

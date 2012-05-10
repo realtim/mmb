@@ -1,5 +1,10 @@
+<?php
+// +++++++++++ Показ списка команд марш-броска ++++++++++++++++++++++++++++++++
 
+// Выходим, если файл был запрошен напрямую, а не через include
+if (!isset($MyPHPScript)) return;
 
+?>
 <script language = "JavaScript">
 
         // Посмотреть профиль пользователя
@@ -52,8 +57,7 @@
 
 </script>
 
-
-<?
+<?php
 
 
 
@@ -101,7 +105,7 @@
     // Конец функции вывода данных по КП
 
         // Проверяем, что передали  идентификатор ММБ
-        if (empty($RaidId)) 
+        if ($RaidId <= 0)
 	{
 		    $statustext = 'Не указан ММБ';
 	  	    $alert = 0;
@@ -123,17 +127,12 @@
 		$DisabledText = '';
 
                 // Разбираемся с сортировкой
-                if (isset($_POST['OrderType'])) $OrderType = $_POST['OrderType']; else $OrderType = "";
+                if (isset($_REQUEST['OrderType'])) $OrderType = $_REQUEST['OrderType']; else $OrderType = "";
 		$OrderString = '';
 
 
-		  $sql = "select CASE WHEN  now() <= COALESCE(r.raid_resultpublicationdate, now()) 
-                                      THEN 'Num' 
-                                      ELSE 'Place' 
-                                  END as ordertype,
-                                  r.raid_resultpublicationdate,
-                                  COALESCE(r.raid_ruleslink, '') as raid_ruleslink,
-                                  COALESCE(r.raid_startlink, '') as raid_startlink
+		  $sql = "select COALESCE(r.raid_ruleslink, '') as raid_ruleslink,
+                                 COALESCE(r.raid_startlink, '') as raid_startlink
 			  from  Raids r
 			  where r.raid_id = ".$RaidId."
                           "; 
@@ -141,15 +140,13 @@
 		  $Result = MySqlQuery($sql);
 		  $Row = mysql_fetch_assoc($Result);
 		  mysql_free_result($Result);
-                // Скорее всего нужно использоать только в сравнении с текущим временем
-                $ResultPublicated =  $Row['raid_resultpublicationdate'];
                 $RaidRulesLink = trim($Row['raid_ruleslink']);
                 $RaidStartLink = trim($Row['raid_startlink']);
 
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
                 if  (empty($OrderType))
                 {
-                  $OrderType = trim($Row['ordertype']);
+                  if ($RaidStage > 2) $OrderType = "Place"; else $OrderType = "Num";
                 }
 
             	print('<div align = "left" style = "font-size: 80%;">'."\r\n");
@@ -157,7 +154,7 @@
 		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;" 
                                onchange = "OrderTypeChange();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
 	        print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >убыванию номера'."\r\n");
-		if (CheckRaidStarted($RaidId))
+		if ($RaidStage > 2)
 		{
 	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
 		}
@@ -172,21 +169,20 @@
                 
 		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px;" 
                                onchange = "DistanceIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-                $distanceselected =  (0 == $_POST['DistanceId'] ? 'selected' : '');
+                $distanceselected =  (0 == $_REQUEST['DistanceId'] ? 'selected' : '');
 		  print('<option value = "0" '.$$distanceselected.' >дистанцию'."\r\n");
-		if (!isset($_POST['DistanceId'])) $_POST['DistanceId'] = "";
+		if (!isset($_REQUEST['DistanceId'])) $_REQUEST['DistanceId'] = "";
 	        while ($Row = mysql_fetch_assoc($Result))
 		{
-		  $distanceselected = ($Row['distance_id'] == $_POST['DistanceId']  ? 'selected' : '');
+		  $distanceselected = ($Row['distance_id'] == $_REQUEST['DistanceId']  ? 'selected' : '');
 		  print('<option value = "'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."\r\n");
 		}
 		print('</select>'."\r\n");  
 		mysql_free_result($Result);		
 
 		// Определяем, можно ли показывать пользователю информацию об этапах дистанции
-		$LevelDataVisible = CheckLevelDataVisible($SessionId, $RaidId);
-
-		if (!isset($_POST['LevelId'])) $_POST['LevelId'] = "";
+		$LevelDataVisible = CanViewResults($Administrator, $Moderator, $RaidStage);
+		if (!isset($_REQUEST['LevelId'])) $_REQUEST['LevelId'] = "";
 		if ($LevelDataVisible)
 		{
 		    $sql = "select level_id, d.distance_name, CONCAT(trim(level_name), ' (', trim(d.distance_name), ')') as level_name
@@ -194,9 +190,9 @@
                                 inner join Distances d
                                 on l.distance_id = d.distance_id
                             where d.raid_id = ".$RaidId;
-                    if (!empty($_POST['DistanceId']))
+                    if (!empty($_REQUEST['DistanceId']))
                     {
-			$sql = $sql." and d.distance_id = ".$_POST['DistanceId'];
+			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
                     }
                     $sql = $sql." order by d.distance_name, l.level_order ";
 		    //  echo 'sql '.$sql;
@@ -205,12 +201,12 @@
 		    print('<select name="LevelId" '.(($OrderType=='Num') ? 'disabled' : '').'
                                 style = "margin-left: 5px; margin-right: 10px;"
                                 onchange = "LevelIdChange();" tabindex = "'.(++$TabIndex).'" >'."\r\n");
-	            $levelselected =  ((0 == $_POST['LevelId'] or $OrderType=='Num') ? 'selected' : '');
+	            $levelselected =  ((0 == $_REQUEST['LevelId'] or $OrderType=='Num') ? 'selected' : '');
 		    print('<option value = "0" '.$levelselected.' >этап'."\r\n");
 
 		    while ($Row = mysql_fetch_assoc($Result))
 		    {
-			$levelselected = (($Row['level_id'] == $_POST['LevelId'] and $OrderType<>'Num' )? 'selected' : '');
+			$levelselected = (($Row['level_id'] == $_REQUEST['LevelId'] and $OrderType<>'Num' )? 'selected' : '');
 			print('<option value = "'.$Row['level_id'].'" '.$levelselected.' >'.$Row['level_name']."\r\n");
 		    }
 		    mysql_free_result($Result);
@@ -243,13 +239,13 @@
 
                     // $sql = $sql." and l.level_begtime <= now() ";
 
-                    if (!empty($_POST['DistanceId']))
+                    if (!empty($_REQUEST['DistanceId']))
                     {
-			$sql = $sql." and d.distance_id = ".$_POST['DistanceId'];
+			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
                     }
-                    if (!empty($_POST['LevelId']))
+                    if (!empty($_REQUEST['LevelId']))
                     {
-			$sql = $sql." and l.level_id = ".$_POST['LevelId'];
+			$sql = $sql." and l.level_id = ".$_REQUEST['LevelId'];
                     }
                     $sql = $sql." order by d.distance_name, l.level_order ";
 
@@ -370,24 +366,51 @@
 		    print('</table>'."\r\n");
 		}
 
+		// ============ Вывод списка команд ===========================
+
+		// Готовим строчки с описанием схода с этапов
+		$DistanceId = 0;
+		$DismissNames = array();
+		$sql = "select level_name, l.distance_id from Levels l
+				inner join Distances d on l.distance_id = d.distance_id
+			where d.raid_id = ".$RaidId.'
+			order by l.distance_id, level_order';
+                $Result = MySqlQuery($sql);
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+			if ($DistanceId <> $Row['distance_id'])
+			{
+				$DistanceId = $Row['distance_id'];
+				$TeamProgress = 0;
+			}
+			if (!$TeamProgress)
+			{
+				if ($RaidStage < 3) $DismissNames[$DistanceId][0] = '';
+				else $DismissNames[$DistanceId][0] = "\n".'<br><i>Не вышла на старт</i>';
+			}
+			else $DismissNames[$DistanceId][$TeamProgress] = "\n".'<br><i>Не вышла на этап '.$Row['level_name'].'</i>';
+			$DismissNames[$DistanceId][$TeamProgress + 1] = "\n".'<br><i>Сошла с этапа '.$Row['level_name'].'</i>';
+			$DismissNames[$DistanceId][$TeamProgress + 2] = '';
+			$TeamProgress += 2;
+		}
+		mysql_free_result($Result);
+
+		// Выводим список команд
 		if  ($OrderType == 'Num')
                 {
 
                   // Сортировка по номеру (в обратном порядке)
 		  $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, 
-		               t.team_mapscount, d.distance_name, d.distance_id,
-                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
-			       COALESCE(l.level_name, '') as level_name
+		               t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
+                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult
 		        from  Teams t
 			     inner join  Distances d 
 			     on t.distance_id = d.distance_id
-                             left outer join Levels l
-                             on t.level_id = l.level_id 
 			where t.team_hide = 0 and d.raid_id = ".$RaidId;
 
-		   if (!empty($_POST['DistanceId']))
+		   if (!empty($_REQUEST['DistanceId']))
 		   {
-                     $sql = $sql." and d.distance_id = ".$_POST['DistanceId']; 
+                     $sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
 		   }
 		   $sql = $sql." order by team_num desc"; 
                     
@@ -396,37 +419,29 @@
                   // Сортировка по месту требует более хитрого запроса
 
 
-		   if (empty($_POST['LevelId']))
+		   if (empty($_REQUEST['LevelId']))
 		   {
 
 		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, 
-		               t.team_mapscount, d.distance_name, d.distance_id,
-                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
-			       COALESCE(l.level_name, '') as level_name,
-                               CASE WHEN l.level_id is NULL and t.team_result > 0 THEN 0
-                                    WHEN l.level_id is not NULL and t.team_result > 0 THEN ROUND(1.00/l.level_order, 4)
-                                    ELSE 2
-                               END as placegroup  
+		               t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
+                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult
 			  from  Teams t
 				inner join  Distances d 
 				on t.distance_id = d.distance_id
-				left outer join Levels l
-				on t.level_id = l.level_id 
 			  where t.team_hide = 0 and d.raid_id = ".$RaidId;
 
-		      if (!empty($_POST['DistanceId']))
+		      if (!empty($_REQUEST['DistanceId']))
 		      {
-			$sql = $sql." and d.distance_id = ".$_POST['DistanceId']; 
+			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
 		      }
 
-		      $sql = $sql." order by distance_name, placegroup asc, team_result asc "; 
+		      $sql = $sql." order by distance_name, team_progress desc, team_result asc ";
 		    
 		     } else {
                           // Если фильтруем пожтапу, то другой запрос
 
 		      $sql = " select t.team_num, t.team_id, t.team_usegps, t.team_name, 
-				      t.team_mapscount, d.distance_name, d.distance_id,
-				      COALESCE(lout.level_name, '') as level_name,
+				      t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
 				      TIME_FORMAT(timediff(tl.teamlevel_endtime, 
 					CASE l.level_starttype 
 					    WHEN 1 THEN tl.teamlevel_begtime 
@@ -449,9 +464,7 @@
                                   on t.team_id = tl.team_id 
 				  inner join  Distances d 
 				  on t.distance_id = d.distance_id
-				  left outer join Levels lout
-				  on t.level_id = lout.level_id 
-			    where tl.teamlevel_hide = 0 and tl.level_id = ".$_POST['LevelId']." 
+			    where tl.teamlevel_hide = 0 and tl.level_id = ".$_REQUEST['LevelId']." 
 				  and timediff(tl.teamlevel_endtime, 
 					CASE l.level_starttype 
 					    WHEN 1 THEN tl.teamlevel_begtime 
@@ -466,7 +479,7 @@
 					    ELSE NULL 
 					END
 				      ) > 0
-			    order by  team_result asc";
+			    order by  tl.teamlevel_progress desc, team_sresult asc";
 
                      }
 
@@ -484,7 +497,7 @@
                 $thstyle = 'border-color: #000000; border-style: solid; border-width: 1px 1px 1px 1px; padding: 5px 0px 2px 5px;';		
                 $thstyle = '';		
 
-//		print('<table width = "'.(($_POST['LevelId'] > 0 and  $OrderType == 'Place') ? '1015' : '815').'" border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
+//		print('<table width = "'.(($_REQUEST['LevelId'] > 0 and  $OrderType == 'Place') ? '1015' : '815').'" border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<tr class = "gray">
 		         <td width = "50" style = "'.$thstyle.'">Номер</td>
@@ -497,7 +510,7 @@
 		  print('  <td width = "50" style = "'.$thstyle.'">Место</td>'."\r\n");
 
                   // дополнительные поля в случае вывода  этапа
-                  if ($_POST['LevelId'] > 0)
+                  if ($_REQUEST['LevelId'] > 0)
                   {
 		    print('<td width = "50" style = "'.$thstyle.'">Штраф</td>
 			   <td width = "150" style = "'.$thstyle.'">Комментарий</td>
@@ -525,9 +538,9 @@
 
 			$TeamsCount--;
 
- 			print('<tr class = "'.$TrClass.'"><td style = "'.$tdstyle.'">'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
-			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].')
-                                   '.($Row['level_name'] == '' ? '' : '</br><i>Не вышла на этап: '.$Row['level_name'].'</i>').'</td><td style = "'.$tdstyle.'">'."\r\n");
+ 			print('<tr class = "'.$TrClass.'"><td style = "'.$tdstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
+			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].')'.
+                                  $DismissNames[$Row['distance_id']][$Row['team_progress']].'</td><td style = "'.$tdstyle.'">'."\r\n");
 		
 			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,
                                        tu.level_id, u.user_id, l.level_name 
@@ -568,12 +581,12 @@
                             }
 			    print('</td>'."\r\n");
 
-			    if ($_POST['LevelId'] > 0)
+			    if ($_REQUEST['LevelId'] > 0)
 			    {
 			      print('<td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_penalty'].'</td>
 				      <td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_comment'].'</td>
 				      <td width = "100" style = "'.$thstyle.'">'."\r\n");
-			      ConvertTeamLevelPoints2($LevelPointNames, $LevelPointPenalties, $Row['teamlevel_points'], $_POST['LevelId']); 
+			      ConvertTeamLevelPoints2($LevelPointNames, $LevelPointPenalties, $Row['teamlevel_points'], $_REQUEST['LevelId']); 
 			      print('</td>'."\r\n");
 
 

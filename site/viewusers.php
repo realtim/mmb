@@ -1,5 +1,10 @@
+<?php
+// +++++++++++ Поиск участников в базе ++++++++++++++++++++++++++++++++++++++++
 
+// Выходим, если файл был запрошен напрямую, а не через include
+if (!isset($MyPHPScript)) return;
 
+?>
 <script language = "JavaScript">
 
         
@@ -35,11 +40,6 @@
                 }
    
 	//$FindString = trim($_POST['FindString']); 
-
-         if (empty($SessionId))
-	 {
-		$SessionId =  $_POST['sessionid'];
-	 } 
 
                 // Выводим спсиок пользователей, которые подошли
                 print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">'.$FindText.'</div>'."\r\n");
