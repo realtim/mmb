@@ -10,7 +10,7 @@ public class Constants
 	public static final String KEY_CURRENT_INPUT_MODE = "current.input_mode";
 	public static final String KEY_CURRENT_TEAM_SORT_COLUMN = "current.team.sort_column";
 	public static final String KEY_CURRENT_TEAM_SORT_ORDER = "current.team.sort_order";
-	public static final String KEY_CURRENT_TEAM_FILTER_HIDE = "current.team.filter_hide";
+	public static final String KEY_CURRENT_TEAM_FILTER_STATE = "current.team.filter_state";
 	public static final String KEY_CURRENT_TEAM_FILTER_NUMBER_EXACT =
 	    "current.team.filter_number_exact";
 	public static final String KEY_CURRENT_TEAM_FILTER_NUMBER = "current.team.filter_number";

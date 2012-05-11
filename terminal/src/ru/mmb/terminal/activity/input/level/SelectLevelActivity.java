@@ -170,7 +170,7 @@ public class SelectLevelActivity extends Activity implements StateChangeListener
 			return;
 		}
 
-		if (level.getLevelStartType() != StartType.WHEN_READY)
+		if (level.getLevelStartType() == StartType.USE_PREVIOUS_FINISH)
 		{
 			radioStart.setEnabled(false);
 			radioFinish.setEnabled(true);

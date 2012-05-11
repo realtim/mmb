@@ -26,7 +26,8 @@
     <string name="input_team_refresh_data">Refresh teams</string>
     <string name="input_team_filter_clear">Clear filter</string>
     <string name="input_team_filter_hide">Hide filter</string>
-    <string name="input_team_filter_show">Show filter</string>
+    <string name="input_team_filter_show_number">Number filter</string>
+    <string name="input_team_filter_show_full">Full filter</string>
     <string name="input_team_filter_number">Number:</string>
     <string name="input_team_filter_number_exact">Exact</string>
     <string name="input_team_filter_team">Team:</string>

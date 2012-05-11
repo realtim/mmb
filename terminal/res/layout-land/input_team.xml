@@ -1,208 +1,313 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/global_padding"
+        android:layout_weight="1"
+        android:orientation="vertical" >
 
         <LinearLayout
-            android:layout_width="0dip"
-            android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/global_padding"
-            android:layout_weight="1"
-            android:orientation="vertical" >
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+            <Button
+                android:id="@+id/inputTeam_sortByNumberButton"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="15"
+                android:gravity="left|center_vertical"
+                android:text="@string/input_team_sort_num" />
 
-                <Button
-                    android:id="@+id/inputTeam_sortByNumberButton"
-                    android:layout_width="0dip"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="15"
-                    android:gravity="left|center_vertical"
-                    android:text="@string/input_team_sort_num" />
+            <Button
+                android:id="@+id/inputTeam_sortByTeamButton"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="45"
+                android:text="@string/input_team_sort_team" />
 
-                <Button
-                    android:id="@+id/inputTeam_sortByTeamButton"
-                    android:layout_width="0dip"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="45"
-                    android:text="@string/input_team_sort_team" />
-
-                <Button
-                    android:id="@+id/inputTeam_sortByMemberButton"
-                    android:layout_width="0dip"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="40"
-                    android:text="@string/input_team_sort_member" />
-            </LinearLayout>
-
-            <ListView
-                android:id="@+id/inputTeam_teamsList"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_weight="1"
-                android:choiceMode="singleChoice" >
-            </ListView>
+            <Button
+                android:id="@+id/inputTeam_sortByMemberButton"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="40"
+                android:text="@string/input_team_sort_member" />
         </LinearLayout>
 
+        <ListView
+            android:id="@+id/inputTeam_teamsList"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:choiceMode="singleChoice" >
+        </ListView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/global_padding"
+        android:layout_marginLeft="@dimen/global_padding"
+        android:layout_marginRight="@dimen/global_padding"
+        android:layout_marginTop="@dimen/global_padding"
+        android:orientation="vertical" >
+
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="@dimen/global_padding"
-            android:layout_marginLeft="@dimen/global_padding"
-            android:layout_marginRight="@dimen/global_padding"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/inputTeam_filterClearButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/input_team_filter_clear" />
+
+            <Button
+                android:id="@+id/inputTeam_filterHideButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/global_padding"
+                android:text="@string/input_team_filter_hide" />
+
+            <Button
+                android:id="@+id/inputTeam_refreshDataButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/global_padding"
+                android:text="@string/input_team_refresh_data" >
+            </Button>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/inputTeam_filterStatusTextView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginTop="@dimen/global_padding"
+            android:gravity="right"
+            android:text="dummy_filter_state" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical" >
 
             <LinearLayout
+                android:id="@+id/inputTeam_filterNumberPanel"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_padding" >
 
-                <Button
-                    android:id="@+id/inputTeam_filterClearButton"
-                    android:layout_width="wrap_content"
+                <TextView
+                    android:layout_width="75dip"
                     android:layout_height="wrap_content"
-                    android:text="@string/input_team_filter_clear" />
+                    android:text="@string/input_team_filter_number" />
 
-                <Button
-                    android:id="@+id/inputTeam_filterHideButton"
+                <EditText
+                    android:id="@+id/inputTeam_filterNumberEdit"
+                    android:layout_width="100dip"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionDone|flagNoEnterAction"
+                    android:inputType="number"
+                    android:maxLength="4" >
+                </EditText>
+
+                <CheckBox
+                    android:id="@+id/inputTeam_filterNumberExactCheck"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/global_padding"
-                    android:text="@string/input_team_filter_hide" />
-
-                <Button
-                    android:id="@+id/inputTeam_refreshDataButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/global_padding"
-                    android:text="@string/input_team_refresh_data" >
-                </Button>
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/inputTeam_filterStatusTextView"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginTop="@dimen/global_padding"
-                android:gravity="right"
-                android:text="dummy_filter_state" />
-
-            <LinearLayout
-                android:id="@+id/inputTeam_filterEditorsPanel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" >
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/global_padding" >
-
-                    <TextView
-                        android:layout_width="75dip"
-                        android:layout_height="wrap_content"
-                        android:text="@string/input_team_filter_number" />
-
-                    <EditText
-                        android:id="@+id/inputTeam_filterNumberEdit"
-                        android:layout_width="100dip"
-                        android:layout_height="wrap_content"
-                        android:imeOptions="actionDone|flagNoEnterAction"
-                        android:inputType="number"
-                        android:maxLength="4" >
-                    </EditText>
-
-                    <CheckBox
-                        android:id="@+id/inputTeam_filterNumberExactCheck"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/global_padding"
-                        android:text="@string/input_team_filter_number_exact" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/global_padding" >
-
-                    <TextView
-                        android:layout_width="75dip"
-                        android:layout_height="wrap_content"
-                        android:text="@string/input_team_filter_team" />
-
-                    <EditText
-                        android:id="@+id/inputTeam_filterTeamEdit"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:imeOptions="actionDone|flagNoEnterAction"
-                        android:singleLine="true" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/global_padding" >
-
-                    <TextView
-                        android:layout_width="75dip"
-                        android:layout_height="wrap_content"
-                        android:text="@string/input_team_filter_member" />
-
-                    <EditText
-                        android:id="@+id/inputTeam_filterMemberEdit"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:imeOptions="actionDone|flagNoEnterAction"
-                        android:singleLine="true" />
-                </LinearLayout>
+                    android:text="@string/input_team_filter_number_exact" />
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/inputTeam_proceedInputPanel"
+                android:id="@+id/inputTeam_filterNumberDigitsPanel"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/global_padding" >
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
                     android:orientation="vertical" >
 
-                    <TextView
-                        android:id="@+id/inputTeam_selectedTeamTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="right"
-                        android:text="@string/input_team_no_team" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" >
+
+                        <Button
+                            android:id="@+id/inputTeam_number1Button"
+                            android:layout_width="35dip"
+                            android:layout_height="wrap_content"
+                            android:text="1" />
+
+                        <Button
+                            android:id="@+id/inputTeam_number2Button"
+                            android:layout_width="35dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/small_padding"
+                            android:text="2" />
+
+                        <Button
+                            android:id="@+id/inputTeam_number3Button"
+                            android:layout_width="35dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/small_padding"
+                            android:text="3" />
+
+                        <Button
+                            android:id="@+id/inputTeam_number4Button"
+                            android:layout_width="35dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/small_padding"
+                            android:text="4" />
+
+                        <Button
+                            android:id="@+id/inputTeam_number5Button"
+                            android:layout_width="35dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/small_padding"
+                            android:text="5" />
+
+                        <Button
+                            android:id="@+id/inputTeam_numberCButton"
+                            android:layout_width="40dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/global_double_padding"
+                            android:text="C" />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="right"
                         android:layout_marginTop="@dimen/global_padding" >
-                        
-                        <Button
-                            android:id="@+id/inputTeam_withdrawMemberButton"
-                            android:layout_width="100dip"
-                            android:layout_height="wrap_content"
-                            android:text="@string/input_team_withdraw_member" />
 
                         <Button
-                            android:id="@+id/inputTeam_inputDataButton"
-                            android:layout_width="100dip"
+                            android:id="@+id/inputTeam_number6Button"
+                            android:layout_width="35dip"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="@dimen/global_padding"
-                            android:text="@string/input_team_input_data" />
+                            android:text="6" />
+
+                        <Button
+                            android:id="@+id/inputTeam_number7Button"
+                            android:layout_width="35dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/small_padding"
+                            android:text="7" />
+
+                        <Button
+                            android:id="@+id/inputTeam_number8Button"
+                            android:layout_width="35dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/small_padding"
+                            android:text="8" />
+
+                        <Button
+                            android:id="@+id/inputTeam_number9Button"
+                            android:layout_width="35dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/small_padding"
+                            android:text="9" />
+
+                        <Button
+                            android:id="@+id/inputTeam_number0Button"
+                            android:layout_width="35dip"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="@dimen/small_padding"
+                            android:text="0" />
                     </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/inputTeam_filterTeamAndMemberPanel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_padding" >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" >
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" >
+
+                        <TextView
+                            android:layout_width="75dip"
+                            android:layout_height="wrap_content"
+                            android:text="@string/input_team_filter_team" />
+
+                        <EditText
+                            android:id="@+id/inputTeam_filterTeamEdit"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:imeOptions="actionDone|flagNoEnterAction"
+                            android:singleLine="true" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/global_padding" >
+
+                        <TextView
+                            android:layout_width="75dip"
+                            android:layout_height="wrap_content"
+                            android:text="@string/input_team_filter_member" />
+
+                        <EditText
+                            android:id="@+id/inputTeam_filterMemberEdit"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:imeOptions="actionDone|flagNoEnterAction"
+                            android:singleLine="true" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/inputTeam_proceedInputPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/global_padding" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/inputTeam_selectedTeamTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right"
+                    android:text="@string/input_team_no_team" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/global_padding"
+                    android:gravity="right" >
+
+                    <Button
+                        android:id="@+id/inputTeam_withdrawMemberButton"
+                        android:layout_width="100dip"
+                        android:layout_height="wrap_content"
+                        android:text="@string/input_team_withdraw_member" />
+
+                    <Button
+                        android:id="@+id/inputTeam_inputDataButton"
+                        android:layout_width="100dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/global_padding"
+                        android:text="@string/input_team_input_data" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

@@ -50,12 +50,12 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/inputTeam_filterEditorsPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" >
 
             <LinearLayout
+                android:id="@+id/inputTeam_filterNumberPanel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/global_padding" >
@@ -70,8 +70,8 @@
                     android:layout_width="100dip"
                     android:layout_height="wrap_content"
                     android:imeOptions="actionDone|flagNoEnterAction"
-                    android:maxLength="4"
-                    android:inputType="number" >
+                    android:inputType="number"
+                    android:maxLength="4" >
                 </EditText>
 
                 <CheckBox
@@ -83,6 +83,90 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/inputTeam_filterNumberDigitsPanel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_padding" >
+
+                <Button
+                    android:id="@+id/inputTeam_number1Button"
+                    android:layout_width="35dip"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+                <Button
+                    android:id="@+id/inputTeam_number2Button"
+                    android:layout_width="35dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/small_padding"
+                    android:text="2" />
+
+                <Button
+                    android:id="@+id/inputTeam_number3Button"
+                    android:layout_width="35dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/small_padding"
+                    android:text="3" />
+
+                <Button
+                    android:id="@+id/inputTeam_number4Button"
+                    android:layout_width="35dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/small_padding"
+                    android:text="4" />
+
+                <Button
+                    android:id="@+id/inputTeam_number5Button"
+                    android:layout_width="35dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/small_padding"
+                    android:text="5" />
+
+                <Button
+                    android:id="@+id/inputTeam_number6Button"
+                    android:layout_width="35dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/small_padding"
+                    android:text="6" />
+
+                <Button
+                    android:id="@+id/inputTeam_number7Button"
+                    android:layout_width="35dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/small_padding"
+                    android:text="7" />
+
+                <Button
+                    android:id="@+id/inputTeam_number8Button"
+                    android:layout_width="35dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/small_padding"
+                    android:text="8" />
+
+                <Button
+                    android:id="@+id/inputTeam_number9Button"
+                    android:layout_width="35dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/small_padding"
+                    android:text="9" />
+
+                <Button
+                    android:id="@+id/inputTeam_number0Button"
+                    android:layout_width="35dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/small_padding"
+                    android:text="0" />
+
+                <Button
+                    android:id="@+id/inputTeam_numberCButton"
+                    android:layout_width="40dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/global_double_padding"
+                    android:text="C" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/inputTeam_filterTeamAndMemberPanel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/global_padding" >
@@ -96,9 +180,9 @@
                     android:id="@+id/inputTeam_filterTeamEdit"
                     android:layout_width="0dip"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:imeOptions="actionDone|flagNoEnterAction"
-                    android:singleLine="true"
-                    android:layout_weight="1" />
+                    android:singleLine="true" />
 
                 <TextView
                     android:layout_width="75dip"
@@ -110,9 +194,9 @@
                     android:id="@+id/inputTeam_filterMemberEdit"
                     android:layout_width="0dip"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:imeOptions="actionDone|flagNoEnterAction"
-                    android:singleLine="true"
-                    android:layout_weight="1" />
+                    android:singleLine="true" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -175,7 +259,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="@dimen/global_padding"
             android:text="@string/input_team_withdraw_member" />
-        
+
         <Button
             android:id="@+id/inputTeam_inputDataButton"
             android:layout_width="100dip"

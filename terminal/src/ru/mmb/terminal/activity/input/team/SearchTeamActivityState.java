@@ -1,9 +1,9 @@
 package ru.mmb.terminal.activity.input.team;
 
-import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_FILTER_HIDE;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_FILTER_MEMBER;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_FILTER_NUMBER;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_FILTER_NUMBER_EXACT;
+import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_FILTER_STATE;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_FILTER_TEAM;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_SORT_COLUMN;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_SORT_ORDER;
@@ -17,7 +17,7 @@ public class SearchTeamActivityState extends InputActivityState
 	private SortColumn sortColumn = SortColumn.NUMBER;
 	private SortOrder sortOrder = SortOrder.ASC;
 
-	private boolean hideFilter = false;
+	private FilterState filterState = FilterState.SHOW_JUST_NUMBER;
 	private boolean filterNumberExact = true;
 
 	private String numberFilter = null;
@@ -60,7 +60,7 @@ public class SearchTeamActivityState extends InputActivityState
 		super.save(savedInstanceState);
 		savedInstanceState.putSerializable(KEY_CURRENT_TEAM_SORT_COLUMN, sortColumn);
 		savedInstanceState.putSerializable(KEY_CURRENT_TEAM_SORT_ORDER, sortOrder);
-		savedInstanceState.putBoolean(KEY_CURRENT_TEAM_FILTER_HIDE, hideFilter);
+		savedInstanceState.putSerializable(KEY_CURRENT_TEAM_FILTER_STATE, filterState);
 		savedInstanceState.putBoolean(KEY_CURRENT_TEAM_FILTER_NUMBER_EXACT, filterNumberExact);
 		if (numberFilter != null)
 		    savedInstanceState.putString(KEY_CURRENT_TEAM_FILTER_NUMBER, numberFilter);
@@ -79,8 +79,9 @@ public class SearchTeamActivityState extends InputActivityState
 		        (SortColumn) savedInstanceState.getSerializable(KEY_CURRENT_TEAM_SORT_COLUMN);
 		if (savedInstanceState.containsKey(KEY_CURRENT_TEAM_SORT_ORDER))
 		    sortOrder = (SortOrder) savedInstanceState.getSerializable(KEY_CURRENT_TEAM_SORT_ORDER);
-		if (savedInstanceState.containsKey(KEY_CURRENT_TEAM_FILTER_HIDE))
-		    hideFilter = savedInstanceState.getBoolean(KEY_CURRENT_TEAM_FILTER_HIDE);
+		if (savedInstanceState.containsKey(KEY_CURRENT_TEAM_FILTER_STATE))
+		    filterState =
+		        (FilterState) savedInstanceState.getSerializable(KEY_CURRENT_TEAM_FILTER_STATE);
 		if (savedInstanceState.containsKey(KEY_CURRENT_TEAM_FILTER_NUMBER_EXACT))
 		    filterNumberExact = savedInstanceState.getBoolean(KEY_CURRENT_TEAM_FILTER_NUMBER_EXACT);
 		if (savedInstanceState.containsKey(KEY_CURRENT_TEAM_FILTER_NUMBER))
@@ -91,14 +92,14 @@ public class SearchTeamActivityState extends InputActivityState
 		    memberFilter = savedInstanceState.getString(KEY_CURRENT_TEAM_FILTER_MEMBER);
 	}
 
-	public boolean isHideFilter()
+	public FilterState getFilterState()
 	{
-		return hideFilter;
+		return filterState;
 	}
 
-	public void setHideFilter(boolean hideFilter)
+	public void setFilterState(FilterState filterState)
 	{
-		this.hideFilter = hideFilter;
+		this.filterState = filterState;
 	}
 
 	public boolean isFilterNumberExact()
@@ -119,7 +120,7 @@ public class SearchTeamActivityState extends InputActivityState
 		SharedPreferences.Editor editor = preferences.edit();
 		editor.putString(getPrefix() + "." + KEY_CURRENT_TEAM_SORT_COLUMN, getSortColumn().name());
 		editor.putString(getPrefix() + "." + KEY_CURRENT_TEAM_SORT_ORDER, getSortOrder().name());
-		editor.putBoolean(getPrefix() + "." + KEY_CURRENT_TEAM_FILTER_HIDE, isHideFilter());
+		editor.putString(getPrefix() + "." + KEY_CURRENT_TEAM_FILTER_STATE, getFilterState().name());
 		editor.putBoolean(getPrefix() + "." + KEY_CURRENT_TEAM_FILTER_NUMBER_EXACT, isFilterNumberExact());
 		editor.commit();
 	}
@@ -135,10 +136,11 @@ public class SearchTeamActivityState extends InputActivityState
 		String sortOrderName =
 		    preferences.getString(getPrefix() + "." + KEY_CURRENT_TEAM_SORT_ORDER, "ASC");
 		setSortOrder(SortOrder.getByName(sortOrderName));
-		setHideFilter(preferences.getBoolean(getPrefix() + "." + KEY_CURRENT_TEAM_FILTER_HIDE, false));
+		String filterStateName =
+		    preferences.getString(getPrefix() + "." + KEY_CURRENT_TEAM_FILTER_STATE, "SHOW_JUST_NUMBER");
+		setFilterState(FilterState.getByName(filterStateName));
 		setFilterNumberExact(preferences.getBoolean(getPrefix() + "."
 		        + KEY_CURRENT_TEAM_FILTER_NUMBER_EXACT, true));
-
 	}
 
 	public String getNumberFilter()
@@ -225,14 +227,5 @@ public class SearchTeamActivityState extends InputActivityState
 	protected void loadFromExtrasBundle(Bundle extras)
 	{
 		super.loadFromExtrasBundle(extras);
-	}
-
-	@Override
-	public String toString()
-	{
-		return "SearchTeamActivityState [sortColumn=" + sortColumn + ", sortOrder=" + sortOrder
-		        + ", hideFilter=" + hideFilter + ", filterNumberExact=" + filterNumberExact
-		        + ", numberFilter=" + numberFilter + ", teamFilter=" + teamFilter
-		        + ", memberFilter=" + memberFilter + "]";
 	}
 }
