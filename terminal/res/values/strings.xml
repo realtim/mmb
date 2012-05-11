@@ -9,6 +9,7 @@
     <string name="main_export_data">Export</string>
     <string name="main_title">MMB terminal</string>
     <string name="main_settings">Settings</string>
+    <string name="main_fill_data">Fill test data</string>
     <string name="main_progress_loading">Loading...</string>
     <string name="input_start_select_level">Select level</string>
     <string name="input_start_no_distance">&lt;No distance selected></string>

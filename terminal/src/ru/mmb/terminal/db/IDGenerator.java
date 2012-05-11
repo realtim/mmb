@@ -18,9 +18,11 @@ public class IDGenerator
 	public IDGenerator(SQLiteDatabase db)
 	{
 		this.db = db;
-		init();
+		// TODO uncomment when needed
+		// init();
 	}
 
+	@SuppressWarnings("unused")
 	private void init()
 	{
 		String whereCondition = SEQUENCE_ID + " = 1";

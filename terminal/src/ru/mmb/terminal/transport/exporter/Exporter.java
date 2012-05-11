@@ -16,15 +16,17 @@ public class Exporter
 {
 	private final Date exportDate;
 	private final ExportMode exportMode;
-	private final DataExtracter dataExtracter;
+	private final DataExtractor dataExtracter;
+	private final ExportState exportState;
 
 	private BufferedWriter writer;
 
-	public Exporter(ExportMode exportMode)
+	public Exporter(ExportMode exportMode, ExportState exportState)
 	{
 		this.exportDate = new Date();
 		this.exportMode = exportMode;
-		this.dataExtracter = new DataExtracter(exportMode);
+		this.exportState = exportState;
+		this.dataExtracter = new DataExtractor(exportMode);
 	}
 
 	public String exportData() throws Exception
@@ -34,8 +36,11 @@ public class Exporter
 		try
 		{
 			writeHeader();
+			if (exportState.isTerminated()) return "";
 			exportTable("TeamLevelDismiss");
+			if (exportState.isTerminated()) return "";
 			exportTable("TeamLevelPoints");
+			if (exportState.isTerminated()) return "";
 			writeFooter();
 			updateLastExportDate();
 		}
@@ -69,9 +74,10 @@ public class Exporter
 		dataExtracter.setCurrentTable(table);
 		if (dataExtracter.hasRecordsToExport())
 		{
+			if (exportState.isTerminated()) return;
 			writer.write("---" + tableName);
 			writer.newLine();
-			dataExtracter.exportNewRecordsToFile(writer);
+			dataExtracter.exportNewRecordsToFile(writer, exportState);
 		}
 	}
 

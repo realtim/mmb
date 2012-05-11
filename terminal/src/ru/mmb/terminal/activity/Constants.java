@@ -23,6 +23,7 @@ public class Constants
 	public static final String KEY_CURRENT_INPUT_CHECKED_DATE = "current.input.checked.date";
 	public static final String KEY_CURRENT_INPUT_WITHDRAWN_CHECKED =
 	    "current.input.withdrawn.checked";
+	public static final String KEY_EXPORT_RESULT_MESSAGE = "export.result.message";
 
 	public static final int REQUEST_CODE_DEFAULT_ACTIVITY = -1;
 	public static final int REQUEST_CODE_INPUT_LEVEL_ACTIVITY = 2;

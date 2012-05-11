@@ -152,40 +152,48 @@ public class MetaTable
 		return sb.toString();
 	}
 
-	public String generateCheckNewRecordsSQL()
+	public String generateCheckNewRecordsSQL(ExportMode exportMode)
 	{
-		return "select count(*) from " + getTableName() + " where " + getUpdateDateCondition();
-	}
+		String selectSql = "select count(*) from " + getTableName();
 
-	private String getUpdateDateCondition()
-	{
-		return getUpdateDateColumnName() + " >= " + "'"
-		        + Settings.getInstance().getLastExportDate() + "'";
+		String whereClause = generateExportWhereClause(exportMode);
+		if (whereClause.length() > 0)
+		{
+			selectSql += " where " + whereClause;
+		}
+
+		return selectSql;
 	}
 
 	public String generateSelectNewRecordsSQL(ExportMode exportMode)
 	{
 		String selectSql = "select " + generateColumnNamesClause() + " from " + getTableName();
 
-		String whereCondition = "";
-		if (getColumnByName("device_id") != null)
+		String whereClause = generateExportWhereClause(exportMode);
+		if (whereClause.length() > 0)
 		{
-			whereCondition = "device_id = " + Settings.getInstance().getDeviceId();
-		}
-		if (needSelectByDate(exportMode))
-		{
-			if (whereCondition.length() > 0)
-			{
-				whereCondition += " and ";
-			}
-			whereCondition += getUpdateDateCondition();
-		}
-		if (whereCondition.length() > 0)
-		{
-			selectSql += " where " + whereCondition;
+			selectSql += " where " + whereClause;
 		}
 
 		return selectSql;
+	}
+
+	private String generateExportWhereClause(ExportMode exportMode)
+	{
+		String result = "";
+		if (getColumnByName("device_id") != null)
+		{
+			result = "device_id = " + Settings.getInstance().getDeviceId();
+		}
+		if (needSelectByDate(exportMode))
+		{
+			if (result.length() > 0)
+			{
+				result += " and ";
+			}
+			result += getUpdateDateCondition();
+		}
+		return result;
 	}
 
 	private boolean needSelectByDate(ExportMode exportMode)
@@ -194,6 +202,12 @@ public class MetaTable
 		if (exportMode == ExportMode.FULL) return false;
 		if ("".equals(Settings.getInstance().getLastExportDate())) return false;
 		return true;
+	}
+
+	private String getUpdateDateCondition()
+	{
+		return getUpdateDateColumnName() + " >= " + "'"
+		        + Settings.getInstance().getLastExportDate() + "'";
 	}
 
 	public String generateExportRowString(Cursor cursor)

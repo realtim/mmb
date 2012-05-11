@@ -4,18 +4,17 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 
 import ru.mmb.terminal.db.TerminalDB;
-import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.transport.model.MetaTable;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-public class DataExtracter
+public class DataExtractor
 {
 	private MetaTable currentTable = null;
 	private final SQLiteDatabase db;
 	private final ExportMode exportMode;
 
-	public DataExtracter(ExportMode exportMode)
+	public DataExtractor(ExportMode exportMode)
 	{
 		this.db = TerminalDB.getInstance().getDb();
 		this.exportMode = exportMode;
@@ -29,11 +28,8 @@ public class DataExtracter
 	public boolean hasRecordsToExport()
 	{
 		if (currentTable == null) return false;
-		if (exportMode == ExportMode.FULL) return true;
-		if (currentTable.getUpdateDateColumn() == null) return true;
-		if ("".equals(Settings.getInstance().getLastExportDate())) return true;
 
-		String sql = currentTable.generateCheckNewRecordsSQL();
+		String sql = currentTable.generateCheckNewRecordsSQL(exportMode);
 		Cursor cursor = db.rawQuery(sql, null);
 		try
 		{
@@ -46,12 +42,13 @@ public class DataExtracter
 		}
 	}
 
-	public void exportNewRecordsToFile(BufferedWriter writer) throws IOException
+	public void exportNewRecordsToFile(BufferedWriter writer, ExportState exportState)
+	        throws IOException
 	{
 		String selectSql = currentTable.generateSelectNewRecordsSQL(exportMode);
 		Cursor cursor = db.rawQuery(selectSql, null);
 		cursor.moveToFirst();
-		while (!cursor.isAfterLast())
+		while (!cursor.isAfterLast() && !exportState.isTerminated())
 		{
 			exportRow(writer, cursor);
 			cursor.moveToNext();

@@ -4,9 +4,9 @@ CREATE TABLE "android_metadata" ("locale" TEXT DEFAULT 'en_US');
 INSERT INTO android_metadata VALUES('en_US');
 
 CREATE TABLE Settings (setting_name TEXT NOT NULL, setting_value TEXT, PRIMARY KEY (setting_name));
-INSERT INTO Settings VALUES('user_id', NULL);
-INSERT INTO Settings VALUES('device_id', NULL);
-INSERT INTO Settings VALUES('current_raid_id', NULL);
+INSERT INTO Settings VALUES('user_id', '1');
+INSERT INTO Settings VALUES('device_id', '1');
+INSERT INTO Settings VALUES('current_raid_id', '18');
 INSERT INTO Settings VALUES('last_export_date', NULL);
 INSERT INTO Settings VALUES('transp_user_id', '1');
 INSERT INTO Settings VALUES('transp_user_password', 'abc');

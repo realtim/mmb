@@ -1,7 +1,5 @@
 BEGIN TRANSACTION;
 
-UPDATE LocalSequence SET sequence_value = 1101 WHERE sequence_id = 1;
-
 INSERT INTO Raids VALUES(201205130000,3,'ММБ 2012 весна');
 INSERT INTO Raids VALUES(201110150000,2,'ММБ 2011 осень');
 INSERT INTO Raids VALUES(201105130000,1,'ММБ 2011 весна');
