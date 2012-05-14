@@ -442,7 +442,7 @@ if (!isset($MyPHPScript)) return;
 
 		      $sql = " select t.team_num, t.team_id, t.team_usegps, t.team_name, 
 				      t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
-				      TIME_FORMAT(timediff(tl.teamlevel_endtime, 
+				      TIME_FORMAT(TIME_TO_SEC(timediff(tl.teamlevel_endtime, 
 					CASE l.level_starttype 
 					    WHEN 1 THEN tl.teamlevel_begtime 
 					    WHEN 2 THEN l.level_begtime 
@@ -455,7 +455,7 @@ if (!isset($MyPHPScript)) return;
 							) 
 					    ELSE NULL 
 					END
-				      ) + COALESCE(tl.teamlevel_penalty, 0)*60, '%H:%i') as  team_sresult,
+				      )) + COALESCE(tl.teamlevel_penalty, 0)*60, '%H:%i') as  team_sresult,
                                       tl.teamlevel_penalty, tl.teamlevel_points, tl.teamlevel_comment
 			    from  TeamLevels tl 
 				  inner join Levels l 
