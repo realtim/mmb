@@ -114,6 +114,23 @@
             android:layout_weight="1" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/global_padding" >
+
+        <TextView
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_team_clear_filter" />
+
+        <CheckBox
+            android:id="@+id/settings_teamClearFilterCheckbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/settings_saveBtn"
         android:layout_width="150dip"

@@ -71,6 +71,7 @@ public class InputDataActivity extends Activity implements StateChangeListener
 		public void onClick(View v)
 		{
 			currentState.saveInputDataToDB();
+			setResult(RESULT_OK);
 			finish();
 		}
 	}

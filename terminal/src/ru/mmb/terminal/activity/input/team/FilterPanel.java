@@ -141,11 +141,24 @@ public class FilterPanel
 		currentState.setMemberFilter(editFilterMember.getText().toString());
 	}
 
-	private void onRefreshClick()
+	private void refreshFilter()
 	{
 		updateCurrentState();
 		refreshFilterStatus();
 		searchTeamActivity.refreshTeams();
+	}
+
+	private void clearFilterControls()
+	{
+		editFilterNumber.setText("");
+		editFilterTeam.setText("");
+		editFilterMember.setText("");
+	}
+
+	public void reset()
+	{
+		clearFilterControls();
+		refreshFilter();
 	}
 
 	private class HideFilterClickListener implements OnClickListener
@@ -174,7 +187,7 @@ public class FilterPanel
 		@Override
 		public void onClick(View v)
 		{
-			onRefreshClick();
+			refreshFilter();
 		}
 	}
 
@@ -183,10 +196,8 @@ public class FilterPanel
 		@Override
 		public void onClick(View v)
 		{
-			editFilterNumber.setText("");
-			editFilterTeam.setText("");
-			editFilterMember.setText("");
-			onRefreshClick();
+			clearFilterControls();
+			refreshFilter();
 		}
 	}
 
