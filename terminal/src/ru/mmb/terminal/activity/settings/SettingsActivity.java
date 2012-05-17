@@ -20,6 +20,7 @@ public class SettingsActivity extends Activity
 	private EditText editTranspUserId;
 	private EditText editTranspUserPassword;
 	private CheckBox checkTeamClearFilter;
+	private EditText editCheckboxesPerLine;
 
 	private Button btnSave;
 
@@ -41,6 +42,7 @@ public class SettingsActivity extends Activity
 		editTranspUserId = (EditText) findViewById(R.id.settings_transpUserIdEdit);
 		editTranspUserPassword = (EditText) findViewById(R.id.settings_transpUserPasswordEdit);
 		checkTeamClearFilter = (CheckBox) findViewById(R.id.settings_teamClearFilterCheckbox);
+		editCheckboxesPerLine = (EditText) findViewById(R.id.settings_checkboxesPerLineEdit);
 
 		btnSave = (Button) findViewById(R.id.settings_saveBtn);
 
@@ -60,6 +62,7 @@ public class SettingsActivity extends Activity
 		editTranspUserId.setText(Integer.toString(Settings.getInstance().getTranspUserId()));
 		editTranspUserPassword.setText(Settings.getInstance().getTranspUserPassword());
 		checkTeamClearFilter.setChecked(Settings.getInstance().isTeamClearFilterAfterOk());
+		editCheckboxesPerLine.setText(Settings.getInstance().getCheckboxesPerLine());
 	}
 
 	private void saveSettings()
@@ -70,6 +73,7 @@ public class SettingsActivity extends Activity
 		Settings.getInstance().setTranspUserId(editTranspUserId.getText().toString());
 		Settings.getInstance().setTranspUserPassword(editTranspUserPassword.getText().toString());
 		Settings.getInstance().setTeamClearFilterAfterOk(Boolean.toString(checkTeamClearFilter.isChecked()));
+		Settings.getInstance().setCheckboxesPerLine(editCheckboxesPerLine.getText().toString());
 
 		Toast.makeText(getApplicationContext(), getResources().getText(R.string.settings_applied), Toast.LENGTH_SHORT).show();
 	}
