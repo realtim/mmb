@@ -89,6 +89,7 @@
     <string name="settings_transp_user_id">Transport user ID:</string>
     <string name="settings_transp_user_password">Transport user password:</string>
     <string name="settings_team_clear_filter">Clear team filter after OK:</string>
+    <string name="settings_input_checkboxes_per_line">Input data checkboxes per line:</string>
     <string name="settings_applied">Settings applied</string>
     <string name="transp_export_title">Export</string>
     <string name="transp_export_full">Export full</string>
