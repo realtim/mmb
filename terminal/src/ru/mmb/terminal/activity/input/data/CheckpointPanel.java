@@ -9,6 +9,7 @@ import java.util.Map;
 
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.model.Checkpoint;
+import ru.mmb.terminal.model.registry.Settings;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -65,10 +66,10 @@ public class CheckpointPanel
 
 	private void createCheckpointBoxes()
 	{
-		int colCount = 7;
+		int colCount = Settings.getInstance().getCheckboxesPerLinePortrait();
 		if (inputDataActivity.getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE)
 		{
-			colCount = 9;
+			colCount = Settings.getInstance().getCheckboxesPerLineLandscape();
 		}
 
 		List<TableRow> rows = new ArrayList<TableRow>();

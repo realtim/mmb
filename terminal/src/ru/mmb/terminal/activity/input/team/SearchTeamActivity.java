@@ -10,6 +10,7 @@ import ru.mmb.terminal.activity.input.data.InputDataActivity;
 import ru.mmb.terminal.activity.input.team.model.DataProvider;
 import ru.mmb.terminal.activity.input.team.model.TeamListRecord;
 import ru.mmb.terminal.activity.input.withdraw.WithdrawMemberActivity;
+import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -35,6 +36,8 @@ public class SearchTeamActivity extends Activity
 	private Button btnInputData;
 	private Button btnWithdraw;
 
+	private FilterPanel filterPanel;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -45,7 +48,7 @@ public class SearchTeamActivity extends Activity
 
 		setContentView(R.layout.input_team);
 
-		new FilterPanel(this, currentState);
+		filterPanel = new FilterPanel(this, currentState);
 		new SortButtons(this, currentState);
 
 		lvTeams = (ListView) findViewById(R.id.inputTeam_teamsList);
@@ -126,19 +129,22 @@ public class SearchTeamActivity extends Activity
 		switch (requestCode)
 		{
 			case REQUEST_CODE_INPUT_DATA_ACTIVITY:
-				onInputDataActivityResult(resultCode, data);
+			case REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY:
+				onInputActivityResult(resultCode, data);
 				break;
 			default:
 				super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
 
-	private void onInputDataActivityResult(int resultCode, Intent data)
+	private void onInputActivityResult(int resultCode, Intent data)
 	{
 		if (resultCode == RESULT_OK)
 		{
-			setResult(RESULT_OK, new Intent());
-			finish();
+			if (Settings.getInstance().isTeamClearFilterAfterOk())
+			{
+				filterPanel.reset();
+			}
 		}
 	}
 

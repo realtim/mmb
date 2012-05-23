@@ -14,6 +14,8 @@ public class Settings
 	private static final String LAST_EXPORT_DATE = "last_export_date";
 	private static final String TRANSP_USER_ID = "transp_user_id";
 	private static final String TRANSP_USER_PASSWORD = "transp_user_password";
+	private static final String TEAM_CLEAR_FILTER_AFTER_OK = "team_clear_filter_after_ok";
+	private static final String INPUT_CHECKBOXES_PER_LINE = "input_checkboxes_per_line";
 
 	private static Settings instance = null;
 
@@ -114,6 +116,43 @@ public class Settings
 	public void setTranspUserPassword(String transpUserPassword)
 	{
 		setValue(TRANSP_USER_PASSWORD, transpUserPassword);
+	}
+
+	public boolean isTeamClearFilterAfterOk()
+	{
+		return Boolean.parseBoolean(settings.getProperty(TEAM_CLEAR_FILTER_AFTER_OK, "false"));
+	}
+
+	public void setTeamClearFilterAfterOk(String teamClearFilterAfterOk)
+	{
+		setValue(TEAM_CLEAR_FILTER_AFTER_OK, teamClearFilterAfterOk);
+	}
+
+	public String getCheckboxesPerLine()
+	{
+		return settings.getProperty(INPUT_CHECKBOXES_PER_LINE, "5;7");
+	}
+
+	public int getCheckboxesPerLinePortrait()
+	{
+		String[] values = splitCheckboxesSetting();
+		return Integer.parseInt(values[0]);
+	}
+
+	private String[] splitCheckboxesSetting()
+	{
+		return settings.getProperty(INPUT_CHECKBOXES_PER_LINE, "5;7").split(";");
+	}
+
+	public int getCheckboxesPerLineLandscape()
+	{
+		String[] values = splitCheckboxesSetting();
+		return Integer.parseInt(values[1]);
+	}
+
+	public void setCheckboxesPerLine(String checkboxesPerLine)
+	{
+		setValue(INPUT_CHECKBOXES_PER_LINE, checkboxesPerLine);
 	}
 
 	public void refresh()

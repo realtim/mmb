@@ -81,6 +81,10 @@ $Sql = "select user_id, levelpoint_id, team_id, teamlevelpoint_date, device_id, 
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelPoints"][] = $Row; }
 
+// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
+header("Content-Type: application/octet-stream");
+header("Content-Disposition: attachment; filename=\"update.json\"");
+
 // Вывод json
 print json_encode( $data );
 
