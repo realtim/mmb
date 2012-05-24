@@ -279,10 +279,14 @@ if (isset($_FILES['android']))
 				$Old['teamlevel_penalty'] = "NULL";
 				$Old['error_id'] = "NULL";
 				$Old['teamlevel_hide'] = "0";
+				$insert = 1;
 			}
 			else
-			foreach ($Old as &$val)
-				$val = mysql_real_escape_string($val);
+			{
+				foreach ($Old as &$val)
+					$val = mysql_real_escape_string($val);
+				$insert = 0;
+			}
 
 			// Обновляем запись результатами из строки импорта
 			if ($pointtype_id == 1)
@@ -299,14 +303,23 @@ if (isset($_FILES['android']))
 				$Old['teamlevel_progress'] = "2";
 			}
 			if ($Old['teamlevel_comment'] == "") $Old['teamlevel_comment'] = $values[7];
-			// Заменяем запись в TeamLevels на обновленную
+			// Добавляем/обновляем запись в таблице TeamLevels
 			foreach ($Old as &$val)
 			{
 				 if ($val == "") $val = "NULL";
-				 if (($val <> "NULL") && (strstr($val, "'") === false)) $val = "'".$val."'";
+				 if (($val <> "NULL") && (substr($val, 0, 1) <> "'")) $val = "'".$val."'";
 			}
-			$sql = "replace into TeamLevels (teamlevel_id, level_id, team_id, teamlevel_begtime, teamlevel_endtime, teamlevel_points, teamlevel_comment, teamlevel_progress, teamlevel_penalty, error_id, teamlevel_hide)
+			if ($insert)
+				$sql = "insert into TeamLevels (teamlevel_id, level_id, team_id, teamlevel_begtime, teamlevel_endtime, teamlevel_points, teamlevel_comment, teamlevel_progress, teamlevel_penalty, error_id, teamlevel_hide)
 					values (".$Old['teamlevel_id'].", ".$Old['level_id'].", ".$Old['team_id'].", ".$Old['teamlevel_begtime'].", ".$Old['teamlevel_endtime'].", ".$Old['teamlevel_points'].", ".$Old['teamlevel_comment'].", ".$Old['teamlevel_progress'].", ".$Old['teamlevel_penalty'].", ".$Old['error_id'].", ".$Old['teamlevel_hide'].")";
+			else
+				$sql = "update TeamLevels set
+					teamlevel_begtime = ".$Old['teamlevel_begtime'].",
+					teamlevel_endtime = ".$Old['teamlevel_endtime'].",
+					teamlevel_points = ".$Old['teamlevel_points'].",
+					teamlevel_comment = ".$Old['teamlevel_comment'].",
+					teamlevel_progress = ".$Old['teamlevel_progress']."
+					where level_id = ".$level_id." and team_id = ".$values[2];
 			mysql_query($sql);
 			if (mysql_error()) die($sql.": ".mysql_error());
 			// Пересчитываем штрафы и общий прогресс команды
