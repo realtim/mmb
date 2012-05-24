@@ -495,9 +495,52 @@ send_mime_mail('Автор письма',
      }
      // конец функций для отправки письма
 
+
+      // функция пересчитывает штраф команды на этапах
+     function RecalcTeamLevelPenalty($teamid)
+     {
+       
+	// Получаем информацию об этапах, которые могла проходить команда
+	$sql = "select l.level_pointpenalties,
+		       tl.teamlevel_points,
+		       tl.teamlevel_id
+		from TeamLevels tl
+			inner join Levels l on l.level_id = tl.level_id
+		where tl.teamlevel_hide = 0 and tl.team_id = ".$teamid;
+
+	$rs = MySqlQuery($sql);
+
+	// ================ Цикл обработки данных по этапам
+	$statustext = "";
+	while ($Row = mysql_fetch_assoc($rs))
+	{
+		$TeamLevelId = $Row['teamlevel_id'];
+
+		// Получаем отметки о невзятых КП переводим его в строку и считаем штраф
+		$ArrLen = count(explode(',', $Row['level_pointpenalties']));
+		$Penalties = explode(',', $Row['level_pointpenalties']);
+		$TeamLevelPoints = explode(',', $Row['teamlevel_points']);
+		$PenaltyTime = 0;
+		for ($i = 0; $i < $ArrLen; $i++)
+		{
+  		   $PenaltyTime += (int)$Penalties[$i]*(1 - (int)$TeamLevelPoints[$i]);
+		}
+
+		$sql = "update TeamLevels set 	teamlevel_penalty = ".$PenaltyTime."
+				where teamlevel_id = ".$TeamLevelId;
+		MySqlQuery($sql);
+
+         }
+	// Конец цикла по этапам
+	mysql_free_result($rs);
+
+     }
+     // конец функции пересчёта штрафа 
+
      // функция пересчитывает результат команды
      function RecalcTeamResult($teamid)
      {
+
 	  // Если хотя бы один этап некорректный = общий резултат - пустой
            // MySql при агрегировании строк функцией SUM() просто игнорирует строик с NULL, но остальные - считает
            //  из-за этого приходится делать повторный запрос с корректировокой

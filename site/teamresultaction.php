@@ -172,14 +172,15 @@ elseif ($action == 'RecalcRaidResults')
 	$sql = 'select team_id
 		from Teams t
 			inner join Distances d on t.distance_id = d.distance_id
-		where t.team_hide = 0 and d.raid_id = '.$RaidId.'
-		order by team_id';
-	$Result = MySqlQuery($sql);
-
+		where t.team_hide = 0 and d.raid_id = '.$RaidId.' 
+               order by team_id';
+        
+        $Result = MySqlQuery($sql);
 	// Цикл по всем командам
 	while ($Row = mysql_fetch_assoc($Result))
 	{
 		$RecalcTeamId = $Row['team_id'];
+		RecalcTeamLevelPenalty($RecalcTeamId);
 		RecalcTeamResult($RecalcTeamId);
 	}
 	mysql_free_result($Result);
