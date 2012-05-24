@@ -44,7 +44,6 @@ if ($action == "ChangeTeamResult")
 
 	// ================ Цикл обработки данных по этапам
 	$statustext = "";
-	$TeamLevelProgressPrev = 2;
 	while ($Row = mysql_fetch_assoc($rs))
 	{
 		// По этому ключу потом определяем, есть ли уже строчка в TeamLevels или её нужно создать
@@ -53,8 +52,6 @@ if ($action == "ChangeTeamResult")
 		// Обрабатываем сход с этапа
 		$Index = 'Level'.$Row['level_id'].'_progress';
 		if (isset($_POST[$Index])) $TeamLevelProgress = (int)$_POST[$Index]; else $TeamLevelProgress = 0;
-		if ($TeamLevelProgressPrev <> 2) $TeamLevelProgress = 0;
-		$TeamLevelProgressPrev = $TeamLevelProgress;
 
 		// Вычисляем время выхода на этап
 		$Index = 'Level'.$Row['level_id'].'_begyear';
@@ -104,6 +101,9 @@ if ($action == "ChangeTeamResult")
 			if ($TeamLevelProgress > 1)
 				$statustext = $statustext."</br> финиша '".$Row['level_name']."'";
 		}
+
+		// Ставим флаг "Дошла до конца этапа", если у нас есть корректное время финиша команды
+		if (($EndYDTs <> "NULL") && !$TeamLevelProgress) $TeamLevelProgress = 2;
 
 		// Получаем отметки о невзятых КП переводим его в строку и считаем штраф
 		$ArrLen = count(explode(',', $Row['level_pointnames']));
