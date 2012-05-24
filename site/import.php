@@ -303,6 +303,24 @@ if (isset($_FILES['android']))
 				$Old['teamlevel_progress'] = "2";
 			}
 			if ($Old['teamlevel_comment'] == "") $Old['teamlevel_comment'] = $values[7];
+			// Заново вычисляем штраф на этапе
+			if ($pointtype_id == 2)
+			{
+				$sql = "select level_pointpenalties from Levels where level_id = ".$level_id;
+				$Result = mysql_query($sql);
+				if (!$Result || mysql_num_rows($Result) <> 1) die("Ошибка получения списка штрафов этапа в строке #".$line_num." - ".$line);
+				$Row = mysql_fetch_assoc($Result);
+				$Penalties = explode(',', $Row['level_pointpenalties']);
+				mysql_free_result($Result);
+				$PenaltyTime = 0;
+				$Points = explode(',', $teamlevelpoint_points[$line_num]);
+				foreach ($Points as $n => $point)
+				{
+					if ((($point == "0") && ((int)$Penalties[$n] > 0)) || (($point == "1") && ((int)$Penalties[$n] < 0)))
+						$PenaltyTime += (int)$Penalties[$n];
+				}
+				$Old['teamlevel_penalty'] = $PenaltyTime;
+			}
 			// Добавляем/обновляем запись в таблице TeamLevels
 			foreach ($Old as &$val)
 			{
