@@ -268,8 +268,8 @@ if (!isset($MyPHPScript)) return;
 	print('</form>'."\r\n");
 	print('</br>'."\r\n");
 
-       // Форма сервисов администратора
-        if ($Administrator)
+       // Форма сервисов администратора и модератора
+        if ($Administrator || $Moderator)
 	{
 	  print('<form  name = "AdminServiceForm"  action = "'.$MyPHPScript.'" method = "post" onsubmit = "return true;">'."\r\n");
 	  print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
@@ -279,10 +279,13 @@ if (!isset($MyPHPScript)) return;
 
 
           //  показываем кнопку "Пересчёт результатов" 
-          print('<input type="button" style = "width:185px;" name="RecalcRaidResultsButton" value="Пересчитать результаты" 
+	  if ($Administrator)
+	  {
+		print('<input type="button" style = "width:185px;" name="RecalcRaidResultsButton" value="Пересчитать результаты"
                           onclick = "javascript: RecalcRaidResults();"
                           tabindex = "401">'."\r\n"); 
-	  print('</br>'."\r\n");
+		print('</br>'."\r\n");
+	  }
 
           //  показываем кнопку "Поиск ошибок"
           print('<input type="button" style = "width:185px;" name="FindRaidErrorsButton" value="Найти ошибки"

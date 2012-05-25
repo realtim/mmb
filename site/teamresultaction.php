@@ -137,7 +137,8 @@ if ($action == "ChangeTeamResult")
 					teamlevel_penalty = ".$PenaltyTime.",
 					teamlevel_points = '".$TeamLevelPoints."',
 					teamlevel_progress = '".$TeamLevelProgress."',
-					teamlevel_comment = ".$Comment."
+					teamlevel_comment = ".$Comment.",
+					error_id = NULL
 				where teamlevel_id = ".$TeamLevelId."";
 		}
 		else
@@ -198,7 +199,7 @@ elseif ($action == 'FindRaidErrors')
 		$view = "";
 		return;
 	}
-	if (!$Administrator) return;
+	if (!$Administrator && !$Moderator) return;
 
 	$n_Errors = 0;
 	$n_Warnings = 0;

@@ -128,7 +128,7 @@ if (!isset($MyPHPScript)) return;
 
                 // Разбираемся с сортировкой
                 if (isset($_REQUEST['OrderType'])) $OrderType = $_REQUEST['OrderType']; else $OrderType = "";
-		if (($OrderType == 'Errors') && !$Administrator) $OrderType = "";
+		if (($OrderType == 'Errors') && !$Administrator && !$Moderator) $OrderType = "";
 		$OrderString = '';
 
 
@@ -159,7 +159,7 @@ if (!isset($MyPHPScript)) return;
 		{
 	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
 		}
-		if ($Administrator)
+		if ($Administrator || $Moderator)
 		{
 	            print('<option value = "Errors" '.($OrderType == 'Errors' ? 'selected' :'').' >наличию ошибок'."\r\n");
 		}
@@ -493,7 +493,7 @@ if (!isset($MyPHPScript)) return;
 			$sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_mapscount, t.team_progress, d.distance_name, d.distance_id, TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 					(select count(*) from Teams t2, Distances d2, Levels l, TeamLevels tl
 					where t2.team_id = t.team_id and t2.distance_id = d2.distance_id and l.distance_id = d2.distance_id and tl.team_id = t.team_id and tl.level_id = l.level_id
-						and ((tl.error_id <> 0) or (tl.teamlevel_comment is not NULL))
+						and (((tl.error_id is not NULL) and (tl.error_id <> 0)) or (tl.teamlevel_comment is not NULL))
 					) as n_err
 				from Teams t, Distances d
 				where t.team_hide = 0 and d.raid_id = ".$RaidId." and t.distance_id = d.distance_id";
