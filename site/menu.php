@@ -184,6 +184,14 @@ if (!isset($MyPHPScript)) return;
               return true;
 	}
 
+	function FindRaidErrors()
+	{
+              document.AdminServiceForm.action.value = "FindRaidErrors";
+              document.AdminServiceForm.RaidId.value = document.FindTeamForm.RaidId.value;
+	      document.AdminServiceForm.submit();
+              return true;
+	}
+
 	function ClearTables()
 	{ 
 		document.AdminServiceForm.action.value = "ClearTables";
@@ -274,6 +282,12 @@ if (!isset($MyPHPScript)) return;
           print('<input type="button" style = "width:185px;" name="RecalcRaidResultsButton" value="Пересчитать результаты" 
                           onclick = "javascript: RecalcRaidResults();"
                           tabindex = "401">'."\r\n"); 
+	  print('</br>'."\r\n");
+
+          //  показываем кнопку "Поиск ошибок"
+          print('<input type="button" style = "width:185px;" name="FindRaidErrorsButton" value="Найти ошибки"
+                          onclick = "javascript: FindRaidErrors();"
+                          tabindex = "402">'."\r\n");
 	  print('</br>'."\r\n");
 
           //  показываем кнопку "Очистить таблицы" 

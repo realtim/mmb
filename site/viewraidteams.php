@@ -128,6 +128,7 @@ if (!isset($MyPHPScript)) return;
 
                 // Разбираемся с сортировкой
                 if (isset($_REQUEST['OrderType'])) $OrderType = $_REQUEST['OrderType']; else $OrderType = "";
+		if (($OrderType == 'Errors') && !$Administrator) $OrderType = "";
 		$OrderString = '';
 
 
@@ -157,6 +158,10 @@ if (!isset($MyPHPScript)) return;
 		if ($RaidStage > 2)
 		{
 	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
+		}
+		if ($Administrator)
+		{
+	            print('<option value = "Errors" '.($OrderType == 'Errors' ? 'selected' :'').' >наличию ошибок'."\r\n");
 		}
 	        print('</select>'."\r\n");  
 
@@ -198,7 +203,7 @@ if (!isset($MyPHPScript)) return;
 		    //  echo 'sql '.$sql;
 		    $Result = MySqlQuery($sql);
 
-		    print('<select name="LevelId" '.(($OrderType=='Num') ? 'disabled' : '').'
+		    print('<select name="LevelId" '.((($OrderType=='Num') || ($OrderType=='Errors')) ? 'disabled' : '').'
                                 style = "margin-left: 5px; margin-right: 10px;"
                                 onchange = "LevelIdChange();" tabindex = "'.(++$TabIndex).'" >'."\r\n");
 	            $levelselected =  ((0 == $_REQUEST['LevelId'] or $OrderType=='Num') ? 'selected' : '');
@@ -483,8 +488,21 @@ if (!isset($MyPHPScript)) return;
 
                      }
 
-		} 
-
+		} elseif ($OrderType == 'Errors') {
+		// Ставим первыми те команды, у которых хотя бы на одном из этапов код ошибки или комментарий отличен от нуля
+			$sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_mapscount, t.team_progress, d.distance_name, d.distance_id, TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
+					(select count(*) from Teams t2, Distances d2, Levels l, TeamLevels tl
+					where t2.team_id = t.team_id and t2.distance_id = d2.distance_id and l.distance_id = d2.distance_id and tl.team_id = t.team_id and tl.level_id = l.level_id
+						and ((tl.error_id <> 0) or (tl.teamlevel_comment is not NULL))
+					) as n_err
+				from Teams t, Distances d
+				where t.team_hide = 0 and d.raid_id = ".$RaidId." and t.distance_id = d.distance_id";
+			if (!empty($_REQUEST['DistanceId']))
+			{
+				$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
+			}
+			$sql = $sql." order by n_err desc, t.team_progress desc, t.team_result asc, t.team_id asc";
+		}
 
           	//echo 'sql '.$sql;
                 $Result = MySqlQuery($sql);
@@ -501,9 +519,10 @@ if (!isset($MyPHPScript)) return;
 		print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<tr class = "gray">
 		         <td width = "50" style = "'.$thstyle.'">Номер</td>
-			 <td width = "350" style = "'.$thstyle.'">Команда (gps, дистанция, карт)</td>
-			 <td width = "350" style = "'.$thstyle.'">Участники</td>
-			 <td width = "50" style = "'.$thstyle.'">Результат</td>'."\r\n");
+			 <td width = "350" style = "'.$thstyle.'">Команда (gps, дистанция, карт)</td>');
+		if ($OrderType <> 'Errors') print('<td width = "350" style = "'.$thstyle.'">Участники</td>');
+		else print('<td style = "'.$thstyle.'">Ошибки</td>');
+		print('<td width = "50" style = "'.$thstyle.'">Результат</td>'."\r\n");
                 if ($OrderType == 'Place')   
                 {
                   // дополнительное поле место
@@ -541,7 +560,9 @@ if (!isset($MyPHPScript)) return;
  			print('<tr class = "'.$TrClass.'"><td style = "'.$tdstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
 			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].')'.
                                   $DismissNames[$Row['distance_id']][$Row['team_progress']].'</td><td style = "'.$tdstyle.'">'."\r\n");
-		
+
+			if ($OrderType <> 'Errors')
+			{
 			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,
                                        tu.level_id, u.user_id, l.level_name 
 			        from  TeamUsers tu
@@ -563,6 +584,26 @@ if (!isset($MyPHPScript)) return;
 			  print('</div>'."\r\n");
 			}  
 		        mysql_free_result($UserResult);
+			}
+			elseif ($Row['n_err'] > 0)
+			{
+				$sql = 'select l.level_name, teamlevel_comment, tl.error_id, e.error_name from TeamLevels tl
+						inner join Levels l on l.level_id = tl.level_id
+						inner join Errors e on e.error_id = tl.error_id
+					where tl.team_id = '.$Row['team_id'].' and ((tl.error_id <> 0) or (tl.teamlevel_comment is not NULL))';
+				$ErrResult = MySqlQuery($sql);
+				while ($ErrRow = mysql_fetch_assoc($ErrResult))
+				{
+					echo $ErrRow['level_name'].', ';
+					if ($ErrRow['error_id'] > 0) echo 'ошибка';
+					elseif ($ErrRow['error_id'] < 0) echo 'предупреждение';
+					else echo 'комментарий';
+					if ($ErrRow['error_id']) echo ": <strong>".$ErrRow['error_name']."</strong>";
+					else echo ": <em>".$ErrRow['teamlevel_comment']."</em>";
+					echo "<br />";
+				}
+				mysql_free_result($ErrResult);
+			}
 
 			print('</td><td>'.$Row['team_sresult']."\r\n");
 			print('</td>'."\r\n");
