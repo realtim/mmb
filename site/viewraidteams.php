@@ -533,7 +533,7 @@ if (!isset($MyPHPScript)) return;
                   {
 		    print('<td width = "50" style = "'.$thstyle.'">Штраф</td>
 			   <td width = "150" style = "'.$thstyle.'">Комментарий</td>
-			   <td width = "250" style = "'.$thstyle.'">Невзятые КП</td>'."\r\n");
+			   <td width = "250" style = "'.$thstyle.'">Взятые КП</td>'."\r\n");
 
                         
 
