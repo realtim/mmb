@@ -104,6 +104,48 @@ if (!isset($MyPHPScript)) return;
     }
     // Конец функции вывода данных по КП
 
+
+
+// функция возвращает для команды невзятые на этапе КП
+    function InvertTeamLevelPoints ($LevelPointNames,$TeamLevelPoints,$LevelId)
+    {
+	
+	  if (empty($TeamLevelPoints))
+          {
+	    return;
+	  }
+
+	  $Names = explode(',', $LevelPointNames);
+	  $Points = explode(',', $TeamLevelPoints);
+
+	  if (count($Names) <> count($Points)) 
+	  {
+           print('Ошибка данных по КП'."\r\n");
+	   return;
+	  }
+
+
+	  $PointString = '';
+	  for ($i = 0; $i < count($Names); $i++)
+	  {
+	    if ($Points[$i]==0)
+	    {
+              $PointString = $PointString.' '.$Names[$i];
+	    } 
+	  } 
+
+          if (trim($PointString) == '')
+          {
+            $PointString = '&nbsp;';
+          }
+	  print(trim($PointString));
+
+    return;	
+    }
+    // Конец функции вывода невзятых КП
+
+
+
         // Проверяем, что передали  идентификатор ММБ
         if ($RaidId <= 0)
 	{
@@ -230,6 +272,7 @@ if (!isset($MyPHPScript)) return;
 		{
 
                     // Нужно доработать проыерку старта,т.к. нельзя прямо проверять время старта - на этапах с общим стартом его нет
+                    // Добавлен расчет статистики
 		    $sql = "select  d.distance_name, l.level_id, l.level_name,
                                     l.level_pointnames, l.level_starttype,
                                     l.level_pointpenalties, l.level_order,
@@ -241,15 +284,43 @@ if (!isset($MyPHPScript)) return;
                                     l.level_endtime, 
                                     (select count(*) 
                                      from TeamLevels tl
-                                     where level_id =  l.level_id 
+                                     where tl.level_id =  l.level_id 
                                            and tl.teamlevel_progress > 0
+                                           and tl.teamlevel_hide = 0
                                     ) as teamstartcount,
+                                    (select count(*) 
+                                     from TeamLevels tl
+                                          inner join TeamUsers tu
+                                          on tl.team_id = tu.team_id 
+                                          left outer join Levels l2
+                                          on tu.level_id = l2.level_id
+                                     where tl.level_id =  l.level_id 
+                                           and tl.teamlevel_progress > 0
+                                           and tl.teamlevel_hide = 0
+                                           and tu.teamuser_hide = 0
+                                           and COALESCE(l2.level_order, l.level_order + 1) > l.level_order 
+                                    ) as teamuserstartcount,
 				     (select count(*) 
                                      from TeamLevels tl
-                                     where level_id =  l.level_id 
+                                     where tl.level_id = l.level_id 
                                            and tl.teamlevel_progress = 2
 					    and tl.teamlevel_endtime > 0
-                                    ) as teamfinishcount
+					    and tl.teamlevel_hide = 0
+                                    ) as teamfinishcount,
+                                    (select count(*) 
+                                     from TeamLevels tl
+                                          inner join TeamUsers tu
+                                          on tl.team_id = tu.team_id 
+                                          left outer join Levels l2
+                                          on tu.level_id = l2.level_id
+                                     where tl.level_id =  l.level_id 
+                                           and tl.teamlevel_progress = 2
+					    and tl.teamlevel_endtime > 0
+                                           and tl.teamlevel_hide = 0
+                                           and tu.teamuser_hide = 0
+                                           and COALESCE(l2.level_order, l.level_order + 1) > l.level_order 
+                                    ) as teamuserfinishcount
+
                             from  Levels l
                                   inner join Distances d
                                   on d.distance_id = l.distance_id
@@ -291,6 +362,8 @@ if (!isset($MyPHPScript)) return;
 
 			$LevelStartTeamCount =  $Row['teamstartcount'];
 			$LevelFinishTeamCount =  $Row['teamfinishcount'];
+			$LevelStartTeamUserCount =  $Row['teamuserstartcount'];
+			$LevelFinishTeamUserCount =  $Row['teamuserfinishcount'];
 
 			//   $LevelMapLink = $Row['level_maplink'];
 
@@ -314,21 +387,21 @@ if (!isset($MyPHPScript)) return;
 			// Если есть даты старта и фнишиа и они совпадают - выодим только дату старта
 			if ($LevelStartType == 1)
 			{
-			    $LevelStartTypeText = 'По готовности (';
+			    $LevelStartTypeText = 'Старт по готовности:  ';
 			    if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_smaxbegtime']), 0, 5))
 			    {
 				$LevelStartTypeText = $LevelStartTypeText.$Row['level_sbegtime'].' - '.substr(trim($Row['level_smaxbegtime']), 6);
 			    } else {
 				$LevelStartTypeText = $LevelStartTypeText.$Row['level_sbegtime'].' - '.$Row['level_smaxbegtime'];
 			    }
-			    $LevelStartTypeText = $LevelStartTypeText.')/(';
+			    $LevelStartTypeText = $LevelStartTypeText.' </br> Финиш: ';
 
 			} elseif ($LevelStartType == 2) {
-			    $LevelStartTypeText = 'Общий ('.$Row['level_sbegtime'];
-			    $LevelStartTypeText = $LevelStartTypeText.')/(';
+			    $LevelStartTypeText = 'Старт общий: '.$Row['level_sbegtime'];
+			    $LevelStartTypeText = $LevelStartTypeText.' </br> Финиш: ';
 
 			} elseif ($LevelStartType == 3) {
-			    $LevelStartTypeText = 'Во время финиша (';
+			    $LevelStartTypeText = 'Старт во время финиша предыдущего этапа </br> Финиш: ';
 
 			}
 
@@ -347,7 +420,7 @@ if (!isset($MyPHPScript)) return;
 			    $LevelStartTypeText = $LevelStartTypeText.$Row['level_sminendtime'].' - '.$Row['level_sendtime'];
 			}
 
-			$LevelStartTypeText = $LevelStartTypeText.')';
+			$LevelStartTypeText = $LevelStartTypeText.' ';
        
 			// сторим строчку для текущего этапа
 			print('<tr><td>'.$Row['distance_name'].'</td>'."\r\n");
@@ -380,7 +453,7 @@ if (!isset($MyPHPScript)) return;
                         // Впечатываем статитстику старт/финиш
 
 
-			print('  ('.$LevelStartTeamCount.'/'.$LevelFinishTeamCount.')'."\r\n");
+			print('</br>'.$LevelStartTeamCount.'/'.$LevelStartTeamUserCount.' - '.$LevelFinishTeamCount.'/'.$LevelFinishTeamUserCount.' '."\r\n");
 			print('</td>'."\r\n");
 
 			print('<td>'.$LevelStartTypeText.'</td>
@@ -483,7 +556,8 @@ if (!isset($MyPHPScript)) return;
 					    ELSE NULL 
 					END
 				      ) + SEC_TO_TIME(COALESCE(tl.teamlevel_penalty, 0)*60), '%H:%i') as  team_sresult,
-                                      tl.teamlevel_penalty, tl.teamlevel_points, tl.teamlevel_comment
+                                      TIME_FORMAT(SEC_TO_TIME(COALESCE(tl.teamlevel_penalty, 0)*60), '%H:%i') as teamlevel_penalty,
+                                      tl.teamlevel_points, tl.teamlevel_comment, l.level_pointnames
 			    from  TeamLevels tl 
 				  inner join Levels l 
 				  on tl.level_id = l.level_id 
@@ -492,7 +566,10 @@ if (!isset($MyPHPScript)) return;
 				  inner join  Distances d 
 				  on t.distance_id = d.distance_id
 			    where tl.teamlevel_hide = 0 and tl.level_id = ".$_REQUEST['LevelId']." 
-				  and timediff(tl.teamlevel_endtime, 
+                                 and tl.teamlevel_progress > 0
+			    order by teamlevel_progress desc, team_sresult asc";
+
+/*			  and timediff(tl.teamlevel_endtime, 
 					CASE l.level_starttype 
 					    WHEN 1 THEN tl.teamlevel_begtime 
 					    WHEN 2 THEN l.level_begtime 
@@ -507,7 +584,7 @@ if (!isset($MyPHPScript)) return;
 					END
 				      ) > 0
 			    order by  team_sresult asc";
-
+*/
                      }
 
 		} elseif ($OrderType == 'Errors') {
@@ -555,7 +632,7 @@ if (!isset($MyPHPScript)) return;
                   {
 		    print('<td width = "50" style = "'.$thstyle.'">Штраф</td>
 			   <td width = "150" style = "'.$thstyle.'">Комментарий</td>
-			   <td width = "250" style = "'.$thstyle.'">Взятые КП</td>'."\r\n");
+			   <td width = "250" style = "'.$thstyle.'">Невзятые КП</td>'."\r\n");
 
                         
 
@@ -568,7 +645,7 @@ if (!isset($MyPHPScript)) return;
                 // Меняем логику отображения места
                 // Было 1111233345  Стало 1111455589  
                 $TeamPlace = 0;
-                $SamePlaceTeamCount = 0;
+                $SamePlaceTeamCount = 1;
                 $PredResult = ''; 
 		
 		while ($Row = mysql_fetch_assoc($Result))
@@ -635,18 +712,18 @@ if (!isset($MyPHPScript)) return;
 			if ($OrderType == 'Place')   
 			{
 			    print('<td width = "50" style = "'.$thstyle.'">'."\r\n");
-                            if ($Row['team_sresult'] == '00:00')
+                            if ($Row['team_sresult'] == '00:00' or $Row['team_sresult'] == '')
                             {
                                print('&nbsp;');
                             } elseif($Row['team_sresult'] <>  $PredResult) {
-                               $TeamPlace = $TeamPlace + 1 + $SamePlaceTeamCount;
+                               $TeamPlace = $TeamPlace + $SamePlaceTeamCount;
                                print($TeamPlace);
-			       $PredResult = $Row['team_sresult'];
-			       $SamePlaceTeamCount = 0;
+			        $PredResult = $Row['team_sresult'];
+			        $SamePlaceTeamCount = 1;
                             } else {
 				$SamePlaceTeamCount++;
                                print($TeamPlace);
-			       $PredResult = $Row['team_sresult'];
+			        $PredResult = $Row['team_sresult'];
                             }
 			    print('</td>'."\r\n");
 
@@ -655,7 +732,8 @@ if (!isset($MyPHPScript)) return;
 			      print('<td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_penalty'].'</td>
 				      <td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_comment'].'</td>
 				      <td width = "100" style = "'.$thstyle.'">'."\r\n");
-			      ConvertTeamLevelPoints2($LevelPointNames, $LevelPointPenalties, $Row['teamlevel_points'], $_REQUEST['LevelId']); 
+			      InvertTeamLevelPoints($Row['level_pointnames'], $Row['teamlevel_points']); 
+//			      ConvertTeamLevelPoints2($LevelPointNames, $LevelPointPenalties, $Row['teamlevel_points'], $_REQUEST['LevelId']); 
 			      print('</td>'."\r\n");
 
 
