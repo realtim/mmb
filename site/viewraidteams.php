@@ -228,6 +228,8 @@ if (!isset($MyPHPScript)) return;
                 // Показываем этапы
 		if ($LevelDataVisible)
 		{
+
+                    // Нужно доработать проыерку старта,т.к. нельзя прямо проверять время старта - на этапах с общим стартом его нет
 		    $sql = "select  d.distance_name, l.level_id, l.level_name,
                                     l.level_pointnames, l.level_starttype,
                                     l.level_pointpenalties, l.level_order,
@@ -236,7 +238,18 @@ if (!isset($MyPHPScript)) return;
                                     DATE_FORMAT(l.level_minendtime, '%d.%m %H:%i') as level_sminendtime,
                                     DATE_FORMAT(l.level_endtime,    '%d.%m %H:%i') as level_sendtime,
                                     l.level_begtime, l.level_maxbegtime, l.level_minendtime,
-                                    l.level_endtime
+                                    l.level_endtime, 
+                                    (select count(*) 
+                                     from TeamLevels tl
+                                     where level_id =  l.level_id 
+                                           and tl.teamlevel_progress > 0
+                                    ) as teamstartcount,
+				     (select count(*) 
+                                     from TeamLevels tl
+                                     where level_id =  l.level_id 
+                                           and tl.teamlevel_progress = 2
+					    and tl.teamlevel_endtime > 0
+                                    ) as teamfinishcount
                             from  Levels l
                                   inner join Distances d
                                   on d.distance_id = l.distance_id
@@ -275,6 +288,10 @@ if (!isset($MyPHPScript)) return;
 			$LevelStartType = $Row['level_starttype'];
 			$LevelPointNames =  $Row['level_pointnames'];
 			$LevelPointPenalties =  $Row['level_pointpenalties'];
+
+			$LevelStartTeamCount =  $Row['teamstartcount'];
+			$LevelFinishTeamCount =  $Row['teamfinishcount'];
+
 			//   $LevelMapLink = $Row['level_maplink'];
 
 			// Проверяем, что строчка с названиями КП указана
@@ -359,6 +376,11 @@ if (!isset($MyPHPScript)) return;
 			    $MapString = '('.trim(substr(trim($MapString), 1)).')';
 			    print($MapString."\r\n");
 			}
+
+                        // Впечатываем статитстику старт/финиш
+
+
+			print('  ('.$LevelStartTeamCount.'/'.$LevelFinishTeamCount.')'."\r\n");
 			print('</td>'."\r\n");
 
 			print('<td>'.$LevelStartTypeText.'</td>
@@ -542,8 +564,11 @@ if (!isset($MyPHPScript)) return;
 		print('</tr>'."\r\n");
 	
 		$TeamsCount = mysql_num_rows($Result);
-                 
+                
+                // Меняем логику отображения места
+                // Было 1111233345  Стало 1111455589  
                 $TeamPlace = 0;
+                $SamePlaceTeamCount = 0;
                 $PredResult = ''; 
 		
 		while ($Row = mysql_fetch_assoc($Result))
@@ -614,9 +639,12 @@ if (!isset($MyPHPScript)) return;
                             {
                                print('&nbsp;');
                             } elseif($Row['team_sresult'] <>  $PredResult) {
-                               print(++$TeamPlace);
+                               $TeamPlace = $TeamPlace + 1 + $SamePlaceTeamCount;
+                               print($TeamPlace);
 			       $PredResult = $Row['team_sresult'];
+			       $SamePlaceTeamCount = 0;
                             } else {
+				$SamePlaceTeamCount++;
                                print($TeamPlace);
 			       $PredResult = $Row['team_sresult'];
                             }
