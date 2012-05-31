@@ -284,12 +284,17 @@ if (!isset($MyPHPScript)) return;
                                     l.level_endtime, 
                                     (select count(*) 
                                      from TeamLevels tl
+                                          inner join Teams t
+                                          on tl.team_id = t.team_id 
                                      where tl.level_id =  l.level_id 
                                            and tl.teamlevel_progress > 0
                                            and tl.teamlevel_hide = 0
+                                           and t.team_hide = 0
                                     ) as teamstartcount,
                                     (select count(*) 
                                      from TeamLevels tl
+                                          inner join Teams t
+                                          on tl.team_id = t.team_id 
                                           inner join TeamUsers tu
                                           on tl.team_id = tu.team_id 
                                           left outer join Levels l2
@@ -298,17 +303,23 @@ if (!isset($MyPHPScript)) return;
                                            and tl.teamlevel_progress > 0
                                            and tl.teamlevel_hide = 0
                                            and tu.teamuser_hide = 0
+                                           and t.team_hide = 0
                                            and COALESCE(l2.level_order, l.level_order + 1) > l.level_order 
                                     ) as teamuserstartcount,
 				     (select count(*) 
                                      from TeamLevels tl
+                                          inner join Teams t
+                                          on tl.team_id = t.team_id 
                                      where tl.level_id = l.level_id 
                                            and tl.teamlevel_progress = 2
 					    and tl.teamlevel_endtime > 0
 					    and tl.teamlevel_hide = 0
-                                    ) as teamfinishcount,
+                                           and t.team_hide = 0
+                                   ) as teamfinishcount,
                                     (select count(*) 
                                      from TeamLevels tl
+                                          inner join Teams t
+                                          on tl.team_id = t.team_id 
                                           inner join TeamUsers tu
                                           on tl.team_id = tu.team_id 
                                           left outer join Levels l2
@@ -319,6 +330,7 @@ if (!isset($MyPHPScript)) return;
                                            and tl.teamlevel_hide = 0
                                            and tu.teamuser_hide = 0
                                            and COALESCE(l2.level_order, l.level_order + 1) > l.level_order 
+                                           and t.team_hide = 0
                                     ) as teamuserfinishcount
 
                             from  Levels l
@@ -565,8 +577,10 @@ if (!isset($MyPHPScript)) return;
                                   on t.team_id = tl.team_id 
 				  inner join  Distances d 
 				  on t.distance_id = d.distance_id
-			    where tl.teamlevel_hide = 0 and tl.level_id = ".$_REQUEST['LevelId']." 
+			    where tl.teamlevel_hide = 0 
+                                 and tl.level_id = ".$_REQUEST['LevelId']." 
                                  and tl.teamlevel_progress > 0
+                                 and t.team_hide = 0
 			    order by teamlevel_progress desc, team_sresult asc";
 
 /*			  and timediff(tl.teamlevel_endtime, 
