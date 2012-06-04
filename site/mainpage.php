@@ -80,6 +80,13 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 					 where t.distance_id = d.distance_id
 					            and t.team_hide = 0
 					) as teamscount,
+					(
+					 select count(team_id) 
+					 from  Teams t 
+					 where t.distance_id = d.distance_id
+					            and t.team_hide = 0
+						    and t.team_greenpeace = 1
+					) as teamsgreencount,
 					COALESCE((
 					 select sum(COALESCE(team_mapscount, 0)) 
 					 from  Teams t 
@@ -113,7 +120,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 		$DistanceName = $rowDistance['distance_name'];
 		$DistanceLink = $rowDistance['distance_resultlink'];
 		$DistanceData = $rowDistance['distance_data'];
-		$DistanceCounters = '('.$rowDistance['teamscount'].'/'.$rowDistance['teammapscount'].'/'.$rowDistance['teamuserscount'].')';
+		$DistanceCounters = '('.$rowDistance['teamscount'].'/<span style = "color:#007700;">'.$rowDistance['teamsgreencount'].'</span>/'.$rowDistance['teammapscount'].'/'.$rowDistance['teamuserscount'].')';
 	
 	        print('<a href = "'.$DistanceLink.'">'.$DistanceName.'</a>: '.$DistanceCounters.' '.$DistanceData."\r\n");
 	

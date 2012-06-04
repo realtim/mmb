@@ -534,7 +534,7 @@ if (!isset($MyPHPScript)) return;
 		   if (empty($_REQUEST['LevelId']))
 		   {
 
-		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, 
+		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
 		               t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
                                TIME_FORMAT(t.team_result, '%H:%i') as team_sresult
 			  from  Teams t
@@ -552,7 +552,7 @@ if (!isset($MyPHPScript)) return;
 		     } else {
                           // Если фильтруем по этапу, то другой запрос
 
-		      $sql = " select t.team_num, t.team_id, t.team_usegps, t.team_name, 
+		      $sql = " select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
 				      t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
 				      TIME_FORMAT(timediff(tl.teamlevel_endtime, 
 					CASE l.level_starttype 
@@ -672,8 +672,14 @@ if (!isset($MyPHPScript)) return;
 			} 
 
 			$TeamsCount--;
+                      
+                       if ($Row['team_greenpeace'] == 1) {
+                             $tdgreenstyle = 'background-color:#99ee99;';
+                        } else {
+                             $tdgreenstyle = '';
+                        }
 
- 			print('<tr class = "'.$TrClass.'"><td style = "'.$tdstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
+ 			print('<tr class = "'.$TrClass.'"><td style = "'.$tdgreenstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
 			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].')'.
                                   $DismissNames[$Row['distance_id']][$Row['team_progress']].'</td><td style = "'.$tdstyle.'">'."\r\n");
 
