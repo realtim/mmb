@@ -496,6 +496,52 @@ send_mime_mail('Автор письма',
      // конец функций для отправки письма
 
 
+     // функция пересчитывает время нахождения команды на этапах
+     function RecalcTeamLevelDuration($teamid)
+     {
+       
+           // Несколько тонкостей: timediff возвращает тип time - он автоматом не преобразуется в daettime, поэтому
+           // поле teamlevel_duration  должно иметь формат TIME_TO_SEC
+           // Похоже, что в MySql UPDATE не может содержать WHERE  - приходится убирать в подзапрос 
+           // Нельзя применять SUM к типу TIME и DATETIME
+           
+	$sql = "  update TeamLevels tl0
+			  inner join 
+				    (select   tl.teamlevel_id, timediff(tl.teamlevel_endtime, 
+									  CASE l.level_starttype 
+									    WHEN 1 THEN tl.teamlevel_begtime 
+									    WHEN 2 THEN l.level_begtime 
+									    WHEN 3 THEN tl3.teamlevel_endtime
+									    ELSE NULL 
+									  END
+									)  as duration
+				      from    TeamLevels  tl 
+					      inner join Levels l 
+					      on tl.level_id = l.level_id 
+					      left outer join  (select tl2.team_id,  l2.level_order,  tl2.teamlevel_endtime 
+								from TeamLevels tl2
+								      inner join Levels l2 
+								      on tl2.level_id = l2.level_id
+                                                                     
+							      )  as tl3
+					      on  tl3.team_id = tl.team_id
+						  and  tl3.level_order = l.level_order - 1
+
+				      where tl.teamlevel_hide = 0 
+					    and tl.teamlevel_progress = 2 
+					    and tl.teamlevel_endtime > 0
+					    and tl.team_id = ".$teamid."
+				  ) as a
+			  on tl0.teamlevel_id = a.teamlevel_id
+		  SET teamlevel_duration = a.duration "
+				    
+	$rs = MySqlQuery($sql);
+
+
+     }
+     // конец функции пересчёта времени нахождения 
+
+
       // функция пересчитывает штраф команды на этапах
      function RecalcTeamLevelPenalty($teamid)
      {
@@ -542,8 +588,9 @@ send_mime_mail('Автор письма',
      {
 
 	  // Если хотя бы один этап некорректный = общий резултат - пустой
-           // MySql при агрегировании строк функцией SUM() просто игнорирует строик с NULL, но остальные - считает
-           //  из-за этого приходится делать повторный запрос с корректировокой
+          // MySql при агрегировании строк функцией SUM() просто игнорирует строик с NULL, но остальные - считает
+          //  из-за этого приходится делать повторный запрос с корректировокой
+          // Нельзя применять SUM к типу TIME и DATETIME
  	   $sql = "update Teams t
 			  inner join
 			  (
