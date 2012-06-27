@@ -154,6 +154,10 @@ if ($action == "ChangeTeamResult")
 	if (trim($statustext) <> "")
 		$statustext = "Выход за допустимые границы: ".trim($statustext);
 
+	// Пересчет врмени нахождения команды на этапах
+	RecalcTeamLevelDuration($TeamId);
+	// Пересчет штрафов (выше это уже сделано, нотеперь есть отдельная функция)
+	RecalcTeamLevelPenalty($TeamId);
 	// Обновляем результат команды
 	RecalcTeamResult($TeamId);
 }
@@ -181,6 +185,7 @@ elseif ($action == 'RecalcRaidResults')
 	while ($Row = mysql_fetch_assoc($Result))
 	{
 		$RecalcTeamId = $Row['team_id'];
+		RecalcTeamLevelDuration($RecalcTeamId);
 		RecalcTeamLevelPenalty($RecalcTeamId);
 		RecalcTeamResult($RecalcTeamId);
 	}
