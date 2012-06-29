@@ -105,20 +105,17 @@ if ($action == "ChangeTeamResult")
 		// Ставим флаг "Дошла до конца этапа", если у нас есть корректное время финиша команды
 		if (($EndYDTs <> "NULL") && !$TeamLevelProgress) $TeamLevelProgress = 2;
 
-		// Получаем отметки о невзятых КП переводим его в строку и считаем штраф
+		// Получаем отметки о невзятых КП переводим его в строку
+               // Штраф и результат считаем для всех этапов отдельно (после записи данных)
 		$ArrLen = count(explode(',', $Row['level_pointnames']));
-		$Penalties = explode(',', $Row['level_pointpenalties']);
+		//$Penalties = explode(',', $Row['level_pointpenalties']);
 		$TeamLevelPoints = '';
 		$PenaltyTime = 0;
 		for ($i = 0; $i < $ArrLen; $i++)
 		{
 			$Index = 'Level'.$Row['level_id'].'_chk'.$i;
 			if (isset($_POST[$Index])) $Point = $_POST[$Index]; else $Point = "";
-			if ($Point == 'on') $TeamLevelPoints = $TeamLevelPoints.',1';
-			else $TeamLevelPoints = $TeamLevelPoints.',0';
-			// Считаем штраф
-			if ((($Point <> 'on') && ((int)$Penalties[$i] > 0)) || (($Point == 'on') && ((int)$Penalties[$i] < 0)))
-				$PenaltyTime += (int)$Penalties[$i];
+			if ($Point == 'on') $TeamLevelPoints = $TeamLevelPoints.',1';	else $TeamLevelPoints = $TeamLevelPoints.',0';
 		}
 		$TeamLevelPoints = substr(trim($TeamLevelPoints), 1);
 
@@ -134,7 +131,6 @@ if ($action == "ChangeTeamResult")
 			$sql = "update TeamLevels set
 					teamlevel_begtime = ".$BegYDTs.",
 					teamlevel_endtime = ".$EndYDTs.",
-					teamlevel_penalty = ".$PenaltyTime.",
 					teamlevel_points = '".$TeamLevelPoints."',
 					teamlevel_progress = '".$TeamLevelProgress."',
 					teamlevel_comment = ".$Comment.",
@@ -143,8 +139,8 @@ if ($action == "ChangeTeamResult")
 		}
 		else
 		{
-			$sql = "insert into TeamLevels (team_id, level_id, teamlevel_begtime, teamlevel_endtime, teamlevel_penalty, teamlevel_points, teamlevel_comment, teamlevel_progress)
-					values (".$TeamId.", ".$Row['level_id'].", ".$BegYDTs.", ".$EndYDTs.", ".$PenaltyTime.", '".$TeamLevelPoints."', ".$Comment.", ".$TeamLevelProgress.")";
+			$sql = "insert into TeamLevels (team_id, level_id, teamlevel_begtime, teamlevel_endtime, teamlevel_points, teamlevel_comment, teamlevel_progress)
+					values (".$TeamId.", ".$Row['level_id'].", ".$BegYDTs.", ".$EndYDTs.", '".$TeamLevelPoints."', ".$Comment.", ".$TeamLevelProgress.")";
 		}
 		MySqlQuery($sql);
 	}
@@ -156,7 +152,7 @@ if ($action == "ChangeTeamResult")
 
 	// Пересчет врмени нахождения команды на этапах
 	RecalcTeamLevelDuration($TeamId);
-	// Пересчет штрафов (выше это уже сделано, нотеперь есть отдельная функция)
+	// Пересчет штрафов 
 	RecalcTeamLevelPenalty($TeamId);
 	// Обновляем результат команды
 	RecalcTeamResult($TeamId);
