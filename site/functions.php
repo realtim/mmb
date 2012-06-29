@@ -587,87 +587,49 @@ send_mime_mail('Автор письма',
      function RecalcTeamResult($teamid)
      {
 
-	  // Если хотя бы один этап некорректный = общий резултат - пустой
-           // MySql при агрегировании строк функцией SUM() просто игнорирует строик с NULL, но остальные - считает
-           //  из-за этого приходится делать повторный запрос с корректировокой
- 	   $sql = "update Teams t
+
+	//Новый вариант с учетом _duratgion
+        //Считаем число этапов на дистанцуии (можно вынести этот запрос и передавать число этапов, как параметр)
+
+	$sql = " select count(l.level_id) as levelscount
+		 from Teams t 
+		      inner join Distances d 
+		      on d.distance_id = t.distance_id
+		      inner join Levels l
+		      on l.distance_id = d.distance_id
+		 where t.team_id = ".$teamid;
+
+
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$LevelsOnDistanceCount = $Row['levelscount'];
+	
+	// Запрос можно сделать сразу для всех команд дистанции, если потиом понадобится
+	// Итоговый результат пишем только в том случае, если число этапов, по которым внесена информация сопало с общим, на каждом этапе есть положительное время и 
+	// команда финишировала на каждом этапе 
+	$sql = "update Teams t
 			  inner join
 			  (
 			    select  tl.team_id,
-				    SUM(TIME_TO_SEC(timediff(tl.teamlevel_endtime, 
-					CASE l.level_starttype 
-					    WHEN 1 THEN tl.teamlevel_begtime 
-					    WHEN 2 THEN l.level_begtime 
-					    WHEN 3 THEN (select MAX(tl2.teamlevel_endtime) 
-							 from TeamLevels tl2
-							      inner join Levels l2 
-							      on tl2.level_id = l2.level_id
-							 where tl2.team_id = tl.team_id 
-							       and l2.level_order < l.level_order
-							) 
-					    ELSE NULL 
-					END
-				      )) + COALESCE(tl.teamlevel_penalty, 0)*60) as team_resultinsec
+				    SUM(TIME_TO_SEC(COALESCE(tl.teamlevel_duration, 0)) + COALESCE(tl.teamlevel_penalty, 0)*60) as team_resultinsec,
+                                   SUM(COALESCE(tl.teamlevel_progress, 0)) as totalprogress,
+                                   MIN(COALESCE(tl.teamlevel_duration, 0)) as minduration,
+                                   MIN(COALESCE(tl.teamlevel_progress, 0)) as minprogress,
+                                   count(*) as levelscount
 			    from  TeamLevels tl 
-				  inner join Levels l 
-				  on tl.level_id = l.level_id 
-			    where tl.teamlevel_hide = 0 and tl.teamlevel_progress = 2 and tl.team_id = ".$teamid."
-			    group by  tl.team_id
-			   )  a
-			  on  t.team_id = a.team_id
-		  set t.team_result = SEC_TO_TIME(a.team_resultinsec)";
-
-             // echo $sql;
-              MySqlQuery($sql);  
-
-	   // Придется сделать отдельный запрос для обновления team_progress
-	   $sql = "update Teams t
-			  inner join
-			  (
-			    select tl.team_id,
-			           SUM(tl.teamlevel_progress) as totalprogress
-			    from  TeamLevels tl
-				  inner join Levels l
-				  on tl.level_id = l.level_id
 			    where tl.teamlevel_hide = 0 and tl.team_id = ".$teamid."
 			    group by  tl.team_id
 			   )  a
 			  on  t.team_id = a.team_id
-		  set t.team_progress = totalprogress";
-              MySqlQuery($sql);
+		  set t.team_result = CASE WHEN a.levelscount = ".$LevelsOnDistanceCount." and a.minduration > 0 and  a.minprogress = 2 
+                                              THEN  SEC_TO_TIME(a.team_resultinsec)
+                                              ELSE  NULL
+                                          END, 
+                      t.team_progress = totalprogress ";
 
 
-              // Запрос сбрасывает в NULL результаты для команды, у которой, хоть один из этапов даёт NULL
-	      $sql = "update Teams t
-			  inner join
-			  (
-			    select  tl.team_id
-			    from  TeamLevels tl 
-				  inner join Levels l 
-				  on tl.level_id = l.level_id 
-			    where tl.teamlevel_hide = 0 and tl.team_id = ".$teamid." 
-				  and timediff(tl.teamlevel_endtime, 
-					CASE l.level_starttype 
-					    WHEN 1 THEN tl.teamlevel_begtime 
-					    WHEN 2 THEN l.level_begtime 
-					    WHEN 3 THEN (select MAX(tl2.teamlevel_endtime) 
-							 from TeamLevels tl2
-							      inner join Levels l2 
-							      on tl2.level_id = l2.level_id
-							 where tl2.team_id = tl.team_id 
-							       and l2.level_order < l.level_order
-							) 
-					    ELSE NULL 
-					END
-				      ) is NULL
-				   or tl.teamlevel_progress <> 2
-			   )  a
-			  on  t.team_id = a.team_id
-		  set t.team_result = NULL";
-
-             // echo $sql;
-              MySqlQuery($sql);  
-
+         // echo $sql;
+         MySqlQuery($sql);  
 
      }
      // конец функции пересчёта результата команды 
@@ -679,11 +641,15 @@ send_mime_mail('Автор письма',
      {
        
            // На самом деле  можно вычислять "на лету" хитрым подзапросом, но тут делаем простой вариант
-
+ 
+        // В отличие от расчета результата здесь важно отсеять удаленные команды, т.к. иначе местобудлет неправильным       
         // Определяем результат на этапе для команды
         $sql = "  		      select (TIME_TO_SEC(COALESCE(tl.teamlevel_duration,0)) + COALESCE(tl.teamlevel_penalty, 0)*60) as result_in_sec
 				      from    TeamLevels  tl 
+                                             inner join Teams t
+                                             on t.team_id = tl.team_id
 				      where tl.teamlevel_hide = 0 
+                                           and t.team_hide = 0 
 					    and tl.teamlevel_progress = 2 
 					    and COALESCE(tl.teamlevel_duration,0) > 0
 					    and tl.team_id = ".$teamid."
@@ -698,7 +664,10 @@ send_mime_mail('Автор письма',
         // Смотрим сколько команд имеют такой же результат или лучше   
 	$sql_place = "  	      select  count(*) as result_place
 				      from    TeamLevels  tl 
+                                             inner join Teams t
+                                             on t.team_id = tl.team_id
 				      where tl.teamlevel_hide = 0 
+                                           and t.team_hide = 0 
 					    and tl.teamlevel_progress = 2 
 					    and COALESCE(tl.teamlevel_duration,0) > 0
                                            and (TIME_TO_SEC(COALESCE(tl.teamlevel_duration,0)) + COALESCE(tl.teamlevel_penalty, 0)*60) <= ". $TeamLevelResult."
