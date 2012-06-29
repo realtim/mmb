@@ -554,20 +554,10 @@ if (!isset($MyPHPScript)) return;
 
 		      $sql = " select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
 				      t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
-				      TIME_FORMAT(timediff(tl.teamlevel_endtime, 
-					CASE l.level_starttype 
-					    WHEN 1 THEN tl.teamlevel_begtime 
-					    WHEN 2 THEN l.level_begtime 
-					    WHEN 3 THEN (select MAX(tl2.teamlevel_endtime) 
-							 from TeamLevels tl2
-							      inner join Levels l2 
-							      on tl2.level_id = l2.level_id
-							 where tl2.team_id = tl.team_id 
-							       and l2.level_order < l.level_order
-							) 
-					    ELSE NULL 
-					END
-				      ) + SEC_TO_TIME(COALESCE(tl.teamlevel_penalty, 0)*60), '%H:%i') as  team_sresult,
+				      CASE WHEN COALESCE(tl.teamlevel_duration, 0) > 0 
+                                          THEN TIME_FORMAT(SEC_TO_TIME(TIME_TO_SEC(tl.teamlevel_duration) + COALESCE(tl.teamlevel_penalty, 0)*60), '%H:%i') 
+                                          ELSE ''
+                                     END as  team_sresult,
                                       TIME_FORMAT(SEC_TO_TIME(COALESCE(tl.teamlevel_penalty, 0)*60), '%H:%i') as teamlevel_penalty,
                                       tl.teamlevel_points, tl.teamlevel_comment, l.level_pointnames
 			    from  TeamLevels tl 
@@ -581,24 +571,8 @@ if (!isset($MyPHPScript)) return;
                                  and tl.level_id = ".$_REQUEST['LevelId']." 
                                  and tl.teamlevel_progress > 0
                                  and t.team_hide = 0
-			    order by teamlevel_progress desc, team_sresult asc";
+			    order by tl.teamlevel_progress desc, team_sresult asc, t.team_num";
 
-/*			  and timediff(tl.teamlevel_endtime, 
-					CASE l.level_starttype 
-					    WHEN 1 THEN tl.teamlevel_begtime 
-					    WHEN 2 THEN l.level_begtime 
-					    WHEN 3 THEN (select MAX(tl2.teamlevel_endtime) 
-							 from TeamLevels tl2
-							      inner join Levels l2 
-							      on tl2.level_id = l2.level_id
-							 where tl2.team_id = tl.team_id 
-							       and l2.level_order < l.level_order
-							) 
-					    ELSE NULL 
-					END
-				      ) > 0
-			    order by  team_sresult asc";
-*/
                      }
 
 		} elseif ($OrderType == 'Errors') {
