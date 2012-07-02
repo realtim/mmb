@@ -32,8 +32,10 @@ if (!isset($MyPHPScript)) return;
             if (this.value=='Num')
             {
                  document.RaidTeamsForm.LevelId.disabled=true;
+                 document.RaidTeamsForm.ResultViewMode.disabled=true;
             }else{
                  document.RaidTeamsForm.LevelId.disabled=false;
+                 document.RaidTeamsForm.ResultViewMode.disabled=false;
             }
 	    document.RaidTeamsForm.action.value = "ViewRaidTeams";          
 	    document.RaidTeamsForm.submit();
@@ -54,6 +56,13 @@ if (!isset($MyPHPScript)) return;
 	  document.RaidTeamsForm.submit();
          } 
 
+
+	// Формат вывода результатов
+	function ResultViewModeChange()
+	{ 
+          document.RaidTeamsForm.action.value = "ViewRaidTeams";          
+	  document.RaidTeamsForm.submit();
+         } 
 
 </script>
 
@@ -165,7 +174,8 @@ if (!isset($MyPHPScript)) return;
          <input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
 
 <?
-                $TabIndex = 0;
+
+               $TabIndex = 0;
 		$DisabledText = '';
 
                 // Разбираемся с сортировкой
@@ -246,7 +256,7 @@ if (!isset($MyPHPScript)) return;
 		    $Result = MySqlQuery($sql);
 
 		    print('<select name="LevelId" '.((($OrderType=='Num') || ($OrderType=='Errors')) ? 'disabled' : '').'
-                                style = "margin-left: 5px; margin-right: 10px;"
+                                style = "margin-left: 5px; margin-right: 10px; width: 150px;"
                                 onchange = "LevelIdChange();" tabindex = "'.(++$TabIndex).'" >'."\r\n");
 	            $levelselected =  ((0 == $_REQUEST['LevelId'] or $OrderType=='Num') ? 'selected' : '');
 		    print('<option value = "0" '.$levelselected.' >этап'."\r\n");
@@ -258,6 +268,21 @@ if (!isset($MyPHPScript)) return;
 		    }
 		    mysql_free_result($Result);
 	            print('</select>'."\r\n");
+
+                    // Режим отображения результатов
+                    if (isset($_REQUEST['ResultViewMode'])) $ResultViewMode = $_REQUEST['ResultViewMode']; else $ResultViewMode = "";
+
+                    // Сбрасываем режим отображения, если задан этап
+                    if ($_REQUEST['LevelId'] > 0) $_REQUEST['ResultViewMode'] = "";
+
+
+           	     print('Отображать '."\r\n");
+		     print('<select name="ResultViewMode" style = "margin-left: 10px; margin-right: 20px;" '.((($OrderType=='Num') || ($OrderType=='Errors') || ($_REQUEST['LevelId'] <> 0)) ? 'disabled' : '').'
+                             onchange = "ResultViewModeChange();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
+	   	     print('<option value = "Short" '.($ResultViewMode == 'Short' ? 'selected' :'').' >кратко'."\r\n");
+	   	     print('<option value = "WithLevels" '.($ResultViewMode == 'WithLevels' ? 'selected' :'').' >с этапами'."\r\n");
+		     print('</select>'."\r\n");  
+
 		}
 
 		print('</div>'."\r\n");
@@ -602,12 +627,22 @@ if (!isset($MyPHPScript)) return;
                 $thstyle = 'border-color: #000000; border-style: solid; border-width: 1px 1px 1px 1px; padding: 5px 0px 2px 5px;';		
                 $thstyle = '';		
 
+                $ColumnWidth = 0;
+                if ($_REQUEST['ResultViewMode'] == 'WithLevels') {
+                    $ColumnWidth = 175;
+                } else {
+                    $ColumnWidth = 350;
+                }
+
+
 //		print('<table width = "'.(($_REQUEST['LevelId'] > 0 and  $OrderType == 'Place') ? '1015' : '815').'" border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<tr class = "gray">
 		         <td width = "50" style = "'.$thstyle.'">Номер</td>
-			 <td width = "350" style = "'.$thstyle.'">Команда (gps, дистанция, карт)</td>');
-		if ($OrderType <> 'Errors') print('<td width = "350" style = "'.$thstyle.'">Участники</td>');
+			 <td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда (gps, дистанция, карт)</td>');
+
+
+		if ($OrderType <> 'Errors') print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>');
 		else print('<td style = "'.$thstyle.'">Ошибки</td>');
 		print('<td width = "50" style = "'.$thstyle.'">Результат</td>'."\r\n");
                 if ($OrderType == 'Place')   
@@ -625,6 +660,20 @@ if (!isset($MyPHPScript)) return;
                         
 
 		  }
+
+
+                 if ($_REQUEST['ResultViewMode'] == 'WithLevels') {
+		    print('<td width = "500"  style = "'.$thstyle.'">'."\r\n");
+                   print('<table border = "0" cellpadding = "0" style = "font-size: 100%"><tr>'."\r\n");
+		    print('<td width = "150" style = "'.$thstyle.'">Старт-Финиш</td>'."\r\n");
+		    print('<td width = "100" style = "'.$thstyle.'">Время (Штраф)</td>'."\r\n");
+		    print('<td width = "50" style = "'.$thstyle.'">Место</td>'."\r\n");
+		    print('<td width = "200" style = "'.$thstyle.'">Не взяты КП</td>'."\r\n");
+		    print('</tr></table>'."\r\n");
+
+                 } 
+
+
                 }
 		print('</tr>'."\r\n");
 	
@@ -703,6 +752,7 @@ if (!isset($MyPHPScript)) return;
 
 			print('</td><td>'.$Row['team_sresult']."\r\n");
 			print('</td>'."\r\n");
+                       // Сортировка "по месту"
 			if ($OrderType == 'Place')   
 			{
 			    print('<td width = "50" style = "'.$thstyle.'">'."\r\n");
@@ -721,6 +771,7 @@ if (!isset($MyPHPScript)) return;
                             }
 			    print('</td>'."\r\n");
 
+                           // Если фильтровали по этапу, то нужныдополнительные колонки 
 			    if ($_REQUEST['LevelId'] > 0)
 			    {
 			      print('<td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_penalty'].'</td>
@@ -730,10 +781,102 @@ if (!isset($MyPHPScript)) return;
 //			      ConvertTeamLevelPoints2($LevelPointNames, $LevelPointPenalties, $Row['teamlevel_points'], $_REQUEST['LevelId']); 
 			      print('</td>'."\r\n");
 
-
-
 			    }
-     
+
+                           // Для вывода "с этапами" 
+			    if ($_REQUEST['ResultViewMode'] == 'WithLevels')
+                           {
+/*
+			      print('<td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_penalty'].'</td>
+				      <td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_comment'].'</td>
+				      <td width = "100" style = "'.$thstyle.'">'."\r\n");
+			      InvertTeamLevelPoints($Row['level_pointnames'], $Row['teamlevel_points']); 
+  */
+                            print('<td>'."\r\n");
+                               print('<table border = "0" cellpadding = "0" style = "font-size: 100%">'."\r\n");
+
+                            // Запрашиваем все этапы 
+			     $sql = "select level_id, level_starttype, 
+                                           TIME_FORMAT(level_begtime, '%H:%i') as level_begtime,
+                                           level_order, level_pointnames
+                                    from  Levels l
+                                    where l.distance_id = ".$Row['distance_id']."
+                                    order by l.level_order ";
+			     //  echo 'sql '.$sql;
+			     $LevelResult = MySqlQuery($sql);
+  
+			      while ($LevelRow = mysql_fetch_assoc($LevelResult))
+			      {
+                                 // Запрашиваем результаты для этого этапа
+				  $sql = "select TIME_FORMAT(SEC_TO_TIME(tl.teamlevel_penalty*60), '%H:%i') as teamlevel_penalty, 
+                                                tl.teamlevel_progress,
+                                                TIME_FORMAT(tl.teamlevel_duration, '%H:%i') as teamlevel_duration,
+                                                TIME_FORMAT(tl.teamlevel_endtime, '%H:%i') as teamlevel_endtime,
+                                                TIME_FORMAT(tl.teamlevel_begtime, '%H:%i') as teamlevel_begtime, 
+                                                tl.teamlevel_points
+					  from  TeamLevels tl
+                                    where tl.teamlevel_hide = 0 
+                                          and tl.teamlevel_progress > 0
+                                          and tl.level_id = ".$LevelRow['level_id']."
+                                          and tl.team_id = ".$Row['team_id'];
+				    //  echo 'sql '.$sql;
+				    $TeamLevelResult = MySqlQuery($sql);
+				    while ($TeamLevelRow = mysql_fetch_assoc($TeamLevelResult))
+				    {
+					print('<tr><td width = "150">'."\r\n");
+
+                                               // формируем результирующую строку
+                                       if ($LevelRow['level_starttype'] == 1) {
+
+                                         print($TeamLevelRow['teamlevel_begtime']."\r\n"); 
+
+                                       } elseif  ($LevelRow['level_starttype'] == 2) {
+
+                                          print($LevelRow['level_begtime']."\r\n"); 
+                                   	} else {
+                                          print(''."\r\n"); 
+					}
+
+                                       print(' - '.$TeamLevelRow['teamlevel_endtime']."\r\n"); 
+
+                                       if ($LevelRow['level_starttype'] == 3) {
+
+                                      //   print(' ('.$TeamLevelRow['teamlevel_enddate'].')'."\r\n"); 
+
+                                       }
+
+                                       print('</td>'."\r\n");
+
+                                       if ($TeamLevelRow['teamlevel_progress'] > 1) {
+					  print('<td width = "100">'."\r\n");
+					  print($TeamLevelRow['teamlevel_duration'].' ('.$TeamLevelRow['teamlevel_penalty'].')'."\r\n");
+					  print('</td>'."\r\n");
+
+					  print('<td width = "50">'."\r\n");
+                                         print(GetTeamLevelPlace($Row['team_id'], $LevelRow['level_id'])."\r\n");
+					  print('</td>'."\r\n");
+
+
+                                       }
+
+					  print('<td width = "200">'."\r\n");
+                                         InvertTeamLevelPoints($LevelRow['level_pointnames'], $TeamLevelRow['teamlevel_points']); 
+					  print('</td>'."\r\n");
+
+
+				    }
+				    mysql_free_result($TeamLevelResult);
+				    // Конец запроса данных команды по этапу
+			       }
+			       mysql_free_result($LevelResult);
+			       // Конец запроса этапов
+
+                              print('</tr></table>'."\r\n");
+
+                           }
+                           // Конец проверки на формат вывода 
+             		   print('</td>'."\r\n");
+    
 			}
 			print('</tr>'."\r\n");
 		}
@@ -742,10 +885,8 @@ if (!isset($MyPHPScript)) return;
 	
 
 ?>
-
-
-
-		</br>
+</form>
+</br>
 
 
 
