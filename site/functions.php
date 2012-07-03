@@ -662,7 +662,7 @@ send_mime_mail('Автор письма',
         $TeamLevelResult =  $Row['result_in_sec'];
 
         // Смотрим сколько команд имеют такой же результат или лучше   
-	$sql_place = "  	      select  count(*) as result_place
+	$sql_place = "  	      select  count(*) + 1 as result_place
 				      from    TeamLevels  tl 
                                              inner join Teams t
                                              on t.team_id = tl.team_id
@@ -670,7 +670,7 @@ send_mime_mail('Автор письма',
                                            and t.team_hide = 0 
 					    and tl.teamlevel_progress = 2 
 					    and COALESCE(tl.teamlevel_duration,0) > 0
-                                           and (TIME_TO_SEC(COALESCE(tl.teamlevel_duration,0)) + COALESCE(tl.teamlevel_penalty, 0)*60) <= ". $TeamLevelResult."
+                                           and (TIME_TO_SEC(COALESCE(tl.teamlevel_duration,0)) + COALESCE(tl.teamlevel_penalty, 0)*60) < ". $TeamLevelResult."
 					    and tl.level_id = ".$levelid;
 
 	$Result_place  = MySqlQuery($sql_place);
