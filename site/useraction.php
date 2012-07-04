@@ -79,7 +79,9 @@ if (!isset($MyPHPScript)) return;
            if (!isset($_POST['UserProhibitAdd'])) $_POST['UserProhibitAdd'] = "";
            $pUserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
            $pUserId = $_POST['UserId']; 
-
+           $pUserNewPassword = $_POST['UserNewPassword']; 
+           $pUserConfirmNewPassword = $_POST['UserConfirmNewPassword']; 
+         
    
 	   if ($action == 'AddUser')
 	   {
@@ -113,6 +115,16 @@ if (!isset($MyPHPScript)) return;
                 $viewsubmode = "ReturnAfterError"; 
 		return; 
 	   }
+
+
+	   if ((trim($pUserNewPassword) <> '' or trim($pUserConfirmNewPassword) <> '') and trim($pUserNewPassword) <> trim($pUserConfirmNewPassword))
+	   {
+		$statustext = "Не совпадает новый пароль и его подтверждение.";
+	        $alert = 1;
+                $viewsubmode = "ReturnAfterError"; 
+		return; 
+	   }
+
 
 
            $sql = "select count(*) as resultcount from  Users where trim(user_email) = '".$pUserEmail."' and user_id <> ".$pUserId;
@@ -175,7 +187,7 @@ if (!isset($MyPHPScript)) return;
 //                 $UserId = mysql_insert_id($Connection);
 		 if ($newUserId <= 0)
 		 {
-                        $statustext = 'Ошибка записи нового пользователя.';
+                       $statustext = 'Ошибка записи нового пользователя.';
 			$alert = 1;
 			$viewsubmode = "ReturnAfterError"; 
 			return;
@@ -225,14 +237,33 @@ if (!isset($MyPHPScript)) return;
 
              if ($AllowEdit == 1)
 	     {
+
+
+
 	         $sql = "update  Users set   user_email = trim('".$pUserEmail."'),
 		                             user_name = trim('".$pUserName."'),
 		                             user_prohibitadd = ".$pUserProhibitAdd.",
 					     user_birthyear = ".$pUserBirthYear."
 	                 where user_id = ".$pUserId;
                  
-		// echo $sql;
+          		// echo $sql;
 		 $rs = MySqlQuery($sql);  
+
+                  // Обновление пароля джелаем только, когда просят
+		  if (trim($pUserNewPassword) <> '' and trim($pUserConfirmNewPassword) <> '' and trim($pUserNewPassword) == trim($pUserConfirmNewPassword))
+		  {
+		      $sql = "update  Users set user_password = md5('".trim($pUserNewPassword)."')
+	                      where user_id = ".$pUserId;
+                 
+          		// echo $sql;
+		      $rs = MySqlQuery($sql);  
+
+                     $statustext = 'Сохранён новый пароль.';
+
+
+		  }
+
+
 
 		 // Формируем сообщение
 

@@ -661,7 +661,8 @@ send_mime_mail('Автор письма',
 
         $TeamLevelResult =  $Row['result_in_sec'];
 
-        // Смотрим сколько команд имеют такой же результат или лучше   
+        // Смотрим сколько команд имеют результат лучше и прибавляем 1
+        // Нельзя ставить <=, т.к. на одном месте может быть несколько команд
 	$sql_place = "  	      select  count(*) + 1 as result_place
 				      from    TeamLevels  tl 
                                              inner join Teams t

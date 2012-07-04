@@ -238,25 +238,36 @@ if (!isset($MyPHPScript)) return;
 	        title = "Год рождения"></td></tr>'."\r\n");
 
          print('<tr><td class = "input"><input type="checkbox" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "4" '.$DisabledText.'
-	        title = "Даже зная адрес e-mail другой пользователь не сможет сделать Вас участником своей команды - только Вы сами или модератор ММБ" /> Нельзя включать в команду другим пользователям</td></tr>'."\r\n");
+	        title = "Даже зная адрес e-mail, другой пользователь не сможет сделать Вас участником своей команды - только Вы сами или модератор ММБ" /> Нельзя включать в команду другим пользователям</td></tr>'."\r\n");
+
+	 if (($AllowEdit == 1) and  ($viewmode <> 'Add'))
+        {
+
+	  print('<tr><td class = "input" style =  "padding-top: 15px;">Новый пароль: <input type="password" name="UserNewPassword" size="30" value="" tabindex = "5"   '.$DisabledText.'
+                  title = "Новый пароль"></td></tr>'."\r\n");
+
+	  print('<tr><td class = "input">Подтверждение: <input type="password" name="UserConfirmNewPassword" size="30" value="" tabindex = "6"   '.$DisabledText.'
+                  title = "Подтверждение нового пароля"></td></tr>'."\r\n");
+
+        }
 
 
          // Если не разрешена права - не показываем кнопки
 	 if ($AllowEdit == 1) 
 	 {
 	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
-	  print('<input type="button" onClick = "javascript: if (ValidateUserDataForm()) submit();"  name="RegisterButton" value="'.$SaveButtonText.'" tabindex = "5">'."\r\n");
+	  print('<input type="button" onClick = "javascript: if (ValidateUserDataForm()) submit();"  name="RegisterButton" value="'.$SaveButtonText.'" tabindex = "7">'."\r\n");
 
            // Если регистрация нового пользователя - не нужны кнопки "Отмена" и "Сменить пароль"
           if ($viewmode <> 'Add')
 	  {
-            print('<input type="button" onClick = "javascript: Cancel();"  name="CancelButton" value="Отмена" tabindex = "6" title = "Заново считывает данные из базы">'."\r\n");		
+            print('<input type="button" onClick = "javascript: Cancel();"  name="CancelButton" value="Отмена" tabindex = "8" title = "Заново считывает данные из базы">'."\r\n");		
 
 	    // 15,01,2012 убрал проверку
 	    // М.б. проверка лишняя и нужно разрешить и администратору высылать запрос о смене пароля
 	    //if ($UserId > 0 and $UserId == $NowUserId)
 	    //{
-             print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите выслать запрос на адрес '.trim($UserEmail).' для смены пароля: '.trim($UserName).'? \')) { NewPassword(); }"  name="ChangePasswordButton" value="Сменить пароль" tabindex = "7">'."\r\n");		
+             print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите выслать на адрес '.trim($UserEmail).' новый пароль для '.trim($UserName).' будет создан новый пароль и ? \')) { NewPassword(); }"  name="ChangePasswordButton" value="Создать и выслать новый пароль" tabindex = "9">'."\r\n");		
 	    //}
           }
 
