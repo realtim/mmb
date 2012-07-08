@@ -221,6 +221,8 @@ if (!isset($MyPHPScript)) return;
 	}                
 	print('<input type = "hidden" name = "action" value = "FindTeam">'."\r\n"); 
 	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
+        // Эта переменная нужна только тогла, когда из спсика марш-бросков выбирают дистанцию
+	print('<input type = "hidden" name = "DistanceId" value = "0">'."\r\n");
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 	print('<tr><td class = "input">ММБ'."\r\n"); 
 	print('<select name="RaidId"  style = "width: 141px; margin-left: 5px;" tabindex = "201"  title = "Список марш-бросков">'."\r\n"); 

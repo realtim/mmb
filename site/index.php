@@ -28,6 +28,9 @@
 	if (!isset($_REQUEST['action'])) $_REQUEST['action'] = "";
 	$action = $_REQUEST['action'];
 
+        //Не знаю, относится ли дистанция к переменным сессии, но инициализацию делаем
+	if (isset($_REQUEST['DistanceId'])) $DistanceId = (int)$_REQUEST['DistanceId']; else $DistanceId = "0";
+
 	if ($action == "") 
 	{
 	// Действие не указано
