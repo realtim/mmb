@@ -23,6 +23,9 @@ if (!isset($MyPHPScript)) return;
 	} elseif ($view == "ViewRaidTeams") {
 		// Результаты ММБ (по всем командам)
 		include("viewraidteams.php");
+	} elseif ($view == "ViewAdminPage") {
+		// Результаты ММБ (по всем командам)
+		include("viewadminpage.php");
 	}
 
 	// Очищаем переменную

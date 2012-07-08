@@ -174,8 +174,8 @@ if (!isset($MyPHPScript)) return;
 		document.FindTeamForm.submit();
 	}
 
-
-        
+/*
+    Перенёс функции в отдельную страницу    
 	function RecalcRaidResults()
 	{ 
               document.AdminServiceForm.action.value = "RecalcRaidResults";
@@ -198,7 +198,7 @@ if (!isset($MyPHPScript)) return;
 		document.AdminServiceForm.submit();
 	}
 
-
+*/
         function ShowEmail()
 	{
          var begstr = "<? echo substr(trim($_SERVER['SERVER_NAME']), 0, 4); ?>";
@@ -207,6 +207,14 @@ if (!isset($MyPHPScript)) return;
 	  begstr = begstr + "progressor.ru";
 	  alert(begstr);
 	}
+
+
+	function ViewAdminPage()
+	{ 
+		document.FindTeamForm.action.value = "ViewAdminPage";
+		document.FindTeamForm.submit();
+	}
+
 
 </script>
 
@@ -242,6 +250,11 @@ if (!isset($MyPHPScript)) return;
 		print('<tr><td><a href = "javascript:NewTeam();" title = "Переход к форме регистрации новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n"); 
 	}
 	print('<tr><td><a href = "javascript:RaidTeams();" title = "Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n"); 
+        // Впечатываем ссылку на администрирование
+	if ($Administrator || $Moderator)
+	{
+	    print('<tr><td><a href = "javascript:ViewAdminPage();" title = "Страница администрирования ММБ">Администрирование</a></td></tr>'."\r\n"); 
+        }
         //print('<tr><td class = "input">Поиск:</td></tr>'."\r\n"); 
 	print('<tr><td style = "padding-top: 15px;"><input  type="text" name="TeamNum" style = "width: 125px;" value="Номер команды" tabindex = "206"  title = "Будет выведена карточка команды с указанным номером для выбранного выше ММБ"
                        onclick = "javascript: if (trimBoth(this.value) == \'Номер команды\') {this.value=\'\';}"
@@ -270,6 +283,9 @@ if (!isset($MyPHPScript)) return;
 	print('</form>'."\r\n");
 	print('</br>'."\r\n");
 
+/*
+
+Перенёс на отдельную страницу
        // Форма сервисов администратора и модератора
         if ($Administrator || $Moderator)
 	{
@@ -295,16 +311,11 @@ if (!isset($MyPHPScript)) return;
                           tabindex = "402">'."\r\n");
 	  print('</br>'."\r\n");
 
-          //  показываем кнопку "Очистить таблицы" 
-	  // print('<input type="button" style = "width:185px; margin-top:10px;" name="ClearTablesButton" value="Очистить таблицы"
-          //                onclick = "ClearTables();"
-          //                tabindex = "402">'."\r\n");
-
-	  print('</form>'."\r\n");
+   	  print('</form>'."\r\n");
 	  print('</br>'."\r\n");
 
 	} 
-		
+*/		
 	// Внешние сылки
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 	print('<tr><td><a href="http://www.livejournal.com/community/_mmb_" target = "_blank">ЖЖ</a></td></tr>'."\r\n"); 
