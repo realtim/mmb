@@ -292,7 +292,7 @@ if (!isset($MyPHPScript)) return;
             	print('<div align = "left" style = "margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
 		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidRulesLink.'" target = "_blank">Положение</a> '."\r\n");
 		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidStartLink.'" target = "_blank">Информация о старте</a> '."\r\n");
-		print('<a  style = "font-size:80%;" href = "'.trim(str_replace('index.php','printraidteams.php?RaidId=',$MyPHPScript)).$RaidId.'" target = "_blank">Список для печати</a>'."\r\n");
+//		print('<a  style = "font-size:80%;" href = "'.trim(str_replace('index.php','printraidteams.php?RaidId=',$MyPHPScript)).$RaidId.'" target = "_blank">Список для печати</a>'."\r\n");
 		print('</div>'."\r\n");
 
                 // Показываем этапы

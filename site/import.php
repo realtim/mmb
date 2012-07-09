@@ -1,37 +1,58 @@
 <?php
-// Общие настройки
-include("settings.php");
-// Библиотека функций
-include("functions.php");
-// Устанавливаем часовой пояс по умолчанию
-date_default_timezone_set("Europe/Moscow");
-// Подключаемся к базе
-$ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
-if ($ConnectionId <= 0) die(mysql_error());
-// Устанавливаем временную зону
-mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
-// Устанавливаем кодировку для взаимодействия
-mysql_query('set names \'utf8\'', $ConnectionId);
-// Выбираем БД ММБ
-if (mysql_select_db($DBName, $ConnectionId) == "") die(mysql_error());
-?>
 
-<html>
-<head>
- <title>Импорт данных с Android</title>
- <link rel="Stylesheet" type="text/css"  href="styles/mmb.css" />
- <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-</head>
+// Проверка, как именно используем скрипт: из интерфейса или отдельно
+if (isset($MyPHPScript) and $action == 'LoadRaidDataFile')
+{
+  if (!$Administrator && !$Moderator) return;
 
-<body>
+  $ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+  if ($ConnectionId <= 0) die(mysql_error());
+  // Устанавливаем временную зону
+  mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
+  // Устанавливаем кодировку для взаимодействия
+  mysql_query('set names \'utf8\'', $ConnectionId);
+  // Выбираем БД ММБ
+  if (mysql_select_db($DBName, $ConnectionId) == "") die(mysql_error());
 
-<form enctype="multipart/form-data" action="import.php" method="POST">
-<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />
-Файл с данными: <input name="android" type="file" /> &nbsp;
-<input type="submit" value="Загрузить" />
-</form>
+}
+else 
+{
 
-<?
+
+  // Общие настройки
+  include("settings.php");
+  // Библиотека функций
+  include("functions.php");
+  // Устанавливаем часовой пояс по умолчанию
+  date_default_timezone_set("Europe/Moscow");
+  // Подключаемся к базе
+  $ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+  if ($ConnectionId <= 0) die(mysql_error());
+  // Устанавливаем временную зону
+  mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
+  // Устанавливаем кодировку для взаимодействия
+  mysql_query('set names \'utf8\'', $ConnectionId);
+  // Выбираем БД ММБ
+  if (mysql_select_db($DBName, $ConnectionId) == "") die(mysql_error());
+
+  print('<html>');
+  print('<head>');
+  print('<title>Импорт данных с Android</title>');
+  print('<link rel="Stylesheet" type="text/css"  href="styles/mmb.css" />');
+  print('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">');
+  print('</head>');
+  print('<body>');
+
+  print('<form enctype="multipart/form-data" action="import.php" method="POST">');
+  print('<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />');
+  print('Файл с данными: <input name="android" type="file" /> &nbsp;');
+  print('<input type="submit" value="Загрузить" />');
+  print('</form>');
+
+}
+// Конец проверки, как именно используем скрипт: из интерфейса или отдельно
+
+
 // Обработка загруженного файла
 if (isset($_FILES['android']))
 {
@@ -346,7 +367,13 @@ if (isset($_FILES['android']))
 	}
 	echo "$n_new результатов добавлено, $n_updated изменено, $n_unchanged являются дубликатами<br />";
 }
+
+
+if (!isset($MyPHPScript) or $action <> 'LoadRaidDataFile')
+{
+   print('</body>');
+   print('</html>');
+}
+
 ?>
 
-</body>
-</html>
