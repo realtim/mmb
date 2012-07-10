@@ -126,11 +126,12 @@ if (!isset($MyPHPScript)) return;
 	   }
 
 
-
-           $sql = "select count(*) as resultcount from  Users where trim(user_email) = '".$pUserEmail."' and user_id <> ".$pUserId;
+           // Прверяем, что нет активной учетной записи с таким e-mail
+           $sql = "select count(*) as resultcount from  Users where COALESCE(user_password, '') <> '' and trim(user_email) = '".$pUserEmail."' and user_id <> ".$pUserId;
       //     echo $sql;
 	   $rs = MySqlQuery($sql);  
 	   $Row = mysql_fetch_assoc($rs);
+           mysql_free_result($rs);
 	   if ($Row['resultcount'] > 0)
 	   {
    		$statustext = "Уже есть пользователь с таким email.";
@@ -140,10 +141,11 @@ if (!isset($MyPHPScript)) return;
 	   }
 
 
-           $sql = "select count(*) as resultcount from  Users where  trim(user_name) = '".$pUserName."' and user_birthyear = ".$pUserBirthYear." and user_id <> ".$pUserId;
+	   $sql = "select count(*) as resultcount from  Users where  trim(user_name) = '".$pUserName."' and user_birthyear = ".$pUserBirthYear." and user_id <> ".$pUserId;
            //echo $sql;
 	   $rs = MySqlQuery($sql);  
 	   $Row = mysql_fetch_assoc($rs);
+           mysql_free_result($rs);
 	   if ($Row['resultcount'] > 0)
 	   {
    		$statustext = "Уже есть пользователь с таким именем и годом рождения.";
@@ -152,6 +154,48 @@ if (!isset($MyPHPScript)) return;
                 return; 
 	   }
 
+
+	    // Если есть неактивная учетная запись - высылаем на почту ссылку с активацией
+           $sql = "select user_id from  Users where COALESCE(user_password, '') = '' and trim(user_email) = '".$pUserEmail."' and user_id <> ".$pUserId;
+           //echo $sql;
+	   $rs = MySqlQuery($sql);  
+	   $Row = mysql_fetch_assoc($rs);
+           mysql_free_result($rs);
+	   if ($Row['user_id'] > 0)
+	   {
+               if ($action == 'AddUser')
+               {
+
+		 $ChangePasswordSessionId = uniqid();
+                 $sql = "update  Users set   user_sessionfornewpassword = '".$ChangePasswordSessionId."', user_sendnewpasswordrequestdt = now()
+		         where user_id = ".$Row['user_id'];         
+//                 echo $sql;  
+		 MySqlQuery($sql);
+
+		   // Решил не писать здесь имя - м.б. и в адресе не надо
+		   $Msg = "Здравствуйте!\r\n\r\n";
+		   $Msg =  $Msg."Кто-то (возможно, это были Вы) пытается зарегистрировать учетную запись на сайте ММБ, связанную с этим адресом e-mail.".".\r\n";
+		   $Msg =  $Msg."Запись помечена, как неактивная, поэтому повтороно высылается ссылка для активации:".".\r\n";
+		   $Msg =  $Msg."Для активации пользователя и получения пароля необходимо перейти по ссылке:".".\r\n";
+		   $Msg =  $Msg.$MyHttpLink.$MyPHPScript.'?action=sendpasswordafterrequest&changepasswordsessionid='.$ChangePasswordSessionId."\r\n\r\n";
+		   $Msg =  $Msg."Учетные записи без активации могут быть удалены.".".\r\n";
+		   //$Msg =  $Msg."P.S. Если Вас зарегистрировали без Вашего желания - просто проигнорируйте письмо - приносим извинения за доставленные неудобства."."\r\n";
+			    
+                   // Отправляем письмо
+		   SendMail(trim($pUserEmail), $Msg, $pUserName);
+
+                   $statustext = 'Повторная ссылка для активации пользователя и получения пароля выслана на указанный адрес. 
+		                  Если письмо не пришло - проверьте спам. Учетные записи без активации могут быть удалены.';				     
+
+		   $view = "MainPage";
+	           return; 
+               } else {
+		  $statustext = "Уже есть пользователь с таким email.";
+		  $alert = 1; 
+		  $viewsubmode = "ReturnAfterError"; 
+		  return; 
+               }
+	   }
 
 
 	   if ($action == 'AddUser')
