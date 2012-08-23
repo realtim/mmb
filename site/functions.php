@@ -575,7 +575,7 @@ send_mime_mail('Автор письма',
 		for ($i = 0; $i < $ArrLen; $i++)
 		{
   		   $PenaltyTime += (int)$Penalties[$i]*(1 - (int)$TeamLevelPoints[$i]);
-		   if ($Discount > 0 and (int)$TeamLevelPoints[$i] > 0)
+		   if ($Discount > 0 and (int)$DiscountPoints[$i] > 0)
 		   {
 		     $DiscountPenalty += (int)$Penalties[$i]*(1 - (int)$TeamLevelPoints[$i]);
 		   }
