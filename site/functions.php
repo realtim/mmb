@@ -547,9 +547,9 @@ send_mime_mail('Автор письма',
      {
        
 	// Получаем информацию об этапах, которые могла проходить команда
-	$sql = "select l.level_pointpenalties,
+	$sql = "select l.level_pointpenalties, l.level_discount, l.level_discountpoints,
 		       tl.teamlevel_points,
-		       tl.teamlevel_id
+		       tl.teamlevel_id		        
 		from TeamLevels tl
 			inner join Levels l on l.level_id = tl.level_id
 		where tl.teamlevel_hide = 0 and tl.team_id = ".$teamid;
@@ -567,10 +567,34 @@ send_mime_mail('Автор письма',
 		$Penalties = explode(',', $Row['level_pointpenalties']);
 		$TeamLevelPoints = explode(',', $Row['teamlevel_points']);
 		$PenaltyTime = 0;
+                // Добавляем разбор неорбязательных КП 
+		$DiscountPoints = explode(',', $Row['level_discountpoints']);
+		$Discount = (int)$Row['level_discount'];
+		$DiscountPenalty = 0;
+
 		for ($i = 0; $i < $ArrLen; $i++)
 		{
   		   $PenaltyTime += (int)$Penalties[$i]*(1 - (int)$TeamLevelPoints[$i]);
+		   if ($Discount > 0 and (int)$TeamLevelPoints[$i] > 0)
+		   {
+		     $DiscountPenalty += (int)$Penalties[$i]*(1 - (int)$TeamLevelPoints[$i]);
+		   }
+
 		}
+
+                // Если есть амнистия, смотрим, больше ли штраф на необязательных КП, чем амнистия.
+		// Если больше штраф - вычитаем амнистию из общего результата, больше амнистия - вычитаем штраф на необязательных КП
+		// 
+                if ($Discount > 0)
+		{
+                  if ($DiscountPenalty > $Discount)
+		  { 
+		   $PenaltyTime =  $PenaltyTime - $Discount;
+		  } else {
+		   $PenaltyTime =  $PenaltyTime - $DiscountPenalty;
+		  }  
+		}
+		
 
 		$sql = "update TeamLevels set 	teamlevel_penalty = ".$PenaltyTime."
 				where teamlevel_id = ".$TeamLevelId;
