@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ru.mmb.terminal.R;
+import ru.mmb.terminal.model.registry.Settings;
 import android.content.Context;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
-public class SortButtons
+public class SortButtons extends ModeSwitchable
 {
 	private final Button btnSortByNumber;
 	private final Button btnSortByTeam;
@@ -30,7 +31,6 @@ public class SortButtons
 		this.btnSortByMember = (Button) context.findViewById(R.id.inputTeam_sortByMemberButton);
 
 		this.currentState = currentState;
-		prevSortColumn = currentState.getSortColumn();
 
 		this.searchTeamActivity = context;
 
@@ -38,6 +38,28 @@ public class SortButtons
 		initButtons();
 		setOnClickListener(new SortButtonClickListener());
 		refreshButtonNames();
+
+		if (Settings.getInstance().isTeamFastSelect()) switchToFastMode();
+
+		prevSortColumn = currentState.getSortColumn();
+	}
+
+	@Override
+	protected void switchToFastMode()
+	{
+		currentState.setSortColumn(SortColumn.NUMBER);
+		currentState.setSortOrder(SortOrder.ASC);
+		refreshButtonNames();
+
+		btnSortByTeam.setEnabled(false);
+		btnSortByMember.setEnabled(false);
+	}
+
+	@Override
+	protected void switchToUsualMode()
+	{
+		btnSortByTeam.setEnabled(true);
+		btnSortByMember.setEnabled(true);
 	}
 
 	private void initButtonNames(Context context)

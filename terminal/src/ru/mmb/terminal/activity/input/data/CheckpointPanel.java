@@ -1,7 +1,5 @@
 package ru.mmb.terminal.activity.input.data;
 
-import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +7,7 @@ import java.util.Map;
 
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.model.Checkpoint;
-import ru.mmb.terminal.model.registry.Settings;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -66,17 +64,13 @@ public class CheckpointPanel
 
 	private void createCheckpointBoxes()
 	{
-		int colCount = Settings.getInstance().getCheckboxesPerLinePortrait();
-		if (inputDataActivity.getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE)
-		{
-			colCount = Settings.getInstance().getCheckboxesPerLineLandscape();
-		}
-
-		List<TableRow> rows = new ArrayList<TableRow>();
-
 		List<Checkpoint> checkpoints = currentState.getCurrentLevel().getCheckpoints();
-		int rowCount = (int) Math.round(Math.ceil(((double) checkpoints.size()) / colCount));
+		int checkpointsCount = checkpoints.size();
+		int colCount = checkpointsCount / 2;
+		if (checkpointsCount % 2 != 0) colCount += 1;
 
+		int rowCount = 5;
+		List<TableRow> rows = new ArrayList<TableRow>();
 		for (int i = 0; i < rowCount; i++)
 		{
 			TableRow tableRow = new TableRow(inputDataActivity);
@@ -84,43 +78,70 @@ public class CheckpointPanel
 			checkpointsPanel.addView(tableRow);
 		}
 
-		for (int i = 0; i < checkpoints.size(); i++)
-		{
-			int rowIndex = i / colCount;
-			TableRow tableRow = rows.get(rowIndex);
-			CheckBox checkpointBox = new CheckBox(inputDataActivity);
-			TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
-			layoutParams.weight = 1;
-			checkpointBox.setLayoutParams(layoutParams);
-			checkpointBox.setText(checkpoints.get(i).getCheckpointName());
-			checkpointBox.setChecked(false);
-			checkpointBox.setOnClickListener(new CheckpointBoxClickListener());
-			tableRow.addView(checkpointBox);
-			checkpointBoxes.put(checkpoints.get(i), checkpointBox);
-			boxCheckpoints.put(checkpointBox, checkpoints.get(i));
+		buildCheckpointsRow(rows, 0, checkpoints, colCount);
+		buildSeparatorRow(rows.get(2));
+		buildCheckpointsRow(rows, 1, checkpoints, colCount);
+	}
 
-			if (i == checkpoints.size() - 1)
+	private void buildSeparatorRow(TableRow tableRow)
+	{
+		TextView dummyText = new TextView(inputDataActivity);
+		dummyText.setText("");
+		tableRow.addView(dummyText);
+	}
+
+	private void buildCheckpointsRow(List<TableRow> rows, int rowIndex,
+	        List<Checkpoint> checkpoints, int colCount)
+	{
+		int checkIndex = (rowIndex == 0) ? 0 : 4;
+		int textIndex = (rowIndex == 0) ? 1 : 3;
+
+		for (int i = 0; i < colCount; i++)
+		{
+			int checkpointIndex = (rowIndex == 0) ? i : i + colCount;
+			TableRow checkRow = rows.get(checkIndex);
+			TableRow textRow = rows.get(textIndex);
+			if (checkpointIndex < checkpoints.size())
 			{
-				if (checkpoints.size() % colCount != 0)
-				{
-					addDummyControls(tableRow, colCount, checkpoints.size());
-				}
+				CheckBox checkpointBox = new CheckBox(inputDataActivity);
+				TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
+				layoutParams.weight = 1;
+				checkpointBox.setLayoutParams(layoutParams);
+				checkpointBox.setText("");
+				checkpointBox.setChecked(false);
+				checkpointBox.setOnClickListener(new CheckpointBoxClickListener());
+				checkRow.addView(checkpointBox);
+				checkpointBoxes.put(checkpoints.get(checkpointIndex), checkpointBox);
+				boxCheckpoints.put(checkpointBox, checkpoints.get(checkpointIndex));
+
+				TextView checkNameText = new TextView(inputDataActivity);
+				checkNameText.setText(checkpoints.get(checkpointIndex).getCheckpointName());
+				layoutParams = new TableRow.LayoutParams();
+				layoutParams.weight = 1;
+				layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
+				checkNameText.setLayoutParams(layoutParams);
+				textRow.addView(checkNameText);
+			}
+			else
+			{
+				addDummyControls(checkRow, textRow);
 			}
 		}
 	}
 
-	private void addDummyControls(TableRow tableRow, int colCount, int checkpointsSize)
+	private void addDummyControls(TableRow checkRow, TableRow textRow)
 	{
-		int countToAdd = colCount - (checkpointsSize % colCount);
-		for (int i = 0; i < countToAdd; i++)
-		{
-			TextView dummy = new TextView(inputDataActivity);
-			dummy.setText("");
-			TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
-			layoutParams.weight = 1;
-			dummy.setLayoutParams(layoutParams);
-			tableRow.addView(dummy);
-		}
+		TextView dummy = new TextView(inputDataActivity);
+		dummy.setText("");
+		TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
+		layoutParams.weight = 1;
+		dummy.setLayoutParams(layoutParams);
+		checkRow.addView(dummy);
+
+		dummy = new TextView(inputDataActivity);
+		dummy.setText("");
+		dummy.setLayoutParams(layoutParams);
+		textRow.addView(dummy);
 	}
 
 	private void initCheckboxesState()

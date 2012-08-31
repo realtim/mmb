@@ -15,7 +15,7 @@ public class Settings
 	private static final String TRANSP_USER_ID = "transp_user_id";
 	private static final String TRANSP_USER_PASSWORD = "transp_user_password";
 	private static final String TEAM_CLEAR_FILTER_AFTER_OK = "team_clear_filter_after_ok";
-	private static final String INPUT_CHECKBOXES_PER_LINE = "input_checkboxes_per_line";
+	private static final String TEAM_FAST_SELECT = "team_fast_select";
 
 	private static Settings instance = null;
 
@@ -128,31 +128,14 @@ public class Settings
 		setValue(TEAM_CLEAR_FILTER_AFTER_OK, teamClearFilterAfterOk);
 	}
 
-	public String getCheckboxesPerLine()
+	public boolean isTeamFastSelect()
 	{
-		return settings.getProperty(INPUT_CHECKBOXES_PER_LINE, "5;7");
+		return Boolean.parseBoolean(settings.getProperty(TEAM_FAST_SELECT, "false"));
 	}
 
-	public int getCheckboxesPerLinePortrait()
+	public void setTeamFastSelect(String teamFastSelect)
 	{
-		String[] values = splitCheckboxesSetting();
-		return Integer.parseInt(values[0]);
-	}
-
-	private String[] splitCheckboxesSetting()
-	{
-		return settings.getProperty(INPUT_CHECKBOXES_PER_LINE, "5;7").split(";");
-	}
-
-	public int getCheckboxesPerLineLandscape()
-	{
-		String[] values = splitCheckboxesSetting();
-		return Integer.parseInt(values[1]);
-	}
-
-	public void setCheckboxesPerLine(String checkboxesPerLine)
-	{
-		setValue(INPUT_CHECKBOXES_PER_LINE, checkboxesPerLine);
+		setValue(TEAM_FAST_SELECT, teamFastSelect);
 	}
 
 	public void refresh()

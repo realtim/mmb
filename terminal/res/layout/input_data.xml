@@ -12,13 +12,34 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical" >
-
-        <TextView
-            android:id="@+id/inputData_teamNameTextView"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:text="@string/input_data_no_team" />
+            android:layout_gravity="right" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/inputData_teamNameTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left"
+                    android:text="@string/input_data_no_team"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/inputData_withdrawButton"
+                android:layout_width="100dip"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/global_padding"
+                android:text="@string/input_data_withdraw_member" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/inputData_datePanel"
@@ -31,8 +52,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
-            <TimePicker
-                android:id="@+id/inputData_timePicker"
+            <LinearLayout
+                android:id="@+id/inputData_timePanel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/global_padding" />

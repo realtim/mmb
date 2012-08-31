@@ -11,7 +11,7 @@ INSERT INTO Settings VALUES('last_export_date', NULL);
 INSERT INTO Settings VALUES('transp_user_id', '1');
 INSERT INTO Settings VALUES('transp_user_password', 'abc');
 INSERT INTO Settings VALUES('team_clear_filter_after_ok', 'false');
-INSERT INTO Settings VALUES('input_checkboxes_per_line', '5;7');
+INSERT INTO Settings VALUES('team_fast_select', 'false');
 
 CREATE TABLE Raids (raid_registrationenddate TEXT, raid_id INTEGER NOT NULL, raid_name TEXT NOT NULL, PRIMARY KEY (raid_id));
 

@@ -2,98 +2,122 @@ package ru.mmb.terminal.activity.input.team;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import ru.mmb.terminal.R;
+import ru.mmb.terminal.model.registry.Settings;
+import ru.mmb.terminal.widget.EditTextWithSoftKeyboardSupport;
+import android.database.DataSetObserver;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
-public class FilterPanel
+public class FilterPanel extends ModeSwitchable
 {
 	private final SearchTeamActivityState currentState;
 	private final SearchTeamActivity searchTeamActivity;
 
-	private final Button btnRefresh;
 	private final TextView labFilterStatus;
 	private final Button btnClearFilter;
 	private final Button btnHideFilter;
 
-	private final EditText editFilterNumber;
+	private final EditTextWithSoftKeyboardSupport editFilterNumber;
 	private final CheckBox chkFilterNumberExact;
 
-	private final EditText editFilterTeam;
-	private final EditText editFilterMember;
+	private final EditTextWithSoftKeyboardSupport editFilterTeam;
+	private final EditTextWithSoftKeyboardSupport editFilterMember;
 
 	private final LinearLayout panelFilterNumber;
-	private final LinearLayout panelFilterNumberDigits;
 	private final LinearLayout panelFilterTeamAndMember;
 
-	private final List<Button> digitButtons = new ArrayList<Button>();
-	private final Button btnClearDigit;
+	private final Map<TeamsAdapter, AdapterObserver> adapterObservers =
+	    new HashMap<TeamsAdapter, AdapterObserver>();
 
 	public FilterPanel(SearchTeamActivity context, SearchTeamActivityState currentState)
 	{
 		this.currentState = currentState;
 		this.searchTeamActivity = context;
+		FilterChangeListener filterChangeListener = new FilterChangeListener();
 
-		btnRefresh = (Button) context.findViewById(R.id.inputTeam_refreshDataButton);
 		btnClearFilter = (Button) context.findViewById(R.id.inputTeam_filterClearButton);
 		btnHideFilter = (Button) context.findViewById(R.id.inputTeam_filterHideButton);
 		labFilterStatus = (TextView) context.findViewById(R.id.inputTeam_filterStatusTextView);
 
-		editFilterNumber = (EditText) context.findViewById(R.id.inputTeam_filterNumberEdit);
+		editFilterNumber =
+		    (EditTextWithSoftKeyboardSupport) context.findViewById(R.id.inputTeam_filterNumberEdit);
 		chkFilterNumberExact =
 		    (CheckBox) context.findViewById(R.id.inputTeam_filterNumberExactCheck);
 
-		editFilterTeam = (EditText) context.findViewById(R.id.inputTeam_filterTeamEdit);
-		editFilterMember = (EditText) context.findViewById(R.id.inputTeam_filterMemberEdit);
+		editFilterTeam =
+		    (EditTextWithSoftKeyboardSupport) context.findViewById(R.id.inputTeam_filterTeamEdit);
+		editFilterMember =
+		    (EditTextWithSoftKeyboardSupport) context.findViewById(R.id.inputTeam_filterMemberEdit);
 
 		panelFilterNumber = (LinearLayout) context.findViewById(R.id.inputTeam_filterNumberPanel);
-		panelFilterNumberDigits =
-		    (LinearLayout) context.findViewById(R.id.inputTeam_filterNumberDigitsPanel);
 		panelFilterTeamAndMember =
 		    (LinearLayout) context.findViewById(R.id.inputTeam_filterTeamAndMemberPanel);
 
-		initDigitButtons(context);
-		btnClearDigit = (Button) context.findViewById(R.id.inputTeam_numberCButton);
-
 		btnHideFilter.setOnClickListener(new HideFilterClickListener());
 		chkFilterNumberExact.setOnClickListener(new FilterNumberExactClickListener());
-		btnRefresh.setOnClickListener(new RefreshClickListener());
 		btnClearFilter.setOnClickListener(new ClearFilterClickListener());
-		btnClearDigit.setOnClickListener(new ClearDigitClickListener());
+
+		editFilterNumber.setOnEditorActionListener(filterChangeListener);
+		editFilterNumber.setSoftKeyboardBackListener(filterChangeListener);
+		editFilterNumber.setOnFocusChangeListener(filterChangeListener);
+
+		editFilterTeam.setOnEditorActionListener(filterChangeListener);
+		editFilterTeam.setSoftKeyboardBackListener(filterChangeListener);
+		editFilterTeam.setOnFocusChangeListener(filterChangeListener);
+
+		editFilterMember.setOnEditorActionListener(filterChangeListener);
+		editFilterMember.setSoftKeyboardBackListener(filterChangeListener);
+		editFilterMember.setOnFocusChangeListener(filterChangeListener);
 
 		if (context.getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE)
 		    btnHideFilter.setEnabled(false);
+
+		if (Settings.getInstance().isTeamFastSelect()) switchToFastMode();
 
 		refreshFilterVisible();
 		refreshFilterNumberExact();
 		refreshFilterStatus();
 	}
 
-	private void initDigitButtons(SearchTeamActivity context)
+	@Override
+	protected void switchToFastMode()
 	{
-		digitButtons.add((Button) context.findViewById(R.id.inputTeam_number0Button));
-		digitButtons.add((Button) context.findViewById(R.id.inputTeam_number1Button));
-		digitButtons.add((Button) context.findViewById(R.id.inputTeam_number2Button));
-		digitButtons.add((Button) context.findViewById(R.id.inputTeam_number3Button));
-		digitButtons.add((Button) context.findViewById(R.id.inputTeam_number4Button));
-		digitButtons.add((Button) context.findViewById(R.id.inputTeam_number5Button));
-		digitButtons.add((Button) context.findViewById(R.id.inputTeam_number6Button));
-		digitButtons.add((Button) context.findViewById(R.id.inputTeam_number7Button));
-		digitButtons.add((Button) context.findViewById(R.id.inputTeam_number8Button));
-		digitButtons.add((Button) context.findViewById(R.id.inputTeam_number9Button));
-		for (int i = 0; i < 10; i++)
-		{
-			digitButtons.get(i).setTag(R.id.digit_button_tag, new Integer(i));
-			digitButtons.get(i).setOnClickListener(new DigitClickListener());
-		}
+		currentState.setFilterState(FilterState.SHOW_JUST_NUMBER);
+		currentState.setFilterNumberExact(true);
+
+		chkFilterNumberExact.setEnabled(false);
+		editFilterTeam.setEnabled(false);
+		editFilterMember.setEnabled(false);
+		btnHideFilter.setEnabled(false);
+		btnHideFilter.setText(searchTeamActivity.getResources().getString(R.string.input_team_filter_hide));
+
+		refreshFilterVisible();
+		refreshFilterNumberExact();
+	}
+
+	@Override
+	protected void switchToUsualMode()
+	{
+		chkFilterNumberExact.setEnabled(true);
+		editFilterTeam.setEnabled(true);
+		editFilterMember.setEnabled(true);
+		btnHideFilter.setEnabled(true);
+		btnHideFilter.setText(searchTeamActivity.getResources().getString(R.string.input_team_filter_hide));
+
+		refreshFilterVisible();
+		refreshFilterNumberExact();
 	}
 
 	public void refreshFilterVisible()
@@ -101,23 +125,27 @@ public class FilterPanel
 		if (searchTeamActivity.getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE)
 		    return;
 
+		if (Settings.getInstance().isTeamFastSelect())
+		{
+			panelFilterNumber.setVisibility(View.VISIBLE);
+			panelFilterTeamAndMember.setVisibility(View.GONE);
+			return;
+		}
+
 		switch (currentState.getFilterState())
 		{
 			case HIDE_FILTER:
 				panelFilterNumber.setVisibility(View.GONE);
-				panelFilterNumberDigits.setVisibility(View.GONE);
 				panelFilterTeamAndMember.setVisibility(View.GONE);
 				btnHideFilter.setText(searchTeamActivity.getResources().getString(R.string.input_team_filter_show_number));
 				break;
 			case SHOW_JUST_NUMBER:
 				panelFilterNumber.setVisibility(View.VISIBLE);
-				panelFilterNumberDigits.setVisibility(View.VISIBLE);
 				panelFilterTeamAndMember.setVisibility(View.GONE);
 				btnHideFilter.setText(searchTeamActivity.getResources().getString(R.string.input_team_filter_show_full));
 				break;
 			case SHOW_FULL:
 				panelFilterNumber.setVisibility(View.VISIBLE);
-				panelFilterNumberDigits.setVisibility(View.VISIBLE);
 				panelFilterTeamAndMember.setVisibility(View.VISIBLE);
 				btnHideFilter.setText(searchTeamActivity.getResources().getString(R.string.input_team_filter_hide));
 				break;
@@ -132,6 +160,19 @@ public class FilterPanel
 	private void refreshFilterStatus()
 	{
 		labFilterStatus.setText(currentState.getFilterStatusText(searchTeamActivity));
+	}
+
+	public void addObserversToAdapters()
+	{
+		addAdapterObserver(SortColumn.NUMBER);
+	}
+
+	private void addAdapterObserver(SortColumn sortColumn)
+	{
+		TeamsAdapter adapter = searchTeamActivity.getAdapterBySortColumn(sortColumn);
+		AdapterObserver observer = new AdapterObserver();
+		adapter.registerDataSetObserver(observer);
+		adapterObservers.put(adapter, observer);
 	}
 
 	private void updateCurrentState()
@@ -182,15 +223,6 @@ public class FilterPanel
 		}
 	}
 
-	private class RefreshClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			refreshFilter();
-		}
-	}
-
 	private class ClearFilterClickListener implements OnClickListener
 	{
 		@Override
@@ -201,31 +233,50 @@ public class FilterPanel
 		}
 	}
 
-	private class ClearDigitClickListener implements OnClickListener
+	private class FilterChangeListener implements OnEditorActionListener, OnFocusChangeListener
 	{
 		@Override
-		public void onClick(View v)
+		public void onFocusChange(View v, boolean hasFocus)
 		{
-			String prevText = editFilterNumber.getText().toString();
-			if (prevText.length() > 0)
+			if (!hasFocus)
 			{
-				editFilterNumber.setText(prevText.substring(0, prevText.length() - 1));
+				refreshFilter();
 			}
+		}
+
+		@Override
+		public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
+		{
+			if (actionId == EditorInfo.IME_ACTION_UNSPECIFIED
+			        && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)
+			{
+				if (Settings.getInstance().isTeamFastSelect())
+				{
+					TeamsAdapter adapter = searchTeamActivity.getCurrentAdapter();
+					AdapterObserver observer = adapterObservers.get(adapter);
+					if (observer != null) observer.setActive(true);
+				}
+				refreshFilter();
+			}
+			return false;
 		}
 	}
 
-	private class DigitClickListener implements OnClickListener
+	private class AdapterObserver extends DataSetObserver
 	{
-		@Override
-		public void onClick(View v)
-		{
-			String prevText = editFilterNumber.getText().toString();
-			if (prevText.length() >= 4) return;
+		private boolean active = false;
 
-			Button digitButton = (Button) v;
-			Integer digitValue = (Integer) digitButton.getTag(R.id.digit_button_tag);
-			String digit = Integer.toString(digitValue);
-			editFilterNumber.setText(prevText + digit);
+		@Override
+		public void onChanged()
+		{
+			if (active && currentState.getNumberFilter() != null)
+			    searchTeamActivity.selectTeamAndStartInput();
+			active = false;
+		}
+
+		public void setActive(boolean active)
+		{
+			this.active = active;
 		}
 	}
 }

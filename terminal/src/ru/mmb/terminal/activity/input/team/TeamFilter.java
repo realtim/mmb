@@ -85,6 +85,7 @@ public class TeamFilter extends Filter
 	{
 		@SuppressWarnings("unchecked")
 		List<TeamListRecord> filterResult = (List<TeamListRecord>) results.values;
+		owner.setNotifyOnChange(false);
 		owner.clear();
 		if (filterResult != null)
 		{

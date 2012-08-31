@@ -43,7 +43,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/global_double_padding"
-        android:text="@string/main_fill_data" />
-    -->
+        android:text="@string/main_fill_data" />    -->
 
 </LinearLayout>

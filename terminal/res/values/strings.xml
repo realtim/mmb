@@ -13,7 +13,7 @@
     <string name="main_progress_loading">Loading...</string>
     <string name="input_start_select_level">Select level</string>
     <string name="input_start_no_distance">&lt;No distance selected></string>
-    <string name="input_start_no_level">&lt;No lap selected></string>
+    <string name="input_start_no_level">&lt;No level selected></string>
     <string name="input_start_no_mode">&lt;Input mode undefined></string>
     <string name="input_start_proceed_input">Proceed input</string>
     <string name="input_global_no_selected_level">&lt;No level selected></string>
@@ -24,6 +24,8 @@
     <string name="input_level_input_mode">Input mode:</string>
     <string name="input_level_ok">OK</string>
     <string name="input_team_refresh_data">Refresh teams</string>
+    <string name="input_team_mode_fast">Fast mode</string>
+    <string name="input_team_mode_usual">Usual mode</string>
     <string name="input_team_filter_clear">Clear filter</string>
     <string name="input_team_filter_hide">Hide filter</string>
     <string name="input_team_filter_show_number">Number filter</string>
@@ -36,7 +38,6 @@
     <string name="input_team_sort_team">Team</string>
     <string name="input_team_sort_member">Member</string>
     <string name="input_team_input_data">Input data</string>
-    <string name="input_team_withdraw_member">Withdraw</string>
     <string name="input_team_no_team">&lt;No team selected></string>
     <string name="input_team_filter_status_number">Number:</string>
     <string name="input_team_filter_status_exact">exact</string>
@@ -44,8 +45,6 @@
     <string name="input_team_filter_status_member">Member:</string>
     <string name="input_team_filter_status_empty">No filter</string>
     <string name="input_data_no_team">&lt;No team selected></string>
-    <string name="input_data_tab_general">General</string>
-    <string name="input_data_tab_withdraw">Withdraw</string>
     <string name="input_data_time_now">Now</string>
     <string name="input_data_check_all">Check all</string>
     <string name="input_data_check_nothing">Clear</string>
@@ -54,6 +53,7 @@
     <string name="input_data_res_start_time">Start time:</string>
     <string name="input_data_res_finish_time">Finish time:</string>
     <string name="input_data_res_missed">Missed:</string>
+    <string name="input_data_withdraw_member">Withdraw</string>
     <string name="input_withdraw_no_team">&lt;No team selected></string>
     <string name="input_withdraw_member_column">Member</string>
     <string name="input_withdraw_withdraw_column">Withdraw</string>
@@ -89,7 +89,7 @@
     <string name="settings_transp_user_id">Transport user ID:</string>
     <string name="settings_transp_user_password">Transport user password:</string>
     <string name="settings_team_clear_filter">Clear team filter after OK:</string>
-    <string name="settings_input_checkboxes_per_line">Input data checkboxes per line:</string>
+    <string name="settings_team_fast_select">Fast team select:</string>
     <string name="settings_applied">Settings applied</string>
     <string name="transp_export_title">Export</string>
     <string name="transp_export_full">Export full</string>

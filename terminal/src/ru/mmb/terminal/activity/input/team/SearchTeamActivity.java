@@ -1,7 +1,6 @@
 package ru.mmb.terminal.activity.input.team;
 
 import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_DATA_ACTIVITY;
-import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY;
 
 import java.util.List;
 
@@ -9,7 +8,6 @@ import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.data.InputDataActivity;
 import ru.mmb.terminal.activity.input.team.model.DataProvider;
 import ru.mmb.terminal.activity.input.team.model.TeamListRecord;
-import ru.mmb.terminal.activity.input.withdraw.WithdrawMemberActivity;
 import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
@@ -34,9 +32,10 @@ public class SearchTeamActivity extends Activity
 	private ListView lvTeams;
 	private TextView labSelectedTeam;
 	private Button btnInputData;
-	private Button btnWithdraw;
+	private Button btnMode;
 
 	private FilterPanel filterPanel;
+	private SortButtons sortButtons;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -49,7 +48,7 @@ public class SearchTeamActivity extends Activity
 		setContentView(R.layout.input_team);
 
 		filterPanel = new FilterPanel(this, currentState);
-		new SortButtons(this, currentState);
+		sortButtons = new SortButtons(this, currentState);
 
 		lvTeams = (ListView) findViewById(R.id.inputTeam_teamsList);
 		initListAdapters();
@@ -57,15 +56,16 @@ public class SearchTeamActivity extends Activity
 
 		labSelectedTeam = (TextView) findViewById(R.id.inputTeam_selectedTeamTextView);
 		btnInputData = (Button) findViewById(R.id.inputTeam_inputDataButton);
-		btnWithdraw = (Button) findViewById(R.id.inputTeam_withdrawMemberButton);
+		btnMode = (Button) findViewById(R.id.inputTeam_modeButton);
 
 		btnInputData.setOnClickListener(new InputDataClickListener());
-		btnWithdraw.setOnClickListener(new WithdrawMemberClickListener());
+		btnMode.setOnClickListener(new ModeClickListener());
 
 		setTitle(currentState.getTitleText(this));
 
 		refreshTeams(!CLEAR_SELECTED_TEAM);
 		refreshSelectedTeamLabel();
+		refreshModeButtonState();
 		refreshInputButtonsState();
 	}
 
@@ -81,6 +81,8 @@ public class SearchTeamActivity extends Activity
 		items = dataProvider.getTeams(distanceId, SortColumn.MEMBER);
 		adapterByMember = new TeamsAdapter(this, R.layout.input_team_row, items);
 		((TeamFilter) adapterByMember.getFilter()).initialize(items, currentState);
+
+		filterPanel.addObserversToAdapters();
 	}
 
 	public void refreshTeams()
@@ -104,7 +106,7 @@ public class SearchTeamActivity extends Activity
 		refreshInputButtonsState();
 	}
 
-	private TeamsAdapter getAdapterBySortColumn(SortColumn sortColumn)
+	public TeamsAdapter getAdapterBySortColumn(SortColumn sortColumn)
 	{
 		if (sortColumn == SortColumn.MEMBER)
 			return adapterByMember;
@@ -120,7 +122,14 @@ public class SearchTeamActivity extends Activity
 	public void refreshInputButtonsState()
 	{
 		btnInputData.setEnabled(currentState.isTeamSelected());
-		btnWithdraw.setEnabled(currentState.isTeamSelected());
+	}
+
+	private void refreshModeButtonState()
+	{
+		if (Settings.getInstance().isTeamFastSelect())
+			btnMode.setText(getResources().getString(R.string.input_team_mode_usual));
+		else
+			btnMode.setText(getResources().getString(R.string.input_team_mode_fast));
 	}
 
 	@Override
@@ -129,7 +138,6 @@ public class SearchTeamActivity extends Activity
 		switch (requestCode)
 		{
 			case REQUEST_CODE_INPUT_DATA_ACTIVITY:
-			case REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY:
 				onInputActivityResult(resultCode, data);
 				break;
 			default:
@@ -162,25 +170,36 @@ public class SearchTeamActivity extends Activity
 		currentState.saveToSharedPreferences(getPreferences(MODE_PRIVATE));
 	}
 
+	public TeamsAdapter getCurrentAdapter()
+	{
+		return getAdapterBySortColumn(currentState.getSortColumn());
+	}
+
+	public void selectTeamAndStartInput()
+	{
+		if (!Settings.getInstance().isTeamFastSelect()) return;
+
+		// teams are already filtered
+		if (lvTeams.getAdapter().isEmpty()) return;
+
+		int teamId = (int) lvTeams.getAdapter().getItemId(0);
+		currentState.setCurrentTeam(teamId);
+		startInputDataActivity();
+	}
+
+	private void startInputDataActivity()
+	{
+		Intent intent = new Intent(getApplicationContext(), InputDataActivity.class);
+		currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_DATA_ACTIVITY);
+		startActivityForResult(intent, REQUEST_CODE_INPUT_DATA_ACTIVITY);
+	}
+
 	private class InputDataClickListener implements OnClickListener
 	{
 		@Override
 		public void onClick(View v)
 		{
-			Intent intent = new Intent(getApplicationContext(), InputDataActivity.class);
-			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_DATA_ACTIVITY);
-			startActivityForResult(intent, REQUEST_CODE_INPUT_DATA_ACTIVITY);
-		}
-	}
-
-	private class WithdrawMemberClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Intent intent = new Intent(getApplicationContext(), WithdrawMemberActivity.class);
-			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY);
-			startActivityForResult(intent, REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY);
+			startInputDataActivity();
 		}
 	}
 
@@ -192,6 +211,19 @@ public class SearchTeamActivity extends Activity
 			currentState.setCurrentTeam((int) itemId);
 			refreshSelectedTeamLabel();
 			refreshInputButtonsState();
+		}
+	}
+
+	private class ModeClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			boolean newTeamFastSelect = !Settings.getInstance().isTeamFastSelect();
+			Settings.getInstance().setTeamFastSelect(Boolean.toString(newTeamFastSelect));
+			filterPanel.switchMode();
+			sortButtons.switchMode();
+			refreshModeButtonState();
 		}
 	}
 }

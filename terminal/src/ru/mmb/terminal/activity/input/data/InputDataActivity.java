@@ -1,8 +1,11 @@
 package ru.mmb.terminal.activity.input.data;
 
+import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.StateChangeListener;
+import ru.mmb.terminal.activity.input.withdraw.WithdrawMemberActivity;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -16,6 +19,7 @@ public class InputDataActivity extends Activity implements StateChangeListener
 	private TextView labTeam;
 	private TextView labResult;
 	private Button btnOk;
+	private Button btnWithdraw;
 
 	private DatePanel datePanel;
 
@@ -35,12 +39,14 @@ public class InputDataActivity extends Activity implements StateChangeListener
 		labTeam = (TextView) findViewById(R.id.inputData_teamNameTextView);
 		labResult = (TextView) findViewById(R.id.inputData_resultTextView);
 		btnOk = (Button) findViewById(R.id.inputData_okButton);
+		btnWithdraw = (Button) findViewById(R.id.inputData_withdrawButton);
 
 		setTitle(currentState.getTitleText(this));
 		labTeam.setText(currentState.getCurrentTeamText(this));
 		labResult.setText(currentState.getResultText(this));
 
 		btnOk.setOnClickListener(new OkBtnClickListener());
+		btnWithdraw.setOnClickListener(new WithdrawMemberClickListener());
 
 		currentState.addStateChangeListener(this);
 	}
@@ -81,5 +87,16 @@ public class InputDataActivity extends Activity implements StateChangeListener
 	{
 		super.onResume();
 		datePanel.refreshDateControls();
+	}
+
+	private class WithdrawMemberClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			Intent intent = new Intent(getApplicationContext(), WithdrawMemberActivity.class);
+			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY);
+			startActivity(intent);
+		}
 	}
 }

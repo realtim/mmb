@@ -17,7 +17,8 @@
             android:id="@+id/inputWithdraw_teamNameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
+            android:layout_gravity="left"
+            android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="@string/input_withdraw_no_team" />
 
         <LinearLayout
