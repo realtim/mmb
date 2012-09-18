@@ -94,7 +94,7 @@
 				<input type = "hidden" name = "view" value = "MainPage">
 				<input type = "hidden" name = "sessionid" value = "<? echo $SessionId; ?>">
 				<input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
-				<a href="javascript:document.StartPageForm.submit();"><img  style = "margin-bottom: 15px;" width = "157" height = "139" border = "0" alt = "ММБ"  src = "http://mmb.progressor.ru/mmbicons/mmb2012v-logo-s_4.png"></a>
+				<div align="center"><a href="javascript:document.StartPageForm.submit();"><img style="margin-bottom: 15px; border: none" width="160" height="140" alt="ММБ" src="http://mmb.progressor.ru/mmbicons/logo.png"></a></div>
                        </form> 
 
 			<!-- вставка меню на php -->
