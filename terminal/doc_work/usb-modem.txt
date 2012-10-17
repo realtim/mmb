@@ -1,0 +1,14 @@
+Команды для модемов Huawei:
+http://3g-huawei.clan.su/publ/help_information/at_command_modem_huawei/2-1-0-10
+
+Вход в hyperterminal.
+ATE1
+OK
+AT^U2DIAG=0 - отключение всего, кроме модема
+OK
+AT^U2DIAG=268 - включение стандартного набора на E173
+OK
+
+
+Ещё можно пробовать AT^U2DIAG=255 - сброс к заводским установкам, 
+AT^U2DIAG=256 - всключить стандартный набор без CD.
