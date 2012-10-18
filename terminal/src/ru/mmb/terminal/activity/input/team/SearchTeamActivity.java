@@ -10,10 +10,12 @@ import ru.mmb.terminal.activity.input.team.model.DataProvider;
 import ru.mmb.terminal.activity.input.team.model.TeamListRecord;
 import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
@@ -153,6 +155,10 @@ public class SearchTeamActivity extends Activity
 			{
 				filterPanel.reset();
 			}
+			if (Settings.getInstance().isTeamFastSelect())
+			{
+				filterPanel.focusNumberInputAndShowKeyboard();
+			}
 		}
 	}
 
@@ -184,6 +190,12 @@ public class SearchTeamActivity extends Activity
 
 		int teamId = (int) lvTeams.getAdapter().getItemId(0);
 		currentState.setCurrentTeam(teamId);
+
+		// hide soft keyboard
+		InputMethodManager imm =
+		    (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(lvTeams.getApplicationWindowToken(), 0);
+
 		startInputDataActivity();
 	}
 

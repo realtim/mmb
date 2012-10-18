@@ -16,7 +16,8 @@ public class InputDataActivity extends Activity implements StateChangeListener
 {
 	private InputDataActivityState currentState;
 
-	private TextView labTeam;
+	private TextView labTeamName;
+	private TextView labTeamNumber;
 	private TextView labResult;
 	private Button btnOk;
 	private Button btnWithdraw;
@@ -36,13 +37,18 @@ public class InputDataActivity extends Activity implements StateChangeListener
 		datePanel = new DatePanel(this, currentState);
 		new CheckpointPanel(this, currentState);
 
-		labTeam = (TextView) findViewById(R.id.inputData_teamNameTextView);
+		labTeamName = (TextView) findViewById(R.id.inputData_teamNameTextView);
+		labTeamNumber = (TextView) findViewById(R.id.inputData_teamNumberTextView);
 		labResult = (TextView) findViewById(R.id.inputData_resultTextView);
 		btnOk = (Button) findViewById(R.id.inputData_okButton);
 		btnWithdraw = (Button) findViewById(R.id.inputData_withdrawButton);
 
 		setTitle(currentState.getTitleText(this));
-		labTeam.setText(currentState.getCurrentTeamText(this));
+		if (currentState.getCurrentTeam() != null)
+		{
+			labTeamName.setText(currentState.getCurrentTeam().getTeamName());
+			labTeamNumber.setText(Integer.toString(currentState.getCurrentTeam().getTeamNum()));
+		}
 		labResult.setText(currentState.getResultText(this));
 
 		btnOk.setOnClickListener(new OkBtnClickListener());

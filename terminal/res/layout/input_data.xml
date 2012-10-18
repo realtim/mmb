@@ -12,7 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical" >
-        <LinearLayout
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="right" >
@@ -24,13 +25,27 @@
                 android:layout_weight="1"
                 android:orientation="vertical" >
 
-                <TextView
-                    android:id="@+id/inputData_teamNameTextView"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="left"
-                    android:text="@string/input_data_no_team"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
+                    android:layout_gravity="left" >
+
+                    <TextView
+                        android:id="@+id/inputData_teamNumberTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/input_data_no_team_number"
+                        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                    <TextView
+                        android:id="@+id/inputData_teamNameTextView"
+                        android:layout_width="400dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/global_padding"
+                        android:text="@string/input_data_no_team"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="@color/Tan" />
+                </LinearLayout>
             </LinearLayout>
 
             <Button

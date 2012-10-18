@@ -8,12 +8,14 @@ import java.util.Map;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.widget.EditTextWithSoftKeyboardSupport;
+import android.content.Context;
 import android.database.DataSetObserver;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
@@ -200,6 +202,16 @@ public class FilterPanel extends ModeSwitchable
 	{
 		clearFilterControls();
 		refreshFilter();
+	}
+
+	public void focusNumberInputAndShowKeyboard()
+	{
+		if (!Settings.getInstance().isTeamFastSelect()) return;
+
+		editFilterNumber.requestFocus();
+		InputMethodManager imm =
+		    (InputMethodManager) searchTeamActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 	}
 
 	private class HideFilterClickListener implements OnClickListener
