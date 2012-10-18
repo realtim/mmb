@@ -306,16 +306,21 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	// RaidStage указывает на то, на какой временной стадии находится ммб
 	// 0 - raid_registrationenddate IS NULL, марш-бросок не показывать
 	// 1 - raid_registrationenddate еще не наступил
-	// 2 - raid_registrationenddate наступил, но первый этап не стартовал
-	// 3 - первый этап стартовал, финиш еще не закрылся
-	// 4 - финиш закрылся, raid_closedate IS NULL или не наступил
-	// 5 - raid_closedate наступил
+	// 2 - raid_registrationenddate наступил, но удалять участников еще можно
+	// 3 - удалять участников уже нельзя, но первый этап не стартовал
+	// 4 - первый этап стартовал, финиш еще не закрылся
+	// 5 - финиш закрылся, raid_closedate IS NULL или не наступил
+	// 6 - raid_closedate наступил
 	$sql = "select
 		CASE
 			WHEN r.raid_registrationenddate IS NULL THEN 0
-			WHEN r.raid_registrationenddate > NOW() THEN 1
+			WHEN r.raid_registrationenddate >= DATE(NOW()) THEN 1
 			ELSE 2
 		END as registration,
+		(select count(*) from Levels l
+			inner join Distances d on l.distance_id = d.distance_id
+			where (d.raid_id = r.raid_id) and (NOW() >= DATE_SUB(l.level_begtime, INTERVAL 12 HOUR)))
+		as cantdelete,
 		(select count(*) from Levels l
 			inner join Distances d on l.distance_id = d.distance_id
 			where (d.raid_id = r.raid_id) and (NOW() >= l.level_begtime))
@@ -325,7 +330,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 			where (d.raid_id = r.raid_id) and (NOW() < l.level_endtime))
 		as notfinished,
 		CASE
-			WHEN (r.raid_closedate IS NULL) OR (NOW() < r.raid_closedate) THEN 0
+			WHEN (r.raid_closedate IS NULL) OR (r.raid_closedate >= DATE(NOW())) THEN 0
 			ELSE 1
 		END as closed
 		from Raids r where r.raid_id=".$RaidId;
@@ -335,12 +340,13 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	elseif ($Row['registration'] == 1) $RaidStage = 1;
 	else
 	{
-		if ($Row['started'] == 0) $RaidStage = 2;
-		elseif ($Row['notfinished'] > 0) $RaidStage = 3;
+		if ($Row['cantdelete'] == 0) $RaidStage = 2;
+		elseif ($Row['started'] == 0) $RaidStage = 3;
+		elseif ($Row['notfinished'] > 0) $RaidStage = 4;
 		else
 		{
-			if ($Row['closed'] == 0) $RaidStage = 4;
-			else $RaidStage = 5;
+			if ($Row['closed'] == 0) $RaidStage = 5;
+			else $RaidStage = 6;
 		}
 	}
 	mysql_free_result($Result);
@@ -359,16 +365,16 @@ function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage)
 
 	// Если марш-бросок закрыт через raid_closedate - остальным нельзя
 	// (включая модераторов)
-	if ($RaidStage == 5) return(0);
+	if ($RaidStage == 6) return(0);
 
 	// В старом марш-броске можно всем, если он открыт через raid_closedate
 	if ($OldMmb) return(1);
 
 	// Модератор может до закрытия редактирования через raid_closedate
-	if ($Moderator && ($RaidStage < 5)) return(1);
+	if ($Moderator && ($RaidStage < 6)) return(1);
 
-	// Обычные пользователи могут до начала марш-броска
-	if ($RaidStage < 3) return(1); else return(0);
+	// Обычные пользователи могут до окончания регистрации
+	if ($RaidStage < 2) return(1); else return(0);
 }
 
 // ----------------------------------------------------------------------------
@@ -383,7 +389,7 @@ function CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage)
 	if ($Administrator) return(1);
 
 	// Модератор может до закрытия редактирования через raid_closedate
-	if ($Moderator && ($RaidStage < 5)) return(1);
+	if ($Moderator && ($RaidStage < 6)) return(1);
 
 	// Посторонний участник не может никогда
 	if (!$TeamUser) return(0);
@@ -391,9 +397,9 @@ function CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage)
 	// Здесь и ниже остались только члены команды
 
 	// В старом марш-броске можно, если он открыт через raid_closedate
-	if ($OldMmb && ($RaidStage < 5)) return(1);
+	if ($OldMmb && ($RaidStage < 6)) return(1);
 
-	// А в обычном только до начала марш-броска
+	// А в обычном только не позже 12 часов до начала марш-броска
 	if ($RaidStage < 3) return(1); else return(0);
 }
 
@@ -407,10 +413,10 @@ function CanViewResults($Administrator, $Moderator, $RaidStage)
 
 	// Администратор и модератор могут после старта марш-броска
 	// (раньше результатов все равно быть не должно)
-	if (($Administrator || $Moderator) && ($RaidStage > 2)) return(1);
+	if (($Administrator || $Moderator) && ($RaidStage > 3)) return(1);
 
 	// Все остальные могут после финиша марш-броска
-	if ($RaidStage > 3) return(1); else return(0);
+	if ($RaidStage > 4) return(1); else return(0);
 }
 
 // ----------------------------------------------------------------------------
@@ -428,17 +434,17 @@ function CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidSta
 	if (!$TeamUser && !$Moderator) return(0);
 
 	// После наступления raid_closedate нельзя
-	if ($RaidStage == 5) return(0);
+	if ($RaidStage == 6) return(0);
 
 	// В старом марш-броске можно всегда
 	if ($OldMmb) return(1);
 
 	// Модератор может после старта марш-броска
-	if ($Moderator && ($RaidStage > 2)) return(1);
+	if ($Moderator && ($RaidStage > 3)) return(1);
 
 	// Члены команды могут после финиша марш-броска
 	// и до закрытия через raid_closedate
-	if ($RaidStage > 3) return(1); else return(0);
+	if ($RaidStage > 4) return(1); else return(0);
 }
 
 // ----------------------------------------------------------------------------

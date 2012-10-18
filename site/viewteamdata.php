@@ -349,7 +349,8 @@ print('</td></tr>'."\n");
 // Закончили вывод списка участников
 
 // ============ Новый участник
-if ($AllowEdit == 1)
+// Возможность добавлять участников заканчивается вместе с возсожностью создавать команды
+if (($AllowEdit == 1) && CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage))
 {
 	print('<tr><td class="input" style="padding-top: 10px;">'."\n");
 	if (($viewmode == "Add") && !$Moderator)

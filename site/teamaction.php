@@ -180,7 +180,14 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			$viewsubmode = "ReturnAfterError";
 			return;
 		}
-
+		if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage))
+		{
+			$NewUserId = 0;
+			$statustext = 'Добавление новых участников закрыто';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+		}
 	}
 	else
 	{

@@ -199,7 +199,7 @@ if (!isset($MyPHPScript)) return;
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
                 if  (empty($OrderType))
                 {
-                  if ($RaidStage > 2) $OrderType = "Place"; else $OrderType = "Num";
+                  if ($RaidStage > 3) $OrderType = "Place"; else $OrderType = "Num";
                 }
 
             	print('<div align = "left" style = "font-size: 80%;">'."\r\n");
@@ -207,7 +207,7 @@ if (!isset($MyPHPScript)) return;
 		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;" 
                                onchange = "OrderTypeChange();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
 	        print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >убыванию номера'."\r\n");
-		if ($RaidStage > 2)
+		if ($RaidStage > 3)
 		{
 	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
 		}
@@ -525,7 +525,7 @@ if (!isset($MyPHPScript)) return;
 			}
 			if (!$TeamProgress)
 			{
-				if ($RaidStage < 3) $DismissNames[$DistanceId][0] = '';
+				if ($RaidStage < 4) $DismissNames[$DistanceId][0] = '';
 				else $DismissNames[$DistanceId][0] = "\n".'<br><i>Не вышла на старт</i>';
 			}
 			else $DismissNames[$DistanceId][$TeamProgress] = "\n".'<br><i>Не вышла на этап '.$Row['level_name'].'</i>';
