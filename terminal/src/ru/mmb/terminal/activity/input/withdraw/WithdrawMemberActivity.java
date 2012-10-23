@@ -16,7 +16,8 @@ import android.widget.TextView;
 public class WithdrawMemberActivity extends Activity implements StateChangeListener
 {
 	private WithdrawMemberActivityState currentState;
-	private TextView labTeam;
+	private TextView labTeamName;
+	private TextView labTeamNumber;
 	private TextView labResult;
 	private Button btnOk;
 	private ListView lvMembers;
@@ -34,13 +35,15 @@ public class WithdrawMemberActivity extends Activity implements StateChangeListe
 		lvMembers = (ListView) findViewById(R.id.inputWithdraw_withdrawList);
 		initListAdapter();
 
-		labTeam = (TextView) findViewById(R.id.inputWithdraw_teamNameTextView);
+		labTeamName = (TextView) findViewById(R.id.inputWithdraw_teamNameTextView);
+		labTeamNumber = (TextView) findViewById(R.id.inputWithdraw_teamNumberTextView);
 		labResult = (TextView) findViewById(R.id.inputWithdraw_resultTextView);
 		btnOk = (Button) findViewById(R.id.inputWithdraw_okButton);
 
 		setTitle(currentState.getTitleText(this));
 
-		labTeam.setText(currentState.getCurrentTeamText(this));
+		labTeamName.setText(currentState.getCurrentTeam().getTeamName());
+		labTeamNumber.setText(Integer.toString(currentState.getCurrentTeam().getTeamNum()));
 		labResult.setText(currentState.getResultText(this));
 
 		btnOk.setOnClickListener(new OkBtnClickListener());

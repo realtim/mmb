@@ -54,6 +54,7 @@
     <string name="input_data_res_finish_time">Время финиша:</string>
     <string name="input_data_res_missed">Пропущено:</string>
     <string name="input_data_withdraw_member">Сход</string>
+    <string name="input_withdraw_no_team_number">333</string>
     <string name="input_withdraw_no_team">&lt;Команда не выбрана></string>
     <string name="input_withdraw_member_column">Участник</string>
     <string name="input_withdraw_withdraw_column">Сошёл</string>

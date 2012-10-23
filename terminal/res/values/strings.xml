@@ -55,6 +55,7 @@
     <string name="input_data_res_finish_time">Finish time:</string>
     <string name="input_data_res_missed">Missed:</string>
     <string name="input_data_withdraw_member">Withdraw</string>
+    <string name="input_withdraw_no_team_number">333</string>
     <string name="input_withdraw_no_team">&lt;No team selected></string>
     <string name="input_withdraw_member_column">Member</string>
     <string name="input_withdraw_withdraw_column">Withdraw</string>

@@ -130,14 +130,15 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:orientation="vertical" >
-
+
                 <TextView
                     android:id="@+id/inputData_resultTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="right"
                     android:layout_marginTop="@dimen/global_padding"
-                    android:text="@string/input_data_no_result" />
+                    android:text="@string/input_data_no_result"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"

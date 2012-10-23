@@ -137,13 +137,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="right" >
-
+
                     <TextView
                         android:id="@+id/inputData_resultTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="right"
-                        android:text="@string/input_data_no_result" />
+                        android:text="@string/input_data_no_result"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
 
                     <Button
                         android:id="@+id/inputData_okButton"
