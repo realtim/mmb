@@ -102,14 +102,14 @@ if (isset($_FILES['android']))
 		// Если оказались здесь - обрабатываем строчку с данными
 		if (!$type) die("Не указан тип данных");
 		if ($type == "end") die("Данные после строки 'end'");
-		if ($type == "TeamLevelDismiss") die("Обработка TeamLevelDismiss пока не реализована");
 
-		// Данные о командах на контрольной точке
-		if ($type == "TeamLevelPoints")
+		// Единая проверка валидности оператора, который ввел данные,
+		// его планшета и контрольной точки, где происходил ввод
+		if (($type == "TeamLevelDismiss") || ($type == "TeamLevelPoints"))
 		{
 			// Получаем переменные
 			$values = explode(';', $line);
-			if (count($values) <> 8) die("Некорректное число параметров в строке #".$line_num." - ".$line);
+			if (count($values) < 6) die("Некорректное число параметров в строке #".$line_num." - ".$line);
 			foreach ($values as &$value) $value = trim($value, '"');
 			// Проверяем наличие в базе оператора данных
 			$sql = "select user_id from Users where user_id = ".mysql_real_escape_string($values[0]);
@@ -117,7 +117,8 @@ if (isset($_FILES['android']))
 			if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующий автор данных в строке #".$line_num." - ".$line);
 			mysql_free_result($Result);
 			// Проверяем наличие в базе устройства для ввода данных
-			$sql = "select device_id from Devices where device_id = ".mysql_real_escape_string($values[4]);
+			if ($type == "TeamLevelPoints") $device_id = $values[4]; else $device_id = $values[5];
+			$sql = "select device_id from Devices where device_id = ".mysql_real_escape_string($device_id);
 			$Result = mysql_query($sql);
 			if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующее устройство ввода данных в строке #".$line_num." - ".$line);
 			mysql_free_result($Result);
@@ -153,15 +154,35 @@ if (isset($_FILES['android']))
 				$endtime = $Row['level_endtime'];
 			}
 			mysql_free_result($Result);
+		}
+		else die("Неизвестный тип данных '".$type."'");
+
+		// Данные о сходе участников на контрольной точке
+		if ($type == "TeamLevelDismiss")
+		{
+			// Проверяем точное число параметров в строке
+			if (count($values) <> 6) die("Некорректное число параметров в строке #".$line_num." - ".$line);
+			// Проверяем, является ли сошедший участник членом команды
+			$sql = "select teamuser_id from TeamUsers where team_id = ".mysql_real_escape_string($values[2])." and user_id = ".mysql_real_escape_string($values[3]);
+			$Result = mysql_query($sql);
+			if (!$Result || mysql_num_rows($Result) <> 1) die("Сошедшего участника нет в его команде в строке #".$line_num." - ".$line);
+			mysql_free_result($Result);
+		}
+
+		// Данные о командах на контрольной точке
+		if ($type == "TeamLevelPoints")
+		{
+			// Проверяем точное число параметров в строке
+			if (count($values) <> 8) die("Некорректное число параметров в строке #".$line_num." - ".$line);
 			// Проверяем, что команда отметилась на контрольной точке в то время, когда точка была открыта
 			$sql = "select * from Levels WHERE UNIX_TIMESTAMP('".$values[5]."') >= UNIX_TIMESTAMP('".$begtime."') and UNIX_TIMESTAMP('".$values[5]."') <= UNIX_TIMESTAMP('".$endtime."') LIMIT 1";
 			$Result = mysql_query($sql);
-			if (!$Result || !mysql_num_rows($Result)) die("Некорректное время прихода на контрольную точку в строке #".$line_num." - ".$line);
+			if (!$Result || !mysql_num_rows($Result)) die("Время прихода на контрольную точку не совпадает со временем ее работы в строке #".$line_num." - ".$line);
 			mysql_free_result($Result);
 			// Проверяем, что время регистрации результата >= времени прихода команды
 			$sql = "select * from Levels WHERE UNIX_TIMESTAMP('".$values[3]."') >= UNIX_TIMESTAMP('".$values[5]."') LIMIT 1";
 			$Result = mysql_query($sql);
-			if (!$Result || !mysql_num_rows($Result)) die("Некорректное время регистрации результата в строке #".$line_num." - ".$line);
+			if (!$Result || !mysql_num_rows($Result)) die("Время регистрации результата меньше времени регистрируемого результата в строке #".$line_num." - ".$line);
 			mysql_free_result($Result);
 			// Получаем список полный КП этапа, на котором зарегистрирован результат
 			$sql = "select level_pointnames from Levels where level_id = ".$level_id;
@@ -188,7 +209,6 @@ if (isset($_FILES['android']))
 			$teamlevelpoint_points[$line_num] = implode(",", $bit_points);
 			if ($pointtype_id <> 2) $teamlevelpoint_points[$line_num] = "NULL";
 		}
-		else die("Неизвестный тип данных '".$type."'");
 	}
 	// Проверяем, что в конце файла был end
 	if ($line <> "end") die("В конце файла отсутствует 'end'");
@@ -199,6 +219,8 @@ if (isset($_FILES['android']))
 
 	// Повторно сканируем файл и берем из него данные с минимумом проверок
 	$n_new = $n_updated = $n_unchanged = 0;
+	$d_new = $d_updated = $d_unchanged = 0;
+	$d_dismiss = $d_delete = 0;
 	foreach ($lines as $line_num => $line)
 	{
 		// Логин и пароль уже не проверяем
@@ -215,6 +237,105 @@ if (isset($_FILES['android']))
 			continue;
 		}
 		else if ($line == "end") continue;
+
+		// Данные о сходе участников на контрольной точке
+		if ($type == "TeamLevelDismiss")
+		{
+			// Получаем переменные
+			$values = explode(';', $line);
+			foreach ($values as &$value) $value = mysql_real_escape_string(trim($value, '"'));
+			// Выясняем, есть ли уже такая запись
+			$sql = "select teamleveldismiss_date, device_id from TeamLevelDismiss where user_id = ".$values[0].
+				" and levelpoint_id = ".$values[1]." and team_id = ".$values[2]." and teamuser_id = ".$values[3];
+			$Result = mysql_query($sql);
+			$Old = mysql_fetch_assoc($Result);
+			if (!$Old) $Record = "new";
+			else
+			{
+				foreach ($Old as &$val) $val = mysql_real_escape_string($val);
+				if (($Old['teamleveldismiss_date'] == $values[4]) &&
+				    ($Old['device_id'] == $values[5]))
+					$Record = "unchanged";
+				else $Record = "updated";
+			}
+			mysql_free_result($Result);
+			// Если записи раньше не было - вставляем ее в таблицу
+			if ($Record == "new")
+			{
+				// новая запись о результате
+				$d_new++;
+				$sql = "insert into TeamLevelDismiss
+					(teamleveldismiss_date, user_id, device_id, levelpoint_id, team_id, teamuser_id)
+					values ('".$values[4]."', '".$values[0]."', '".$values[5]."', '".$values[1]."', '".$values[2]."', '".$values[3]."')";
+				mysql_query($sql);
+				if (mysql_error()) die($sql.": ".mysql_error());
+			}
+			elseif ($Record == "updated")
+			{
+				// измененная запись о результате
+				$d_updated++;
+				$sql = "update TeamLevelDismiss set
+					teamleveldismiss_date = '".$values[4]."',
+					device_id = ".$values[5]."
+					where user_id = ".$values[0]." and levelpoint_id = ".$values[1].
+					" and team_id = ".$values[2]." and teamuser_id = ".$values[3];
+				mysql_query($sql);
+				if (mysql_error()) die($sql.": ".mysql_error());
+			}
+			else
+			{
+				// дубль, игнорируем
+				$d_unchanged++;
+				continue;
+			}
+			// =============== Данные импортировали, теперь обновляем другие таблицы на основе импортированной записи
+			// Выясняем level_id контрольной точки, на которой зарегистрирован сход
+			$sql = "select level_id, levelpoint_order from LevelPoints where levelpoint_id = ".$values[1];
+			$Result = mysql_query($sql);
+			$Row = mysql_fetch_assoc($Result);
+			$new_level_dismiss = $Row['level_id'];
+			$new_levelpoint_order = $Row['levelpoint_order'];
+			mysql_free_result($Result);
+			// Получаем из базы текущую информацию о сходе участника
+			$sql = "select teamuser_hide, level_id from TeamUsers where team_id = ".$values[2]." and user_id = ".$values[3];
+			$Result = mysql_query($sql);
+			$Row = mysql_fetch_assoc($Result);
+			$old_level_dismiss = $Row['level_id'];
+			$old_teamuser_hide = $Row['teamuser_hide'];
+			mysql_free_result($Result);
+			// Если он в базе сошел - выясняем порядковый номер контрольной точки, на которой он уже точно сошел
+			if ($old_level_dismiss == '')
+			{
+				$old_level_dismiss = "NULL";
+				$old_levelpoint_order = 9999;
+			}
+			else
+			{
+				$sql = "select levelpoint_order from LevelPoints where level_id = ".$old_level_dismiss." order by levelpoint_order desc";
+				$Result = mysql_query($sql);
+				$Row = mysql_fetch_assoc($Result);
+				$old_levelpoint_order = $Row['levelpoint_order'];
+			}
+			mysql_free_result($Result);
+			// Если участник сошел на старте 1 этапа, то его надо удалить из команды
+			if ($new_levelpoint_order == 1)
+			{
+				$new_level_dismiss = "NULL";
+				$new_teamuser_hide = 1;
+			}
+			else $new_teamuser_hide = $old_teamuser_hide;
+			// Если в импортированных данных участник сошел раньше, чем в базе - обновляем базу
+			if ((($new_level_dismiss <> $old_level_dismiss) || ($new_teamuser_hide <> $old_teamuser_hide)) && ($new_levelpoint_order < $old_levelpoint_order))
+			{
+				$sql = "update TeamUsers set
+					teamuser_hide = ".$new_teamuser_hide.",
+					level_id = ".$new_level_dismiss."
+					where user_id = ".$values[3]." and team_id = ".$values[2];
+				mysql_query($sql);
+				if (mysql_error()) die($sql.": ".mysql_error());
+				if ($new_levelpoint_order == 1) $d_delete++; else $d_dismiss++;
+			}
+		}
 
 		// Данные о командах на контрольной точке
 		if ($type == "TeamLevelPoints")
@@ -271,8 +392,10 @@ if (isset($_FILES['android']))
 			{
 				// дубль, игнорируем
 				$n_unchanged++;
-//				continue;
+				continue;
 			}
+
+			// =============== Данные импортировали, теперь обновляем другие таблицы на основе импортированной записи
 			// Выясняем level_id и pointtype_id для обновления TeamLevels
 			$sql = "select level_id, pointtype_id from LevelPoints where levelpoint_id = ".$values[1];
 			$Result = mysql_query($sql);
@@ -362,10 +485,13 @@ if (isset($_FILES['android']))
 			mysql_query($sql);
 			if (mysql_error()) die($sql.": ".mysql_error());
 			// Пересчитываем штрафы и общий прогресс команды
+			RecalcTeamLevelPenalty($values[2]);
 			RecalcTeamResult($values[2]);
 		}
 	}
-	echo "$n_new результатов добавлено, $n_updated изменено, $n_unchanged являются дубликатами<br />";
+	echo "Команды: $n_new результатов добавлено, $n_updated изменено, $n_unchanged являются дубликатами<br />";
+	echo "Данные о сходах: $d_new добавлено, $d_updated изменено, $d_unchanged являются дубликатами<br />";
+	echo "У $d_dismiss участников изменена информация о сходе, $d_delete удалены из команд из-за неявки на старт<br />";
 }
 
 
@@ -376,4 +502,3 @@ if (!isset($MyPHPScript) or $action <> 'LoadRaidDataFile')
 }
 
 ?>
-
