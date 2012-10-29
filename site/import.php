@@ -485,6 +485,7 @@ if (isset($_FILES['android']))
 			mysql_query($sql);
 			if (mysql_error()) die($sql.": ".mysql_error());
 			// Пересчитываем штрафы и общий прогресс команды
+			RecalcTeamLevelDuration($values[2]);
 			RecalcTeamLevelPenalty($values[2]);
 			RecalcTeamResult($values[2]);
 		}

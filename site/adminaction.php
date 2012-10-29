@@ -270,14 +270,34 @@ function ValidateTeam($Team, $Levels)
 		if (!$endtime && ($teamlevel['teamlevel_progress'] == 2)) return(LogError($teamlevel['teamlevel_id'], 8));
 		// проверяем длину списка КП и пересчитываем штраф
 		$level_pointpenalties = explode(',', $Levels['level_pointpenalties'][$n]);
-		$teamlevel_points = explode(',', $teamlevel['teamlevel_points']);
+		$level_discountpoints = explode(',', $Levels['level_discountpoints'][$n]);
+		if ($teamlevel['teamlevel_points'] == "")
+		{
+			unset($teamlevel_points);
+			foreach ($level_pointpenalties as $penalty)
+				$teamlevel_points[] = "0";
+		}
+		else
+			$teamlevel_points = explode(',', $teamlevel['teamlevel_points']);
 		if (count($teamlevel_points) <> count($level_pointpenalties)) return(LogError($teamlevel['teamlevel_id'], 9));
 		$teamlevel_penalty = 0;
+		$teamlevel_selectpenalty = 0;
 		foreach ($teamlevel_points as $npoint => $point)
 		{
 			if ((($point == "0") && ((int)$level_pointpenalties[$npoint] > 0)) || (($point == "1") && ((int)$level_pointpenalties[$npoint] < 0)))
-				$teamlevel_penalty += (int)$level_pointpenalties[$npoint];
+			{
+				if ($level_discountpoints[$npoint])
+					$teamlevel_selectpenalty += (int)$level_pointpenalties[$npoint];
+				else
+					$teamlevel_penalty += (int)$level_pointpenalties[$npoint];
+			}
 		}
+		if ($Levels['level_discount'][$n])
+		{
+			$teamlevel_selectpenalty -= $Levels['level_discount'][$n];
+			if ($teamlevel_selectpenalty < 0) $teamlevel_selectpenalty = 0;
+		}
+		$teamlevel_penalty += $teamlevel_selectpenalty;
 		if ($teamlevel_penalty <> $teamlevel['teamlevel_penalty']) return(LogError($teamlevel['teamlevel_id'], 10));
 		// пока считаем, что ошибок на этапе нет
 		LogError($teamlevel['teamlevel_id'], 0);
@@ -304,8 +324,8 @@ function ValidateTeam($Team, $Levels)
 	// Сверяем итоговые прогресс и результат команды
 	if (!$finished) $team_result = "";
 	else $team_result = sprintf("%d:%02d:00", $team_result / 60, $team_result % 60);
-	if ($team_result <> $Team['team_result']) die('Ошибка подсчета итогового времени у команды '.$Team['team_id'].': правильное='.$team_result.", в базе=".$Team['team_result']);
-	if ($team_progress <> $Team['team_progress']) die('Ошибка подсчета итогового времени у команды '.$Team['team_id'].': правильное='.$team_result.", в базе=".$Team['team_result']);
+	if ($team_result <> $Team['team_result']) echo 'Ошибка подсчета итогового времени у команды '.$Team['team_id'].': правильное='.$team_result.", в базе=".$Team['team_result'], "<br>";
+	if ($team_progress <> $Team['team_progress']) echo 'Ошибка подсчета степени продвижения по дистанции у команды '.$Team['team_id'].': правильное='.$team_result.", в базе=".$Team['team_result'], "<br>";
 
 	// Ошибок в результатах команды не обнаружено
 	return(0);
