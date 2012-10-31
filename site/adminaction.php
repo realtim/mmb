@@ -58,7 +58,7 @@ if (empty($RaidId))
 		$CardsArr = $CardsArr.','.$Row['team_num'];
 	}
   }
-  mysql_free_result($UserResult);
+  mysql_free_result($Result);
 
   // записываем накопленное
   print($CardsArr.'<br />'."\n");
