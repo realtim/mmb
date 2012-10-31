@@ -47,6 +47,7 @@ if (!($Administrator)) return;
 	function JSON()
 	{ 
 		document.AdminForm.action.value = "JSON";
+                document.AdminForm.RaidId.value = document.FindTeamForm.RaidId.value;
 		document.AdminForm.submit();
 	}
 
