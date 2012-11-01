@@ -156,6 +156,12 @@ if ($action == "ChangeTeamResult")
 	RecalcTeamLevelPenalty($TeamId);
 	// Обновляем результат команды
 	RecalcTeamResult($TeamId);
+
+       // Если передали альтернативную страницу, на которую переходить (пока только одна возможность - на список команд)
+	$view = $_POST['view'];
+	if (empty($view)) $view = "ViewTeamData";
+}
+
 }
 // =============== Никаких действий не требуется ==============================
 else
