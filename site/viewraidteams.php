@@ -318,6 +318,29 @@ if (!isset($MyPHPScript)) return;
 		}
 		print('</div>'."\r\n");
 
+
+                // Информация о дистанции(ях)
+
+
+		    print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");
+
+		    $sql = "select  d.distance_name, d.distance_data
+  		            from Distances d
+                            where d.raid_id = ".$RaidId;
+				
+		    $Result = MySqlQuery($sql);
+
+		    // теперь цикл обработки данных по этапам
+		    while ($Row = mysql_fetch_assoc($Result))
+		    {
+                	print('<tr><td width = "100">'.$Row['distance_name'].'</td><td>'.$Row['distance_data'].'</td></tr>'."\r\n");
+		    }
+		    // конец цикла по этапам
+		    mysql_free_result($Result);
+
+		    print('</table>'."\r\n");
+		    
+
                 // Показываем этапы
 		if ($LevelDataVisible)
 		{
