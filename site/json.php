@@ -58,9 +58,10 @@ else
 
 if (empty($RaidId))
 {
-  $sql = "select top 1 raid_id
+  $sql = "select raid_id
  	  from Raids 
- 	  order by raid_registrationenddate desc";
+ 	  order by raid_registrationenddate desc
+	  LIMIT 0,1 ";
 
   $Result = MySqlQuery($sql);
   $Row = mysql_fetch_assoc($Result);

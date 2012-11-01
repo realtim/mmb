@@ -789,4 +789,38 @@ send_mime_mail('Автор письма',
         }
         // Конец очистик специальных массивов от возможных инъекций
 
+     // функция получает ссылку на  логотип
+     function GetMmbLogo($raidid)
+     {
+    
+         $logolink = "";      
+
+	if (empty($raidid))
+	{
+	$sql = "select raidlogo_link
+	        from Raids 
+		order by raid_registrationenddate desc
+		LIMIT 0,1 ";
+
+	} else {
+
+
+	$sql = "select raidlogo_link
+	        from Raids 
+		where  raid_id = ".$raidid."
+		LIMIT 0,1 ";
+	
+	}
+
+        $Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$logolink = $Row['raidlogo_link'];
+	mysql_free_result($Result);
+
+        return($logolink);
+
+      }
+      // Конец получения логотипа
+
+
 ?>
