@@ -797,7 +797,7 @@ send_mime_mail('Автор письма',
 
 	if (empty($raidid))
 	{
-	$sql = "select raidlogo_link
+	$sql = "select raid_logolink
 	        from Raids 
 		order by raid_registrationenddate desc
 		LIMIT 0,1 ";
@@ -805,7 +805,7 @@ send_mime_mail('Автор письма',
 	} else {
 
 
-	$sql = "select raidlogo_link
+	$sql = "select raid_logolink
 	        from Raids 
 		where  raid_id = ".$raidid."
 		LIMIT 0,1 ";
@@ -814,7 +814,7 @@ send_mime_mail('Автор письма',
 
         $Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
-	$logolink = $Row['raidlogo_link'];
+	$logolink = $Row['raid_logolink'];
 	mysql_free_result($Result);
 
         return($logolink);

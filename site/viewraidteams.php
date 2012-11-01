@@ -185,7 +185,11 @@ if (!isset($MyPHPScript)) return;
 
 
 		  $sql = "select COALESCE(r.raid_ruleslink, '') as raid_ruleslink,
-                                 COALESCE(r.raid_startlink, '') as raid_startlink
+                                 COALESCE(r.raid_startlink, '') as raid_startlink,
+                                 COALESCE(r.raid_kpwptlink, '') as raid_kpwptlink,
+                                 COALESCE(r.raid_legendlink, '') as raid_legendlink,
+                                 COALESCE(r.raid_ziplink, '') as raid_ziplink,
+                                 COALESCE(r.raid_znlink, '') as raid_znlink
 			  from  Raids r
 			  where r.raid_id = ".$RaidId."
                           "; 
@@ -195,6 +199,10 @@ if (!isset($MyPHPScript)) return;
 		  mysql_free_result($Result);
                 $RaidRulesLink = trim($Row['raid_ruleslink']);
                 $RaidStartLink = trim($Row['raid_startlink']);
+                $RaidKpWptLink = trim($Row['raid_kpwptlink']);
+                $RaidLegendLink = trim($Row['raid_legendlink']);
+                $RaidZipLink = trim($Row['raid_ziplink']);
+                $RaidZnLink = trim($Row['raid_znlink']);
 
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
                 if  (empty($OrderType))
@@ -292,7 +300,22 @@ if (!isset($MyPHPScript)) return;
             	print('<div align = "left" style = "margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
 		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidRulesLink.'" target = "_blank">Положение</a> '."\r\n");
 		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidStartLink.'" target = "_blank">Информация о старте</a> '."\r\n");
-//		print('<a  style = "font-size:80%;" href = "'.trim(str_replace('index.php','printraidteams.php?RaidId=',$MyPHPScript)).$RaidId.'" target = "_blank">Список для печати</a>'."\r\n");
+                if (trim($RaidKpWptLink) <> '')
+		{
+			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidKpWptLink.'" target = "_blank">Точки КП</a> '."\r\n");
+		}
+                if (trim($RaidLegendLink) <> '')
+		{
+			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidLegendLink.'" target = "_blank">Легенды КП</a> '."\r\n");
+		}
+                if (trim($RaidZipLink) <> '')
+		{
+			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidZipLink.'" target = "_blank">ZIP всех материалов</a> '."\r\n");
+		}
+                if (trim($RaidZnLink) <> '')
+		{
+			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidZnLink.'" target = "_blank">Значок</a> '."\r\n");
+		}
 		print('</div>'."\r\n");
 
                 // Показываем этапы
@@ -467,7 +490,7 @@ if (!isset($MyPHPScript)) return;
 
 			print('<td>'.$Row['level_name']."\r\n");
 
-			$sql = 'select levelmaplink_url
+			$sql = 'select levelmaplink_url, levelmapozilink_url
                                 from LevelMapLinks
                                 where level_id = '.$Row['level_id'].'
                                 order by levelmaplink_id';
@@ -482,6 +505,10 @@ if (!isset($MyPHPScript)) return;
 			{
 			    $MapsCount++;
 			    $MapString = $MapString.', <a href = "'.trim($RowMap['levelmaplink_url']).'" target = "_blank">'.$MapsCount.'</a>';
+			    if (trim($RowMap['levelmapozilink_url']) <> '')
+			    {
+			      $MapString = $MapString.' <a href = "'.trim($RowMap['levelmapozilink_url']).'" target = "_blank">map</a>';
+			    }  
 			}
 			mysql_free_result($ResultMap);
 			if (!empty($MapString))
