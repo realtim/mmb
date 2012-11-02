@@ -189,7 +189,8 @@ if (!isset($MyPHPScript)) return;
                                  COALESCE(r.raid_kpwptlink, '') as raid_kpwptlink,
                                  COALESCE(r.raid_legendlink, '') as raid_legendlink,
                                  COALESCE(r.raid_ziplink, '') as raid_ziplink,
-                                 COALESCE(r.raid_znlink, '') as raid_znlink
+                                 COALESCE(r.raid_znlink, '') as raid_znlink,
+				 raid_registrationenddate,  raid_closedate
 			  from  Raids r
 			  where r.raid_id = ".$RaidId."
                           "; 
@@ -203,6 +204,9 @@ if (!isset($MyPHPScript)) return;
                 $RaidLegendLink = trim($Row['raid_legendlink']);
                 $RaidZipLink = trim($Row['raid_ziplink']);
                 $RaidZnLink = trim($Row['raid_znlink']);
+                $RaidRegisterEndDt = $Row['raid_registrationenddate'];
+                $RaidCloseDt = $Row['raid_closedate'];
+   
 
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
                 if  (empty($OrderType))
@@ -306,7 +310,7 @@ if (!isset($MyPHPScript)) return;
 		}
                 if (trim($RaidLegendLink) <> '')
 		{
-			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidLegendLink.'" target = "_blank">Легенды КП</a> '."\r\n");
+			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidLegendLink.'" target = "_blank">Легенды</a> '."\r\n");
 		}
                 if (trim($RaidZipLink) <> '')
 		{
@@ -333,8 +337,28 @@ if (!isset($MyPHPScript)) return;
 		    // теперь цикл обработки данных по этапам
 		    while ($Row = mysql_fetch_assoc($Result))
 		    {
-                	print('<tr><td width = "100">'.$Row['distance_name'].'</td><td>'.$Row['distance_data'].'</td></tr>'."\r\n");
+                	print('<tr><td width = "100">'.$Row['distance_name'].'</td>
+			           <td width = "300">'.$Row['distance_data'].'</td>'."\r\n");
+
+                        // Если идёт регистрацию время окончания выделяем жирным
+                        if ($RaidStage == 1)
+			{ 
+			    print('<td style = "font-weight: bold;">Регистрация до: '.$RaidRegisterEndDt.'</td>'."\r\n");
+
+			} else {
+
+			    print('<td>Регистрация до: '.$RaidRegisterEndDt.'</td>'."\r\n");
+		
+			}
+				   
+			if (!empty($RaidCloseDt))
+			{	   
+			  print('<td>Протокол закрыт: '.$RaidCloseDt.'</td>'."\r\n");
+			}  
+			print('</tr>'."\r\n");
+
 		    }
+		    
 		    // конец цикла по этапам
 		    mysql_free_result($Result);
 
