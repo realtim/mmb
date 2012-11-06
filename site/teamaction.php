@@ -634,7 +634,152 @@ elseif ($action == "ViewRaidTeams")
 {
 	$view = "ViewRaidTeams";
 }
+// =============== Получение JSON экмпорта для жедающих анализировтаь протокол ===================
+// Сначала поместил в административный, но там нет доступа, кроме администратора
+elseif ($action == 'JsonExport')
+{
 
+	if (!isset($_REQUEST['RaidId'])) {$_REQUEST['RaidId'] = "";}
+
+	$RaidId = $_REQUEST['RaidId'];
+
+
+// Берём марш-бросок, который передан
+// Если такого нет - берём последний
+// Проверяем, что передали идентификатор ММБ
+
+
+if (empty($RaidId))
+{
+  $sql = "select raid_id
+ 	  from Raids 
+ 	  order by raid_registrationenddate desc
+	  LIMIT 0,1 ";
+
+  $Result = MySqlQuery($sql);
+  $Row = mysql_fetch_assoc($Result);
+  $RaidId = $Row['raid_id'];
+  mysql_free_result($Result);
+
+}
+
+
+
+// Сбор данных для дампа
+$data = array();
+
+// Raids: raid_id, raid_name, raid_registrationenddate
+$Sql = "select raid_id, raid_name 
+        from Raids 
+	where raid_id = ".$RaidId;
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Raids"][] = $Row; }
+mysql_free_result($Result);
+
+// Distances: distance_id, raid_id, distance_name
+$Sql = "select distance_id, raid_id, distance_name 
+        from Distances
+	where raid_id = ".$RaidId;
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
+mysql_free_result($Result);
+
+// Levels: level_id, distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
+$Sql = "select level_id, l.distance_id, level_name, level_order, level_starttype, 
+               level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime,
+	       level_minendtime, level_endtime, level_discountpoints, level_discount
+        from Levels l 
+	     inner join Distances d on l.distance_id = d.distance_id 
+        where d.raid_id = ".$RaidId;
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
+mysql_free_result($Result);
+
+// LevelPoints: levelpoint_id, level_id, pointtype_id
+/*
+$Sql = "select levelpoint_id, lp.level_id, pointtype_id from LevelPoints lp inner join Levels l on lp.level_id = l.level_id  inner join Distances d on l.distance_id = d.distance_id where d.raid_id = ".$RaidId;
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row; }
+mysql_free_result($Result);
+*/
+
+// Teams: team_id, distance_id, team_name, team_num // *
+$Sql = "select team_id, t.distance_id, team_name, team_num, team_usegps, team_greenpeace,
+        level_id, team_progress, team_result 
+        from Teams t 
+	     inner join Distances d on t.distance_id = d.distance_id 
+	where t.team_hide = 0  and d.raid_id = ".$RaidId;
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
+mysql_free_result($Result);
+
+// Users: user_id, user_name, user_birthyear // *
+// Добавил олграничение - только по текущему ММБ
+$Sql = "select u.user_id, u.user_name, u.user_birthyear 
+        from Users u
+	     inner join TeamUsers tu on u.user_id = tu.user_id
+	     inner join Teams t on tu.team_id = t.team_id 
+	     inner join Distances d on t.distance_id = d.distance_id 
+	where u.user_hide = 0 and t.team_hide = 0 and tu.teamuser_hide = 0 and d.raid_id = ".$RaidId;
+
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Users"][] = $Row; }
+mysql_free_result($Result);
+
+// TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
+$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.level_id 
+        from TeamUsers tu 
+	     inner join Teams t on tu.team_id = t.team_id 
+	     inner join Distances d on t.distance_id = d.distance_id 
+	where t.team_hide = 0 and tu.teamuser_hide = 0 and d.raid_id = ".$RaidId;
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
+mysql_free_result($Result);
+
+
+// TeamLevels: 
+$Sql = "select teamlevel_id, tl.team_id, tl.level_id, 
+	       teamlevel_begtime, teamlevel_endtime,
+	       teamlevel_points, teamlevel_comment,
+	       teamlevel_progress, teamlevel_penalty,
+	       error_id, teamlevel_duration 
+        from TeamLevels tl 
+	     inner join Teams t on tl.team_id = t.team_id 
+	     inner join Distances d on t.distance_id = d.distance_id 
+	where t.team_hide = 0 and tl.teamlevel_hide = 0 and d.raid_id = ".$RaidId;
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
+mysql_free_result($Result);
+
+
+// TeamLevelDismiss: user_id, levelpoint_id, team_id, teamuser_id, teamleveldismiss_date, device_id
+/*
+$Sql = "select user_id, levelpoint_id, tld.team_id, teamuser_id, teamleveldismiss_date, device_id from TeamLevelDismiss tld inner join Teams t on tld.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and d.raid_id = ".$RaidId;
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelDismiss"][] = $Row; }
+mysql_free_result($Result);
+*/
+// TeamLevelPoints: user_id, levelpoint_id, team_id, teamlevelpoint_date, device_id, teamlevelpoint_datetime, teamlevelpoint_points, teamlevelpoint_comment
+/*
+$Sql = "select user_id, levelpoint_id, tlp.team_id, teamlevelpoint_date, device_id, teamlevelpoint_datetime, teamlevelpoint_points, teamlevelpoint_comment from TeamLevelPoints tlp inner join Teams t on tlp.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and d.raid_id = ".$RaidId;
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelPoints"][] = $Row; }
+mysql_free_result($Result);
+*/
+// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
+header("Content-Type: application/octet-stream");
+header("Content-Disposition: attachment; filename=\"mmbdata.json\"");
+
+// Вывод json
+print json_encode( $data );
+
+
+
+
+  // Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
+  die();
+  return;
+}
 // ============ Никаких действий не требуется =================================
 else
 {

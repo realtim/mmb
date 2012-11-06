@@ -73,6 +73,30 @@
 
  </head>
 
+<?
+ 
+ print('<script language="JavaScript">'."\n");
+ print("\r\n");
+ print('LogoImgArr=new Array();'."\n");
+ print("\r\n");
+ 
+ $Sql = "select raid_logolink, raid_id from Raids"; 
+ $Result = MySqlQuery($Sql);
+ while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
+ { 
+   print('LogoImgArr['.$Row['raid_id'].'] = new Image();'."\r\n");
+   print('LogoImgArr['.$Row['raid_id'].'].src = "'.$Row['raid_logolink'].'";'."\r\n");
+ }
+ mysql_free_result($Result);
+
+ print("\r\n");
+ print('function ChangeLogo(raidid) '."\r\n");
+ print('{document.mmblogo.src=LogoImgArr[raidid].src;}'."\r\n");
+ print("\r\n");
+ print('</script>'."\n");
+?>	
+
+
  <body>
  
 
@@ -94,7 +118,7 @@
 				<input type = "hidden" name = "view" value = "MainPage">
 				<input type = "hidden" name = "sessionid" value = "<? echo $SessionId; ?>">
 				<input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
-				<div align="center"><a href="javascript:document.StartPageForm.submit();"><img style="margin-bottom: 15px; border: none" width="160" height="140" alt="ММБ" src="<? echo GetMmbLogo($RaidId); ?>"></a></div>
+				<div align="center"><a href="javascript:document.StartPageForm.submit();"><img name = "mmblogo" style="margin-bottom: 15px; border: none" width="160" height="140" alt="ММБ" src="<? echo GetMmbLogo($RaidId); ?>"></a></div>
                        </form> 
 
 			<!-- вставка меню на php -->

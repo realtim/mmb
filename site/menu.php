@@ -233,7 +233,7 @@ if (!isset($MyPHPScript)) return;
 	print('<input type = "hidden" name = "DistanceId" value = "0">'."\r\n");
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 	print('<tr><td class = "input">ММБ'."\r\n"); 
-	print('<select name="RaidId"  style = "width: 141px; margin-left: 5px;" tabindex = "201"  title = "Список марш-бросков">'."\r\n"); 
+	print('<select name="RaidId"  style = "width: 141px; margin-left: 5px;" tabindex = "201"  title = "Список марш-бросков" onClick = "ChangeLogo(this.value);">'."\r\n"); 
 
                 $Result = MySqlQuery('select raid_id, raid_name from  Raids where raid_registrationenddate is not null order by raid_id desc');
 

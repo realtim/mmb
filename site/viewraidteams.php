@@ -64,6 +64,20 @@ if (!isset($MyPHPScript)) return;
 	  document.RaidTeamsForm.submit();
          } 
 
+        // Выгрузка данных для анализа
+	function JsonExport()
+	{ 
+		document.RaidTeamsForm.action.value = "JsonExport";
+    	        document.RaidTeamsForm.submit();
+	}
+
+
+
+
+</script>
+<!-- Конец вывода javascrpit -->
+
+
 </script>
 
 <?php
@@ -318,8 +332,9 @@ if (!isset($MyPHPScript)) return;
 		}
                 if (trim($RaidZnLink) <> '')
 		{
-			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidZnLink.'" target = "_blank">Значок</a> '."\r\n");
+			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidZnLink.'" target = "_blank");">Значок</a> '."\r\n");
 		}
+			print('<a  style = "font-size:80%; margin-right: 15px;" href = "javascript: JsonExport();">Json</a> '."\r\n");
 		print('</div>'."\r\n");
 
 
