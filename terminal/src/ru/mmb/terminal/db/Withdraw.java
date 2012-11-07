@@ -19,7 +19,6 @@ public class Withdraw
 	private static final String TABLE_DISMISS = "TeamLevelDismiss";
 	private static final String TABLE_LEVELPOINTS = "LevelPoints";
 	private static final String TABLE_LEVELS = "Levels";
-	private static final String TABLE_TEAM_USERS = "TeamUsers";
 
 	private static final String DISMISS_DATE = "teamleveldismiss_date";
 	private static final String DEVICE_ID = "device_id";
@@ -43,13 +42,12 @@ public class Withdraw
 	{
 		List<Participant> result = new ArrayList<Participant>();
 		String sql =
-		    "select distinct tu." + USER_ID + ", lp." + LEVELPOINT_ID + ", l." + LEVEL_ORDER
+		    "select distinct d." + TEAMUSER_ID + ", lp." + LEVELPOINT_ID + ", l." + LEVEL_ORDER
 		            + " from " + TABLE_DISMISS + " as d join " + TABLE_LEVELPOINTS
 		            + " as lp on (d." + LEVELPOINT_ID + " = lp." + LEVELPOINT_ID + ") join "
-		            + TABLE_LEVELS + " as l on (lp." + LEVEL_ID + " = l." + LEVEL_ID + ") join "
-		            + TABLE_TEAM_USERS + " as tu on (d." + TEAMUSER_ID + " = tu." + TEAMUSER_ID
-		            + ") where d." + TEAM_ID + " = " + team.getTeamId() + " and l." + LEVEL_ORDER
-		            + " <= " + level.getLevelOrder();
+		            + TABLE_LEVELS + " as l on (lp." + LEVEL_ID + " = l." + LEVEL_ID + ") where d."
+		            + TEAM_ID + " = " + team.getTeamId() + " and l." + LEVEL_ORDER + " <= "
+		            + level.getLevelOrder();
 		Cursor resultCursor = db.rawQuery(sql, null);
 
 		resultCursor.moveToFirst();
@@ -104,7 +102,7 @@ public class Withdraw
 			{
 				if (isRecordExists(selectSql, member)) continue;
 				db.execSQL(insertSql, new Object[] { DateFormat.format(new Date()),
-				        new Integer(member.getTeamUserId()) });
+				        new Integer(member.getUserId()) });
 			}
 			db.setTransactionSuccessful();
 		}
@@ -117,7 +115,7 @@ public class Withdraw
 	private boolean isRecordExists(String selectSql, Participant member)
 	{
 		Cursor resultCursor =
-		    db.rawQuery(selectSql.replace(TEMPLATE_TEAMUSER_ID, Integer.toString(member.getTeamUserId())), null);
+		    db.rawQuery(selectSql.replace(TEMPLATE_TEAMUSER_ID, Integer.toString(member.getUserId())), null);
 		resultCursor.moveToFirst();
 		int recordCount = resultCursor.getInt(0);
 		resultCursor.close();
