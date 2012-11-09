@@ -20,6 +20,24 @@
 	$OldSessionId = $SessionId;
 	if (isset($_REQUEST['RaidId'])) $RaidId = (int)$_REQUEST['RaidId']; else $RaidId = "0";
 	if (isset($_REQUEST['TeamId'])) $TeamId = (int)$_REQUEST['TeamId']; else $TeamId = "0";
+
+         // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
+        if (empty($RaidId))
+	{ 
+
+		  $sql = "select raid_id
+			  from Raids 
+		 	  order by raid_registrationenddate desc
+			  LIMIT 0,1 ";
+
+		  $Result = MySqlQuery($sql);
+		  $Row = mysql_fetch_assoc($Result);
+		  $RaidId = $Row['raid_id'];
+		  mysql_free_result($Result);
+        }
+	// Конец определения ММБ
+
+
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
 
 	// Инициализуем переменные сессии, если они отсутствуют
@@ -34,13 +52,15 @@
 	if ($action == "") 
 	{
 	// Действие не указано
-		$view = "MainPage";
-
+		  $view = "MainPage";
+       
 	} elseif ($action == "StartPage") {
 
                 $view = $_REQUEST['view'];
 
 	} else {	
+
+              //  echo  $RaidId;
 	        // Обработчик событий, связанных с пользователем
 		include ("useraction.php");
 		// Если у нас новая сессия после логина, логаута или

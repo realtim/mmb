@@ -209,12 +209,32 @@ if (!isset($MyPHPScript)) return;
 	}
 
 
-	function ViewAdminPage()
+	function ViewAdminRaidPage()
 	{ 
-		document.FindTeamForm.action.value = "ViewAdminPage";
+		document.FindTeamForm.action.value = "ViewAdminRaidPage";
 		document.FindTeamForm.submit();
 	}
 
+
+	function ViewAdminModeratorsPage()
+	{ 
+		document.FindTeamForm.action.value = "ViewAdminModeratorsPage";
+		document.FindTeamForm.submit();
+	}
+
+
+	function ViewAdminDataPage()
+	{ 
+		document.FindTeamForm.action.value = "ViewAdminDataPage";
+		document.FindTeamForm.submit();
+	}
+
+	
+	function ViewAdminUnionPage()
+	{ 
+		document.FindTeamForm.action.value = "ViewAdminUnionPage";
+		document.FindTeamForm.submit();
+	}
 
 </script>
 
@@ -251,11 +271,32 @@ if (!isset($MyPHPScript)) return;
 	}
 	print('<tr><td><a href = "javascript:RaidTeams();" title = "Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n"); 
         // Впечатываем ссылку на администрирование
+
+        // Ввод/ПРавка марш-броска
+	if ($Administrator)
+        { 
+	    print('<tr><td><a href = "javascript:ViewAdminRaidPage();" title = "Страница администрирования марш-броска">Марш-бросок</a></td></tr>'."\r\n"); 
+        }
+
+        // Модераторы
+	if ($Administrator)
+        { 
+	    print('<tr><td><a href = "javascript:ViewAdminModeratorsPage();" title = "Страница администрирования модераторов">Модераторы</a></td></tr>'."\r\n"); 
+        }
+
+        // Импорт-Экспорт, пересчет
 	if ($Administrator || $Moderator)
 	{
-	    print('<tr><td><a href = "javascript:ViewAdminPage();" title = "Страница администрирования ММБ">Администрирование</a></td></tr>'."\r\n"); 
+	    print('<tr><td><a href = "javascript:ViewAdminDataPage();" title = "Страница администрирования экспорта-импорта">Обмен данными</a></td></tr>'."\r\n"); 
         }
-        //print('<tr><td class = "input">Поиск:</td></tr>'."\r\n"); 
+        
+	// Объхединение команд
+	if ($Administrator || $Moderator)
+	{
+	    print('<tr><td><a href = "javascript:ViewAdminUnionPage();" title = "Страница администрирования объединения команд">Объединение</a></td></tr>'."\r\n"); 
+        }
+        
+	//print('<tr><td class = "input">Поиск:</td></tr>'."\r\n"); 
 	print('<tr><td style = "padding-top: 15px;"><input  type="text" name="TeamNum" style = "width: 125px;" value="Номер команды" tabindex = "206"  title = "Будет выведена карточка команды с указанным номером для выбранного выше ММБ"
                        onclick = "javascript: if (trimBoth(this.value) == \'Номер команды\') {this.value=\'\';}"
 		       onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\'Номер команды\';}"

@@ -23,9 +23,18 @@ if (!isset($MyPHPScript)) return;
 	} elseif ($view == "ViewRaidTeams") {
 		// Результаты ММБ (по всем командам)
 		include("viewraidteams.php");
-	} elseif ($view == "ViewAdminPage") {
+	} elseif ($view == "ViewAdminRaidPage") {
 		// Результаты ММБ (по всем командам)
-		include("viewadminpage.php");
+		include("viewadminraidpage.php");
+	} elseif ($view == "ViewAdminModeratorsPage") {
+		// Результаты ММБ (по всем командам)
+		include("viewadminmoderatorspage.php");
+	} elseif ($view == "ViewAdminDataPage") {
+		// Результаты ММБ (по всем командам)
+		include("viewadmindatapage.php");
+	} elseif ($view == "ViewAdminUnionPage") {
+		// Результаты ММБ (по всем командам)
+		include("viewadminunionpage.php");
 	}
 
 	// Очищаем переменную

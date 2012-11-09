@@ -4,16 +4,6 @@
 if (isset($MyPHPScript) and $action == 'LoadRaidDataFile')
 {
   if (!$Administrator && !$Moderator) return;
-
-  $ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
-  if ($ConnectionId <= 0) die(mysql_error());
-  // Устанавливаем временную зону
-  mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
-  // Устанавливаем кодировку для взаимодействия
-  mysql_query('set names \'utf8\'', $ConnectionId);
-  // Выбираем БД ММБ
-  if (mysql_select_db($DBName, $ConnectionId) == "") die(mysql_error());
-
 }
 else 
 {
@@ -23,18 +13,7 @@ else
   include("settings.php");
   // Библиотека функций
   include("functions.php");
-  // Устанавливаем часовой пояс по умолчанию
-  date_default_timezone_set("Europe/Moscow");
-  // Подключаемся к базе
-  $ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
-  if ($ConnectionId <= 0) die(mysql_error());
-  // Устанавливаем временную зону
-  mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
-  // Устанавливаем кодировку для взаимодействия
-  mysql_query('set names \'utf8\'', $ConnectionId);
-  // Выбираем БД ММБ
-  if (mysql_select_db($DBName, $ConnectionId) == "") die(mysql_error());
-
+  
   print('<html>');
   print('<head>');
   print('<title>Импорт данных с Android</title>');
@@ -51,6 +30,19 @@ else
 
 }
 // Конец проверки, как именно используем скрипт: из интерфейса или отдельно
+
+
+// Устанавливаем часовой пояс по умолчанию
+  date_default_timezone_set("Europe/Moscow");
+  // Подключаемся к базе
+  $ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+  if ($ConnectionId <= 0) die(mysql_error());
+  // Устанавливаем временную зону
+  mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
+  // Устанавливаем кодировку для взаимодействия
+  mysql_query('set names \'utf8\'', $ConnectionId);
+  // Выбираем БД ММБ
+  if (mysql_select_db($DBName, $ConnectionId) == "") die(mysql_error());
 
 
 // Обработка загруженного файла

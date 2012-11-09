@@ -3,11 +3,20 @@
 // Проверка, как именно используем скрипт: из интерфейса или отдельно
 if (isset($MyPHPScript) and $action == 'JSON')
 {
-  if (!$Administrator) return;
+  if (!$Administrator and !$Moderator)
+  {
+    $statustext = 'Нет прав на экспорт';				     
+    $view = "";
+    return;
+   }
+  
+  echo '11111111';
   
   if (!isset($_REQUEST['RaidId'])) {$_REQUEST['RaidId'] = "";}
   $RaidId = $_REQUEST['RaidId'];
 
+
+echo $RaidId.'222';
 }
 else 
 {
@@ -51,13 +60,17 @@ else
 // Конец проверки, как именно используем скрипт: из интерфейса или отдельно
 
 
-// Берём марш-бросок, который передан
-// Если такого нет - берём последний
 // Проверяем, что передали идентификатор ММБ
 
 
 if (empty($RaidId))
 {
+    $statustext = 'Не указан ММБ';				     
+    $view = "";
+    return;
+
+
+/*
   $sql = "select raid_id
  	  from Raids 
  	  order by raid_registrationenddate desc
@@ -67,7 +80,7 @@ if (empty($RaidId))
   $Row = mysql_fetch_assoc($Result);
   $RaidId = $Row['raid_id'];
   mysql_free_result($Result);
-
+*/
 }
 
 
