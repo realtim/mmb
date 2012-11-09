@@ -7,10 +7,10 @@
 if (!isset($MyPHPScript)) return;
 
 // =============== Показываем страницу администрирования ===================
-if ($action == "ViewAdminPage")  {
+if ($action == "ViewAdminDataPage")  {
     // Действие вызывается ссылкой Администрирование
    
-	$view = "ViewAdminPage";
+	$view = "ViewAdminDataPage";
 	$viewmode = "";
 
 }
@@ -112,7 +112,12 @@ if (empty($RaidId))
 elseif ($action == 'JSON')
 {
 
-   if (!$Administrator) return;
+ if (!$Administrator and !$Moderator)
+  {
+    $statustext = 'Нет прав на экспорт';				     
+    $view = "";
+    return;
+   }
 
    include("json.php");
   
@@ -126,13 +131,14 @@ elseif ($action == 'LoadRaidDataFile')
 	
         $statustext = ''; 
 
+        // Пока разрешил и модератору         
 	if (!$Administrator && !$Moderator) return;
 
         include('import.php');
        
 
 //	$statustext = $statustext.'</br>'.$n_new.' результатов добавлено, '.$n_updated.' изменено, '.$n_unchanged.' являются дубликатами';
-	$view = "ViewAdminPage";
+	$view = "ViewAdminDataPage";
 }
 // =============== Пересчет результатов ММБ администратором ===================
 elseif ($action == 'RecalcRaidResults')
@@ -144,7 +150,7 @@ elseif ($action == 'RecalcRaidResults')
 		return;
 	}
 
-	if (!$Administrator) return;
+	if (!$Administrator && !$Moderator) return;
 
 	$sql = 'select team_id
 		from Teams t
@@ -164,7 +170,7 @@ elseif ($action == 'RecalcRaidResults')
 	mysql_free_result($Result);
 
 	$statustext = 'Результаты марш-броска пересчитаны';
-	$view = "ViewAdminPage";
+	$view = "ViewAdminDataPage";
 }
 // =============== Поиск ошибок и обновление штрафного и общего времени =======
 elseif ($action == 'FindRaidErrors')
