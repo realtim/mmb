@@ -683,22 +683,17 @@ if (!isset($MyPHPScript)) return;
    } elseif ($action == "HideModerator")  {
     // Действие вызывается нажатием кнопки "Сделать модератором"
 
+             $RaidModeratorId = $_POST['RaidModeratorId']; 
              $pUserId = $_POST['UserId']; 
 
              // Если вызвали с таким действием, должны быть определны оба пользователя
-             if ($pUserId <= 0 or $UserId <= 0)
+             if ($RaidModeratorId <= 0 or !$Administrator)
 	     {
 	      return;
 	     }
 	   
-	     // Права на редактирование
-             if (!$Administrator)
-	     {
-	      return;
-	     } 
-
-
-	          $Sql = "update RaidModerators set raidmoderator_hide = 1 where raid_id = ".$RaidId." and user_id = ".$pUserId;
+	   
+	          $Sql = "update RaidModerators set raidmoderator_hide = 1 where raidmoderator_id = ".$RaidModeratorId;
 		  $Result = MySqlQuery($Sql);  
 		  mysql_free_result($Result);
 

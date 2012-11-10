@@ -16,8 +16,9 @@ if (!isset($MyPHPScript)) return;
 		document.ModeratorsForm.submit();
 	}
 	
-	function HideModerator(userid)
+	function HideModerator(raidmoderatorid,userid)
 	{ 
+		document.ModeratorsForm.RaidModeratorId.value = raidmoderatorid;
 		document.ModeratorsForm.UserId.value = userid;
 		document.ModeratorsForm.action.value = "HideModerator";
 		document.ModeratorsForm.submit();
@@ -36,11 +37,12 @@ if (!isset($MyPHPScript)) return;
            	print('<form  name = "ModeratorsForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
                 print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");
+	        print('<input type = "hidden" name = "RaidModeratorId" value = "0">'."\n");
 		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
 		
 		
                  
-		$sql = "select u.user_id, u.user_name 
+		$sql = "select u.user_id, u.user_name, rm.raidmoderator_id 
 		        from  Users u
 			      inner join RaidModerators rm
 			      on u.user_id = rm.user_id  
@@ -62,7 +64,7 @@ if (!isset($MyPHPScript)) return;
 			{
 			  print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
 			  print('<a href = "javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a>'."\r\n");
-		          print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите снять статус модератора с текущего марш-броска? \')) { HideModerator('.$Row['user_id'].'); }"  name="ModeratorHideButton" value="Скрыть" tabindex = "10">'."\r\n");
+		          print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите снять статус модератора с текущего марш-броска? \')) { HideModerator('.$Row['raidmoderator_id'].','.$Row['user_id'].'); }"  name="ModeratorHideButton" value="Скрыть" tabindex = "10">'."\r\n");
 	                  print('</div>'."\r\n");
 	  	  
 			}
