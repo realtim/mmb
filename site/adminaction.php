@@ -224,6 +224,15 @@ elseif ($action == 'FindRaidErrors')
 	$statustext = 'Найдено '.$n_Errors.' ошибок и '.$n_Warnings.' предупреждений';
 	$view = "ViewAdminPage";
 }
+// =============== Показываем страницу модераторов ===================
+if ($action == "ViewAdminModeratorsPage")  {
+    // Действие вызывается ссылкой Модераторы
+   
+	$view = "ViewAdminModeratorsPage";
+	$viewmode = "";
+
+}
+
 // =============== Никаких действий не требуется ==============================
 else
 {

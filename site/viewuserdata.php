@@ -38,7 +38,8 @@ if (!isset($MyPHPScript)) return;
 	     $NextActionName = 'AddUser';
              // Действие на текстовом поле по клику
 	     $SaveButtonText = 'Зарегистрировать';
-
+             // Кнопка "Сделать модератором" не выводится при добавлении пользователя
+             $ModeratorButtonText = '';
 
          } else {
 
@@ -81,6 +82,7 @@ if (!isset($MyPHPScript)) return;
 	        $NextActionName = 'UserChangeData';
 		$AllowEdit = 0;
 		$SaveButtonText = 'Сохранить изменения';
+		$ModeratorButtonText = 'Сделать модератором';
 		
 
                 if (($pUserId == $UserId) || $Administrator)
@@ -167,6 +169,16 @@ if (!isset($MyPHPScript)) return;
 		document.UserTeamsForm.action.value = "TeamInfo";
 		document.UserTeamsForm.submit();
 	}
+
+
+	// Функция создания модератора
+	function MakeModerator()
+	{ 
+		document.UserDataForm.action.value = "MakeModerator";
+		document.UserDataForm.submit();
+	}
+	// 
+
 /*	
 
         Вынес эти функции в меню
@@ -274,6 +286,14 @@ if (!isset($MyPHPScript)) return;
           print('</td></tr>'."\r\n"); 
          }
          // Конец вывода кнопок
+
+         // для Администратора добавляем кнопку "Сделать модератором" в правке пользователя
+	 if ($Administrator and $viewmode <> 'Add') 
+	 {
+	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
+	  	  print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите сделать этого пользователя модератором текущего марш-броска? \')) { MakeModerator(); }"  name="ModeratorButton" value="'.$ModeratorButtonText.'" tabindex = "10">'."\r\n");
+          print('</td></tr>'."\r\n"); 
+         }
 
 	 print('</table></form>'."\r\n"); 
 	 // Конец вывода формы с данными пользователя

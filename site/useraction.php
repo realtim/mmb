@@ -50,6 +50,7 @@ if (!isset($MyPHPScript)) return;
 		//Конец проверки пользователя и пароля
 
 	$SessionId = StartSession($UserId);
+
 	$view = "MainPage";
 	//$statustext = "ua Пользователь: ".$UserId.", сессия: ".$SessionId;
 		
@@ -583,9 +584,152 @@ if (!isset($MyPHPScript)) return;
                 }
 
 
+   } elseif ($action == "MakeModerator")  {
+    // Действие вызывается нажатием кнопки "Сделать модератором"
+
+             $pUserId = $_POST['UserId']; 
+
+             // Если вызвали с таким действием, должны быть определны оба пользователя
+             if ($pUserId <= 0 or $UserId <= 0)
+	     {
+	      return;
+	     }
+	   
+	     // Права на редактирование
+             if (!$Administrator)
+	     {
+	      return;
+	     } 
 
 
-   } else {
+			$Sql = "select raidmoderator_id,  raidmoderator_hide
+ 		                from RaidModerators 
+			        where raid_id = ".$RaidId."
+			              and user_id = ".$pUserId."
+			        LIMIT 0,1 "  ;
+				
+			 $Result = MySqlQuery($Sql);  
+			 $Row = mysql_fetch_assoc($Result);
+	                 mysql_free_result($Result);
+			 $RaidModeratorId =  $Row['raidmoderator_id'];	
+			 $RaidModeratorHide =  $Row['raidmoderator_hide'];	
+	         
+		 $ModeratorAdd = 0;
+		 
+		 if (empty($RaidModeratorId))
+		 {
+			 $Sql = "insert into RaidModerators (raid_id, user_id, raidmoderator_hide) values (".$RaidId.", ".$pUserId.", 0)";
+			 $Result = MySqlQuery($Sql);  
+			 mysql_free_result($Result);
+			 $ModeratorAdd = 1;
+
+		 } else {	 
+			 
+			 if ($RaidModeratorHide == 0)
+			 {
+			    $ModeratorAdd = 0;
+			 
+			 } else {
+			   
+			  // Есть и модератор скрыт -  обновляем
+ 		          $Sql = "update RaidModerators set raidmoderator_hide = 0 where raidmoderator_id = ".$Row['raidmoderator_id'];
+			  $Result = MySqlQuery($Sql);  
+			  mysql_free_result($Result);
+   		          $ModeratorAdd = 1;
+
+			 }
+                         // Конец проверки существующей записи
+		 
+		 } 
+                 // Конец разбора ситуации с модераторами		 
+                 
+
+             if ($ModeratorAdd)
+	     {
+
+                 $statustext = 'Добавлен модератор';				     
+
+
+	         $Sql = "select user_name from  Users where user_id = ".$UserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $ChangeDataUserName = $Row['user_name'];
+		 mysql_free_result($Result);
+
+	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $pUserName = $Row['user_name'];
+		 $pUserEmail = $Row['user_email'];
+		 mysql_free_result($Result);
+		    
+                 $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
+		 $Msg =  $Msg."Вы получили статус модератора марш-броска ".$RaidName."\r\n";
+		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
+		 	   
+			    
+                  // Отправляем письмо
+		//  SendMail(trim($pUserEmail), $Msg, $pUserName);
+
+             } else {
+	     
+	        $statustext = 'Пользователь уже имеет статус модератора!';				     
+
+	     }
+
+	   $view = "ViewUserData";
+	   $viewmode = "";
+
+   } elseif ($action == "HideModerator")  {
+    // Действие вызывается нажатием кнопки "Сделать модератором"
+
+             $pUserId = $_POST['UserId']; 
+
+             // Если вызвали с таким действием, должны быть определны оба пользователя
+             if ($pUserId <= 0 or $UserId <= 0)
+	     {
+	      return;
+	     }
+	   
+	     // Права на редактирование
+             if (!$Administrator)
+	     {
+	      return;
+	     } 
+
+
+	          $Sql = "update RaidModerators set raidmoderator_hide = 1 where raid_id = ".$RaidId." and user_id = ".$pUserId;
+		  $Result = MySqlQuery($Sql);  
+		  mysql_free_result($Result);
+
+                  $statustext = 'Удален модератор';				     
+
+	         $Sql = "select user_name from  Users where user_id = ".$UserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $ChangeDataUserName = $Row['user_name'];
+		 mysql_free_result($Result);
+
+	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $pUserName = $Row['user_name'];
+		 $pUserEmail = $Row['user_email'];
+		 mysql_free_result($Result);
+		    
+                 $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
+		 $Msg =  $Msg."Вы получили статус модератора марш-броска ".$RaidName."\r\n";
+		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
+		 	   
+			    
+                  // Отправляем письмо
+		//  SendMail(trim($pUserEmail), $Msg, $pUserName);
+
+               // Остаемся на той же странице
+
+		$view = "ViewAdminModeratorsPage";
+		$viewmode = "";
+   }  else {
    // если никаких действий не требуется
 
    //  $statustext = "<br/>";
