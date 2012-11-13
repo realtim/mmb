@@ -670,15 +670,19 @@ if (!isset($MyPHPScript)) return;
 			    
                   // Отправляем письмо
 		//  SendMail(trim($pUserEmail), $Msg, $pUserName);
+		  $view = "ViewAdminModeratorsPage";
+	      	  $viewmode = "";
+
 
              } else {
 	     
 	        $statustext = 'Пользователь уже имеет статус модератора!';				     
+		   $view = "ViewUserData";
+		   $viewmode = "";
+
 
 	     }
 
-	   $view = "ViewUserData";
-	   $viewmode = "";
 
    } elseif ($action == "HideModerator")  {
     // Действие вызывается нажатием кнопки "Сделать модератором"
