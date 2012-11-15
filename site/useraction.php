@@ -632,7 +632,7 @@ if (!isset($MyPHPScript)) return;
 			 } else {
 			   
 			  // Есть и модератор скрыт -  обновляем
- 		          $Sql = "update RaidModerators set raidmoderator_hide = 0 where raidmoderator_id = ".$Row['raidmoderator_id'];
+ 		          $Sql = "update RaidModerators set raidmoderator_hide = 0 where raidmoderator_id = ".$RaidModeratorId;
 			  $Result = MySqlQuery($Sql);  
 			  mysql_free_result($Result);
    		          $ModeratorAdd = 1;
@@ -685,7 +685,7 @@ if (!isset($MyPHPScript)) return;
 
 
    } elseif ($action == "HideModerator")  {
-    // Действие вызывается нажатием кнопки "Сделать модератором"
+    // Действие вызывается нажатием кнопки "Удалить" на странице со списком модераторов
 
              $RaidModeratorId = $_POST['RaidModeratorId']; 
              $pUserId = $_POST['UserId']; 

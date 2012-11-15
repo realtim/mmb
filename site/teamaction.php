@@ -643,142 +643,273 @@ elseif ($action == 'JsonExport')
 
 	$RaidId = $_REQUEST['RaidId'];
 
+	if (empty($RaidId))
+	{
+		$statustext = "Не выбран марш-бросок";
+		$alert = 0;
+		return;
 
-// Берём марш-бросок, который передан
-// Если такого нет - берём последний
-// Проверяем, что передали идентификатор ММБ
-
-
-if (empty($RaidId))
-{
-  $sql = "select raid_id
- 	  from Raids 
- 	  order by raid_registrationenddate desc
-	  LIMIT 0,1 ";
-
-  $Result = MySqlQuery($sql);
-  $Row = mysql_fetch_assoc($Result);
-  $RaidId = $Row['raid_id'];
-  mysql_free_result($Result);
-
-}
+	}
 
 
+	// Сбор данных для дампа
+	$data = array();
 
-// Сбор данных для дампа
-$data = array();
+	// Raids: raid_id, raid_name, raid_registrationenddate
+	$Sql = "select raid_id, raid_name 
+	        from Raids 
+		where raid_id = ".$RaidId;
 
-// Raids: raid_id, raid_name, raid_registrationenddate
-$Sql = "select raid_id, raid_name 
-        from Raids 
-	where raid_id = ".$RaidId;
-$Result = MySqlQuery($Sql);
-while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Raids"][] = $Row; }
-mysql_free_result($Result);
+	$Result = MySqlQuery($Sql);
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Raids"][] = $Row; }
+	mysql_free_result($Result);
 
-// Distances: distance_id, raid_id, distance_name
-$Sql = "select distance_id, raid_id, distance_name 
-        from Distances
-	where raid_id = ".$RaidId;
-$Result = MySqlQuery($Sql);
-while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
-mysql_free_result($Result);
+	// Distances: distance_id, raid_id, distance_name
+	$Sql = "select distance_id, raid_id, distance_name 
+		from Distances
+		where raid_id = ".$RaidId;
 
-// Levels: level_id, distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
-$Sql = "select level_id, l.distance_id, level_name, level_order, level_starttype, 
-               level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime,
-	       level_minendtime, level_endtime, level_discountpoints, level_discount
-        from Levels l 
-	     inner join Distances d on l.distance_id = d.distance_id 
-        where d.raid_id = ".$RaidId;
-$Result = MySqlQuery($Sql);
-while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
-mysql_free_result($Result);
+	$Result = MySqlQuery($Sql);
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
+	mysql_free_result($Result);
 
-// LevelPoints: levelpoint_id, level_id, pointtype_id
+	// Levels: level_id, distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
+	$Sql = "select level_id, l.distance_id, level_name, level_order, level_starttype, 
+	               level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime,
+		       level_minendtime, level_endtime, level_discountpoints, level_discount
+	        from Levels l 
+		     inner join Distances d on l.distance_id = d.distance_id 
+	        where d.raid_id = ".$RaidId;
+
+	$Result = MySqlQuery($Sql);
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
+	mysql_free_result($Result);
+
+
+	// Teams: team_id, distance_id, team_name, team_num // *
+	$Sql = "select team_id, t.distance_id, team_name, team_num, team_usegps, team_greenpeace,
+		level_id, team_progress, team_result 
+		from Teams t 
+			inner join Distances d on t.distance_id = d.distance_id 
+		where t.team_hide = 0  and d.raid_id = ".$RaidId;
+
+	$Result = MySqlQuery($Sql);
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
+	mysql_free_result($Result);
+
+	// Users: user_id, user_name, user_birthyear // *
+	// Добавил олграничение - только по текущему ММБ
+	$Sql = "select u.user_id, u.user_name, u.user_birthyear 
+	        from Users u
+		     inner join TeamUsers tu on u.user_id = tu.user_id
+		     inner join Teams t on tu.team_id = t.team_id 
+		     inner join Distances d on t.distance_id = d.distance_id 
+		where u.user_hide = 0 and t.team_hide = 0 and tu.teamuser_hide = 0 and d.raid_id = ".$RaidId;
+
+
+	$Result = MySqlQuery($Sql);
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Users"][] = $Row; }
+	mysql_free_result($Result);
+
+	// TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
+	$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.level_id 
+	        from TeamUsers tu 
+			inner join Teams t on tu.team_id = t.team_id 
+		     inner join Distances d on t.distance_id = d.distance_id 
+		where t.team_hide = 0 and tu.teamuser_hide = 0 and d.raid_id = ".$RaidId;
+
+	$Result = MySqlQuery($Sql);
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
+	mysql_free_result($Result);
+
+
+	// TeamLevels: 
+	$Sql = "select teamlevel_id, tl.team_id, tl.level_id, 
+			teamlevel_begtime, teamlevel_endtime,
+		       teamlevel_points, teamlevel_comment,
+		       teamlevel_progress, teamlevel_penalty,
+			error_id, teamlevel_duration 
+		from TeamLevels tl 
+		     inner join Teams t on tl.team_id = t.team_id 
+		     inner join Distances d on t.distance_id = d.distance_id 
+		where t.team_hide = 0 and tl.teamlevel_hide = 0 and d.raid_id = ".$RaidId;
+
+	$Result = MySqlQuery($Sql);
+
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
+	mysql_free_result($Result);
+
+	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
+	header("Content-Type: application/octet-stream");
+	header("Content-Disposition: attachment; filename=\"mmbdata.json\"");
+
+	// Вывод json
+	print json_encode( $data );
+
+
+	// Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
+	die();
+	return;
+
+ } elseif ($action == "AddTeamInUnion")  {
+    // Действие вызывается нажатием кнопки "Объединить"
+
+	if ($TeamId <= 0)
+	{
+		$statustext = 'Команда не найдена';
+		$alert = 1;
+		return;
+	}
+	if ($SessionId <= 0)
+	{
+		$statustext = 'Сессия не найдена';
+		$alert = 1;
+		return;
+	}
+
+	   
+        // Права на редактирование
+        if (!$Administrator and !$Moderator)
+        {
+		$statustext = 'Нет прав на объединение';
+		$alert = 1;
+		return;
+	      return;
+	} 
+
+
+			$Sql = "select teamunionlog_id,  teamunionlog_hide
+ 		                from TeamUnionLogs 
+			        where team_id = ".$TeamId."
+				      and union_status = 1 
+			        LIMIT 0,1 "  ;
+				
+			 $Result = MySqlQuery($Sql);  
+			 $Row = mysql_fetch_assoc($Result);
+	                 mysql_free_result($Result);
+			 $TeamUnionLogId =  $Row['teamunionlog_id'];	
+			 $TeamUnionLogHide =  $Row['teamunionlog_hide'];	
+	         
+		 $TeamAdd = 0;
+		 
+		 if (empty($TeamUnionLogId))
+		 {
+			 $Sql = "insert into TeamUnionLogs (user_id, teamunionlog_dt, 
+			         teamunionlog_hide, team_id, team_parentid, union_status)
+				  values (".$UserId.", now(), 0, ".$TeamId.", null, 1)";
+			 $Result = MySqlQuery($Sql);  
+			 mysql_free_result($Result);
+			 $TeamAdd = 1;
+
+		 } else {	 
+			 
+			 if ($TeamUnionLogHide == 0)
+			 {
+			    $TeamAdd = 0;
+			 
+			 } else {
+			   
+			  // Есть и команда скрыта -  обновляем
+ 		          $Sql = "update TeamUnionLogs set teamunionlog_hide = 0, teamunionlog_dt = now()  where teamunionlog_id = ".$TeamUnionLogId;
+			  $Result = MySqlQuery($Sql);  
+			  mysql_free_result($Result);
+   		          $TeamAdd = 1;
+
+			 }
+                         // Конец проверки существующей записи
+		 
+		 } 
+                 // Конец разбора ситуации с добавлением колманды в объединение		 
+                 
+
+             if ($TeamAdd)
+	     {
+
+                 $statustext = 'Команда добавлена в объединение';				     
+
+
+	         $Sql = "select user_name from  Users where user_id = ".$UserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $ChangeDataUserName = $Row['user_name'];
+		 mysql_free_result($Result);
+
 /*
-$Sql = "select levelpoint_id, lp.level_id, pointtype_id from LevelPoints lp inner join Levels l on lp.level_id = l.level_id  inner join Distances d on l.distance_id = d.distance_id where d.raid_id = ".$RaidId;
-$Result = MySqlQuery($Sql);
-while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row; }
-mysql_free_result($Result);
-*/
-
-// Teams: team_id, distance_id, team_name, team_num // *
-$Sql = "select team_id, t.distance_id, team_name, team_num, team_usegps, team_greenpeace,
-        level_id, team_progress, team_result 
-        from Teams t 
-	     inner join Distances d on t.distance_id = d.distance_id 
-	where t.team_hide = 0  and d.raid_id = ".$RaidId;
-$Result = MySqlQuery($Sql);
-while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
-mysql_free_result($Result);
-
-// Users: user_id, user_name, user_birthyear // *
-// Добавил олграничение - только по текущему ММБ
-$Sql = "select u.user_id, u.user_name, u.user_birthyear 
-        from Users u
-	     inner join TeamUsers tu on u.user_id = tu.user_id
-	     inner join Teams t on tu.team_id = t.team_id 
-	     inner join Distances d on t.distance_id = d.distance_id 
-	where u.user_hide = 0 and t.team_hide = 0 and tu.teamuser_hide = 0 and d.raid_id = ".$RaidId;
-
-$Result = MySqlQuery($Sql);
-while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Users"][] = $Row; }
-mysql_free_result($Result);
-
-// TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
-$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.level_id 
-        from TeamUsers tu 
-	     inner join Teams t on tu.team_id = t.team_id 
-	     inner join Distances d on t.distance_id = d.distance_id 
-	where t.team_hide = 0 and tu.teamuser_hide = 0 and d.raid_id = ".$RaidId;
-$Result = MySqlQuery($Sql);
-while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
-mysql_free_result($Result);
+	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $pUserName = $Row['user_name'];
+		 $pUserEmail = $Row['user_email'];
+		 mysql_free_result($Result);
+		    
+                 $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
+		 $Msg =  $Msg."Вы получили статус модератора марш-броска ".$RaidName."\r\n";
+		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
+		 	   
+*/			    
+                  // Отправляем письмо
+		//  SendMail(trim($pUserEmail), $Msg, $pUserName);
+		  $view = "ViewAdminUnionPage";
+	      	  $viewmode = "";
 
 
-// TeamLevels: 
-$Sql = "select teamlevel_id, tl.team_id, tl.level_id, 
-	       teamlevel_begtime, teamlevel_endtime,
-	       teamlevel_points, teamlevel_comment,
-	       teamlevel_progress, teamlevel_penalty,
-	       error_id, teamlevel_duration 
-        from TeamLevels tl 
-	     inner join Teams t on tl.team_id = t.team_id 
-	     inner join Distances d on t.distance_id = d.distance_id 
-	where t.team_hide = 0 and tl.teamlevel_hide = 0 and d.raid_id = ".$RaidId;
-$Result = MySqlQuery($Sql);
-while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
-mysql_free_result($Result);
+             } else {
+	     
+	        $statustext = 'Команда уже включена в объединение!';				     
+		   $view = "ViewTeamData";
+		   $viewmode = "";
 
 
-// TeamLevelDismiss: user_id, levelpoint_id, team_id, teamuser_id, teamleveldismiss_date, device_id
+	     }
+
+
+   } elseif ($action == "HideTeamInUnion")  {
+    // Действие вызывается нажатием кнопки "Удалить" на странице со списокм команд в объединении
+    
+
+             $TeamUnionLogId = $_POST['TeamUnionLogId']; 
+
+             // Если вызвали с таким действием, должны быть определны оба пользователя
+             if ($TeamUnionLogId <= 0 or (!$Administrator and !$Moderator))
+	     {
+	      return;
+	     }
+	   
+	   
+	          $Sql = "update TeamUnionLogs set teamunionlog_hide = 1 where teamunionlog_id = ".$TeamUnionLogId;
+		  $Result = MySqlQuery($Sql);  
+		  mysql_free_result($Result);
+
+                  $statustext = 'Команда удалена из объединения';				     
+
+	         $Sql = "select user_name from  Users where user_id = ".$UserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $ChangeDataUserName = $Row['user_name'];
+		 mysql_free_result($Result);
 /*
-$Sql = "select user_id, levelpoint_id, tld.team_id, teamuser_id, teamleveldismiss_date, device_id from TeamLevelDismiss tld inner join Teams t on tld.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and d.raid_id = ".$RaidId;
-$Result = MySqlQuery($Sql);
-while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelDismiss"][] = $Row; }
-mysql_free_result($Result);
-*/
-// TeamLevelPoints: user_id, levelpoint_id, team_id, teamlevelpoint_date, device_id, teamlevelpoint_datetime, teamlevelpoint_points, teamlevelpoint_comment
-/*
-$Sql = "select user_id, levelpoint_id, tlp.team_id, teamlevelpoint_date, device_id, teamlevelpoint_datetime, teamlevelpoint_points, teamlevelpoint_comment from TeamLevelPoints tlp inner join Teams t on tlp.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and d.raid_id = ".$RaidId;
-$Result = MySqlQuery($Sql);
-while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelPoints"][] = $Row; }
-mysql_free_result($Result);
-*/
-// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
-header("Content-Type: application/octet-stream");
-header("Content-Disposition: attachment; filename=\"mmbdata.json\"");
+	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $pUserName = $Row['user_name'];
+		 $pUserEmail = $Row['user_email'];
+		 mysql_free_result($Result);
+		    
+                 $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
+		 $Msg =  $Msg."Вы получили статус модератора марш-броска ".$RaidName."\r\n";
+		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
+		 	   
+*/			    
+                  // Отправляем письмо
+		//  SendMail(trim($pUserEmail), $Msg, $pUserName);
 
-// Вывод json
-print json_encode( $data );
+               // Остаемся на той же странице
+
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
 
 
 
-
-  // Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
-  die();
-  return;
 }
 // ============ Никаких действий не требуется =================================
 else

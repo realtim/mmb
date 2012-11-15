@@ -56,6 +56,7 @@ if ($viewmode == 'Add')
 	$OnClickText = ' onClick="javascript:this.value = \'\';"';
 	// Надпись на кнопке
 	$SaveButtonText = 'Зарегистрировать';
+        $UnionButtonText = 'Объединить';
 }
 
 else
@@ -116,6 +117,7 @@ else
 	$AllowEdit = 0;
 	$OnClickText = '';
 	$SaveButtonText = 'Сохранить данные команды';
+	$UnionButtonText = 'Объединить';
 }
 // ================ Конец инициализации переменных команды =================
 
@@ -187,6 +189,16 @@ else $AllowViewResults = 0;
 		document.TeamDataForm.action.value = 'TeamUserOut';
 		document.TeamDataForm.submit();
 	}
+	
+	
+	
+	// Функция объединения команд
+	function AddTeamInUnion()
+	{ 
+		document.TeamDataForm.action.value = "AddTeamInUnion";
+		document.TeamDataForm.submit();
+	}
+	// 
 </script>
 
 <?php
@@ -377,6 +389,16 @@ if ($AllowEdit == 1)
 	print('</select>'."\n");
 	print('<input type="button" onClick="javascript: Cancel();" name="CancelButton" value="Отмена" tabindex="'.(++$TabIndex).'">'."\n");
 	print('</td></tr>'."\n\n");
+
+	// для Администратора добавляем кнопку "Сделать модератором" в правке пользователя
+	if ($Administrator and $viewmode <> 'Add') 
+	{
+	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
+	  	  print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите добавить эту команду в текущее объединение? \')) { AddTeamInUnion(); }"  name="UnionButton" value="'.$UnionButtonText.'" tabindex = "'.(++$TabIndex).'">'."\r\n");
+          print('</td></tr>'."\r\n"); 
+        }
+
+
 }
 
 print('</table></form>'."\n");
