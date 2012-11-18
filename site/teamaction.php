@@ -876,7 +876,7 @@ elseif ($action == 'JsonExport')
 	     }
 	   
 	   
-	          $Sql = "update TeamUnionLogs set teamunionlog_hide = 1 where teamunionlog_id = ".$TeamUnionLogId;
+	          $Sql = "update TeamUnionLogs set teamunionlog_hide = 1, union_status = 0  where teamunionlog_id = ".$TeamUnionLogId;
 		  $Result = MySqlQuery($Sql);  
 		  mysql_free_result($Result);
 
@@ -906,6 +906,272 @@ elseif ($action == 'JsonExport')
                // Остаемся на той же странице
 
 		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+
+} elseif ($action == "CancelUnionTeams")  {
+    // Действие вызывается нажатием кнопки "Отменить объединение" на странице со списокм команд в объединении
+    
+	$sql = "update TeamUnionLogs
+                SET union_status = 0, teamunionlog_hide = 1
+		where teamunionlog_hide = 0 
+                      and union_status = 1
+		      and teamunionlog_hide = 0
+		      "; 
+                
+		//echo 'sql '.$sql;
+		
+		$Result = MySqlQuery($sql);
+
+                $statustext = 'Объединение очищено';				     
+
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+
+
+} elseif ($action == "UnionTeams")  {
+    // Действие вызывается нажатием кнопки "Объединить" 
+    
+    
+    $sql = "select  MAX(TIME_TO_SEC(COALESCE(t.team_result, 0))) - MIN(TIME_TO_SEC(COALESCE(t.team_result, 0))) as deltaresult,
+                    MAX(COALESCE(t.team_progress, 0)) - MIN(COALESCE(t.team_progress, 0)) as deltaprogress,
+		    MAX(t.distance_id) as maxdistanceid, 
+		    MIN(t.distance_id) as mindistanceid,
+		    SUM(t.team_mapscount) as mapscount 
+		        from  TeamUnionLogs tul
+			      inner join Teams t
+			      on t.team_id = tul.team_id
+			where tul.teamunionlog_hide = 0 
+                              and tul.union_status = 1"; 
+                
+		//echo 'sql '.$sql;
+		
+    $Result = MySqlQuery($sql);
+    $Row = mysql_fetch_assoc($Result);
+    mysql_free_result($Result);
+    
+    // Проверяем, что результат отличается не больше чем на 15 минут
+    if ($Row['deltaresult'] > 15*60)
+    {
+        $statustext = 'Результат команд отличается больше чем на 15 минут';				     
+
+	$view = "ViewAdminUnionPage";
+	$viewmode = "";
+
+       return;
+    }
+    
+    
+    if ($Row['maxdistanceid'] <> $Row['mindistanceid'])
+    {
+        $statustext = 'Разные дистанции у объединяемых команд';				     
+
+	$view = "ViewAdminUnionPage";
+	$viewmode = "";
+
+       return;
+    }
+
+    $pDistanceId = $Row['maxdistanceid'];
+    $pTeamMapsCount  = $Row['mapscount'];
+        // Проверяем одинкаовое число взятых КП
+	$sql = "select  tl.level_id
+		        from  TeamUnionLogs tul
+			      inner join Teams t
+			      on t.team_id = tul.team_id
+	                      inner join TeamLevels tl
+			      on t.team_id = tl.team_id 
+			where tul.teamunionlog_hide = 0 
+                              and tul.union_status = 1
+			      and tl.teamlevel_hide = 0
+                group by tl.level_id
+		having MAX(COALESCE(teamlevel_points, '')) <> MIN(COALESCE(teamlevel_points,''))		      
+	       "; 
+    
+	$Result = MySqlQuery($sql);
+        $RowsCount = mysql_num_rows($Result);
+
+	if ($RowsCount > 0)
+	{
+	        $statustext = 'Различается список взятых КП';				     
+
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+
+	       return;
+	}
+
+
+	$pTeamName = $_POST['TeamName'];
+
+	if ($RaidId <= 0)
+	{
+		$statustext = "Не указан ММБ.";
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+
+		return;
+	}
+	if (trim($pTeamName) == '' or trim($pTeamName)  == 'Название объединённой команды')
+	{
+		$statustext = "Не указано название.";
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+		return;
+	}
+	
+
+	if ($pDistanceId <= 0)
+	{
+		$statustext = "Не указана дистанция.";
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+		return;
+	}
+
+	$sql = "select  MAX(t.team_usegps) as team_usegps,
+	                MIN(t.team_greenpeace) as team_greenpeace
+	        from  TeamUnionLogs tul
+		      inner join Teams t
+		      on t.team_id = tul.team_id
+		where tul.teamunionlog_hide = 0 
+                      and tul.union_status = 1"; 
+                
+		//echo 'sql '.$sql;
+		
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	mysql_free_result($Result);
+   
+        $pTeamUseGPS = $Row['team_usegps'];
+        $pTeamGreenPeace = $Row['team_greenpeace'];
+	
+
+	// Приступаем, собственно к объединению:
+	// Создаём новую команду и ставим ей признак скрытая
+	// GPS по приницпу или grenpeace по принципу И число карт - суммируем
+	// Добавляем всех участников
+	// группируем результаты по этапам и для старта берём MIN время, для финища - максимальное
+        // Проставляем новую команду в поле parent_id 
+	// Открываем новую команду
+	// Скрываем старые команды
+    
+
+		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
+			team_registerdt, team_greenpeace, team_hide)
+			values (";
+
+		$sql = $sql."(select COALESCE(MAX(t.team_num), 0) + 1
+				from Teams t
+					inner join Distances d on t.distance_id = d.distance_id
+				where d.raid_id = ".$RaidId.")";
+		
+		// Все остальное
+		$sql = $sql.", '".$pTeamName."',".$pTeamUseGPS.",".$pTeamMapsCount.", ".$pDistanceId.",NOW(), "
+			.$pTeamGreenPeace.", 1)";
+
+		// При insert должен вернуться послений id - это реализовано в MySqlQuery
+		$TeamId = MySqlQuery($sql);
+		// Поменялся TeamId, заново определяем права доступа
+	
+	//  По-моему здесь необязательно запрашивать привелегии
+	//	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
+
+
+		if ($TeamId <= 0)
+		{
+			$statustext = 'Ошибка записи новой команды.';
+			$view = "ViewAdminUnionPage";
+			$viewmode = "";
+			return;
+
+		}
+		$sql = "insert into TeamUsers (team_id, user_id, level_id) 
+                        select ".$TeamId." , tu.user_id, tu.level_id
+		        from  TeamUnionLogs tul
+			      inner join Teams t
+			      on t.team_id = tul.team_id
+			      inner join TeamUsers tu
+			      on tu.team_id = t.team_id
+			where tul.teamunionlog_hide = 0 
+	                      and tul.union_status = 1
+	                      and tu.teamuser_hide = 0
+			"; 
+			 
+		
+		MySqlQuery($sql);
+
+
+		$sql = " insert into TeamLevels (level_id, team_id, teamlevel_points,
+						 teamlevel_begtime, teamlevel_endtime,
+						 teamlevel_progress, teamlevel_hide 
+						)
+		         select  tl.level_id, ".$TeamId.",
+		                MAX(teamlevel_points) as teamlevel_points,
+		                MIN(teamlevel_begtime) as teamlevel_begtime,
+		                MAX(teamlevel_endtime) as teamlevel_endtime,
+		                MAX(teamlevel_progress) as teamlevel_progress,
+				0 as  teamlevel_hide 
+ 		         from  TeamUnionLogs tul
+			       inner join Teams t
+			       on t.team_id = tul.team_id
+	                       inner join TeamLevels tl
+			       on t.team_id = tl.team_id 
+			 where tul.teamunionlog_hide = 0 
+                               and tul.union_status = 1
+			       and tl.teamlevel_hide = 0
+	                 group by tl.level_id
+		       "; 
+  
+		MySqlQuery($sql);
+
+
+		$sql = " update TeamUnionLogs set team_parentid = ".$TeamId." 
+			 where teamunionlog_hide = 0 
+                               and union_status = 1
+		       "; 
+  
+		MySqlQuery($sql);
+
+
+		$sql = "update Teams t
+			  inner join
+			  (
+			    select  tul.team_id
+		            from  TeamUnionLogs tul
+  			    where tul.teamunionlog_hide = 0 
+	                          and tul.union_status = 1
+			          and tul.team_parentid = ".$TeamId." 
+			    group by  tul.team_id
+			   )  a
+			  on  t.team_id = a.team_id
+		  set t.team_hide = 1, 
+                      t.team_parentid = ".$TeamId;
+
+		MySqlQuery($sql);
+
+		$sql = " update Teams set team_hide = 0
+			 where team_id = ".$TeamId;
+		
+		MySqlQuery($sql);
+	 
+		$sql = " update TeamUnionLogs set union_status = 2
+			 where union_status = 1
+			       and teamunionlog_hide = 0
+			 "; 
+			 
+		MySqlQuery($sql);
+
+	// Пересчет врмени нахождения команды на этапах
+	RecalcTeamLevelDuration($TeamId);
+	// Пересчет штрафов 
+	RecalcTeamLevelPenalty($TeamId);
+	// Обновляем результат команды
+	RecalcTeamResult($TeamId);
+ 
+
+                $statustext = 'Команды объединены';				     
+
+		$view = "ViewRaidTeams";
 		$viewmode = "";
 
 
