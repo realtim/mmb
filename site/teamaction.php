@@ -867,6 +867,16 @@ elseif ($action == 'JsonExport')
     // Действие вызывается нажатием кнопки "Удалить" на странице со списокм команд в объединении
     
 
+	// Права 
+        if (!$Administrator and !$Moderator)
+        {
+		$statustext = 'Нет прав на объединение';
+		$alert = 1;
+		return;
+	      return;
+	} 
+
+
              $TeamUnionLogId = $_POST['TeamUnionLogId']; 
 
              // Если вызвали с таким действием, должны быть определны оба пользователя
@@ -908,8 +918,19 @@ elseif ($action == 'JsonExport')
 		$view = "ViewAdminUnionPage";
 		$viewmode = "";
 
-} elseif ($action == "CancelUnionTeams")  {
-    // Действие вызывается нажатием кнопки "Отменить объединение" на странице со списокм команд в объединении
+} elseif ($action == "ClearUnionTeams")  {
+    // Действие вызывается нажатием кнопки "Очистить объединение" на странице со списокм команд в объединении
+
+
+	// Права 
+        if (!$Administrator and !$Moderator)
+        {
+		$statustext = 'Нет прав на объединение';
+		$alert = 1;
+		return;
+	      return;
+	} 
+
     
 	$sql = "update TeamUnionLogs
                 SET union_status = 0, teamunionlog_hide = 1
@@ -932,11 +953,33 @@ elseif ($action == 'JsonExport')
     // Действие вызывается нажатием кнопки "Объединить" 
     
     
+         // Права 
+        if (!$Administrator and !$Moderator)
+        {
+		$statustext = 'Нет прав на объединение';
+		$alert = 1;
+		return;
+	      return;
+	} 
+    
+    	$pTeamName = $_POST['TeamName'];
+
+	if (trim($pTeamName) == '' or trim($pTeamName)  == 'Название объединённой команды')
+	{
+		$statustext = "Не указано название.";
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+
+    
     $sql = "select  MAX(TIME_TO_SEC(COALESCE(t.team_result, 0))) - MIN(TIME_TO_SEC(COALESCE(t.team_result, 0))) as deltaresult,
                     MAX(COALESCE(t.team_progress, 0)) - MIN(COALESCE(t.team_progress, 0)) as deltaprogress,
 		    MAX(t.distance_id) as maxdistanceid, 
 		    MIN(t.distance_id) as mindistanceid,
-		    SUM(t.team_mapscount) as mapscount 
+		    SUM(t.team_mapscount) as mapscount, 
+		    count(t.team_id) as teamcount 
 		        from  TeamUnionLogs tul
 			      inner join Teams t
 			      on t.team_id = tul.team_id
@@ -956,6 +999,7 @@ elseif ($action == 'JsonExport')
 
 	$view = "ViewAdminUnionPage";
 	$viewmode = "";
+	$viewsubmode = "ReturnAfterError";
 
        return;
     }
@@ -967,9 +1011,22 @@ elseif ($action == 'JsonExport')
 
 	$view = "ViewAdminUnionPage";
 	$viewmode = "";
+	$viewsubmode = "ReturnAfterError";
 
        return;
     }
+
+    if ($Row['teamcount'] < 2)
+    {
+        $statustext = 'Объединить можно две команды или больше';				     
+
+	$view = "ViewAdminUnionPage";
+	$viewmode = "";
+	$viewsubmode = "ReturnAfterError";
+
+       return;
+    }
+    
 
     $pDistanceId = $Row['maxdistanceid'];
     $pTeamMapsCount  = $Row['mapscount'];
@@ -996,35 +1053,30 @@ elseif ($action == 'JsonExport')
 
 		$view = "ViewAdminUnionPage";
 		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
 
 	       return;
 	}
 
 
-	$pTeamName = $_POST['TeamName'];
 
 	if ($RaidId <= 0)
 	{
 		$statustext = "Не указан ММБ.";
 		$view = "ViewAdminUnionPage";
 		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
 
 		return;
 	}
-	if (trim($pTeamName) == '' or trim($pTeamName)  == 'Название объединённой команды')
-	{
-		$statustext = "Не указано название.";
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		return;
-	}
-	
+		
 
 	if ($pDistanceId <= 0)
 	{
 		$statustext = "Не указана дистанция.";
 		$view = "ViewAdminUnionPage";
 		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
 		return;
 	}
 
@@ -1085,8 +1137,8 @@ elseif ($action == 'JsonExport')
 			return;
 
 		}
-		$sql = "insert into TeamUsers (team_id, user_id, level_id) 
-                        select ".$TeamId." , tu.user_id, tu.level_id
+		$sql = "insert into TeamUsers (team_id, user_id, level_id, teamuser_hide) 
+                        select ".$TeamId." , tu.user_id, tu.level_id, 1
 		        from  TeamUnionLogs tul
 			      inner join Teams t
 			      on t.team_id = tul.team_id
@@ -1097,7 +1149,8 @@ elseif ($action == 'JsonExport')
 	                      and tu.teamuser_hide = 0
 			"; 
 			 
-		
+// Правильнее написать ХП, которая делает это
+// т.к. нельзя в одной строке передать несколько запросов		
 		MySqlQuery($sql);
 
 
@@ -1129,11 +1182,12 @@ elseif ($action == 'JsonExport')
 			 where teamunionlog_hide = 0 
                                and union_status = 1
 		       "; 
-  
+
 		MySqlQuery($sql);
+  
 
 
-		$sql = "update Teams t
+		$sql = " update Teams t
 			  inner join
 			  (
 			    select  tul.team_id
@@ -1149,16 +1203,37 @@ elseif ($action == 'JsonExport')
 
 		MySqlQuery($sql);
 
-		$sql = " update Teams set team_hide = 0
+
+		$sql = " update TeamUsers tu
+			  inner join
+			  (
+			    select  t.team_id
+		            from  Teams t
+  			    where t.team_parentid = ".$TeamId." 
+			   )  a
+			  on  tu.team_id = a.team_id
+		  set tu.teamuser_hide = 1
+		  "; 
+
+		MySqlQuery($sql);
+
+
+		$sql =  " update Teams set team_hide = 0
 			 where team_id = ".$TeamId;
 		
 		MySqlQuery($sql);
+
+		$sql =  " update TeamUsers set teamuser_hide = 0
+			 where team_id = ".$TeamId;
+		
+		MySqlQuery($sql);
+
 	 
 		$sql = " update TeamUnionLogs set union_status = 2
 			 where union_status = 1
 			       and teamunionlog_hide = 0
 			 "; 
-			 
+		 
 		MySqlQuery($sql);
 
 	// Пересчет врмени нахождения команды на этапах
