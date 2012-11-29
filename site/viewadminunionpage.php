@@ -50,6 +50,15 @@ if (!isset($MyPHPScript)) return;
 		document.UnionTeamsForm.submit();
 	}
 
+	// Функция отмены текущего объединения
+	function CancelUnionTeams(parentteamid)
+	{
+		document.UnionTeamsForm.action.value = "CancelUnionTeams";
+		document.UnionTeamsForm.TeamId.value = parentteamid;
+		document.UnionTeamsForm.submit();
+	}
+
+
 
 </script>
 
@@ -153,163 +162,191 @@ if (!isset($MyPHPScript)) return;
 
 
 
-	  $sql = "  select  t.team_num, t.team_name, 
-	                   COALESCE(t2.team_num, '') as team_parentnum, 
-			   COALESCE(t2.team_name, '') as team_parentname, 
+	  $sql = "  select MAX(t.team_num) as team_num, 
+			   MAX(t.team_name) as team_name, 
+			   CASE WHEN MAX(tul.union_status) = 2 THEN 'Объединены'
+			        WHEN MAX(tul.union_status) = 3 THEN 'Отмена объединения'
+			        WHEN MAX(tul.union_status) = 0 THEN 'Не объединена'
+				ELSE ''
+			   END as unionstatus,
+			   tul.team_parentid  as team_id, 
+			   1 as union_flag,
+			   MAX(tul.teamunionlog_id) as log_id,
+			   DATE_FORMAT(MAX(tul.teamunionlog_dt), '%d.%m %H:%i:%s') as log_dt
+	            from  TeamUnionLogs tul
+		          inner join Teams t
+			  on t.team_id = tul.team_parentid
+                    where tul.union_status <> 1
+		          and tul.team_parentid is not null
+		    group by tul.team_parentid 
+		    union all
+		    select t.team_num as team_num, 
+			   t.team_name as team_name,
 			   CASE WHEN tul.union_status = 2 THEN 'Объединены'
 			        WHEN tul.union_status = 3 THEN 'Отмена объединения'
 			        WHEN tul.union_status = 0 THEN 'Не объединена'
 				ELSE ''
 			  END as unionstatus,
-			  tul.team_parentid,
-			  tul.team_id,
-			  COALESCE((select count(*) from  TeamUnionLogs where team_parentid = tul.team_parentid), 0) as teamcount
-	          from  TeamUnionLogs tul
-		        inner join Teams t
-			on t.team_id = tul.team_id
-			left outer join Teams t2
-			on tul.team_parentid = t2.team_id
-                  where  tul.union_status <> 1
-		  order by tul.team_parentid DESC, tul.teamunionlog_id DESC 
+			  tul.team_id  as team_id, 
+			  0 as union_flag,
+			  tul.teamunionlog_id as log_id,
+			  DATE_FORMAT(tul.teamunionlog_dt, '%d.%m %H:%i:%s') as log_dt
+	            from  TeamUnionLogs tul
+		          inner join Teams t
+			  on t.team_id = tul.team_id
+                    where tul.union_status <> 1
+		          and tul.team_parentid is null
+ 		    order by log_id DESC
 		  "; 
 	
 	  //	echo 'sql '.$sql;
                 $Result = MySqlQuery($sql);
 	
 
+			  //DATE_FORMAT(tul.teamunionlog_dt, '%d.%m %H:%i:%s') as log_dt,
+			 // tul.team_id,
+			 // COALESCE((select count(*) from  TeamUnionLogs where team_parentid = tul.team_parentid), 0) as teamcount
+
+
 
 
 		$tdstyle = 'padding: 5px 0px 2px 5px;';		
-                $tdstyle = '';		
-                $thstyle = 'border-color: #000000; border-style: solid; border-width: 1px 1px 1px 1px; padding: 5px 0px 2px 5px;';		
-                $thstyle = '';		
+              //  $tdstyle = '';		
+                $thstyle = 'padding: 5px 0px 0px 5px;';		
+               // $thstyle = '';		
 
                 $ColumnWidth = 350;
 
 
-		print('<table border = "1" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
+		print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
 
 		print('<tr class = "gray">
-		         <td width = "200" style = "'.$thstyle.'">Номер и название исходной команды</td>
-			 <td width = "200" style = "'.$thstyle.'">Участники</td>
-		         <td width = "200" style = "'.$thstyle.'">Номер и название объединённой команды</td>
-			 <td width = "200" style = "'.$thstyle.'">Участники</td>
- 	                 <td width = "50" style = "'.$thstyle.'">Статус</td>
+ 	                 <td width = "200" style = "'.$thstyle.'">Статус</td>
+		         <td width = "300" style = "'.$thstyle.'">Номер и название команды</td>
+			 <td width = "400" style = "'.$thstyle.'">Участники и команды до объединения</td>
 			 </tr>'."\r\n");
 		
-		$TeamsCount = mysql_num_rows($Result);
-
-
-                $PredParentTeamId = 0; 
-		
+	        // Сканируем команды
 		while ($Row = mysql_fetch_assoc($Result))
 		{
+	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
+                     print('<tr>'."\r\n");
+                     print('<td align = "center" style = "'.$tdstyle.'">'.$Row['unionstatus']."\r\n");
+                                
+	  	     // Вставляем кнопку отмены объединения
+		     if ($Row['unionstatus'] == 'Объединены') 
+		     {
+			   print('<br/><input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите отменить объединение? \')) {CancelUnionTeams('.$Row['team_parentid'].');}" name="CancelUnionButton" value="Отменить объединение" tabindex="'.(++$TabIndex).'">'."\n");
+		     }
+                     print('</td>'."\r\n");
+		     print('<td style = "'.$tdstyle.'">'.$Row['team_num']."\r\n");
+		     
+		     if ($Row['unionstatus'] <> 'Отмена объединения') 
+		     {
+			print('<a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
+		     	       $Row['team_name'].'</a> '."\r\n");
+                     } else {
+			print('<b>'.$Row['team_name'].'</b>'."\r\n");
+		     }	
 
+                     // Для успрешно объединённых колманд есть подробное время в участниках
+		     if ($Row['unionstatus'] == 'Не объединена') 
+		     {
+			   print($Row['log_dt']."\n");
+		     }
 
-/*
-			if ($TeamsCount%2 == 0) {
-			  $TrClass = 'yellow';
-			} else {
-			  $TrClass = 'green';
-			} 
+		     print('</td>'."\r\n");
 
-			$TeamsCount--;
-  
-  */            
+		     print('<td style = "'.$tdstyle.'">'."\r\n");
 
-	      
-			print('<tr class = "'.$TrClass.'"><td style = "'.$tdstyle.'">'.$Row['team_num'].' <a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
-			          $Row['team_name'].'</a> </td><td style = "'.$tdstyle.'">'."\r\n");
-
-
-			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,
-                                       tu.level_id, u.user_id, l.level_name 
-			        from  TeamUsers tu
-				     inner join  Users u
-				     on tu.user_id = u.user_id
-                                     left outer join Levels l
- 				     on tu.level_id = l.level_id
- 				where tu.teamuser_hide = 0 and team_id = ".$Row['team_id'];
-
-			
-			if (!empty($Row['team_parentid']))
-			{
-			$sql = $sql."	
-				UNION 
-				select tu.teamuser_id, u.user_name, u.user_birthyear,
-                                       tu.level_id, u.user_id, l.level_name 
-			        from  TeamUsers tu
-				     inner join  Teams t
-				     on tu.team_id = t.team_id
-				     inner join  Users u
-				     on tu.user_id = u.user_id
-                                     left outer join Levels l
- 				     on tu.level_id = l.level_id
- 				where tu.teamuser_hide = 1 and tu.team_id = ".$Row['team_id']."
-				       and t.team_parentid = ".$Row['team_parentid'];
-
-			}			
-				
-//			echo 'sql '.$sql;
-			$UserResult = MySqlQuery($sql);
-
-			while ($UserRow = mysql_fetch_assoc($UserResult))
-			{
-			  print('<div><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear']."\r\n");
-			  print('</div>'."\r\n");
-			}  
-		        mysql_free_result($UserResult);
-	
-			print('</td>'."\r\n");
-
-			
-
-			if (!empty($Row['team_parentid'])) 
-			{
-          
-	                    if ($Row['team_parentid'] <>  $PredParentTeamId )
-			    {
-	                        $PredParentTeamId = $Row['team_parentid'];
-	
-	                         
-				 
-				print('<td rowspan = "'.$Row['teamcount'].'" style = "'.$tdstyle.'">'.$Row['team_parentnum'].' <a href = "javascript:ViewTeamInfo('.$Row['team_parentid'].');">'.
-			          $Row['team_parentname'].'</a> </td><td rowspan = "'.$Row['teamcount'].'" style = "'.$tdstyle.'">'."\r\n");
-
-				$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,
-	                                       tu.level_id, u.user_id, l.level_name 
+                     if ($Row['unionstatus'] == 'Объединены') 
+		     {
+                        // Команда объединена
+			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,	
+					       tu.level_id, u.user_id, l.level_name,
+					       t.team_name as oldteam_name,
+					       t.team_num as  oldteam_num,
+			                       DATE_FORMAT(tul.teamunionlog_dt, '%d.%m %H:%i:%s')  as unionlog_dt  
 				        from  TeamUsers tu
-					     inner join  Users u
-					     on tu.user_id = u.user_id
-	                                     left outer join Levels l
-	 				     on tu.level_id = l.level_id
-	 				where tu.teamuser_hide = 0 and team_id = ".$Row['team_parentid']; 
-				//echo 'sql '.$sql;
-				$UserResult = MySqlQuery($sql);
+					      inner join  Users u
+					      on tu.user_id = u.user_id
+		                              left outer join Levels l
+					      on tu.level_id = l.level_id
+					      inner join  TeamUsers tu2
+					      on tu2.user_id = tu.user_id
+					      inner join  Teams t
+					      on t.team_id = tu2.team_id
+					      inner join TeamUnionLogs tul
+					      on t.team_id = tul.team_id
+					         and  t.team_parentid = tul.team_parentid
+					where tu.teamuser_hide = 0 
+					      and tu.team_id = ".$Row['team_id']."
+					      and t.team_parentid = ".$Row['team_id']."
+					      order by unionlog_dt";
 
+		     } elseif ($Row['unionstatus'] == 'Отмена объединения')  {
 
-				while ($UserRow = mysql_fetch_assoc($UserResult))
-				{
-				  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear']."\r\n");
-					  print('</div>'."\r\n");
-				}  
-			        mysql_free_result($UserResult);
+				$sql = "select null as teamuser_id,
+				               '' as user_name,
+					       '' as user_birthyear,	
+					       '' as level_id, 
+					       null as user_id,
+					       '' as level_name,
+					       t.team_name as oldteam_name,
+					       t.team_num as  oldteam_num,
+			                       DATE_FORMAT(tul.teamunionlog_dt, '%d.%m %H:%i:%s')  as unionlog_dt  
+				        from  Teams t
+					      inner join TeamUnionLogs tul
+					      on t.team_id = tul.team_id
+					where tul.team_parentid = ".$Row['team_id']."
+					      order by unionlog_dt";
 
-				print('</td>'."\r\n");
- 			        print('<td rowspan = "'.$Row['teamcount'].'" style = "'.$tdstyle.'">'.$Row['unionstatus'].'</td>'."\r\n");
-
-			     }	
-
-			} else {
 			
-				print('<td>&nbsp;</td><td>&nbsp;</td>'."\r\n");
- 			        print('<td style = "'.$tdstyle.'">'.$Row['unionstatus'].'</td>'."\r\n");
+		     } else {
 
-			}
-			print('</tr>'."\r\n");
+                        // Команда не объединена
+			 
+				$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,	
+					       tu.level_id, u.user_id, l.level_name,
+					       '' as oldteam_name,
+					       '' as oldteam_num,
+					       '' as  unionlog_dt  
+				        from  TeamUsers tu
+					      inner join  Users u
+					      on tu.user_id = u.user_id
+		                              left outer join Levels l
+					      on tu.level_id = l.level_id
+					where tu.teamuser_hide = 0 and team_id = ".$Row['team_id'];
+			 
+			 
+		      }			
+			
+			//echo 'sql '.$sql;
+		      $UserResult = MySqlQuery($sql);
 
+                      $UserCount = 0;
+                      // Сканируем состав
+		      while ($UserRow = mysql_fetch_assoc($UserResult))
+		      {
+			$UserCount++;
+			  print('<div>'.$UserRow['unionlog_dt'].'  '.$UserRow['oldteam_name'].'  '.
+			                $UserRow['oldteam_num'].'  '. "\r\n"); 
 			  
-		
+			  if ($Row['unionstatus'] <> 'Отмена объединения') 
+			  {
+			        print('<a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.
+			                 $UserRow['user_name'].'</a> '.$UserRow['user_birthyear']."\r\n");
+			  }
+			  print('</div>'."\r\n");
+		      }  
+		      mysql_free_result($UserResult);
+	
+	              if ($UserCount == 0)
+		      {
+			print('&nbsp;'."\r\n");
+		      }
+		      print('</td>'."\r\n");
+
 			
 		}	
 
@@ -319,10 +356,6 @@ if (!isset($MyPHPScript)) return;
 		
   	  
 ?>
-<!--		
-		</td></tr>
-		</table>
--->
 		
 
 		</br>

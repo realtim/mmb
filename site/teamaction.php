@@ -1236,6 +1236,7 @@ elseif ($action == 'JsonExport')
 		 
 		MySqlQuery($sql);
 
+
 	// Пересчет врмени нахождения команды на этапах
 	RecalcTeamLevelDuration($TeamId);
 	// Пересчет штрафов 
@@ -1249,6 +1250,142 @@ elseif ($action == 'JsonExport')
 		$view = "ViewRaidTeams";
 		$viewmode = "";
 
+
+} elseif ($action == "CancelUnionTeams")  {
+    // Действие вызывается нажатием кнопки "Объединить" 
+    
+    
+         // Права 
+        if (!$Administrator and !$Moderator)
+        {
+		$statustext = 'Нет прав на отмену объединения';
+		$alert = 1;
+		return;
+	      return;
+	} 
+    
+    	$pParentTeamId = $_POST['TeamId'];
+ 
+    
+
+	if ($RaidId <= 0)
+	{
+		$statustext = "Не указан ММБ.";
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
+
+		return;
+	}
+		
+	if ($pParentTeamId <= 0)
+	{
+		$statustext = "Не указана команда.";
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+
+
+	// Приступаем, собственно к отмене:
+	   
+
+                // Удаляем новую объединённую команду
+  
+		$sql = " update Teams t
+ 		         set t.team_hide = 1 
+                         where t.team_id = ".$pParentTeamId;
+
+              //  echo $sql;
+
+		MySqlQuery($sql);
+
+                // её участнтиков
+		$sql = " update TeamUsers tu
+ 		         set tu.teamuser_hide = 1 
+                         where tu.team_id = ".$pParentTeamId;
+
+		//echo $sql;		
+
+
+		MySqlQuery($sql);
+
+                // Открываем старые команды
+
+		$sql = " update Teams t
+ 		         set t.team_hide = 0 
+                         where t.team_parentid = ".$pParentTeamId;
+
+		//echo $sql;
+
+		MySqlQuery($sql);
+ 
+               // Открываем участников старых команд
+
+		$sql = " update TeamUsers tu
+			  inner join
+			  (
+			    select  t.team_id
+		            from  Teams t
+  			    where t.team_parentid = ".$pParentTeamId." 
+			   )  a
+			  on  tu.team_id = a.team_id
+			  inner join
+			  (
+			    select  tu2.user_id
+		            from  TeamUsers tu2
+  			    where tu2.team_id = ".$pParentTeamId." 
+			   )  b
+			  on  tu.user_id = b.user_id
+			 set tu.teamuser_hide = 0
+		  "; 
+
+
+		//echo $sql;
+
+		MySqlQuery($sql);
+
+                // Ставим изменения в лог
+
+		$sql = " update TeamUnionLogs set union_status = 3
+			 where teamunionlog_hide = 0 
+                               and union_status = 2
+			       and team_parentid = ".$pParentTeamId; 
+
+		//echo $sql;
+
+
+		MySqlQuery($sql);
+
+		
+	$sql =  " select team_id 
+	          from  Teams
+		  where team_hide = 0
+			and team_parentid = ".$pParentTeamId;
+
+
+		//echo $sql;
+
+        $Result = MySqlQuery($sql);
+	 
+ 	while ($Row = mysql_fetch_assoc($Result))
+	{
+	
+		// Пересчет врмени нахождения команды на этапах
+		RecalcTeamLevelDuration($Row['team_id']);
+		// Пересчет штрафов 
+		RecalcTeamLevelPenalty($Row['team_id']);
+		// Обновляем результат команды
+		RecalcTeamResult($Row['team_id']);
+ 
+	}
+	
+	mysql_free_result($Result);
+	
+        $statustext = 'Объединение отменено';				     
+	$view = "ViewRaidTeams";
+	$viewmode = "";
 
 
 }
