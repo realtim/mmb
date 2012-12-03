@@ -308,9 +308,12 @@ print('GPS <input type="checkbox" name="TeamUseGPS" value="on"'.(($TeamUseGPS ==
 // ============ Число карт
 print('&nbsp; Число карт <input type="text" name="TeamMapsCount" size="2" maxlength="2" value="'.$TeamMapsCount.'" tabindex="'.(++$TabIndex).'"'
 	.$OnClickText.$DisabledText.' title="Число заказанных на команду карт на каждый из этапов"> &nbsp;'."\n");
+print('</td></tr>'."\n\n");
 
 // ============ Нет сломанным унитазам!
-print('&nbsp; Нет <a href="http://community.livejournal.com/_mmb_/2010/09/24/" target="_blank">сломанным унитазам</a>! <input type="checkbox" name="TeamGreenPeace" value="on"'.(($TeamGreenPeace >= 1) ? ' checked="checked"' : '')
+print('<tr><td class="input">'."\n");
+
+print('<a href="http://community.livejournal.com/_mmb_/2010/09/24/" target="_blank">Нет сломанным унитазам!</a> - прочитали и поддерживаем <input type="checkbox" name="TeamGreenPeace" value="on"'.(($TeamGreenPeace >= 1) ? ' checked="checked"' : '')
 	.' tabindex="'.(++$TabIndex).'"'.$DisabledText.' title="Отметьте, если команда берёт повышенные экологические обязательства"/>'."\n");
 
 print('</td></tr>'."\n\n");
