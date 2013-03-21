@@ -1,8 +1,21 @@
 <?php
+
+
         // Общие настройки
 	include("settings.php");
 	// Библиотека функций
 	include("functions.php");
+
+        if (isset($DebugMode) and ($DebugMode == 1))
+	{
+		// Устанавливаем режим отображения ошибок
+		ini_set('display_errors',1);
+		error_reporting(E_ALL);
+	} else {
+		ini_set('display_errors',1);
+		error_reporting(E_ERROR);
+	}
+
 
         // Пробегаем помассивам POST GET REAUEST COOKIE  и чистим возможные sql инъекции и мусор
         ClearArrays();
@@ -74,9 +87,13 @@
 	        // Обработчик событий, связанных с результатами команды
 		include ("teamresultaction.php");
 
-
 	        // Обработчик событий, связанных с администрированием
 		include ("adminaction.php");
+
+
+	        // Обработчик событий, связанных с марш-броском
+		include ("raidaction.php");
+
 
 	}
 

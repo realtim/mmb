@@ -209,9 +209,16 @@ if (!isset($MyPHPScript)) return;
 	}
 
 
-	function ViewAdminRaidPage()
+	function NewRaid()
 	{ 
-		document.FindTeamForm.action.value = "ViewAdminRaidPage";
+		document.FindTeamForm.action.value = "RegisterNewRaid";
+		document.FindTeamForm.submit();
+	}
+
+
+	function ViewRaidInfo()
+	{ 
+		document.FindTeamForm.action.value = "RaidInfo";
 		document.FindTeamForm.submit();
 	}
 
@@ -255,7 +262,15 @@ if (!isset($MyPHPScript)) return;
 	print('<tr><td class = "input">ММБ'."\r\n"); 
 	print('<select name="RaidId"  style = "width: 141px; margin-left: 5px;" tabindex = "201"  title = "Список марш-бросков" onClick = "ChangeLogo(this.value);">'."\r\n"); 
 
-                $Result = MySqlQuery('select raid_id, raid_name from  Raids where raid_registrationenddate is not null order by raid_id desc');
+                $sql = " select raid_id, raid_name from Raids ";
+
+		if (!$Administrator)
+		{
+	                $sql.=  " where raid_registrationenddate is not null ";
+		}
+		$sql.=  " order by raid_id desc ";
+		
+                $Result = MySqlQuery($sql);
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
@@ -275,7 +290,8 @@ if (!isset($MyPHPScript)) return;
         // Ввод/ПРавка марш-броска
 	if ($Administrator)
         { 
-	    print('<tr><td><a href = "javascript:ViewAdminRaidPage();" title = "Страница администрирования марш-броска">Марш-бросок</a></td></tr>'."\r\n"); 
+	    print('<tr><td><a href = "javascript:NewRaid();" title = "Создание марш-броска">Новый марш-бросок</a></td></tr>'."\r\n"); 
+	    print('<tr><td><a href = "javascript:ViewRaidInfo();" title = "Параметры марш-броска">Марш-бросок</a></td></tr>'."\r\n"); 
         }
 
         // Модераторы
