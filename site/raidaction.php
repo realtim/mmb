@@ -51,6 +51,12 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	$pClearRaidRegistrationEndDate = (isset($_POST['ClearRaidRegistrationEndDate']) && ($_POST['ClearRaidRegistrationEndDate'] == 'on')) ? 1 : 0;
 	$pRaidLogoLink = $_POST['RaidLogoLink'];
 	$pRaidRulesLink = $_POST['RaidRulesLink'];
+	$pRaidStartPointName = $_POST['RaidStartPointName'];
+	$pRaidStartLink = $_POST['RaidStartLink'];
+	$pRaidFinishPointName = $_POST['RaidFinishPointName'];
+	$pRaidCloseDate = $_POST['RaidCloseDate'];
+	$pClearRaidCloseDate = (isset($_POST['ClearRaidCloseDate']) && ($_POST['ClearRaidCloseDate'] == 'on')) ? 1 : 0;
+	$pRaidZnLink = $_POST['RaidZnLink'];
 
 
 
@@ -85,10 +91,14 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		
 	// Добавляем/изменяем марш-бросок в базе
 
-	if ($action == "AddRaid")
+if ($action == "AddRaid")
 	// Новая команда
 	{
-		$sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, raid_logolink, raid_ruleslink)
+		$sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
+		                           raid_logolink, raid_ruleslink, raid_startpoint, 
+					   raid_startlink, raid_finishpoint, raid_closedate,
+					   raid_znlink
+					   )
 			values (trim('".$pRaidName."'), trim('".$pRaidPeriod."'),  ";
 		
 		if ($pClearRaidRegistrationEndDate == 1) 
@@ -99,11 +109,22 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		}
 		$sql.= ", trim('".$pRaidLogoLink."') ";
 		$sql.= ", trim('".$pRaidRulesLink."') ";
-			
+		$sql.= ", trim('".$pRaidStartPointName."') ";
+		$sql.= ", trim('".$pRaidStartLink."') ";
+		$sql.= ", trim('".$pRaidFinishPointName."') ";
+
+		if ($pClearRaidCloseDate == 1) 
+		{	
+			$sql.=  " NULL ";
+		} else {
+			$sql.=  " '".$pRaidCloseDate."'";
+		}
+	
+		$sql.= ", trim('".$pRaidZnLink."') ";
 		$sql.= ")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 
-                echo $sql;
+            //    echo $sql;
 
 		$RaidId = MySqlQuery($sql);
 		// Поменялся TeamId, заново определяем права доступа
@@ -137,14 +158,27 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		}
 		$sql.=  " , raid_logolink = trim('".$pRaidLogoLink."') "; 
 		$sql.=  " , raid_ruleslink = trim('".$pRaidRulesLink."') "; 
+		$sql.=  " , raid_startpoint =  trim('".$pRaidStartPointName."') ";
+		$sql.=  " , raid_startlink = trim('".$pRaidStartLink."') ";
+		$sql.=  " , raid_finishpoint = trim('".$pRaidFinishPointName."') ";
+                $sql.=  " , raid_closedate =  ";
+					   
+		if ($pClearRaidCloseDate == 1) 
+		{	
+			$sql.=  " NULL ";
+		} else {
+			$sql.=  " '".$pRaidCloseDate."'";
+		}
+	
+		$sql.= ", raid_znlink = trim('".$pRaidZnLink."') ";
 		$sql.=  " where raid_id = ".$RaidId; 
 	    
-	        echo $sql;
+	 //       echo $sql;
 
 			
 		$rs = MySqlQuery($sql);
 	}
-	// Конец разных вариантов действий при создании и редактировании команды
+	// Конец разных вариантов действий при создании и редактировании ММБ
 
 
 	// Если передали альтернативную страницу, на которую переходить (пока только одна возможность - на список команд)

@@ -24,6 +24,12 @@ if ($viewmode == 'Add')
                 $RaidRegistrationEndDate = $_POST['RaidRegistrationEndDate'];
                 $RaidLogoLink = $_POST['RaidLogoLink'];
                 $RaidRulesLink = $_POST['RaidRulesLink'];
+		$RaidStartPointName = $_POST['RaidStartPointName'];
+		$RaidStartLink = $_POST['RaidStartLink'];
+		$RaidFinishPointName = $_POST['RaidFinishPointName'];
+		$RaidCloseDate = $_POST['RaidCloseDate'];
+		$ClearRaidCloseDate = (isset($_POST['ClearRaidCloseDate']) && ($_POST['ClearRaidCloseDate'] == 'on')) ? 1 : 0;
+		$RaidZnLink = $_POST['RaidZnLink'];
 
 	}
 	else
@@ -35,6 +41,11 @@ if ($viewmode == 'Add')
                 $RaidRegistrationEndDate = 'Дата окончания регистрации (yyyy-mm-dd)';
                 $RaidLogoLink = 'Ссылка на эмблему ММБ';
                 $RaidRulesLink = 'Ссылка на положение о ММБ';
+		$RaidStartPointName = 'Название старта';
+		$RaidStartLink = 'Ссылка на информацию о старте';
+		$RaidFinishPointName = 'Название финиша';
+		$RaidCloseDate = 'Дата закрытия протокола';
+		$RaidZnLink = 'Ссылка на значок ММБ';
 
 	}
 
@@ -57,7 +68,10 @@ else
 
 	$sql = "select r.raid_name, r.raid_period, r.raid_registrationenddate,
 	               (CASE WHEN r.raid_registrationenddate is null THEN 1 ELSE 0 END) as raid_clearregistrationenddate,
-		       r.raid_logolink, r.raid_ruleslink 
+		       r.raid_logolink, r.raid_ruleslink,  r.raid_startpoint, 
+		       r.raid_startlink, r.raid_finishpoint, r.raid_closedate,
+		       r.raid_znlink, 
+      	               (CASE WHEN r.raid_closedate is null THEN 1 ELSE 0 END) as raid_clearclosedate
 		from Raids r
 		where r.raid_id = ".$RaidId;
 	$Result = MySqlQuery($sql);
@@ -74,15 +88,14 @@ else
 		$ClearRaidRegistrationEndDate = $_POST['ClearRaidRegistrationEndDate'];
 		$RaidLogoLink = $_POST['RaidLogoLink'];
 		$RaidRulesLink = $_POST['RaidRulesLink'];
+		$RaidStartPointName = $_POST['RaidStartPointName'];
+		$RaidStartLink = $_POST['RaidStartLink'];
+		$RaidFinishPointName = $_POST['RaidFinishPointName'];
+		$RaidCloseDate = $_POST['RaidCloseDate'];
+		$ClearRaidCloseDate = $_POST['ClearRaidCloseDate'];
+		$RaidZnLink = $_POST['RaidZnLink'];
+
 		
-/*
-		$TeamNum = (int) $_POST['TeamNum'];
-		$TeamName = str_replace( '"', '&quot;', $_POST['TeamName']);
-		$DistanceId = $_POST['DistanceId'];
-		$TeamUseGPS = ($_POST['TeamUseGPS'] == 'on' ? 1 : 0);
-		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
-		$TeamGreenPeace = ($_POST['TeamGreenPeace'] == 'on' ? 1 : 0);
-*/
 	}
 	else
 	{
@@ -93,6 +106,12 @@ else
                 $ClearRaidRegistrationEndDate = $Row['raid_clearregistrationenddate'];
 		$RaidLogoLink = $Row['raid_logolink'];
 		$RaidRulesLink = $Row['raid_ruleslink'];
+		$RaidStartPointName = $Row['raid_startpoint'];
+		$RaidStartLink = $Row['raid_startlink'];
+		$RaidFinishPointName = $Row['raid_finishpoint'];
+		$RaidCloseDate = $Row['raid_closedate'];
+		$ClearRaidCloseDate = $Row['raid_clearclosedate'];
+		$RaidZnLink = $Row['raid_znlink'];
 	    
 
 	}
@@ -207,45 +226,81 @@ print('<tr><td class="input"><input type="text" name="RaidName" size="50" value=
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidName.'\';}"')
 	.' title="Название ММБ"></td></tr>'."\n\n");
 
-print('<tr><td class="input">'."\n");
+// ============ Эмблема (ссылка и загрузка файла)
+print('<tr><td class="input"><input type="text" name="RaidLogoLink" size="50" value="'.$RaidLogoLink.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidLogoLink.'\') {this.value=\'\';}"')
+	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidLogoLink.'\';}"')
+	.' title="Ссылка на эмблему ММБ"></td></tr>'."\r\n");
+
+print('<tr><td class = "input">Новый файл эмблемы: <input name="userfile[]" type="file" /></td></tr>'."\r\n");
+
 
 // ============ Период ММБ
 print('<tr><td class="input"><input type="text" name="RaidPeriod" size="50" value="'.$RaidPeriod.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidPeriod.'\') {this.value=\'\';}"')
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidPeriod.'\';}"')
-	.' title="Период ММБ"></td></tr>'."\n\n");
-
-print('<tr><td class="input">'."\n");
+	.' title="Период ММБ"></td></tr>'."\r\n");
 
 
 // ============ Дата окончания регистрации ММБ
 print('<tr><td class="input"><input type="text" name="RaidRegistrationEndDate" size="50" value="'.$RaidRegistrationEndDate.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidRegistrationEndDate.'\') {this.value=\'\';}"')
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidRegistrationEndDate.'\';}"')
-	.' title="Дата закрытия регистрации ММБ"></td></tr>'."\n\n");
+	.' title="Дата закрытия регистрации ММБ"></td></tr>'."\r\n");
 
 // ============ Очистка даты окончания регистрации ММБ
 print('<tr><td class = "input"><input type="checkbox" name="ClearRaidRegistrationEndDate" '.(($ClearRaidRegistrationEndDate == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
 	        title = "Дата окончания регистрации будет очищена" /> Убрать дату окончания регистрации</td></tr>'."\r\n");
 
 
-// ============ Эмблема (ссылка и загрузка файла)
-print('<tr><td class="input"><input type="text" name="RaidLogoLink" size="50" value="'.$RaidLogoLink.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidLogoLink.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidLogoLink.'\';}"')
-	.' title="Ссылка на эмблему ММБ"></td></tr>'."\n\n");
-
-print('<tr><td class = "input">Новый файл эмблемы: <input name="userfile[]" type="file" /></td></tr>'."\r\n");
-
 // ============ Положение (ссылка и загрузка файла)
 print('<tr><td class="input"><input type="text" name="RaidRulesLink" size="50" value="'.$RaidRulesLink.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidRulesLink.'\') {this.value=\'\';}"')
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidRulesLink.'\';}"')
-	.' title="Ссылка на эмблему ММБ"></td></tr>'."\n\n");
+	.' title="Ссылка на эмблему ММБ"></td></tr>'."\r\n");
 
 print('<tr><td class = "input">Новый файл положения: <input name="userfile[]" type="file" /></td></tr>'."\r\n");
   
 
+
+// ============ Старт ММБ
+print('<tr><td class="input"><input type="text" name="RaidStartPointName" size="50" value="'.$RaidStartPointName.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidStartPointName.'\') {this.value=\'\';}"')
+	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidStartPointName.'\';}"')
+	.' title="Название пункта старта ММБ"></td></tr>'."\n\n");
+
+// ============ Информация о старте  (ссылка)
+print('<tr><td class="input"><input type="text" name="RaidStartLink" size="50" value="'.$RaidStartLink.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidStartLink.'\') {this.value=\'\';}"')
+	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidStartLink.'\';}"')
+	.' title="Ссылка на информацию о старте ММБ"></td></tr>'."\r\n");
+
+
+// ============ Финиш ММБ
+print('<tr><td class="input"><input type="text" name="RaidFinishPointName" size="50" value="'.$RaidFinishPointName.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidFinishPointName.'\') {this.value=\'\';}"')
+	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidFinishPointName.'\';}"')
+	.' title="Название пункта финиша ММБ (запоняется после ММБ!)"></td></tr>'."\n\n");
+
+
+// ============ Дата закрытия протокола ММБ
+print('<tr><td class="input"><input type="text" name="RaidCloseDate" size="50" value="'.$RaidCloseDate.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidCloseDate.'\') {this.value=\'\';}"')
+	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidCloseDate.'\';}"')
+	.' title="Дата закрытия протокола  ММБ"></td></tr>'."\r\n");
+
+// ============ Очистка даты закрытия протокола ММБ
+print('<tr><td class = "input"><input type="checkbox" name="ClearRaidCloseDate" '.(($ClearRaidCloseDate == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+	        title = "Дата закрытия протокола будет очищена" /> Убрать дату закрытия протокола</td></tr>'."\r\n");
+
+
+// ============ Значок (ссылка и загрузка файла)
+print('<tr><td class="input"><input type="text" name="RaidZnLink" size="50" value="'.$RaidZnLink.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidZnLink.'\') {this.value=\'\';}"')
+	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidZnLink.'\';}"')
+	.' title="Ссылка на эмблему ММБ"></td></tr>'."\r\n");
+
+print('<tr><td class = "input">Новый файл значка: <input name="userfile[]" type="file" /></td></tr>'."\r\n");
 
 
 
