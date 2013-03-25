@@ -60,10 +60,10 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 
 
 
-        // Обрабатываем зхагрузку файла
-        if (!empty($_FILES['userfile']['name'][0]) and ($_FILES['userfile']['size'][0] > 0))
+        // Обрабатываем зхагрузку файла эмблемы
+        if (!empty($_FILES['logofile']['name']) and ($_FILES['logofile']['size'] > 0))
 	{
-           if  (substr(trim($_FILES['userfile']['type'][0]), 0, 6) != 'image/') 
+           if  (substr(trim($_FILES['logofile']['type']), 0, 6) != 'image/') 
 	   {
 			$statustext = 'Недопустимый тип файла.';
 			$alert = 1;
@@ -71,12 +71,12 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 			return;
 	   }
             
-	   $UploadFile = $MyStoreFileLink . basename($_FILES['userfile']['name'][0]);
+	   $UploadFile = $MyStoreFileLink . basename($_FILES['logofile']['name']);
 
-	   if (move_uploaded_file($_FILES['userfile']['tmp_name'][0], $UploadFile))
+	   if (move_uploaded_file($_FILES['logofile']['tmp_name'], $UploadFile))
 	   {
 		// Успешно загрузили файл
-		$pRaidLogoLink = $MyStoreHttpLink . basename($_FILES['userfile']['name'][0]);
+		$pRaidLogoLink = $MyStoreHttpLink . basename($_FILES['logofile']['name']);
 	   } else {
 			$statustext = 'Ошибка загрузки файла с эмблемой ММБ.';
 			$alert = 1;
@@ -85,8 +85,46 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
            }
            // Конец проверки на успешность загрузки
 	}
-        // Конец проверки на указание в форме файла для загрузки
+        // Конец проверки на указание в форме файла для загрузки эмблемы
 	
+	if  (empty($pRaidName)) 
+	{
+			$statustext = 'Пустое название ММБ.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+	}
+        // Конец пролверки на пустое название 
+	
+
+        // Обрабатываем зхагрузку файла положения
+        if (!empty($_FILES['rulesfile']['name']) and ($_FILES['rulesfile']['size'] > 0))
+	{
+
+           if  (substr(trim($_FILES['rulesfile']['type']), 0, 9) != 'text/html') 
+	   {
+			$statustext = 'Недопустимый тип файла.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+	   }
+            
+	   $UploadFile = $MyStoreFileLink . basename($_FILES['rulesfile']['name']);
+
+	   if (move_uploaded_file($_FILES['rulesfile']['tmp_name'], $UploadFile))
+	   {
+		// Успешно загрузили файл
+		$pRaidRulesLink = $MyStoreHttpLink . basename($_FILES['rulesfile']['name']);
+	   } else {
+			$statustext = 'Ошибка загрузки файла с положением ММБ.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+           // Конец проверки на успешность загрузки
+	}
+        // Конец проверки на указание в форме файла для загрузки положэние
+
 	
 		
 	// Добавляем/изменяем марш-бросок в базе
