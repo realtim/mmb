@@ -128,15 +128,23 @@ $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
 mysql_free_result($Result);
 
+// 27/03/2013 Отключил экспорт TeamLevelPoints т.к. эта таблица формируется исключительно при импорте данных.
+// Пока на планшетах не производится сведение всех данных - не нужна
+
 // TeamLevelDismiss: user_id, levelpoint_id, team_id, teamuser_id, teamleveldismiss_date, device_id
+
+/*
 $Sql = "select user_id, levelpoint_id, tld.team_id, teamuser_id, teamleveldismiss_date, device_id from TeamLevelDismiss tld inner join Teams t on tld.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and d.raid_id = ".$RaidId;
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelDismiss"][] = $Row; }
 mysql_free_result($Result);
+*/
 
-// TeamLevelPoints: user_id, levelpoint_id, team_id, teamlevelpoint_date, device_id, teamlevelpoint_datetime, teamlevelpoint_points, teamlevelpoint_comment
+
 // 27/03/2013 Отключил экспорт TeamLevelPoints т.к. эта таблица формируется исключительно при импорте данных.
 // Пока на планшетах не производится сведение всех данных - не нужна
+
+// TeamLevelPoints: user_id, levelpoint_id, team_id, teamlevelpoint_date, device_id, teamlevelpoint_datetime, teamlevelpoint_points, teamlevelpoint_comment
 /*
 $Sql = "select user_id, levelpoint_id, tlp.team_id, teamlevelpoint_date, device_id, teamlevelpoint_datetime, teamlevelpoint_points, teamlevelpoint_comment from TeamLevelPoints tlp inner join Teams t on tlp.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and d.raid_id = ".$RaidId;
 $Result = MySqlQuery($Sql);
