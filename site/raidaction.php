@@ -137,13 +137,13 @@ if ($action == "AddRaid")
 					   raid_startlink, raid_finishpoint, raid_closedate,
 					   raid_znlink
 					   )
-			values (trim('".$pRaidName."'), trim('".$pRaidPeriod."'),  ";
+			values (trim('".$pRaidName."'), trim('".$pRaidPeriod."')  ";
 		
-		if ($pClearRaidRegistrationEndDate == 1) 
+		if ($pClearRaidRegistrationEndDate == 1 or empty($pRaidRegistrationEndDate)) 
 		{	
-			$sql.=  " NULL ";
+			$sql.=  ", NULL ";
 		} else {
-			$sql.=  " '".$pRaidRegistrationEndDate."'";
+			$sql.=  ", '".$pRaidRegistrationEndDate."'";
 		}
 		$sql.= ", trim('".$pRaidLogoLink."') ";
 		$sql.= ", trim('".$pRaidRulesLink."') ";
@@ -151,18 +151,18 @@ if ($action == "AddRaid")
 		$sql.= ", trim('".$pRaidStartLink."') ";
 		$sql.= ", trim('".$pRaidFinishPointName."') ";
 
-		if ($pClearRaidCloseDate == 1) 
+		if ($pClearRaidCloseDate == 1 or empty($pRaidCloseDate)) 
 		{	
-			$sql.=  " NULL ";
+			$sql.=  ", NULL ";
 		} else {
-			$sql.=  " '".$pRaidCloseDate."'";
+			$sql.=  ", '".$pRaidCloseDate."'";
 		}
 	
 		$sql.= ", trim('".$pRaidZnLink."') ";
 		$sql.= ")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 
-            //    echo $sql;
+                echo $sql;
 
 		$RaidId = MySqlQuery($sql);
 		// Поменялся TeamId, заново определяем права доступа

@@ -36,16 +36,19 @@ if ($viewmode == 'Add')
 	// Пробуем создать команду первый раз
 	{
 
-                $RaidName = 'Название ММБ';
-		$RaidPeriod = 'Период проведения';
-                $RaidRegistrationEndDate = 'Дата окончания регистрации (yyyy-mm-dd)';
-                $RaidLogoLink = 'Ссылка на эмблему ММБ';
-                $RaidRulesLink = 'Ссылка на положение о ММБ';
-		$RaidStartPointName = 'Название старта';
-		$RaidStartLink = 'Ссылка на информацию о старте';
-		$RaidFinishPointName = 'Название финиша';
-		$RaidCloseDate = 'Дата закрытия протокола';
-		$RaidZnLink = 'Ссылка на значок ММБ';
+                $RaidName = '';
+		$RaidPeriod = '';
+                $RaidRegistrationEndDate = '';
+                $ClearRaidRegistrationEndDate = 0;
+		$RaidLogoLink = '';
+                $RaidRulesLink = '';
+		$RaidStartPointName = '';
+		$RaidStartLink = '';
+		$RaidFinishPointName = '';
+		$RaidCloseDate = '';
+		$RaidZnLink = '';
+                $ClearRaidCloseDate = 0;
+		
 
 	}
 
