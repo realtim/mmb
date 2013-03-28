@@ -122,6 +122,12 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 		$DistanceData = $rowDistance['distance_data'];
 		$DistanceCounters = '('.$rowDistance['teamscount'].'/<span style = "color:#007700;">'.$rowDistance['teamsgreencount'].'</span>/'.$rowDistance['teammapscount'].'/'.$rowDistance['teamuserscount'].')';
 	
+	        // Если ссылка пустая - заменяем на сгенерированную
+	        if (trim($DistanceLink) == '')
+		{
+		  $DistanceLink = '?action=ViewRaidTeams&RaidId='.$nextRaidId;
+		}
+	
 	        print('<a href = "'.$DistanceLink.'">'.$DistanceName.'</a>: '.$DistanceCounters.' '.$DistanceData."\r\n");
 	
 	}

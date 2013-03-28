@@ -225,7 +225,42 @@ if (!isset($MyPHPScript)) return;
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
                 if  (empty($OrderType))
                 {
-                  if ($RaidStage > 3) $OrderType = "Place"; else $OrderType = "Num";
+                  if ($RaidStage > 3)
+		  {
+		   // Прповеряем, что внесено хотя бы 30 результатов (может нужна другая проверка)
+		  
+		    $sql = " select count(*) as raid_teamlevelcount
+			    from  TeamLevels tl 
+				  inner join Levels l 
+				  on tl.level_id = l.level_id 
+                                  inner join Teams t
+                                  on t.team_id = tl.team_id 
+				  inner join  Distances d 
+				  on t.distance_id = d.distance_id
+			    where tl.teamlevel_hide = 0 
+                                 and d.raid_id = ".$RaidId." 
+                                 and tl.teamlevel_progress > 0
+                                 and t.team_hide = 0
+			    ";
+
+		     $Result = MySqlQuery($sql);
+		     $Row = mysql_fetch_assoc($Result);
+		     mysql_free_result($Result);
+                     $RaidTeamLevelCount = (int)$Row['raid_teamlevelcount'];
+		  
+		     // Смотрим число загруженных результатов
+		     if  ($RaidTeamLevelCount > 30)
+                     {		  
+		        $OrderType = "Place";
+		     } else {
+	           	$OrderType = "Num";
+		     }
+		      
+		  } else {
+		   $OrderType = "Num";
+		  }
+		  // Конец разбора сортировки по умолчанию
+		   
                 }
 
             	print('<div align = "left" style = "font-size: 80%;">'."\r\n");
