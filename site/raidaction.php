@@ -57,7 +57,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	$pRaidCloseDate = $_POST['RaidCloseDate'];
 	$pClearRaidCloseDate = (isset($_POST['ClearRaidCloseDate']) && ($_POST['ClearRaidCloseDate'] == 'on')) ? 1 : 0;
 	$pRaidZnLink = $_POST['RaidZnLink'];
-
+        $pRaidDistancesCount = (int)$_POST['RaidDistancesCount'];
 
 
         // Обрабатываем зхагрузку файла эмблемы
@@ -87,6 +87,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	}
         // Конец проверки на указание в форме файла для загрузки эмблемы
 	
+	// Проверка на пустое название 
 	if  (empty($pRaidName)) 
 	{
 			$statustext = 'Пустое название ММБ.';
@@ -94,8 +95,19 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 			$viewsubmode = "ReturnAfterError";
 			return;
 	}
-        // Конец пролверки на пустое название 
+        // Конец проверки на пустое название 
 	
+	// Проверка на число дистанций
+	if  ($pRaidDistancesCount <= 0) 
+	{
+			$statustext = 'Число дистанций длолжно быть положительным.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+	}
+        // Конец проверки на число дистанций
+	
+
 
         // Обрабатываем зхагрузку файла положения
         if (!empty($_FILES['rulesfile']['name']) and ($_FILES['rulesfile']['size'] > 0))
@@ -126,12 +138,32 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
         // Конец проверки на указание в форме файла для загрузки положэние
 
 	
+
 		
 	// Добавляем/изменяем марш-бросок в базе
 
-if ($action == "AddRaid")
-	// Новая команда
+	if ($action == "AddRaid")
+	// Новый ММБ
 	{
+
+
+		// Проверяем, нет ли уже ММБ с таким названием
+		$sql = "select count(*) as resultcount
+			from Raids r
+			where  trim(raid_name) = '".$pRaidName."'";
+
+		$rs = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($rs);
+		mysql_free_result($rs);
+		if ($Row['resultcount'] > 0)
+		{
+			$statustext = "Уже есть ММБ с таким названием.";
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+		}
+                // Конец проверки на  повтор имени
+
 		$sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
 		                           raid_logolink, raid_ruleslink, raid_startpoint, 
 					   raid_startlink, raid_finishpoint, raid_closedate,
@@ -162,19 +194,45 @@ if ($action == "AddRaid")
 		$sql.= ")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 
-                echo $sql;
+              //  echo $sql;
 
 		$RaidId = MySqlQuery($sql);
-		// Поменялся TeamId, заново определяем права доступа
-//		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
+		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
+
 		if ($RaidId <= 0)
 		{
 			$statustext = 'Ошибка записи нового ММБ.';
 			$alert = 1;
 			$viewsubmode = "ReturnAfterError";
 			return;
-		}
+		} else {
+		
+		    // Добавляем дистанции
+                    if  ($pRaidDistancesCount == 1)
+		    {
+				$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink) 
+				        values (".$RaidId.", 'Общая', '','')";
+		    
+				$rs = MySqlQuery($sql);
+		    
+		    } else {
 
+			$AddDistanceCounter =  0;
+			while ($AddDistanceCounter < $pRaidDistancesCount) 
+			{
+				$AddDistanceCounter++;
+			
+				$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink) 
+				        values (".$RaidId.", 'Дистанция".$AddDistanceCounter."', '','')";
+
+				// echo $sql;
+				$rs = MySqlQuery($sql);
+		    
+		         }
+                     }
+		    // Конец добавления дистанций 
+		}
+                // Конец проверки успешной записи ММБ
 
 //		$sql = "insert into TeamUsers (team_id, user_id) values (".$TeamId.", ".$NewUserId.")";
 //		MySqlQuery($sql);
@@ -184,6 +242,44 @@ if ($action == "AddRaid")
 	else
 	// Изменения в уже существующей команде
 	{
+
+
+		// Проверяем, что текущее чимсло дистанций не больше, чем указано
+		$sql = "select count(*) as resultcount
+			from Distances 
+			where  raid_id = ".$RaidId; 
+
+		$rs = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($rs);
+		mysql_free_result($rs);
+		$NowDistancesCounter = $Row['resultcount'];
+		if ($NowDistancesCounter > $pRaidDistancesCount)
+		{
+			$statustext = "Дистанций не может быть меньше, чем уже создано.";
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+
+                } else {
+                    // Добавляем дистанции
+                    $AddDistanceCounter =  $NowDistancesCounter;
+                    while ($AddDistanceCounter < $pRaidDistancesCount) 
+		    {
+			$AddDistanceCounter++;
+			
+			$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink) 
+			        values (".$RaidId.", 'Дистанция".$AddDistanceCounter."', '','')";
+
+                        // echo $sql;
+			$rs = MySqlQuery($sql);
+		    
+		    }
+		    // Конец добавления дистанций 
+		}
+                // Конец проверки на число дистанций
+
+
+
 		$sql = "update Raids set raid_name = trim('".$pRaidName."'),
 				raid_period = trim('".$pRaidPeriod."'), 
 				raid_registrationenddate = ";
@@ -227,6 +323,54 @@ if ($action == "AddRaid")
 elseif ($action == "CancelChangeRaidData")
 {
 	$view = "ViewRaidData";
+}
+// ============ Измененеия в дистанции ====================================
+elseif ($action == 'DistanceChangeData')
+{
+	$viewmode = "";
+	$view = "ViewRaidData";
+	// Общая проверка возможности редактирования
+	if (!$Administrator)
+	{
+		$statustext = "Нет прав на ввод или правку дистанций";
+		$alert = 0;
+		return;
+	}
+        $pDistanceId = (int)$_POST['DistanceId'];
+
+	// Проверка на ключ дистанции
+	if  ($pDistanceId <= 0) 
+	{
+			$statustext = 'Не найден ключ дистанции.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+	}
+        // Конец проверки на пустое название 
+
+        		
+        $pDistanceName = $_POST['DistanceName'.$pDistanceId];
+
+	// Проверка на пустое название 
+	if (empty($pDistanceName)) 
+	{
+			$statustext = 'Пустое название дистанции.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+	}
+        // Конец проверки на пустое название 
+
+        $pDistanceData = $_POST['DistanceData'.$pDistanceId];
+	
+	$sql = "update Distances set distance_name = trim('".$pDistanceName."'),
+	 			     distance_data = trim('".$pDistanceData."')
+		where distance_id = ".$pDistanceId; 
+	    
+	// echo $sql;
+	$rs = MySqlQuery($sql);
+
+
 }
 // ============ Никаких действий не требуется =================================
 else
