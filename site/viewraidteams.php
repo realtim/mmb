@@ -332,10 +332,10 @@ if (!isset($MyPHPScript)) return;
 
                     // Режим отображения результатов
                     if (isset($_REQUEST['ResultViewMode'])) $ResultViewMode = $_REQUEST['ResultViewMode']; else $ResultViewMode = "";
+		    
 
                     // Сбрасываем режим отображения, если задан этап
                     if ($_REQUEST['LevelId'] > 0) {
-                        $_REQUEST['ResultViewMode'] = '';
                         $ResultViewMode = '';
                     }
 
@@ -755,7 +755,7 @@ if (!isset($MyPHPScript)) return;
                 $thstyle = '';		
 
                 $ColumnWidth = 0;
-                if ($_REQUEST['ResultViewMode'] == 'WithLevels') {
+                if ($ResultViewMode == 'WithLevels') {
                     $ColumnWidth = 175;
                 } else {
                     $ColumnWidth = 350;
@@ -789,7 +789,7 @@ if (!isset($MyPHPScript)) return;
 		  }
 
 
-                 if ($_REQUEST['ResultViewMode'] == 'WithLevels') {
+                 if ($ResultViewMode == 'WithLevels') {
 		    print('<td width = "500"  style = "'.$thstyle.'">'."\r\n");
                    print('<table border = "0" cellpadding = "0" style = "font-size: 100%"><tr>'."\r\n");
 		    print('<td width = "120" style = "'.$thstyle.'">Старт-Финиш</td>'."\r\n");
@@ -911,7 +911,7 @@ if (!isset($MyPHPScript)) return;
 			    }
 
                            // Для вывода "с этапами" 
-			    if ($_REQUEST['ResultViewMode'] == 'WithLevels')
+			    if ($ResultViewMode == 'WithLevels')
                            {
 /*
 			      print('<td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_penalty'].'</td>

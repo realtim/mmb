@@ -125,7 +125,8 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	        // Если ссылка пустая - заменяем на сгенерированную
 	        if (trim($DistanceLink) == '')
 		{
-		  $DistanceLink = '?action=ViewRaidTeams&RaidId='.$nextRaidId;
+		  //$DistanceLink = '?action=ViewRaidTeams&RaidId='.$nextRaidId;
+		  $DistanceLink = 'javascript:document.FindTeamForm.RaidId.value='.$nextRaidId.';RaidTeams()';
 		}
 	
 	        print('<a href = "'.$DistanceLink.'">'.$DistanceName.'</a>: '.$DistanceCounters.' '.$DistanceData."\r\n");
