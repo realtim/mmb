@@ -65,7 +65,7 @@ if ($viewmode == 'Add') return;
 if (!CanViewResults($Administrator, $Moderator, $RaidStage)) return;
 
 // И запоминаем на будущее, можно ли их редактировать
-if (CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
+if (CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 {
 	$AllowEditResult = 1;
 	$NextResultActionName = 'ChangeTeamResult';

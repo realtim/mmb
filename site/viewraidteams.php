@@ -130,7 +130,7 @@ if (!isset($MyPHPScript)) return;
 
 
 // функция возвращает для команды невзятые на этапе КП
-    function InvertTeamLevelPoints ($LevelPointNames,$TeamLevelPoints,$LevelId)
+    function InvertTeamLevelPoints ($LevelPointNames,$TeamLevelPoints)
     {
 	
 	  if (empty($TeamLevelPoints))
@@ -666,7 +666,8 @@ if (!isset($MyPHPScript)) return;
                   // Сортировка по номеру (в обратном порядке)
 		  $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
 		               t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
-                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult
+                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult, 
+			       COALESCE(t.team_outofrange, 0) as  team_outofrange 
 		        from  Teams t
 			     inner join  Distances d 
 			     on t.distance_id = d.distance_id
@@ -688,7 +689,9 @@ if (!isset($MyPHPScript)) return;
 
 		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
 		               t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
-                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult
+                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
+			       COALESCE(t.team_outofrange, 0) as  team_outofrange 
+
 			  from  Teams t
 				inner join  Distances d 
 				on t.distance_id = d.distance_id
@@ -699,7 +702,7 @@ if (!isset($MyPHPScript)) return;
 			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
 		      }
 
-		      $sql = $sql." order by distance_name, team_progress desc, team_result asc, team_num asc ";
+		      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_result asc, team_num asc ";
 		    
 		     } else {
                           // Если фильтруем по этапу, то другой запрос
@@ -709,7 +712,8 @@ if (!isset($MyPHPScript)) return;
 				      CASE WHEN COALESCE(tl.teamlevel_duration, 0) > 0 
                                           THEN TIME_FORMAT(SEC_TO_TIME(TIME_TO_SEC(tl.teamlevel_duration) + COALESCE(tl.teamlevel_penalty, 0)*60), '%H:%i') 
                                           ELSE ''
-                                     END as  team_sresult,
+                                      END as  team_sresult,
+			              COALESCE(t.team_outofrange, 0) as  team_outofrange, 
                                       TIME_FORMAT(SEC_TO_TIME(COALESCE(tl.teamlevel_penalty, 0)*60), '%H:%i') as teamlevel_penalty,
                                       tl.teamlevel_points, tl.teamlevel_comment, l.level_pointnames
 			    from  TeamLevels tl 
@@ -723,7 +727,7 @@ if (!isset($MyPHPScript)) return;
                                  and tl.level_id = ".$_REQUEST['LevelId']." 
                                  and tl.teamlevel_progress > 0
                                  and t.team_hide = 0
-			    order by tl.teamlevel_progress desc, team_sresult asc, t.team_num asc";
+			    order by team_outofrange, tl.teamlevel_progress desc, team_sresult asc, t.team_num asc";
 
                      }
 
@@ -830,7 +834,7 @@ if (!isset($MyPHPScript)) return;
                         }
 
  			print('<tr class = "'.$TrClass.'"><td style = "'.$tdgreenstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
-			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].')'.
+			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_outofrange'] == 1 ? ', Вне зачета!' : '').')'.
                                   $DismissNames[$Row['distance_id']][$Row['team_progress']].'</td><td style = "'.$tdstyle.'">'."\r\n");
 
 			if ($OrderType <> 'Errors')
@@ -883,7 +887,7 @@ if (!isset($MyPHPScript)) return;
 			if ($OrderType == 'Place')   
 			{
 			    print('<td width = "50" style = "'.$thstyle.'">'."\r\n");
-                            if ($Row['team_sresult'] == '00:00' or $Row['team_sresult'] == '')
+                            if ($Row['team_sresult'] == '00:00' or $Row['team_sresult'] == '' or $Row['team_outofrange'] == 1)
                             {
                                print('&nbsp;');
                             } elseif($Row['team_sresult'] <>  $PredResult) {

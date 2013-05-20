@@ -18,7 +18,8 @@ if ($viewmode == 'Add')
 	}
 
 	// Если запрещено создавать команду - молча выходим, сообщение уже выведено в teamaction.php
-	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage)) return;
+	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)) return;
+
 
 	$Sql = "select user_email from Users where user_id = ".$UserId;
 	$Result = MySqlQuery($Sql);
@@ -73,7 +74,7 @@ else
 
 	$sql = "select t.team_num, t.distance_id, t.team_usegps, t.team_name,
 		t.team_mapscount, t.team_registerdt,
-		t.team_greenpeace,
+		t.team_greenpeace, 
 		TIME_FORMAT(t.team_result, '%H:%i') as team_result,
 		CASE WHEN t.team_registerdt >= r.raid_registrationenddate
 			THEN 1
@@ -122,7 +123,7 @@ else
 // ================ Конец инициализации переменных команды =================
 
 // Определяем права по редактированию команды
-if (($viewmode == "Add") || CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
+if (($viewmode == "Add") || CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 {
 	$AllowEdit = 1;
 	$DisabledText = '';
@@ -300,6 +301,19 @@ print('<tr><td class="input"><input type="text" name="TeamName" size="50" value=
 
 print('<tr><td class="input">'."\n");
 
+
+// ============ Вне зачета
+
+if (CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)) 
+{
+     $DisabledTextOutOfRange = ''; 
+} else {
+     $DisabledTextOutOfRange = 'disabled'; 
+}
+
+	print('Вне зачета! <input type="checkbox" name="TeamOutOfRange" value="on"'.(($TeamOutOfRange == 1) ? ' checked="checked"' : '')
+	.' tabindex="'.(++$TabIndex).'" '.$DisabledTextOutOfRange.'  title="Команда вне зачета"/> &nbsp;'."\n");
+
 // ============ Использование GPS
 print('GPS <input type="checkbox" name="TeamUseGPS" value="on"'.(($TeamUseGPS == 1) ? ' checked="checked"' : '')
 	.' tabindex="'.(++$TabIndex).'"'.$DisabledText
@@ -365,7 +379,7 @@ print('</td></tr>'."\n");
 
 // ============ Новый участник
 // Возможность добавлять участников заканчивается вместе с возсожностью создавать команды
-if (($AllowEdit == 1) && CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage))
+if (($AllowEdit == 1) && CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
 {
 	print('<tr><td class="input" style="padding-top: 10px;">'."\n");
 	if (($viewmode == "Add") && !$Moderator)

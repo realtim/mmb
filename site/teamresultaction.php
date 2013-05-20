@@ -23,7 +23,7 @@ if ($action == "ChangeTeamResult")
 	mysql_free_result($Result);
 
 	// Проверка возможности редактировать результаты
-	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
+	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
 		$statustext = 'Изменение результатов команды запрещено';
 		return;

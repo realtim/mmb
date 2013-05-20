@@ -210,7 +210,7 @@ if (!isset($MyPHPScript)) return;
 // ----------------------------------------------------------------------------
 // Инициализация всех переменных, отвечающих за уровни доступа
 
-function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator, &$TeamUser, &$Moderator, &$OldMmb, &$RaidStage)
+function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator, &$TeamUser, &$Moderator, &$OldMmb, &$RaidStage, &$TeamOutOfRange)
 {
 	// Инициализируем переменные самым низким уровнем доступа
 	$UserId = 0;
@@ -219,6 +219,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	$Moderator = 0;
 	$OldMmb = 0;
 	$RaidStage = 0;
+        $TeamOutOfRange = 0;
 
 	$UserId	= GetSession($SessionId);
 
@@ -236,9 +237,11 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	// Контролируем, что команда есть в базе
 	if ($TeamId > 0)
 	{
-		$sql = "select team_id from Teams where team_id = ".$TeamId;
+		$sql = "select team_id, COALESCE(team_outofrange, 0) as team_outofrange from Teams where team_id = ".$TeamId;
 		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
 		if (mysql_num_rows($Result) == 0) $TeamId = 0;
+		$TeamOutOfRange = $Row['team_outofrange'];
 		mysql_free_result($Result);
 	}
 
@@ -355,10 +358,16 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 // ----------------------------------------------------------------------------
 // Проверка возможности создавать команду
 
-function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage)
+function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, &$TeamOutOfRange)
 {
 	// Если марш-бросок еще не открыт - никаких созданий команд
 	if ($RaidStage == 0) return(0);
+
+        // Ставим признак, что команда вне зачета
+        if (($TeamOutOfRange == 0) && ($RaidStage >= 2)) 
+	{
+	    $TeamOutOfRange = 1;
+	}
 
 	// Администратор может всегда
 	if ($Administrator) return(1);
@@ -373,14 +382,20 @@ function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage)
 	// Модератор может до закрытия редактирования через raid_closedate
 	if ($Moderator && ($RaidStage < 6)) return(1);
 
-	// Обычные пользователи могут до окончания регистрации
-	if ($RaidStage < 2) return(1); else return(0);
+        // Если стоит признак, что команла вне зачета, то можно
+        if ($TeamOutOfRange == 1) return(1);
+
+        // Если не стоит признак, что команла вне зачета, то только до закрытия регистрации
+        if (($TeamOutOfRange == 0) && ($RaidStage < 2)) return(1);
+
+        // Если попали сюда, то нельзя
+	return(0);
 }
 
 // ----------------------------------------------------------------------------
 // Проверка возможности редактировать команду
 
-function CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage)
+function CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)
 {
 	// Если марш-бросок еще не открыт - никаких редактирований
 	if ($RaidStage == 0) return(0);
@@ -399,6 +414,10 @@ function CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage)
 	// В старом марш-броске можно, если он открыт через raid_closedate
 	if ($OldMmb && ($RaidStage < 6)) return(1);
 
+
+	// Тем, кто вне зачета можно редактировать, сколько угодно 
+	if ($TeamOutOfRange && ($RaidStage < 6)) return(1);
+
 	// А в обычном только не позже 12 часов до начала марш-броска
 	if ($RaidStage < 3) return(1); else return(0);
 }
@@ -413,7 +432,8 @@ function CanViewResults($Administrator, $Moderator, $RaidStage)
 
 	// Администратор и модератор могут после старта марш-броска
 	// (раньше результатов все равно быть не должно)
-	if (($Administrator || $Moderator) && ($RaidStage > 3)) return(1);
+	// 19.05.2013  поменят ограничение, чтобы можно было тестировать - тогда результаты до старта могут быть
+	if (($Administrator || $Moderator) && ($RaidStage > 1)) return(1);
 
 	// Все остальные могут после финиша марш-броска
 	if ($RaidStage > 4) return(1); else return(0);
@@ -422,7 +442,7 @@ function CanViewResults($Administrator, $Moderator, $RaidStage)
 // ----------------------------------------------------------------------------
 // Проверка возможности редактировать результаты
 
-function CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage)
+function CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)
 {
 	// Если марш-бросок еще не открыт - никаких редактирований
 	if ($RaidStage == 0) return(0);
@@ -444,8 +464,38 @@ function CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidSta
 
 	// Члены команды могут после финиша марш-броска
 	// и до закрытия через raid_closedate
-	if ($RaidStage > 4) return(1); else return(0);
+	// 19.05.2013 Могут редактировать только команды вне зачета
+	if ($TeamOutOfRange && ($RaidStage > 4)) return(1); else return(0);
 }
+
+// ----------------------------------------------------------------------------
+// Проверка возможности редактировать признак вне зачета
+
+function CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)
+{
+	// Если марш-бросок еще не открыт - никаких редактирований
+	if ($RaidStage == 0) return(0);
+
+	// Администратор может всегда
+	if ($Administrator) return(1);
+
+	// Посторонний участник, не являющийся модератором, не может никогда
+	if (!$TeamUser && !$Moderator) return(0);
+
+	// После наступления raid_closedate нельзя
+	if ($RaidStage == 6) return(0);
+
+	// В старом марш-броске можно всегда
+	if ($OldMmb) return(1);
+
+	// Модератор может 
+	if ($Moderator) return(1);
+
+         // Если попали сюда, то нельзя
+	return(0);
+}
+
+
 
 // ----------------------------------------------------------------------------
 

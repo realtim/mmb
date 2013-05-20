@@ -20,7 +20,7 @@ if ($action == "RegisterNewTeam")
 	}
 
 	// Проверка возможности создать команду
-	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage))
+	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
 		$statustext = "Регистрация на марш-бросок закрыта";
 		$alert = 0;
@@ -56,6 +56,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pTeamNum = (int) $_POST['TeamNum'];
 	$pTeamName = $_POST['TeamName'];
 	$pTeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
+        // Используем только при правке (м.б. нужна доп. проверка на права
+	$pTeamOutOfRange = (isset($_POST['TeamOutOfRange']) && ($_POST['TeamOutOfRange'] == 'on')) ? 1 : 0;
 	$pTeamMapsCount = (int)$_POST['TeamMapsCount'];
 	$pTeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
 	$pNewTeamUserEmail = $_POST['NewTeamUserEmail'];
@@ -180,8 +182,11 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			$viewsubmode = "ReturnAfterError";
 			return;
 		}
-		if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage))
+
+               // 19.05.2013 внёс изменения, чтобы разрешить регистрацию вне зачета
+		if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
 		{
+	  
 			$NewUserId = 0;
 			$statustext = 'Добавление новых участников закрыто';
 			$alert = 1;
@@ -203,14 +208,16 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$NewUserId = 0;
 	} // Конец проверки на корректную передачу email
 
+         // 19.05.2013 внёс изменения, чтобы разрешить регистрацию вне зачета
 	// Общая проверка возможности редактирования
-	if (($viewmode == "Add") && !CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage))
+	if (($viewmode == "Add") && !CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
 		$statustext = "Регистрация на марш-бросок закрыта";
 		$alert = 0;
 		return;
 	}
-	if (($viewmode <> "Add") && !CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
+
+	if (($viewmode <> "Add") && !CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)) 
 	{
 		$statustext = "Изменения в команде запрещены";
 		$alert = 0;
@@ -223,7 +230,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	// Новая команда
 	{
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
-			team_registerdt, team_greenpeace)
+			team_registerdt, team_greenpeace, team_outofrange)
 			values (";
 		// Номер команды
 		if ($OldMmb) $sql = $sql.$pTeamNum;
@@ -236,11 +243,11 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		}
 		// Все остальное
 		$sql = $sql.", '".$pTeamName."',".$pTeamUseGPS.",".$pTeamMapsCount.", ".$pDistanceId.",NOW(), "
-			.$pTeamGreenPeace.")";
+			.$pTeamGreenPeace.",".$TeamOutOfRange.")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);
 		// Поменялся TeamId, заново определяем права доступа
-		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
+		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 		if ($TeamId <= 0)
 		{
 			$statustext = 'Ошибка записи новой команды.';
@@ -260,14 +267,33 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$TeamActionTextForEmail = "изменение данных команды";
 		$SendEmailToAllTeamUsers = 0;
-		$sql = "update Teams set team_name = trim('".$pTeamName."'),
-				distance_id = ".$pDistanceId.",
-				team_usegps = ".$pTeamUseGPS.",
-				team_greenpeace = ".$pTeamGreenPeace.",
-				team_mapscount = ".$pTeamMapsCount."
-			where team_id = ".$TeamId;
-		$rs = MySqlQuery($sql);
 
+                // Провыерка, на правку поля "Вне зачета"
+                if (CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
+		{
+			$sql = "update Teams set team_name = trim('".$pTeamName."'),
+					distance_id = ".$pDistanceId.",
+					team_usegps = ".$pTeamUseGPS.",
+					team_greenpeace = ".$pTeamGreenPeace.",
+					team_outofrange = ".$pTeamOutOfRange.",
+					team_mapscount = ".$pTeamMapsCount."
+				where team_id = ".$TeamId;
+
+			$rs = MySqlQuery($sql);
+		
+	
+	        } else {	
+			$sql = "update Teams set team_name = trim('".$pTeamName."'),
+					distance_id = ".$pDistanceId.",
+					team_usegps = ".$pTeamUseGPS.",
+					team_greenpeace = ".$pTeamGreenPeace.",
+					team_mapscount = ".$pTeamMapsCount."
+				where team_id = ".$TeamId;
+
+			$rs = MySqlQuery($sql);
+                }
+		// Конец проверки на право правки
+		
 		// Если добавляли участника
 		if ($NewUserId > 0)
 		{
@@ -344,7 +370,7 @@ elseif ($action == 'FindTeam')
 	mysql_free_result($rs);
 	$TeamId = $Row['team_id'];
 	// Поменялся TeamId, заново определяем права доступа
-	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
+	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 	if ($TeamId <= 0)
 	{
 		$statustext = 'Команда с номером '.(int)$TeamNum.' не найдена';
@@ -397,7 +423,7 @@ elseif ($action == 'HideTeamUser')
 	}
 
 	// Проверка возможности редактировать команду
-	if (!CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
+	if (!CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
 		$statustext = "Изменения в команде запрещены";
 		$alert = 1;
@@ -515,7 +541,7 @@ elseif ($action == 'TeamUserOut')
 	}
 
 	// Проверка возможности редактировать результаты
-	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
+	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
 		$statustext = 'Изменение результатов команды запрещено';
 		$alert = 1;
@@ -580,7 +606,7 @@ elseif ($action == 'HideTeam')
 	}
 
 	// Проверка возможности удалить команду
-	if (!CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage))
+	if (!CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
 		$statustext = "Удаление команды запрещено";
 		$alert = 1;
@@ -1126,7 +1152,7 @@ elseif ($action == 'JsonExport')
 		// Поменялся TeamId, заново определяем права доступа
 	
 	//  По-моему здесь необязательно запрашивать привелегии
-	//	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
+	//	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
 
 		if ($TeamId <= 0)
