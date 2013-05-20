@@ -307,12 +307,20 @@ function ValidateTeam($Team, $Levels)
 		$teamlevel_selectpenalty = 0;
 		foreach ($teamlevel_points as $npoint => $point)
 		{
-			if ((($point == "0") && ((int)$level_pointpenalties[$npoint] > 0)) || (($point == "1") && ((int)$level_pointpenalties[$npoint] < 0)))
+
+                        if (empty($level_pointpenalties[$npoint]))                      
 			{
-				if ($level_discountpoints[$npoint])
-					$teamlevel_selectpenalty += (int)$level_pointpenalties[$npoint];
+			   $NowLevelPointPenalty = 0;
+			} else {
+			   $NowLevelPointPenalty = (int)$level_pointpenalties[$npoint];
+			}
+     
+			if ((($point == "0") && ($NowLevelPointPenalty > 0)) || (($point == "1") && ($NowLevelPointPenalty < 0)))
+			{
+				if (!empty($level_discountpoints[$npoint]))
+					$teamlevel_selectpenalty += $NowLevelPointPenalty;
 				else
-					$teamlevel_penalty += (int)$level_pointpenalties[$npoint];
+					$teamlevel_penalty += $NowLevelPointPenalty;
 			}
 		}
 		if ($Levels['level_discount'][$n])

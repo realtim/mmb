@@ -653,7 +653,7 @@ if (!isset($MyPHPScript)) return;
 				else $DismissNames[$DistanceId][0] = "\n".'<br><i>Не вышла на старт</i>';
 			}
 			else $DismissNames[$DistanceId][$TeamProgress] = "\n".'<br><i>Не вышла на этап '.$Row['level_name'].'</i>';
-			$DismissNames[$DistanceId][$TeamProgress + 1] = "\n".'<br><i>Сошла с этапа '.$Row['level_name'].'</i>';
+			$DismissNames[$DistanceId][$TeamProgress + 1] = "\n".'<br><i>Сход или выход за КВ этапа '.$Row['level_name'].'</i>';
 			$DismissNames[$DistanceId][$TeamProgress + 2] = '';
 			$TeamProgress += 2;
 		}
@@ -733,7 +733,7 @@ if (!isset($MyPHPScript)) return;
 
 		} elseif ($OrderType == 'Errors') {
 		// Ставим первыми те команды, у которых хотя бы на одном из этапов код ошибки или комментарий отличен от нуля
-			$sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace, t.team_mapscount, t.team_progress, d.distance_name, d.distance_id, TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
+			$sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name,  t.team_outofrange,  t.team_greenpeace, t.team_mapscount, t.team_progress, d.distance_name, d.distance_id, TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 					(select count(*) from Teams t2, Distances d2, Levels l, TeamLevels tl
 					where t2.team_id = t.team_id and t2.distance_id = d2.distance_id and l.distance_id = d2.distance_id and tl.team_id = t.team_id and tl.level_id = l.level_id
 						and (((tl.error_id is not NULL) and (tl.error_id <> 0)) or (tl.teamlevel_comment is not NULL))
@@ -949,7 +949,9 @@ if (!isset($MyPHPScript)) return;
                                     where tl.teamlevel_hide = 0 
                                           and tl.teamlevel_progress > 0
                                           and tl.level_id = ".$LevelRow['level_id']."
-                                          and tl.team_id = ".$Row['team_id'];
+                                          and tl.team_id = ".$Row['team_id']."
+					  and COALESCE(tl.error_id, 0) = 0  ";
+					  
 				    //  echo 'sql '.$sql;
 				    $TeamLevelResult = MySqlQuery($sql);
 				    while ($TeamLevelRow = mysql_fetch_assoc($TeamLevelResult))

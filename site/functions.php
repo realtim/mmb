@@ -630,10 +630,18 @@ send_mime_mail('Автор письма',
 
 		for ($i = 0; $i < $ArrLen; $i++)
 		{
-  		   $PenaltyTime += (int)$Penalties[$i]*(1 - (int)$TeamLevelPoints[$i]);
+                   if (empty($TeamLevelPoints[$i])) 
+		   {
+		      $NowTeamLevelPoint = 0;
+		   } else {
+		      $NowTeamLevelPoint = (int)$TeamLevelPoints[$i];
+		   }
+
+		   $PenaltyTime += (int)$Penalties[$i]*(1 - $NowTeamLevelPoint);
+	   	
 		   if ($Discount > 0 and (int)$DiscountPoints[$i] > 0)
 		   {
-		     $DiscountPenalty += (int)$Penalties[$i]*(1 - (int)$TeamLevelPoints[$i]);
+		     $DiscountPenalty += (int)$Penalties[$i]*(1 - $NowTeamLevelPoint);
 		   }
 
 		}
