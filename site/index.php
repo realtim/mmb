@@ -51,7 +51,7 @@
 	// Конец определения ММБ
 
 
-	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
+	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
 	// Инициализуем переменные сессии, если они отсутствуют
 	if (!isset($view)) $view = "";
@@ -79,7 +79,7 @@
 		// Если у нас новая сессия после логина, логаута или
 		// прихода по ссылке - заново определяем права доступа
 		if ($SessionId <> $OldSessionId)
-			GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
+			GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
 	        // Обработчик событий, связанных с командой
 		include ("teamaction.php");
