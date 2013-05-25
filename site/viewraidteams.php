@@ -301,6 +301,16 @@ if (!isset($MyPHPScript)) return;
 		// Определяем, можно ли показывать пользователю информацию об этапах дистанции
 		$LevelDataVisible = CanViewResults($Administrator, $Moderator, $RaidStage);
 		if (!isset($_REQUEST['LevelId'])) $_REQUEST['LevelId'] = "";
+	
+	        // Режим отображения результатов
+                if (isset($_REQUEST['ResultViewMode'])) $ResultViewMode = $_REQUEST['ResultViewMode']; else $ResultViewMode = "";
+	
+                // Сбрасываем режим отображения, если задан этап
+                if ($_REQUEST['LevelId'] > 0) {
+                       $ResultViewMode = "";
+                }
+	
+	
 		if ($LevelDataVisible)
 		{
 		    $sql = "select level_id, d.distance_name, CONCAT(trim(level_name), ' (', trim(d.distance_name), ')') as level_name
@@ -330,15 +340,7 @@ if (!isset($MyPHPScript)) return;
 		    mysql_free_result($Result);
 	            print('</select>'."\r\n");
 
-                    // Режим отображения результатов
-                    if (isset($_REQUEST['ResultViewMode'])) $ResultViewMode = $_REQUEST['ResultViewMode']; else $ResultViewMode = "";
-	
-
-                    // Сбрасываем режим отображения, если задан этап
-                    if ($_REQUEST['LevelId'] > 0) {
-                       $ResultViewMode = "";
-                    }
-
+         
 
            	     print('Отображать '."\r\n");
 		     print('<select name="ResultViewMode" style = "margin-left: 10px; margin-right: 20px;" '.((($OrderType=='Num') || ($OrderType=='Errors') || ($_REQUEST['LevelId'] <> 0)) ? 'disabled' : '').'
