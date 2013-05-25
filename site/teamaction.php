@@ -285,7 +285,11 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 				where team_id = ".$TeamId;
 
 			$rs = MySqlQuery($sql);
-                }
+                       
+		        // Перезапрашиваем права и тип команды
+			GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
+
+		}
 		// Конец проверки на право правки "Вне зачета"
 		
 		// Если добавляли участника
