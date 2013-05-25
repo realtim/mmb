@@ -637,10 +637,12 @@ if (!isset($MyPHPScript)) return;
 		// Готовим строчки с описанием схода с этапов
 		$DistanceId = 0;
 		$DismissNames = array();
-		$sql = "select level_name, l.distance_id from Levels l
-				inner join Distances d on l.distance_id = d.distance_id
+		$sql = "select  COALESCE(l.level_name, '') as level_name, d.distance_id 
+		          from Distances d 
+			       left outer join Levels l 
+			       on d.distance_id = l.distance_id
 			where d.raid_id = ".$RaidId.'
-			order by l.distance_id, level_order';
+			order by d.distance_id, l.level_order';
                 $Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
 		{
