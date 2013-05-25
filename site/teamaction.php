@@ -268,31 +268,25 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$TeamActionTextForEmail = "изменение данных команды";
 		$SendEmailToAllTeamUsers = 0;
 
+		$sql = "update Teams set team_name = trim('".$pTeamName."'),
+					distance_id = ".$pDistanceId.",
+					team_usegps = ".$pTeamUseGPS.",
+					team_greenpeace = ".$pTeamGreenPeace.",
+					team_mapscount = ".$pTeamMapsCount."
+			where team_id = ".$TeamId;
+
+		$rs = MySqlQuery($sql);
+		
+
                 // Провыерка, на правку поля "Вне зачета"
                 if (CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 		{
-			$sql = "update Teams set team_name = trim('".$pTeamName."'),
-					distance_id = ".$pDistanceId.",
-					team_usegps = ".$pTeamUseGPS.",
-					team_greenpeace = ".$pTeamGreenPeace.",
-					team_outofrange = ".$pTeamOutOfRange.",
-					team_mapscount = ".$pTeamMapsCount."
-				where team_id = ".$TeamId;
-
-			$rs = MySqlQuery($sql);
-		
-	
-	        } else {	
-			$sql = "update Teams set team_name = trim('".$pTeamName."'),
-					distance_id = ".$pDistanceId.",
-					team_usegps = ".$pTeamUseGPS.",
-					team_greenpeace = ".$pTeamGreenPeace.",
-					team_mapscount = ".$pTeamMapsCount."
+			$sql = "update Teams set team_outofrange = ".$pTeamOutOfRange."
 				where team_id = ".$TeamId;
 
 			$rs = MySqlQuery($sql);
                 }
-		// Конец проверки на право правки
+		// Конец проверки на право правки "Вне зачета"
 		
 		// Если добавляли участника
 		if ($NewUserId > 0)
