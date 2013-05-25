@@ -197,7 +197,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
               //  echo $sql;
 
 		$RaidId = MySqlQuery($sql);
-		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage);
+		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
 		if ($RaidId <= 0)
 		{

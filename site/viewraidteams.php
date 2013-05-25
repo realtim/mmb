@@ -332,11 +332,11 @@ if (!isset($MyPHPScript)) return;
 
                     // Режим отображения результатов
                     if (isset($_REQUEST['ResultViewMode'])) $ResultViewMode = $_REQUEST['ResultViewMode']; else $ResultViewMode = "";
-		    
+	
 
                     // Сбрасываем режим отображения, если задан этап
                     if ($_REQUEST['LevelId'] > 0) {
-                        $ResultViewMode = '';
+                       $ResultViewMode = "";
                     }
 
 

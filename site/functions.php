@@ -243,7 +243,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		if (mysql_num_rows($Result) == 0) $TeamId = 0;
 		$TeamOutOfRange = $Row['team_outofrange'];
 		mysql_free_result($Result);
-	}
+	} 
 
 	// Проверяем, является ли пользователь членом команды
 	if (($UserId > 0) && ($TeamId > 0))
@@ -353,14 +353,59 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		}
 	}
 	mysql_free_result($Result);
+
+
+        // Если команда не определена, а регистрация закончена, то команда вне зачета 	
+	if ($RaidStage >= 2  &&  empty($TeamId) && $TeamOutOfRange == 0)
+	{
+		$TeamOutOfRange = 1;
+        }
 }
 
 // ----------------------------------------------------------------------------
 // Проверка возможности создавать команду
 
-function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, &$TeamOutOfRange)
+function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)
 {
 	// Если марш-бросок еще не открыт - никаких созданий команд
+	if ($RaidStage == 0) return(0);
+
+        // Ставим признак, что команда вне зачета
+//        if (($TeamOutOfRange == 0) && ($RaidStage >= 2)) 
+//	{
+//	    $TeamOutOfRange = 1;
+//	}
+
+	// Администратор может всегда
+	if ($Administrator) return(1);
+
+	// Если марш-бросок закрыт через raid_closedate - остальным нельзя
+	// (включая модераторов)
+	if ($RaidStage == 6) return(0);
+
+	// В старом марш-броске можно всем, если он открыт через raid_closedate
+	if ($OldMmb) return(1);
+
+	// Модератор может до закрытия редактирования через raid_closedate
+	if ($Moderator && ($RaidStage < 6)) return(1);
+
+        // Если стоит признак, что команла вне зачета, то можно
+        if ($TeamOutOfRange == 1) return(1);
+
+        // Если не стоит признак, что команла вне зачета, то только до закрытия регистрации
+        if (($TeamOutOfRange == 0) && ($RaidStage < 2)) return(1);
+
+        // Если попали сюда, то нельзя
+	return(0);
+}
+
+
+// ----------------------------------------------------------------------------
+// Проверка возможности добавить пользователя в команду
+
+function CanAddTeamUser($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)
+{
+	// Если марш-бросок еще не открыт - никаких добавлений
 	if ($RaidStage == 0) return(0);
 
         // Ставим признак, что команда вне зачета
@@ -391,6 +436,8 @@ function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, &$TeamOu
         // Если попали сюда, то нельзя
 	return(0);
 }
+
+
 
 // ----------------------------------------------------------------------------
 // Проверка возможности редактировать команду
