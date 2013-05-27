@@ -76,7 +76,7 @@ else
 		t.team_mapscount, t.team_registerdt,
 		t.team_greenpeace, 
 		TIME_FORMAT(t.team_result, '%H:%i') as team_result,
-		CASE WHEN t.team_registerdt >= r.raid_registrationenddate
+		CASE WHEN DATE(t.team_registerdt) > r.raid_registrationenddate
 			THEN 1
 			ELSE 0
 		END as team_late,
