@@ -801,6 +801,56 @@ elseif ($action == 'JsonExport')
 	      return;
 	} 
 
+        // Проверяем, что команды нет в объединении
+	$sql = " select teamunionlog_id
+	         from TeamUnionLogs 
+			 where teamunionlog_hide = 0 
+                               and union_status = 2
+			       and team_id = ".$TeamId; 
+
+
+ 
+	$Result = MySqlQuery($sql);
+        $RowsCount = mysql_num_rows($Result);
+
+	if ($RowsCount > 0)
+	{
+	        $statustext = 'Команды уже объединена';				     
+
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
+
+	       return;
+	}
+
+
+
+// Проверяем, что команды не скрыта и в зачете
+	$sql = " select count(*) as t_result 
+	         from Teams 
+			 where team_hide = 0 
+                               and COALESCE(team_outofrange, 0) = 0
+			       and team_id = ".$TeamId; 
+
+
+ 
+	$Result = MySqlQuery($sql);
+        $RowsCount = mysql_num_rows($Result);
+
+	if ($RowsCount <= 0)
+	{
+	        $statustext = 'Команда скрыта или вне зачета';				     
+
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
+
+	       return;
+	}
+
+
+
 
 			$Sql = "select teamunionlog_id,  teamunionlog_hide
  		                from TeamUnionLogs 
@@ -821,8 +871,8 @@ elseif ($action == 'JsonExport')
 			 $Sql = "insert into TeamUnionLogs (user_id, teamunionlog_dt, 
 			         teamunionlog_hide, team_id, team_parentid, union_status)
 				  values (".$UserId.", now(), 0, ".$TeamId.", null, 1)";
-			 $Result = MySqlQuery($Sql);  
-			 mysql_free_result($Result);
+			 MySqlQuery($Sql);  
+			 
 			 $TeamAdd = 1;
 
 		 } else {	 
@@ -835,8 +885,8 @@ elseif ($action == 'JsonExport')
 			   
 			  // Есть и команда скрыта -  обновляем
  		          $Sql = "update TeamUnionLogs set teamunionlog_hide = 0, teamunionlog_dt = now()  where teamunionlog_id = ".$TeamUnionLogId;
-			  $Result = MySqlQuery($Sql);  
-			  mysql_free_result($Result);
+			  MySqlQuery($Sql);  
+			  
    		          $TeamAdd = 1;
 
 			 }
@@ -911,8 +961,8 @@ elseif ($action == 'JsonExport')
 	   
 	   
 	          $Sql = "update TeamUnionLogs set teamunionlog_hide = 1, union_status = 0  where teamunionlog_id = ".$TeamUnionLogId;
-		  $Result = MySqlQuery($Sql);  
-		  mysql_free_result($Result);
+		  MySqlQuery($Sql);  
+		  
 
                   $statustext = 'Команда удалена из объединения';				     
 
@@ -1310,6 +1360,33 @@ elseif ($action == 'JsonExport')
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
+
+
+        // Проверяем, что команда есть в объединении
+	$sql = " select teamunionlog_id
+	         from TeamUnionLogs 
+			 where teamunionlog_hide = 0 
+                               and union_status = 2
+			       and team_parentid = ".$pParentTeamId; 
+
+
+ 
+	$Result = MySqlQuery($sql);
+        $RowsCount = mysql_num_rows($Result);
+
+	if ($RowsCount <= 0)
+	{
+	        $statustext = 'Команды нет в объединении';				     
+
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
+
+	       return;
+	}
+
+
+
 
 
 	// Приступаем, собственно к отмене:

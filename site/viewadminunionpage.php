@@ -172,10 +172,15 @@ if (!isset($MyPHPScript)) return;
 			   tul.team_parentid  as team_id, 
 			   1 as union_flag,
 			   MAX(tul.teamunionlog_id) as log_id,
-			   DATE_FORMAT(MAX(tul.teamunionlog_dt), '%d.%m %H:%i:%s') as log_dt
+			   DATE_FORMAT(MAX(tul.teamunionlog_dt), '%d.%m %H:%i:%s') as log_dt,
+			  d.distance_name, r.raid_name 
 	            from  TeamUnionLogs tul
 		          inner join Teams t
 			  on t.team_id = tul.team_parentid
+  			  inner join Distances d
+			  on t.distance_id = d.distance_id
+			  inner join Raids r
+			  on d.raid_id = r.raid_id    
                     where tul.union_status <> 1
 		          and tul.team_parentid is not null
 		    group by tul.team_parentid 
@@ -190,10 +195,15 @@ if (!isset($MyPHPScript)) return;
 			  tul.team_id  as team_id, 
 			  0 as union_flag,
 			  tul.teamunionlog_id as log_id,
-			  DATE_FORMAT(tul.teamunionlog_dt, '%d.%m %H:%i:%s') as log_dt
+			  DATE_FORMAT(tul.teamunionlog_dt, '%d.%m %H:%i:%s') as log_dt,
+			  d.distance_name, r.raid_name 
 	            from  TeamUnionLogs tul
 		          inner join Teams t
 			  on t.team_id = tul.team_id
+			  inner join Distances d
+			  on t.distance_id = d.distance_id
+			  inner join Raids r
+			  on d.raid_id = r.raid_id    
                     where tul.union_status <> 1
 		          and tul.team_parentid is null
  		    order by log_id DESC
@@ -221,6 +231,7 @@ if (!isset($MyPHPScript)) return;
 		print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
 
 		print('<tr class = "gray">
+ 	                 <td width = "150" style = "'.$thstyle.'">Дистанция</td>
  	                 <td width = "200" style = "'.$thstyle.'">Статус</td>
 		         <td width = "300" style = "'.$thstyle.'">Номер и название команды</td>
 			 <td width = "400" style = "'.$thstyle.'">Участники и команды до объединения</td>
@@ -231,12 +242,13 @@ if (!isset($MyPHPScript)) return;
 		{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
                      print('<tr>'."\r\n");
+		     print('<td align = "left" style = "'.$tdstyle.'">'.$Row['raid_name'].' '.$Row['distance_name'].'</td>'."\r\n");
                      print('<td align = "center" style = "'.$tdstyle.'">'.$Row['unionstatus']."\r\n");
                                 
 	  	     // Вставляем кнопку отмены объединения
 		     if ($Row['unionstatus'] == 'Объединены') 
 		     {
-			   print('<br/><input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите отменить объединение? \')) {CancelUnionTeams('.$Row['team_parentid'].');}" name="CancelUnionButton" value="Отменить объединение" tabindex="'.(++$TabIndex).'">'."\n");
+			   print('<br/><input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите отменить объединение? \')) {CancelUnionTeams('.$Row['team_id'].');}" name="CancelUnionButton" value="Отменить объединение" tabindex="'.(++$TabIndex).'">'."\n");
 		     }
                      print('</td>'."\r\n");
 		     print('<td style = "'.$tdstyle.'">'.$Row['team_num']."\r\n");
