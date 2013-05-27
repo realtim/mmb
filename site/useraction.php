@@ -80,6 +80,10 @@ if (!isset($MyPHPScript)) return;
            if (!isset($_POST['UserProhibitAdd'])) $_POST['UserProhibitAdd'] = "";
            $pUserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
            $pUserId = $_POST['UserId']; 
+
+           if (!isset($_POST['UserNewPassword'])) $_POST['UserNewPassword'] = "";
+           if (!isset($_POST['UserConfirmNewPassword'])) $_POST['UserConfirmNewPassword'] = "";
+
            $pUserNewPassword = $_POST['UserNewPassword']; 
            $pUserConfirmNewPassword = $_POST['UserConfirmNewPassword']; 
          
