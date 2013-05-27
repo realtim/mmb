@@ -111,7 +111,7 @@ while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row;
 mysql_free_result($Result);
 
 // Teams: team_id, distance_id, team_name, team_num // *
-$Sql = "select team_id, t.distance_id, team_name, team_num from Teams t inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and d.raid_id = ".$RaidId;
+$Sql = "select team_id, t.distance_id, team_name, team_num from Teams t inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0 and COALSCE(t.team_outofrange, 0) = 0 and d.raid_id = ".$RaidId;
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
 mysql_free_result($Result);
@@ -123,7 +123,7 @@ while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Users"][] = $Row; }
 mysql_free_result($Result);
 
 // TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
-$Sql = "select teamuser_id, tu.team_id, user_id, teamuser_hide from TeamUsers tu inner join Teams t on tu.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and d.raid_id = ".$RaidId;
+$Sql = "select teamuser_id, tu.team_id, user_id, teamuser_hide from TeamUsers tu inner join Teams t on tu.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and COALSCE(t.team_outofrange, 0) = 0  and d.raid_id = ".$RaidId;
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
 mysql_free_result($Result);
