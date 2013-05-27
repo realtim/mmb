@@ -294,7 +294,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	print('<tr><td colspan="5" style="padding-top: 0px">'."\n");
 	print('<select name="Level'.$Row['level_id'].'_progress" tabindex="'.(++$TabIndex).'"'.$DisabledResultText.'>'."\n");
 	print('<option value="0"'.(($TeamLevelProgress == 0) ? ' selected' : '').'>Не вышла на этап</option>'."\n");
-	print('<option value="1"'.(($TeamLevelProgress == 1) ? ' selected' : '').'>Сход или выход ха КВ этапа</option>'."\n");
+	print('<option value="1"'.(($TeamLevelProgress == 1) ? ' selected' : '').'>Сход или выход за КВ этапа</option>'."\n");
 	print('<option value="2"'.(($TeamLevelProgress == 2) ? ' selected' : '').'>Дошла до конца этапа</option>'."\n");
 	print('</select>'."\n");
 	print('</td></tr>'."\n");
