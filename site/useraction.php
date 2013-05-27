@@ -619,8 +619,7 @@ if (!isset($MyPHPScript)) return;
 		 if (empty($RaidModeratorId))
 		 {
 			 $Sql = "insert into RaidModerators (raid_id, user_id, raidmoderator_hide) values (".$RaidId.", ".$pUserId.", 0)";
-			 $Result = MySqlQuery($Sql);  
-			 mysql_free_result($Result);
+			 MySqlQuery($Sql);  
 			 $ModeratorAdd = 1;
 
 		 } else {	 
@@ -633,8 +632,7 @@ if (!isset($MyPHPScript)) return;
 			   
 			  // Есть и модератор скрыт -  обновляем
  		          $Sql = "update RaidModerators set raidmoderator_hide = 0 where raidmoderator_id = ".$RaidModeratorId;
-			  $Result = MySqlQuery($Sql);  
-			  mysql_free_result($Result);
+			  MySqlQuery($Sql);  
    		          $ModeratorAdd = 1;
 
 			 }
@@ -662,14 +660,23 @@ if (!isset($MyPHPScript)) return;
 		 $pUserName = $Row['user_name'];
 		 $pUserEmail = $Row['user_email'];
 		 mysql_free_result($Result);
-		    
+
+
+	         $Sql = "select raid_name from  Raids where raid_id = ".$RaidId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $RaidName = $Row['raid_name'];
+		 mysql_free_result($Result);
+
+
+
                  $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
 		 $Msg =  $Msg."Вы получили статус модератора марш-броска ".$RaidName."\r\n";
 		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
 		 	   
 			    
                   // Отправляем письмо
-		//  SendMail(trim($pUserEmail), $Msg, $pUserName);
+		  SendMail(trim($pUserEmail), $Msg, $pUserName);
 		  $view = "ViewAdminModeratorsPage";
 	      	  $viewmode = "";
 
@@ -698,8 +705,8 @@ if (!isset($MyPHPScript)) return;
 	   
 	   
 	          $Sql = "update RaidModerators set raidmoderator_hide = 1 where raidmoderator_id = ".$RaidModeratorId;
-		  $Result = MySqlQuery($Sql);  
-		  mysql_free_result($Result);
+		  MySqlQuery($Sql);  
+		  
 
                   $statustext = 'Удален модератор';				     
 
@@ -715,14 +722,21 @@ if (!isset($MyPHPScript)) return;
 		 $pUserName = $Row['user_name'];
 		 $pUserEmail = $Row['user_email'];
 		 mysql_free_result($Result);
+
+	         $Sql = "select raid_name from  Raids where raid_id = ".$RaidId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $RaidName = $Row['raid_name'];
+		 mysql_free_result($Result);
+
 		    
                  $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
-		 $Msg =  $Msg."Вы получили статус модератора марш-броска ".$RaidName."\r\n";
+		 $Msg =  $Msg."Вы потеряли статус модератора марш-броска ".$RaidName."\r\n";
 		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
 		 	   
 			    
-                  // Отправляем письмо
-		//  SendMail(trim($pUserEmail), $Msg, $pUserName);
+                 // Отправляем письмо
+		 SendMail(trim($pUserEmail), $Msg, $pUserName);
 
                // Остаемся на той же странице
 

@@ -1,5 +1,5 @@
 <?php
-// +++++++++++ Поиск участников в базе ++++++++++++++++++++++++++++++++++++++++
+// +++++++++++ Просмотр модераторов ММБ ++++++++++++++++++++++++++++++++++++++++
 
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
@@ -30,10 +30,9 @@ if (!isset($MyPHPScript)) return;
 <?php
 
 		
-   
+                
 	
-                // Выводим спсиок пользователей, которые подошли
-                print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">'.$FindText.'</div>'."\r\n");
+                
            	print('<form  name = "ModeratorsForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
                 print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");

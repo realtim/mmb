@@ -295,6 +295,11 @@ if (!isset($MyPHPScript)) return;
           print('</td></tr>'."\r\n"); 
          }
 
+	 if ($AllowEdit == 1) 
+	 {
+	  print('<tr><td class = "input"  style =  "padding-top: 10px;">Ключ пользователя: '.$pUserId.'</td></tr>'."\r\n");
+	 }
+
 	 print('</table></form>'."\r\n"); 
 	 // Конец вывода формы с данными пользователя
 
