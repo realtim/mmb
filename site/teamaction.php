@@ -60,6 +60,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pTeamOutOfRange = (isset($_POST['TeamOutOfRange']) && ($_POST['TeamOutOfRange'] == 'on')) ? 1 : 0;
 	$pTeamMapsCount = (int)$_POST['TeamMapsCount'];
 	$pTeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
+	if (!isset($_POST['NewTeamUserEmail'])) $_POST['NewTeamUserEmail'] = "";
 	$pNewTeamUserEmail = $_POST['NewTeamUserEmail'];
 	if (!isset($_POST['TeamNotOnLevelId'])) $_POST['TeamNotOnLevelId'] = "";
 	$pTeamNotOnLevelId = (int)$_POST['TeamNotOnLevelId'];
