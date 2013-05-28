@@ -79,7 +79,7 @@ if (empty($RaidId))
 	$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, tu.level_id, u.user_id
 		from TeamUsers tu
 			inner join Users u on tu.user_id = u.user_id
-		where tu.teamuser_hide = 0  and COALESCE(t.team_outofrange, 0) = 0 and team_id = ".$Row['team_id']."
+		where tu.teamuser_hide = 0   and team_id = ".$Row['team_id']."
 		order by tu.teamuser_id asc";
 	$UserResult = MySqlQuery($sql);
 
