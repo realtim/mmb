@@ -408,7 +408,7 @@ if ($AllowEdit == 1)
 	print('</td></tr>'."\n\n");
 
 	// для Администратора добавляем кнопку "Сделать модератором" в правке пользователя
-	if ($Administrator and $viewmode <> 'Add') 
+	if ($Administrator and $viewmode <> 'Add' and $TeamOutOfRange == 0) 
 	{
 	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
 	  	  print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите добавить эту команду в текущее объединение? \')) { AddTeamInUnion(); }"  name="UnionButton" value="'.$UnionButtonText.'" tabindex = "'.(++$TabIndex).'">'."\r\n");
