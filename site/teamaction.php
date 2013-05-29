@@ -828,7 +828,7 @@ elseif ($action == 'JsonExport')
 
 
 // Проверяем, что команды не скрыта и в зачете
-	$sql = " select count(*) as t_result 
+	$sql = " select team_id 
 	         from Teams 
 			 where team_hide = 0 
                                and COALESCE(team_outofrange, 0) = 0
