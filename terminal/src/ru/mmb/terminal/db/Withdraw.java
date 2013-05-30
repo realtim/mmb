@@ -3,13 +3,17 @@ package ru.mmb.terminal.db;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Participant;
 import ru.mmb.terminal.model.PointType;
 import ru.mmb.terminal.model.Team;
+import ru.mmb.terminal.model.TeamLevelDismiss;
 import ru.mmb.terminal.model.registry.Settings;
+import ru.mmb.terminal.model.registry.TeamsRegistry;
+import ru.mmb.terminal.model.registry.UsersRegistry;
 import ru.mmb.terminal.util.DateFormat;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -28,6 +32,7 @@ public class Withdraw
 	private static final String TEAMUSER_ID = "teamuser_id";
 	private static final String LEVEL_ID = "level_id";
 	private static final String LEVEL_ORDER = "level_order";
+	private static final String DISTANCE_ID = "distance_id";
 
 	private static final String TEMPLATE_TEAMUSER_ID = "%teamuser_id%";
 
@@ -82,7 +87,7 @@ public class Withdraw
 	}
 
 	public void saveWithdrawnMembers(LevelPoint levelPoint, Level level, Team team,
-	        List<Participant> withdrawnMembers)
+	        List<Participant> withdrawnMembers, Date recordDateTime)
 	{
 		String selectSql =
 		    "select count(*) from " + TABLE_DISMISS + " where " + USER_ID + " = "
@@ -101,7 +106,7 @@ public class Withdraw
 			for (Participant member : withdrawnMembers)
 			{
 				if (isRecordExists(selectSql, member)) continue;
-				db.execSQL(insertSql, new Object[] { DateFormat.format(new Date()),
+				db.execSQL(insertSql, new Object[] { DateFormat.format(recordDateTime),
 				        new Integer(member.getUserId()) });
 			}
 			db.setTransactionSuccessful();
@@ -120,5 +125,62 @@ public class Withdraw
 		int recordCount = resultCursor.getInt(0);
 		resultCursor.close();
 		return recordCount > 0;
+	}
+
+	public List<TeamLevelDismiss> loadDismissedMembers(LevelPoint levelPoint)
+	{
+		List<TeamLevelDismiss> result = new ArrayList<TeamLevelDismiss>();
+		Level level = levelPoint.getLevel();
+		Integer distanceId = level.getDistanceId();
+		String sql =
+		    "select distinct d." + DISMISS_DATE + ", d." + TEAM_ID + ", d." + TEAMUSER_ID + ", lp."
+		            + LEVELPOINT_ID + ", l." + LEVEL_ORDER + " from " + TABLE_DISMISS
+		            + " as d join " + TABLE_LEVELPOINTS + " as lp on (d." + LEVELPOINT_ID
+		            + " = lp." + LEVELPOINT_ID + ") join " + TABLE_LEVELS + " as l on (lp."
+		            + LEVEL_ID + " = l." + LEVEL_ID + ") where l." + DISTANCE_ID + " = "
+		            + distanceId + " and l." + LEVEL_ORDER + " <= " + level.getLevelOrder();
+		Cursor resultCursor = db.rawQuery(sql, null);
+
+		resultCursor.moveToFirst();
+		while (!resultCursor.isAfterLast())
+		{
+			Date recordDateTime = DateFormat.parse(resultCursor.getString(0));
+			int teamId = resultCursor.getInt(1);
+			int teamUserId = resultCursor.getInt(2);
+			int levelPointId = resultCursor.getInt(3);
+			int levelOrder = resultCursor.getInt(4);
+			if (isDBLevelPointEarlier(levelPoint, level, levelPointId, levelOrder))
+			{
+				TeamLevelDismiss teamLevelDismiss =
+				    new TeamLevelDismiss(levelPoint.getLevelPointId(), teamId, teamUserId, recordDateTime);
+
+				// init reference fields
+				teamLevelDismiss.setLevelPoint(levelPoint);
+				teamLevelDismiss.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
+				teamLevelDismiss.setTeamUser(UsersRegistry.getInstance().getUserById(teamUserId));
+
+				result.add(teamLevelDismiss);
+			}
+			resultCursor.moveToNext();
+		}
+		resultCursor.close();
+
+		return result;
+	}
+
+	public void appendLevelPointTeams(LevelPoint levelPoint, Set<Integer> teams)
+	{
+		String sql =
+		    "select distinct " + TEAM_ID + " from " + TABLE_DISMISS + " where " + LEVELPOINT_ID
+		            + " = " + levelPoint.getLevelPointId();
+		Cursor resultCursor = db.rawQuery(sql, null);
+
+		resultCursor.moveToFirst();
+		while (!resultCursor.isAfterLast())
+		{
+			teams.add(resultCursor.getInt(0));
+			resultCursor.moveToNext();
+		}
+		resultCursor.close();
 	}
 }

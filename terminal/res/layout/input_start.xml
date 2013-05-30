@@ -15,26 +15,30 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical" >
-
+
             <TextView
                 android:id="@+id/inputStart_distanceLabel"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
-                android:text="@string/input_start_no_distance" />
-
+                android:text="@string/input_start_no_distance"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
             <TextView
                 android:id="@+id/inputStart_levelLabel"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/global_padding"
-                android:text="@string/input_start_no_level" />
-
+                android:text="@string/input_start_no_level"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
             <TextView
                 android:id="@+id/inputStart_modeLabel"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/global_padding"
-                android:text="@string/input_start_no_mode" />
+                android:text="@string/input_start_no_mode"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
         </LinearLayout>
 
         <LinearLayout

@@ -222,4 +222,9 @@ public class MetaTable
 		}
 		return result.toString();
 	}
+
+	public String generateDeleteAllRowsSQL()
+	{
+		return "delete from " + getTableName();
+	}
 }

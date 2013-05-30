@@ -9,12 +9,17 @@ import java.util.Date;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.InputActivityState;
 import ru.mmb.terminal.activity.input.InputMode;
-import ru.mmb.terminal.activity.input.data.checkpoints.CheckedState;
 import ru.mmb.terminal.db.InputDataRecord;
 import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.Checkpoint;
 import ru.mmb.terminal.model.Level;
+import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.StartType;
+import ru.mmb.terminal.model.Team;
+import ru.mmb.terminal.model.TeamLevelPoint;
+import ru.mmb.terminal.model.checkpoints.CheckedState;
+import ru.mmb.terminal.model.history.DataStorage;
+import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -198,8 +203,20 @@ public class InputDataActivityState extends InputActivityState
 		fireStateChanged();
 	}
 
-	public void saveInputDataToDB()
+	public void saveInputDataToDB(Date recordDateTime)
 	{
-		TerminalDB.getInstance().saveInputData(getCurrentLevelPoint(), getCurrentTeam(), inputDate.toDate(), checkedState.getTakenCheckpointsRawText());
+		TerminalDB.getInstance().saveInputData(getCurrentLevelPoint(), getCurrentTeam(), inputDate.toDate(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
+	}
+
+	public void putTeamLevelPointToDataStorage(Date recordDateTime)
+	{
+		Team team = getCurrentTeam();
+		LevelPoint levelPoint = getCurrentLevelPoint();
+		TeamLevelPoint teamLevelPoint =
+		    new TeamLevelPoint(team.getTeamId(), Settings.getInstance().getUserId(), Settings.getInstance().getDeviceId(), levelPoint.getLevelPointId(), checkedState.getTakenCheckpointsRawText(), inputDate.toDate(), recordDateTime);
+		teamLevelPoint.setTeam(team);
+		teamLevelPoint.setLevelPoint(levelPoint);
+		teamLevelPoint.initTakenCheckpoints();
+		DataStorage.putTeamLevelPoint(teamLevelPoint);
 	}
 }

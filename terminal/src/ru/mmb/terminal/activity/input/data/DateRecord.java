@@ -7,12 +7,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import ru.mmb.terminal.util.PrettyDateFormat;
+
 public class DateRecord implements Serializable
 {
 	private static final long serialVersionUID = -3532015001709602344L;
 
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmm");
-	private static final SimpleDateFormat prettyFormat = new SimpleDateFormat("HH:mm dd/MMM/yyyy");
 
 	private int year;
 	private int month;
@@ -121,7 +122,7 @@ public class DateRecord implements Serializable
 
 	public String toPrettyString()
 	{
-		return prettyFormat.format(toDate());
+		return PrettyDateFormat.format(toDate());
 	}
 
 	public String saveToString()

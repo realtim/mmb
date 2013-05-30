@@ -45,19 +45,6 @@ public class Checkpoint implements Serializable, Comparable<Checkpoint>
 		return checkpointPenalty;
 	}
 
-	/*public static Checkpoint parse(String checkpointString)
-	{
-		if (ParseUtils.isEmpty(checkpointString)) return null;
-
-		String[] splitted = checkpointString.trim().split("\\|");
-		int lapId = Integer.parseInt(splitted[0]);
-		int orderNum = Integer.parseInt(splitted[1]);
-		String name = splitted[2];
-		int penalty = Integer.parseInt(splitted[3]);
-
-		return new Checkpoint(lapId, orderNum, name, penalty);
-	}*/
-
 	public Level getLevel()
 	{
 		return level;

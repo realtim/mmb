@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -19,8 +18,6 @@ public class SettingsActivity extends Activity
 	private EditText editLastExportDate;
 	private EditText editTranspUserId;
 	private EditText editTranspUserPassword;
-	private CheckBox checkTeamClearFilter;
-	private CheckBox checkTeamFastSelect;
 
 	private Button btnSave;
 
@@ -41,8 +38,6 @@ public class SettingsActivity extends Activity
 		editLastExportDate = (EditText) findViewById(R.id.settings_lastExportDateEdit);
 		editTranspUserId = (EditText) findViewById(R.id.settings_transpUserIdEdit);
 		editTranspUserPassword = (EditText) findViewById(R.id.settings_transpUserPasswordEdit);
-		checkTeamClearFilter = (CheckBox) findViewById(R.id.settings_teamClearFilterCheckbox);
-		checkTeamFastSelect = (CheckBox) findViewById(R.id.settings_teamFastSelectCheckbox);
 
 		btnSave = (Button) findViewById(R.id.settings_saveBtn);
 
@@ -61,8 +56,6 @@ public class SettingsActivity extends Activity
 		editLastExportDate.setText(Settings.getInstance().getLastExportDate());
 		editTranspUserId.setText(Integer.toString(Settings.getInstance().getTranspUserId()));
 		editTranspUserPassword.setText(Settings.getInstance().getTranspUserPassword());
-		checkTeamClearFilter.setChecked(Settings.getInstance().isTeamClearFilterAfterOk());
-		checkTeamFastSelect.setChecked(Settings.getInstance().isTeamFastSelect());
 	}
 
 	private void saveSettings()
@@ -72,8 +65,6 @@ public class SettingsActivity extends Activity
 		Settings.getInstance().setCurrentRaidId(editCurrentRaidId.getText().toString());
 		Settings.getInstance().setTranspUserId(editTranspUserId.getText().toString());
 		Settings.getInstance().setTranspUserPassword(editTranspUserPassword.getText().toString());
-		Settings.getInstance().setTeamClearFilterAfterOk(Boolean.toString(checkTeamClearFilter.isChecked()));
-		Settings.getInstance().setTeamFastSelect(Boolean.toString(checkTeamFastSelect.isChecked()));
 
 		Toast.makeText(getApplicationContext(), getResources().getText(R.string.settings_applied), Toast.LENGTH_SHORT).show();
 	}

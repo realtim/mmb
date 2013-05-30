@@ -5,15 +5,20 @@ import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_INPUT_WITHDRAWN_CHE
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.InputActivityState;
-import ru.mmb.terminal.activity.input.withdraw.model.TeamMemberRecord;
+import ru.mmb.terminal.activity.input.withdraw.list.TeamMemberRecord;
 import ru.mmb.terminal.db.TerminalDB;
+import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Participant;
 import ru.mmb.terminal.model.Team;
+import ru.mmb.terminal.model.TeamLevelDismiss;
+import ru.mmb.terminal.model.history.DataStorage;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
+import ru.mmb.terminal.model.registry.UsersRegistry;
 import android.app.Activity;
 import android.os.Bundle;
 
@@ -163,8 +168,25 @@ public class WithdrawMemberActivityState extends InputActivityState
 		}
 	}
 
-	public void saveCurrWithdrawnToDB()
+	public void saveCurrWithdrawnToDB(Date recordDateTime)
 	{
-		TerminalDB.getInstance().saveWithdrawnMembers(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam(), currWithdrawnMembers);
+		TerminalDB.getInstance().saveWithdrawnMembers(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
+	}
+
+	public void putCurrWithdrawnToDataStorage(Date recordDateTime)
+	{
+		Team team = getCurrentTeam();
+		LevelPoint levelPoint = getCurrentLevelPoint();
+		for (Participant withdrawn : currWithdrawnMembers)
+		{
+			TeamLevelDismiss teamLevelDismiss =
+			    new TeamLevelDismiss(levelPoint.getLevelPointId(), team.getTeamId(), withdrawn.getUserId(), recordDateTime);
+			// init reference fields
+			teamLevelDismiss.setLevelPoint(levelPoint);
+			teamLevelDismiss.setTeam(team);
+			teamLevelDismiss.setTeamUser(UsersRegistry.getInstance().getUserById(withdrawn.getUserId()));
+
+			DataStorage.putTeamLevelDismiss(teamLevelDismiss);
+		}
 	}
 }

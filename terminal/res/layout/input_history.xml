@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/global_padding" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/global_padding"
+        android:paddingRight="@dimen/global_padding" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:id="@+id/inputHistory_teamNumberPanel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="150dip"
+                    android:layout_height="wrap_content"
+                    android:text="@string/input_history_team_number"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <ru.mmb.terminal.widget.EditTextWithSoftKeyboardSupport
+                    android:id="@+id/inputHistory_teamNumberEdit"
+                    android:layout_width="100dip"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionDone|flagNoEnterAction"
+                    android:inputType="number"
+                    android:maxLength="4" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/inputHistory_historyList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/global_padding"
+        android:layout_weight="1"
+        android:choiceMode="singleChoice" >
+    </ListView>
+
+</LinearLayout>

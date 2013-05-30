@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Team;
+import ru.mmb.terminal.model.TeamLevelPoint;
 import ru.mmb.terminal.model.registry.Settings;
+import ru.mmb.terminal.model.registry.TeamsRegistry;
 import ru.mmb.terminal.util.DateFormat;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -68,18 +71,18 @@ public class InputData
 	}
 
 	public void saveInputData(LevelPoint levelPoint, Team team, Date checkDateTime,
-	        String takenCheckpoints)
+	        String takenCheckpoints, Date recordDateTime)
 	{
 		db.beginTransaction();
 		try
 		{
 			if (isThisUserRecordExists(levelPoint, team))
 			{
-				updateExistingRecord(levelPoint, team, checkDateTime, takenCheckpoints);
+				updateExistingRecord(levelPoint, team, checkDateTime, takenCheckpoints, recordDateTime);
 			}
 			else
 			{
-				insertNewRecord(levelPoint, team, checkDateTime, takenCheckpoints);
+				insertNewRecord(levelPoint, team, checkDateTime, takenCheckpoints, recordDateTime);
 			}
 			db.setTransactionSuccessful();
 		}
@@ -103,33 +106,83 @@ public class InputData
 	}
 
 	private void updateExistingRecord(LevelPoint levelPoint, Team team, Date checkDateTime,
-	        String takenCheckpoints)
+	        String takenCheckpoints, Date recordDateTime)
 	{
 		String updateSql =
 		    "update " + TABLE_TEAM_LEVEL_POINTS + " set " + DEVICE_ID + " = "
-		            + Settings.getInstance().getDeviceId() + ", " + TEAMLEVELPOINT_DATE
-		            + " = '" + DateFormat.format(new Date()) + "', " + TEAMLEVELPOINT_DATETIME
-		            + " = '" + DateFormat.format(checkDateTime) + "', " + TEAMLEVELPOINT_POINTS
-		            + " = '" + takenCheckpoints + "', " + TEAMLEVELPOINT_COMMENT + " = '' where "
-		            + USER_ID + " = " + Settings.getInstance().getUserId() + " and "
-		            + LEVELPOINT_ID + " = " + levelPoint.getLevelPointId() + " and " + TEAM_ID
-		            + " = " + team.getTeamId();
+		            + Settings.getInstance().getDeviceId() + ", " + TEAMLEVELPOINT_DATE + " = '"
+		            + DateFormat.format(recordDateTime) + "', " + TEAMLEVELPOINT_DATETIME + " = '"
+		            + DateFormat.format(checkDateTime) + "', " + TEAMLEVELPOINT_POINTS + " = '"
+		            + takenCheckpoints + "', " + TEAMLEVELPOINT_COMMENT + " = '' where " + USER_ID
+		            + " = " + Settings.getInstance().getUserId() + " and " + LEVELPOINT_ID + " = "
+		            + levelPoint.getLevelPointId() + " and " + TEAM_ID + " = " + team.getTeamId();
 		db.execSQL(updateSql);
 	}
 
 	private void insertNewRecord(LevelPoint levelPoint, Team team, Date checkDateTime,
-	        String takenCheckpoints)
+	        String takenCheckpoints, Date recordDateTime)
 	{
 		String insertSql =
 		    "insert into " + TABLE_TEAM_LEVEL_POINTS + " (" + USER_ID + ", " + DEVICE_ID + ", "
 		            + LEVELPOINT_ID + ", " + TEAM_ID + ", " + TEAMLEVELPOINT_DATE + ", "
 		            + TEAMLEVELPOINT_DATETIME + ", " + TEAMLEVELPOINT_POINTS + ", "
-		            + TEAMLEVELPOINT_COMMENT + ") values ("
-		            + Settings.getInstance().getUserId() + ", "
-		            + Settings.getInstance().getDeviceId() + ", "
+		            + TEAMLEVELPOINT_COMMENT + ") values (" + Settings.getInstance().getUserId()
+		            + ", " + Settings.getInstance().getDeviceId() + ", "
 		            + levelPoint.getLevelPointId() + ", " + team.getTeamId() + ", '"
-		            + DateFormat.format(new Date()) + "', '" + DateFormat.format(checkDateTime)
+		            + DateFormat.format(recordDateTime) + "', '" + DateFormat.format(checkDateTime)
 		            + "', '" + takenCheckpoints + "', '')";
 		db.execSQL(insertSql);
+	}
+
+	public List<TeamLevelPoint> loadTeamLevelPoints(LevelPoint levelPoint)
+	{
+		List<TeamLevelPoint> result = new ArrayList<TeamLevelPoint>();
+		String sql =
+		    "select " + TEAMLEVELPOINT_DATE + ", " + USER_ID + ", " + DEVICE_ID + ", " + TEAM_ID
+		            + ", " + TEAMLEVELPOINT_DATETIME + ", " + TEAMLEVELPOINT_POINTS + " from "
+		            + TABLE_TEAM_LEVEL_POINTS + " where " + LEVELPOINT_ID + " = "
+		            + levelPoint.getLevelPointId();
+		Cursor resultCursor = db.rawQuery(sql, null);
+
+		resultCursor.moveToFirst();
+		while (!resultCursor.isAfterLast())
+		{
+			Date recordDateTime = DateFormat.parse(resultCursor.getString(0));
+			Integer userId = resultCursor.getInt(1);
+			Integer deviceId = resultCursor.getInt(2);
+			Integer teamId = resultCursor.getInt(3);
+			Date checkDateTime = DateFormat.parse(resultCursor.getString(4));
+			String takenCheckpointNames = resultCursor.getString(5);
+
+			TeamLevelPoint teamLevelPoint =
+			    new TeamLevelPoint(teamId, userId, deviceId, levelPoint.getLevelPointId(), takenCheckpointNames, checkDateTime, recordDateTime);
+			// init reference fields
+			teamLevelPoint.setLevelPoint(levelPoint);
+			teamLevelPoint.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
+			teamLevelPoint.initTakenCheckpoints();
+
+			result.add(teamLevelPoint);
+			resultCursor.moveToNext();
+		}
+		resultCursor.close();
+
+		return result;
+	}
+
+	public void appendLevelPointTeams(LevelPoint levelPoint, Set<Integer> teams)
+	{
+		String sql =
+		    "select distinct " + TEAM_ID + " from " + TABLE_TEAM_LEVEL_POINTS + " where "
+		            + LEVELPOINT_ID + " = " + levelPoint.getLevelPointId();
+		Cursor resultCursor = db.rawQuery(sql, null);
+
+		resultCursor.moveToFirst();
+		while (!resultCursor.isAfterLast())
+		{
+			Integer teamId = resultCursor.getInt(0);
+			teams.add(teamId);
+			resultCursor.moveToNext();
+		}
+		resultCursor.close();
 	}
 }

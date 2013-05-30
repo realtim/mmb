@@ -21,11 +21,12 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
-
+
                 <TextView
                     android:layout_width="250dip"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_user_id" />
+                    android:text="@string/settings_user_id"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <EditText
                     android:id="@+id/settings_userIdEdit"
@@ -43,7 +44,8 @@
                 <TextView
                     android:layout_width="250dip"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_device_id" />
+                    android:text="@string/settings_device_id"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <EditText
                     android:id="@+id/settings_deviceIdEdit"
@@ -61,7 +63,8 @@
                 <TextView
                     android:layout_width="250dip"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_current_raid_id" />
+                    android:text="@string/settings_current_raid_id"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <EditText
                     android:id="@+id/settings_currentRaidIdEdit"
@@ -79,7 +82,8 @@
                 <TextView
                     android:layout_width="250dip"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_last_export_date" />
+                    android:text="@string/settings_last_export_date"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <EditText
                     android:id="@+id/settings_lastExportDateEdit"
@@ -97,7 +101,8 @@
                 <TextView
                     android:layout_width="250dip"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_transp_user_id" />
+                    android:text="@string/settings_transp_user_id"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <EditText
                     android:id="@+id/settings_transpUserIdEdit"
@@ -115,47 +120,14 @@
                 <TextView
                     android:layout_width="250dip"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_transp_user_password" />
+                    android:text="@string/settings_transp_user_password"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <EditText
                     android:id="@+id/settings_transpUserPasswordEdit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/global_padding" >
-
-                <TextView
-                    android:layout_width="250dip"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_team_clear_filter" />
-
-                <CheckBox
-                    android:id="@+id/settings_teamClearFilterCheckbox"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/global_padding" >
-
-                <TextView
-                    android:layout_width="250dip"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_team_fast_select" />
-
-                <CheckBox
-                    android:id="@+id/settings_teamFastSelectCheckbox"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

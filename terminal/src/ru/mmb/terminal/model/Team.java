@@ -67,30 +67,6 @@ public class Team implements Serializable
 		getMembersInstance().add(participant);
 	}
 
-	/*public static Team parse(String teamString, Map<Integer, List<Participant>> teamParticipants)
-	{
-		if (ParseUtils.isEmpty(teamString)) return null;
-
-		String[] strings = teamString.trim().split("\\|");
-		int id = Integer.parseInt(strings[0]);
-		Integer idInteger = new Integer(id);
-		int distanceId = Integer.parseInt(strings[1]);
-		int number = Integer.parseInt(strings[2]);
-		String name = strings[3];
-		Team result = new Team(id, distanceId, number, name);
-
-		if (teamParticipants.containsKey(idInteger))
-		{
-			for (Participant participant : teamParticipants.get(idInteger))
-			{
-				result.addMember(participant);
-				participant.setTeam(result);
-			}
-		}
-
-		return result;
-	}*/
-
 	private void writeObject(ObjectOutputStream s) throws IOException
 	{
 		s.defaultWriteObject();

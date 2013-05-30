@@ -65,21 +65,6 @@ public class Distance implements Serializable
 		Collections.sort(getLevelsInstance());
 	}
 
-	/*public static Distance parse(String distanceString, Map<Integer, List<Level>> distanceLaps)
-	{
-		if (ParseUtils.isEmpty(distanceString)) return null;
-
-		String[] splitted = distanceString.trim().split("\\|");
-		int id = Integer.parseInt(splitted[0]);
-		int mmbId = Integer.parseInt(splitted[1]);
-		String name = splitted[2];
-		Distance result = new Distance(id, mmbId, name);
-
-		addDistanceLaps(result, distanceLaps);
-
-		return result;
-	}*/
-
 	private void writeObject(ObjectOutputStream s) throws IOException
 	{
 		s.defaultWriteObject();

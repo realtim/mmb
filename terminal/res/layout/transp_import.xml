@@ -15,10 +15,11 @@
 
         <TextView
             android:id="@+id/transpImport_fileName"
-            android:layout_width="wrap_content"
+            android:layout_width="400dip"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:text="@string/transp_import_no_file_selected" />
+            android:text="@string/transp_import_no_file_selected"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <Button
             android:id="@+id/transpImport_selectFile"
@@ -56,14 +57,16 @@
         <TextView
             android:layout_width="150dip"
             android:layout_height="wrap_content"
-            android:text="@string/transp_import_current_table" />
+            android:text="@string/transp_import_current_table"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/transpImport_currentTable"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/global_padding"
-            android:text="@string/transp_import_no_table" />
+            android:text="@string/transp_import_no_table"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
     </LinearLayout>
 
     <LinearLayout
@@ -74,14 +77,16 @@
         <TextView
             android:layout_width="150dip"
             android:layout_height="wrap_content"
-            android:text="@string/transp_import_rows_processed" />
+            android:text="@string/transp_import_rows_processed"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/transpImport_rowsProcessed"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/global_padding"
-            android:text="@string/transp_import_no_rows" />
+            android:text="@string/transp_import_no_rows"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
     </LinearLayout>
 
     <ScrollView

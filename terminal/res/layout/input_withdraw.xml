@@ -39,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/global_padding" >
-
+
             <TextView
                 android:id="@+id/inputWithdraw_memberColumnTextView"
                 android:layout_width="0dip"
@@ -47,8 +47,9 @@
                 android:layout_weight="50"
                 android:gravity="center_horizontal|center_vertical"
                 android:text="@string/input_withdraw_member_column"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@android:color/primary_text_dark" />
-
+
             <TextView
                 android:id="@+id/inputWithdraw_withdrawColumnTextView"
                 android:layout_width="0dip"
@@ -56,6 +57,7 @@
                 android:layout_weight="20"
                 android:gravity="center_horizontal|center_vertical"
                 android:text="@string/input_withdraw_withdraw_column"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@android:color/primary_text_dark" />
 
             <TextView

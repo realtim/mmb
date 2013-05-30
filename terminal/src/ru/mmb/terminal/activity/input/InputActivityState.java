@@ -215,7 +215,7 @@ public class InputActivityState extends CurrentState
 		{
 			case Constants.REQUEST_CODE_DEFAULT_ACTIVITY:
 			case Constants.REQUEST_CODE_INPUT_LEVEL_ACTIVITY:
-			case Constants.REQUEST_CODE_INPUT_TEAM_ACTIVITY:
+			case Constants.REQUEST_CODE_INPUT_HISTORY_ACTIVITY:
 			case Constants.REQUEST_CODE_INPUT_DATA_ACTIVITY:
 			case Constants.REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY:
 				if (getCurrentDistance() != null)
@@ -243,14 +243,6 @@ public class InputActivityState extends CurrentState
 		this.currentTeam = TeamsRegistry.getInstance().getTeamById(teamId);
 	}
 
-	public String getCurrentTeamText(Activity context)
-	{
-		if (currentTeam == null)
-			return context.getResources().getString(R.string.input_team_no_team);
-		else
-			return currentTeam.getTeamNum() + " " + currentTeam.getTeamName();
-	}
-
 	public boolean isTeamSelected()
 	{
 		return currentTeam != null;
@@ -264,7 +256,7 @@ public class InputActivityState extends CurrentState
 		        + currentTeam + ", toString()=" + super.toString() + "]";
 	}
 
-	protected LevelPoint getCurrentLevelPoint()
+	public LevelPoint getCurrentLevelPoint()
 	{
 		Level level = getCurrentLevel();
 		LevelPoint result = level.getStartPoint();

@@ -1,10 +1,12 @@
 package ru.mmb.terminal.activity.input.withdraw;
 
+import java.util.Date;
 import java.util.List;
 
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.StateChangeListener;
-import ru.mmb.terminal.activity.input.withdraw.model.TeamMemberRecord;
+import ru.mmb.terminal.activity.input.withdraw.list.MembersAdapter;
+import ru.mmb.terminal.activity.input.withdraw.list.TeamMemberRecord;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
@@ -77,7 +79,9 @@ public class WithdrawMemberActivity extends Activity implements StateChangeListe
 		@Override
 		public void onClick(View v)
 		{
-			currentState.saveCurrWithdrawnToDB();
+			Date recordDateTime = new Date();
+			currentState.saveCurrWithdrawnToDB(recordDateTime);
+			currentState.putCurrWithdrawnToDataStorage(recordDateTime);
 			setResult(RESULT_OK);
 			finish();
 		}

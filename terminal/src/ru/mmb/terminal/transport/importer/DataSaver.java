@@ -10,6 +10,15 @@ import ru.mmb.terminal.transport.model.MetaTable;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+/**
+ * Data synchronization disabled.<br>
+ * All records MUST be removed from table before import.<br>
+ * All rows from import package will be imported without any checks.<br>
+ * 
+ * But import with synchronization features can be restored at any moment.
+ * 
+ * @author yweiss
+ */
 public class DataSaver
 {
 	private MetaTable currentTable = null;
@@ -30,6 +39,15 @@ public class DataSaver
 		if (currentTable == null) return;
 		if (tableRow == null) return;
 
+		insertRecord(tableRow);
+	}
+
+	/*
+	public void saveRecordToDB(JSONObject tableRow) throws JSONException
+	{
+		if (currentTable == null) return;
+		if (tableRow == null) return;
+
 		ImportToDBAction action = getImportToDBAction(tableRow);
 		if (action == ImportToDBAction.UPDATE)
 		{
@@ -40,7 +58,9 @@ public class DataSaver
 			insertRecord(tableRow);
 		}
 	}
+	*/
 
+	@SuppressWarnings("unused")
 	private ImportToDBAction getImportToDBAction(JSONObject tableRow) throws JSONException
 	{
 		if (currentTable.getUpdateDateColumnName() == null)
@@ -107,6 +127,7 @@ public class DataSaver
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private void updateRecord(JSONObject tableRow) throws JSONException
 	{
 		String sql = currentTable.generateUpdateSQL(tableRow);
@@ -117,5 +138,26 @@ public class DataSaver
 	{
 		String sql = currentTable.generateInsertSQL(tableRow);
 		db.execSQL(sql);
+	}
+
+	public void clearCurrentTable()
+	{
+		String sql = currentTable.generateDeleteAllRowsSQL();
+		db.execSQL(sql);
+	}
+
+	public void beginTransaction()
+	{
+		db.beginTransaction();
+	}
+
+	public void setTransactionSuccessful()
+	{
+		db.setTransactionSuccessful();
+	}
+
+	public void endTransaction()
+	{
+		db.endTransaction();
 	}
 }

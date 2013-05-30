@@ -1,11 +1,11 @@
 package ru.mmb.terminal.activity.input.start;
 
+import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_HISTORY_ACTIVITY;
 import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_LEVEL_ACTIVITY;
-import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_TEAM_ACTIVITY;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.InputActivityState;
+import ru.mmb.terminal.activity.input.history.HistoryActivity;
 import ru.mmb.terminal.activity.input.level.SelectLevelActivity;
-import ru.mmb.terminal.activity.input.team.SearchTeamActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -112,8 +112,8 @@ public class StartInputActivity extends Activity
 		@Override
 		public void onClick(View v)
 		{
-			Intent intent = new Intent(getApplicationContext(), SearchTeamActivity.class);
-			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_TEAM_ACTIVITY);
+			Intent intent = new Intent(getApplicationContext(), HistoryActivity.class);
+			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_HISTORY_ACTIVITY);
 			startActivity(intent);
 		}
 	}

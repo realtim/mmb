@@ -1,6 +1,9 @@
 package ru.mmb.terminal.activity.input.data;
 
 import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY;
+
+import java.util.Date;
+
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.StateChangeListener;
 import ru.mmb.terminal.activity.input.withdraw.WithdrawMemberActivity;
@@ -82,7 +85,9 @@ public class InputDataActivity extends Activity implements StateChangeListener
 		@Override
 		public void onClick(View v)
 		{
-			currentState.saveInputDataToDB();
+			Date recordDateTime = new Date();
+			currentState.saveInputDataToDB(recordDateTime);
+			currentState.putTeamLevelPointToDataStorage(recordDateTime);
 			setResult(RESULT_OK);
 			finish();
 		}

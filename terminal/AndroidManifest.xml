@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ru.mmb.terminal"
-    android:versionCode="10003"
-    android:versionName="1.2" >
+    android:versionCode="10004"
+    android:versionName="1.3" >
 
     <uses-sdk android:minSdkVersion="10" />
 
@@ -24,7 +24,7 @@
         <activity android:name=".activity.input.start.StartInputActivity" />
         <activity android:name=".activity.input.level.SelectLevelActivity" />
         <activity
-            android:name=".activity.input.team.SearchTeamActivity"
+            android:name=".activity.input.history.HistoryActivity"
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".activity.input.data.InputDataActivity" />
         <activity android:name=".activity.input.withdraw.WithdrawMemberActivity" />
