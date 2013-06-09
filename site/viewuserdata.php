@@ -179,38 +179,20 @@ if (!isset($MyPHPScript)) return;
 	}
 	// 
 
-/*	
 
-        Вынес эти функции в меню
-	// Функция проверки e-mail
-	function CheckEmail(email) 
+	// Удалить пользователя
+	function HideUser()
 	{
-		var template = /^[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z])+$/;
-//		email = drop_spaces(email); //функцию drop_spaces() см. выше
-		if (template.test(email)) 
-		{
-		        return true;
-		}
-		return false; 
+               if  (!document.UserDataForm.UserHideConfirm.checked)
+	       {
+	         document.UserDataForm.UserHideConfirm.disabled = false;
+	   	 retrun;
+	       }  
+	 
+		document.UserDataForm.action.value = 'HideUser';
+		document.UserDataForm.submit();
 	}
 
-
-	function trimLeft(str) {
-	  return str.replace(/^\s+/, '');
-	}
-
-	function trimRight(str) {
-	  return str.replace(/\s+$/, '');
-	}
-
-	function trimBoth(str) {
-	  return trimRight(trimLeft(str));
-	}
-
-	function trimSpaces(str) {
-	  return str.replace(/\s{2,}/g, ' ');
-	}
-*/	
 </script>
 <!-- Конец вывода javascrpit -->
 
@@ -229,36 +211,37 @@ if (!isset($MyPHPScript)) return;
 	 } 
 
          print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0" width = "300">'."\r\n");
-
+	 $TabIndex = 0;
+	 
          // Если не разрешена правка - не показываем адрес почты
          if ($AllowEdit == 1) 
 	 {
-	  print('<tr><td class = "input"><input type="text" name="UserEmail" size="50" value="'.$UserEmail.'" tabindex = "1"  '.$DisabledText.'
+	  print('<tr><td class = "input"><input type="text" name="UserEmail" size="50" value="'.$UserEmail.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserEmail.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserEmail.'\';}"').'
 	         title = "E-mail - Используется для идентификации пользователя"></td></tr>'."\r\n");
          }
 
-         print('<tr><td class = "input"><input type="text" name="UserName" size="50" value="'.$UserName.'" tabindex = "2"   '.$DisabledText.'
+         print('<tr><td class = "input"><input type="text" name="UserName" size="50" value="'.$UserName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserName.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserName.'\';}"').'
                 title = "ФИО - Так будет выглядеть информация о пользователе в протоколах и на сайте"></td></tr>'."\r\n");
 
-         print('<tr><td class = "input"><input type="text" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "3" '.$DisabledText.'
+         print('<tr><td class = "input"><input type="text" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserBirthYear.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserBirthYear.'\';}"').'
 	        title = "Год рождения"></td></tr>'."\r\n");
 
-         print('<tr><td class = "input"><input type="checkbox" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "4" '.$DisabledText.'
+         print('<tr><td class = "input"><input type="checkbox" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
 	        title = "Даже зная адрес e-mail, другой пользователь не сможет сделать Вас участником своей команды - только Вы сами или модератор ММБ" /> Нельзя включать в команду другим пользователям</td></tr>'."\r\n");
 
 	 if (($AllowEdit == 1) and  ($viewmode <> 'Add'))
         {
 
-	  print('<tr><td class = "input" style =  "padding-top: 15px;">Новый пароль: <input type="password" name="UserNewPassword" size="30" value="" tabindex = "5"   '.$DisabledText.'
+	  print('<tr><td class = "input" style =  "padding-top: 15px;">Новый пароль: <input type="password" name="UserNewPassword" size="30" value="" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                   title = "Новый пароль"></td></tr>'."\r\n");
 
-	  print('<tr><td class = "input">Подтверждение: <input type="password" name="UserConfirmNewPassword" size="30" value="" tabindex = "6"   '.$DisabledText.'
+	  print('<tr><td class = "input">Подтверждение: <input type="password" name="UserConfirmNewPassword" size="30" value="" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                   title = "Подтверждение нового пароля"></td></tr>'."\r\n");
 
         }
@@ -291,7 +274,7 @@ if (!isset($MyPHPScript)) return;
 	 if ($Administrator and $viewmode <> 'Add') 
 	 {
 	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
-	  	  print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите сделать этого пользователя модератором текущего марш-броска? \')) { MakeModerator(); }"  name="ModeratorButton" value="'.$ModeratorButtonText.'" tabindex = "10">'."\r\n");
+	  	  print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите сделать этого пользователя модератором текущего марш-броска? \')) { MakeModerator(); }"  name="ModeratorButton" value="'.$ModeratorButtonText.'" tabindex = "'.(++$TabIndex).'">'."\r\n");
           print('</td></tr>'."\r\n"); 
          }
 
@@ -299,7 +282,22 @@ if (!isset($MyPHPScript)) return;
 	 {
 	  print('<tr><td class = "input"  style =  "padding-top: 10px;">Ключ пользователя: '.$pUserId.'</td></tr>'."\r\n");
 	 }
+         
+	 
+	 // ============ Кнопка удаления всей команды для тех, кто имеет право
+ 	 if ($Administrator  and $viewmode <> 'Add') 
+	 {
+	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
+	           print('<input type="button" style="padding-left: 30px;padding-right: 30px;margin-right:15px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить пользователя: '.trim($UserName).'? \')) {HideUser();}" name="HideUserButton" value="Удалить пользователя" tabindex="'.(++$TabIndex).'">'."\n");
 
+           print(' Подтверждение удаления <input type="checkbox" name="UserHideConfirm" tabindex = "'.(++$TabIndex).'" disabled 
+	        title = "Защита от случайного удаления" /> '."\r\n");
+
+	  
+	  print('</td></tr>'."\r\n");
+	 }
+
+	 
 	 print('</table></form>'."\r\n"); 
 	 // Конец вывода формы с данными пользователя
 

@@ -746,6 +746,79 @@ if (!isset($MyPHPScript)) return;
 
 		$view = "ViewAdminModeratorsPage";
 		$viewmode = "";
+ 
+   }
+   // ============ Обратимое удаление пользователя ====================================
+   elseif ($action == 'HideUser')
+   {
+
+	$pUserId = $_POST['UserId']; 
+
+	if ($pUserId <= 0)
+	{
+		$statustext = 'Пользователь не найден';
+		$alert = 1;
+		return;
+	}
+
+	if ($SessionId <= 0)
+	{
+		$statustext = 'Сессия не найдена';
+		$alert = 1;
+		return;
+	}
+
+	// Проверка возможности удалить пользоваиеля
+	if (!$Administrator)
+	{
+		$statustext = "Удаление пользователя запрещено";
+		$alert = 1;
+		return;
+	}
+
+/*
+	if ($pUserId == $UserId)
+	{
+		$statustext = 'Нельзя удалить самого себя';
+		$alert = 1;
+		return;
+	}
+*/
+
+        // Проверяем, что пользователя нет ни в одной команде
+	$sql = " select tu.teamuser_id
+	         from TeamUsers tu 
+		 inner join Teams t
+		 on tu.team_id = t.team_id     
+		 where tu.teamuser_hide = 0 
+		       and t.team_hide = 0
+                       and tu.user_id = ".$pUserId; 
+ 
+	$Result = MySqlQuery($sql);
+        $RowsCount = mysql_num_rows($Result);
+
+	if ($RowsCount > 0)
+	{
+	        $statustext = 'Пользователь уже является участником по крайней мере одной команды';				     
+		$alert = 1;
+		return;
+	}
+
+	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $pUserName = $Row['user_name'];
+		 $pUserEmail = $Row['user_email'];
+		 mysql_free_result($Result);
+
+
+
+	$sql = "update Users set user_hide = 1 where user_id = ".$pUserId;
+	$rs = MySqlQuery($sql);
+
+        $statustext = 'Пользователь '.$pUserName.' ключ '.$pUserId.' удален ';				     
+	$view = "ViewRaidTeams";
+
    }  else {
    // если никаких действий не требуется
 
