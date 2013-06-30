@@ -31,7 +31,8 @@ if ($viewmode == 'Add')
 		$ClearRaidCloseDate = (isset($_POST['ClearRaidCloseDate']) && ($_POST['ClearRaidCloseDate'] == 'on')) ? 1 : 0;
 		$RaidZnLink = $_POST['RaidZnLink'];
 		$RaidDistancesCount = (int)$_POST['RaidDistancesCount'];
-
+                $RaidNoShowResult = (isset($_POST['RaidNoShowResult']) && ($_POST['RaidNoShowResult'] == 'on')) ? 1 : 0;
+		
 
 	}
 	else
@@ -51,7 +52,7 @@ if ($viewmode == 'Add')
 		$RaidZnLink = '';
                 $ClearRaidCloseDate = 0;
 		$RaidDistancesCount = 1;
-
+                $RaidNoShowResult = 0; 
 	}
 
 	// Определяем следующее действие
@@ -75,7 +76,7 @@ else
 	               (CASE WHEN r.raid_registrationenddate is null THEN 1 ELSE 0 END) as raid_clearregistrationenddate,
 		       r.raid_logolink, r.raid_ruleslink,  r.raid_startpoint, 
 		       r.raid_startlink, r.raid_finishpoint, r.raid_closedate,
-		       r.raid_znlink, 
+		       r.raid_znlink, COALESCE(r.raid_noshowresult, 0) as raid_noshowresult, 
       	               (CASE WHEN r.raid_closedate is null THEN 1 ELSE 0 END) as raid_clearclosedate,
 		       (select count(*) from Distances where raid_id = ".$RaidId.") as raid_distancescount
 		from Raids r
@@ -102,7 +103,8 @@ else
 		$RaidZnLink = $_POST['RaidZnLink'];
                 //В отличие от остальлных полей это - вычисляемое и после ошибки не возвращается  
 		$RaidDistancesCount = (int)$Row['raid_distancescount'];
-		
+		$RaidNoShowResult = $_POST['RaidNoShowResult'];
+
 	}
 	else
 	{
@@ -120,7 +122,7 @@ else
 		$ClearRaidCloseDate = $Row['raid_clearclosedate'];
 		$RaidZnLink = $Row['raid_znlink'];
 		$RaidDistancesCount = (int)$Row['raid_distancescount'];
-	    
+	        $RaidNoShowResult = (int)$Row['raid_noshowresult'];
 
 	}
 
@@ -285,6 +287,10 @@ print('<tr><td class="input">Название пункта финиша: <input 
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidFinishPointName.'\';}"')
 	.' title="Название пункта финиша ММБ"></td></tr>'."\n\n");
 
+
+// ============ Отображение резудьтатов ММБ
+print('<tr><td class="input">Не показывать результаты ММБ <input type="checkbox" name="RaidNoShowResult" '.(($RaidNoShowResult == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+	        title = "Не показывать результаты ММБ" /></td></tr>'."\r\n");
 
 // ============ Дата закрытия протокола ММБ
 print('<tr><td class="input">Дата закрытия протокола (гггг-мм-дд): <input type="text" name="RaidCloseDate" size="10" value="'.$RaidCloseDate.'" tabindex="'.(++$TabIndex)

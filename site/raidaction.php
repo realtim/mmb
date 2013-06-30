@@ -58,7 +58,8 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	$pClearRaidCloseDate = (isset($_POST['ClearRaidCloseDate']) && ($_POST['ClearRaidCloseDate'] == 'on')) ? 1 : 0;
 	$pRaidZnLink = $_POST['RaidZnLink'];
         $pRaidDistancesCount = (int)$_POST['RaidDistancesCount'];
-
+        $pRaidNoShowResult = (isset($_POST['RaidNoShowResult']) && ($_POST['RaidNoShowResult'] == 'on')) ? 1 : 0;
+	
 
         // Обрабатываем зхагрузку файла эмблемы
         if (!empty($_FILES['logofile']['name']) and ($_FILES['logofile']['size'] > 0))
@@ -305,6 +306,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		}
 	
 		$sql.= ", raid_znlink = trim('".$pRaidZnLink."') ";
+		$sql.= ", raid_noshowresult = ".$pRaidNoShowResult." ";
 		$sql.=  " where raid_id = ".$RaidId; 
 	    
 	 //       echo $sql;

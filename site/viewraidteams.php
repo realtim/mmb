@@ -204,7 +204,8 @@ if (!isset($MyPHPScript)) return;
                                  COALESCE(r.raid_legendlink, '') as raid_legendlink,
                                  COALESCE(r.raid_ziplink, '') as raid_ziplink,
                                  COALESCE(r.raid_znlink, '') as raid_znlink,
-				 raid_registrationenddate,  raid_closedate
+				 raid_registrationenddate,  raid_closedate,
+				 COALESCE(r.raid_noshowresult, 0) as raid_noshowresult
 			  from  Raids r
 			  where r.raid_id = ".$RaidId."
                           "; 
@@ -220,6 +221,7 @@ if (!isset($MyPHPScript)) return;
                 $RaidZnLink = trim($Row['raid_znlink']);
                 $RaidRegisterEndDt = $Row['raid_registrationenddate'];
                 $RaidCloseDt = $Row['raid_closedate'];
+                $RaidNoShowResult = $Row['raid_noshowresult'];
    
 
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
@@ -228,7 +230,7 @@ if (!isset($MyPHPScript)) return;
                   if ($RaidStage > 3)
 		  {
 		   // Прповеряем, что внесено хотя бы 30 результатов (может нужна другая проверка)
-		  
+		  /*
 		    $sql = " select count(*) as raid_teamlevelcount
 			    from  TeamLevels tl 
 				  inner join Levels l 
@@ -247,10 +249,13 @@ if (!isset($MyPHPScript)) return;
 		     $Row = mysql_fetch_assoc($Result);
 		     mysql_free_result($Result);
                      $RaidTeamLevelCount = (int)$Row['raid_teamlevelcount'];
-		  
+		  */
+
 		     // Смотрим число загруженных результатов
-		     if  ($RaidTeamLevelCount > 30)
-                     {		  
+		     //if  ($RaidTeamLevelCount > 30 && $RaidNoShowResult == 0)
+
+		     // заменил проверку по результатам проверкой на флаг
+		     if  ($RaidNoShowResult == 0) {            
 		        $OrderType = "Place";
 		     } else {
 	           	$OrderType = "Num";
@@ -268,7 +273,10 @@ if (!isset($MyPHPScript)) return;
 		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;" 
                                onchange = "OrderTypeChange();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
 	        print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >убыванию номера'."\r\n");
-		if ($RaidStage > 3)
+
+                //Сортировку по месту показыаем только после окончания ММБ, если не стоит флаг "Не показывать результаты"
+		// Администраторам и модераторам флаг не мешает
+		if ($RaidStage > 3 and ($RaidNoShowResult == 0 or $Moderator or $Administrator))
 		{
 	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
 		}
