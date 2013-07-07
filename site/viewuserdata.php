@@ -193,6 +193,23 @@ if (!isset($MyPHPScript)) return;
 		document.UserDataForm.submit();
 	}
 
+
+	// Функция получения конфигурации
+	function GetDeviceId(deviceid)
+	{ 
+		document.UserDevicesForm.DeviceId.value = deviceid;
+		document.UserDevicesForm.action.value = "GetDeviceId";
+		document.UserDevicesForm.submit();
+	}
+
+	// Функция добавления устройства
+	function AddDevice()
+	{ 
+		document.UserDevicesForm.action.value = "AddDevice";
+		document.UserDevicesForm.submit();
+	}
+
+
 </script>
 <!-- Конец вывода javascrpit -->
 
@@ -335,7 +352,47 @@ if (!isset($MyPHPScript)) return;
                 mysql_free_result($Result);
 	        print('</form>'."\r\n");
 
+	  if ($viewmode <> 'Add' and $AllowEdit == 1)
+	  {
+		// Выводим спсиок устройств, которые относятся к данному пользователю 
+	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Устройства, принадлежащие поьзователю:</div>'."\r\n");
+		print('<form  name = "UserDevicesForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
+		print('<input type = "hidden" name = "action" value = "">'."\r\n");
+		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
+		print('<input type = "hidden" name = "DeviceId" value = "0">'."\n");
+		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
+	  
+		
+                 
+		$sql = "select d.device_id, d.device_name
+		        from  Devices d
+			where d.user_id = ".$pUserId."
+			order by device_id desc "; 
+                //echo 'sql '.$sql;
+		$Result = MySqlQuery($sql);
 
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+		  print('<div align = "left" style = "padding-top: 5px;">'.$Row['device_name'].' <a href = "javascript:GetDeviceId('.$Row['device_id'].');" 
+		          title = "Получить файл конфмгурации">Конфигурация</a></div>'."\r\n");
+		}
+
+                mysql_free_result($Result);
+
+                $TabIndex = 1;
+	        $DisabledText = '';
+                $NewDeviceName = 'Название нового устройства';
+		print('<div align = "left" style = "padding-top: 5px;"><input type="text" name="NewDeviceName" size="50" value="'.$NewDeviceName.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
+                onclick = "javascript: if (trimBoth(this.value) == \''.$NewDeviceName.'\') {this.value=\'\';}" 
+                onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$NewDeviceName.'\';}"
+	        title = "Название нового устройства">'."\r\n");
+    	        print('<input type="button" onClick = "javascript: AddDevice();"  name="AddDeviceButton" value="Добавить" tabindex = "'.(++$TabIndex).'">'."\r\n");
+                   
+	        print('</div></form>'."\r\n");
+
+	   }
+	   // Конец проверки на режим правки
+	   
 ?>
 
 

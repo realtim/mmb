@@ -815,10 +815,197 @@ if (!isset($MyPHPScript)) return;
 
 	$sql = "update Users set user_hide = 1 where user_id = ".$pUserId;
 	$rs = MySqlQuery($sql);
+	     $AllowEdit = 0;
+	     // Права на редактирование
+             if (($pUserId == $UserId) || $Administrator)
+	     {
+		  $AllowEdit = 1;
+	     } else {
+
+	       $AllowEdit = 0;
+               // выходим
+	       return;
+	     }
 
         $statustext = 'Пользователь '.$pUserName.' ключ '.$pUserId.' удален ';				     
 	$view = "ViewRaidTeams";
+   }
+   // ============ Добавление устройства ====================================
+   elseif ($action == 'AddDevice')
+   {
+   
+   
+	$pUserId = $_POST['UserId']; 
 
+	if ($pUserId <= 0)
+	{
+		$statustext = 'Пользователь не найден';
+		$alert = 1;
+		return;
+	}
+
+	if ($SessionId <= 0)
+	{
+		$statustext = 'Сессия не найдена';
+		$alert = 1;
+		return;
+	}
+
+
+	     $AllowEdit = 0;
+	     // Права на редактирование
+             if (($pUserId == $UserId) || $Administrator)
+	     {
+		  $AllowEdit = 1;
+	     } else {
+	     $AllowEdit = 0;
+	     // Права на редактирование
+             if (($pUserId == $UserId) || $Administrator)
+	     {
+		  $AllowEdit = 1;
+	     } else {
+
+	       $AllowEdit = 0;
+               // выходим
+	       return;
+	     }
+
+	       $AllowEdit = 0;
+               // выходим
+	       return;
+	     }
+
+		$pNewDeviceName = trim($_POST['NewDeviceName']); 
+		
+		if (!isset($pNewDeviceName)) {
+		  $pNewDeviceName  = '';
+		}
+
+	if (empty($pNewDeviceName) or $pNewDeviceName == 'Название нового устройства')
+	{
+		$statustext = 'Не указано название устройства';
+		$alert = 1;    
+		   $view = "ViewUserData";
+		   $viewmode = "";
+
+		return;
+	}
+
+	// Прверяем, что нет устройства с таким именем
+           $sql = "select count(*) as resultcount from  Devices where trim(device_name) = '".$pNewDeviceName."'";
+      //     echo $sql;
+	   $rs = MySqlQuery($sql);  
+	   $Row = mysql_fetch_assoc($rs);
+           mysql_free_result($rs);
+	   if ($Row['resultcount'] > 0)
+	   {
+   		$statustext = "Уже есть устройство с таким именем.";
+	        $alert = 1; 
+                $viewsubmode = "ReturnAfterError"; 
+                return; 
+	   }
+	   
+    		 $Sql = "insert into Devices (device_name, user_id) values ('".$pNewDeviceName."', ".$pUserId.")";
+		 MySqlQuery($Sql);  
+
+	   
+	           $statustext = 'Добавлено устройство';				     
+		   $view = "ViewUserData";
+		   $viewmode = "";
+
+
+
+}
+   // ============ Получение конфигурации ====================================
+   elseif ($action == 'GetDeviceId')
+   {
+   
+   
+	$pUserId = $_POST['UserId']; 
+	$pDeviceId = $_POST['DeviceId']; 
+
+	if ($pUserId <= 0)
+	{
+		$statustext = 'Пользователь не найден';
+		$alert = 1;
+		return;
+	}
+
+	if ($pDeviceId <= 0)
+	{
+		$statustext = 'Устройство не найден';
+		$alert = 1;
+		return;
+	}
+
+
+
+	if ($SessionId <= 0)
+	{
+		$statustext = 'Сессия не найдена';
+		$alert = 1;
+		return;
+	}
+
+
+	     $AllowEdit = 0;
+	     // Права на редактирование
+             if (($pUserId == $UserId) || $Administrator)
+	     {
+		  $AllowEdit = 1;
+	     } else {
+	     $AllowEdit = 0;
+	     // Права на редактирование
+             if (($pUserId == $UserId) || $Administrator || $Moderator)
+	     {
+		  $AllowEdit = 1;
+	     } else {
+
+	       $AllowEdit = 0;
+               // выходим
+	       return;
+	     }
+
+	       $AllowEdit = 0;
+               // выходим
+	       return;
+	     }
+
+	// Прверяем, что есть устройство для пользователя
+           $sql = "select count(*) as resultcount from  Devices where user_id  = ".$pUserId." and device_id = ".$pDeviceId;
+      //     echo $sql;
+	   $rs = MySqlQuery($sql);  
+	   $Row = mysql_fetch_assoc($rs);
+           mysql_free_result($rs);
+	   if ($Row['resultcount'] <> 1)
+	   {
+   		$statustext = "Нет устройства.";
+	        $alert = 1; 
+                $viewsubmode = "ReturnAfterError"; 
+                return; 
+	   }
+	   
+		// Сбор данных для конфигурации
+	  $data = array();
+
+	// Raids: raid_id, raid_name, raid_registrationenddate
+	$Sql = "select d.device_id, d.device_name, d.user_id, u.user_name, u.user_password from Devices d inner join Users u on d.user_id = u.user_id  where d.device_id = ".$pDeviceId;
+	$Result = MySqlQuery($Sql);
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Devices"][] = $Row; }
+	mysql_free_result($Result);
+
+	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
+	header("Content-Type: application/octet-stream");
+	header("Content-Disposition: attachment; filename=\"device.json\"");
+
+	// Вывод json
+	print json_encode( $data );
+ 
+	// Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
+	die();
+	return;
+
+	   
    }  else {
    // если никаких действий не требуется
 
