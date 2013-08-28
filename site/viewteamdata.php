@@ -303,8 +303,9 @@ print('<tr><td class="input">'."\n");
 
 
 // ============ Вне зачета
-
-if (CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)) 
+// Если регистрация команды, то атрибут "вне зачёта" не может изменпить  даже администратор - этот параметр рассчитывается по времени
+// администратор может поменять флаг при правке
+if ($viewmode <> "Add" and CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)) 
 {
      $DisabledTextOutOfRange = ''; 
 } else {
