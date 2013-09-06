@@ -7,6 +7,7 @@ import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.StateChangeListener;
 import ru.mmb.terminal.activity.input.withdraw.list.MembersAdapter;
 import ru.mmb.terminal.activity.input.withdraw.list.TeamMemberRecord;
+import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
@@ -28,6 +29,8 @@ public class WithdrawMemberActivity extends Activity implements StateChangeListe
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+		Settings.getInstance().setCurrentContext(this);
 
 		currentState = new WithdrawMemberActivityState();
 		currentState.initialize(this, savedInstanceState);

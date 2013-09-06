@@ -40,4 +40,16 @@ public class Distances
 
 		return result;
 	}
+
+	public static void performTestQuery(SQLiteDatabase dbToCheck)
+	{
+		Cursor resultCursor =
+		    dbToCheck.query(TABLE_DISTANCES, new String[] { DISTANCE_ID, DISTANCE_NAME }, null, null, null, null, null);
+		resultCursor.moveToFirst();
+		while (!resultCursor.isAfterLast())
+		{
+			resultCursor.moveToNext();
+		}
+		resultCursor.close();
+	}
 }

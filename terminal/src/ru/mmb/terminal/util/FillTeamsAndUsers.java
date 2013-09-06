@@ -18,7 +18,7 @@ public class FillTeamsAndUsers
 
 	public static void execute()
 	{
-		db = TerminalDB.getInstance().getDb();
+		db = TerminalDB.getConnectedInstance().getDb();
 		try
 		{
 			importTeams();
@@ -144,7 +144,7 @@ public class FillTeamsAndUsers
 				db.execSQL(userBirthyearSql, new Object[] { new Integer(userInfo.getUserId()),
 				        userInfo.getUserName(), userInfo.getUserBirthYear() });
 			}
-			int localId = TerminalDB.getInstance().getNextId();
+			int localId = TerminalDB.getConnectedInstance().getNextId();
 			db.execSQL(teamUserSql, new Object[] { new Integer(localId),
 			        new Integer(userInfo.getUserId()), new Integer(userInfo.getTeamId()) });
 		}

@@ -35,7 +35,7 @@ public class TeamsRegistry
 	{
 		try
 		{
-			teams = TerminalDB.getInstance().loadTeams();
+			teams = TerminalDB.getConnectedInstance().loadTeams();
 			refreshTeamByIdMap();
 			refreshTeamsByNumberMap();
 		}

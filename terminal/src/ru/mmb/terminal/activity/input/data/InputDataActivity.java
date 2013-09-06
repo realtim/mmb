@@ -7,6 +7,7 @@ import java.util.Date;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.StateChangeListener;
 import ru.mmb.terminal.activity.input.withdraw.WithdrawMemberActivity;
+import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -31,6 +32,8 @@ public class InputDataActivity extends Activity implements StateChangeListener
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+		Settings.getInstance().setCurrentContext(this);
 
 		currentState = new InputDataActivityState();
 		currentState.initialize(this, savedInstanceState);

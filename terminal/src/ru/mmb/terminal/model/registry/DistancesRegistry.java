@@ -32,10 +32,11 @@ public class DistancesRegistry
 	{
 		try
 		{
-			distances = TerminalDB.getInstance().loadDistances(CurrentRaid.getId());
+			distances = TerminalDB.getConnectedInstance().loadDistances(CurrentRaid.getId());
 			for (Distance distance : distances)
 			{
-				List<Level> levels = TerminalDB.getInstance().loadLevels(distance.getDistanceId());
+				List<Level> levels =
+				    TerminalDB.getConnectedInstance().loadLevels(distance.getDistanceId());
 				distance.addLoadedLevels(levels);
 			}
 		}

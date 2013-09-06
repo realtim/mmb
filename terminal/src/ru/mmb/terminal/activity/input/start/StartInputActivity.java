@@ -6,6 +6,7 @@ import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.InputActivityState;
 import ru.mmb.terminal.activity.input.history.HistoryActivity;
 import ru.mmb.terminal.activity.input.level.SelectLevelActivity;
+import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,6 +29,8 @@ public class StartInputActivity extends Activity
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+		Settings.getInstance().setCurrentContext(this);
 
 		currentState = new InputActivityState("input.start");
 		currentState.initialize(this, savedInstanceState);

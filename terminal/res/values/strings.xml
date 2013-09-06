@@ -4,6 +4,10 @@
     <string name="app_name">MMB-terminal</string>
     <string name="global_input_mode_start">Start</string>
     <string name="global_input_mode_finish">Finish</string>
+    <string name="main_database_file">Database file:</string>
+    <string name="main_database_connection_NOK">Not connected to DB</string>
+    <string name="main_database_connection_OK">Connected to DB</string>
+    <string name="main_current_raid_id">Current raid ID:</string>
     <string name="main_input_data">Input data</string>
     <string name="main_import_data">Import</string>
     <string name="main_export_data">Export</string>
@@ -64,7 +68,8 @@
     <string name="transp_import_rows_processed">Rows processed:</string>
     <string name="transp_import_no_rows">&lt;Unknown></string>
     <string name="settings_title">Settings</string>
-    <string name="settings_save">Apply</string>
+    <string name="settings_path_to_terminal_db">terminal.db:</string>
+    <string name="settings_select_terminal_db_file">Select file</string>
     <string name="settings_device_id">Device ID:</string>
     <string name="settings_user_id">User ID:</string>
     <string name="settings_current_raid_id">Current raid ID:</string>

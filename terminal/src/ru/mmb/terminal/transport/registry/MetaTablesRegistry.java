@@ -32,7 +32,7 @@ public class MetaTablesRegistry
 	{
 		try
 		{
-			tables = TerminalDB.getInstance().loadMetaTables();
+			tables = TerminalDB.getConnectedInstance().loadMetaTables();
 			fillTablesByName();
 		}
 		catch (Exception e)

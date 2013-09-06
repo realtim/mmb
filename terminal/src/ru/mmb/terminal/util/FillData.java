@@ -35,7 +35,7 @@ public class FillData
 			Date finishDate = level.getLevelEndTime();
 			for (Team team : teams)
 			{
-				TerminalDB.getInstance().saveInputData(levelFinish, team, finishDate, takenCheckpoints, new Date());
+				TerminalDB.getConnectedInstance().saveInputData(levelFinish, team, finishDate, takenCheckpoints, new Date());
 			}
 		}
 	}
@@ -58,7 +58,7 @@ public class FillData
 				if (i == 0) continue;
 				withdrawnMembers.add(members.get(i));
 			}
-			TerminalDB.getInstance().saveWithdrawnMembers(finishPoint, level, team, withdrawnMembers, new Date());
+			TerminalDB.getConnectedInstance().saveWithdrawnMembers(finishPoint, level, team, withdrawnMembers, new Date());
 		}
 	}
 }

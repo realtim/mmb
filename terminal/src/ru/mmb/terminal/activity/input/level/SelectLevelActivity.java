@@ -11,6 +11,7 @@ import ru.mmb.terminal.model.Distance;
 import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.StartType;
 import ru.mmb.terminal.model.registry.DistancesRegistry;
+import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -47,6 +48,8 @@ public class SelectLevelActivity extends Activity implements StateChangeListener
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+		Settings.getInstance().setCurrentContext(this);
 
 		distances = DistancesRegistry.getInstance();
 

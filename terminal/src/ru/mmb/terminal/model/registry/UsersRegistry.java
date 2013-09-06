@@ -33,7 +33,7 @@ public class UsersRegistry
 		try
 		{
 			users.clear();
-			List<User> loadedUsers = TerminalDB.getInstance().loadUsers();
+			List<User> loadedUsers = TerminalDB.getConnectedInstance().loadUsers();
 			for (User user : loadedUsers)
 			{
 				users.put(new Integer(user.getUserId()), user);

@@ -23,6 +23,7 @@ import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 
 public class InputDataActivityState extends InputActivityState
 {
@@ -63,6 +64,7 @@ public class InputDataActivityState extends InputActivityState
 	{
 		inputDate.setHour(hour);
 		inputDate.setMinute(minute);
+		Log.d("input data activity", "set hour: " + hour + " and minute: " + minute);
 		fireStateChanged();
 	}
 
@@ -182,7 +184,7 @@ public class InputDataActivityState extends InputActivityState
 		if (!fromSavedBundle)
 		{
 			InputDataRecord previousRecord =
-			    TerminalDB.getInstance().getExistingTeamLevelPointRecord(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam());
+			    TerminalDB.getConnectedInstance().getExistingTeamLevelPointRecord(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam());
 			if (previousRecord != null)
 			{
 				checkedState.loadTakenCheckpoints(previousRecord.getCheckedMap());
@@ -205,7 +207,7 @@ public class InputDataActivityState extends InputActivityState
 
 	public void saveInputDataToDB(Date recordDateTime)
 	{
-		TerminalDB.getInstance().saveInputData(getCurrentLevelPoint(), getCurrentTeam(), inputDate.toDate(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
+		TerminalDB.getConnectedInstance().saveInputData(getCurrentLevelPoint(), getCurrentTeam(), inputDate.toDate(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
 	}
 
 	public void putTeamLevelPointToDataStorage(Date recordDateTime)

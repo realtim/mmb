@@ -1,10 +1,12 @@
 package ru.mmb.terminal.activity.main;
 
+import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_SETTINGS_ACTIVITY;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.start.StartInputActivity;
 import ru.mmb.terminal.activity.settings.SettingsActivity;
 import ru.mmb.terminal.activity.transport.transpexport.TransportExportActivity;
 import ru.mmb.terminal.activity.transport.transpimport.TransportImportActivity;
+import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.util.FillData;
 import android.app.Activity;
 import android.content.Intent;
@@ -12,11 +14,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity
 {
 	private MainActivityState currentState;
+
+	private TextView labDBFile;
+	private TextView labConnection;
+	private TextView labCurrentRaidId;
 
 	private Button btnInputData;
 	private Button btnImportData;
@@ -32,10 +39,16 @@ public class MainActivity extends Activity
 	{
 		super.onCreate(savedInstanceState);
 
+		Settings.getInstance().setCurrentContext(this);
+
 		currentState = new MainActivityState();
 		currentState.initialize(this, savedInstanceState);
 
 		setContentView(R.layout.main);
+
+		labDBFile = (TextView) findViewById(R.id.main_dataBaseFileLabel);
+		labConnection = (TextView) findViewById(R.id.main_dataBaseConnectionLabel);
+		labCurrentRaidId = (TextView) findViewById(R.id.main_currentRaidIDLabel);
 
 		btnInputData = (Button) findViewById(R.id.main_inputDataBtn);
 		btnImportData = (Button) findViewById(R.id.main_importDataBtn);
@@ -55,6 +68,27 @@ public class MainActivity extends Activity
 	private void refreshState()
 	{
 		setTitle(getResources().getString(R.string.main_title));
+
+		refreshLabels();
+		refreshButtons();
+	}
+
+	private void refreshLabels()
+	{
+		labDBFile.setText(currentState.getDBFileText(this));
+		labDBFile.setTextColor(currentState.getColor(this, currentState.isDBFileSelected()));
+		labConnection.setText(currentState.getConnectionText(this));
+		labConnection.setTextColor(currentState.getColor(this, currentState.isConnected()));
+		labCurrentRaidId.setText(currentState.getCurrentRaidIDText(this));
+		labCurrentRaidId.setTextColor(currentState.getColor(this, currentState.isCurrentRaidSelected()));
+	}
+
+	private void refreshButtons()
+	{
+		boolean enabled = currentState.isEnabled();
+		btnInputData.setEnabled(enabled);
+		btnImportData.setEnabled(enabled);
+		btnExportData.setEnabled(enabled);
 	}
 
 	@Override
@@ -62,6 +96,16 @@ public class MainActivity extends Activity
 	{
 		super.onSaveInstanceState(outState);
 		currentState.save(outState);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		if (requestCode == REQUEST_CODE_SETTINGS_ACTIVITY)
+		{
+			refreshState();
+		}
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	private class InputDataClickListener implements OnClickListener
@@ -100,7 +144,7 @@ public class MainActivity extends Activity
 		public void onClick(View v)
 		{
 			Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-			startActivity(intent);
+			startActivityForResult(intent, REQUEST_CODE_SETTINGS_ACTIVITY);
 		}
 	}
 

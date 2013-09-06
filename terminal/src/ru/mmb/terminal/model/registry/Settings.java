@@ -1,13 +1,21 @@
 package ru.mmb.terminal.model.registry;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import static android.content.Context.MODE_PRIVATE;
+
+import java.io.File;
 import java.util.Properties;
 
 import ru.mmb.terminal.db.TerminalDB;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
 
 public class Settings
 {
+	private static final String SETTINGS_FILE = "settings";
+
+	private static final String PATH_TO_TERMINAL_DB = "path_to_terminal_db";
+	private static final String IMPORT_DIR = "import_dir";
 	private static final String DEVICE_ID = "device_id";
 	private static final String USER_ID = "user_id";
 	private static final String CURRENT_RAID_ID = "current_raid_id";
@@ -18,6 +26,11 @@ public class Settings
 	private static Settings instance = null;
 
 	private Properties settings = null;
+
+	private Context currentContext = null;
+	private boolean settingsLoaded = false;
+
+	private SharedPreferences preferences;
 
 	public static Settings getInstance()
 	{
@@ -30,17 +43,125 @@ public class Settings
 
 	private Settings()
 	{
-		refresh();
 	}
 
-	private void load() throws FileNotFoundException, IOException
+	public void setCurrentContext(Context currentContext)
 	{
-		settings = TerminalDB.getInstance().loadSettings();
+		this.currentContext = currentContext;
+		if (!settingsLoaded)
+		{
+			refresh();
+		}
+	}
+
+	public void refresh()
+	{
+		if (currentContext == null) return;
+
+		try
+		{
+			settings = new Properties();
+			loadSettings();
+			settingsLoaded = true;
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("Couldn't load settings.", e);
+		}
+	}
+
+	private void loadSettings()
+	{
+		preferences = currentContext.getSharedPreferences(SETTINGS_FILE, MODE_PRIVATE);
+		loadProperty(PATH_TO_TERMINAL_DB);
+		loadProperty(IMPORT_DIR);
+		loadProperty(USER_ID);
+		loadProperty(DEVICE_ID);
+		loadProperty(CURRENT_RAID_ID);
+		loadProperty(LAST_EXPORT_DATE);
+		loadProperty(TRANSP_USER_ID);
+		loadProperty(TRANSP_USER_PASSWORD);
+	}
+
+	private void loadProperty(String propertyName)
+	{
+		String value = preferences.getString(propertyName, null);
+		if (value != null)
+		{
+			settings.put(propertyName, value);
+		}
+	}
+
+	public String getPathToTerminalDB()
+	{
+		return settings.getProperty(PATH_TO_TERMINAL_DB, "");
+	}
+
+	public void setPathToTerminalDB(String pathToTerminalDB)
+	{
+		boolean changed = setValue(PATH_TO_TERMINAL_DB, pathToTerminalDB);
+		if (changed)
+		{
+			TerminalDB.getRawInstance().closeConnection();
+			// reconnect in getInstance
+			TerminalDB.getRawInstance().tryConnectToDB();
+			if (TerminalDB.getRawInstance().isConnected())
+			{
+				DistancesRegistry.getInstance().refresh();
+				TeamsRegistry.getInstance().refresh();
+				UsersRegistry.getInstance().refresh();
+			}
+		}
+	}
+
+	public String getImportDir()
+	{
+		String result = settings.getProperty(IMPORT_DIR, "");
+		if ("".equals(result))
+		{
+			result = getMMBPathFromTerminalDBFile();
+		}
+		Log.d("Settings", "get import directory: " + result);
+		return result;
+	}
+
+	private String getMMBPathFromTerminalDBFile()
+	{
+		String result = settings.getProperty(PATH_TO_TERMINAL_DB, "");
+		if (!"".equals(result))
+		{
+			File dbFile = new File(result);
+			result = dbFile.getParent();
+		}
+		Log.d("Settings", "get path to mmb directory: " + result);
+		return result;
+	}
+
+	public void onImportFileSelected(String fileName)
+	{
+		if (fileName == null)
+		{
+			setImportDir("");
+			return;
+		}
+
+		File importFile = new File(fileName);
+		setImportDir(importFile.getParent());
+	}
+
+	private void setImportDir(String importDir)
+	{
+		setValue(IMPORT_DIR, importDir);
+	}
+
+	public String getExportDir()
+	{
+		return getMMBPathFromTerminalDBFile();
 	}
 
 	public int getDeviceId()
 	{
-		return Integer.parseInt(settings.getProperty(DEVICE_ID, "-1"));
+		return getIntSetting(DEVICE_ID);
 	}
 
 	public void setDeviceId(String deviceId)
@@ -48,22 +169,9 @@ public class Settings
 		setValue(DEVICE_ID, deviceId);
 	}
 
-	private boolean setValue(String settingName, String newValue)
-	{
-		boolean changed = false;
-		String oldValue = (String) settings.get(settingName);
-		if (oldValue == null || !oldValue.equals(newValue))
-		{
-			settings.put(settingName, newValue);
-			TerminalDB.getInstance().setSettingValue(settingName, newValue);
-			changed = true;
-		}
-		return changed;
-	}
-
 	public int getUserId()
 	{
-		return Integer.parseInt(settings.getProperty(USER_ID, "-1"));
+		return getIntSetting(USER_ID);
 	}
 
 	public void setUserId(String userId)
@@ -73,7 +181,7 @@ public class Settings
 
 	public int getCurrentRaidId()
 	{
-		return Integer.parseInt(settings.getProperty(CURRENT_RAID_ID, "-1"));
+		return getIntSetting(CURRENT_RAID_ID);
 	}
 
 	public void setCurrentRaidId(String currentRaidId)
@@ -81,8 +189,11 @@ public class Settings
 		boolean changed = setValue(CURRENT_RAID_ID, currentRaidId);
 		if (changed)
 		{
-			DistancesRegistry.getInstance().refresh();
-			TeamsRegistry.getInstance().refresh();
+			if (TerminalDB.getConnectedInstance() != null)
+			{
+				DistancesRegistry.getInstance().refresh();
+				TeamsRegistry.getInstance().refresh();
+			}
 		}
 	}
 
@@ -98,7 +209,7 @@ public class Settings
 
 	public int getTranspUserId()
 	{
-		return Integer.parseInt(settings.getProperty(TRANSP_USER_ID, "-1"));
+		return getIntSetting(TRANSP_USER_ID);
 	}
 
 	public void setTranspUserId(String transpUserId)
@@ -116,15 +227,39 @@ public class Settings
 		setValue(TRANSP_USER_PASSWORD, transpUserPassword);
 	}
 
-	public void refresh()
+	private boolean setValue(String settingName, String newValue)
 	{
-		try
+		boolean changed = false;
+		String oldValue = (String) settings.get(settingName);
+		if (oldValue == null || !oldValue.equals(newValue))
 		{
-			load();
+			settings.put(settingName, newValue);
+			saveSetting(settingName, newValue);
+			changed = true;
 		}
-		catch (Exception e)
+		return changed;
+	}
+
+	private void saveSetting(String settingName, String value)
+	{
+		if (currentContext == null)
 		{
-			throw new RuntimeException("Couldn't load settings.", e);
+			throw new RuntimeException("Error. Settings saveSetting while current context is NULL.");
 		}
+
+		preferences = currentContext.getSharedPreferences(SETTINGS_FILE, MODE_PRIVATE);
+		SharedPreferences.Editor editor = preferences.edit();
+		editor.putString(settingName, value);
+		editor.commit();
+	}
+
+	private int getIntSetting(String settingName)
+	{
+		String valueString = settings.getProperty(settingName);
+		if (valueString == null || valueString.trim().length() == 0)
+		{
+			return -1;
+		}
+		return Integer.parseInt(valueString);
 	}
 }

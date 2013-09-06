@@ -26,7 +26,8 @@ public class DataSaver
 
 	public DataSaver()
 	{
-		db = TerminalDB.getInstance().getDb();
+		// TerminalDB.getRawInstance() will never be null, but db can be null.
+		db = TerminalDB.getRawInstance().getDb();
 	}
 
 	public void setCurrentTable(MetaTable metaTable)

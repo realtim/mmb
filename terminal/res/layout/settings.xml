@@ -20,8 +20,45 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left"
+                    android:text="@string/settings_path_to_terminal_db"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/global_padding" >
+
+                    <TextView
+                        android:id="@+id/settings_pathToTerminalDBLabel"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:gravity="right"
+                        android:text="terminal.db"
+                        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                    <Button
+                        android:id="@+id/settings_selectTerminalDBBtn"
+                        android:layout_width="150dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/global_padding"
+                        android:text="@string/settings_select_terminal_db_file" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_padding" >
+
                 <TextView
                     android:layout_width="250dip"
                     android:layout_height="wrap_content"
@@ -131,13 +168,5 @@
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
-
-    <Button
-        android:id="@+id/settings_saveBtn"
-        android:layout_width="150dip"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:layout_marginTop="@dimen/global_padding"
-        android:text="@string/settings_save" />
 
 </LinearLayout>

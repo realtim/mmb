@@ -2,7 +2,6 @@ package ru.mmb.terminal.db;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import ru.mmb.terminal.model.Distance;
@@ -13,48 +12,94 @@ import ru.mmb.terminal.model.Team;
 import ru.mmb.terminal.model.TeamLevelDismiss;
 import ru.mmb.terminal.model.TeamLevelPoint;
 import ru.mmb.terminal.model.User;
+import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.transport.model.MetaTable;
-import ru.mmb.terminal.util.ExternalStorage;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.util.Log;
 
 public class TerminalDB
 {
 	private static TerminalDB instance = null;
 
-	private final SQLiteDatabase db;
-	private final Withdraw withdraw;
-	private final InputData inputData;
-	private final Distances distances;
-	private final Levels levels;
-	private final Teams teams;
-	private final MetaTables metaTables;
-	private final Settings settings;
-	private final Users users;
+	private SQLiteDatabase db;
+	private Withdraw withdraw;
+	private InputData inputData;
+	private Distances distances;
+	private Levels levels;
+	private Teams teams;
+	private MetaTables metaTables;
+	private Users users;
 
-	private final IDGenerator idGenerator;
+	private IDGenerator idGenerator;
 
-	public static TerminalDB getInstance()
+	public static TerminalDB getRawInstance()
 	{
 		if (instance == null)
 		{
 			instance = new TerminalDB();
+			instance.tryConnectToDB();
 		}
 		return instance;
 	}
 
+	public static TerminalDB getConnectedInstance()
+	{
+		TerminalDB result = getRawInstance();
+		if (!result.isConnected()) return null;
+		return result;
+	}
+
 	private TerminalDB()
 	{
-		db =
-		    SQLiteDatabase.openDatabase(ExternalStorage.getDir() + "/mmb/db/terminal.db", null, SQLiteDatabase.OPEN_READWRITE);
-		withdraw = new Withdraw(db);
-		inputData = new InputData(db);
-		distances = new Distances(db);
-		levels = new Levels(db);
-		teams = new Teams(db);
-		idGenerator = new IDGenerator(db);
-		metaTables = new MetaTables(db);
-		settings = new Settings(db);
-		users = new Users(db);
+	}
+
+	public void tryConnectToDB()
+	{
+		try
+		{
+			db =
+			    SQLiteDatabase.openDatabase(Settings.getInstance().getPathToTerminalDB(), null, SQLiteDatabase.OPEN_READWRITE);
+			performTestQuery();
+			Log.d("TerminalDB", "db open SUCCESS");
+			withdraw = new Withdraw(db);
+			inputData = new InputData(db);
+			distances = new Distances(db);
+			levels = new Levels(db);
+			teams = new Teams(db);
+			idGenerator = new IDGenerator(db);
+			metaTables = new MetaTables(db);
+			users = new Users(db);
+		}
+		catch (SQLiteException e)
+		{
+			Log.d("TerminalDB", "db open FAILURE");
+			db.close();
+			Log.d("TerminalDB", "db closed");
+			db = null;
+		}
+	}
+
+	private void performTestQuery()
+	{
+		if (db == null) return;
+
+		Distances.performTestQuery(db);
+	}
+
+	public boolean isConnected()
+	{
+		return db != null;
+	}
+
+	public void closeConnection()
+	{
+		if (isConnected())
+		{
+			db.close();
+			Log.d("TerminalDB", "close connection OK");
+			db = null;
+		}
 	}
 
 	public List<Participant> getWithdrawnMembers(LevelPoint levelPoint, Level level, Team team)
@@ -108,16 +153,6 @@ public class TerminalDB
 	public List<MetaTable> loadMetaTables()
 	{
 		return metaTables.loadMetaTables();
-	}
-
-	public Properties loadSettings()
-	{
-		return settings.loadSettings();
-	}
-
-	public void setSettingValue(String settingName, String settingValue)
-	{
-		settings.setSettingValue(settingName, settingValue);
 	}
 
 	public List<TeamLevelPoint> loadTeamLevelPoints(LevelPoint levelPoint)

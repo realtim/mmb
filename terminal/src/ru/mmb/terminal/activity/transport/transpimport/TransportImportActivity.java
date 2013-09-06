@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Timer;
 
 import ru.mmb.terminal.R;
+import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.transport.importer.ImportState;
-import ru.mmb.terminal.util.ExternalStorage;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -43,6 +43,8 @@ public class TransportImportActivity extends Activity
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+		Settings.getInstance().setCurrentContext(this);
 
 		setContentView(R.layout.transp_import);
 
@@ -94,6 +96,7 @@ public class TransportImportActivity extends Activity
 				if (resultCode == Activity.RESULT_OK)
 				{
 					fileName = data.getStringExtra(FileDialog.RESULT_PATH);
+					Settings.getInstance().onImportFileSelected(fileName);
 				}
 				else
 				{
@@ -202,8 +205,7 @@ public class TransportImportActivity extends Activity
 		public void onClick(View v)
 		{
 			Intent intent = new Intent(getBaseContext(), FileDialog.class);
-			intent.putExtra(FileDialog.START_PATH, ExternalStorage.getDir().getPath()
-			        + "/mmb/import");
+			intent.putExtra(FileDialog.START_PATH, Settings.getInstance().getImportDir());
 			intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
 			intent.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
 			startActivityForResult(intent, REQUEST_CODE_FILE_DIALOG_ACTIVITY);

@@ -31,6 +31,8 @@ public class TransportExportActivity extends Activity
 	{
 		super.onCreate(savedInstanceState);
 
+		Settings.getInstance().setCurrentContext(this);
+
 		setContentView(R.layout.transp_export);
 
 		labLastExportDate = (TextView) findViewById(R.id.transpExport_lastExportTextView);

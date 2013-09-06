@@ -53,12 +53,13 @@ public class DataStorage
 	private void initLevelPointTeams()
 	{
 		levelPointTeams.clear();
-		TerminalDB.getInstance().appendLevelPointTeams(levelPoint, levelPointTeams);
+		TerminalDB.getConnectedInstance().appendLevelPointTeams(levelPoint, levelPointTeams);
 	}
 
 	private void initTeamLevelPoints()
 	{
-		List<TeamLevelPoint> inputData = TerminalDB.getInstance().loadTeamLevelPoints(levelPoint);
+		List<TeamLevelPoint> inputData =
+		    TerminalDB.getConnectedInstance().loadTeamLevelPoints(levelPoint);
 		for (TeamLevelPoint teamLevelPoint : inputData)
 		{
 			teamLevelPoints.put(teamLevelPoint);
@@ -68,7 +69,7 @@ public class DataStorage
 	private void initTeamDismissed()
 	{
 		List<TeamLevelDismiss> dismissed =
-		    TerminalDB.getInstance().loadDismissedMembers(levelPoint);
+		    TerminalDB.getConnectedInstance().loadDismissedMembers(levelPoint);
 		for (TeamLevelDismiss teamLevelDismiss : dismissed)
 		{
 			teamDismissed.put(teamLevelDismiss);

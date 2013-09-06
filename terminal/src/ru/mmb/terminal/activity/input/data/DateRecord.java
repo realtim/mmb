@@ -6,8 +6,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 import ru.mmb.terminal.util.PrettyDateFormat;
+import android.util.Log;
 
 public class DateRecord implements Serializable
 {
@@ -58,7 +60,8 @@ public class DateRecord implements Serializable
 
 	public Date toDate()
 	{
-		Calendar calendar = new GregorianCalendar();
+		Calendar calendar = new GregorianCalendar(Locale.getDefault());
+		Log.d("date record", calendar.getTimeZone().getDisplayName());
 		calendar.set(year, month, day, hour, minute);
 		return calendar.getTime();
 	}

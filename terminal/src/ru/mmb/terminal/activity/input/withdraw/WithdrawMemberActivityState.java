@@ -83,7 +83,7 @@ public class WithdrawMemberActivityState extends InputActivityState
 		if (getCurrentLevel() != null && getCurrentTeam() != null)
 		{
 			prevWithdrawnMembers.clear();
-			prevWithdrawnMembers.addAll(TerminalDB.getInstance().getWithdrawnMembers(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam()));
+			prevWithdrawnMembers.addAll(TerminalDB.getConnectedInstance().getWithdrawnMembers(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam()));
 		}
 	}
 
@@ -170,7 +170,7 @@ public class WithdrawMemberActivityState extends InputActivityState
 
 	public void saveCurrWithdrawnToDB(Date recordDateTime)
 	{
-		TerminalDB.getInstance().saveWithdrawnMembers(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
+		TerminalDB.getConnectedInstance().saveWithdrawnMembers(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
 	}
 
 	public void putCurrWithdrawnToDataStorage(Date recordDateTime)

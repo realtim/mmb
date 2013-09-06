@@ -9,6 +9,7 @@ import ru.mmb.terminal.activity.input.history.list.HistoryFilter;
 import ru.mmb.terminal.activity.input.history.list.HistoryListRecord;
 import ru.mmb.terminal.model.Team;
 import ru.mmb.terminal.model.history.DataStorage;
+import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
 import ru.mmb.terminal.widget.EditTextWithSoftKeyboardSupport;
 import android.app.Activity;
@@ -43,6 +44,8 @@ public class HistoryActivity extends Activity
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+		Settings.getInstance().setCurrentContext(this);
 
 		currentState = new HistoryActivityState();
 		currentState.initialize(this, savedInstanceState);

@@ -10,7 +10,6 @@ import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.transport.model.MetaTable;
 import ru.mmb.terminal.transport.registry.MetaTablesRegistry;
 import ru.mmb.terminal.util.DateFormat;
-import ru.mmb.terminal.util.ExternalStorage;
 
 public class Exporter
 {
@@ -53,7 +52,7 @@ public class Exporter
 
 	private String generateFileName(ExportMode exportMode, Date exportDate)
 	{
-		String result = ExternalStorage.getDir() + "/mmb/export/terminal_export_";
+		String result = Settings.getInstance().getExportDir() + "/terminal_export_";
 		result +=
 		    Settings.getInstance().getUserId() + "_" + Settings.getInstance().getDeviceId() + "_"
 		            + exportMode.name() + "_" + DateFormat.format(exportDate) + ".txt";

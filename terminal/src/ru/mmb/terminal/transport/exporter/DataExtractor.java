@@ -16,7 +16,8 @@ public class DataExtractor
 
 	public DataExtractor(ExportMode exportMode)
 	{
-		this.db = TerminalDB.getInstance().getDb();
+		// TerminalDB.getRawInstance() will never be null, but db can be null.
+		this.db = TerminalDB.getRawInstance().getDb();
 		this.exportMode = exportMode;
 	}
 

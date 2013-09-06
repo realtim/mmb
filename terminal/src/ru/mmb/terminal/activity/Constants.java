@@ -18,8 +18,10 @@ public class Constants
 	public static final String KEY_EXPORT_RESULT_MESSAGE = "export.result.message";
 
 	public static final int REQUEST_CODE_DEFAULT_ACTIVITY = -1;
-	public static final int REQUEST_CODE_INPUT_LEVEL_ACTIVITY = 2;
-	public static final int REQUEST_CODE_INPUT_HISTORY_ACTIVITY = 3;
+	public static final int REQUEST_CODE_MAIN_ACTIVITY = 1;
+	public static final int REQUEST_CODE_SETTINGS_ACTIVITY = 2;
+	public static final int REQUEST_CODE_INPUT_LEVEL_ACTIVITY = 3;
+	public static final int REQUEST_CODE_INPUT_HISTORY_ACTIVITY = 4;
 	public static final int REQUEST_CODE_INPUT_DATA_ACTIVITY = 5;
 	public static final int REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY = 6;
 	public static final int REQUEST_CODE_FILE_DIALOG_ACTIVITY = 7;
