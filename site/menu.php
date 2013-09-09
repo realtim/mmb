@@ -202,9 +202,11 @@ if (!isset($MyPHPScript)) return;
         function ShowEmail()
 	{
          var begstr = "<? echo substr(trim($_SERVER['SERVER_NAME']), 0, 4); ?>";
-
-	  begstr = begstr.replace("\.","\@");
-	  begstr = begstr + "progressor.ru";
+         var endstr = "<? echo substr(trim($_SERVER['SERVER_NAME']), -3); ?>";
+          
+	  begstr = begstr.replace("\.","site\@");
+	  endstr = endstr.replace("\.ru","\.com");
+	  begstr = begstr + "googlegroups" + endstr;
 	  alert(begstr);
 	}
 
@@ -387,7 +389,7 @@ if (!isset($MyPHPScript)) return;
 
         // Почта
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
-	print('<tr><td><a style = "font-family: Times New Roman, Serif; font-size: 100%;" href="javascript: ShowEmail();" title = "Адрес латинскими буквами, как в названии сайта">ммб@прогрессор.ру</a> <small>(en)</small></td></tr>'."\r\n");
+	print('<tr><td><a style = "font-family: Times New Roman, Serif; font-size: 100%;" href="javascript: ShowEmail();" title = "Адрес латинскими буквами или кликните мышкой">ммбсайт@googlegroups.com</a></td></tr>'."\r\n");
         print('<tr><td><a href="https://github.com/realtim/mmb/wiki/%D0%A1%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F-%D0%BE-%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%B5-%D0%9C%D0%9C%D0%91"  target = "_blank">О сервисе</a>, 
                        <a href="https://github.com/realtim/mmb/wiki/%D0%90%D0%B2%D1%82%D0%BE%D1%80%D1%8B" target = "_blank">Авторы</a>
                </td></tr>'."\r\n"); 
