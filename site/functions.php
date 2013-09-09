@@ -196,6 +196,7 @@ if (!isset($MyPHPScript)) return;
 		    'UTF-8', // кодировка, в которой будет отправлено письмо
 		    $Subject,
 		    $Message."\r\n".'Используйте для вопросов адрес mmbsite@googlegroups.com'."\r\n".'Ответ на это письмо будет проигнорирован.'."\r\n");
+		    
 
 
     return ;
