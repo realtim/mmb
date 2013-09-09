@@ -185,7 +185,7 @@ public class SettingsActivity extends Activity
 		@Override
 		public boolean onEditorAction(TextView view, int action, KeyEvent event)
 		{
-			Log.d("settings activity", "ime action fired: " + action + " for text view: " + view);
+			// Log.d("settings activity", "ime action fired: " + action + " for text view: " + view);
 			if (action == EditorInfo.IME_ACTION_NEXT || action == EditorInfo.IME_ACTION_DONE)
 			{
 				onTextEditorContentsChanged(view);
@@ -203,12 +203,12 @@ public class SettingsActivity extends Activity
 			// So, here v is always EditText.
 			if (!hasFocus)
 			{
-				Log.d("settings activity", "focus lost fired for editor: " + v);
+				// Log.d("settings activity", "focus lost fired for editor: " + v);
 				onTextEditorContentsChanged(v);
 			}
 			else
 			{
-				Log.d("settings activity", "focus gained by editor: " + v);
+				// Log.d("settings activity", "focus gained by editor: " + v);
 				currentEditor = (EditText) v;
 			}
 		}

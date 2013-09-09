@@ -16,7 +16,6 @@ import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.transport.model.MetaTable;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.util.Log;
 
 public class TerminalDB
 {
@@ -61,7 +60,7 @@ public class TerminalDB
 			db =
 			    SQLiteDatabase.openDatabase(Settings.getInstance().getPathToTerminalDB(), null, SQLiteDatabase.OPEN_READWRITE);
 			performTestQuery();
-			Log.d("TerminalDB", "db open SUCCESS");
+			// Log.d("TerminalDB", "db open SUCCESS");
 			withdraw = new Withdraw(db);
 			inputData = new InputData(db);
 			distances = new Distances(db);
@@ -73,10 +72,13 @@ public class TerminalDB
 		}
 		catch (SQLiteException e)
 		{
-			Log.d("TerminalDB", "db open FAILURE");
-			db.close();
-			Log.d("TerminalDB", "db closed");
-			db = null;
+			if (db != null)
+			{
+				// Log.d("TerminalDB", "db open FAILURE");
+				db.close();
+				// Log.d("TerminalDB", "db closed");
+				db = null;
+			}
 		}
 	}
 
@@ -97,7 +99,7 @@ public class TerminalDB
 		if (isConnected())
 		{
 			db.close();
-			Log.d("TerminalDB", "close connection OK");
+			// Log.d("TerminalDB", "close connection OK");
 			db = null;
 		}
 	}

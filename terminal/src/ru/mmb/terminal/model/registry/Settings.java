@@ -8,7 +8,6 @@ import java.util.Properties;
 import ru.mmb.terminal.db.TerminalDB;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 public class Settings
 {
@@ -121,7 +120,7 @@ public class Settings
 		{
 			result = getMMBPathFromTerminalDBFile();
 		}
-		Log.d("Settings", "get import directory: " + result);
+		// Log.d("Settings", "get import directory: " + result);
 		return result;
 	}
 
@@ -133,7 +132,7 @@ public class Settings
 			File dbFile = new File(result);
 			result = dbFile.getParent();
 		}
-		Log.d("Settings", "get path to mmb directory: " + result);
+		// Log.d("Settings", "get path to mmb directory: " + result);
 		return result;
 	}
 

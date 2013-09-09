@@ -208,6 +208,7 @@ public class TransportImportActivity extends Activity
 			intent.putExtra(FileDialog.START_PATH, Settings.getInstance().getImportDir());
 			intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
 			intent.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
+			intent.putExtra(FileDialog.FORMAT_FILTER, new String[] { ".json" });
 			startActivityForResult(intent, REQUEST_CODE_FILE_DIALOG_ACTIVITY);
 		}
 	}

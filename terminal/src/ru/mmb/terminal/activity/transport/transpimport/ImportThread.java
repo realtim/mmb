@@ -2,6 +2,7 @@ package ru.mmb.terminal.activity.transport.transpimport;
 
 import ru.mmb.terminal.model.registry.DistancesRegistry;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
+import ru.mmb.terminal.model.registry.UsersRegistry;
 import ru.mmb.terminal.transport.importer.ImportState;
 import ru.mmb.terminal.transport.importer.Importer;
 import android.os.Message;
@@ -45,6 +46,7 @@ public class ImportThread extends Thread
 		{
 			DistancesRegistry.getInstance().refresh();
 			TeamsRegistry.getInstance().refresh();
+			UsersRegistry.getInstance().refresh();
 		}
 
 		System.out.println("ImportThread finished.");

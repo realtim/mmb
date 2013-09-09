@@ -4,10 +4,12 @@
     <string name="app_name">MMB-terminal</string>
     <string name="global_input_mode_start">Start</string>
     <string name="global_input_mode_finish">Finish</string>
-    <string name="main_database_file">Database file:</string>
+    <string name="main_database_file">Database file: %s</string>
     <string name="main_database_connection_NOK">Not connected to DB</string>
     <string name="main_database_connection_OK">Connected to DB</string>
-    <string name="main_current_raid_id">Current raid ID:</string>
+    <string name="main_user_id">User ID: %d</string>
+    <string name="main_device_id">Device ID: %d</string>
+    <string name="main_current_raid_id">Current raid ID: %d</string>
     <string name="main_input_data">Input data</string>
     <string name="main_import_data">Import</string>
     <string name="main_export_data">Export</string>

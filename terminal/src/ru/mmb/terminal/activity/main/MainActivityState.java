@@ -24,7 +24,7 @@ public class MainActivityState extends CurrentState
 		{
 			return false;
 		}
-		if (!isCurrentRaidSelected())
+		if (!isAllNecessaryIdsSelected())
 		{
 			return false;
 		}
@@ -39,8 +39,9 @@ public class MainActivityState extends CurrentState
 
 	public String getDBFileText(Context context)
 	{
-		return context.getResources().getString(R.string.main_database_file)
-		        + Settings.getInstance().getPathToTerminalDB();
+		String format = context.getResources().getString(R.string.main_database_file);
+		String pathToDB = Settings.getInstance().getPathToTerminalDB();
+		return String.format(format, pathToDB);
 	}
 
 	public boolean isConnected()
@@ -60,20 +61,47 @@ public class MainActivityState extends CurrentState
 		}
 	}
 
-	public boolean isCurrentRaidSelected()
-	{
-		return Settings.getInstance().getCurrentRaidId() != -1;
-	}
-
 	public String getCurrentRaidIDText(Context context)
 	{
-		String result = context.getResources().getString(R.string.main_current_raid_id);
+		String format = context.getResources().getString(R.string.main_current_raid_id);
 		int raidId = Settings.getInstance().getCurrentRaidId();
-		if (raidId != -1)
-		{
-			result += " " + raidId;
-		}
-		return result;
+		return String.format(format, new Integer(raidId));
+	}
+
+	public String getUserIDText(Context context)
+	{
+		String format = context.getResources().getString(R.string.main_user_id);
+		int userId = Settings.getInstance().getUserId();
+		return String.format(format, new Integer(userId));
+	}
+
+	public String getDeviceIDText(Context context)
+	{
+		String format = context.getResources().getString(R.string.main_device_id);
+		int deviceId = Settings.getInstance().getDeviceId();
+		return String.format(format, new Integer(deviceId));
+	}
+
+	public boolean isAllNecessaryIdsSelected()
+	{
+		return Settings.getInstance().getUserId() != -1
+		        && Settings.getInstance().getDeviceId() != -1
+		        && Settings.getInstance().getCurrentRaidId() != -1;
+	}
+
+	public boolean isUserIdSelected()
+	{
+		return Settings.getInstance().getUserId() != -1;
+	}
+
+	public boolean isDeviceIdSelected()
+	{
+		return Settings.getInstance().getDeviceId() != -1;
+	}
+
+	public boolean isCurrentRaidIdSelected()
+	{
+		return Settings.getInstance().getCurrentRaidId() != -1;
 	}
 
 	public int getColor(Context context, boolean enabled)
@@ -84,7 +112,7 @@ public class MainActivityState extends CurrentState
 		}
 		else
 		{
-			return context.getResources().getColor(R.color.Red);
+			return context.getResources().getColor(R.color.LightPink);
 		}
 	}
 
