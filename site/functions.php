@@ -187,21 +187,15 @@ if (!isset($MyPHPScript)) return;
     function SendMail($Email, $Message, $ToName='', $Subject='Информация с сайта ММБ') {
    //
    
-   // 20.01.2012 Заменил штатную функцию на более удобную  send_mime_mail (см. ниже)
-	//$Headers = 'From: mmb@progressor.ru' . "\r\n" .
-	//		'Reply-To: mmb@progressor.ru' . "\r\n" .
-	//	    'X-Mailer:  /';
-   
-//           mail($Email, 'Информация с сайта ММБ', $Message, $Headers);
-
+    // 20.01.2012 Заменил штатную функцию на более удобную  send_mime_mail (см. ниже)
     send_mime_mail('mmbsite',
-		  'mmb@progressor.ru',
-		  $ToName,
-		  $Email,
-		  'UTF-8',  // кодировка, в которой находятся передаваемые строки
-		  'UTF-8', // кодировка, в которой будет отправлено письмо
-		  $Subject,
-		  $Message);
+ 		   'mmb@progressor.ru',
+		    $ToName,
+		    $Email,
+		    'UTF-8',  // кодировка, в которой находятся передаваемые строки
+		    'UTF-8', // кодировка, в которой будет отправлено письмо
+		    $Subject,
+		    $Message);
 
 
     return ;
@@ -531,8 +525,10 @@ send_mime_mail('Автор письма',
       $to = mime_header_encode($name_to, $data_charset, $send_charset)
 		  . ' <' . $email_to . '>';
       $subject = mime_header_encode($subject, $data_charset, $send_charset);
+
       $from =  mime_header_encode($name_from, $data_charset, $send_charset)
                      .' <' . $email_from . '>';
+ 
       if($data_charset != $send_charset) 
       {
 	$body = iconv($data_charset, $send_charset, $body);
@@ -542,7 +538,8 @@ send_mime_mail('Автор письма',
       $headers .= "Content-type: text/$type; charset=$send_charset\r\n";
       $headers .= "Mime-Version: 1.0\r\n";
 
-      return mail($to, $subject, $body, $headers);
+      // 09/09/2013 Добавил атрибут Return-Path (пятым параметром)
+      return mail($to, $subject, $body, $headers, "-f".$email_from);
      }
 
      function mime_header_encode($str, $data_charset, $send_charset) 
