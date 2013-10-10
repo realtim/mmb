@@ -1,6 +1,7 @@
 package ru.mmb.terminal.activity.settings;
 
-import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_FILE_DIALOG_ACTIVITY;
+import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_SETTINGS_DB_FILE_DIALOG;
+import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG;
 
 import java.io.File;
 
@@ -9,7 +10,7 @@ import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,21 +24,25 @@ import android.widget.TextView.OnEditorActionListener;
 import com.filedialog.FileDialog;
 import com.filedialog.SelectionMode;
 
-public class SettingsActivity extends Activity
+public class SettingsActivity extends FragmentActivity
 {
 	private TextView labelPathToTerminalDB;
 	private Button btnSelectTerminalDBFile;
 
+	private Button btnImportDeviceJson;
+
 	private EditText editUserId;
 	private EditText editDeviceId;
 	private EditText editCurrentRaidId;
-	private EditText editLastExportDate;
 	private EditText editTranspUserId;
 	private EditText editTranspUserPassword;
 	private TextEditorActionListener textEditorActionListener;
 	private TextEditorFocusChangeListener textEditorFocusChangeListener;
 
 	private EditText currentEditor = null;
+
+	private DeviceJsonImporter deviceJsonImporter = null;
+	private boolean needStartDeviceDialog = false;
 
 	/** Called when the activity is first created. */
 
@@ -54,6 +59,9 @@ public class SettingsActivity extends Activity
 		btnSelectTerminalDBFile = (Button) findViewById(R.id.settings_selectTerminalDBBtn);
 		btnSelectTerminalDBFile.setOnClickListener(new SelectTerminalDBFileClickListener());
 
+		btnImportDeviceJson = (Button) findViewById(R.id.settings_importDeviceJsonBtn);
+		btnImportDeviceJson.setOnClickListener(new ImportDeviceJsonClickListener());
+
 		textEditorActionListener = new TextEditorActionListener();
 		textEditorFocusChangeListener = new TextEditorFocusChangeListener();
 
@@ -68,8 +76,6 @@ public class SettingsActivity extends Activity
 		editTranspUserPassword = (EditText) findViewById(R.id.settings_transpUserPasswordEdit);
 		hookTextEditor(editTranspUserPassword, EditorInfo.IME_ACTION_DONE);
 
-		editLastExportDate = (EditText) findViewById(R.id.settings_lastExportDateEdit);
-
 		refreshState();
 	}
 
@@ -80,7 +86,7 @@ public class SettingsActivity extends Activity
 		textEditor.setOnFocusChangeListener(textEditorFocusChangeListener);
 	}
 
-	private void refreshState()
+	public void refreshState()
 	{
 		setTitle(getResources().getString(R.string.settings_title));
 
@@ -88,7 +94,6 @@ public class SettingsActivity extends Activity
 		editUserId.setText(Integer.toString(Settings.getInstance().getUserId()));
 		editDeviceId.setText(Integer.toString(Settings.getInstance().getDeviceId()));
 		editCurrentRaidId.setText(Integer.toString(Settings.getInstance().getCurrentRaidId()));
-		editLastExportDate.setText(Settings.getInstance().getLastExportDate());
 		editTranspUserId.setText(Integer.toString(Settings.getInstance().getTranspUserId()));
 		editTranspUserPassword.setText(Settings.getInstance().getTranspUserPassword());
 	}
@@ -98,7 +103,7 @@ public class SettingsActivity extends Activity
 	{
 		switch (requestCode)
 		{
-			case REQUEST_CODE_FILE_DIALOG_ACTIVITY:
+			case REQUEST_CODE_SETTINGS_DB_FILE_DIALOG:
 				if (resultCode == Activity.RESULT_OK)
 				{
 					String terminalDBFileName = data.getStringExtra(FileDialog.RESULT_PATH);
@@ -106,8 +111,37 @@ public class SettingsActivity extends Activity
 					Settings.getInstance().setPathToTerminalDB(terminalDBFileName);
 				}
 				break;
+			case REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG:
+				if (resultCode == Activity.RESULT_OK)
+				{
+					String deviceJsonName = data.getStringExtra(FileDialog.RESULT_PATH);
+					deviceJsonImporter = new DeviceJsonImporter(this);
+					if (deviceJsonImporter.prepareJsonObjects(deviceJsonName))
+					{
+						needStartDeviceDialog = true;
+					}
+					else
+					{
+						deviceJsonImporter = null;
+					}
+				}
+				break;
 			default:
 				super.onActivityResult(requestCode, resultCode, data);
+		}
+	}
+
+	@Override
+	protected void onResume()
+	{
+		super.onResume();
+		// DialogFragment is not created in onActivityResult, 
+		// because activity is yet not working there.
+		// So we are waiting for resume.
+		if (needStartDeviceDialog)
+		{
+			needStartDeviceDialog = false;
+			if (deviceJsonImporter != null) deviceJsonImporter.showImportDialog();
 		}
 	}
 
@@ -159,25 +193,24 @@ public class SettingsActivity extends Activity
 			intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
 			intent.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
 			intent.putExtra(FileDialog.FORMAT_FILTER, new String[] { ".db" });
-			startActivityForResult(intent, REQUEST_CODE_FILE_DIALOG_ACTIVITY);
+			startActivityForResult(intent, REQUEST_CODE_SETTINGS_DB_FILE_DIALOG);
 		}
+	}
 
-		private String extractStartPath()
+	private String extractStartPath()
+	{
+		String result = null;
+		String prevPathToTerminalDB = labelPathToTerminalDB.getText().toString();
+		if (!"".equals(prevPathToTerminalDB))
 		{
-			String result = null;
-			String prevPathToTerminalDB = labelPathToTerminalDB.getText().toString();
-			if (!"".equals(prevPathToTerminalDB))
+			File dbFile = new File(prevPathToTerminalDB);
+			File dbFileDir = new File(dbFile.getParent());
+			if (dbFileDir.exists())
 			{
-				File dbFile = new File(prevPathToTerminalDB);
-				File dbFileDir = new File(dbFile.getParent());
-				Log.d("SettingsActivity", "db file dir: " + dbFileDir.getPath());
-				if (dbFileDir.exists())
-				{
-					result = dbFileDir.getPath();
-				}
+				result = dbFileDir.getPath();
 			}
-			return result;
 		}
+		return result;
 	}
 
 	private class TextEditorActionListener implements OnEditorActionListener
@@ -185,7 +218,6 @@ public class SettingsActivity extends Activity
 		@Override
 		public boolean onEditorAction(TextView view, int action, KeyEvent event)
 		{
-			// Log.d("settings activity", "ime action fired: " + action + " for text view: " + view);
 			if (action == EditorInfo.IME_ACTION_NEXT || action == EditorInfo.IME_ACTION_DONE)
 			{
 				onTextEditorContentsChanged(view);
@@ -203,14 +235,30 @@ public class SettingsActivity extends Activity
 			// So, here v is always EditText.
 			if (!hasFocus)
 			{
-				// Log.d("settings activity", "focus lost fired for editor: " + v);
 				onTextEditorContentsChanged(v);
 			}
 			else
 			{
-				// Log.d("settings activity", "focus gained by editor: " + v);
 				currentEditor = (EditText) v;
 			}
+		}
+	}
+
+	private class ImportDeviceJsonClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			Intent intent = new Intent(getBaseContext(), FileDialog.class);
+			String startPath = extractStartPath();
+			if (startPath != null)
+			{
+				intent.putExtra(FileDialog.START_PATH, startPath);
+			}
+			intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
+			intent.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
+			intent.putExtra(FileDialog.FORMAT_FILTER, new String[] { ".json" });
+			startActivityForResult(intent, REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG);
 		}
 	}
 }

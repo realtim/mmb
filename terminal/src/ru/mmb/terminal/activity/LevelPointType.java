@@ -1,8 +1,8 @@
-package ru.mmb.terminal.activity.input;
+package ru.mmb.terminal.activity;
 
 import ru.mmb.terminal.R;
 
-public enum InputMode
+public enum LevelPointType
 {
 	START(R.string.global_input_mode_start, 1),
 
@@ -11,7 +11,7 @@ public enum InputMode
 	private int displayNameId;
 	private int id;
 
-	private InputMode(int displayNameId, int id)
+	private LevelPointType(int displayNameId, int id)
 	{
 		this.displayNameId = displayNameId;
 		this.id = id;
@@ -27,9 +27,9 @@ public enum InputMode
 		return id;
 	}
 
-	public static InputMode getById(int id)
+	public static LevelPointType getById(int id)
 	{
-		for (InputMode inputMode : values())
+		for (LevelPointType inputMode : values())
 		{
 			if (inputMode.getId() == id) return inputMode;
 		}

@@ -31,4 +31,14 @@ public class IntegerDataType extends DataType<Integer>
 		Integer intValue = (Integer) value;
 		return Integer.toString(intValue);
 	}
+
+	@Override
+	public void appendToJSON(JSONObject targetJSON, String columnName, Object value)
+	        throws JSONException
+	{
+		if (value == null)
+			targetJSON.put(columnName, JSONObject.NULL);
+		else
+			targetJSON.put(columnName, ((Integer) value).intValue());
+	}
 }

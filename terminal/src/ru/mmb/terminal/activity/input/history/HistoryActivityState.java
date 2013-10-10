@@ -1,10 +1,10 @@
 package ru.mmb.terminal.activity.input.history;
 
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_NUMBER;
-import ru.mmb.terminal.activity.input.InputActivityState;
+import ru.mmb.terminal.activity.ActivityStateWithTeamAndLevel;
 import android.os.Bundle;
 
-public class HistoryActivityState extends InputActivityState
+public class HistoryActivityState extends ActivityStateWithTeamAndLevel
 {
 	private String teamNumber = null;
 

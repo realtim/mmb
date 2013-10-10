@@ -11,6 +11,7 @@ import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.TeamLevelDismiss;
 import ru.mmb.terminal.model.TeamLevelPoint;
+import ru.mmb.terminal.model.exception.DataStorageException;
 
 public class DataStorage
 {
@@ -23,7 +24,7 @@ public class DataStorage
 	 * Special static methods will make data storage usable from
 	 * InputDataActivity and WithdrawMemberActivity.
 	 * 
-	 * @param levelPointId
+	 * @param levelPoint
 	 * @return
 	 */
 	public static DataStorage getInstance(LevelPoint levelPoint)
@@ -148,7 +149,7 @@ public class DataStorage
 		else
 		{
 			String message =
-			    "Fatal error." + "\n" + "Current data storage level point ["
+			    "Fatal error." + "\n" + "Current HISTORY data storage level point ["
 			            + instance.getLevelPoint() + "]" + "\n"
 			            + "Putting new team level point to [" + teamLevelPoint.getLevelPoint()
 			            + "]";

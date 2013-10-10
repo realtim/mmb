@@ -75,6 +75,11 @@ public class MetaColumn
 		return columnDataType.decodeJSON(columnName, tableRow);
 	}
 
+	public void appendToJSON(JSONObject targetJSON, Object value) throws JSONException
+	{
+		columnDataType.appendToJSON(targetJSON, columnName, value);
+	}
+
 	private boolean isNull(JSONObject tableRow) throws JSONException
 	{
 		return tableRow.isNull(columnName) || tableRow.get(columnName) == null;
@@ -93,10 +98,17 @@ public class MetaColumn
 		return columnDataType.getFromDB(cursor, columnIndex);
 	}
 
-	public String decorateForExport(Cursor cursor)
+	public String decorateForExportToString(Cursor cursor)
 	{
 		Object value = getValue(cursor, columnOrder);
 		if (value == null) return "\"" + NULL + "\"";
 		return "\"" + columnDataType.encodeString(value) + "\"";
+	}
+
+	public Object decorateForExportToJSON(Cursor cursor)
+	{
+		Object value = getValue(cursor, columnOrder);
+		if (value == null) return JSONObject.NULL;
+		return columnDataType.encodeString(value);
 	}
 }

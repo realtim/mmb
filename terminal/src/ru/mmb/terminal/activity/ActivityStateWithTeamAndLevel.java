@@ -1,12 +1,10 @@
-package ru.mmb.terminal.activity.input;
+package ru.mmb.terminal.activity;
 
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_DISTANCE;
-import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_INPUT_MODE;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_LEVEL;
+import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_LEVEL_POINT_TYPE;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM;
 import ru.mmb.terminal.R;
-import ru.mmb.terminal.activity.Constants;
-import ru.mmb.terminal.activity.CurrentState;
 import ru.mmb.terminal.model.Distance;
 import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
@@ -18,14 +16,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-public class InputActivityState extends CurrentState
+public class ActivityStateWithTeamAndLevel extends CurrentState
 {
 	private Distance currentDistance = null;
 	private Level currentLevel = null;
-	private InputMode currentInputMode = null;
+	private LevelPointType currentLevelPointType = null;
 	private Team currentTeam = null;
 
-	public InputActivityState(String prefix)
+	public ActivityStateWithTeamAndLevel(String prefix)
 	{
 		super(prefix);
 	}
@@ -52,14 +50,14 @@ public class InputActivityState extends CurrentState
 		fireStateChanged();
 	}
 
-	public InputMode getCurrentInputMode()
+	public LevelPointType getCurrentLevelPointType()
 	{
-		return currentInputMode;
+		return currentLevelPointType;
 	}
 
-	public void setCurrentInputMode(InputMode currentInputMode)
+	public void setCurrentLevelPointType(LevelPointType currentLevelPointType)
 	{
-		this.currentInputMode = currentInputMode;
+		this.currentLevelPointType = currentLevelPointType;
 		fireStateChanged();
 	}
 
@@ -70,8 +68,8 @@ public class InputActivityState extends CurrentState
 		    savedInstanceState.putSerializable(KEY_CURRENT_DISTANCE, currentDistance);
 		if (currentLevel != null)
 		    savedInstanceState.putSerializable(KEY_CURRENT_LEVEL, currentLevel);
-		if (currentInputMode != null)
-		    savedInstanceState.putSerializable(KEY_CURRENT_INPUT_MODE, currentInputMode);
+		if (currentLevelPointType != null)
+		    savedInstanceState.putSerializable(KEY_CURRENT_LEVEL_POINT_TYPE, currentLevelPointType);
 		if (currentTeam != null) savedInstanceState.putSerializable(KEY_CURRENT_TEAM, currentTeam);
 	}
 
@@ -84,9 +82,9 @@ public class InputActivityState extends CurrentState
 		    currentDistance = (Distance) savedInstanceState.getSerializable(KEY_CURRENT_DISTANCE);
 		if (savedInstanceState.containsKey(KEY_CURRENT_LEVEL))
 		    currentLevel = (Level) savedInstanceState.getSerializable(KEY_CURRENT_LEVEL);
-		if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_MODE))
-		    currentInputMode =
-		        (InputMode) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_MODE);
+		if (savedInstanceState.containsKey(KEY_CURRENT_LEVEL_POINT_TYPE))
+		    currentLevelPointType =
+		        (LevelPointType) savedInstanceState.getSerializable(KEY_CURRENT_LEVEL_POINT_TYPE);
 		if (savedInstanceState.containsKey(KEY_CURRENT_TEAM))
 		    currentTeam = (Team) savedInstanceState.getSerializable(KEY_CURRENT_TEAM);
 	}
@@ -103,7 +101,7 @@ public class InputActivityState extends CurrentState
 			{
 				currentDistance = null;
 				currentLevel = null;
-				currentInputMode = null;
+				currentLevelPointType = null;
 			}
 			else
 			{
@@ -117,7 +115,7 @@ public class InputActivityState extends CurrentState
 			if (updatedLevel == null)
 			{
 				currentLevel = null;
-				currentInputMode = null;
+				currentLevelPointType = null;
 			}
 			else
 			{
@@ -135,7 +133,7 @@ public class InputActivityState extends CurrentState
 
 	public boolean isLevelSelected()
 	{
-		return currentDistance != null && currentLevel != null && currentInputMode != null;
+		return currentDistance != null && currentLevel != null && currentLevelPointType != null;
 	}
 
 	private String getSelectedLevelString(Activity activity)
@@ -145,10 +143,11 @@ public class InputActivityState extends CurrentState
 		else
 			return "\"" + currentDistance.getDistanceName() + "\" -> \""
 			        + currentLevel.getLevelName() + "\" -> ["
-			        + activity.getResources().getString(currentInputMode.getDisplayNameId()) + "]";
+			        + activity.getResources().getString(currentLevelPointType.getDisplayNameId())
+			        + "]";
 	}
 
-	public String getTitleText(Activity activity)
+	public String getLevelPointText(Activity activity)
 	{
 		return getSelectedLevelString(activity);
 	}
@@ -160,8 +159,8 @@ public class InputActivityState extends CurrentState
 		    setCurrentDistance((Distance) extras.getSerializable(KEY_CURRENT_DISTANCE));
 		if (extras.containsKey(KEY_CURRENT_LEVEL))
 		    setCurrentLevel((Level) extras.getSerializable(KEY_CURRENT_LEVEL));
-		if (extras.containsKey(KEY_CURRENT_INPUT_MODE))
-		    setCurrentInputMode((InputMode) extras.getSerializable(KEY_CURRENT_INPUT_MODE));
+		if (extras.containsKey(KEY_CURRENT_LEVEL_POINT_TYPE))
+		    setCurrentLevelPointType((LevelPointType) extras.getSerializable(KEY_CURRENT_LEVEL_POINT_TYPE));
 		if (extras.containsKey(KEY_CURRENT_TEAM))
 		    setCurrentTeam((Team) extras.getSerializable(KEY_CURRENT_TEAM));
 	}
@@ -174,8 +173,8 @@ public class InputActivityState extends CurrentState
 		    editor.putInt(getPrefix() + "." + KEY_CURRENT_DISTANCE, getCurrentDistance().getDistanceId());
 		if (getCurrentLevel() != null)
 		    editor.putInt(getPrefix() + "." + KEY_CURRENT_LEVEL, getCurrentLevel().getLevelId());
-		if (getCurrentInputMode() != null)
-		    editor.putInt(getPrefix() + "." + KEY_CURRENT_INPUT_MODE, getCurrentInputMode().getId());
+		if (getCurrentLevelPointType() != null)
+		    editor.putInt(getPrefix() + "." + KEY_CURRENT_LEVEL_POINT_TYPE, getCurrentLevelPointType().getId());
 		editor.commit();
 	}
 
@@ -192,19 +191,19 @@ public class InputActivityState extends CurrentState
 			if (currentLevel != null)
 			{
 				int inputModeId =
-				    preferences.getInt(getPrefix() + "." + KEY_CURRENT_INPUT_MODE, -1);
+				    preferences.getInt(getPrefix() + "." + KEY_CURRENT_LEVEL_POINT_TYPE, -1);
 				if (inputModeId == -1)
-					currentInputMode = null;
+					currentLevelPointType = null;
 				else
-					currentInputMode = InputMode.getById(inputModeId);
+					currentLevelPointType = LevelPointType.getById(inputModeId);
 			}
 			else
-				currentInputMode = null;
+				currentLevelPointType = null;
 		}
 		else
 		{
 			currentLevel = null;
-			currentInputMode = null;
+			currentLevelPointType = null;
 		}
 	}
 
@@ -214,16 +213,17 @@ public class InputActivityState extends CurrentState
 		switch (activityRequestId)
 		{
 			case Constants.REQUEST_CODE_DEFAULT_ACTIVITY:
-			case Constants.REQUEST_CODE_INPUT_LEVEL_ACTIVITY:
+			case Constants.REQUEST_CODE_LEVEL_ACTIVITY:
 			case Constants.REQUEST_CODE_INPUT_HISTORY_ACTIVITY:
+			case Constants.REQUEST_CODE_INPUT_BARCODE_ACTIVITY:
 			case Constants.REQUEST_CODE_INPUT_DATA_ACTIVITY:
 			case Constants.REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY:
 				if (getCurrentDistance() != null)
 				    intent.putExtra(KEY_CURRENT_DISTANCE, getCurrentDistance());
 				if (getCurrentLevel() != null)
 				    intent.putExtra(KEY_CURRENT_LEVEL, getCurrentLevel());
-				if (getCurrentInputMode() != null)
-				    intent.putExtra(KEY_CURRENT_INPUT_MODE, getCurrentInputMode());
+				if (getCurrentLevelPointType() != null)
+				    intent.putExtra(KEY_CURRENT_LEVEL_POINT_TYPE, getCurrentLevelPointType());
 				if (getCurrentTeam() != null) intent.putExtra(KEY_CURRENT_TEAM, getCurrentTeam());
 		}
 	}
@@ -248,19 +248,20 @@ public class InputActivityState extends CurrentState
 		return currentTeam != null;
 	}
 
-	@Override
-	public String toString()
-	{
-		return "InputActivityState [currentDistance=" + currentDistance + ", currentLevel="
-		        + currentLevel + ", currentInputMode=" + currentInputMode + ", currentTeam="
-		        + currentTeam + ", toString()=" + super.toString() + "]";
-	}
-
 	public LevelPoint getCurrentLevelPoint()
 	{
 		Level level = getCurrentLevel();
 		LevelPoint result = level.getStartPoint();
-		if (getCurrentInputMode() == InputMode.FINISH) result = level.getFinishPoint();
+		if (getCurrentLevelPointType() == LevelPointType.FINISH) result = level.getFinishPoint();
 		return result;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "ActivityStateWithTeamAndLevel [currentDistance=" + currentDistance
+		        + ", currentLevel=" + currentLevel + ", currentLevelPointType="
+		        + currentLevelPointType + ", currentTeam=" + currentTeam + ", toString()="
+		        + super.toString() + "]";
 	}
 }

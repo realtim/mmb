@@ -11,15 +11,18 @@ import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class InputDataActivity extends Activity implements StateChangeListener
 {
 	private InputDataActivityState currentState;
 
+	private LinearLayout panelExistsIndicator;
 	private TextView labTeamName;
 	private TextView labTeamNumber;
 	private TextView labResult;
@@ -43,13 +46,14 @@ public class InputDataActivity extends Activity implements StateChangeListener
 		datePanel = new DatePanel(this, currentState);
 		new CheckpointPanel(this, currentState);
 
+		panelExistsIndicator = (LinearLayout) findViewById(R.id.inputData_existsIndicatorPanel);
 		labTeamName = (TextView) findViewById(R.id.inputData_teamNameTextView);
 		labTeamNumber = (TextView) findViewById(R.id.inputData_teamNumberTextView);
 		labResult = (TextView) findViewById(R.id.inputData_resultTextView);
 		btnOk = (Button) findViewById(R.id.inputData_okButton);
 		btnWithdraw = (Button) findViewById(R.id.inputData_withdrawButton);
 
-		setTitle(currentState.getTitleText(this));
+		setTitle(currentState.getLevelPointText(this));
 		if (currentState.getCurrentTeam() != null)
 		{
 			labTeamName.setText(currentState.getCurrentTeam().getTeamName());
@@ -61,6 +65,21 @@ public class InputDataActivity extends Activity implements StateChangeListener
 		btnWithdraw.setOnClickListener(new WithdrawMemberClickListener());
 
 		currentState.addStateChangeListener(this);
+		refreshExistsIndicator();
+	}
+
+	private void refreshExistsIndicator()
+	{
+		if (currentState.isEditingExistingRecord())
+		{
+			Log.d("input_data", "record exists");
+			panelExistsIndicator.setBackgroundResource(R.color.LightSkyBlue);
+		}
+		else
+		{
+			Log.d("input_data", "record NOT exists");
+			panelExistsIndicator.setBackgroundResource(R.color.Pink);
+		}
 	}
 
 	@Override

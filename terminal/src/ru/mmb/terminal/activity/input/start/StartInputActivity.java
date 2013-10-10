@@ -1,11 +1,14 @@
 package ru.mmb.terminal.activity.input.start;
 
+import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_BARCODE_ACTIVITY;
 import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_HISTORY_ACTIVITY;
-import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_INPUT_LEVEL_ACTIVITY;
+import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_LEVEL_ACTIVITY;
 import ru.mmb.terminal.R;
-import ru.mmb.terminal.activity.input.InputActivityState;
+import ru.mmb.terminal.activity.ActivityStateWithTeamAndLevel;
+import ru.mmb.terminal.activity.LevelPointType;
+import ru.mmb.terminal.activity.input.barcode.BarCodeActivity;
 import ru.mmb.terminal.activity.input.history.HistoryActivity;
-import ru.mmb.terminal.activity.input.level.SelectLevelActivity;
+import ru.mmb.terminal.activity.level.SelectLevelActivity;
 import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
@@ -17,10 +20,11 @@ import android.widget.TextView;
 
 public class StartInputActivity extends Activity
 {
-	private InputActivityState currentState;
+	private ActivityStateWithTeamAndLevel currentState;
 
 	private Button btnSelectLevel;
 	private Button btnProceedInput;
+	private Button btnScanBarCodes;
 	private TextView labDistance;
 	private TextView labLevel;
 	private TextView labInputMode;
@@ -32,35 +36,39 @@ public class StartInputActivity extends Activity
 
 		Settings.getInstance().setCurrentContext(this);
 
-		currentState = new InputActivityState("input.start");
+		currentState = new ActivityStateWithTeamAndLevel("input.start");
 		currentState.initialize(this, savedInstanceState);
 
 		setContentView(R.layout.input_start);
 
 		btnSelectLevel = (Button) findViewById(R.id.inputStart_selectLevelBtn);
 		btnProceedInput = (Button) findViewById(R.id.inputStart_proceedInputBtn);
+		btnScanBarCodes = (Button) findViewById(R.id.inputStart_scanBarCodesBtn);
 		labDistance = (TextView) findViewById(R.id.inputStart_distanceLabel);
 		labLevel = (TextView) findViewById(R.id.inputStart_levelLabel);
 		labInputMode = (TextView) findViewById(R.id.inputStart_modeLabel);
 
 		btnSelectLevel.setOnClickListener(new SelectLevelClickListener());
 		btnProceedInput.setOnClickListener(new ProceedInputClickListener());
+		btnScanBarCodes.setOnClickListener(new ScanBarCodesClickListener());
 
 		refreshState();
 	}
 
 	private void refreshState()
 	{
-		setTitle(currentState.getTitleText(this));
+		setTitle(currentState.getLevelPointText(this));
 
 		if (currentState.getCurrentDistance() != null)
 		    labDistance.setText(currentState.getCurrentDistance().getDistanceName());
 		if (currentState.getCurrentLevel() != null)
 		    labLevel.setText(currentState.getCurrentLevel().getLevelName());
-		if (currentState.getCurrentInputMode() != null)
-		    labInputMode.setText(getResources().getString(currentState.getCurrentInputMode().getDisplayNameId()));
+		if (currentState.getCurrentLevelPointType() != null)
+		    labInputMode.setText(getResources().getString(currentState.getCurrentLevelPointType().getDisplayNameId()));
 
 		btnProceedInput.setEnabled(currentState.isLevelSelected());
+		btnScanBarCodes.setEnabled(currentState.isLevelSelected()
+		        && currentState.getCurrentLevelPointType() == LevelPointType.FINISH);
 	}
 
 	private class SelectLevelClickListener implements OnClickListener
@@ -69,8 +77,8 @@ public class StartInputActivity extends Activity
 		public void onClick(View v)
 		{
 			Intent intent = new Intent(getApplicationContext(), SelectLevelActivity.class);
-			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_LEVEL_ACTIVITY);
-			startActivityForResult(intent, REQUEST_CODE_INPUT_LEVEL_ACTIVITY);
+			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_LEVEL_ACTIVITY);
+			startActivityForResult(intent, REQUEST_CODE_LEVEL_ACTIVITY);
 		}
 	}
 
@@ -79,7 +87,7 @@ public class StartInputActivity extends Activity
 	{
 		switch (requestCode)
 		{
-			case REQUEST_CODE_INPUT_LEVEL_ACTIVITY:
+			case REQUEST_CODE_LEVEL_ACTIVITY:
 				onSelectLevelActivityResult(resultCode, data);
 				break;
 			default:
@@ -117,6 +125,17 @@ public class StartInputActivity extends Activity
 		{
 			Intent intent = new Intent(getApplicationContext(), HistoryActivity.class);
 			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_HISTORY_ACTIVITY);
+			startActivity(intent);
+		}
+	}
+
+	private class ScanBarCodesClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			Intent intent = new Intent(getApplicationContext(), BarCodeActivity.class);
+			currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_BARCODE_ACTIVITY);
 			startActivity(intent);
 		}
 	}

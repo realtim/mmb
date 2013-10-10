@@ -9,12 +9,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ru.mmb.terminal.transport.model.ImportBarCodeMetaTable;
 import ru.mmb.terminal.transport.model.MetaTable;
 import ru.mmb.terminal.transport.registry.MetaTablesRegistry;
+import ru.mmb.terminal.util.JSONUtils;
 import android.util.Log;
 
 public class Importer
 {
+	private static final String TABLE_BAR_CODE_SCANS = "BarCodeScans";
+
 	private static final int ROWS_IN_BATCH = 200;
 
 	private InputStreamReader reader;
@@ -32,7 +36,7 @@ public class Importer
 
 		importState.appendMessage("Import started.");
 
-		String jsonString = readFromFile();
+		String jsonString = JSONUtils.readFromInputStream(reader, 32768);
 		JSONObject tables = new JSONObject(jsonString);
 
 		importState.appendMessage("File loaded to JSON object.");
@@ -51,38 +55,23 @@ public class Importer
 				continue;
 			}
 			dataSaver.setCurrentTable(metaTable);
-			dataSaver.clearCurrentTable();
-			Log.d("data saver", "table cleared: " + tableName);
+			if (metaTable.needClearBeforeImport())
+			{
+				dataSaver.clearCurrentTable();
+				Log.d("data saver", "table cleared: " + tableName);
+			}
 			JSONArray tableRows = tables.getJSONArray(tableName);
 			resetImportState(metaTable, tableRows.length());
 			importTableRows(dataSaver, tableRows);
 		}
 	}
 
-	private String readFromFile() throws IOException
-	{
-		try
-		{
-			StringBuilder sb = new StringBuilder();
-			char[] buffer = new char[32768];
-
-			int charsRead = reader.read(buffer);
-			while (charsRead != -1)
-			{
-				sb.append(buffer, 0, charsRead);
-				charsRead = reader.read(buffer);
-			}
-			return sb.toString();
-		}
-		finally
-		{
-			reader.close();
-		}
-	}
-
 	private MetaTable getMetaTable(String tableName)
 	{
-		return MetaTablesRegistry.getInstance().getTableByName(tableName);
+		if (TABLE_BAR_CODE_SCANS.equals(tableName))
+			return new ImportBarCodeMetaTable();
+		else
+			return MetaTablesRegistry.getInstance().getTableByName(tableName);
 	}
 
 	private void resetImportState(MetaTable metaTable, int totalRows)

@@ -4,22 +4,41 @@ import static ru.mmb.terminal.activity.Constants.KEY_EXPORT_RESULT_MESSAGE;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.transport.exporter.ExportMode;
 import ru.mmb.terminal.transport.exporter.ExportState;
-import ru.mmb.terminal.transport.exporter.Exporter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 
-public class ExportThread extends Thread
+public abstract class ExportThread extends Thread
 {
 	private final TransportExportActivity activity;
 	private final ExportMode exportMode;
 	private final ExportState exportState;
+	private final Handler finishHandler;
 
-	public ExportThread(TransportExportActivity activity, ExportMode exportMode, ExportState exportState)
+	protected abstract String exportData() throws Exception;
+
+	public ExportThread(TransportExportActivity activity, Handler finishHandler, ExportMode exportMode, ExportState exportState)
 	{
 		super();
 		this.activity = activity;
+		this.finishHandler = finishHandler;
 		this.exportMode = exportMode;
 		this.exportState = exportState;
+	}
+
+	public ExportMode getExportMode()
+	{
+		return exportMode;
+	}
+
+	public ExportState getExportState()
+	{
+		return exportState;
+	}
+
+	public TransportExportActivity getActivity()
+	{
+		return activity;
 	}
 
 	@Override
@@ -30,7 +49,8 @@ public class ExportThread extends Thread
 		String fileName = "";
 		try
 		{
-			fileName = new Exporter(exportMode, exportState).exportData();
+			fileName = exportData();
+			// fileName = new DataExporter(exportMode, exportState).exportData();
 		}
 		catch (Exception e)
 		{
@@ -39,7 +59,7 @@ public class ExportThread extends Thread
 			e.printStackTrace();
 		}
 
-		activity.getExportFinishHandler().sendMessage(prepareResultMessage(wasError, errorMessage, fileName));
+		finishHandler.sendMessage(prepareResultMessage(wasError, errorMessage, fileName));
 	}
 
 	private Message prepareResultMessage(boolean wasError, String errorMessage, String fileName)

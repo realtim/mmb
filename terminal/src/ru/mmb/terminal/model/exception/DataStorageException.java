@@ -1,4 +1,4 @@
-package ru.mmb.terminal.model.history;
+package ru.mmb.terminal.model.exception;
 
 public class DataStorageException extends RuntimeException
 {

@@ -20,7 +20,7 @@
                 android:layout_marginTop="@dimen/global_padding" >
 
                 <TextView
-                    android:id="@+id/inputHistoryRow_numText"
+                    android:id="@+id/inputHistoryRow_teamNumText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Num"
