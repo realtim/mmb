@@ -40,14 +40,12 @@ public class DataSaver
 		if (currentTable == null) return;
 		if (tableRow == null) return;
 
-		insertRecord(tableRow);
-	}
-
-	/*
-	public void saveRecordToDB(JSONObject tableRow) throws JSONException
-	{
-		if (currentTable == null) return;
-		if (tableRow == null) return;
+		// If table is cleared before import, then no PK violation possible.
+		if (currentTable.needClearBeforeImport())
+		{
+			insertRecord(tableRow);
+			return;
+		}
 
 		ImportToDBAction action = getImportToDBAction(tableRow);
 		if (action == ImportToDBAction.UPDATE)
@@ -59,9 +57,7 @@ public class DataSaver
 			insertRecord(tableRow);
 		}
 	}
-	*/
 
-	@SuppressWarnings("unused")
 	private ImportToDBAction getImportToDBAction(JSONObject tableRow) throws JSONException
 	{
 		if (currentTable.getUpdateDateColumnName() == null)
@@ -128,7 +124,6 @@ public class DataSaver
 		}
 	}
 
-	@SuppressWarnings("unused")
 	private void updateRecord(JSONObject tableRow) throws JSONException
 	{
 		String sql = currentTable.generateUpdateSQL(tableRow);

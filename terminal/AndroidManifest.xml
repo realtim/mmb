@@ -4,13 +4,15 @@
     android:versionCode="10005"
     android:versionName="1.4" >
 
-    <uses-sdk android:minSdkVersion="10" />
+    <uses-sdk 
+        android:minSdkVersion="7"
+        android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:debuggable="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/mmb"
         android:label="@string/app_name" >
         <activity
             android:name=".activity.main.MainActivity"
@@ -22,9 +24,12 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.input.start.StartInputActivity" />
-        <activity android:name=".activity.input.level.SelectLevelActivity" />
+        <activity android:name=".activity.level.SelectLevelActivity" />
         <activity
             android:name=".activity.input.history.HistoryActivity"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".activity.input.barcode.BarCodeActivity"
             android:windowSoftInputMode="stateHidden" />
         <activity android:name=".activity.input.data.InputDataActivity" />
         <activity android:name=".activity.input.withdraw.WithdrawMemberActivity" />

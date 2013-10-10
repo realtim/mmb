@@ -54,8 +54,10 @@ public class DateRecord implements Serializable
 
 	public void setTimePart(Date date)
 	{
-		hour = date.getHours();
-		minute = date.getMinutes();
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTime(date);
+		hour = calendar.get(Calendar.HOUR_OF_DAY);
+		minute = calendar.get(Calendar.MINUTE);
 	}
 
 	public Date toDate()

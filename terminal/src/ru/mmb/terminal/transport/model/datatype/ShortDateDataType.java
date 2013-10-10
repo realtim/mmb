@@ -35,4 +35,14 @@ public class ShortDateDataType extends DataType<Date>
 		Date dateValue = (Date) value;
 		return "'" + DateFormat.format(dateValue) + "'";
 	}
+
+	@Override
+	public void appendToJSON(JSONObject targetJSON, String columnName, Object value)
+	        throws JSONException
+	{
+		if (value == null)
+			targetJSON.put(columnName, JSONObject.NULL);
+		else
+			targetJSON.put(columnName, encodeString(value));
+	}
 }

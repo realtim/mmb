@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import ru.mmb.terminal.R;
-import ru.mmb.terminal.activity.input.InputActivityState;
+import ru.mmb.terminal.activity.ActivityStateWithTeamAndLevel;
 import ru.mmb.terminal.activity.input.withdraw.list.TeamMemberRecord;
 import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.LevelPoint;
@@ -22,7 +22,7 @@ import ru.mmb.terminal.model.registry.UsersRegistry;
 import android.app.Activity;
 import android.os.Bundle;
 
-public class WithdrawMemberActivityState extends InputActivityState
+public class WithdrawMemberActivityState extends ActivityStateWithTeamAndLevel
 {
 	private final List<Participant> prevWithdrawnMembers = new ArrayList<Participant>();
 	private final List<Participant> currWithdrawnMembers = new ArrayList<Participant>();

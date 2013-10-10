@@ -1,18 +1,17 @@
 package ru.mmb.terminal.transport.exporter;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-
 import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.transport.model.MetaTable;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-public class DataExtractor
+public abstract class DataExtractor
 {
 	private MetaTable currentTable = null;
 	private final SQLiteDatabase db;
 	private final ExportMode exportMode;
+
+	protected abstract void exportRow(Cursor cursor) throws Exception;
 
 	public DataExtractor(ExportMode exportMode)
 	{
@@ -24,6 +23,11 @@ public class DataExtractor
 	public void setCurrentTable(MetaTable metaTable)
 	{
 		currentTable = metaTable;
+	}
+
+	public MetaTable getCurrentTable()
+	{
+		return currentTable;
 	}
 
 	public boolean hasRecordsToExport()
@@ -43,34 +47,16 @@ public class DataExtractor
 		}
 	}
 
-	public void exportNewRecordsToFile(BufferedWriter writer, ExportState exportState)
-	        throws IOException
+	public void exportNewRecords(ExportState exportState) throws Exception
 	{
 		String selectSql = currentTable.generateSelectNewRecordsSQL(exportMode);
 		Cursor cursor = db.rawQuery(selectSql, null);
 		cursor.moveToFirst();
 		while (!cursor.isAfterLast() && !exportState.isTerminated())
 		{
-			exportRow(writer, cursor);
+			exportRow(cursor);
 			cursor.moveToNext();
 		}
 		cursor.close();
-	}
-
-	private void exportRow(BufferedWriter writer, Cursor cursor) throws IOException
-	{
-		String rowToExport = null;
-		try
-		{
-			rowToExport = currentTable.generateExportRowString(cursor);
-		}
-		catch (Exception e)
-		{
-		}
-		if (rowToExport != null)
-		{
-			writer.write(rowToExport);
-			writer.newLine();
-		}
 	}
 }

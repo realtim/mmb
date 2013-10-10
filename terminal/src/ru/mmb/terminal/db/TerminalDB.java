@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import ru.mmb.terminal.model.BarCodeScan;
 import ru.mmb.terminal.model.Distance;
 import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
@@ -29,6 +30,7 @@ public class TerminalDB
 	private Teams teams;
 	private MetaTables metaTables;
 	private Users users;
+	private BarCodeScans barCodeScans;
 
 	private IDGenerator idGenerator;
 
@@ -69,6 +71,7 @@ public class TerminalDB
 			idGenerator = new IDGenerator(db);
 			metaTables = new MetaTables(db);
 			users = new Users(db);
+			barCodeScans = new BarCodeScans(db);
 		}
 		catch (SQLiteException e)
 		{
@@ -176,5 +179,16 @@ public class TerminalDB
 	{
 		inputData.appendLevelPointTeams(levelPoint, teams);
 		withdraw.appendLevelPointTeams(levelPoint, teams);
+	}
+
+	public List<BarCodeScan> loadBarCodeScans(LevelPoint levelPoint)
+	{
+		return barCodeScans.loadBarCodeScans(levelPoint);
+	}
+
+	public void saveBarCodeScan(LevelPoint levelPoint, Team team, Date checkDateTime,
+	        Date recordDateTime)
+	{
+		barCodeScans.saveBarCodeScan(levelPoint, team, checkDateTime, recordDateTime);
 	}
 }

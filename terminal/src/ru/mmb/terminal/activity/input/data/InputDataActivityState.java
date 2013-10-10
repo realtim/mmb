@@ -2,13 +2,14 @@ package ru.mmb.terminal.activity.input.data;
 
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_INPUT_CHECKED_DATE;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_INPUT_CHECKPOINTS_STATE;
+import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_INPUT_EXISTING_RECORD;
 
 import java.text.ParseException;
 import java.util.Date;
 
 import ru.mmb.terminal.R;
-import ru.mmb.terminal.activity.input.InputActivityState;
-import ru.mmb.terminal.activity.input.InputMode;
+import ru.mmb.terminal.activity.ActivityStateWithTeamAndLevel;
+import ru.mmb.terminal.activity.LevelPointType;
 import ru.mmb.terminal.db.InputDataRecord;
 import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.Checkpoint;
@@ -25,10 +26,11 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 
-public class InputDataActivityState extends InputActivityState
+public class InputDataActivityState extends ActivityStateWithTeamAndLevel
 {
 	private CheckedState checkedState = new CheckedState();
 	private DateRecord inputDate = new DateRecord();
+	private boolean editingExistingRecord = false;
 
 	public InputDataActivityState()
 	{
@@ -79,6 +81,7 @@ public class InputDataActivityState extends InputActivityState
 		super.save(savedInstanceState);
 		savedInstanceState.putSerializable(KEY_CURRENT_INPUT_CHECKPOINTS_STATE, checkedState);
 		savedInstanceState.putSerializable(KEY_CURRENT_INPUT_CHECKED_DATE, inputDate);
+		savedInstanceState.putSerializable(KEY_CURRENT_INPUT_EXISTING_RECORD, new Boolean(editingExistingRecord));
 	}
 
 	@Override
@@ -91,6 +94,9 @@ public class InputDataActivityState extends InputActivityState
 		if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_CHECKED_DATE))
 		    inputDate =
 		        (DateRecord) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_CHECKED_DATE);
+		if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_EXISTING_RECORD))
+		    editingExistingRecord =
+		        (Boolean) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_EXISTING_RECORD);
 	}
 
 	@Override
@@ -120,13 +126,13 @@ public class InputDataActivityState extends InputActivityState
 
 	public boolean isCommonStart()
 	{
-		if (getCurrentInputMode() == InputMode.FINISH) return false;
+		if (getCurrentLevelPointType() == LevelPointType.FINISH) return false;
 		return getCurrentLevel().getLevelStartType() == StartType.COMMON_START;
 	}
 
 	public boolean needInputCheckpoints()
 	{
-		return getCurrentInputMode() == InputMode.FINISH;
+		return getCurrentLevelPointType() == LevelPointType.FINISH;
 	}
 
 	public void setInputDate(Date date)
@@ -150,7 +156,7 @@ public class InputDataActivityState extends InputActivityState
 
 	private void appendDateText(Activity context, StringBuilder sb)
 	{
-		if (getCurrentInputMode() == InputMode.START)
+		if (getCurrentLevelPointType() == LevelPointType.START)
 			sb.append(context.getResources().getString(R.string.input_data_res_start_time));
 		else
 			sb.append(context.getResources().getString(R.string.input_data_res_finish_time));
@@ -160,7 +166,7 @@ public class InputDataActivityState extends InputActivityState
 
 	private void appendMissedCheckpointsText(Activity context, StringBuilder sb)
 	{
-		if (getCurrentInputMode() == InputMode.FINISH)
+		if (getCurrentLevelPointType() == LevelPointType.FINISH)
 		{
 			sb.append("\n");
 			sb.append(context.getResources().getString(R.string.input_data_res_missed));
@@ -189,6 +195,7 @@ public class InputDataActivityState extends InputActivityState
 			{
 				checkedState.loadTakenCheckpoints(previousRecord.getCheckedMap());
 				inputDate = new DateRecord(previousRecord.getCheckDateTime());
+				editingExistingRecord = true;
 			}
 		}
 	}
@@ -220,5 +227,10 @@ public class InputDataActivityState extends InputActivityState
 		teamLevelPoint.setLevelPoint(levelPoint);
 		teamLevelPoint.initTakenCheckpoints();
 		DataStorage.putTeamLevelPoint(teamLevelPoint);
+	}
+
+	public boolean isEditingExistingRecord()
+	{
+		return editingExistingRecord;
 	}
 }

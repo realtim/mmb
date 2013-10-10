@@ -3,14 +3,6 @@ BEGIN TRANSACTION;
 CREATE TABLE "android_metadata" ("locale" TEXT DEFAULT 'en_US');
 INSERT INTO android_metadata VALUES('en_US');
 
-CREATE TABLE Settings (setting_name TEXT NOT NULL, setting_value TEXT, PRIMARY KEY (setting_name));
-INSERT INTO Settings VALUES('user_id', '1');
-INSERT INTO Settings VALUES('device_id', '1');
-INSERT INTO Settings VALUES('current_raid_id', '21');
-INSERT INTO Settings VALUES('last_export_date', NULL);
-INSERT INTO Settings VALUES('transp_user_id', '1');
-INSERT INTO Settings VALUES('transp_user_password', 'abc');
-
 CREATE TABLE Raids (raid_registrationenddate TEXT, raid_id INTEGER NOT NULL, raid_name TEXT NOT NULL, PRIMARY KEY (raid_id));
 
 CREATE TABLE Distances (distance_id INTEGER NOT NULL, distance_name TEXT NOT NULL, 
@@ -55,6 +47,8 @@ teamlevelpoint_points TEXT, teamlevelpoint_comment TEXT, PRIMARY KEY (user_id, l
 CREATE INDEX IDXTLP_accelerator_1 ON TeamLevelPoints (levelpoint_id, team_id);
 CREATE INDEX IDXTLP_update_date ON TeamLevelPoints (teamlevelpoint_date);
 
+CREATE TABLE BarCodeScans (barcodescan_date TEXT NOT NULL, device_id INTEGER NOT NULL, levelpoint_id INTEGER NOT NULL, 
+team_id INTEGER NOT NULL, teamlevelpoint_datetime TEXT NOT NULL, PRIMARY KEY (levelpoint_id, team_id));
 
 
 CREATE TABLE MetaTables (table_id INTEGER NOT NULL, table_name TEXT NOT NULL, 
@@ -77,6 +71,7 @@ INSERT INTO MetaTables VALUES(6,'Users',NULL);
 INSERT INTO MetaTables VALUES(7,'TeamUsers',NULL);
 INSERT INTO MetaTables VALUES(8,'TeamLevelDismiss','teamleveldismiss_date');
 INSERT INTO MetaTables VALUES(9,'TeamLevelPoints','teamlevelpoint_date');
+INSERT INTO MetaTables VALUES(10,'BarCodeScans','barcodescan_date');
 
 /* raids */
 INSERT INTO MetaColumns VALUES(1, 1, 'raid_id', 0, 'INTEGER', 1);
@@ -132,6 +127,12 @@ INSERT INTO MetaColumns VALUES(105, 9, 'device_id', 4, 'INTEGER', 0);
 INSERT INTO MetaColumns VALUES(106, 9, 'teamlevelpoint_datetime', 5, 'LONG_DATE', 0);
 INSERT INTO MetaColumns VALUES(107, 9, 'teamlevelpoint_points', 6, 'TEXT', 0);
 INSERT INTO MetaColumns VALUES(108, 9, 'teamlevelpoint_comment', 7, 'TEXT', 0);
+/*barcodescans*/
+INSERT INTO MetaColumns VALUES(121, 10, 'levelpoint_id', 0, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(122, 10, 'team_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(123, 10, 'barcodescan_date', 2, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(124, 10, 'device_id', 3, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(125, 10, 'teamlevelpoint_datetime', 4, 'LONG_DATE', 0);
 
 COMMIT;
 

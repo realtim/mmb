@@ -2,3 +2,5 @@
 /bin
 /assets
 /gen
+/proguard
+/.settings

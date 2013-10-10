@@ -32,4 +32,14 @@ public class TextDataType extends DataType<String>
 		String prepared = stringValue.replace("'", "''");
 		return "'" + prepared + "'";
 	}
+
+	@Override
+	public void appendToJSON(JSONObject targetJSON, String columnName, Object value)
+	        throws JSONException
+	{
+		if (value == null)
+			targetJSON.put(columnName, JSONObject.NULL);
+		else
+			targetJSON.put(columnName, value);
+	}
 }

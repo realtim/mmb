@@ -1,12 +1,13 @@
-package ru.mmb.terminal.activity.input.level;
+package ru.mmb.terminal.activity.level;
 
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_DISTANCE;
-import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_INPUT_MODE;
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_LEVEL;
+import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_LEVEL_POINT_TYPE;
+import static ru.mmb.terminal.activity.Constants.KEY_LEVEL_SELECT_MODE;
 import ru.mmb.terminal.R;
+import ru.mmb.terminal.activity.ActivityStateWithTeamAndLevel;
+import ru.mmb.terminal.activity.LevelPointType;
 import ru.mmb.terminal.activity.StateChangeListener;
-import ru.mmb.terminal.activity.input.InputActivityState;
-import ru.mmb.terminal.activity.input.InputMode;
 import ru.mmb.terminal.model.Distance;
 import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.StartType;
@@ -28,13 +29,15 @@ import android.widget.Spinner;
 
 public class SelectLevelActivity extends Activity implements StateChangeListener
 {
-	private InputActivityState currentState;
+	private ActivityStateWithTeamAndLevel currentState;
 
 	private Spinner inputDistance;
 	private Spinner inputLevel;
 	private RadioButton radioStart;
 	private RadioButton radioFinish;
 	private Button btnOk;
+
+	private LevelSelectMode levelSelectMode = LevelSelectMode.NORMAL;
 
 	private DistancesRegistry distances;
 
@@ -53,8 +56,10 @@ public class SelectLevelActivity extends Activity implements StateChangeListener
 
 		distances = DistancesRegistry.getInstance();
 
-		currentState = new InputActivityState("input.level");
+		currentState = new ActivityStateWithTeamAndLevel("input.level");
 		currentState.initialize(this, savedInstanceState);
+
+		updateLevelSelectMode(savedInstanceState);
 
 		setContentView(R.layout.input_level);
 
@@ -76,6 +81,23 @@ public class SelectLevelActivity extends Activity implements StateChangeListener
 
 		currentState.addStateChangeListener(this);
 		onStateChange();
+	}
+
+	private void updateLevelSelectMode(Bundle savedInstanceState)
+	{
+		if (savedInstanceState == null)
+		{
+			Bundle extras = getIntent().getExtras();
+			if (extras == null) return;
+			if (extras.containsKey(KEY_LEVEL_SELECT_MODE))
+			    levelSelectMode = (LevelSelectMode) extras.getSerializable(KEY_LEVEL_SELECT_MODE);
+		}
+		else
+		{
+			if (savedInstanceState.containsKey(KEY_LEVEL_SELECT_MODE))
+			    levelSelectMode =
+			        (LevelSelectMode) savedInstanceState.getSerializable(KEY_LEVEL_SELECT_MODE);
+		}
 	}
 
 	private void setInputDistanceAdapter()
@@ -169,28 +191,30 @@ public class SelectLevelActivity extends Activity implements StateChangeListener
 		{
 			radioStart.setEnabled(false);
 			radioFinish.setEnabled(false);
-			currentState.setCurrentInputMode(null);
+			currentState.setCurrentLevelPointType(null);
 			return;
 		}
 
-		if (level.getLevelStartType() == StartType.USE_PREVIOUS_FINISH)
+		if (level.getLevelStartType() == StartType.USE_PREVIOUS_FINISH
+		        || levelSelectMode == LevelSelectMode.BARCODE)
 		{
 			radioStart.setEnabled(false);
 			radioFinish.setEnabled(true);
 			radioFinish.setChecked(true);
-			currentState.setCurrentInputMode(InputMode.FINISH);
+			currentState.setCurrentLevelPointType(LevelPointType.FINISH);
 		}
 		else
 		{
 			radioStart.setEnabled(true);
 			radioFinish.setEnabled(true);
-			if (currentState.getCurrentInputMode() == null)
+			if (currentState.getCurrentLevelPointType() == null)
 			{
 				radioStart.setChecked(true);
-				currentState.setCurrentInputMode(InputMode.START);
+				currentState.setCurrentLevelPointType(LevelPointType.START);
 			}
-			if (currentState.getCurrentInputMode() == InputMode.START) radioStart.setChecked(true);
-			if (currentState.getCurrentInputMode() == InputMode.FINISH)
+			if (currentState.getCurrentLevelPointType() == LevelPointType.START)
+			    radioStart.setChecked(true);
+			if (currentState.getCurrentLevelPointType() == LevelPointType.FINISH)
 			    radioFinish.setChecked(true);
 		}
 	}
@@ -228,7 +252,7 @@ public class SelectLevelActivity extends Activity implements StateChangeListener
 				prevSelectedLevelPos = currSelectedLevelPos;
 				Distance distance = currentState.getCurrentDistance();
 				currentState.setCurrentLevel(distance.getLevelByIndex(pos));
-				currentState.setCurrentInputMode(null);
+				currentState.setCurrentLevelPointType(null);
 				refreshInputModeState();
 			}
 		}
@@ -249,9 +273,9 @@ public class SelectLevelActivity extends Activity implements StateChangeListener
 			if (isChecked)
 			{
 				if (buttonView == radioStart)
-					currentState.setCurrentInputMode(InputMode.START);
+					currentState.setCurrentLevelPointType(LevelPointType.START);
 				else
-					currentState.setCurrentInputMode(InputMode.FINISH);
+					currentState.setCurrentLevelPointType(LevelPointType.FINISH);
 			}
 		}
 	}
@@ -266,8 +290,8 @@ public class SelectLevelActivity extends Activity implements StateChangeListener
 			    resultData.putExtra(KEY_CURRENT_DISTANCE, currentState.getCurrentDistance());
 			if (currentState.getCurrentLevel() != null)
 			    resultData.putExtra(KEY_CURRENT_LEVEL, currentState.getCurrentLevel());
-			if (currentState.getCurrentInputMode() != null)
-			    resultData.putExtra(KEY_CURRENT_INPUT_MODE, currentState.getCurrentInputMode());
+			if (currentState.getCurrentLevelPointType() != null)
+			    resultData.putExtra(KEY_CURRENT_LEVEL_POINT_TYPE, currentState.getCurrentLevelPointType());
 			setResult(RESULT_OK, resultData);
 			finish();
 		}
@@ -278,12 +302,13 @@ public class SelectLevelActivity extends Activity implements StateChangeListener
 	{
 		super.onSaveInstanceState(outState);
 		currentState.save(outState);
+		outState.putSerializable(KEY_LEVEL_SELECT_MODE, levelSelectMode);
 	}
 
 	@Override
 	public void onStateChange()
 	{
-		setTitle(currentState.getTitleText(this));
+		setTitle(currentState.getLevelPointText(this));
 
 		btnOk.setEnabled(currentState.isLevelSelected());
 	}

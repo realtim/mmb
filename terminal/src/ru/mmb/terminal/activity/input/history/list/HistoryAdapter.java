@@ -28,13 +28,13 @@ public class HistoryAdapter extends ArrayAdapter<HistoryListRecord>
 		HistoryListRecord item = getItem(position);
 		if (item != null)
 		{
-			TextView tvNum = (TextView) view.findViewById(R.id.inputHistoryRow_numText);
+			TextView tvTeamNum = (TextView) view.findViewById(R.id.inputHistoryRow_teamNumText);
 			TextView tvTeamName = (TextView) view.findViewById(R.id.inputHistoryRow_teamNameText);
 			TextView tvLevelPoint =
 			    (TextView) view.findViewById(R.id.inputHistoryRow_levelPointText);
 			TextView tvMembers = (TextView) view.findViewById(R.id.inputHistoryRow_membersText);
 			TextView tvDismissed = (TextView) view.findViewById(R.id.inputHistoryRow_dismissedText);
-			if (tvNum != null) tvNum.setText(Integer.toString(item.getTeamNumber()));
+			if (tvTeamNum != null) tvTeamNum.setText(Integer.toString(item.getTeamNumber()));
 			if (tvTeamName != null) tvTeamName.setText(item.getTeam().getTeamName());
 			if (tvLevelPoint != null) tvLevelPoint.setText(item.getTeamLevelPointText());
 			if (tvMembers != null) tvMembers.setText(item.getMembersText());

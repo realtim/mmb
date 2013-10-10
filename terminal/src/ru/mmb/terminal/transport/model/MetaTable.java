@@ -1,7 +1,9 @@
 package ru.mmb.terminal.transport.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -20,6 +22,9 @@ public class MetaTable
 
 	private final Map<String, MetaColumn> columnsByName = new HashMap<String, MetaColumn>();
 	private final Map<Integer, MetaColumn> columnsByOrder = new TreeMap<Integer, MetaColumn>();
+
+	private String exportWhereAppendix = "";
+	private String lastExportDate = "";
 
 	public MetaTable(int tableId, String tableName, String updateDateColumnName)
 	{
@@ -59,6 +64,16 @@ public class MetaTable
 		return columnsByOrder.get(columnOrder);
 	}
 
+	public List<String> getColumnNames()
+	{
+		List<String> result = new ArrayList<String>();
+		for (Integer columnOrder : columnsByOrder.keySet())
+		{
+			result.add(columnsByOrder.get(columnOrder).getColumnName());
+		}
+		return result;
+	}
+
 	public Date getUpdateDate(JSONObject tableRow) throws JSONException
 	{
 		MetaColumn updateDateColumn = getUpdateDateColumn();
@@ -71,7 +86,7 @@ public class MetaTable
 		        + generatePKCondition(tableRow);
 	}
 
-	private String generatePKCondition(JSONObject tableRow) throws JSONException
+	protected String generatePKCondition(JSONObject tableRow) throws JSONException
 	{
 		StringBuilder sb = new StringBuilder();
 		int keyColumnIndex = 0;
@@ -152,6 +167,16 @@ public class MetaTable
 		return sb.toString();
 	}
 
+	public void setExportWhereAppendix(String exportWhereAppendix)
+	{
+		this.exportWhereAppendix = exportWhereAppendix;
+	}
+
+	public void setLastExportDate(String lastExportDate)
+	{
+		this.lastExportDate = lastExportDate;
+	}
+
 	public String generateCheckNewRecordsSQL(ExportMode exportMode)
 	{
 		String selectSql = "select count(*) from " + getTableName();
@@ -187,11 +212,13 @@ public class MetaTable
 		}
 		if (needSelectByDate(exportMode))
 		{
-			if (result.length() > 0)
-			{
-				result += " and ";
-			}
+			if (result.length() > 0) result += " and ";
 			result += getUpdateDateCondition();
+		}
+		if (exportWhereAppendix.length() > 0)
+		{
+			if (result.length() > 0) result += " and ";
+			result += exportWhereAppendix;
 		}
 		return result;
 	}
@@ -200,14 +227,13 @@ public class MetaTable
 	{
 		if (getUpdateDateColumn() == null) return false;
 		if (exportMode == ExportMode.FULL) return false;
-		if ("".equals(Settings.getInstance().getLastExportDate())) return false;
+		if ("".equals(lastExportDate)) return false;
 		return true;
 	}
 
 	private String getUpdateDateCondition()
 	{
-		return getUpdateDateColumnName() + " >= " + "'"
-		        + Settings.getInstance().getLastExportDate() + "'";
+		return getUpdateDateColumnName() + " >= " + "'" + lastExportDate + "'";
 	}
 
 	public String generateExportRowString(Cursor cursor)
@@ -217,7 +243,7 @@ public class MetaTable
 		for (MetaColumn metaColumn : columnsByOrder.values())
 		{
 			if (columnIndex > 0) result.append(";");
-			result.append(metaColumn.decorateForExport(cursor));
+			result.append(metaColumn.decorateForExportToString(cursor));
 			columnIndex++;
 		}
 		return result.toString();
@@ -226,5 +252,20 @@ public class MetaTable
 	public String generateDeleteAllRowsSQL()
 	{
 		return "delete from " + getTableName();
+	}
+
+	public JSONObject generateExportRowJSON(Cursor cursor) throws JSONException
+	{
+		JSONObject result = new JSONObject();
+		for (MetaColumn metaColumn : columnsByOrder.values())
+		{
+			result.put(metaColumn.getColumnName(), metaColumn.decorateForExportToJSON(cursor));
+		}
+		return result;
+	}
+
+	public boolean needClearBeforeImport()
+	{
+		return !("TeamLevelPoints".equals(tableName) || "TeamLevelDismiss".equals(tableName) || "BarCodeScans".equals(tableName));
 	}
 }

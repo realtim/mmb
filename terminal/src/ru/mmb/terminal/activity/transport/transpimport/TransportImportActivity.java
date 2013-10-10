@@ -1,6 +1,6 @@
 package ru.mmb.terminal.activity.transport.transpimport;
 
-import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_FILE_DIALOG_ACTIVITY;
+import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_FILE_DIALOG;
 
 import java.util.List;
 import java.util.Timer;
@@ -92,7 +92,7 @@ public class TransportImportActivity extends Activity
 	{
 		switch (requestCode)
 		{
-			case REQUEST_CODE_FILE_DIALOG_ACTIVITY:
+			case REQUEST_CODE_FILE_DIALOG:
 				if (resultCode == Activity.RESULT_OK)
 				{
 					fileName = data.getStringExtra(FileDialog.RESULT_PATH);
@@ -209,7 +209,7 @@ public class TransportImportActivity extends Activity
 			intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
 			intent.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
 			intent.putExtra(FileDialog.FORMAT_FILTER, new String[] { ".json" });
-			startActivityForResult(intent, REQUEST_CODE_FILE_DIALOG_ACTIVITY);
+			startActivityForResult(intent, REQUEST_CODE_FILE_DIALOG);
 		}
 	}
 

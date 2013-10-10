@@ -67,7 +67,7 @@ public class HistoryActivity extends Activity
 
 		lvHistory.setOnItemLongClickListener(new LvHistoryItemLongClickListener());
 
-		setTitle(currentState.getTitleText(this));
+		setTitle(currentState.getLevelPointText(this));
 
 		refreshHistory();
 	}

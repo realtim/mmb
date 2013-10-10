@@ -68,6 +68,14 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:text="@string/input_start_proceed_input" />
+        
+        <Button
+            android:id="@+id/inputStart_scanBarCodesBtn"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginTop="@dimen/global_padding"
+            android:text="@string/input_start_scan_bar_codes" />
     </LinearLayout>
 
 </LinearLayout>

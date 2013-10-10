@@ -18,6 +18,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="right" >
+            
+            <LinearLayout
+                android:id="@+id/inputData_existsIndicatorPanel"
+                android:layout_width="30dip"
+                android:layout_height="30dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="@dimen/global_padding"
+                android:background="@color/LightSkyBlue" />
 
             <LinearLayout
                 android:layout_width="match_parent"
