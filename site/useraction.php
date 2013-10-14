@@ -30,7 +30,7 @@ if (!isset($MyPHPScript)) return;
         } 
          // конец первичной проверки входных данных
 
-        $Sql = "select user_id, user_name from  Users where trim(user_email) = trim('".$_POST['Login']."') and user_password = '".md5(trim($_POST['Password']))."'";
+        $Sql = "select user_id, user_name from  Users where trim(user_email) = trim('".mysql_real_escape_string($_POST['Login'])."') and user_password = '".md5(trim(mysql_real_escape_str($_POST['Password'])))."'";
 		
 	//echo $Sql;
 		
