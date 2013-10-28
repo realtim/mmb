@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.transport.exporter.ExportMode;
 import android.database.Cursor;
+import android.util.Log;
 
 public class MetaTable
 {
@@ -220,6 +221,7 @@ public class MetaTable
 			if (result.length() > 0) result += " and ";
 			result += exportWhereAppendix;
 		}
+		Log.d("meta table", "export where clause: " + result);
 		return result;
 	}
 
@@ -233,7 +235,9 @@ public class MetaTable
 
 	private String getUpdateDateCondition()
 	{
-		return getUpdateDateColumnName() + " >= " + "'" + lastExportDate + "'";
+		String result = getUpdateDateColumnName() + " >= " + "'" + lastExportDate + "'";
+		Log.d("meta table", "update date condition: " + result);
+		return result;
 	}
 
 	public String generateExportRowString(Cursor cursor)

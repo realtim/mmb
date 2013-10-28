@@ -47,6 +47,10 @@ public class ImportThread extends Thread
 			DistancesRegistry.getInstance().refresh();
 			TeamsRegistry.getInstance().refresh();
 			UsersRegistry.getInstance().refresh();
+
+			// update data storages after import
+			ru.mmb.terminal.model.history.DataStorage.reset();
+			ru.mmb.terminal.model.barcode.DataStorage.reset();
 		}
 
 		System.out.println("ImportThread finished.");

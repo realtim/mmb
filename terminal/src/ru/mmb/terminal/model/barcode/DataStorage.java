@@ -32,6 +32,11 @@ public class DataStorage
 		return instance;
 	}
 
+	public static void reset()
+	{
+		instance = null;
+	}
+
 	private final LevelPoint levelPoint;
 	// For selected level point each team would have only one bar code scan.
 	private final Map<Integer, BarCodeScan> levelPointScans = new HashMap<Integer, BarCodeScan>();

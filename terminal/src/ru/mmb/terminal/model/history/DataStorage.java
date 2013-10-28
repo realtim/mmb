@@ -37,6 +37,11 @@ public class DataStorage
 		return instance;
 	}
 
+	public static void reset()
+	{
+		instance = null;
+	}
+
 	private final LevelPoint levelPoint;
 
 	private final Set<Integer> levelPointTeams = new HashSet<Integer>();

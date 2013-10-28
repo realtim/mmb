@@ -30,6 +30,8 @@ public class MainActivity extends Activity
 	private Button btnExportData;
 	private Button btnSettings;
 
+	//	private Button btnGenerate;
+
 	/** Called when the activity is first created. */
 
 	@Override
@@ -54,11 +56,13 @@ public class MainActivity extends Activity
 		btnImportData = (Button) findViewById(R.id.main_importDataBtn);
 		btnExportData = (Button) findViewById(R.id.main_exportDataBtn);
 		btnSettings = (Button) findViewById(R.id.main_settingsBtn);
+		//		btnGenerate = (Button) findViewById(R.id.main_generateBtn);
 
 		btnInputData.setOnClickListener(new InputDataClickListener());
 		btnImportData.setOnClickListener(new ImportDataClickListener());
 		btnExportData.setOnClickListener(new ExportDataClickListener());
 		btnSettings.setOnClickListener(new SettingsClickListener());
+		//		btnGenerate.setOnClickListener(new GenerateClickListener());
 
 		refreshState();
 	}
@@ -149,4 +153,13 @@ public class MainActivity extends Activity
 			startActivityForResult(intent, REQUEST_CODE_SETTINGS_ACTIVITY);
 		}
 	}
+
+	/*private class GenerateClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			FillBarCodeData.execute();
+		}
+	}*/
 }

@@ -85,6 +85,7 @@ public class InputDataActivity extends Activity implements StateChangeListener
 	@Override
 	public void onStateChange()
 	{
+		Log.d("input data", "state change fired");
 		labResult.setText(currentState.getResultText(this));
 	}
 

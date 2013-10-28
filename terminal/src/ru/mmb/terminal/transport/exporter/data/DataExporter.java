@@ -55,10 +55,10 @@ public class DataExporter
 
 	private String generateFileName(ExportMode exportMode, Date exportDate)
 	{
-		String result = Settings.getInstance().getExportDir() + "/terminal_export_";
+		String result = Settings.getInstance().getExportDir() + "/exp_";
 		result +=
 		    Settings.getInstance().getUserId() + "_" + Settings.getInstance().getDeviceId() + "_"
-		            + exportMode.name() + "_" + DateFormat.format(exportDate) + ".txt";
+		            + exportMode.getShortName() + "_" + DateFormat.format(exportDate) + ".txt";
 		return result;
 	}
 

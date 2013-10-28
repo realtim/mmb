@@ -150,7 +150,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndLevel
 	{
 		StringBuilder sb = new StringBuilder();
 		appendDateText(context, sb);
-		appendMissedCheckpointsText(context, sb);
+		appendTakenCheckpointsText(context, sb);
 		return sb.toString();
 	}
 
@@ -164,6 +164,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndLevel
 		sb.append(inputDate.toPrettyString());
 	}
 
+	@SuppressWarnings("unused")
 	private void appendMissedCheckpointsText(Activity context, StringBuilder sb)
 	{
 		if (getCurrentLevelPointType() == LevelPointType.FINISH)
@@ -172,6 +173,17 @@ public class InputDataActivityState extends ActivityStateWithTeamAndLevel
 			sb.append(context.getResources().getString(R.string.input_data_res_missed));
 			sb.append(" ");
 			sb.append(checkedState.getMissedCheckpointsText());
+		}
+	}
+
+	private void appendTakenCheckpointsText(Activity context, StringBuilder sb)
+	{
+		if (getCurrentLevelPointType() == LevelPointType.FINISH)
+		{
+			sb.append("\n");
+			sb.append(context.getResources().getString(R.string.input_data_res_taken));
+			sb.append(" ");
+			sb.append(checkedState.getTakenCheckpointsText());
 		}
 	}
 

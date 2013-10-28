@@ -39,7 +39,7 @@ public class BarCodeExporter
 
 	public String exportData() throws Exception
 	{
-		String fileName = generateFileName(exportMode, exportDate);
+		String fileName = generateFileName();
 
 		JSONArray records = new JSONArray();
 		exportTable(TABLE_BAR_CODE_SCANS, records);
@@ -50,12 +50,13 @@ public class BarCodeExporter
 		return fileName;
 	}
 
-	private String generateFileName(ExportMode exportMode, Date exportDate)
+	private String generateFileName()
 	{
-		String result = Settings.getInstance().getExportDir() + "/barcode_export_";
+		String result = Settings.getInstance().getExportDir() + "/barcode_exp_";
 		result +=
 		    Settings.getInstance().getUserId() + "_" + Settings.getInstance().getDeviceId() + "_"
-		            + exportMode.name() + "_" + DateFormat.format(exportDate) + ".json";
+		            + levelPointId + "_" + exportMode.getShortName() + "_"
+		            + DateFormat.format(exportDate) + ".json";
 		return result;
 	}
 
