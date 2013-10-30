@@ -301,6 +301,8 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	$OldMmb = $Row['oldmmb'];
 	mysql_free_result($Result);
 
+         // 30.10.2013 Для трёхдневного ММБ  изменил INTERVAL 12 на INTERVAL 24  
+
 	// RaidStage указывает на то, на какой временной стадии находится ммб
 	// 0 - raid_registrationenddate IS NULL, марш-бросок не показывать
 	// 1 - raid_registrationenddate еще не наступил
@@ -317,7 +319,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		END as registration,
 		(select count(*) from Levels l
 			inner join Distances d on l.distance_id = d.distance_id
-			where (d.raid_id = r.raid_id) and (NOW() >= DATE_SUB(l.level_begtime, INTERVAL 12 HOUR)))
+			where (d.raid_id = r.raid_id) and (NOW() >= DATE_SUB(l.level_begtime, INTERVAL 24 HOUR)))
 		as cantdelete,
 		(select count(*) from Levels l
 			inner join Distances d on l.distance_id = d.distance_id
