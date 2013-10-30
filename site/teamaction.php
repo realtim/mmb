@@ -701,7 +701,7 @@ elseif ($action == 'JsonExport')
 
 	// Teams: team_id, distance_id, team_name, team_num // *
 	$Sql = "select team_id, t.distance_id, team_name, team_num, team_usegps, team_greenpeace,
-		level_id, team_progress, team_result 
+		level_id, team_progress, team_result, team_registerdt 
 		from Teams t 
 			inner join Distances d on t.distance_id = d.distance_id 
 		where t.team_hide = 0  and d.raid_id = ".$RaidId;
