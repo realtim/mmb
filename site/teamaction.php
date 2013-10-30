@@ -698,18 +698,6 @@ elseif ($action == 'JsonExport')
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
 	mysql_free_result($Result);
 
-	// Levels: level_id, distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
-	$Sql = "select level_id, l.distance_id, level_name, level_order, level_starttype, 
-	               level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime,
-		       level_minendtime, level_endtime, level_discountpoints, level_discount
-	        from Levels l 
-		     inner join Distances d on l.distance_id = d.distance_id 
-	        where d.raid_id = ".$RaidId;
-
-	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
-	mysql_free_result($Result);
-
 
 	// Teams: team_id, distance_id, team_name, team_num // *
 	$Sql = "select team_id, t.distance_id, team_name, team_num, team_usegps, team_greenpeace,
@@ -748,6 +736,26 @@ elseif ($action == 'JsonExport')
 	mysql_free_result($Result);
 
 
+	// Определяем, можно ли показывать пользователю информацию об этапах дистанции
+	$LevelDataVisible = CanViewResults($Administrator, $Moderator, $RaidStage);
+
+        if ($LevelDataVisible)
+        {
+	// Levels: level_id, distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
+	$Sql = "select level_id, l.distance_id, level_name, level_order, level_starttype, 
+	               level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime,
+		       level_minendtime, level_endtime, level_discountpoints, level_discount
+	        from Levels l 
+		     inner join Distances d on l.distance_id = d.distance_id 
+	        where d.raid_id = ".$RaidId;
+
+	$Result = MySqlQuery($Sql);
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
+	mysql_free_result($Result);
+
+
+
+
 	// TeamLevels: 
 	$Sql = "select teamlevel_id, tl.team_id, tl.level_id, 
 			teamlevel_begtime, teamlevel_endtime,
@@ -763,6 +771,8 @@ elseif ($action == 'JsonExport')
 
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
 	mysql_free_result($Result);
+
+        }
 
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
 	header("Content-Type: application/octet-stream");
