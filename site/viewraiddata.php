@@ -32,7 +32,9 @@ if ($viewmode == 'Add')
 		$RaidZnLink = $_POST['RaidZnLink'];
 		$RaidDistancesCount = (int)$_POST['RaidDistancesCount'];
                 $RaidNoShowResult = (isset($_POST['RaidNoShowResult']) && ($_POST['RaidNoShowResult'] == 'on')) ? 1 : 0;
-		
+                $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
+		$RaidFilePrefix = $_POST['RaidFilePrefix'];
+                
 
 	}
 	else
@@ -52,7 +54,10 @@ if ($viewmode == 'Add')
 		$RaidZnLink = '';
                 $ClearRaidCloseDate = 0;
 		$RaidDistancesCount = 1;
-                $RaidNoShowResult = 0; 
+                $RaidNoShowResult = 1; 
+                $RaidReadOnlyHoursBeforeStart = 8;
+                $RaidFilePrefix = '';
+
 	}
 
 	// Определяем следующее действие
@@ -76,7 +81,9 @@ else
 	               (CASE WHEN r.raid_registrationenddate is null THEN 1 ELSE 0 END) as raid_clearregistrationenddate,
 		       r.raid_logolink, r.raid_ruleslink,  r.raid_startpoint, 
 		       r.raid_startlink, r.raid_finishpoint, r.raid_closedate,
-		       r.raid_znlink, COALESCE(r.raid_noshowresult, 0) as raid_noshowresult, 
+		       r.raid_znlink, COALESCE(r.raid_noshowresult, 0) as raid_noshowresult,
+		       COALESCE(r.raid_readonlyhoursbeforestart, 8) as raid_readonlyhoursbeforestart,  
+		       r.raid_fileprefix,
       	               (CASE WHEN r.raid_closedate is null THEN 1 ELSE 0 END) as raid_clearclosedate,
 		       (select count(*) from Distances where raid_id = ".$RaidId.") as raid_distancescount
 		from Raids r
@@ -104,6 +111,8 @@ else
                 //В отличие от остальлных полей это - вычисляемое и после ошибки не возвращается  
 		$RaidDistancesCount = (int)$Row['raid_distancescount'];
 		$RaidNoShowResult = $_POST['RaidNoShowResult'];
+                $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
+		$RaidFilePrefix = $_POST['RaidFilePrefix'];
 
 	}
 	else
@@ -123,6 +132,8 @@ else
 		$RaidZnLink = $Row['raid_znlink'];
 		$RaidDistancesCount = (int)$Row['raid_distancescount'];
 	        $RaidNoShowResult = (int)$Row['raid_noshowresult'];
+                $RaidReadOnlyHoursBeforeStart = (int)$Row['raid_readonlyhoursbeforestart'];
+		$RaidFilePrefix = $Row['raid_fileprefix'];
 
 	}
 
@@ -226,12 +237,18 @@ print('<tr><td class="input">Ссылка на эмблему: <input type="text
 
 print('<tr><td class = "input">Новый файл эмблемы для загрузки: <input name="logofile" type="file" /></td></tr>'."\r\n");
 
-
 // ============ Период ММБ
 print('<tr><td class="input">Период: <input type="text" name="RaidPeriod" size="30" value="'.$RaidPeriod.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidPeriod.'\') {this.value=\'\';}"')
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidPeriod.'\';}"')
 	.' title="Период ММБ"></td></tr>'."\r\n");
+
+// ============ Префикс файлов прим загрузке 
+print('<tr><td class="input">Префикс файлов: <input type="text" name="RaidFilePrefix" size="30" value="'.$RaidFilePrefix.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidFilePrefix.'\') {this.value=\'\';}"')
+	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidFilePrefix.'\';}"')
+	.' title="Префикс файлов"></td></tr>'."\r\n");
+
 
 // ============ Число Дистанций
 print('<tr><td class="input">Число дистанций <input type="text" name="RaidDistancesCount" size="2" maxlength="1" value="'.$RaidDistancesCount.'" tabindex="'.(++$TabIndex)
@@ -263,6 +280,11 @@ print('<input type="checkbox" name="ClearRaidRegistrationEndDate" '.(($ClearRaid
 print('<tr><td class="input"><i>Пользователи видят ММБ в списке, если указана дата закрытия регистрации.<br/>Команду можно зарегистрировать до 23:59 этой даты.</i></td></tr>'."\r\n");
 print('<tr><td class="input"><br/></td></tr>'."\r\n");
 
+// ============ Запрет на редактирование команд участникаи за ... часов до старта 
+print('<tr><td class="input">Запрет правок участниками в часах до старта <input type="text" name="RaidReadOnlyHoursBeforeStart" size="2" maxlength="2" value="'.$RaidReadOnlyHoursBeforeStart.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidReadOnlyHoursBeforeStart.'\') {this.value=\'\';}"')
+	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidReadOnlyHoursBeforeStart.'\';}"')
+	.' title="часов до старта"></td></tr>'."\r\n");
  
 
 

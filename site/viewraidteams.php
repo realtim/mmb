@@ -189,8 +189,13 @@ if (!isset($MyPHPScript)) return;
 
 <?
 
-               $TabIndex = 0;
+                $TabIndex = 0;
 		$DisabledText = '';
+
+                //Определяем локальные переменные-флаги показа результатов и этапов 
+                $CanViewResults = CanViewResults($Administrator, $Moderator, $RaidStage);
+                $CanViewLevels = CanViewLevels($Administrator, $Moderator, $RaidStage);
+
 
                 // Разбираемся с сортировкой
                 if (isset($_REQUEST['OrderType'])) $OrderType = $_REQUEST['OrderType']; else $OrderType = "";
@@ -225,49 +230,15 @@ if (!isset($MyPHPScript)) return;
    
 
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
-                if  (empty($OrderType))
+                if  (empty($OrderType) && $CanViewResults)
                 {
-                  if ($RaidStage > 3)
-		  {
-		   // Прповеряем, что внесено хотя бы 30 результатов (может нужна другая проверка)
-		  /*
-		    $sql = " select count(*) as raid_teamlevelcount
-			    from  TeamLevels tl 
-				  inner join Levels l 
-				  on tl.level_id = l.level_id 
-                                  inner join Teams t
-                                  on t.team_id = tl.team_id 
-				  inner join  Distances d 
-				  on t.distance_id = d.distance_id
-			    where tl.teamlevel_hide = 0 
-                                 and d.raid_id = ".$RaidId." 
-                                 and tl.teamlevel_progress > 0
-                                 and t.team_hide = 0
-			    ";
-
-		     $Result = MySqlQuery($sql);
-		     $Row = mysql_fetch_assoc($Result);
-		     mysql_free_result($Result);
-                     $RaidTeamLevelCount = (int)$Row['raid_teamlevelcount'];
-		  */
-
-		     // Смотрим число загруженных результатов
-		     //if  ($RaidTeamLevelCount > 30 && $RaidNoShowResult == 0)
-
-		     // заменил проверку по результатам проверкой на флаг
-		     if  ($RaidNoShowResult == 0) {            
-		        $OrderType = "Place";
-		     } else {
-	           	$OrderType = "Num";
-		     }
-		      
-		  } else {
-		   $OrderType = "Num";
-		  }
-		  // Конец разбора сортировки по умолчанию
+  	           $OrderType = "Place";
+		} else {
+	           $OrderType = "Num";
+		}
+		// Конец разбора сортировки по умолчанию
 		   
-                }
-
+                
             	print('<div align = "left" style = "font-size: 80%;">'."\r\n");
 		print('Сортировать по '."\r\n");
 		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;" 
@@ -276,7 +247,7 @@ if (!isset($MyPHPScript)) return;
 
                 //Сортировку по месту показыаем только после окончания ММБ, если не стоит флаг "Не показывать результаты"
 		// Администраторам и модераторам флаг не мешает
-		if ($RaidStage > 3 and ($RaidNoShowResult == 0 or $Moderator or $Administrator))
+		if ($CanViewResults)
 		{
 	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
 		}
@@ -306,8 +277,6 @@ if (!isset($MyPHPScript)) return;
 		print('</select>'."\r\n");  
 		mysql_free_result($Result);		
 
-		// Определяем, можно ли показывать пользователю информацию об этапах дистанции
-		$LevelDataVisible = CanViewResults($Administrator, $Moderator, $RaidStage);
 		if (!isset($_REQUEST['LevelId'])) $_REQUEST['LevelId'] = "";
 	
 	        // Режим отображения результатов
@@ -318,8 +287,8 @@ if (!isset($MyPHPScript)) return;
                        $ResultViewMode = "";
                 }
 	
-	
-		if ($LevelDataVisible)
+		// Определяем, можно ли показывать пользователю информацию об этапах дистанции
+		if ($CanViewLevels)
 		{
 		    $sql = "select level_id, d.distance_name, CONCAT(trim(level_name), ' (', trim(d.distance_name), ')') as level_name
                             from  Levels l
@@ -426,7 +395,7 @@ if (!isset($MyPHPScript)) return;
 		    
 
                 // Показываем этапы
-		if ($LevelDataVisible)
+		if ($CanViewLevels)
 		{
 
                     // Нужно доработать проыерку старта,т.к. нельзя прямо проверять время старта - на этапах с общим стартом его нет
@@ -846,18 +815,28 @@ if (!isset($MyPHPScript)) return;
                         }
 
  			print('<tr class = "'.$TrClass.'"><td style = "'.$tdgreenstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
-			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_outofrange'] == 1 ? ', Вне зачета!' : '').')'.
-                                  $DismissNames[$Row['distance_id']][$Row['team_progress']].'</td><td style = "'.$tdstyle.'">'."\r\n");
+			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_outofrange'] == 1 ? ', Вне зачета!' : '').')'."\r\n");
 
+                        // прогресс команды показываем только когда открыты результаты
+                        if ($CanViewResults) 
+			{
+                            print($DismissNames[$Row['distance_id']][$Row['team_progress']]."\r\n");
+                        }
+			
+			print('</td><td style = "'.$tdstyle.'">'."\r\n");
+			
 			if ($OrderType <> 'Errors')
 			{
 			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,
-                                       tu.level_id, u.user_id, l.level_name 
+                                       tu.level_id, u.user_id, l.level_name,
+				       tu.levelpoint_id, lp.levelpoint_name 
 			        from  TeamUsers tu
 				     inner join  Users u
 				     on tu.user_id = u.user_id
                                      left outer join Levels l
  				     on tu.level_id = l.level_id
+                                     left outer join LevelPoints lp
+ 				     on tu.levelpoint_id = lp.levelpoint_id
  				where tu.teamuser_hide = 0 and team_id = ".$Row['team_id']; 
 			//echo 'sql '.$sql;
 			$UserResult = MySqlQuery($sql);
@@ -865,10 +844,19 @@ if (!isset($MyPHPScript)) return;
 			while ($UserRow = mysql_fetch_assoc($UserResult))
 			{
 			  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear']."\r\n");
-                          if ($UserRow['level_name'] <> '')
+ 
+                          // Неявку участников показываем, если загружены результаты
+			  if ($CanViewResults) 
                           {
-			      print('<i>Сход: '.$UserRow['level_name'].'</i>'."\r\n");
-                          } 
+				if ($UserRow['levelpoint_name'] <> '')
+				{
+				    print('<i>Не явился(-ась) в: '.$UserRow['levelpoint_name'].'</i>'."\r\n");
+				} 
+				elseif ($UserRow['level_name'] <> '')
+				{
+  				    print('<i>Сход: '.$UserRow['level_name'].'</i>'."\r\n");
+				} 
+                          }
 			  print('</div>'."\r\n");
 			}  
 		        mysql_free_result($UserResult);

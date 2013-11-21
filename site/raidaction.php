@@ -59,7 +59,8 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	$pRaidZnLink = $_POST['RaidZnLink'];
         $pRaidDistancesCount = (int)$_POST['RaidDistancesCount'];
         $pRaidNoShowResult = (isset($_POST['RaidNoShowResult']) && ($_POST['RaidNoShowResult'] == 'on')) ? 1 : 0;
-	
+	$pRaidFilePrefix = $_POST['RaidFilePrefix'];
+        $pRaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 
         // Обрабатываем зхагрузку файла эмблемы
         if (!empty($_FILES['logofile']['name']) and ($_FILES['logofile']['size'] > 0))
@@ -168,7 +169,8 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		$sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
 		                           raid_logolink, raid_ruleslink, raid_startpoint, 
 					   raid_startlink, raid_finishpoint, raid_closedate,
-					   raid_znlink
+					   raid_znlink, raid_noshowresult, raid_fileprefix,
+					   raid_readonlyhoursbeforestart
 					   )
 			values (trim('".$pRaidName."'), trim('".$pRaidPeriod."')  ";
 		
@@ -192,6 +194,9 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		}
 	
 		$sql.= ", trim('".$pRaidZnLink."') ";
+		$sql.= ", ".$pRaidNoShowResult;
+		$sql.= ", trim('".$pRaidFilePrefix."') " ;
+		$sql.= ", ".$pRaidReadOnlyHoursBeforeStart;
 		$sql.= ")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 
@@ -307,6 +312,8 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	
 		$sql.= ", raid_znlink = trim('".$pRaidZnLink."') ";
 		$sql.= ", raid_noshowresult = ".$pRaidNoShowResult." ";
+		$sql.= ", raid_readonlyhoursbeforestart = ".$pRaidReadOnlyHoursBeforeStart." ";
+		$sql.= ", raid_fileprefix = trim('".$pRaidFilePrefix."') ";
 		$sql.=  " where raid_id = ".$RaidId; 
 	    
 	 //       echo $sql;
