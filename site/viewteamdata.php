@@ -182,6 +182,7 @@ else $AllowViewResults = 0;
 		document.TeamDataForm.submit();
 	}
 
+         // 25.11.2013 Для совместимости оставил 
 	// Указать этап схода пользователя
 	function TeamUserOut(teamuserid, levelid)
 	{
@@ -191,6 +192,17 @@ else $AllowViewResults = 0;
 		document.TeamDataForm.submit();
 	}
 	
+
+         // 25.11.2013 Новый вариант с точкой
+	// Указать точку неявки участника
+	function TeamUserNotInPoint(teamuserid, levelpointid)
+	{
+               // alert(levelpointid);
+		document.TeamDataForm.HideTeamUserId.value = teamuserid;
+		document.TeamDataForm.UserNotInLevelPointId.value = levelpointid;
+		document.TeamDataForm.action.value = 'TeamUserNotInPoint';
+		document.TeamDataForm.submit();
+	}
 	
 	
 	// Функция объединения команд
@@ -212,6 +224,7 @@ print('<input type="hidden" name="TeamId" value="'.$TeamId.'">'."\n");
 print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
 print('<input type="hidden" name="HideTeamUserId" value="0">'."\n");
 print('<input type="hidden" name="UserOutLevelId" value="0">'."\n");
+print('<input type="hidden" name="UserNotInLevelPointId" value="0">'."\n");
 print('<input type="hidden" name="UserId" value="0">'."\n\n");
 
 print('<table style="font-size: 80%;" border="0" cellpadding="2" cellspacing="0">'."\n\n");
@@ -336,7 +349,15 @@ print('</td></tr>'."\n\n");
 // ============ Участники
 print('<tr><td class="input">'."\n");
 
-$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, tu.level_id, u.user_id
+//25.11.2013 Опредляем, есть ли этап схода у какого-нибудь участника. Если есть - отображаем старый вариант - сход на этапе 
+$sqloutlevel = "select MAX(COALESCE(tu.level_id, 0)) as outlevelflag
+	from TeamUsers tu where team_id = ".$TeamId;
+$ResultMaxOutLevel = MySqlQuery($sqloutlevel);
+$RowMaxOutLevel = mysql_fetch_assoc($ResultMaxOutLevel);
+mysql_free_result($ResultMaxOutLevel);
+
+
+$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, tu.level_id, u.user_id, tu.levelpoint_id
 	from TeamUsers tu
 		inner join Users u
 		on tu.user_id = u.user_id
@@ -355,6 +376,9 @@ while ($Row = mysql_fetch_assoc($Result))
 	// (так как тут есть список этапов)
 	if ($AllowViewResults)
 	{
+           // 25.11.2013  для ММБ  Если указан этап схода хотя бы у одного из  участников 	 
+	   if  ($RowMaxOutLevel['outlevelflag'] > 0)
+	   {
 		// Список этапов, чтобы выбрать, на каком сошёл участник
 		print('Сход: <select name="UserOut'.$Row['teamuser_id'].'" style="width: 100px; margin-right: 15px;" title="Этап, на котором сошёл участник" onChange="javascript:if (confirm(\'Вы уверены, что хотите отметить сход участника: '.$Row['user_name'].'? \')) { TeamUserOut('.$Row['teamuser_id'].', this.value); }" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
 		$sqllevels = "select level_id, level_name from Levels where distance_id = ".$DistanceId." order by level_order";
@@ -368,6 +392,24 @@ while ($Row = mysql_fetch_assoc($Result))
 		}
 		mysql_free_result($ResultLevels);
 		print('</select>'."\n");
+		
+	   } else {
+	     // новый вариант с точкой
+
+		print('Неявка в: <select name="UserNotInPoint'.$Row['teamuser_id'].'" style="width: 100px; margin-right: 15px;" title="Точка, в которую не явился участник" onChange="javascript:if (confirm(\'Вы уверены, что хотите отметить неявку участника: '.$Row['user_name'].'? \')) { TeamUserNotInPoint('.$Row['teamuser_id'].', this.value); }" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
+		$sqllevelpoints = "select levelpoint_id, levelpoint_name from LevelPoints lp inner join Levels l on lp.level_id= l.level_id  where l.distance_id = ".$DistanceId." order by levelpoint_order";
+		$ResultLevelPoints = MySqlQuery($sqllevelpoints);
+		$userlevelpointselected = ($Row['levelpoint_id'] == 0 ? ' selected' : '');
+		print('<option value="0"'.$userlevelpointselected.'>-</option>'."\n");
+		while ($RowLevelPoints = mysql_fetch_assoc($ResultLevelPoints))
+		{
+			$userlevelpointselected = ($RowLevelPoints['levelpoint_id'] == $Row['levelpoint_id'] ? 'selected' : '');
+			print('<option value="'.$RowLevelPoints['levelpoint_id'].'"'.$userlevelpointselected.'>'.$RowLevelPoints['levelpoint_name']."</option>\n");
+		}
+		mysql_free_result($ResultLevelPoints);
+		print('</select>'."\n");
+	   
+	   }	
 	}
 
 	// ФИО и год рождения участника

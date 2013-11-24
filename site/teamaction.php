@@ -64,6 +64,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pNewTeamUserEmail = $_POST['NewTeamUserEmail'];
 	if (!isset($_POST['TeamNotOnLevelId'])) $_POST['TeamNotOnLevelId'] = "";
 	$pTeamNotOnLevelId = (int)$_POST['TeamNotOnLevelId'];
+	if (!isset($_POST['TeamNotInLevelPointId'])) $_POST['TeamNotInLevelPointId'] = "";
+	$pTeamNotOnLevelId = (int)$_POST['TeamNotInLevelPointId'];
 
 	if (($action <> "AddTeam") && ($TeamId <= 0))
 	{
@@ -503,6 +505,7 @@ elseif ($action == 'HideTeamUser')
 }
 
 // ============ Смена этапа схода участника команды ===========================
+// 25/11/2013  Оставил для совместсимости старый вариант с этапами
 elseif ($action == 'TeamUserOut')
 {
 	$HideTeamUserId = $_POST['HideTeamUserId'];
@@ -581,6 +584,87 @@ elseif ($action == 'TeamUserOut')
 	}
 	mysql_free_result($Result);
 }
+// ============ Смена точки неявки участника команды ===========================
+elseif ($action == 'TeamUserNotInPoint')
+{
+  
+	$HideTeamUserId = $_POST['HideTeamUserId'];
+	if ($HideTeamUserId <= 0)
+	{
+		$statustext = 'Участник не найден';
+		$alert = 1;
+		return;
+	}
+	// Здесь может быть 0 точка - значит, что участник везде явился
+	$LevelPointId = $_POST['UserNotInLevelPointId'];
+	if ($LevelPointId < 0)
+	{
+		$statustext = 'Точка не найдена';
+		$alert = 1;
+		return;
+	}
+	if ($TeamId <= 0)
+	{
+		$statustext = 'Команда не найдена';
+		$alert = 1;
+		return;
+	}
+	if ($RaidId <= 0)
+	{
+		$statustext = 'Не найден ММБ.';
+		$alert = 1;
+		return;
+	}
+	if ($SessionId <= 0)
+	{
+		$statustext = 'Не найдена сессия.';
+		$alert = 1;
+		return;
+	}
+
+	// Проверка возможности редактировать результаты
+	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
+	{
+		$statustext = 'Изменение результатов команды запрещено';
+		$alert = 1;
+		return;
+	}
+
+	$sql = "update TeamUsers set levelpoint_id = ".($LevelPointId > 0 ? $LevelPointId : 'null' )." where teamuser_id = ".$HideTeamUserId;
+	$rs = MySqlQuery($sql);
+	$view = "ViewTeamData";
+
+	// Письмо об изменениях	всем, кроме автора изменений
+	// !!! Сход относится к результатам на дистанции и об их изменений письма слать не надо
+	$sql = "select user_name from Users where user_id = ".$UserId;
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	mysql_free_result($Result);
+	$ChangeDataUserName = $Row['user_name'];
+	$sql = "select u.user_email, u.user_name, t.team_num, d.distance_name, r.raid_name
+		from Users u
+			inner join TeamUsers tu on tu.user_id = u.user_id
+			inner join Teams t on tu.team_id = t.team_id
+			inner join Distances d on t.distance_id = d.distance_id
+			inner join Raids r on d.raid_id = r.raid_id
+		where tu.teamuser_hide = 0 and tu.team_id = ".$TeamId." and u.user_id <> ".$UserId."
+		order by tu.teamuser_id asc";
+	$Result = MySqlQuery($sql);
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+		// Формируем сообщение
+		$Msg = "Уважаемый участник ".$Row['user_name']."!\n\n";
+		$Msg = $Msg."Действие: изменение данных команды.\n";
+		$Msg = $Msg."Команда N ".$Row['team_num'].", Дистанция: ".$Row['distance_name'].", ММБ: ".trim($Row['raid_name']).".\n";
+		$Msg = $Msg."Автор изменений: ".$ChangeDataUserName.".\n";
+		$Msg = $Msg."Вы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\n";
+		$Msg = $Msg."P.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
+		// Отправляем письмо
+		SendMail($Row['user_email'], $Msg, $Row['user_name']);
+	}
+	mysql_free_result($Result);
+}
+
 
 // ============ Обратимое удаление команды ====================================
 elseif ($action == 'HideTeam')
