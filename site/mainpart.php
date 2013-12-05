@@ -26,6 +26,9 @@ if (!isset($MyPHPScript)) return;
 	} elseif ($view == "ViewRaidData") {
 		// Результаты ММБ (по всем командам)
 		include("viewraiddata.php");
+	} elseif ($view == "ViewRaidFiles") {
+		// Файлы 
+		include("viewraidfile.php");
 	} elseif ($view == "ViewAdminModeratorsPage") {
 		// Результаты ММБ (по всем командам)
 		include("viewadminmoderatorspage.php");
