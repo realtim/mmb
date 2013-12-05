@@ -381,6 +381,203 @@ elseif ($action == 'DistanceChangeData')
 
 
 }
+// ============ Загруженные файлы  =============
+elseif ($action == 'ViewRaidFilesPage')
+{
+	if ($RaidId <= 0)
+	{
+		$statustext = 'Id ММБ не указан';
+		$alert = 1;
+		return;
+	}
+	$view = "ViewRaidFiles";
+	$viewmode = "Add";
+}
+// ============ Загрузка файда  =============
+elseif ($action == 'AddRaidFile')
+{
+	if ($action == "AddRaidFile") $viewmode = "Add"; else $viewmode = "";
+	$view = "ViewRaidFiles";
+	// Общая проверка возможности редактирования
+	if (!$Administrator)
+	{
+		$statustext = "Нет прав на загрузку файла";
+		$alert = 0;
+		return;
+	}
+
+	$pFileTypeId = $_POST['FileTypeId'];
+	//$pLevelPointId = $_POST['LevelPointId'];
+	$pRaidFileComment = $_POST['RaidFileComment'];
+
+
+
+        // Обрабатываем зхагрузку файла 
+        if (!empty($_FILES['raidfile']['name']) and ($_FILES['raidfile']['size'] > 0))
+	{
+             $pMimeType = trim($_FILES['raidfile']['type']);   
+     /*      if  (substr(trim($_FILES['raidfile']['type']), 0, 6) != 'image/') 
+	   {
+			$statustext = 'Недопустимый тип файла.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+	   }
+       */     
+
+
+	      $sql = "select  raid_fileprefix
+	              from Raids
+	              where raid_id = ".$RaidId;        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$Prefix = trim($Row['raid_fileprefix']);
+
+ 	   $pRaidFileName = trim(basename($_FILES['raidfile']['name']));
+
+           if (strlen($Prefix) > 0 && substr($pRaidFileName, 0, strlen($Prefix)) <> $Prefix)
+ 	   {
+                $pRaidFileName = $Prefix.$pRaidFileName;
+	   }
+
+	   $UploadFile = $MyStoreFileLink . $pRaidFileName;
+
+	   if (move_uploaded_file($_FILES['raidfile']['tmp_name'], $UploadFile))
+	   {
+		// Успешно загрузили файл
+		$pRaidFileLink = $MyStoreHttpLink . $pRaidFileName;
+	   } else {
+			$statustext = 'Ошибка загрузки файла.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+           // Конец проверки на успешность загрузки
+
+
+           if ($action == "AddRaidFile")
+	   // Новsый файл
+	   {
+		$sql = "insert into RaidFiles (raid_id, raidfile_mimetype, filetype_id, 
+			raidfile_uploaddt, raidfile_name, raidfile_comment, raidfile_hide)
+			values (".$RaidId.", '".$pMimeType."', ".$pFileTypeId.", NOW(), '".$pRaidFileName."','".$pRaidFileComment."', 0)";
+		// При insert должен вернуться послений id - это реализовано в MySqlQuery
+		$RaidFileId = MySqlQuery($sql);
+		
+		if ($RaidFileId <= 0)
+		{
+			$statustext = 'Ошибка записи нового файла.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+		}
+		// Открываем опять с возможностью загрузить новый файл
+		$viewmode = "Add";
+	       }
+	
+	}
+        // Конец проверки на указание в форме файла для загрузки 
+	
+ }
+ elseif ($action == "RaidFileInfo")  
+ {
+    // Действие вызывается ссылкой под имененм пользователя
+   
+	$view = "ViewRaidFiles";
+	$viewmode = "Edit";
+ }
+ // ============ Правка файла  =============
+elseif ($action == 'RaidFileChange')
+{
+	if (!$Administrator)
+	{
+		$statustext = "Нет прав на правку файла";
+		$alert = 0;
+		return;
+	}
+
+
+        $pRaidFileId = $_POST['RaidFileId'];
+
+	if ($pRaidFileId <= 0)
+	{
+		$statustext = 'Не определён ключ файла.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+	
+	$pFileTypeId = $_POST['FileTypeId'];
+	//$pLevelPointId = $_POST['LevelPointId'];
+	$pRaidFileComment = $_POST['RaidFileComment'];
+
+		
+        $sql = "update RaidFiles  set filetype_id = ".$pFileTypeId.", 
+	                              raidfile_comment = '".$pRaidFileComment."'
+	        where raidfile_id = ".$pRaidFileId;        
+			
+	 MySqlQuery($sql);
+       
+         // Не знаю, какой правильно режим поставить
+  	 $view = "ViewRaidFiles";
+	 $viewmode = "Add";
+		
+
+}
+// ============ Удаление  файла  =============
+elseif ($action == 'HideFile')
+{
+	if (!$Administrator)
+	{
+		$statustext = "Нет прав на правку файла";
+		$alert = 0;
+		return;
+	}
+
+        $pRaidFileId = $_POST['RaidFileId'];
+
+
+	if ($pRaidFileId <= 0)
+	{
+		$statustext = 'Не определён ключ файла.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+	
+
+		
+        $sql = "select  raidfile_name
+	        from RaidFiles
+	        where raidfile_id = ".$pRaidFileId;        
+	 
+       	$Result = MySqlQuery($sql);  
+	$Row = mysql_fetch_assoc($Result);
+        mysql_free_result($Result);
+
+        $UnlinkFile = $MyStoreFileLink.trim($Row['raidfile_name']);
+
+        if (file_exists($UnlinkFile))
+	{
+	  unlink($UnlinkFile);
+	} 
+       
+        $sql = "update RaidFiles set raidfile_hide = 1
+	        where raidfile_id = ".$pRaidFileId;        
+			
+	 MySqlQuery($sql);
+
+
+
+         // Не знаю, какой правильно режим поставить
+  	 $view = "ViewRaidFiles";
+	 $viewmode = "Add";
+		
+
+}
 // ============ Никаких действий не требуется =================================
 else
 {

@@ -231,6 +231,11 @@ if (!isset($MyPHPScript)) return;
 		document.FindTeamForm.submit();
 	}
 
+	function ViewRaidFiles()
+	{ 
+		document.FindTeamForm.action.value = "ViewRaidFilesPage";
+		document.FindTeamForm.submit();
+	}
 
 	function ViewAdminDataPage()
 	{ 
@@ -294,11 +299,7 @@ if (!isset($MyPHPScript)) return;
         { 
 	    print('<tr><td><a href = "javascript:NewRaid();" title = "Создание марш-броска">Новый марш-бросок</a></td></tr>'."\r\n"); 
 	    print('<tr><td><a href = "javascript:ViewRaidInfo();" title = "Параметры марш-броска">Марш-бросок</a></td></tr>'."\r\n"); 
-        }
-
-        // Модераторы
-	if ($Administrator)
-        { 
+	    print('<tr><td><a href = "javascript:ViewRaidFiles();" title = "Загрузка файлов">Файлы</a></td></tr>'."\r\n"); 
 	    print('<tr><td><a href = "javascript:ViewAdminModeratorsPage();" title = "Страница администрирования модераторов">Модераторы</a></td></tr>'."\r\n"); 
         }
 
