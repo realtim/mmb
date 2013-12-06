@@ -299,9 +299,11 @@ if (!isset($MyPHPScript)) return;
         { 
 	    print('<tr><td><a href = "javascript:NewRaid();" title = "Создание марш-броска">Новый марш-бросок</a></td></tr>'."\r\n"); 
 	    print('<tr><td><a href = "javascript:ViewRaidInfo();" title = "Параметры марш-броска">Марш-бросок</a></td></tr>'."\r\n"); 
-	    print('<tr><td><a href = "javascript:ViewRaidFiles();" title = "Загрузка файлов">Файлы</a></td></tr>'."\r\n"); 
 	    print('<tr><td><a href = "javascript:ViewAdminModeratorsPage();" title = "Страница администрирования модераторов">Модераторы</a></td></tr>'."\r\n"); 
         }
+
+        // Файлы
+        print('<tr><td><a href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Файлы</a></td></tr>'."\r\n"); 
 
         // Импорт-Экспорт, пересчет
 	if ($Administrator || $Moderator)

@@ -7,12 +7,37 @@ if (!isset($MyPHPScript)) return;
 if (!isset($viewmode)) $viewmode = "";
 if (!isset($viewsubmode)) $viewsubmode = "";
 
+
+// Определяем права по редактированию 
+if ($Administrator)
+{
+	$AllowEdit = 1;
+	$DisabledText = '';
+	$OnSubmitFunction = 'return ValidateRaidFileForm();';
+}
+else
+{
+	$AllowEdit = 0;
+	$DisabledText = ' disabled';
+	$OnSubmitFunction = 'return false;';
+}
+// Определяем права по просмотру
+if ($Administrator)
+{
+	$AllowViewResults = 1;
+}
+else 
+{
+       $AllowViewResults = 0;
+}
+
+
+
+
 // ================ Добавляем новый файл ===================================
 if ($viewmode == 'Add')
 {
 
-	// Если запрещено создавать ММБ - молча выходим, сообщение уже выведено в teamaction.php
-	if (!$Administrator) return;
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterError")
@@ -88,35 +113,11 @@ else
 	}
 
 	$NextActionName = 'RaidFileChange';
-	$AllowEdit = 0;
 	$OnClickText = '';
 	$SaveButtonText = 'Сохранить изменения файла';
 
 }
 // ================ Конец инициализации переменных для загружаемого/загруженного файла =================
-
-// Определяем права по редактированию 
-if ($Administrator)
-{
-	$AllowEdit = 1;
-	$DisabledText = '';
-	$OnSubmitFunction = 'return ValidateRaidFileForm();';
-}
-else
-{
-	$AllowEdit = 0;
-	$DisabledText = ' disabled';
-	$OnSubmitFunction = 'return false;';
-}
-// Определяем права по просмотру
-if ($Administrator)
-{
-	$AllowViewResults = 1;
-}
-else 
-{
-       $AllowViewResults = 0;
-}
 
 
 // Выводим javascrpit
@@ -157,34 +158,37 @@ else
 </script>
 
 <?php
-// Выводим начало формы с файлом
-print('<form name="RaidFileForm" action="'.$MyPHPScript.'" method="post" enctype="multipart/form-data" onSubmit="'.$OnSubmitFunction.'">'."\n");
-print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
-print('<input type="hidden" name="action" value="">'."\n");
-print('<input type="hidden" name="view" value="ViewRaidFiles">'."\n");
-print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
-//print('<input type="hidden" name="UserId" value="0">'."\n\n");
-//print('<input type="hidden" name="LevelPointId" value="'.$LevelPointId.'">'."\n");
-print('<input type="hidden" name="RaidFileId" value="'.$pRaidFileId.'">'."\n\n");
-print('<table style="font-size: 80%;" border="0" cellpadding="2" cellspacing="0">'."\n\n");
-
-$TabIndex = 0;
-$DisabledText = '';
-
-print('<table style="font-size: 80%;" border="0" cellpadding="2" cellspacing="0">'."\n\n");
 
 
-if ($viewmode == "Add") 
-{	
+if ($AllowEdit == 1)
+{
+
+	// Выводим начало формы с файлом
+	print('<form name="RaidFileForm" action="'.$MyPHPScript.'" method="post" enctype="multipart/form-data" onSubmit="'.$OnSubmitFunction.'">'."\n");
+	print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
+	print('<input type="hidden" name="action" value="">'."\n");
+	print('<input type="hidden" name="view" value="ViewRaidFiles">'."\n");
+	print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
+	//print('<input type="hidden" name="UserId" value="0">'."\n\n");
+	//print('<input type="hidden" name="LevelPointId" value="'.$LevelPointId.'">'."\n");
+	print('<input type="hidden" name="RaidFileId" value="'.$pRaidFileId.'">'."\n\n");
+	print('<table style="font-size: 80%;" border="0" cellpadding="2" cellspacing="0">'."\n\n");
+
+	$TabIndex = 0;
+	$DisabledText = '';
+
+
+	if ($viewmode == "Add") 
+	{	
 	// ============ загрузка файла
-	print('<tr><td class = "input">Новый файл для загрузки: <input name="raidfile" type="file" /></td></tr>'."\r\n");
-} else {
-	print('<tr><td class = "input"><b>'.$RaidFileName.'</b></td></tr>'."\r\n");
+		print('<tr><td class = "input">Новый файл для загрузки: <input name="raidfile" type="file" /></td></tr>'."\r\n");
+	} else {
+		print('<tr><td class = "input"><b>'.$RaidFileName.'</b></td></tr>'."\r\n");
 
-}
+	}	
 
 
-print('<tr><td class="input">'."\n");
+	print('<tr><td class="input">'."\n");
 
 	print('Тип файла</span>'."\n");
 	// Показываем выпадающий список файлов
@@ -225,12 +229,10 @@ print('<tr><td class="input">'."\n");
 */
 
 
-print('</td></tr>'."\n\n");
+	print('</td></tr>'."\n\n");
 
 
-// ================ Submit для формы ==========================================
-if ($AllowEdit == 1)
-{
+	// ================ Submit для формы ==========================================
 	print('<tr><td class="input" style="padding-top: 20px;">'."\n");
 	print('<input type="button" onClick="javascript: if (ValidateRaidFileForm()) submit();" name="RegisterButton" value="'.$SaveButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
 //	print('<input type="button" onClick="javascript: Cancel();" name="CancelButton" value="Отмена" tabindex="'.(++$TabIndex).'">'."\n");
@@ -243,11 +245,13 @@ if ($AllowEdit == 1)
 	}
 
 	print('</td></tr>'."\n\n");
+	print('</table>'."\n");
+	print('</form>'."\r\n");
+
 
 }
 
 
-print('</table>'."\n");
 
 
 print('</br>'."\n");
@@ -260,7 +264,8 @@ print('</br>'."\n");
 		     inner join FileTypes ft
 		     on rf.filetype_id = ft.filetype_id
 		where rf.raid_id = ".$RaidId."
-		      and rf.raidfile_hide = 0 ";
+		      and rf.raidfile_hide = 0 
+		order by raidfile_id DESC    ";
 	$Result = MySqlQuery($sql);
 	
 	
@@ -272,29 +277,36 @@ print('</br>'."\n");
 		print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
 
 		print('<tr class = "gray">
-		         <td width = "300" style = "'.$thstyle.'">Файл</td>
+		         <td width = "500" style = "'.$thstyle.'">Файл</td>
 		         <td width = "100" style = "'.$thstyle.'">Тип</td>
-		         <td width = "300" style = "'.$thstyle.'">Описание</td>
-		         <td width = "100" style = "'.$thstyle.'">&nbsp;</td>
-			 </tr>'."\r\n");
+		         <td width = "300" style = "'.$thstyle.'">Описание</td>'."\r\n");
+
+		if ($AllowEdit == 1)
+		{
+		       print('<td width = "100" style = "'.$thstyle.'">&nbsp;</td>'."\r\n");
+
+		}
+		
+		print('</tr>'."\r\n");
 		
 	        // Сканируем команды
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
                      print('<tr>'."\r\n");
-		     print('<td align = "left" style = "'.$tdstyle.'"><a target = "_blank" href = "'. trim($MyStoreHttpLink).trim($Row['raidfile_name']).'">'.$Row['raidfile_name'].'</a></td><td align = "left" style = "'.$tdstyle.'">'.$Row['filetype_name'].'</td><td align = "left" style = "'.$tdstyle.'">'.($Row['raidfile_comment'] == '' ? '&nbsp;' : $Row['raidfile_comment']).'</td><td align = "left" style = "'.$tdstyle.'">');
-		     print('&nbsp; <input type="button" onClick="javascript: EditFile('.$Row['raidfile_id'].');" name="EditFileButton" value="Править" tabindex="'.(++$TabIndex).'">'."\n");
-                     print('</td>'."\r\n");
+		     print('<td align = "left" style = "'.$tdstyle.'"><a target = "_blank" href = "'. trim($MyStoreHttpLink).trim($Row['raidfile_name']).'">'.$Row['raidfile_name'].'</a></td><td align = "left" style = "'.$tdstyle.'">'.$Row['filetype_name'].'</td><td align = "left" style = "'.$tdstyle.'">'.($Row['raidfile_comment'] == '' ? '&nbsp;' : $Row['raidfile_comment']).'</td>');
 
-
-                     //print('<td align = "center" style = "'.$tdstyle.'">'.$Row['unionstatus']."\r\n");
+  		     if ($AllowEdit == 1)
+		     {
+			     print('<td align = "left" style = "'.$tdstyle.'">');
+			     print('&nbsp; <input type="button" onClick="javascript: EditFile('.$Row['raidfile_id'].');" name="EditFileButton" value="Править" tabindex="'.(++$TabIndex).'">'."\n");
+			     print('</td>'."\r\n");
+		     }		      
                                 
 		}	
 
 		mysql_free_result($Result);
 		print('</table>'."\r\n");
 		
-	print('</form>'."\r\n");
 
 ?>
