@@ -121,8 +121,29 @@
  $Result = MySqlQuery($Sql);
  while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
  { 
+
+        $nextRaidId =  $Row['raid_id'];
+	$RaidLogoLink = $Row['raid_logolink'];
+        // 08.12.2013 Ищем ссылку на логотип  
+        $sqlFile = "select raidfile_name
+	     from RaidFiles
+	     where raid_id = ".$nextRaidId."        
+                   and filetype_id = 2 
+	     order by raidfile_id desc";
+	 
+       	$ResultFile = MySqlQuery($sqlFile);  
+	$RowFile = mysql_fetch_assoc($ResultFile);
+        mysql_free_result($ResultFile);
+        $LogoFile =  trim($RowFile['raidfile_name']);
+
+        if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
+	{
+          $RaidLogoLink = $MyStoreHttpLink.$LogoFile;
+        }
+        //  Конец получения ссылки на информацию о старте
+
    print('LogoImgArr['.$Row['raid_id'].'] = new Image();'."\r\n");
-   print('LogoImgArr['.$Row['raid_id'].'].src = "'.$Row['raid_logolink'].'";'."\r\n");
+   print('LogoImgArr['.$Row['raid_id'].'].src = "'.$RaidLogoLink.'";'."\r\n");
  }
  mysql_free_result($Result);
 

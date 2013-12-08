@@ -41,6 +41,45 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	$RaidStartPoint = $rowRaids['raid_startpoint'];
 	$RaidFinishPoint = $rowRaids['raid_finishpoint'];
  
+ 
+        // 08.12.2013 Ищем ссылку на положение в загруженных файлах 
+        $sqlFile = "select raidfile_name
+	     from RaidFiles
+	     where raid_id = ".$nextRaidId."        
+                   and filetype_id = 1 
+	     order by raidfile_id desc";
+	 
+       	$ResultFile = MySqlQuery($sqlFile);  
+	$RowFile = mysql_fetch_assoc($ResultFile);
+        mysql_free_result($ResultFile);
+        $RulesFile =  trim($RowFile['raidfile_name']);
+
+        if ($RulesFile <> '' && file_exists($MyStoreFileLink.$RulesFile))
+	{
+          $RaidRulesLink = $MyStoreHttpLink.$RulesFile;
+        }
+        //  Конец получения ссылки на положение
+ 
+        // 08.12.2013 Ищем ссылку на информацию о старте  
+        $sqlFile = "select raidfile_name
+	     from RaidFiles
+	     where raid_id = ".$nextRaidId."        
+                   and filetype_id = 10 
+	     order by raidfile_id desc";
+	 
+       	$ResultFile = MySqlQuery($sqlFile);  
+	$RowFile = mysql_fetch_assoc($ResultFile);
+        mysql_free_result($ResultFile);
+        $StartInfoFile =  trim($RowFile['raidfile_name']);
+
+        if ($StartInfoFile <> '' && file_exists($MyStoreFileLink.$StartInfoFile))
+	{
+          $RaidStartLink = $MyStoreHttpLink.$StartInfoFile;
+        }
+        //  Конец получения ссылки на информацию о старте
+ 
+ 
+ 
         if ($RaidsCount%2 == 0) {
 	
 	  $TrClass = 'yellow';

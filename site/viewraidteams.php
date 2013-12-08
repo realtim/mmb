@@ -329,26 +329,39 @@ if (!isset($MyPHPScript)) return;
 		}
 
 		print('</div>'."\r\n");
-            	print('<div align = "left" style = "margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
-		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidRulesLink.'" target = "_blank">Положение</a> '."\r\n");
-		print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidStartLink.'" target = "_blank">Информация о старте</a> '."\r\n");
-                if (trim($RaidKpWptLink) <> '')
+            	
+		print('<div align = "left" style = "margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
+
+		// 08.12.2013  Добавил ссылку на новый раздел 
+                // Для 2013 нужно ссылки проставить в таблице без повторной загрузки
+		if ($RaidId >= 22)
 		{
+	                print('<a  style = "font-size:80%; margin-right: 15px;"  href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Файлы</a>'."\r\n");
+
+                } else {
+
+			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidRulesLink.'" target = "_blank">Положение</a> '."\r\n");
+			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidStartLink.'" target = "_blank">Информация о старте</a> '."\r\n");
+			if (trim($RaidKpWptLink) <> '')
+			{
 			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidKpWptLink.'" target = "_blank">Точки КП</a> '."\r\n");
-		}
-                if (trim($RaidLegendLink) <> '')
-		{
+			}
+			if (trim($RaidLegendLink) <> '')
+			{
 			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidLegendLink.'" target = "_blank">Легенды</a> '."\r\n");
-		}
-                if (trim($RaidZipLink) <> '')
-		{
+			}
+	                if (trim($RaidZipLink) <> '')
+			{
 			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidZipLink.'" target = "_blank">ZIP всех материалов</a> '."\r\n");
-		}
-                if (trim($RaidZnLink) <> '')
-		{
+			}
+	                if (trim($RaidZnLink) <> '')
+			{
 			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidZnLink.'" target = "_blank");">Значок</a> '."\r\n");
-		}
-			print('<a  style = "font-size:80%; margin-right: 15px;" href = "javascript: JsonExport();">Json</a> '."\r\n");
+			}
+                }
+                // Конец проверки на вывод ссылки на раздел, а не на отдельные файлы
+ 
+		print('<a  style = "font-size:80%; margin-right: 15px;" href = "javascript: JsonExport();">Json</a> '."\r\n");
 		print('</div>'."\r\n");
 
 
