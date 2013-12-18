@@ -271,7 +271,7 @@ else
 }
 // Показываем выпадающий список дистанций
 print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
-$sql = "select distance_id, distance_name from Distances where raid_id = ".$RaidId;
+$sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = ".$RaidId;
 $Result = MySqlQuery($sql);
 while ($Row = mysql_fetch_assoc($Result))
 {

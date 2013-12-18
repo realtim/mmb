@@ -879,7 +879,10 @@ send_mime_mail('Автор письма',
      function GetMmbLogo($raidid)
      {
     
-         $logolink = "";      
+        // Данные берём из settings
+	include("settings.php");
+    
+         $LogoLink = "";      
 
 	if (empty($raidid))
 	{
@@ -887,6 +890,17 @@ send_mime_mail('Автор письма',
 	        from Raids 
 		order by raid_registrationenddate desc
 		LIMIT 0,1 ";
+
+
+        // 08.12.2013 Ищем ссылку на логотип  
+        $sqlFile = "select rf.raidfile_name
+	     from RaidFiles rf
+	          inner join Raids r
+		  on rf.raid_id = r.raid_id
+	     where rf.filetype_id = 2 
+	     order by r.raid_registrationenddate desc, rf.raidfile_id desc
+	     LIMIT 0,1";
+
 
 	} else {
 
@@ -896,14 +910,35 @@ send_mime_mail('Автор письма',
 		where  raid_id = ".$raidid."
 		LIMIT 0,1 ";
 	
+	    // 08.12.2013 Ищем ссылку на логотип  
+        $sqlFile = "select rf.raidfile_name
+	     from RaidFiles rf
+	     where rf.raid_id = ".$raidid." and rf.filetype_id = 2 
+	     order by rf.raidfile_id desc
+	     LIMIT 0,1";
+
+	
 	}
 
         $Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
-	$logolink = $Row['raid_logolink'];
+	$LogoLink = $Row['raid_logolink'];
 	mysql_free_result($Result);
 
-        return($logolink);
+
+	 
+       	$ResultFile = MySqlQuery($sqlFile);  
+	$RowFile = mysql_fetch_assoc($ResultFile);
+        mysql_free_result($ResultFile);
+        $LogoFile =  trim($RowFile['raidfile_name']);
+
+        if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
+	{
+          $LogoLink = $MyStoreHttpLink.$LogoFile;
+        }
+        //  Конец получения ссылки на информацию о старте
+
+        return($LogoLink);
 
       }
       // Конец получения логотипа

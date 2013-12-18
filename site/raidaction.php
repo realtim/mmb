@@ -49,19 +49,20 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	$pRaidPeriod = $_POST['RaidPeriod'];
 	$pRaidRegistrationEndDate = $_POST['RaidRegistrationEndDate'];
 	$pClearRaidRegistrationEndDate = (isset($_POST['ClearRaidRegistrationEndDate']) && ($_POST['ClearRaidRegistrationEndDate'] == 'on')) ? 1 : 0;
-	$pRaidLogoLink = $_POST['RaidLogoLink'];
-	$pRaidRulesLink = $_POST['RaidRulesLink'];
+	//$pRaidLogoLink = $_POST['RaidLogoLink'];
+	//$pRaidRulesLink = $_POST['RaidRulesLink'];
 	$pRaidStartPointName = $_POST['RaidStartPointName'];
-	$pRaidStartLink = $_POST['RaidStartLink'];
+	//$pRaidStartLink = $_POST['RaidStartLink'];
 	$pRaidFinishPointName = $_POST['RaidFinishPointName'];
 	$pRaidCloseDate = $_POST['RaidCloseDate'];
 	$pClearRaidCloseDate = (isset($_POST['ClearRaidCloseDate']) && ($_POST['ClearRaidCloseDate'] == 'on')) ? 1 : 0;
-	$pRaidZnLink = $_POST['RaidZnLink'];
+	//$pRaidZnLink = $_POST['RaidZnLink'];
         $pRaidDistancesCount = (int)$_POST['RaidDistancesCount'];
         $pRaidNoShowResult = (isset($_POST['RaidNoShowResult']) && ($_POST['RaidNoShowResult'] == 'on')) ? 1 : 0;
 	$pRaidFilePrefix = $_POST['RaidFilePrefix'];
         $pRaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 
+/*
         // Обрабатываем зхагрузку файла эмблемы
         if (!empty($_FILES['logofile']['name']) and ($_FILES['logofile']['size'] > 0))
 	{
@@ -88,7 +89,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
            // Конец проверки на успешность загрузки
 	}
         // Конец проверки на указание в форме файла для загрузки эмблемы
-	
+	*/
 	// Проверка на пустое название 
 	if  (empty($pRaidName)) 
 	{
@@ -109,7 +110,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	}
         // Конец проверки на число дистанций
 	
-
+/*
 
         // Обрабатываем зхагрузку файла положения
         if (!empty($_FILES['rulesfile']['name']) and ($_FILES['rulesfile']['size'] > 0))
@@ -140,7 +141,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
         // Конец проверки на указание в форме файла для загрузки положэние
 
 	
-
+*/
 		
 	// Добавляем/изменяем марш-бросок в базе
 
@@ -166,6 +167,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		}
                 // Конец проверки на  повтор имени
 
+/*
 		$sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
 		                           raid_logolink, raid_ruleslink, raid_startpoint, 
 					   raid_startlink, raid_finishpoint, raid_closedate,
@@ -198,6 +200,40 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		$sql.= ", trim('".$pRaidFilePrefix."') " ;
 		$sql.= ", ".$pRaidReadOnlyHoursBeforeStart;
 		$sql.= ")";
+
+
+*/
+
+
+                $sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
+		                           raid_startpoint, raid_finishpoint, raid_closedate,
+					   raid_noshowresult, raid_fileprefix,
+					   raid_readonlyhoursbeforestart
+					   )
+			values (trim('".$pRaidName."'), trim('".$pRaidPeriod."')  ";
+		
+		if ($pClearRaidRegistrationEndDate == 1 or empty($pRaidRegistrationEndDate)) 
+		{	
+			$sql.=  ", NULL ";
+		} else {
+			$sql.=  ", '".$pRaidRegistrationEndDate."'";
+		}
+		$sql.= ", trim('".$pRaidStartPointName."') ";
+		$sql.= ", trim('".$pRaidFinishPointName."') ";
+
+		if ($pClearRaidCloseDate == 1 or empty($pRaidCloseDate)) 
+		{	
+			$sql.=  ", NULL ";
+		} else {
+			$sql.=  ", '".$pRaidCloseDate."'";
+		}
+	
+		$sql.= ", ".$pRaidNoShowResult;
+		$sql.= ", trim('".$pRaidFilePrefix."') " ;
+		$sql.= ", ".$pRaidReadOnlyHoursBeforeStart;
+		$sql.= ")";
+
+
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 
               //  echo $sql;
@@ -216,8 +252,8 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		    // Добавляем дистанции
                     if  ($pRaidDistancesCount == 1)
 		    {
-				$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink) 
-				        values (".$RaidId.", 'Общая', '','')";
+				$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink, distance_hide) 
+				        values (".$RaidId.", 'Общая', '','', 0)";
 		    
 				$rs = MySqlQuery($sql);
 		    
@@ -228,8 +264,8 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 			{
 				$AddDistanceCounter++;
 			
-				$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink) 
-				        values (".$RaidId.", 'Дистанция".$AddDistanceCounter."', '','')";
+				$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink, distance_hide) 
+				        values (".$RaidId.", 'Дистанция".$AddDistanceCounter."', '','', 0)";
 
 				// echo $sql;
 				$rs = MySqlQuery($sql);
@@ -246,14 +282,14 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		$viewmode = "";
 	}
 	else
-	// Изменения в уже существующей команде
+	// Изменения в уже существующем ММБ
 	{
 
 
 		// Проверяем, что текущее чимсло дистанций не больше, чем указано
 		$sql = "select count(*) as resultcount
-			from Distances 
-			where  raid_id = ".$RaidId; 
+			from Distances d
+			where distance_hide = 0 and raid_id = ".$RaidId; 
 
 		$rs = MySqlQuery($sql);
 		$Row = mysql_fetch_assoc($rs);
@@ -273,8 +309,8 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		    {
 			$AddDistanceCounter++;
 			
-			$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink) 
-			        values (".$RaidId.", 'Дистанция".$AddDistanceCounter."', '','')";
+			$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink, distance_hide) 
+			        values (".$RaidId.", 'Дистанция".$AddDistanceCounter."', '','', 0)";
 
                         // echo $sql;
 			$rs = MySqlQuery($sql);
@@ -296,10 +332,10 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		} else {
 			$sql.=  "'".$pRaidRegistrationEndDate."'";
 		}
-		$sql.=  " , raid_logolink = trim('".$pRaidLogoLink."') "; 
-		$sql.=  " , raid_ruleslink = trim('".$pRaidRulesLink."') "; 
+//		$sql.=  " , raid_logolink = trim('".$pRaidLogoLink."') "; 
+//		$sql.=  " , raid_ruleslink = trim('".$pRaidRulesLink."') "; 
 		$sql.=  " , raid_startpoint =  trim('".$pRaidStartPointName."') ";
-		$sql.=  " , raid_startlink = trim('".$pRaidStartLink."') ";
+//		$sql.=  " , raid_startlink = trim('".$pRaidStartLink."') ";
 		$sql.=  " , raid_finishpoint = trim('".$pRaidFinishPointName."') ";
                 $sql.=  " , raid_closedate =  ";
 					   
@@ -310,7 +346,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 			$sql.=  " '".$pRaidCloseDate."'";
 		}
 	
-		$sql.= ", raid_znlink = trim('".$pRaidZnLink."') ";
+//		$sql.= ", raid_znlink = trim('".$pRaidZnLink."') ";
 		$sql.= ", raid_noshowresult = ".$pRaidNoShowResult." ";
 		$sql.= ", raid_readonlyhoursbeforestart = ".$pRaidReadOnlyHoursBeforeStart." ";
 		$sql.= ", raid_fileprefix = trim('".$pRaidFilePrefix."') ";
@@ -352,7 +388,7 @@ elseif ($action == 'DistanceChangeData')
 	{
 			$statustext = 'Не найден ключ дистанции.';
 			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+		//	$viewsubmode = "ReturnAfterError";
 			return;
 	}
         // Конец проверки на пустое название 
@@ -365,7 +401,7 @@ elseif ($action == 'DistanceChangeData')
 	{
 			$statustext = 'Пустое название дистанции.';
 			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+		//	$viewsubmode = "ReturnAfterError";
 			return;
 	}
         // Конец проверки на пустое название 
@@ -379,6 +415,77 @@ elseif ($action == 'DistanceChangeData')
 	// echo $sql;
 	$rs = MySqlQuery($sql);
 
+
+}
+// ============ Удаление дистанции  =============
+elseif ($action == 'HideDistance')
+{
+
+	if (!$Administrator)
+	{
+		$statustext = "Нет прав на удаление дистанции";
+		$alert = 0;
+		return;
+	}
+
+        $pDistanceId = $_POST['DistanceId'];
+
+
+	if ($pDistanceId <= 0)
+	{
+		$statustext = 'Не определён ключ дистанции.';
+		$alert = 1;
+//		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+	
+
+	$viewmode = "";
+	$view = "ViewRaidData";
+	
+	        // Проверяем, что нет точек на эту дистацнию
+		$sql = "select count(*) as resultcount
+			from LevelPoints lp
+			where levelpoint_hide = 0 and distance_id = ".$pDistanceId;       
+
+		$rs = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($rs);
+		mysql_free_result($rs);
+		$NowLevelPointsCounter = $Row['resultcount'];
+		if ($NowLevelPointsCounter > 0)
+		{
+			$statustext = "Уже есть точки на эту дистанцию.";
+			$alert = 1;
+//			$viewsubmode = "ReturnAfterError";
+			return;
+                }
+
+	        // Проверяем, что нет команд на эту дистацнию
+		$sql = "select count(*) as resultcount
+			from Teams t
+			where team_hide = 0 and distance_id = ".$pDistanceId;       
+
+		$rs = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($rs);
+		mysql_free_result($rs);
+		$NowTeamsCounter = $Row['resultcount'];
+		if ($NowTeamsCounter > 0)
+		{
+			$statustext = "Уже есть команды на эту дистанцию.";
+			$alert = 1;
+//			$viewsubmode = "ReturnAfterError";
+			return;
+                }
+	 
+
+       
+        $sql = "update Distances set distance_hide = 1
+	        where distance_id = ".$pDistanceId;   
+			
+	MySqlQuery($sql);
+
+
+	$view = "ViewRaidData";
 
 }
 // ============ Загруженные файлы  =============

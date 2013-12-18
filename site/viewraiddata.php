@@ -22,18 +22,19 @@ if ($viewmode == 'Add')
 		$RaidName = $_POST['RaidName'];
 		$RaidPeriod = $_POST['RaidPeriod'];
                 $RaidRegistrationEndDate = $_POST['RaidRegistrationEndDate'];
-                $RaidLogoLink = $_POST['RaidLogoLink'];
-                $RaidRulesLink = $_POST['RaidRulesLink'];
+           //     $RaidLogoLink = $_POST['RaidLogoLink'];
+           //     $RaidRulesLink = $_POST['RaidRulesLink'];
 		$RaidStartPointName = $_POST['RaidStartPointName'];
-		$RaidStartLink = $_POST['RaidStartLink'];
+	//	$RaidStartLink = $_POST['RaidStartLink'];
 		$RaidFinishPointName = $_POST['RaidFinishPointName'];
 		$RaidCloseDate = $_POST['RaidCloseDate'];
 		$ClearRaidCloseDate = (isset($_POST['ClearRaidCloseDate']) && ($_POST['ClearRaidCloseDate'] == 'on')) ? 1 : 0;
-		$RaidZnLink = $_POST['RaidZnLink'];
+	//	$RaidZnLink = $_POST['RaidZnLink'];
 		$RaidDistancesCount = (int)$_POST['RaidDistancesCount'];
                 $RaidNoShowResult = (isset($_POST['RaidNoShowResult']) && ($_POST['RaidNoShowResult'] == 'on')) ? 1 : 0;
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
+
                 
 
 	}
@@ -45,13 +46,13 @@ if ($viewmode == 'Add')
 		$RaidPeriod = '';
                 $RaidRegistrationEndDate = '';
                 $ClearRaidRegistrationEndDate = 0;
-		$RaidLogoLink = '';
-                $RaidRulesLink = '';
+	//	$RaidLogoLink = '';
+          //      $RaidRulesLink = '';
 		$RaidStartPointName = '';
-		$RaidStartLink = '';
+//		$RaidStartLink = '';
 		$RaidFinishPointName = '';
 		$RaidCloseDate = '';
-		$RaidZnLink = '';
+//		$RaidZnLink = '';
                 $ClearRaidCloseDate = 0;
 		$RaidDistancesCount = 1;
                 $RaidNoShowResult = 1; 
@@ -85,7 +86,7 @@ else
 		       COALESCE(r.raid_readonlyhoursbeforestart, 8) as raid_readonlyhoursbeforestart,  
 		       r.raid_fileprefix,
       	               (CASE WHEN r.raid_closedate is null THEN 1 ELSE 0 END) as raid_clearclosedate,
-		       (select count(*) from Distances where raid_id = ".$RaidId.") as raid_distancescount
+		       (select count(*) from Distances where distance_hide = 0 and raid_id = ".$RaidId.") as raid_distancescount
 		from Raids r
 		where r.raid_id = ".$RaidId;
 	$Result = MySqlQuery($sql);
@@ -100,14 +101,14 @@ else
 		$RaidPeriod = $_POST['RaidPeriod'];
                 $RaidRegistrationEndDate = $_POST['RaidRegistrationEndDate'];
 		$ClearRaidRegistrationEndDate = $_POST['ClearRaidRegistrationEndDate'];
-		$RaidLogoLink = $_POST['RaidLogoLink'];
-		$RaidRulesLink = $_POST['RaidRulesLink'];
+	//	$RaidLogoLink = $_POST['RaidLogoLink'];
+	//	$RaidRulesLink = $_POST['RaidRulesLink'];
 		$RaidStartPointName = $_POST['RaidStartPointName'];
-		$RaidStartLink = $_POST['RaidStartLink'];
+	//	$RaidStartLink = $_POST['RaidStartLink'];
 		$RaidFinishPointName = $_POST['RaidFinishPointName'];
 		$RaidCloseDate = $_POST['RaidCloseDate'];
 		$ClearRaidCloseDate = $_POST['ClearRaidCloseDate'];
-		$RaidZnLink = $_POST['RaidZnLink'];
+	//	$RaidZnLink = $_POST['RaidZnLink'];
                 //В отличие от остальлных полей это - вычисляемое и после ошибки не возвращается  
 		$RaidDistancesCount = (int)$Row['raid_distancescount'];
 		$RaidNoShowResult = $_POST['RaidNoShowResult'];
@@ -122,14 +123,14 @@ else
 		$RaidPeriod = $Row['raid_period'];
 		$RaidRegistrationEndDate = $Row['raid_registrationenddate'];
                 $ClearRaidRegistrationEndDate = $Row['raid_clearregistrationenddate'];
-		$RaidLogoLink = $Row['raid_logolink'];
-		$RaidRulesLink = $Row['raid_ruleslink'];
+	//	$RaidLogoLink = $Row['raid_logolink'];
+	//	$RaidRulesLink = $Row['raid_ruleslink'];
 		$RaidStartPointName = $Row['raid_startpoint'];
-		$RaidStartLink = $Row['raid_startlink'];
+	//	$RaidStartLink = $Row['raid_startlink'];
 		$RaidFinishPointName = $Row['raid_finishpoint'];
 		$RaidCloseDate = $Row['raid_closedate'];
 		$ClearRaidCloseDate = $Row['raid_clearclosedate'];
-		$RaidZnLink = $Row['raid_znlink'];
+	//	$RaidZnLink = $Row['raid_znlink'];
 		$RaidDistancesCount = (int)$Row['raid_distancescount'];
 	        $RaidNoShowResult = (int)$Row['raid_noshowresult'];
                 $RaidReadOnlyHoursBeforeStart = (int)$Row['raid_readonlyhoursbeforestart'];
@@ -229,6 +230,7 @@ print('<tr><td class="input">Название: <input type="text" name="RaidName
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidName.'\';}"')
 	.' title="Название ММБ"></td></tr>'."\n\n");
 
+/*
 // ============ Эмблема (ссылка и загрузка файла)
 print('<tr><td class="input">Ссылка на эмблему: <input type="text" name="RaidLogoLink" size="50" value="'.$RaidLogoLink.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidLogoLink.'\') {this.value=\'\';}"')
@@ -237,6 +239,7 @@ print('<tr><td class="input">Ссылка на эмблему: <input type="text
 
 print('<tr><td class = "input">Новый файл эмблемы для загрузки: <input name="logofile" type="file" /></td></tr>'."\r\n");
 
+*/
 // ============ Период ММБ
 print('<tr><td class="input">Период: <input type="text" name="RaidPeriod" size="30" value="'.$RaidPeriod.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidPeriod.'\') {this.value=\'\';}"')
@@ -256,6 +259,7 @@ print('<tr><td class="input">Число дистанций <input type="text" na
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidDistancesCount.'\';}"')
 	.' title="Число дистанций"> <i>Должно быть не меньше, чем уже создано.</i></td></tr>'."\r\n");
 
+/*
 // ============ Положение (ссылка и загрузка файла)
 print('<tr><td class="input">Ссылка на положение: <input type="text" name="RaidRulesLink" size="50" value="'.$RaidRulesLink.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidRulesLink.'\') {this.value=\'\';}"')
@@ -263,8 +267,7 @@ print('<tr><td class="input">Ссылка на положение: <input type="
 	.' title="Ссылка на положение ММБ"></td></tr>'."\r\n");
 
 print('<tr><td class = "input">Новый файл положения для загрузки: <input name="rulesfile" type="file" /></td></tr>'."\r\n");
-
-
+*/
 
 // ============ Дата окончания регистрации ММБ
 print('<tr><td class="input">Дата закрытия регистрации (гггг-мм-дд): <input type="text" name="RaidRegistrationEndDate" size="10" value="'.$RaidRegistrationEndDate.'" tabindex="'.(++$TabIndex)
@@ -293,13 +296,13 @@ print('<tr><td class="input">Название пункта старта: <input 
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidStartPointName.'\') {this.value=\'\';}"')
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidStartPointName.'\';}"')
 	.' title="Название пункта старта ММБ"></td></tr>'."\n\n");
-
+/*
 // ============ Информация о старте  (ссылка)
 print('<tr><td class="input">Ссылка на информацию о старте: <input type="text" name="RaidStartLink" size="36" value="'.$RaidStartLink.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidStartLink.'\') {this.value=\'\';}"')
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidStartLink.'\';}"')
 	.' title="Ссылка на информацию о старте ММБ"></td></tr>'."\r\n");
-
+*/
 print('<tr><td class="input"><br/></td></tr>'."\r\n");
 print('<tr><td class="input"><b>Заполняется после ММБ</b></td></tr>'."\r\n");
 
@@ -324,7 +327,7 @@ print('<tr><td class="input">Дата закрытия протокола (гг�
 print('<input type="checkbox" name="ClearRaidCloseDate" '.(($ClearRaidCloseDate == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
 	        title = "Дата закрытия протокола будет очищена" /> Убрать</td></tr>'."\r\n");
 
-
+/*
 // ============ Значок (ссылка и загрузка файла)
 print('<tr><td class="input">Ссылка на значок: <input type="text" name="RaidZnLink" size="50" value="'.$RaidZnLink.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidZnLink.'\') {this.value=\'\';}"')
@@ -332,7 +335,7 @@ print('<tr><td class="input">Ссылка на значок: <input type="text" 
 	.' title="Ссылка на значок ММБ"></td></tr>'."\r\n");
 
 print('<tr><td class = "input">Новый файл значка для загрузки: <input name="znfile" type="file" /></td></tr>'."\r\n");
-
+*/
 
 
 print('<tr><td class="input">'."\n");
@@ -361,7 +364,7 @@ if ($viewmode != 'Add')
 
 	$sql = "select d.distance_id, d.distance_name, d.distance_data
 		from Distances d
-		where d.raid_id = ".$RaidId;
+		where d.distance_hide = 0 and d.raid_id = ".$RaidId;
 	$DistanceResult = MySqlQuery($sql);
 	while ($RowDistance = mysql_fetch_assoc($DistanceResult))
 	{
@@ -375,6 +378,8 @@ if ($viewmode != 'Add')
 		print('<input type="hidden" name="UserId" value="0">'."\n");
 		print('<input type="hidden" name="DistanceId" value="'.$RowDistance['distance_id'].'">'."\n");
 
+
+
 		print('<table style="font-size: 80%;" border="0" cellpadding="2" cellspacing="0">'."\n\n");
 		$TabIndex = 0;
 		$DisabledText = '';
@@ -382,6 +387,7 @@ if ($viewmode != 'Add')
 		print('<tr><td class="input">Название: <input type="text" name="DistanceName'.$RowDistance['distance_id'].'" size="20" value="'.$RowDistance['distance_name'].'" tabindex="'.(++$TabIndex).'">'."\r\n");
 		print(' параметры: <input type="text" name="DistanceData'.$RowDistance['distance_id'].'" size="50" value="'.$RowDistance['distance_data'].'" tabindex="'.(++$TabIndex).'">'."\r\n");
 		print('<input type="button" onClick="javascript: submit();" name="SaveDistance'.$RowDistance['distance_id'].'" value="Сохранить" tabindex="'.(++$TabIndex).'">'."\r\n");
+		print('&nbsp; <input type="button" style="margin-left: 30px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить дистанцию.: '.trim($RowDistance['distance_name']).'? \')) {  DistanceDataForm'.$RowDistance['distance_id'].'.action.value = \'HideDistance\';submit();}" name="HideFileButton'.$RowDistance['distance_id'].'" value="Удалить" tabindex="'.(++$TabIndex).'">'."\n");
 		print('</td></tr>'."\r\n");
 		print('</table></form>'."\r\n");
 	}
