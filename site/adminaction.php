@@ -33,7 +33,7 @@ if (empty($RaidId))
   $sql = "select t.team_num, d.distance_name
 	  from Teams t
 	       inner join Distances d on t.distance_id = d.distance_id
-	  where t.team_hide = 0 and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = ".$RaidId."
+	  where d.distance_hide = 0 and t.team_hide = 0 and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = ".$RaidId."
 	  order by d.distance_name, team_num asc";
 
   $Result = MySqlQuery($sql);
@@ -69,7 +69,7 @@ if (empty($RaidId))
 	  t.team_mapscount, d.distance_name, d.distance_id
 	  from Teams t
 		inner join Distances d on t.distance_id = d.distance_id
-	  where t.team_hide = 0  and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = ".$RaidId."
+	  where d.distance_hide = 0 and t.team_hide = 0  and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = ".$RaidId."
 	  order by d.distance_name, team_num asc";
 
   $Result = MySqlQuery($sql);
@@ -155,7 +155,7 @@ elseif ($action == 'RecalcRaidResults')
 	$sql = 'select team_id
 		from Teams t
 			inner join Distances d on t.distance_id = d.distance_id
-		where t.team_hide = 0 and d.raid_id = '.$RaidId.' 
+		where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = '.$RaidId.' 
                order by team_id';
         
         $Result = MySqlQuery($sql);
@@ -187,12 +187,12 @@ elseif ($action == 'FindRaidErrors')
 	$n_Warnings = 0;
 
 	// Обрабатываем в цикле все дистанции марш-броска
-        $sql = 'select distance_id, distance_name from Distances where raid_id = '.$RaidId.' order by distance_name';
+        $sql = 'select distance_id, distance_name from Distances d where d.distance_hide = 0 and d.raid_id = '.$RaidId.' order by distance_name';
 	$DResult = MySqlQuery($sql);
         while ($Distance = mysql_fetch_assoc($DResult))
 	{
 		// Получаем список этапов дистанции и их параметры
-		$sql = 'select * from Levels where distance_id = '.$Distance['distance_id'].' order by level_order ASC';
+		$sql = 'select * from Levels l where  l.level_hide = 0 and l.distance_id = '.$Distance['distance_id'].' order by level_order ASC';
 		$Result = MySqlQuery($sql);
 		$nlevel = 1;
 		unset($Levels);

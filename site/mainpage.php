@@ -142,7 +142,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 					            and tu.teamuser_hide = 0
 					) as teamuserscount
 			            FROM  Distances d 
-				    WHERE raid_id = '.$nextRaidId.'  ORDER BY distance_name ASC');
+				    WHERE d.distance_hide = 0 and raid_id = '.$nextRaidId.'  ORDER BY distance_name ASC');
 	
         $DistancesCount = 0;
          

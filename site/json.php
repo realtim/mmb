@@ -67,7 +67,7 @@ if (empty($RaidId))
     $view = "";
     return;
 
-
+ 
 /*
   $sql = "select raid_id
  	  from Raids 
@@ -93,22 +93,29 @@ while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Raids"][] = $Row; }
 mysql_free_result($Result);
 
 // Distances: distance_id, raid_id, distance_name
-$Sql = "select distance_id, raid_id, distance_name from Distances where raid_id = ".$RaidId;
+$Sql = "select distance_id, raid_id, distance_name from Distances d where d.distance_hide = 0 and d.raid_id = ".$RaidId;
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
 mysql_free_result($Result);
 
 // Levels: level_id, distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
-$Sql = "select level_id, l.distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime from Levels l inner join Distances d on l.distance_id = d.distance_id where d.raid_id = ".$RaidId;
+$Sql = "select level_id, l.distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime from Levels l inner join Distances d on l.distance_id = d.distance_id where l.level_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
 mysql_free_result($Result);
 
 // LevelPoints: levelpoint_id, level_id, pointtype_id
-$Sql = "select levelpoint_id, lp.level_id, pointtype_id from LevelPoints lp inner join Levels l on lp.level_id = l.level_id  inner join Distances d on l.distance_id = d.distance_id where d.raid_id = ".$RaidId;
+$Sql = "select levelpoint_id, pointtype_id, lp.distance_id, lp.levelpoint_order, lp.levelpoint_penalty, lp.levelpoint_mindatetime, lp.levelpoint_maxdatetime from LevelPoints lp inner join Distances d on lp.distance_id = d.distance_id where lp.levelpoint_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row; }
 mysql_free_result($Result);
+
+// LevelPointDiscounts: 
+$Sql = "select lpd.levelpointdiscount_id, lpd.distance_id, lpd.levelpointdiscount_value, lpd.levelpointdiscount_start, lpd.levelpointdiscount_finish from LevelPointDiscounts lpd inner join Distances d on lpd.distance_id = d.distance_id where lpd.levelpointdiscount_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+$Result = MySqlQuery($Sql);
+while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPointDiscounts"][] = $Row; }
+mysql_free_result($Result);
+
 
 // Teams: team_id, distance_id, team_name, team_num // *
 $Sql = "select team_id, t.distance_id, team_name, team_num from Teams t inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0 and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = ".$RaidId;

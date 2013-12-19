@@ -260,7 +260,7 @@ if (!isset($MyPHPScript)) return;
 		print('Фильтровать: '."\r\n"); 
 
 	        $sql = "select distance_id, distance_name
-                        from  Distances where raid_id = ".$RaidId." order by distance_name"; 
+                        from  Distances where distance_hide = 0 and raid_id = ".$RaidId." order by distance_name"; 
 		//echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
                 
@@ -294,7 +294,7 @@ if (!isset($MyPHPScript)) return;
                             from  Levels l
                                 inner join Distances d
                                 on l.distance_id = d.distance_id
-                            where d.raid_id = ".$RaidId;
+                            where l.level_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
                     if (!empty($_REQUEST['DistanceId']))
                     {
 			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
@@ -372,7 +372,7 @@ if (!isset($MyPHPScript)) return;
 
 		    $sql = "select  d.distance_name, d.distance_data
   		            from Distances d
-                            where d.raid_id = ".$RaidId;
+                            where d.distance_hide = 0 and  d.raid_id = ".$RaidId;
 				
 		    $Result = MySqlQuery($sql);
 
@@ -476,7 +476,7 @@ if (!isset($MyPHPScript)) return;
                             from  Levels l
                                   inner join Distances d
                                   on d.distance_id = l.distance_id
-                            where   d.raid_id = ".$RaidId;
+                            where    l.level_hide = 0 and d.distance_hide = 0 and  d.raid_id = ".$RaidId;
 
                     // $sql = $sql." and l.level_begtime <= now() ";
 
@@ -631,7 +631,8 @@ if (!isset($MyPHPScript)) return;
 		          from Distances d 
 			       left outer join Levels l 
 			       on d.distance_id = l.distance_id
-			where d.raid_id = ".$RaidId.'
+			          and l.level_hide = 0  
+			where d.distance_hide = 0 and d.raid_id = ".$RaidId.'
 			order by d.distance_id, l.level_order';
                 $Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
@@ -665,7 +666,7 @@ if (!isset($MyPHPScript)) return;
 		        from  Teams t
 			     inner join  Distances d 
 			     on t.distance_id = d.distance_id
-			where t.team_hide = 0 and d.raid_id = ".$RaidId;
+			where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
 
 		   if (!empty($_REQUEST['DistanceId']))
 		   {
@@ -689,7 +690,7 @@ if (!isset($MyPHPScript)) return;
 			  from  Teams t
 				inner join  Distances d 
 				on t.distance_id = d.distance_id
-			  where t.team_hide = 0 and d.raid_id = ".$RaidId;
+			  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
 
 		      if (!empty($_REQUEST['DistanceId']))
 		      {
@@ -721,6 +722,8 @@ if (!isset($MyPHPScript)) return;
                                  and tl.level_id = ".$_REQUEST['LevelId']." 
                                  and tl.teamlevel_progress > 0
                                  and t.team_hide = 0
+                                 and l.level_hide = 0  
+				 and d.distance_hide = 0
 			    order by team_outofrange, tl.teamlevel_progress desc, team_sresult asc, t.team_num asc";
 
                      }
@@ -733,7 +736,7 @@ if (!isset($MyPHPScript)) return;
 						and (((tl.error_id is not NULL) and (tl.error_id <> 0)) or (tl.teamlevel_comment is not NULL))
 					) as n_err
 				from Teams t, Distances d
-				where t.team_hide = 0 and d.raid_id = ".$RaidId." and t.distance_id = d.distance_id";
+				where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId." and t.distance_id = d.distance_id";
 			if (!empty($_REQUEST['DistanceId']))
 			{
 				$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
@@ -944,7 +947,9 @@ if (!isset($MyPHPScript)) return;
                                            TIME_FORMAT(level_begtime, '%H:%i') as level_begtime,
                                            level_order, level_pointnames
                                     from  Levels l
-                                    where l.distance_id = ".$Row['distance_id']."
+				          inner join Distances d 
+					  on l.distance_id = d.distance_id
+                                    where  l.level_hide = 0 and d.distance_hide = 0 and l.distance_id = ".$Row['distance_id']."
                                     order by l.level_order ";
 			     //  echo 'sql '.$sql;
 			     $LevelResult = MySqlQuery($sql);
