@@ -503,10 +503,13 @@ elseif ($action == 'ViewRaidFilesPage')
 // ============ Загрузка файда  =============
 elseif ($action == 'AddRaidFile')
 {
-	if ($action == "AddRaidFile") $viewmode = "Add"; else $viewmode = "";
+
 	$view = "ViewRaidFiles";
+	$viewmode = "Add";
+
+
 	// Общая проверка возможности редактирования
-	if (!$Administrator)
+	if (!$Administrator and !$Moderator)
 	{
 		$statustext = "Нет прав на загрузку файла";
 		$alert = 0;
@@ -520,10 +523,13 @@ elseif ($action == 'AddRaidFile')
 
 
         // Обрабатываем зхагрузку файла 
+	// Проверка, что файл загрузился
         if (!empty($_FILES['raidfile']['name']) and ($_FILES['raidfile']['size'] > 0))
 	{
              $pMimeType = trim($_FILES['raidfile']['type']);   
-     /*      if  (substr(trim($_FILES['raidfile']['type']), 0, 6) != 'image/') 
+     /*
+         Тут можно вставить проверки по типу звгружаемого файла
+           if  (substr(trim($_FILES['raidfile']['type']), 0, 6) != 'image/') 
 	   {
 			$statustext = 'Недопустимый тип файла.';
 			$alert = 1;
@@ -564,34 +570,31 @@ elseif ($action == 'AddRaidFile')
            }
            // Конец проверки на успешность загрузки
 
-
-           if ($action == "AddRaidFile")
-	   // Новsый файл
-	   {
-		$sql = "insert into RaidFiles (raid_id, raidfile_mimetype, filetype_id, 
+           // Пишем ссылку на файл в таблицу
+	   //  М.б. можно переделать на запись файла прямо в таблицу - это повышаетбезопасность, но
+	   // надо тогда писать собственное отображение файлов 
+    	   $sql = "insert into RaidFiles (raid_id, raidfile_mimetype, filetype_id, 
 			raidfile_uploaddt, raidfile_name, raidfile_comment, raidfile_hide)
 			values (".$RaidId.", '".$pMimeType."', ".$pFileTypeId.", NOW(), '".$pRaidFileName."','".$pRaidFileComment."', 0)";
-		// При insert должен вернуться послений id - это реализовано в MySqlQuery
-		$RaidFileId = MySqlQuery($sql);
-		
-		if ($RaidFileId <= 0)
-		{
+	   // При insert должен вернуться послений id - это реализовано в MySqlQuery
+	   $RaidFileId = MySqlQuery($sql);
+	
+	   if ($RaidFileId <= 0)
+	   {
 			$statustext = 'Ошибка записи нового файла.';
 			$alert = 1;
 			$viewsubmode = "ReturnAfterError";
 			return;
-		}
-		// Открываем опять с возможностью загрузить новый файл
-		$viewmode = "Add";
-	       }
-	
-	}
-        // Конец проверки на указание в форме файла для загрузки 
+	   }
+
+       }
+       // Конец проверки, что файл был загружен	
 	
  }
  elseif ($action == "RaidFileInfo")  
  {
-    // Действие вызывается ссылкой под имененм пользователя
+       // Действие вызывается кнопокй "Править" в таблице файлов
+
    
 	$view = "ViewRaidFiles";
 	$viewmode = "Edit";
@@ -599,7 +602,7 @@ elseif ($action == 'AddRaidFile')
  // ============ Правка файла  =============
 elseif ($action == 'RaidFileChange')
 {
-	if (!$Administrator)
+	if (!$Administrator and !$Moderator)
 	{
 		$statustext = "Нет прав на правку файла";
 		$alert = 0;
@@ -637,7 +640,7 @@ elseif ($action == 'RaidFileChange')
 // ============ Удаление  файла  =============
 elseif ($action == 'HideFile')
 {
-	if (!$Administrator)
+	if (!$Administrator and !$Moderator)
 	{
 		$statustext = "Нет прав на правку файла";
 		$alert = 0;
@@ -684,6 +687,714 @@ elseif ($action == 'HideFile')
 	 $viewmode = "Add";
 		
 
+}
+// ============ Точки дистанции  =============
+elseif ($action == 'ViewLevelPointsPage')
+{
+	if ($RaidId <= 0)
+	{
+		$statustext = 'Id ММБ не указан';
+		$alert = 1;
+		return;
+	}
+	
+	// Есди дистанция не указана  - берём первую
+        if (empty($_POST['DistanceId']))
+	{
+
+		$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = ".$RaidId." order by distance_id ";
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $DistanceId = $Row['distance_id'];
+		mysql_free_result($Result);
+	    
+	} else {
+	  $DistanceId =	$_POST['DistanceId'];
+        }
+	// Конец инициализации дистанции 
+       	
+	$view = "ViewLevelPoints";
+	$viewmode = "Add";
+}
+// ============ Добавить точку  =============
+elseif ($action == 'AddLevelPoint')
+{
+
+
+	$view = "ViewLevelPoints";
+	$viewmode = "Add";
+
+
+	// Общая проверка возможности редактирования
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на ввод точки";
+		$alert = 0;
+		return;
+	}
+
+		$pPointTypeId = $_POST['PointTypeId'];
+		$pDistanceId = $_POST['DistanceId'];
+                $pPointName = $_POST['PointName'];
+                $pPointPenalty = $_POST['PointPenalty'];
+		
+	        $pLevelPointMinYear = $_POST['MinYear'];
+                $pLevelPointMinDate = $_POST['MinDate'];
+                $pLevelPointMinTime = $_POST['MinTime'];
+                $pLevelPointMaxYear = $_POST['MaxYear'];
+                $pLevelPointMaxDate = $_POST['MaxDate'];
+                $pLevelPointMaxTime = $_POST['MaxTime'];
+
+
+         // тут по-хорошему нужны проверки
+
+	      $sql = "select  MAX(levelpoint_order) as lastorder, YEAR(NOW()) as nowyear
+	              from LevelPoints
+	              where levelpoint_hide = 0 and distance_id = ".$pDistanceId;        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$LastOrder = (int)$Row['lastorder'];
+		$NowYear = (int)$Row['nowyear'];
+
+	   if  (empty($pPointName) or trim($pPointName) == 'Название КП')
+	   {
+			$statustext = 'Не указано название точки.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+                // год всегда пишем текущий. если надо - можно добавить поле для года
+
+	        $MinYDTs = "'".$NowYear."-".substr(trim($pLevelPointMinDate), -2)."-".substr(trim($pLevelPointMinDate), 0, 2)." ".substr(trim($pLevelPointMinTime), 0, 2).":".substr(trim($pLevelPointMinTime), -2).":00'";
+		$MinYDT = strtotime(substr(trim($MinYDTs), 1, -1));
+	        $MaxYDTs = "'".$NowYear."-".substr(trim($pLevelPointMaxDate), -2)."-".substr(trim($pLevelPointMaxDate), 0, 2)." ".substr(trim($pLevelPointMaxTime), 0, 2).":".substr(trim($pLevelPointMaxTime), -2).":00'";
+		$MaxYDT = strtotime(substr(trim($MaxYDTs), 1, -1));
+	
+
+		 $sql = " select count(*) as countresult 
+		          from LevelPoints
+		          where levelpoint_hide = 0  and distance_id = ".$pDistanceId."
+			        and trim(levelpoint_name)= trim(".$pPointName.")"; 
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $AlreadyExists = (int)$Row['countresult'];
+		mysql_free_result($Result);
+
+	   if  ($AlreadyExists > 0)
+	   {
+			$statustext = 'Повтор названия.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+
+             // потом добавить время макс. и мин.
+	     
+		$sql = "insert into LevelPoints (distance_id, levelpoint_name, pointtype_id, 
+			levelpoint_penalty, levelpoint_order, levelpoint_hide, 
+			levelpoint_mindatetime, levelpoint_maxdatetime )
+			values (".$pDistanceId.", '".$pPointName."', ".$pPointTypeId.",
+			        ".$pPointPenalty." , ".($LastOrder + 1).", 0, ".$MinYDTs.", ".$MaxYDTs.")";
+		// При insert должен вернуться послений id - это реализовано в MySqlQuery
+		$LevelPointId = MySqlQuery($sql);
+		
+		if ($LevelPointId <= 0)
+		{
+			$statustext = 'Ошибка записи новой точки.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+		}
+	
+
+ }
+ elseif ($action == "LevelPointInfo")  
+ {
+    // Действие вызывается кнопокй "Править" в таблице точек
+   
+	$view = "ViewLevelPoints";
+	$viewmode = "Edit";
+ }
+ // ============ Правка точки  =============
+elseif ($action == 'LevelPointChange')
+{
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку точки";
+		$alert = 0;
+		return;
+	}
+
+  	 $view = "ViewLevelPoints";
+	 $viewmode = "Add";
+
+
+        $pLevelPointId = $_POST['LevelPointId'];
+
+
+	if ($pLevelPointId <= 0)
+	{
+		$statustext = 'Не определён ключ точки.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+
+
+
+     
+
+
+                $sql = "select  YEAR(NOW()) as nowyear";        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+		$NowYear = (int)$Row['nowyear'];
+
+
+		$pPointTypeId = $_POST['PointTypeId'];
+		$pDistanceId = $_POST['DistanceId'];
+                $pPointName = trim($_POST['PointName']);
+                $pPointPenalty = $_POST['PointPenalty'];
+
+
+		$pLevelPointMinYear = $_POST['MinYear'];
+                $pLevelPointMinDate = $_POST['MinDate'];
+                $pLevelPointMinTime = $_POST['MinTime'];
+                $pLevelPointMaxYear = $_POST['MaxYear'];
+                $pLevelPointMaxDate = $_POST['MaxDate'];
+                $pLevelPointMaxTime = $_POST['MaxTime'];
+
+
+        // тут надо поставить проверки
+      // год всегда пишем текущий. если надо - можно добавить поле для года
+
+	
+		$MinYDTs = "'".$NowYear."-".substr(trim($pLevelPointMinDate), -2)."-".substr(trim($pLevelPointMinDate), 0, 2)." ".substr(trim($pLevelPointMinTime), 0, 2).":".substr(trim($pLevelPointMinTime), -2).":00'";
+		$MinYDT = strtotime(substr(trim($MinYDTs), 1, -1));
+	        $MaxYDTs = "'".$NowYear."-".substr(trim($pLevelPointMaxDate), -2)."-".substr(trim($pLevelPointMaxDate), 0, 2)." ".substr(trim($pLevelPointMaxTime), 0, 2).":".substr(trim($pLevelPointMaxTime), -2).":00'";
+		$MaxYDT = strtotime(substr(trim($MaxYDTs), 1, -1));
+	
+
+
+		 $sql = " select count(*) as countresult 
+		          from LevelPoints
+		          where levelpoint_hide = 0  and distance_id = ".$pDistanceId."
+                                and levelpoint_id <> ".$pLevelPointId."
+			        and trim(levelpoint_name)= trim(".$pPointName.")"; 
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $AlreadyExists = (int)$Row['countresult'];
+		mysql_free_result($Result);
+
+	   if  ($AlreadyExists > 0)
+	   {
+			$statustext = 'Повтор названия.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+
+		
+        $sql = "update LevelPoints  set pointtype_id = ".$pPointTypeId." 
+	                                ,levelpoint_name = '".$pPointName."'
+	                                ,levelpoint_penalty = ".$pPointPenalty."
+	                                ,levelpoint_mindatetime = ".$MinYDTs."
+	                                ,levelpoint_maxdatetime = ".$MaxYDTs."
+	        where levelpoint_id = ".$pLevelPointId;        
+			
+	//echo $sql;
+			
+	 MySqlQuery($sql);
+       
+		
+
+}
+// ============ Удаление точки  =============
+elseif ($action == 'HideLevelPoint')
+{
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку точки";
+		$alert = 0;
+		return;
+	}
+
+        $pLevelPointId = $_POST['LevelPointId'];
+
+
+	if ($pLevelPointId <= 0)
+	{
+		$statustext = 'Не определён ключ точки.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+	
+	      $sql = "select  distance_id, levelpoint_order
+	              from LevelPoints
+	              where levelpoint_id = ".$pLevelPointId;        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$DistanceId = $Row['distance_id'];
+		$LevelOrder = $Row['levelpoint_order'];
+
+
+       
+        $sql = "update LevelPoints set levelpoint_hide = 1, levelpoint_order = 0 
+	        where levelpoint_id = ".$pLevelPointId;        
+			
+	 MySqlQuery($sql);
+
+		// сдвигаем все точки с большими порядоквыми номерами, чем текущая
+        $sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
+	        where levelpoint_order > ".$LevelOrder. " and distance_id = ".$DistanceId;        
+			
+	 MySqlQuery($sql);
+
+
+	$view = "ViewLevelPoints";
+	$viewmode = "Add";
+		
+
+}
+// ============ Поднять точку (уменьшить порядковый номер)  =============
+elseif ($action == 'LevelPointOrderDown')
+{
+
+
+	$view = "ViewLevelPoints";
+	$viewmode = "Add";
+
+
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку точки";
+		$alert = 0;
+		return;
+	}
+
+        $pLevelPointId = $_POST['LevelPointId'];
+
+
+	if ($pLevelPointId <= 0)
+	{
+		$statustext = 'Не определён ключ точки.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+	
+
+	      $sql = "select  distance_id, levelpoint_order
+	              from LevelPoints
+	              where levelpoint_id = ".$pLevelPointId;        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$DistanceId = $Row['distance_id'];
+		$LevelOrder = $Row['levelpoint_order'];
+
+
+	      $sql = "select  levelpoint_id
+	              from LevelPoints
+	              where levelpoint_order < ".$LevelOrder."
+		            and distance_id = ".$DistanceId."
+			    and levelpoint_hide = 0
+		     order by levelpoint_order desc
+		     LIMIT 0,1";
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$MaxLevelPointId = (int)$Row['levelpoint_id'];
+
+        if ($MaxLevelPointId == 0)
+	{
+		$statustext = 'Нельзя уменьшить порядковый номер.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	
+	}
+       
+              
+        $sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
+	        where levelpoint_id = ".$pLevelPointId;        
+			
+	 MySqlQuery($sql);
+
+
+        $sql = "update LevelPoints set levelpoint_order = levelpoint_order + 1
+	        where levelpoint_id = ".$MaxLevelPointId;        
+			
+	 MySqlQuery($sql);
+
+
+		
+
+}
+// ============ Опустить точку  (увеличить порядковый номер) =============
+elseif ($action == 'LevelPointOrderUp')
+{
+
+	$view = "ViewLevelPoints";
+	$viewmode = "Add";
+
+
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку точки";
+		$alert = 0;
+		return;
+	}
+
+        $pLevelPointId = $_POST['LevelPointId'];
+
+
+	if ($pLevelPointId <= 0)
+	{
+		$statustext = 'Не определён ключ точки.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+	
+	      $sql = "select  distance_id, levelpoint_order
+	              from LevelPoints
+	              where levelpoint_id = ".$pLevelPointId;        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$DistanceId = $Row['distance_id'];
+		$LevelOrder = $Row['levelpoint_order'];
+
+
+		$sql = "select  levelpoint_id
+	              from LevelPoints
+	              where levelpoint_order > ".$LevelOrder."
+		            and distance_id = ".$DistanceId."
+			    and levelpoint_hide = 0
+		     order by levelpoint_order asc
+		     LIMIT 0,1";
+	
+	      
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$MinLevelPointId = (int)$Row['levelpoint_id'];
+
+
+        if ($MinLevelPointId == 0)
+	{
+		$statustext = 'Нельзя увеличить порядковый номер.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	
+	}
+       
+        $sql = "update LevelPoints set levelpoint_order = levelpoint_order + 1
+	        where levelpoint_id = ".$pLevelPointId;        
+			
+	 MySqlQuery($sql);
+
+
+        $sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
+	        where levelpoint_id = ".$MinLevelPointId;        
+			
+	 MySqlQuery($sql);
+
+}
+// ============ просмотр интервалов амнистии  =============
+elseif ($action == 'ViewLevelPointDiscountsPage')
+{
+	if ($RaidId <= 0)
+	{
+		$statustext = 'Id ММБ не указан';
+		$alert = 1;
+		return;
+	}
+	
+	// Есди дистанция не указана  - берём первую
+        if (empty($_POST['DistanceId']))
+	{
+
+		$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = ".$RaidId." order by distance_id ";
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $DistanceId = $Row['distance_id'];
+		mysql_free_result($Result);
+	    
+	} else {
+	  $DistanceId =	$_POST['DistanceId'];
+        }
+	// Конец инициализации дистанции 
+	$view = "ViewLevelPointDiscounts";
+	$viewmode = "Add";
+}
+// ============  Добавить интервал амнистии  =============
+elseif ($action == 'AddLevelPointDiscount')
+{
+	$view = "ViewLevelPointDiscounts";
+	$viewmode = "Add";
+
+
+	// Общая проверка возможности редактирования
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на ввод интервала";
+		$alert = 0;
+		return;
+	}
+
+		$pDistanceId = (int)$_POST['DistanceId'];
+                $pDiscountStart = (int)$_POST['DiscountStart'];
+                $pDiscountFinish = (int)$_POST['DiscountFinish'];
+                $pDiscountValue = (int)$_POST['DiscountValue'];
+                
+
+
+         // тут по-хорошему нужны проверки
+      
+	   if  (empty($pDiscountValue) or ($pDiscountFinish < $pDiscountStart) or empty($pDiscountStart) or empty($pDiscountFinish))
+	   {
+			$statustext = 'Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+      	         $sql = " select count(*) as countresult 
+		          from LevelPointDiscounts
+		          where levelpointdiscount_hide = 0  and distance_id = ".$pDistanceId."
+			        and (levelpointdiscount_start <= ".$pDiscountFinish." and levelpointdiscount_finish >= ".$pDiscountStart.")"; 
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $AlreadyExists = (int)$Row['countresult'];
+		mysql_free_result($Result);
+
+	   if  ($AlreadyExists > 0)
+	   {
+			$statustext = 'Интервал пересекается с существующим.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+      	         $sql = " select count(*) as countresult 
+		          from LevelPoints
+		          where levelpoint_hide = 0  and distance_id = ".$pDistanceId."
+			        and pointtype_id in (1,2,4) 
+			        and (levelpoint_order <= ".$pDiscountFinish." and levelpoint_order >= ".$pDiscountStart.")";
+				 
+;
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $ForbiddenPointExists = (int)$Row['countresult'];
+		mysql_free_result($Result);
+
+	   if  ($ForbiddenPointExists > 0)
+	   {
+			$statustext = 'Интервал содержит запрещённые для амнистии точки.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+                
+
+             // потом добавить время макс. и мин.
+	     
+		$sql = "insert into LevelPointDiscounts (distance_id, levelpointdiscount_start, levelpointdiscount_finish, 
+			levelpointdiscount_hide, levelpointdiscount_value)
+			values (".$pDistanceId.", ".$pDiscountStart.", ".$pDiscountFinish.", 0, ".$pDiscountValue.")";
+		// При insert должен вернуться послений id - это реализовано в MySqlQuery
+		$LevelPointDiscountId = MySqlQuery($sql);
+		
+		if ($LevelPointDiscountId <= 0)
+		{
+			$statustext = 'Ошибка записи новой точки.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+		}
+	
+
+ }
+ elseif ($action == "LevelPointDiscountInfo")  
+ {
+    // Действие вызывается кнопокй "Править" в таблице интервалов
+   
+	$view = "ViewLevelPointDiscounts";
+	$viewmode = "Edit";
+ }
+ // ============ Правка интервала  =============
+elseif ($action == 'LevelPointDiscountChange')
+{
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку интервала";
+		$alert = 0;
+		return;
+	}
+
+  	 $view = "ViewLevelPointDiscounts";
+	 $viewmode = "Add";
+	
+        $pLevelPointDiscountId = $_POST['LevelPointDiscountId'];
+
+
+	if ($pLevelPointDiscountId <= 0)
+	{
+		$statustext = 'Не определён ключ интервала.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+
+                
+
+		$pDistanceId = (int)$_POST['DistanceId'];
+                $pDiscountStart = (int)$_POST['DiscountStart'];
+                $pDiscountFinish = (int)$_POST['DiscountFinish'];
+                $pDiscountValue = (int)$_POST['DiscountValue'];
+           
+        // тут надо поставить проверки
+
+	   if  (empty($pDiscountValue) or ($pDiscountFinish < $pDiscountStart) or empty($pDiscountStart) or empty($pDiscountFinish))
+	   {
+			$statustext = 'Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+      	         $sql = " select count(*) as countresult 
+		          from LevelPointDiscounts
+		          where levelpointdiscount_hide = 0  and distance_id = ".$pDistanceId."
+                                and  levelpointdiscount_id <> ".$pLevelPointDiscountId."
+			        and (levelpointdiscount_start <= ".$pDiscountFinish." and levelpointdiscount_finish >= ".$pDiscountStart.")"; 
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $AlreadyExists = (int)$Row['countresult'];
+		mysql_free_result($Result);
+
+	   if  ($AlreadyExists > 0)
+	   {
+			$statustext = 'Интервал пересекается с существующим.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+      	         $sql = " select count(*) as countresult 
+		          from LevelPoints
+		          where levelpoint_hide = 0  and distance_id = ".$pDistanceId."
+			        and pointtype_id in (1,2,4) 
+			        and (levelpoint_order <= ".$pDiscountFinish." and levelpoint_order >= ".$pDiscountStart.")";
+				 
+;
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $ForbiddenPointExists = (int)$Row['countresult'];
+		mysql_free_result($Result);
+
+	   if  ($ForbiddenPointExists > 0)
+	   {
+			$statustext = 'Интервал содержит запрещённые для амнистии точки.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+	
+		
+        $sql = "update LevelPointDiscounts  set levelpointdiscount_value = ".$pDiscountValue."
+	                                ,levelpointdiscount_start = ".$pDiscountStart."
+	                                ,levelpointdiscount_finish = ".$pDiscountFinish."
+	       where 	levelpointdiscount_id = ".$pLevelPointDiscountId;        
+			
+	//echo $sql;
+			
+	 MySqlQuery($sql);
+       
+      	
+
+}
+// ============ Удаление интервала  =============
+elseif ($action == 'HideLevelPointDiscount')
+{
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку интервала";
+		$alert = 0;
+		return;
+	}
+
+        $pLevelPointDiscountId = $_POST['LevelPointDiscountId'];
+
+
+	if ($pLevelPointDiscountId <= 0)
+	{
+		$statustext = 'Не определён ключ интервала.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+	
+	      
+
+       
+        $sql = "update LevelPointDiscounts set levelpointdiscount_hide = 1 
+	        where levelpointdiscount_id = ".$pLevelPointDiscountId;        
+			
+	 MySqlQuery($sql);
+
+	$view = "ViewLevelPointDiscounts";
+	$viewmode = "Add";
+		
+
+}
+// ============ Пересоздание этапов =================================
+elseif ($action == 'RecalculateLevels')
+{
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку";
+		$alert = 0;
+		return;
+	}
+
+  	 $view = "ViewLevelPoints";
+	 $viewmode = "Add";
+	 
+	 
+	 echo 'Пока не сделано.';
 }
 // ============ Никаких действий не требуется =================================
 else

@@ -237,6 +237,18 @@ if (!isset($MyPHPScript)) return;
 		document.FindTeamForm.submit();
 	}
 
+	function ViewLevelPoints()
+	{ 
+		document.FindTeamForm.action.value = "ViewLevelPointsPage";
+		document.FindTeamForm.submit();
+	}
+
+	function ViewLevelPointDiscounts()
+	{ 
+		document.FindTeamForm.action.value = "ViewLevelPointDiscountsPage";
+		document.FindTeamForm.submit();
+	}
+
 	function ViewAdminDataPage()
 	{ 
 		document.FindTeamForm.action.value = "ViewAdminDataPage";
@@ -302,8 +314,21 @@ if (!isset($MyPHPScript)) return;
 	    print('<tr><td><a href = "javascript:ViewAdminModeratorsPage();" title = "Страница администрирования модераторов">Модераторы</a></td></tr>'."\r\n"); 
         }
 
+
+        // Точки
+        print('<tr><td><a href = "javascript:ViewLevelPoints();" title = "Список точек (КП) для выбранного выше ММБ">Точки (КП)</a></td></tr>'."\r\n"); 
+
+        // Амнистия для интервала КП
+	if ($Administrator || $Moderator)
+	{
+	    print('<tr><td><a href = "javascript:ViewLevelPointDiscounts();" title = "Страница интервалов КП с амнистией">Амнистия</a></td></tr>'."\r\n"); 
+        }
+
+
         // Файлы
         print('<tr><td><a href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Файлы</a></td></tr>'."\r\n"); 
+
+
 
         // Импорт-Экспорт, пересчет
 	if ($Administrator || $Moderator)
