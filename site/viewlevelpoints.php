@@ -446,5 +446,71 @@ print('</br>'."\n");
 	
 	}
 
+print('</br>'."\n");
+
+	// Список этапов
+
+	$sql = "select l.level_id, l.level_order, l.level_name,   
+                       l.level_starttype, 
+      		       DATE_FORMAT(COALESCE(l.level_begtime, '0000-00-00 00:00:00'), '%m-%d %H:%i') as level_begtime,
+      		       DATE_FORMAT(COALESCE(l.level_maxbegtime, '0000-00-00 00:00:00'), '%m-%d %H:%i') as level_maxbegtime,
+      		       DATE_FORMAT(COALESCE(l.level_minendtime, '0000-00-00 00:00:00'), '%m-%d %H:%i') as level_minendtime,
+      		       DATE_FORMAT(COALESCE(l.level_endtime, '0000-00-00 00:00:00'), '%m-%d %H:%i') as level_endtime,
+	               l.level_pointnames, l.level_pointpenalties, level_discountpoints, level_discount
+		from Levels l
+		where l.level_hide = 0 and l.distance_id = ".$DistanceId."
+		order by level_order";
+	
+	//echo $sql;
+	$Result = MySqlQuery($sql);
+	
+	$tdstyle = 'padding: 5px 0px 2px 5px;';		
+        $thstyle = 'padding: 5px 0px 0px 5px;';		
+
+
+		print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
+
+		print('<tr class = "gray">
+		         <td width = "50" style = "'.$thstyle.'">N п/п</td>
+		         <td width = "200" style = "'.$thstyle.'">Название</td>
+		         <td width = "150" style = "'.$thstyle.'">Тип Старта</td>
+		         <td width = "150" style = "'.$thstyle.'">Старт с</td>
+		         <td width = "150" style = "'.$thstyle.'">по</td>
+		         <td width = "150" style = "'.$thstyle.'">Финиш с</td>
+		         <td width = "150" style = "'.$thstyle.'">по</td>
+		         <td width = "150" style = "'.$thstyle.'">Точки</td>
+		         <td width = "150" style = "'.$thstyle.'">Штрафы (минуты)</td>
+		         <td width = "150" style = "'.$thstyle.'">КП в амнистии</td>
+		         <td width = "100" style = "'.$thstyle.'">Амнистия</td>'."\r\n");
+
+			
+		print('</tr>'."\r\n");
+		
+	        // Сканируем команды
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
+                     print('<tr>'."\r\n");
+		     print('<td align = "left" style = "'.$tdstyle.'">'.$Row['level_order'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['level_name'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['level_starttype'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['level_begtime'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['level_maxbegtime'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['level_minendtime'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['level_endtime'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['level_pointnames'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['level_pointpenalties'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['level_discountpoints'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['level_discount'].'</td>');
+
+  	                               
+		}	
+
+		mysql_free_result($Result);
+		print('</table>'."\r\n");
+	
+
+
+
 ?>
 

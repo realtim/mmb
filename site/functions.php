@@ -944,4 +944,100 @@ send_mime_mail('Автор письма',
       // Конец получения логотипа
 
 
+     // 26/12/2013 
+     // Проверка корректности внесённых точек
+     function CheckLevelPoints($distanceid)
+     {
+     
+       $CheckString = "";
+       // Важно, что в "правой" таблице берутся только точки с типом 1,2,4 (старт,финиш, смена карт)
+       // условия
+       // 1. перед стартом не дожно быть ничего или должен быть финиш
+       // 2. перед финишем должен быть старт или смена карт
+       // 3. перед сменой карт должен быть старт 
+       // 4. перед точкой, которая не является стартом не должен быть финиш
+
+
+       $sql =  "select  c.levelpoint_id, c.levelpoint_name, c.pointtype_id, c.predpointtype_id
+		from 
+		(
+		 select  a.levelpoint_id,  MAX(a.levelpoint_name) as levelpoint_name,   
+		         COALESCE(MAX(a.pointtype_id), 0) as  pointtype_id,
+			 MAX(b.levelpoint_order),
+			 (select  pointtype_id
+			  from LevelPoints
+			  where  distance_id = ".$distanceid."
+			         and  levelpoint_hide = 0
+				 and  levelpoint_order =  MAX(b.levelpoint_order)
+			  LIMIT 0,1
+			 ) as predpointtype_id
+		 from 
+			(
+			 select  levelpoint_id, levelpoint_name, levelpoint_order, pointtype_id
+			 from LevelPoints lp
+			 where distance_id = ".$distanceid."
+			       and  levelpoint_hide = 0
+			) a
+			left outer join
+			(
+			 select  levelpoint_id, levelpoint_name, levelpoint_order, pointtype_id
+			 from LevelPoints lp
+			 where distance_id = ".$distanceid."
+			       and  levelpoint_hide = 0
+			       and  pointtype_id in (1,2,4)
+			) b
+			on a.levelpoint_order > b.levelpoint_order
+		group by a.levelpoint_id
+	       ) c
+	       where (c.pointtype_id  =  1 and c.predpointtype_id not in (0,2)) 
+			or 
+		     (c.pointtype_id  =  2 and c.predpointtype_id  not in (1, 4)) 
+			or 
+		     (c.pointtype_id  =  4 and c.predpointtype_id  not in (1)) 
+			or 
+		     (c.pointtype_id  not in (1) and c.predpointtype_id  = 2) 
+	       order by 1";
+
+     //  echo $sql;		
+
+        $Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$LevelPointId = $Row['levelpoint_id'];
+	$LevelPointName = $Row['levelpoint_name'];
+	mysql_free_result($Result);
+
+        if (!empty($LevelPointId))
+	{
+	  $CheckString = "Некорректность в точке ".$LevelPointName;
+	}
+	
+	$sql = " select lpd.levelpointdiscount_id, lpd.levelpointdiscount_start, lpd.levelpointdiscount_finish 
+	         from LevelPoints lp
+		      inner join  LevelPointDiscounts lpd
+		      on lp.levelpoint_order >= lpd.levelpointdiscount_start
+		         and lp.levelpoint_order <= lpd.levelpointdiscount_finish
+	         where lp.levelpoint_hide = 0  
+		       and lp.distance_id = ".$distanceid."
+		       and lpd.distance_id = ".$distanceid."
+	               and lp.pointtype_id in (1,2,4) 
+		       and lpd.levelpointdiscount_hide = 0";
+				 
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$LevelPointId = $Row['levelpointdiscount_id'];
+	$LevelPointDiscountStart = $Row['levelpointdiscount_start'];
+	$LevelPointDiscountFinish = $Row['levelpointdiscount_finish'];
+	mysql_free_result($Result);
+
+        if (!empty($LevelPointId))
+	{
+	  $CheckString .= "Некорректность в интервале ".$LevelPointDiscountStart." - ".$LevelPointDiscountFinish;
+	}
+
+
+    
+       return($CheckString);
+     }
+     //Конец проверки корректности точек
+
 ?>

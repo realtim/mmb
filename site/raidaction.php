@@ -814,6 +814,13 @@ elseif ($action == 'AddLevelPoint')
 		}
 	
 
+	 $statustext = CheckLevelPoints($DistanceId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
+
+
  }
  elseif ($action == "LevelPointInfo")  
  {
@@ -844,6 +851,7 @@ elseif ($action == 'LevelPointChange')
 		$statustext = 'Не определён ключ точки.';
 		$alert = 1;
 		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
 		return;
 	}
 
@@ -889,7 +897,7 @@ elseif ($action == 'LevelPointChange')
 		          from LevelPoints
 		          where levelpoint_hide = 0  and distance_id = ".$pDistanceId."
                                 and levelpoint_id <> ".$pLevelPointId."
-			        and trim(levelpoint_name)= trim(".$pPointName.")"; 
+			        and trim(levelpoint_name)= trim('".$pPointName."')"; 
                 
 		$Result = MySqlQuery($sql);
 		$Row = mysql_fetch_assoc($Result);
@@ -901,6 +909,7 @@ elseif ($action == 'LevelPointChange')
 			$statustext = 'Повтор названия.';
 			$alert = 1;
 			$viewsubmode = "ReturnAfterError";
+			$viewmode = "Edit";
 			return;
            }
 
@@ -917,6 +926,11 @@ elseif ($action == 'LevelPointChange')
 			
 	 MySqlQuery($sql);
        
+	 $statustext = CheckLevelPoints($DistanceId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
 		
 
 }
@@ -938,6 +952,7 @@ elseif ($action == 'HideLevelPoint')
 		$statustext = 'Не определён ключ точки.';
 		$alert = 1;
 		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
 		return;
 	}
 	
@@ -964,6 +979,13 @@ elseif ($action == 'HideLevelPoint')
 	        where levelpoint_order > ".$LevelOrder. " and distance_id = ".$DistanceId;        
 			
 	 MySqlQuery($sql);
+
+
+	 $statustext = CheckLevelPoints($DistanceId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
 
 
 	$view = "ViewLevelPoints";
@@ -995,6 +1017,7 @@ elseif ($action == 'LevelPointOrderDown')
 		$statustext = 'Не определён ключ точки.';
 		$alert = 1;
 		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
 		return;
 	}
 	
@@ -1030,6 +1053,7 @@ elseif ($action == 'LevelPointOrderDown')
 		$statustext = 'Нельзя уменьшить порядковый номер.';
 		$alert = 1;
 		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
 		return;
 	
 	}
@@ -1047,6 +1071,11 @@ elseif ($action == 'LevelPointOrderDown')
 	 MySqlQuery($sql);
 
 
+	 $statustext = CheckLevelPoints($DistanceId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
 		
 
 }
@@ -1073,6 +1102,7 @@ elseif ($action == 'LevelPointOrderUp')
 		$statustext = 'Не определён ключ точки.';
 		$alert = 1;
 		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
 		return;
 	}
 	
@@ -1109,6 +1139,7 @@ elseif ($action == 'LevelPointOrderUp')
 		$statustext = 'Нельзя увеличить порядковый номер.';
 		$alert = 1;
 		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
 		return;
 	
 	}
@@ -1123,6 +1154,13 @@ elseif ($action == 'LevelPointOrderUp')
 	        where levelpoint_id = ".$MinLevelPointId;        
 			
 	 MySqlQuery($sql);
+	 
+	 $statustext = CheckLevelPoints($DistanceId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
+	 
 
 }
 // ============ просмотр интервалов амнистии  =============
@@ -1207,9 +1245,10 @@ elseif ($action == 'AddLevelPointDiscount')
 		          from LevelPoints
 		          where levelpoint_hide = 0  and distance_id = ".$pDistanceId."
 			        and pointtype_id in (1,2,4) 
-			        and (levelpoint_order <= ".$pDiscountFinish." and levelpoint_order >= ".$pDiscountStart.")";
+			        and (levelpoint_order <= ".$pDiscountFinish." 
+				and levelpoint_order >= ".$pDiscountStart.")";
 				 
-;
+
                 
 		$Result = MySqlQuery($sql);
 		$Row = mysql_fetch_assoc($Result);
@@ -1272,6 +1311,7 @@ elseif ($action == 'LevelPointDiscountChange')
 		$statustext = 'Не определён ключ интервала.';
 		$alert = 1;
 		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
 		return;
 	}
 
@@ -1289,6 +1329,7 @@ elseif ($action == 'LevelPointDiscountChange')
 			$statustext = 'Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.';
 			$alert = 1;
 			$viewsubmode = "ReturnAfterError";
+			$viewmode = "Edit";
 			return;
            }
 
@@ -1308,6 +1349,7 @@ elseif ($action == 'LevelPointDiscountChange')
 			$statustext = 'Интервал пересекается с существующим.';
 			$alert = 1;
 			$viewsubmode = "ReturnAfterError";
+			$viewmode = "Edit";
 			return;
            }
 
@@ -1315,9 +1357,10 @@ elseif ($action == 'LevelPointDiscountChange')
 		          from LevelPoints
 		          where levelpoint_hide = 0  and distance_id = ".$pDistanceId."
 			        and pointtype_id in (1,2,4) 
-			        and (levelpoint_order <= ".$pDiscountFinish." and levelpoint_order >= ".$pDiscountStart.")";
+			        and (levelpoint_order <= ".$pDiscountFinish." 
+				and levelpoint_order >= ".$pDiscountStart.")";
 				 
-;
+
                 
 		$Result = MySqlQuery($sql);
 		$Row = mysql_fetch_assoc($Result);
@@ -1329,6 +1372,7 @@ elseif ($action == 'LevelPointDiscountChange')
 			$statustext = 'Интервал содержит запрещённые для амнистии точки.';
 			$alert = 1;
 			$viewsubmode = "ReturnAfterError";
+			$viewmode = "Edit";
 			return;
            }
 
@@ -1342,7 +1386,8 @@ elseif ($action == 'LevelPointDiscountChange')
 	//echo $sql;
 			
 	 MySqlQuery($sql);
-       
+
+       $viewmode = "Add";
       	
 
 }
@@ -1364,6 +1409,7 @@ elseif ($action == 'HideLevelPointDiscount')
 		$statustext = 'Не определён ключ интервала.';
 		$alert = 1;
 		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
 		return;
 	}
 	
@@ -1392,9 +1438,196 @@ elseif ($action == 'RecalculateLevels')
 
   	 $view = "ViewLevelPoints";
 	 $viewmode = "Add";
+
+ 	 $pDistanceId = (int)$_POST['DistanceId'];
+
+         if ($pDistanceId <= 0)
+	 {
+		$statustext = 'Не определена дистанция.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	 }
 	 
+
+
+	 $statustext = CheckLevelPoints($pDistanceId);
+	 if (!empty($error))
+	 {
+		$statustext = 'Нельзя создавать этапы: '.$statustext;
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	 }
+
+          // Нет проверки, что на одном этапе ровно одна амнистия
+
+
+         // удаляем существующие этапы
+         $sql = "update Levels set level_hide = 1 
+	          where distance_id = ".$pDistanceId;        
+			
+	 MySqlQuery($sql);
 	 
-	 echo 'Пока не сделано.';
+         // цикл по точкам
+	 $sql = "select lp.levelpoint_id, pt.pointtype_id, pt.pointtype_name,  
+	                lp.levelpoint_name, lp.levelpoint_penalty, 
+	 	        lp.distance_id, lp.levelpoint_order,
+		        lp.levelpoint_mindatetime, 
+		        lp.levelpoint_maxdatetime, 
+		        COALESCE(lpd.levelpointdiscount_value, 0) as levelpoint_discount
+	 	 from LevelPoints lp
+		      inner join PointTypes pt
+		      on lp.pointtype_id = pt.pointtype_id
+		      left outer join LevelPointDiscounts lpd
+		      on lp.distance_id = lpd.distance_id
+		         and lpd.levelpointdiscount_hide = 0
+			 and lpd.levelpointdiscount_start <= lp.levelpoint_order
+			 and lpd.levelpointdiscount_finish >= lp.levelpoint_order
+		 where lp.levelpoint_hide = 0 and lp.distance_id = ".$pDistanceId."
+		 order by levelpoint_order";
+
+	 
+	 $Result = MySqlQuery($sql);
+
+         $LevelId = 0;
+         $LevelOrder = 0;
+	 $LevelPoints = "";
+	 $LevelPenalties  = "";
+	 $LevelDiscountPoints = "";
+	 $LevelDiscountValue = 0;
+	  
+ 	 while ($Row = mysql_fetch_assoc($Result))
+	 {
+
+               // Финиш или смена-карт - обновляем уже созжанный уровень
+               if (($Row['pointtype_id'] == 2 or $Row['pointtype_id'] == 4) and ($LevelId > 0))
+	       {
+		  $sqlPoint = "update LevelPoints set level_id = ".$LevelId." 
+			       where levelpoint_id = ".$Row['levelpoint_id'];        
+			
+		  MySqlQuery($sqlPoint);
+
+                  if ($Row['levelpoint_discount'] <> 0) 
+		  {
+		     if ($LevelDiscountValue == 0)
+		     {
+			$LevelDiscountValue = $Row['levelpoint_discount'];
+                     }
+	             $LevelDiscountPoints .= ",1";
+		  } else {
+		     $LevelDiscountPoints .= ",0";
+		  }
+	       
+	          $LevelPoints .= ",".$Row['levelpoint_name'];
+          	  $LevelPenalties .= ",".$Row['levelpoint_penalty'];
+
+
+  		  $sqlFinishLevel = "update Levels set   
+                                                      level_minendtime = '".$Row['levelpoint_mindatetime']."'
+						      ,level_endtime = '".$Row['levelpoint_maxdatetime']."'		 
+						      ,level_pointnames = '".$LevelPoints."'		 
+						      ,level_pointpenalties = '".$LevelPenalties."'		 
+						      ,level_discountpoints = '".$LevelDiscountPoints."'		 
+						      ,level_discount = ".$LevelDiscountValue."		 
+						      ,level_name = CONCAT(level_name, '".trim($Row['levelpoint_name'])."')		 
+		 	            where level_id = ".$LevelId;
+	          // echo $sqlFinishLevel;
+	          MySqlQuery($sqlFinishLevel);
+	       }       
+               // Конец проверки на финиш или смену карт
+
+               // Старт или смена-карт - записываем уровень
+               if ($Row['pointtype_id'] == 1 or $Row['pointtype_id'] == 4)
+	       {
+
+	         $LevelId = 0;
+		 $LevelPoints = "";
+		 $LevelPenalties  = "";
+		 $LevelDiscountPoints = "";
+		 $LevelDiscountValue = 0;
+	         $LevelOrder++;
+
+                 if ($Row['pointtype_id'] == 4)
+		 {
+		   $StartType = 3;
+		 } else {
+                    // Проверка на общий старт
+		    if ($Row['levelpoint_mindatetime'] == $Row['levelpoint_maxdatetime']) 
+		    {
+		       $StartType = 2;
+		    } else  {
+ 		       $StartType = 1;
+		    }
+		 }
+	         
+ 		 $sqlStartLevel = "insert into Levels (distance_id, level_name, level_starttype,
+		                                       level_hide, level_order, 
+			                               level_begtime, level_maxbegtime)
+			            values (".$pDistanceId.", '".trim($Row['levelpoint_name'])." - ', ".$StartType.",
+				              0, ".$LevelOrder.",
+				            '".$Row['levelpoint_mindatetime']."', '".$Row['levelpoint_maxdatetime']."')";
+		// При insert должен вернуться послений id - это реализовано в MySqlQuery
+                 //echo $sqlStartLevel;
+		 $LevelId = MySqlQuery($sqlStartLevel);
+       
+       
+       		 $sqlPoint = "update LevelPoints set level_id = ".$LevelId." 
+			       where levelpoint_id = ".$Row['levelpoint_id'];        
+			
+		 MySqlQuery($sqlPoint);
+
+                 if ($Row['levelpoint_discount'] <> 0) 
+		 {
+		     if ($LevelDiscountValue == 0)
+		     {
+			$LevelDiscountValue = $Row['levelpoint_discount'];
+                     }
+
+	             $LevelDiscountPoints = "1";
+
+		 } else {
+
+		     $LevelDiscountPoints = "0";
+	  
+		 }
+
+	         $LevelPoints = $Row['levelpoint_name'];
+          	 $LevelPenalties = $Row['levelpoint_penalty'];
+	       }       
+               // Конец проверки на старт или смену карт
+             
+	       // Точка, кроме старта, финиша или смены карт 
+	       if ($LevelId > 0 and $Row['pointtype_id'] <> 1  and $Row['pointtype_id'] <> 2 and $Row['pointtype_id'] <> 4)
+	       {
+	       
+	          $sqlPoint = "update LevelPoints set level_id = ".$LevelId." 
+			       where levelpoint_id = ".$Row['levelpoint_id'];        
+			
+		  MySqlQuery($sqlPoint);
+
+                  if ($Row['levelpoint_discount'] <> 0) 
+		  {
+		     if ($LevelDiscountValue == 0)
+		     {
+			$LevelDiscountValue = $Row['levelpoint_discount'];
+                     }
+	             $LevelDiscountPoints .= ",1";
+		  } else {
+                     $LevelDiscountPoints .= ",0";
+		  }
+	       
+       	          $LevelPoints .= ",".$Row['levelpoint_name'];
+		  $LevelPenalties .= ",".$Row['levelpoint_penalty'];
+	       }       
+               // Конец проверки, что точка не смена карт старт или финиш
+
+	 }
+         // Конец цикла 
+	 mysql_free_result($Result);
+
+	 
+	
 }
 // ============ Никаких действий не требуется =================================
 else
