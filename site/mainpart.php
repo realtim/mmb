@@ -29,6 +29,12 @@ if (!isset($MyPHPScript)) return;
 	} elseif ($view == "ViewRaidFiles") {
 		// Файлы 
 		include("viewraidfiles.php");
+	} elseif ($view == "ViewLevelPoints") {
+		// Точки (КП) 
+		include("viewlevelpoints.php");
+	} elseif ($view == "ViewLevelPointDiscounts") {
+		// Амнистия 
+		include("viewlevelpointdiscounts.php");
 	} elseif ($view == "ViewAdminModeratorsPage") {
 		// Результаты ММБ (по всем командам)
 		include("viewadminmoderatorspage.php");
