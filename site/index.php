@@ -34,19 +34,34 @@
 	if (isset($_REQUEST['RaidId'])) $RaidId = (int)$_REQUEST['RaidId']; else $RaidId = "0";
 	if (isset($_REQUEST['TeamId'])) $TeamId = (int)$_REQUEST['TeamId']; else $TeamId = "0";
 
+         // 27/12/2013 Заменил на сортировку по ключу
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
         if (empty($RaidId))
 	{ 
 
-		  $sql = "select raid_id
-			  from Raids 
-		 	  order by raid_registrationenddate desc
-			  LIMIT 0,1 ";
+  	     GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
-		  $Result = MySqlQuery($sql);
-		  $Row = mysql_fetch_assoc($Result);
-		  $RaidId = $Row['raid_id'];
-		  mysql_free_result($Result);
+
+             if ($Administrator)
+	     {
+	       $sql = "select raid_id
+		       from Raids
+		       order by raid_id desc
+		       LIMIT 0,1 ";
+	     
+	     } else {
+	     
+	       $sql = "select raid_id
+		       from Raids
+	 	       order by raid_registrationenddate desc
+		       LIMIT 0,1 ";
+	     
+	     }
+	     
+ 	     $Result = MySqlQuery($sql);
+	     $Row = mysql_fetch_assoc($Result);
+	     $RaidId = $Row['raid_id'];
+	     mysql_free_result($Result);
         }
 	// Конец определения ММБ
 

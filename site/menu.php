@@ -262,6 +262,12 @@ if (!isset($MyPHPScript)) return;
 		document.FindTeamForm.submit();
 	}
 
+	function ChangeRaid()
+	{ 
+		document.FindTeamForm.action.value = "";
+		document.FindTeamForm.submit();
+	}
+
 </script>
 
 <?php
@@ -275,7 +281,7 @@ if (!isset($MyPHPScript)) return;
 	}                
 	print('<input type = "hidden" name = "action" value = "FindTeam">'."\r\n"); 
 	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
-        // Эта переменная нужна только тогла, когда из спсика марш-бросков выбирают дистанцию
+        // Эта переменная нужна только тогда, когда из спсика марш-бросков выбирают дистанцию
 	print('<input type = "hidden" name = "DistanceId" value = "0">'."\r\n");
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 	print('<tr><td class = "input">ММБ'."\r\n"); 
@@ -293,7 +299,7 @@ if (!isset($MyPHPScript)) return;
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-		  print('<option value = "'.$Row['raid_id'].'"  '.(($Row['raid_id'] == $RaidId) ? 'selected' : '').' >'.$Row['raid_name']."\r\n");
+		  print('<option value = "'.$Row['raid_id'].'"  '.(($Row['raid_id'] == $RaidId) ? 'selected' : '').' onclick = "javascript: ChangeRaid();">'.$Row['raid_name']."\r\n");
 		}
 
                 mysql_free_result($Result);
@@ -315,9 +321,12 @@ if (!isset($MyPHPScript)) return;
         }
 
 
-        // Точки
-        print('<tr><td><a href = "javascript:ViewLevelPoints();" title = "Список точек (КП) для выбранного выше ММБ">Точки (КП)</a></td></tr>'."\r\n"); 
-
+        // Точки показываем только после финиша
+	if ($Administrator || $Moderator || $RaidStage >= 5)
+        {
+	  print('<tr><td><a href = "javascript:ViewLevelPoints();" title = "Список точек (КП) для выбранного выше ММБ">Точки (КП)</a></td></tr>'."\r\n"); 
+        }
+	 
         // Амнистия для интервала КП
 	if ($Administrator || $Moderator)
 	{
@@ -358,6 +367,8 @@ if (!isset($MyPHPScript)) return;
 	}                
 	print('<input type = "hidden" name = "action" value = "FindUser">'."\r\n"); 
 	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
+	print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
+	print('<input type = "hidden" name = "DistanceId" value = "0">'."\r\n");
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 	//print('<tr><td class = "input">Поиск пользователя</td></tr>'."\r\n"); 
 	print('<tr><td class = "input"><input  type="text" name="FindString" style = "width:125px;" value="Часть ФИО" tabindex = "301" 
