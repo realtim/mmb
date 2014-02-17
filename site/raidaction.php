@@ -688,6 +688,435 @@ elseif ($action == 'HideFile')
 		
 
 }
+// ============ Точки сканирвания марш-броска  =============
+elseif ($action == 'ViewScanPointsPage')
+{
+	if ($RaidId <= 0)
+	{
+		$statustext = 'Id ММБ не указан';
+		$alert = 1;
+		return;
+	}
+	
+       	
+	$view = "ViewScanPoints";
+	$viewmode = "Add";
+}
+// ============ Добавить скан-точку  =============
+elseif ($action == 'AddScanPoint')
+{
+
+
+	$view = "ViewScanPoints";
+	$viewmode = "Add";
+
+
+	// Общая проверка возможности редактирования
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на ввод скан-точки";
+		$alert = 0;
+		return;
+	}
+
+                $pScanPointName = $_POST['ScanPointName'];
+
+         // тут по-хорошему нужны проверки
+
+	      $sql = "select  MAX(scanpoint_order) as lastorder
+	              from ScanPoints
+	              where scanpoint_hide = 0 and raid_id = ".$RaidId;        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$LastOrder = (int)$Row['lastorder'];
+
+	   if  (empty($pScanPointName) or trim($pScanPointName) == 'Название точки сканирования')
+	   {
+			$statustext = 'Не указано название скан-точки.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+		 $sql = " select count(*) as countresult 
+		          from ScanPoints
+		          where scanpoint_hide = 0  and raid_id = ".$RaidId."
+			        and trim(scanpoint_name) = trim('".$pScanPointName."')"; 
+              
+	        
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $AlreadyExists = (int)$Row['countresult'];
+		mysql_free_result($Result);
+
+	   if  ($AlreadyExists > 0)
+	   {
+			$statustext = 'Повтор названия скан-точки.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+
+             // потом добавить время макс. и мин.
+	     
+		$sql = "insert into ScanPoints (raid_id, scanpoint_name, 
+			scanpoint_order, scanpoint_hide)
+			values (".$RaidId.", '".$pScanPointName."',  ".($LastOrder + 1).", 0)";
+		// При insert должен вернуться послений id - это реализовано в MySqlQuery
+
+           //    echo $sql;
+		
+		$ScanPointId = MySqlQuery($sql);
+		
+		if ($ScanPointId <= 0)
+		{
+			$statustext = 'Ошибка записи новой скан-точки.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+		}
+	
+
+	 $statustext = CheckScanPoints($RaidId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
+
+
+ }
+ elseif ($action == "ScanPointInfo")  
+ {
+    // Действие вызывается кнопокй "Править" в таблице скан-точек
+   
+	$view = "ViewScanPoints";
+	$viewmode = "Edit";
+ }
+ // ============ Правка скан-точки  =============
+elseif ($action == 'ScanPointChange')
+{
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку скан-точки";
+		$alert = 0;
+		return;
+	}
+
+  	 $view = "ViewScanPoints";
+	 $viewmode = "Add";
+
+
+        $pScanPointId = $_POST['ScanPointId'];
+        $pScanPointName = $_POST['ScanPointName'];
+
+
+	if ($pScanPointId <= 0)
+	{
+		$statustext = 'Не определён ключ скан-точки.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
+		return;
+	}
+
+
+
+
+		 $sql = " select count(*) as countresult 
+		          from ScanPoints
+		          where scanpoint_hide = 0  and raid_id = ".$RaidId."
+                                and scanpoint_id <> ".$pScanPointId."
+			        and trim(scanpoint_name)= trim('".$pScanPointName."')"; 
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $AlreadyExists = (int)$Row['countresult'];
+		mysql_free_result($Result);
+
+	   if  ($AlreadyExists > 0)
+	   {
+			$statustext = 'Повтор названия.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			$viewmode = "Edit";
+			return;
+           }
+
+
+		
+        $sql = "update ScanPoints  set scanpoint_name = '".$pScanPointName."'
+	        where scanpoint_id = ".$pScanPointId;        
+			
+	//echo $sql;
+			
+	 MySqlQuery($sql);
+       
+	 $statustext = CheckScanPoints($RaidId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
+		
+
+}
+// ============ Удаление скан-точки  =============
+elseif ($action == 'HideScanPoint')
+{
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку скан-точки";
+		$alert = 0;
+		return;
+	}
+
+	 $view = "ViewScanPoints";
+	 $viewmode = "Add";
+
+
+        $pScanPointId = $_POST['ScanPointId'];
+
+
+	if ($pScanPointId <= 0)
+	{
+		$statustext = 'Не определён ключ скан-точки.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
+		return;
+	}
+	
+	
+	      $sql = "select  count(*) as lpcount
+	              from LevelPoints
+	              where scanpoint_id = ".$pScanPointId."
+		            and levelpoint_hide = 0" ;        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+                $LevelPointCount = $Row['lpcount'];  
+	
+	
+	if ($LevelPointCount > 0)
+	{
+		$statustext = 'Есть точки дистанции, которые ссылаются на эту скан-точку.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
+		return;
+	}
+	
+	
+	      $sql = "select  scanpoint_order
+	              from ScanPoints
+	              where scanpoint_id = ".$pScanPointId;        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$ScanOrder = $Row['scanpoint_order'];
+
+
+       
+        $sql = "update ScanPoints set scanpoint_hide = 1, scanpoint_order = 0 
+	        where scanpoint_id = ".$pScanPointId;        
+			
+	 MySqlQuery($sql);
+
+		// сдвигаем все точки с большими порядоквыми номерами, чем текущая
+        $sql = "update ScanPoints set scanpoint_order = scanpoint_order - 1
+	        where scanpoint_order > ".$ScanOrder. " and raid_id = ".$RaidId;        
+			
+	 MySqlQuery($sql);
+
+
+	 $statustext = CheckScanPoints($RaidId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
+
+
+	$view = "ViewScanPoints";
+	$viewmode = "Add";
+		
+
+}
+// ============ Поднять скан-точку (уменьшить порядковый номер)  =============
+elseif ($action == 'ScanPointOrderDown')
+{
+
+
+	$view = "ViewScanPoints";
+	$viewmode = "Add";
+
+
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку скан-точки";
+		$alert = 0;
+		return;
+	}
+
+        $pScanPointId = $_POST['ScanPointId'];
+
+
+	if ($pScanPointId <= 0)
+	{
+		$statustext = 'Не определён ключ скан-точки.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
+		return;
+	}
+	
+
+	      $sql = "select  scanpoint_order
+	              from ScanPoints
+	              where scanpoint_id = ".$pScanPointId;        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$ScanOrder = $Row['scanpoint_order'];
+
+
+	      $sql = "select  scanpoint_id
+	              from ScanPoints
+	              where scanpoint_order < ".$ScanOrder."
+		            and raid_id = ".$RaidId."
+			    and scanpoint_hide = 0
+		     order by scanpoint_order desc
+		     LIMIT 0,1";
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$MaxScanPointId = (int)$Row['scanpoint_id'];
+
+        if ($MaxScanPointId == 0)
+	{
+		$statustext = 'Нельзя уменьшить порядковый номер.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
+		return;
+	
+	}
+       
+              
+        $sql = "update ScanPoints set scanpoint_order = scanpoint_order - 1
+	        where scanpoint_id = ".$pScanPointId;        
+			
+	 MySqlQuery($sql);
+
+
+        $sql = "update ScanPoints set scanpoint_order = scanpoint_order + 1
+	        where scanpoint_id = ".$MaxScanPointId;        
+			
+	 MySqlQuery($sql);
+
+
+	 $statustext = CheckScanPoints($RaidId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
+		
+
+}
+// ============ Опустить скан-точку  (увеличить порядковый номер) =============
+elseif ($action == 'ScanPointOrderUp')
+{
+
+	$view = "ViewScanPoints";
+	$viewmode = "Add";
+
+
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку скан-точки";
+		$alert = 0;
+		return;
+	}
+
+        $pScanPointId = $_POST['ScanPointId'];
+
+
+	if ($pScanPointId <= 0)
+	{
+		$statustext = 'Не определён ключ скан-точки.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
+		return;
+	}
+	
+	      $sql = "select   scanpoint_order
+	              from ScanPoints
+	              where scanpoint_id = ".$pScanPointId;        
+	 
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$ScanOrder = $Row['scanpoint_order'];
+
+
+		$sql = "select  scanpoint_id
+	                from ScanPoints
+	                where scanpoint_order > ".$ScanOrder."
+		              and raid_id = ".$RaidId."
+			      and scanpoint_hide = 0
+		        order by scanpoint_order asc
+		        LIMIT 0,1";
+	
+	     //   echo $sql;
+	
+	      
+		$Result = MySqlQuery($sql);  
+		$Row = mysql_fetch_assoc($Result);
+		mysql_free_result($Result);
+
+		$MinScanPointId = (int)$Row['scanpoint_id'];
+
+
+        if ($MinScanPointId == 0)
+	{
+		$statustext = 'Нельзя увеличить порядковый номер.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
+		return;
+	
+	}
+       
+        $sql = "update ScanPoints set scanpoint_order = scanpoint_order + 1
+	        where scanpoint_id = ".$pScanPointId;        
+			
+	 MySqlQuery($sql);
+
+
+        $sql = "update ScanPoints set scanpoint_order = scanpoint_order - 1
+	        where scanpoint_id = ".$MinScanPointId;        
+			
+	 MySqlQuery($sql);
+	 
+	 $statustext = CheckScanPoints($RaidId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
+	 
+
+}
 // ============ Точки дистанции  =============
 elseif ($action == 'ViewLevelPointsPage')
 {
@@ -746,6 +1175,7 @@ elseif ($action == 'AddLevelPoint')
                 $pLevelPointMaxDate = $_POST['MaxDate'];
                 $pLevelPointMaxTime = $_POST['MaxTime'];
 
+		$pScanPointId = $_POST['ScanPointId'];
 
          // тут по-хорошему нужны проверки
 
@@ -779,7 +1209,7 @@ elseif ($action == 'AddLevelPoint')
 		 $sql = " select count(*) as countresult 
 		          from LevelPoints
 		          where levelpoint_hide = 0  and distance_id = ".$pDistanceId."
-			        and trim(levelpoint_name)= trim(".$pPointName.")"; 
+			        and trim(levelpoint_name)= trim('".$pPointName."')"; 
                 
 		$Result = MySqlQuery($sql);
 		$Row = mysql_fetch_assoc($Result);
@@ -799,9 +1229,9 @@ elseif ($action == 'AddLevelPoint')
 	     
 		$sql = "insert into LevelPoints (distance_id, levelpoint_name, pointtype_id, 
 			levelpoint_penalty, levelpoint_order, levelpoint_hide, 
-			levelpoint_mindatetime, levelpoint_maxdatetime )
+			levelpoint_mindatetime, levelpoint_maxdatetime, scanpoint_id)
 			values (".$pDistanceId.", '".$pPointName."', ".$pPointTypeId.",
-			        ".$pPointPenalty." , ".($LastOrder + 1).", 0, ".$MinYDTs.", ".$MaxYDTs.")";
+			        ".$pPointPenalty." , ".($LastOrder + 1).", 0, ".$MinYDTs.", ".$MaxYDTs.", ".$pScanPointId.")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$LevelPointId = MySqlQuery($sql);
 		
@@ -881,6 +1311,7 @@ elseif ($action == 'LevelPointChange')
                 $pLevelPointMaxDate = $_POST['MaxDate'];
                 $pLevelPointMaxTime = $_POST['MaxTime'];
 
+		$pScanPointId = $_POST['ScanPointId'];
 
         // тут надо поставить проверки
       // год всегда пишем текущий. если надо - можно добавить поле для года
@@ -916,6 +1347,7 @@ elseif ($action == 'LevelPointChange')
 
 		
         $sql = "update LevelPoints  set pointtype_id = ".$pPointTypeId." 
+	                                ,scanpoint_id = '".$pScanPointId."'
 	                                ,levelpoint_name = '".$pPointName."'
 	                                ,levelpoint_penalty = ".$pPointPenalty."
 	                                ,levelpoint_mindatetime = ".$MinYDTs."

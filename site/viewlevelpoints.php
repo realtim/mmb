@@ -51,6 +51,7 @@ if ($viewmode == 'Add')
                 $LevelPointMaxYear = $_POST['MaxYear'];
                 $LevelPointMaxDate = $_POST['MaxDate'];
                 $LevelPointMaxTime = $_POST['MaxTime'];
+		$ScanPointId = $_POST['ScanPointId'];
 
 	}
 	else
@@ -73,6 +74,7 @@ if ($viewmode == 'Add')
                 $LevelPointMaxDate = '';
                 $LevelPointMaxTime = '';
 
+                $ScanPointId = 0;
 	    
 	}
 
@@ -107,7 +109,8 @@ else
 		       DATE_FORMAT(lp.levelpoint_mindatetime, '%H%i') as levelpoint_smintime,
 		       DATE_FORMAT(lp.levelpoint_maxdatetime, '%Y') as levelpoint_smaxyear,
 		       DATE_FORMAT(lp.levelpoint_maxdatetime, '%d%m') as levelpoint_smaxdate,
-		       DATE_FORMAT(lp.levelpoint_maxdatetime, '%H%i') as levelpoint_smaxtime
+		       DATE_FORMAT(lp.levelpoint_maxdatetime, '%H%i') as levelpoint_smaxtime,
+		       lp.scanpoint_id 
 		from LevelPoints lp
 		     inner join PointTypes pt
 		     on lp.pointtype_id = pt.pointtype_id
@@ -130,6 +133,7 @@ else
                 $LevelPointMaxYear = $_POST['MaxYear'];
                 $LevelPointMaxDate = $_POST['MaxDate'];
                 $LevelPointMaxTime = $_POST['MaxTime'];
+		$ScanPointId = $_POST['ScanPointId'];
 
 
 	}
@@ -146,6 +150,7 @@ else
                 $LevelPointMaxYear = $Row['levelpoint_smaxyear'];
                 $LevelPointMaxDate = $Row['levelpoint_smaxdate'];
                 $LevelPointMaxTime = $Row['levelpoint_smaxtime'];
+		$ScanPointId = $Row['scanpoint_id'];
 
 
 	}	
@@ -270,6 +275,23 @@ if ($AllowEdit == 1)
 	$DisabledText = '';
 
 	print('<tr><td class="input">'."\n");
+
+	print('Скан-Точка</span>'."\n");
+	print('<select name="ScanPointId" class="leftmargin" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
+	$sql = "select scanpoint_id, scanpoint_name from ScanPoints where scanpoint_hide = 0  and raid_id = ".$RaidId." order by scanpoint_order ";
+	$Result = MySqlQuery($sql);
+
+	print('<option value="0">Не указано</option>'."\n");
+
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+		$scanpointselected = ($Row['scanpoint_id'] == $ScanPointId ? 'selected' : '');
+		print('<option value="'.$Row['scanpoint_id'].'" '.$scanpointselected.' >'.$Row['scanpoint_name']."</option>\n");
+	}
+	mysql_free_result($Result);
+	print('</select>'."\n");
+
+
 	print('Тип Точки</span>'."\n");
 	// Показываем выпадающий список файлов
 	print('<select name="PointTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
@@ -282,6 +304,10 @@ if ($AllowEdit == 1)
 	}
 	mysql_free_result($Result);
 	print('</select>'."\n");
+
+	print('</td></tr>'."\n\n");
+	print('<tr><td class="input">'."\n");
+
 
         print('<input type="text" name="PointName" size="20" value="'.$PointName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$PointName.'\') {this.value=\'\';}"').'
@@ -367,7 +393,9 @@ if ($AllowViewResults == 1)
 		       lp.distance_id, lp.levelpoint_order,
 		       DATE_FORMAT(COALESCE(lp.levelpoint_mindatetime, '0000-00-00 00:00:00'), '%m-%d %H:%i') as levelpoint_mindatetime,
 		       DATE_FORMAT(COALESCE(lp.levelpoint_maxdatetime, '0000-00-00 00:00:00'), '%m-%d %H:%i') as levelpoint_maxdatetime,
-		       COALESCE(lpd.levelpointdiscount_value, 0) as levelpoint_discount
+		       COALESCE(lpd.levelpointdiscount_value, 0) as levelpoint_discount,
+		       COALESCE(sp.scanpoint_name, 'Не указана') as scanpoint_name,
+		       COALESCE(sp.scanpoint_id, 0)  as scanpoint_id
 		from LevelPoints lp
 		     inner join PointTypes pt
 		     on lp.pointtype_id = pt.pointtype_id
@@ -376,6 +404,8 @@ if ($AllowViewResults == 1)
 		        and lpd.levelpointdiscount_hide = 0
 			and lpd.levelpointdiscount_start <= lp.levelpoint_order
 			and lpd.levelpointdiscount_finish >= lp.levelpoint_order
+		     left outer join ScanPoints sp
+		     on lp.scanpoint_id = sp.scanpoint_id
 		where lp.levelpoint_hide = 0 and lp.distance_id = ".$DistanceId."
 		order by levelpoint_order";
 	
@@ -395,7 +425,8 @@ if ($AllowViewResults == 1)
 		         <td width = "150" style = "'.$thstyle.'">Штраф (минуты)</td>
 		         <td width = "100" style = "'.$thstyle.'">с</td>
 		         <td width = "100" style = "'.$thstyle.'">по</td>
-		         <td width = "100" style = "'.$thstyle.'">Амнистия</td>'."\r\n");
+		         <td width = "100" style = "'.$thstyle.'">Амнистия</td>
+		         <td width = "100" style = "'.$thstyle.'">Скан-точка</td>'."\r\n");
 
 		if ($AllowEdit == 1)
 		{
@@ -417,7 +448,8 @@ if ($AllowViewResults == 1)
 		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_penalty'].'</td>
 		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_mindatetime'].'</td>
 		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_maxdatetime'].'</td>
-		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_discount'].'</td>');
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_discount'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['scanpoint_name'].'</td>');
 
   		     if ($AllowEdit == 1)
 		     {

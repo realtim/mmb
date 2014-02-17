@@ -243,6 +243,14 @@ if (!isset($MyPHPScript)) return;
 		document.FindTeamForm.submit();
 	}
 
+	function ViewScanPoints()
+	{ 
+		document.FindTeamForm.action.value = "ViewScanPointsPage";
+		document.FindTeamForm.submit();
+	}
+
+
+
 	function ViewLevelPointDiscounts()
 	{ 
 		document.FindTeamForm.action.value = "ViewLevelPointDiscountsPage";
@@ -319,6 +327,14 @@ if (!isset($MyPHPScript)) return;
 	    print('<tr><td><a href = "javascript:ViewRaidInfo();" title = "Параметры марш-броска">Марш-бросок</a></td></tr>'."\r\n"); 
 	    print('<tr><td><a href = "javascript:ViewAdminModeratorsPage();" title = "Страница администрирования модераторов">Модераторы</a></td></tr>'."\r\n"); 
         }
+
+
+        // Точки сканирования 
+	if ($Administrator || $Moderator )
+        {
+	  print('<tr><td><a href = "javascript:ViewScanPoints();" title = "Список точек сканирования для выбранного выше ММБ">Скан-точки</a></td></tr>'."\r\n"); 
+        }
+	 
 
 
         // Точки показываем только после финиша

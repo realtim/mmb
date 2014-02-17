@@ -108,6 +108,14 @@ if (!isset($MyPHPScript)) return;
       return;
   }
 
+   // Удаляем закрытые сессии
+  function ClearSessions() {
+         // права на  delete у пользователя есть только на  таблицу Sessions
+       $Result = MySqlQuery("delete from Sessions where session_status = 1");
+      return;
+  }
+
+
   // Получаем данные сессии
   function GetSession($SessionId) {
 
@@ -119,7 +127,9 @@ if (!isset($MyPHPScript)) return;
 
       // Закрываем все сессии, которые неактивны 20 минут
       CloseInactiveSessions(20);
-      
+
+      // Очищаем таблицу
+   //   ClearSessions();
   //   echo $SessionId;
       $Result = MySqlQuery("select user_id, connection_id, session_updatetime, session_starttime
                             from   Sessions 
@@ -1039,5 +1049,16 @@ send_mime_mail('Автор письма',
        return($CheckString);
      }
      //Конец проверки корректности точек
+     
+     // 17/02/2014 
+     // Проверка корректности внесённых точек сканирования
+     function CheckScanPoints($raidid)
+     {
+     
+       $CheckString = "";
+    
+       return($CheckString);
+     }
+     //Конец проверки корректности точек сканирования
 
 ?>

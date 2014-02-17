@@ -29,6 +29,9 @@ if (!isset($MyPHPScript)) return;
 	} elseif ($view == "ViewRaidFiles") {
 		// Файлы 
 		include("viewraidfiles.php");
+	} elseif ($view == "ViewScanPoints") {
+		// Точки сканирования (скан-точки) 
+		include("viewscanpoints.php");
 	} elseif ($view == "ViewLevelPoints") {
 		// Точки (КП) 
 		include("viewlevelpoints.php");
