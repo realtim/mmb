@@ -281,7 +281,7 @@ if ($AllowEdit == 1)
 	$sql = "select scanpoint_id, scanpoint_name from ScanPoints where scanpoint_hide = 0  and raid_id = ".$RaidId." order by scanpoint_order ";
 	$Result = MySqlQuery($sql);
 
-	print('<option value="0">Не указано</option>'."\n");
+	print('<option value="0">Не указана</option>'."\n");
 
 	while ($Row = mysql_fetch_assoc($Result))
 	{
@@ -420,13 +420,14 @@ if ($AllowViewResults == 1)
 
 		print('<tr class = "gray">
 		         <td width = "50" style = "'.$thstyle.'">N п/п</td>
+                         <td width = "100" style = "'.$thstyle.'">Скан-точка</td>
 		         <td width = "150" style = "'.$thstyle.'">Тип</td>
 		         <td width = "200" style = "'.$thstyle.'">Название</td>
 		         <td width = "150" style = "'.$thstyle.'">Штраф (минуты)</td>
 		         <td width = "100" style = "'.$thstyle.'">с</td>
 		         <td width = "100" style = "'.$thstyle.'">по</td>
 		         <td width = "100" style = "'.$thstyle.'">Амнистия</td>
-		         <td width = "100" style = "'.$thstyle.'">Скан-точка</td>'."\r\n");
+		         '."\r\n");
 
 		if ($AllowEdit == 1)
 		{
@@ -443,13 +444,14 @@ if ($AllowViewResults == 1)
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
                      print('<tr>'."\r\n");
 		     print('<td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_order'].'</td>
-		             <td align = "left" style = "'.$tdstyle.'">'.$Row['pointtype_name'].'</td>
-		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_name'].'</td>
-		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_penalty'].'</td>
-		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_mindatetime'].'</td>
-		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_maxdatetime'].'</td>
-		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_discount'].'</td>
-		             <td align = "left" style = "'.$tdstyle.'">'.$Row['scanpoint_name'].'</td>');
+                            <td align = "left" style = "'.$tdstyle.'">'.$Row['scanpoint_name'].'</td>
+		            <td align = "left" style = "'.$tdstyle.'">'.$Row['pointtype_name'].'</td>
+		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_name'].'</td>
+		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_penalty'].'</td>
+		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_mindatetime'].'</td>
+		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_maxdatetime'].'</td>
+		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_discount'].'</td>
+		            ');
 
   		     if ($AllowEdit == 1)
 		     {
