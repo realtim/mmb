@@ -438,6 +438,59 @@ if (($AllowEdit == 1) && CanCreateTeam($Administrator, $Moderator, $OldMmb, $Rai
 	print('</td></tr>'."\n");
 }
 
+// 20/02/2014 Пользоватлеьское соглашение
+if (($viewmode == "Add") && ($AllowEdit == 1) )
+{
+
+
+print('<tr><td class="input" style="padding-top: 20px;">'."\n");
+print('Условия участия: <br/>'."\n");
+//print('<div style="padding-top: 10px;">&nbsp;</div>'."\n");
+
+   // Ищем последнее пользовательское соглашение
+       $sql = "select rf.raidfile_id, rf.raidfile_name
+		from RaidFiles rf
+		where rf.raidfile_hide = 0 
+		      and rf.filetype_id = 8
+		order by rf.raid_id DESC 
+		LIMIT 0,1    ";
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	mysql_free_result($Result);
+
+        $ConfirmFile = trim($MyStoreHttpLink).trim($Row['raidfile_name']);
+	
+	$Fp = fopen($ConfirmFile, "r");
+	$i = 0;
+        while ((!feof($Fp)) && (trim(fgets($Fp, 4096)) <> '<body>')) 
+	{
+           $i++;
+        }
+
+        $NowStr = '';
+        while ((!feof($Fp)) && (trim($NowStr) <> '</body>')) 
+	{
+           print(trim($NowStr)."\r\n");
+           $NowStr = fgets($Fp, 4096);
+        }
+
+        fclose($Fp);
+
+	
+
+print('</td></tr>'."\n\n");
+
+
+
+print('<tr><td class="input">'."\n");
+print('Прочитал и согласен с условиями участия в ММБ <input type="checkbox" name="Confirmation" value="on" tabindex="'.(++$TabIndex).'"'.$DisabledText.' title="Прочитал и согласен с условиями участия в ММБ"/>'."\n");
+print('</td></tr>'."\n\n");
+
+
+}
+// конец блока пользовательского соглашения
+
+
 // ================ Submit для формы ==========================================
 if ($AllowEdit == 1)
 {

@@ -66,6 +66,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pTeamNotOnLevelId = (int)$_POST['TeamNotOnLevelId'];
 	if (!isset($_POST['TeamNotInLevelPointId'])) $_POST['TeamNotInLevelPointId'] = "";
 	$pTeamNotOnLevelId = (int)$_POST['TeamNotInLevelPointId'];
+	$pTeamConfirmation = (isset($_POST['Confirmation']) && ($_POST['Confirmation'] == 'on')) ? 1 : 0;
+
 
 	if (($action <> "AddTeam") && ($TeamId <= 0))
 	{
@@ -102,6 +104,17 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
+
+
+	if (($action = "AddTeam") && ($pTeamConfirmation == 0))
+	{
+		$statustext = "Подтвердите, что прочитали и согласны с правилами участия в ММБ.";
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+
+
 	// Проверяем, нет ли уже команды с таким названием
 	$sql = "select count(*) as resultcount
 		from Teams t
@@ -135,6 +148,9 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		return;
 	}
 
+
+
+
 	if ($OldMmb and $pTeamNum <= 0)
 	{
 		$statustext = "Для ММБ до 2012 года нужно указывать номер команды.";
@@ -142,6 +158,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
+
+
 
 	// Проверяем email нового участника команды
 	if (!empty($pNewTeamUserEmail) and trim($pNewTeamUserEmail) <> 'Email нового участника')
