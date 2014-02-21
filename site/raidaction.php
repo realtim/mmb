@@ -61,6 +61,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
         $pRaidNoShowResult = (isset($_POST['RaidNoShowResult']) && ($_POST['RaidNoShowResult'] == 'on')) ? 1 : 0;
 	$pRaidFilePrefix = $_POST['RaidFilePrefix'];
         $pRaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
+        $pRaidMapPrice = (int)$_POST['RaidMapPrice'];
 
 /*
         // Обрабатываем зхагрузку файла эмблемы
@@ -110,7 +111,8 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	}
         // Конец проверки на число дистанций
 	
-/*
+	
+	/*
 
         // Обрабатываем зхагрузку файла положения
         if (!empty($_FILES['rulesfile']['name']) and ($_FILES['rulesfile']['size'] > 0))
@@ -208,7 +210,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
                 $sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
 		                           raid_startpoint, raid_finishpoint, raid_closedate,
 					   raid_noshowresult, raid_fileprefix,
-					   raid_readonlyhoursbeforestart
+					   raid_readonlyhoursbeforestart, raid_mapprice
 					   )
 			values (trim('".$pRaidName."'), trim('".$pRaidPeriod."')  ";
 		
@@ -231,6 +233,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		$sql.= ", ".$pRaidNoShowResult;
 		$sql.= ", trim('".$pRaidFilePrefix."') " ;
 		$sql.= ", ".$pRaidReadOnlyHoursBeforeStart;
+		$sql.= ", ".$pRaidMapPrice;
 		$sql.= ")";
 
 
@@ -349,6 +352,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 //		$sql.= ", raid_znlink = trim('".$pRaidZnLink."') ";
 		$sql.= ", raid_noshowresult = ".$pRaidNoShowResult." ";
 		$sql.= ", raid_readonlyhoursbeforestart = ".$pRaidReadOnlyHoursBeforeStart." ";
+		$sql.= ", raid_mapprice = ".$pRaidMapPrice." ";
 		$sql.= ", raid_fileprefix = trim('".$pRaidFilePrefix."') ";
 		$sql.=  " where raid_id = ".$RaidId; 
 	    
