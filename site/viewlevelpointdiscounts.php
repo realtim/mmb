@@ -118,7 +118,7 @@ else
 
 	$NextActionName = 'LevelPointDiscountChange';
 	$OnClickText = '';
-	$SaveButtonText = 'Сохранить изменения точки';
+	$SaveButtonText = 'Сохранить изменения в амнистии';
 
 }
 // ================ Конец инициализации переменных для добавляемой/редактируемой точки =================
@@ -215,17 +215,17 @@ if ($AllowEdit == 1)
 
 	print('<tr><td class="input">'."\n");
 	
-        print(' Амнистия: <input type="text" name="DiscountValue" size="5" value="'.$DiscountValue.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
+        print(' Амнистия (минуты) <input type="text" name="DiscountValue" size="5" value="'.$DiscountValue.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$DiscountValue.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$DiscountValue.'\';}"').'
                 title = "Величина амнистии на интервале КП в минутах">'."\r\n");
 
-        print(' КП с: <input type="text" name="DiscountStart" size="5" value="'.$DiscountStart.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
+        print(' на порядковые номера точек (КП) с <input type="text" name="DiscountStart" size="5" value="'.$DiscountStart.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$DiscountStart.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$DiscountStart.'\';}"').'
                 title = "Порядковый номер первого КП в амнистии">'."\r\n");
 
-        print(' по: <input type="text" name="DiscountFinish" size="5" value="'.$DiscountFinish.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
+        print(' по <input type="text" name="DiscountFinish" size="5" value="'.$DiscountFinish.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$DiscountFinish.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$DiscountFinish.'\';}"').'
                 title = "Порядковый номер первого КП в амнистии">'."\r\n");
@@ -286,7 +286,7 @@ if (empty($DistanceId))
 
 		print('<tr class = "gray">
 		         <td width = "150" style = "'.$thstyle.'">Амнистия (минуты)</td>
-		         <td width = "150" style = "'.$thstyle.'">КП с</td>
+		         <td width = "150" style = "'.$thstyle.'">Порядковый номер с</td>
 		         <td width = "150" style = "'.$thstyle.'">по</td>'."\r\n");
 
 		if ($AllowEdit == 1)

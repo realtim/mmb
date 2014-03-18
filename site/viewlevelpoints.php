@@ -63,7 +63,8 @@ if ($viewmode == 'Add')
                 // дистанция уже должна быть инициализирована в raidactions!
                 if (empty($DistanceId)) {return;}
 		
-		$PointTypeId = 0;
+		// 18/03/2014 По умолчанию ставим  тип КП
+		$PointTypeId = 5;
                 $PointName = 'Название КП';
                 $PointPenalty = 0;
 

@@ -574,6 +574,12 @@ elseif ($action == 'AddRaidFile')
            }
            // Конец проверки на успешность загрузки
 
+           //Удаляем все ссылки на файл с таким же имененм
+	   $sql = "update RaidFiles set raidfile_hide = 1
+	           where raid_id = ".$RaidId." and raidfile_name = '".trim($pRaidFileName)."'";        
+			
+	   MySqlQuery($sql);
+
            // Пишем ссылку на файл в таблицу
 	   //  М.б. можно переделать на запись файла прямо в таблицу - это повышаетбезопасность, но
 	   // надо тогда писать собственное отображение файлов 
@@ -590,6 +596,8 @@ elseif ($action == 'AddRaidFile')
 			$viewsubmode = "ReturnAfterError";
 			return;
 	   }
+
+
 
        }
        // Конец проверки, что файл был загружен	

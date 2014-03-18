@@ -9,7 +9,7 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 
 
 // Определяем права по редактированию 
-if ($Administrator)
+if ($Administrator || $Moderator)
 {
 	$AllowEdit = 1;
 	$DisabledText = '';
@@ -22,7 +22,7 @@ else
 	$OnSubmitFunction = 'return false;';
 }
 // Определяем права по просмотру
-if ($Administrator)
+if ($Administrator || $Moderator)
 {
 	$AllowViewResults = 1;
 }
@@ -124,9 +124,61 @@ else
 ?>
 
 <script language="JavaScript" type="text/javascript">
+
+
+        // проверяем, что нет файла с таким имененм
+	function FileExists(filename) {
+
+	   // перечень существующих файлов по таблице
+	   var files = [<?php
+	   
+	       $sql = "select rf.raidfile_id, rf.raidfile_name, 
+	                      REPLACE(rf.raidfile_name, r.raid_fileprefix, '') as raidfile_shortname
+			from RaidFiles rf
+			     inner join Raids r
+			     on    rf.raid_id = r.raid_id
+			where rf.raid_id = ".$RaidId."
+			      and rf.raidfile_hide = 0 
+			order by raidfile_id DESC    ";
+		$Result = MySqlQuery($sql);
+
+	       // Сканируем команды
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+		     print('"'.trim($Row['raidfile_shortname']).'",');
+		}	
+		mysql_free_result($Result);
+	   ?>];
+
+	   var i = 0;
+	   var file_exist = false;
+   
+	   while (!file_exist && i<files.length) {
+	      if (files[i]==filename) {
+	         file_exist=true;
+	      }
+              i++;
+	   }
+  
+	  
+	   // если файл найден, запрашиваем подтверждение на перезапись
+	   if (file_exist) {
+	      return !confirm("Файл '" + filename + "' существует. Перезаписать?" );
+	   } else {
+	      return false;
+	   }
+	  
+	}
+
 	// Функция проверки правильности заполнения формы
-	function ValidateRaidFileForm()
+	function ValidateRaidFileForm(filename)
 	{
+		
+	        if (FileExists(filename))
+		{
+		  return false;
+		}
+		
 		document.RaidFileForm.action.value = "<? echo $NextActionName; ?>";
 		return true;
 	}
@@ -234,7 +286,7 @@ if ($AllowEdit == 1)
 
 	// ================ Submit для формы ==========================================
 	print('<tr><td class="input" style="padding-top: 20px;">'."\n");
-	print('<input type="button" onClick="javascript: if (ValidateRaidFileForm()) submit();" name="RegisterButton" value="'.$SaveButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
+	print('<input type="button" onClick="javascript: if (ValidateRaidFileForm(document.RaidFileForm.raidfile.value)) submit();" name="RegisterButton" value="'.$SaveButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
 //	print('<input type="button" onClick="javascript: Cancel();" name="CancelButton" value="Отмена" tabindex="'.(++$TabIndex).'">'."\n");
 	
 
