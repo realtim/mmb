@@ -90,7 +90,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
-	if (trim($pTeamName) == '')
+	if (trim($pTeamName) == '' or trim($pTeamName) == 'Название команды')
 	{
 		$statustext = "Не указано название.";
 		$alert = 1;
@@ -106,7 +106,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	}
 
 
-	if (($action = "AddTeam") && ($pTeamConfirmation == 0))
+	if (($action == "AddTeam") && ($pTeamConfirmation == 0))
 	{
 		$statustext = "Подтвердите, что прочитали и согласны с правилами участия в ММБ.";
 		$alert = 1;
