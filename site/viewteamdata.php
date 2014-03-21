@@ -444,7 +444,29 @@ if (($viewmode == "Add") && ($AllowEdit == 1) )
 
 
 print('<tr><td class="input" style="padding-top: 20px;">'."\n");
-print('Условия участия: <br/>'."\n");
+
+
+
+      // 21.03.2014 Ищем ссылку на положение в загруженных файлах 
+        $sqlFile = "select raidfile_name
+	     from RaidFiles
+	     where raid_id = ".$RaidId."        
+                   and filetype_id = 1 
+	     order by raidfile_id desc";
+	 
+       	$ResultFile = MySqlQuery($sqlFile);  
+	$RowFile = mysql_fetch_assoc($ResultFile);
+        mysql_free_result($ResultFile);
+        $RulesFile =  trim($RowFile['raidfile_name']);
+        $RaidRulesLink = '';
+
+        if ($RulesFile <> '' && file_exists($MyStoreFileLink.$RulesFile))
+	{
+          $RaidRulesLink = $MyStoreHttpLink.$RulesFile;
+        }
+        //  Конец получения ссылки на положение
+
+       print('<b>Условия участия (выдержка из <a href = "'.$RaidRulesLink.'" target = "_blank">положения</a>): </b><br/>'."\n");
 //print('<div style="padding-top: 10px;">&nbsp;</div>'."\n");
 
    // Ищем последнее пользовательское соглашение
@@ -452,7 +474,7 @@ print('Условия участия: <br/>'."\n");
 		from RaidFiles rf
 		where rf.raidfile_hide = 0 
 		      and rf.filetype_id = 8
-		order by rf.raid_id DESC 
+		order by rf.raid_id DESC, rf.raidfile_id DESC 
 		LIMIT 0,1    ";
 	$Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
@@ -462,13 +484,13 @@ print('Условия участия: <br/>'."\n");
 	
 	$Fp = fopen($ConfirmFile, "r");
 	$i = 0;
-        while ((!feof($Fp)) && (trim(fgets($Fp, 4096)) <> '<body>')) 
+        while ((!feof($Fp)) && (!strpos(trim(fgets($Fp, 4096)),'body'))) 
 	{
            $i++;
         }
 
         $NowStr = '';
-        while ((!feof($Fp)) && (trim($NowStr) <> '</body>')) 
+        while ((!feof($Fp)) && (!strpos(trim($NowStr),'/body'))) 
 	{
            print(trim($NowStr)."\r\n");
            $NowStr = fgets($Fp, 4096);
@@ -483,6 +505,7 @@ print('</td></tr>'."\n\n");
 
 
 print('<tr><td class="input">'."\n");
+print('<a href = "'.$RaidRulesLink.'" target = "_blank">Полный текст положения</a>):<br/>'."\n");
 print('Прочитал и согласен с условиями участия в ММБ <input type="checkbox" name="Confirmation" value="on" tabindex="'.(++$TabIndex).'"'.$DisabledText.' title="Прочитал и согласен с условиями участия в ММБ"/>'."\n");
 print('</td></tr>'."\n\n");
 
