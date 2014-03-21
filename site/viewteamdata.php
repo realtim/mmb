@@ -100,9 +100,9 @@ else
 		$TeamNum = (int) $_POST['TeamNum'];
 		$TeamName = str_replace( '"', '&quot;', $_POST['TeamName']);
 		$DistanceId = $_POST['DistanceId'];
-		$TeamUseGPS = ($_POST['TeamUseGPS'] == 'on' ? 1 : 0);
+		$TeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
 		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
-		$TeamGreenPeace = ($_POST['TeamGreenPeace'] == 'on' ? 1 : 0);
+		$TeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
 	}
 	else
 	{
