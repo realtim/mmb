@@ -51,7 +51,7 @@ if (!isset($MyPHPScript)) return;
 		
 		
                  
-		$sql = "select u.user_id, u.user_name 
+		$sql = "select u.user_id, u.user_name, COALESCE(u.user_city, '') as user_city 
 		        from  Users u
 			where ltrim(COALESCE(u.user_password, '')) <> '' 
                               and u.user_hide = 0
@@ -70,7 +70,7 @@ if (!isset($MyPHPScript)) return;
 		
 			while ($Row = mysql_fetch_assoc($Result))
 			{
-			  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a></div>'."\r\n");
+			  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a> '.$Row['user_city'].'</div>'."\r\n");
 			}
 
 		} else {

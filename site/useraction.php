@@ -76,6 +76,7 @@ if (!isset($MyPHPScript)) return;
 
            $pUserEmail = $_POST['UserEmail'];
            $pUserName = $_POST['UserName'];
+           $pUserCity = $_POST['UserCity'];
            $pUserBirthYear = $_POST['UserBirthYear'];
            if (!isset($_POST['UserProhibitAdd'])) $_POST['UserProhibitAdd'] = "";
            $pUserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
@@ -225,9 +226,11 @@ if (!isset($MyPHPScript)) return;
                  // пароль пустой, сессия для смены пароля и время отправки запроса
 
 		 $sql = "insert into  Users (user_email, user_name, user_birthyear, user_password, user_registerdt,
-		                             user_sessionfornewpassword, user_sendnewpasswordrequestdt, user_prohibitadd)
+		                             user_sessionfornewpassword, user_sendnewpasswordrequestdt, 
+					     user_prohibitadd, user_city)
 		                     values ('".$pUserEmail."', '".$pUserName."', ".$pUserBirthYear.", '', now(),
-				             '".$ChangePasswordSessionId."', now(), '.$pUserProhibitAdd.')";
+				             '".$ChangePasswordSessionId."', now(), 
+					      ".$pUserProhibitAdd.", '".$pUserCity."')";
 //                 echo $sql;  
                  // При insert должен вернуться послений id - это реализовано в  MySqlQuery
 		 $newUserId = MySqlQuery($sql);
@@ -291,6 +294,7 @@ if (!isset($MyPHPScript)) return;
 
 	         $sql = "update  Users set   user_email = trim('".$pUserEmail."'),
 		                             user_name = trim('".$pUserName."'),
+		                             user_city = trim('".$pUserCity."'),
 		                             user_prohibitadd = ".$pUserProhibitAdd.",
 					     user_birthyear = ".$pUserBirthYear."
 	                 where user_id = ".$pUserId;

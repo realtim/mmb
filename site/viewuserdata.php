@@ -21,6 +21,7 @@ if (!isset($MyPHPScript)) return;
 	      $UserBirthYear = (int)$_POST['UserBirthYear'];
 	      if (!isset($_POST['UserProhibitAdd'])) $_POST['UserProhibitAdd'] = "";
 	      $UserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
+	      $UserCity = str_replace( '"', '&quot;', $_POST['UserCity']);
 
              } else {
 
@@ -28,6 +29,7 @@ if (!isset($MyPHPScript)) return;
 	      $UserName = 'Фамилия Имя';
 	      $UserBirthYear = 'Год рождения';
 	      $UserProhibitAdd = 0;
+	      $UserCity = 'Город';
 
              }
             
@@ -54,7 +56,7 @@ if (!isset($MyPHPScript)) return;
 		     return;
 		}
            
-		$sql = "select user_email, user_name, user_birthyear, user_prohibitadd from  Users where user_id = ".$pUserId;
+		$sql = "select user_email, user_name, user_birthyear, user_prohibitadd, user_city from  Users where user_id = ".$pUserId;
 		$rs = MySqlQuery($sql);  
                 $row = mysql_fetch_assoc($rs);
                 mysql_free_result($rs);
@@ -69,6 +71,7 @@ if (!isset($MyPHPScript)) return;
 		  $UserName = str_replace( '"', '&quot;', $_POST['UserName']);
 		  $UserBirthYear = (int)$_POST['UserBirthYear'];
 		  $UserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
+		  $UserCity = str_replace( '"', '&quot;', $_POST['UserCity']);
 
                 } else {
 
@@ -76,6 +79,7 @@ if (!isset($MyPHPScript)) return;
 		  $UserName = str_replace( '"', '&quot;', $row['user_name']); 
 		  $UserBirthYear = (int)$row['user_birthyear'];  
 		  $UserProhibitAdd = $row['user_prohibitadd'];  
+		  $UserCity = str_replace( '"', '&quot;', $row['user_city']); 
 
                 }
 
@@ -248,6 +252,12 @@ if (!isset($MyPHPScript)) return;
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserBirthYear.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserBirthYear.'\';}"').'
 	        title = "Год рождения"></td></tr>'."\r\n");
+
+         print('<tr><td class = "input"><input type="text" name="UserCity" size="50" value="'.$UserCity.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
+                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserCity.'\') {this.value=\'\';}"').'
+                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserCity.'\';}"').'
+                title = "Город - можо указать..."></td></tr>'."\r\n");
+
 
          print('<tr><td class = "input"><input type="checkbox" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
 	        title = "Даже зная адрес e-mail, другой пользователь не сможет сделать Вас участником своей команды - только Вы сами или модератор ММБ" /> Нельзя включать в команду другим пользователям</td></tr>'."\r\n");

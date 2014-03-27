@@ -843,7 +843,7 @@ if (!isset($MyPHPScript)) return;
 			
 			if ($OrderType <> 'Errors')
 			{
-			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,
+			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, u.user_city,
                                        tu.level_id, u.user_id, l.level_name,
 				       tu.levelpoint_id, lp.levelpoint_name 
 			        from  TeamUsers tu
@@ -859,7 +859,7 @@ if (!isset($MyPHPScript)) return;
 
 			while ($UserRow = mysql_fetch_assoc($UserResult))
 			{
-			  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear']."\r\n");
+			  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
  
                           // Неявку участников показываем, если загружены результаты
 			  if ($CanViewResults) 
