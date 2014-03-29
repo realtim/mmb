@@ -256,7 +256,7 @@ if (!isset($MyPHPScript)) return;
          print('<tr><td class = "input"><input type="text" name="UserCity" size="50" value="'.$UserCity.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserCity.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserCity.'\';}"').'
-                title = "Город - можо указать..."></td></tr>'."\r\n");
+                title = "Город - можно указать..."></td></tr>'."\r\n");
 
 
          print('<tr><td class = "input"><input type="checkbox" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
