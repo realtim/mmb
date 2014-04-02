@@ -237,38 +237,38 @@ if (!isset($MyPHPScript)) return;
          // Если не разрешена правка - не показываем адрес почты
          if ($AllowEdit == 1) 
 	 {
-	  print('<tr><td class = "input"><input type="text" name="UserEmail" size="50" value="'.$UserEmail.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
+	  print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserEmail" size="50" value="'.$UserEmail.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserEmail.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserEmail.'\';}"').'
 	         title = "E-mail - Используется для идентификации пользователя"></td></tr>'."\r\n");
          }
 
-         print('<tr><td class = "input"><input type="text" name="UserName" size="50" value="'.$UserName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
+         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserName" size="50" value="'.$UserName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserName.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserName.'\';}"').'
                 title = "ФИО - Так будет выглядеть информация о пользователе в протоколах и на сайте"></td></tr>'."\r\n");
 
-         print('<tr><td class = "input"><input type="text" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserBirthYear.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserBirthYear.'\';}"').'
 	        title = "Год рождения"></td></tr>'."\r\n");
 
-         print('<tr><td class = "input"><input type="text" name="UserCity" size="50" value="'.$UserCity.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
+         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserCity" size="50" value="'.$UserCity.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserCity.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserCity.'\';}"').'
                 title = "Город - можно указать..."></td></tr>'."\r\n");
 
 
-         print('<tr><td class = "input"><input type="checkbox" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+         print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
 	        title = "Даже зная адрес e-mail, другой пользователь не сможет сделать Вас участником своей команды - только Вы сами или модератор ММБ" /> Нельзя включать в команду другим пользователям</td></tr>'."\r\n");
 
 	 if (($AllowEdit == 1) and  ($viewmode <> 'Add'))
         {
 
-	  print('<tr><td class = "input" style =  "padding-top: 15px;">Новый пароль: <input type="password" name="UserNewPassword" size="30" value="" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
+	  print('<tr><td class = "input" style =  "padding-top: 15px;">Новый пароль: <input type="password" autocomplete = "off" name="UserNewPassword" size="30" value="" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                   title = "Новый пароль"></td></tr>'."\r\n");
 
-	  print('<tr><td class = "input">Подтверждение: <input type="password" name="UserConfirmNewPassword" size="30" value="" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
+	  print('<tr><td class = "input">Подтверждение: <input type="password" autocomplete = "off" name="UserConfirmNewPassword" size="30" value="" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                   title = "Подтверждение нового пароля"></td></tr>'."\r\n");
 
         }
@@ -365,7 +365,7 @@ if (!isset($MyPHPScript)) return;
 	  if ($viewmode <> 'Add' and $AllowEdit == 1)
 	  {
 		// Выводим спсиок устройств, которые относятся к данному пользователю 
-	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Устройства, принадлежащие поьзователю:</div>'."\r\n");
+	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Устройства, принадлежащие пользователю:</div>'."\r\n");
 		print('<form  name = "UserDevicesForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
