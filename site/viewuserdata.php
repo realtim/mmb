@@ -4,6 +4,12 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+       // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении, 
+        //но и при правке, если не былди заполнены поля при добавлении
+	 $UserCityPlaceHolder = 'Город';
+       
+
+
          if ($viewmode == 'Add')
 	 {
              // Новый пользователь 
@@ -29,7 +35,7 @@ if (!isset($MyPHPScript)) return;
 	      $UserName = 'Фамилия Имя';
 	      $UserBirthYear = 'Год рождения';
 	      $UserProhibitAdd = 0;
-	      $UserCity = 'Город';
+	      $UserCity =  $UserCityPlaceHolder;
 
              }
             
@@ -96,6 +102,9 @@ if (!isset($MyPHPScript)) return;
 
 	 }
          // Конец проверки действия с пользователем
+
+         // Заменяем пустое значение на подсказку
+	 if (empty($UserCity)) {$UserCity =  $UserCityPlaceHolder; } 
 
 	 
          if ($AllowEdit == 0) 
@@ -253,11 +262,14 @@ if (!isset($MyPHPScript)) return;
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserBirthYear.'\';}"').'
 	        title = "Год рождения"></td></tr>'."\r\n");
 
+         // Пустой $UserCity  выше  заменяется на подсказку
          print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserCity" size="50" value="'.$UserCity.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserCity.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserCity.'\';}"').'
-                title = "Город - можно указать..."></td></tr>'."\r\n");
+                 '.($UserCity <> $UserCityPlaceHolder ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserCityPlaceHolder.'\') {this.value=\'\';}"').'
+                 '.($UserCity <> $UserCityPlaceHolder ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserCityPlaceHolder.'\';}"').'
+                title = "Город"></td></tr>'."\r\n");
 
+
+//                 '.( $UserCity <> $UserCityPlaceHolder ? '' : 'onclick = "javascript: this.value=\'\';" onblur = "javascript: this.value=\''.$UserCityPlaceHolder.'\';"').'
 
          print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
 	        title = "Даже зная адрес e-mail, другой пользователь не сможет сделать Вас участником своей команды - только Вы сами или модератор ММБ" /> Нельзя включать в команду другим пользователям</td></tr>'."\r\n");

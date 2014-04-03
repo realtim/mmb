@@ -6,6 +6,12 @@ if (!isset($MyPHPScript)) return;
 
   //echo $action;
    
+   // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении, 
+        //но и при правке, если не былди заполнены поля при добавлении
+	 $UserCityPlaceHolder = 'Город';
+       
+   
+   
    if ($action == "") 
    {
      // Действие не указано
@@ -88,6 +94,8 @@ if (!isset($MyPHPScript)) return;
            $pUserNewPassword = $_POST['UserNewPassword']; 
            $pUserConfirmNewPassword = $_POST['UserConfirmNewPassword']; 
          
+	   if ($pUserCity == $UserCityPlaceHolder) { $pUserCity = ''; }  
+	 
    
 	   if ($action == 'AddUser')
 	   {
