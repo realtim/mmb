@@ -114,7 +114,7 @@ mysql_free_result($Result);
 
 // 18/02/2014 добавил scanpoint_id
 // LevelPoints: levelpoint_id, level_id, pointtype_id
-$Sql = "select levelpoint_id, pointtype_id, lp.distance_id, lp.levelpoint_order, lp.levelpoint_penalty, lp.levelpoint_mindatetime, lp.levelpoint_maxdatetime, scanpoint_id from LevelPoints lp inner join Distances d on lp.distance_id = d.distance_id where lp.levelpoint_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+$Sql = "select lp.levelpoint_id, lp.pointtype_id, lp.distance_id, lp.levelpoint_name, lp.levelpoint_order, lp.levelpoint_penalty, lp.levelpoint_mindatetime, lp.levelpoint_maxdatetime, scanpoint_id from LevelPoints lp inner join Distances d on lp.distance_id = d.distance_id where lp.levelpoint_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row; }
 mysql_free_result($Result);
