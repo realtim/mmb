@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import ru.mmb.terminal.model.Checkpoint;
-import ru.mmb.terminal.model.Level;
+import ru.mmb.terminal.model.LevelPoint;
 import android.util.Log;
 
 public class CheckedState implements Serializable
@@ -15,38 +15,39 @@ public class CheckedState implements Serializable
 	private static final long serialVersionUID = -1671058824332140814L;
 
 	private final Map<Integer, Boolean> checkedMap = new LinkedHashMap<Integer, Boolean>();
-	private Level level;
+	private LevelPoint levelPoint;
 
 	public CheckedState()
 	{
 	}
 
-	public void setLevel(Level level)
+	public void setLevelPoint(LevelPoint levelPoint)
 	{
-		if (level != null)
+		if (levelPoint != null)
 		{
-			if (this.level == null || this.level.getLevelId() != level.getLevelId())
-			    rebuildCheckedMap(level);
+			if (this.levelPoint == null
+			        || this.levelPoint.getLevelPointId() != levelPoint.getLevelPointId())
+			    rebuildCheckedMap(levelPoint);
 		}
 		else
 		{
 			checkedMap.clear();
 		}
-		this.level = level;
+		this.levelPoint = levelPoint;
 	}
 
-	private void rebuildCheckedMap(Level level)
+	private void rebuildCheckedMap(LevelPoint levelPoint)
 	{
 		checkedMap.clear();
-		for (Checkpoint checkpoint : level.getCheckpoints())
+		for (Checkpoint checkpoint : levelPoint.getCheckpoints())
 		{
 			checkedMap.put(checkpoint.getCheckpointOrder(), false);
 		}
 	}
 
-	public Level getLevel()
+	public LevelPoint getLevelPoint()
 	{
-		return level;
+		return levelPoint;
 	}
 
 	public void setChecked(int orderNum, boolean checked)
@@ -73,7 +74,7 @@ public class CheckedState implements Serializable
 		StringBuilder sb = new StringBuilder();
 		for (Integer checkpointOrderNum : getCheckedList())
 		{
-			sb.append(level.getCheckpointByOrderNum(checkpointOrderNum).getCheckpointName());
+			sb.append(levelPoint.getCheckpointByOrderNum(checkpointOrderNum).getCheckpointName());
 			sb.append(",");
 		}
 		return (sb.length() == 0) ? "" : sb.toString().substring(0, sb.length() - 1);
@@ -90,9 +91,9 @@ public class CheckedState implements Serializable
 		List<Interval> intervals = new BuildIntervalsMethod(checkpoints).execute();
 		for (Interval interval : intervals)
 		{
-			sb.append(level.getCheckpointByOrderNum(interval.getBeginNum()).getCheckpointName());
+			sb.append(levelPoint.getCheckpointByOrderNum(interval.getBeginNum()).getCheckpointName());
 			if (!interval.isSingleElement())
-			    sb.append("-").append(level.getCheckpointByOrderNum(interval.getEndNum()).getCheckpointName());
+			    sb.append("-").append(levelPoint.getCheckpointByOrderNum(interval.getEndNum()).getCheckpointName());
 			sb.append(",");
 		}
 		Log.d("missed checkpoints", sb.toString());

@@ -5,12 +5,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Participant;
-import ru.mmb.terminal.model.PointType;
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.TeamLevelDismiss;
+import ru.mmb.terminal.model.TeamDismiss;
 import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
 import ru.mmb.terminal.model.registry.UsersRegistry;
@@ -18,41 +16,38 @@ import ru.mmb.terminal.util.DateFormat;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-public class Withdraw
+public class TeamDismissed
 {
 	private static final String TABLE_DISMISS = "TeamLevelDismiss";
 	private static final String TABLE_LEVELPOINTS = "LevelPoints";
-	private static final String TABLE_LEVELS = "Levels";
 
 	private static final String DISMISS_DATE = "teamleveldismiss_date";
 	private static final String DEVICE_ID = "device_id";
 	private static final String USER_ID = "user_id";
 	private static final String TEAM_ID = "team_id";
 	private static final String LEVELPOINT_ID = "levelpoint_id";
+	private static final String LEVELPOINT_ORDER = "levelpoint_order";
 	private static final String TEAMUSER_ID = "teamuser_id";
-	private static final String LEVEL_ID = "level_id";
-	private static final String LEVEL_ORDER = "level_order";
 	private static final String DISTANCE_ID = "distance_id";
 
 	private static final String TEMPLATE_TEAMUSER_ID = "%teamuser_id%";
 
 	private final SQLiteDatabase db;
 
-	public Withdraw(SQLiteDatabase db)
+	public TeamDismissed(SQLiteDatabase db)
 	{
 		this.db = db;
 	}
 
-	public List<Participant> getWithdrawnMembers(LevelPoint levelPoint, Level level, Team team)
+	public List<Participant> getDismissedMembers(LevelPoint levelPoint, Team team)
 	{
 		List<Participant> result = new ArrayList<Participant>();
 		String sql =
-		    "select distinct d." + TEAMUSER_ID + ", lp." + LEVELPOINT_ID + ", l." + LEVEL_ORDER
-		            + " from " + TABLE_DISMISS + " as d join " + TABLE_LEVELPOINTS
-		            + " as lp on (d." + LEVELPOINT_ID + " = lp." + LEVELPOINT_ID + ") join "
-		            + TABLE_LEVELS + " as l on (lp." + LEVEL_ID + " = l." + LEVEL_ID + ") where d."
-		            + TEAM_ID + " = " + team.getTeamId() + " and l." + LEVEL_ORDER + " <= "
-		            + level.getLevelOrder();
+		    "select distinct d." + TEAMUSER_ID + ", lp." + LEVELPOINT_ID + ", lp."
+		            + LEVELPOINT_ORDER + " from " + TABLE_DISMISS + " as d join "
+		            + TABLE_LEVELPOINTS + " as lp on (d." + LEVELPOINT_ID + " = lp."
+		            + LEVELPOINT_ID + ") where d." + TEAM_ID + " = " + team.getTeamId()
+		            + " and lp." + LEVELPOINT_ORDER + " <= " + levelPoint.getLevelPointOrder();
 		Cursor resultCursor = db.rawQuery(sql, null);
 
 		resultCursor.moveToFirst();
@@ -60,8 +55,8 @@ public class Withdraw
 		{
 			int participantId = resultCursor.getInt(0);
 			int levelPointId = resultCursor.getInt(1);
-			int levelOrder = resultCursor.getInt(2);
-			if (isDBLevelPointEarlier(levelPoint, level, levelPointId, levelOrder))
+			int levelPointOrder = resultCursor.getInt(2);
+			if (isDBLevelPointEarlier(levelPoint, levelPointId, levelPointOrder))
 			{
 				Participant member = team.getMember(participantId);
 				if (!result.contains(member))
@@ -76,18 +71,18 @@ public class Withdraw
 		return result;
 	}
 
-	private boolean isDBLevelPointEarlier(LevelPoint currLevelPoint, Level currLevel,
-	        int dbLevelPointId, int dbLevelOrder)
+	private boolean isDBLevelPointEarlier(LevelPoint currLevelPoint, int dbLevelPointId,
+	        int dbLevelOrder)
 	{
-		if (currLevel.getLevelOrder() > dbLevelOrder) return true;
-		if (currLevelPoint.getPointType() == PointType.FINISH) return true;
-		if (currLevelPoint.getPointType() == PointType.START
+		if (currLevelPoint.getLevelPointOrder() > dbLevelOrder) return true;
+		if (currLevelPoint.getPointType().isFinish()) return true;
+		if (currLevelPoint.getPointType().isStart()
 		        && currLevelPoint.getLevelPointId() == dbLevelPointId) return true;
 		return false;
 	}
 
-	public void saveWithdrawnMembers(LevelPoint levelPoint, Level level, Team team,
-	        List<Participant> withdrawnMembers, Date recordDateTime)
+	public void saveDismissedMembers(LevelPoint levelPoint, Team team,
+	        List<Participant> dismissedMembers, Date recordDateTime)
 	{
 		String selectSql =
 		    "select count(*) from " + TABLE_DISMISS + " where " + USER_ID + " = "
@@ -103,7 +98,7 @@ public class Withdraw
 		db.beginTransaction();
 		try
 		{
-			for (Participant member : withdrawnMembers)
+			for (Participant member : dismissedMembers)
 			{
 				if (isRecordExists(selectSql, member)) continue;
 				db.execSQL(insertSql, new Object[] { DateFormat.format(recordDateTime),
@@ -127,18 +122,16 @@ public class Withdraw
 		return recordCount > 0;
 	}
 
-	public List<TeamLevelDismiss> loadDismissedMembers(LevelPoint levelPoint)
+	public List<TeamDismiss> loadDismissedMembers(LevelPoint levelPoint)
 	{
-		List<TeamLevelDismiss> result = new ArrayList<TeamLevelDismiss>();
-		Level level = levelPoint.getLevel();
-		Integer distanceId = level.getDistanceId();
+		List<TeamDismiss> result = new ArrayList<TeamDismiss>();
+		Integer distanceId = levelPoint.getDistanceId();
 		String sql =
 		    "select distinct d." + DISMISS_DATE + ", d." + TEAM_ID + ", d." + TEAMUSER_ID + ", lp."
-		            + LEVELPOINT_ID + ", l." + LEVEL_ORDER + " from " + TABLE_DISMISS
+		            + LEVELPOINT_ID + ", lp." + LEVELPOINT_ORDER + " from " + TABLE_DISMISS
 		            + " as d join " + TABLE_LEVELPOINTS + " as lp on (d." + LEVELPOINT_ID
-		            + " = lp." + LEVELPOINT_ID + ") join " + TABLE_LEVELS + " as l on (lp."
-		            + LEVEL_ID + " = l." + LEVEL_ID + ") where l." + DISTANCE_ID + " = "
-		            + distanceId + " and l." + LEVEL_ORDER + " <= " + level.getLevelOrder();
+		            + " = lp." + LEVELPOINT_ID + ") where lp." + DISTANCE_ID + " = " + distanceId
+		            + " and lp." + LEVELPOINT_ORDER + " <= " + levelPoint.getLevelPointOrder();
 		Cursor resultCursor = db.rawQuery(sql, null);
 
 		resultCursor.moveToFirst();
@@ -148,18 +141,18 @@ public class Withdraw
 			int teamId = resultCursor.getInt(1);
 			int teamUserId = resultCursor.getInt(2);
 			int levelPointId = resultCursor.getInt(3);
-			int levelOrder = resultCursor.getInt(4);
-			if (isDBLevelPointEarlier(levelPoint, level, levelPointId, levelOrder))
+			int levelPointOrder = resultCursor.getInt(4);
+			if (isDBLevelPointEarlier(levelPoint, levelPointId, levelPointOrder))
 			{
-				TeamLevelDismiss teamLevelDismiss =
-				    new TeamLevelDismiss(levelPoint.getLevelPointId(), teamId, teamUserId, recordDateTime);
+				TeamDismiss teamDismiss =
+				    new TeamDismiss(levelPoint.getScanPoint().getScanPointId(), teamId, teamUserId, recordDateTime);
 
 				// init reference fields
-				teamLevelDismiss.setLevelPoint(levelPoint);
-				teamLevelDismiss.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
-				teamLevelDismiss.setTeamUser(UsersRegistry.getInstance().getUserById(teamUserId));
+				teamDismiss.setScanPoint(levelPoint.getScanPoint());
+				teamDismiss.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
+				teamDismiss.setTeamUser(UsersRegistry.getInstance().getUserById(teamUserId));
 
-				result.add(teamLevelDismiss);
+				result.add(teamDismiss);
 			}
 			resultCursor.moveToNext();
 		}

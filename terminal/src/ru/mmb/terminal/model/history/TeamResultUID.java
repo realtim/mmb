@@ -2,7 +2,7 @@ package ru.mmb.terminal.model.history;
 
 import java.util.Date;
 
-import ru.mmb.terminal.model.TeamLevelPoint;
+import ru.mmb.terminal.model.TeamResult;
 
 /**
  * Record UID helps uniquely identify records to synchronize history map.<br>
@@ -10,21 +10,21 @@ import ru.mmb.terminal.model.TeamLevelPoint;
  * 
  * @author yweiss
  */
-public class TeamLevelPointUID implements Comparable<TeamLevelPointUID>
+public class TeamResultUID implements Comparable<TeamResultUID>
 {
 	private final Date recordDateTime;
 	private final Integer teamId;
 	private final Integer userId;
 
-	public TeamLevelPointUID(TeamLevelPoint teamLevelPoint)
+	public TeamResultUID(TeamResult teamResult)
 	{
-		recordDateTime = teamLevelPoint.getRecordDateTime();
-		teamId = teamLevelPoint.getTeamId();
-		userId = teamLevelPoint.getUserId();
+		recordDateTime = teamResult.getRecordDateTime();
+		teamId = teamResult.getTeamId();
+		userId = teamResult.getUserId();
 	}
 
 	@Override
-	public int compareTo(TeamLevelPointUID another)
+	public int compareTo(TeamResultUID another)
 	{
 		int result = recordDateTime.compareTo(another.recordDateTime);
 		if (result == 0)
@@ -55,7 +55,7 @@ public class TeamLevelPointUID implements Comparable<TeamLevelPointUID>
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
-		TeamLevelPointUID other = (TeamLevelPointUID) obj;
+		TeamResultUID other = (TeamResultUID) obj;
 		if (recordDateTime == null)
 		{
 			if (other.recordDateTime != null) return false;

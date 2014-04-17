@@ -3,7 +3,7 @@ package ru.mmb.terminal.model.history;
 import java.util.HashMap;
 import java.util.Map;
 
-import ru.mmb.terminal.model.TeamLevelDismiss;
+import ru.mmb.terminal.model.TeamDismiss;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
 
 public class TeamDismissedStorage
@@ -11,7 +11,7 @@ public class TeamDismissedStorage
 	private final Map<Integer, TeamDismissedState> teamDismissedStorage =
 	    new HashMap<Integer, TeamDismissedState>();
 
-	public void put(TeamLevelDismiss teamLevelDismiss)
+	public void put(TeamDismiss teamLevelDismiss)
 	{
 		Integer teamId = teamLevelDismiss.getTeamId();
 		if (!teamDismissedStorage.containsKey(teamId))

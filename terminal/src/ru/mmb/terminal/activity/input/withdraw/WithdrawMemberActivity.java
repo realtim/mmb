@@ -45,7 +45,7 @@ public class WithdrawMemberActivity extends Activity implements StateChangeListe
 		labResult = (TextView) findViewById(R.id.inputWithdraw_resultTextView);
 		btnOk = (Button) findViewById(R.id.inputWithdraw_okButton);
 
-		setTitle(currentState.getLevelPointText(this));
+		setTitle(currentState.getScanPointText(this));
 
 		labTeamName.setText(currentState.getCurrentTeam().getTeamName());
 		labTeamNumber.setText(Integer.toString(currentState.getCurrentTeam().getTeamNum()));

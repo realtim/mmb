@@ -6,17 +6,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.TeamLevelPoint;
+import ru.mmb.terminal.model.TeamResult;
 import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
 import ru.mmb.terminal.util.DateFormat;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-public class InputData
+public class TeamResults
 {
 	private static final String TABLE_TEAM_LEVEL_POINTS = "TeamLevelPoints";
 
@@ -31,15 +30,14 @@ public class InputData
 
 	private final SQLiteDatabase db;
 
-	public InputData(SQLiteDatabase db)
+	public TeamResults(SQLiteDatabase db)
 	{
 		this.db = db;
 	}
 
-	public InputDataRecord getExistingTeamLevelPointRecord(LevelPoint levelPoint, Level level,
-	        Team team)
+	public TeamResultRecord getExistingTeamResultRecord(LevelPoint levelPoint, Team team)
 	{
-		InputDataRecord result = null;
+		TeamResultRecord result = null;
 		String sql =
 		    "select " + TEAMLEVELPOINT_DATE + ", " + TEAMLEVELPOINT_DATETIME + ", "
 		            + TEAMLEVELPOINT_POINTS + " from " + TABLE_TEAM_LEVEL_POINTS + " where "
@@ -53,13 +51,13 @@ public class InputData
 			return null;
 		}
 
-		List<InputDataRecord> records = new ArrayList<InputDataRecord>();
+		List<TeamResultRecord> records = new ArrayList<TeamResultRecord>();
 		while (!resultCursor.isAfterLast())
 		{
 			String recordDateTime = resultCursor.getString(0);
 			String checkDateTime = resultCursor.getString(1);
 			String takenCheckpoints = resultCursor.getString(2);
-			records.add(new InputDataRecord(recordDateTime, checkDateTime, takenCheckpoints, level));
+			records.add(new TeamResultRecord(recordDateTime, checkDateTime, takenCheckpoints, levelPoint));
 			resultCursor.moveToNext();
 		}
 		resultCursor.close();
@@ -70,7 +68,7 @@ public class InputData
 		return result;
 	}
 
-	public void saveInputData(LevelPoint levelPoint, Team team, Date checkDateTime,
+	public void saveTeamResult(LevelPoint levelPoint, Team team, Date checkDateTime,
 	        String takenCheckpoints, Date recordDateTime)
 	{
 		db.beginTransaction();
@@ -134,9 +132,9 @@ public class InputData
 		db.execSQL(insertSql);
 	}
 
-	public List<TeamLevelPoint> loadTeamLevelPoints(LevelPoint levelPoint)
+	public List<TeamResult> loadTeamResults(LevelPoint levelPoint)
 	{
-		List<TeamLevelPoint> result = new ArrayList<TeamLevelPoint>();
+		List<TeamResult> result = new ArrayList<TeamResult>();
 		String sql =
 		    "select " + TEAMLEVELPOINT_DATE + ", " + USER_ID + ", " + DEVICE_ID + ", " + TEAM_ID
 		            + ", " + TEAMLEVELPOINT_DATETIME + ", " + TEAMLEVELPOINT_POINTS + " from "
@@ -154,14 +152,14 @@ public class InputData
 			Date checkDateTime = DateFormat.parse(resultCursor.getString(4));
 			String takenCheckpointNames = resultCursor.getString(5);
 
-			TeamLevelPoint teamLevelPoint =
-			    new TeamLevelPoint(teamId, userId, deviceId, levelPoint.getLevelPointId(), takenCheckpointNames, checkDateTime, recordDateTime);
+			TeamResult teamResult =
+			    new TeamResult(teamId, userId, deviceId, levelPoint.getScanPoint().getScanPointId(), takenCheckpointNames, checkDateTime, recordDateTime);
 			// init reference fields
-			teamLevelPoint.setLevelPoint(levelPoint);
-			teamLevelPoint.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
-			teamLevelPoint.initTakenCheckpoints();
+			teamResult.setScanPoint(levelPoint.getScanPoint());
+			teamResult.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
+			teamResult.initTakenCheckpoints();
 
-			result.add(teamLevelPoint);
+			result.add(teamResult);
 			resultCursor.moveToNext();
 		}
 		resultCursor.close();

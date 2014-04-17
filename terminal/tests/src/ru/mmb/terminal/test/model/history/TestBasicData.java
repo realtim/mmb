@@ -2,16 +2,16 @@ package ru.mmb.terminal.test.model.history;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ru.mmb.terminal.model.Distance;
-import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Participant;
 import ru.mmb.terminal.model.PointType;
-import ru.mmb.terminal.model.StartType;
+import ru.mmb.terminal.model.ScanPoint;
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.TeamLevelPoint;
+import ru.mmb.terminal.model.TeamResult;
 import ru.mmb.terminal.util.DateFormat;
 
 public class TestBasicData
@@ -37,36 +37,32 @@ public class TestBasicData
 	private final int deviceId = 1;
 
 	private final Distance distance;
-	private final Level level;
+	private final ScanPoint scanPoint;
+	private final LevelPoint levelPoint;
 
 	private final List<Team> teams = new ArrayList<Team>();
 
-	private final List<TeamLevelPoint> teamLevelPoints = new ArrayList<TeamLevelPoint>();
+	private final List<TeamResult> teamLevelPoints = new ArrayList<TeamResult>();
 
 	private TestBasicData()
 	{
+		scanPoint = new ScanPoint(8, 25, "Смена карт", 2);
 		distance = new Distance(1, 1, "Тестовая дистанция");
-		level = createLevel();
+		levelPoint = createLevelPoint(distance, scanPoint);
 		initTeams();
 	}
 
-	private Level createLevel()
+	private LevelPoint createLevelPoint(Distance distance, ScanPoint scanPoint)
 	{
-		Level result =
-		    new Level(1, 1, "Старт - СК", 1, StartType.WHEN_READY, DateFormat.parse("201205152000"), DateFormat.parse("201205160000"), DateFormat.parse("201205152200"), DateFormat.parse("201205170000"));
+		LevelPoint result =
+		    new LevelPoint(154, PointType.CHANGE_MAPS, 1, 8, 7, DateFormat.parse("201404010100"), DateFormat.parse("201404012359"));
+		List<String> levelPointNames =
+		    Arrays.asList(new String[] { "КП1", "КП2", "КП3", "КП4", "КП5" });
+		List<Integer> levelPointPenalties = Arrays.asList(new Integer[] { 120, 120, 120, 120, 60 });
+		result.addCheckpoints(levelPointNames, levelPointPenalties);
 		result.setDistance(distance);
-		result.addCheckpoints("КП1,КП2,КП3,КП4,КП5,КП6,КП7,КП8,КП9,А1,А2,А3,А4,А5", "120,120,120,120,120,120,120,120,120,30,30,30,30,30");
+		result.setScanPoint(scanPoint);
 
-		result.setStartPoint(createLevelPoint(result, PointType.START, 1));
-		result.setFinishPoint(createLevelPoint(result, PointType.FINISH, 2));
-
-		return result;
-	}
-
-	private LevelPoint createLevelPoint(Level level, PointType pointType, int levelPointId)
-	{
-		LevelPoint result = new LevelPoint(pointType, levelPointId, level.getLevelId());
-		result.setLevel(level);
 		return result;
 	}
 
@@ -111,7 +107,7 @@ public class TestBasicData
 			userId = 10001;
 
 			Team team = getTeamById(1);
-			TeamLevelPoint teamLevelPoint =
+			TeamResult teamLevelPoint =
 			    TestUtils.createTeamLevelPoint(team, "КП1,КП2,КП3", DateFormat.parse("201205161400"), TestUtils.parseFullDate("20120516162000.000"));
 			teamLevelPoints.add(teamLevelPoint);
 
@@ -162,17 +158,12 @@ public class TestBasicData
 		return deviceId;
 	}
 
-	public Level getLevel()
-	{
-		return level;
-	}
-
 	public List<Team> getTeams()
 	{
 		return teams;
 	}
 
-	public List<TeamLevelPoint> getTeamLevelPoints()
+	public List<TeamResult> getTeamLevelPoints()
 	{
 		return teamLevelPoints;
 	}
@@ -189,5 +180,15 @@ public class TestBasicData
 	public void setUserId(int userId)
 	{
 		this.userId = userId;
+	}
+
+	public LevelPoint getLevelPoint()
+	{
+		return levelPoint;
+	}
+
+	public ScanPoint getScanPoint()
+	{
+		return scanPoint;
 	}
 }

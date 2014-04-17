@@ -64,7 +64,7 @@ public class CheckpointPanel
 
 	private void createCheckpointBoxes()
 	{
-		List<Checkpoint> checkpoints = currentState.getCurrentLevel().getCheckpoints();
+		List<Checkpoint> checkpoints = currentState.getLevelPointForTeam().getCheckpoints();
 		int checkpointsCount = checkpoints.size();
 		int colCount = checkpointsCount / 2;
 		if (checkpointsCount % 2 != 0) colCount += 1;
@@ -148,7 +148,7 @@ public class CheckpointPanel
 	{
 		if (!currentState.needInputCheckpoints()) return;
 
-		List<Checkpoint> checkpoints = currentState.getCurrentLevel().getCheckpoints();
+		List<Checkpoint> checkpoints = currentState.getLevelPointForTeam().getCheckpoints();
 		for (Checkpoint checkpoint : checkpoints)
 		{
 			CheckBox checkBox = checkpointBoxes.get(checkpoint);

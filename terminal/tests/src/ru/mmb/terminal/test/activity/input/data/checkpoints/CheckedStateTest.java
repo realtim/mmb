@@ -1,26 +1,31 @@
 ﻿package ru.mmb.terminal.test.activity.input.data.checkpoints;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import junit.framework.TestCase;
 import ru.mmb.terminal.model.Checkpoint;
-import ru.mmb.terminal.model.Level;
-import ru.mmb.terminal.model.StartType;
+import ru.mmb.terminal.model.LevelPoint;
+import ru.mmb.terminal.model.PointType;
 import ru.mmb.terminal.util.DateFormat;
 
 public class CheckedStateTest extends TestCase
 {
-	private Level level;
+	private LevelPoint levelPoint;
 	private final Map<Integer, Checkpoint> checkpointsMap = new TreeMap<Integer, Checkpoint>();
 
 	@Override
 	protected void setUp() throws Exception
 	{
-		level =
-		    new Level(1, 1, "Старт - СК", 1, StartType.WHEN_READY, DateFormat.parse("201205152000"), DateFormat.parse("201205160000"), DateFormat.parse("201205152200"), DateFormat.parse("201205170000"));
-		level.addCheckpoints("КП1,КП2,КП3,КП4,КП5,КП6,КП7,КП8,КП9,А1,А2,А3,А4,А5", "120,120,120,120,120,120,120,120,120,30,30,30,30,30");
-		for (Checkpoint checkpoint : level.getCheckpoints())
+		levelPoint =
+		    new LevelPoint(154, PointType.CHANGE_MAPS, 33, 8, 7, DateFormat.parse("201404010100"), DateFormat.parse("201404012359"));
+		List<String> levelPointNames =
+		    Arrays.asList(new String[] { "КП1", "КП2", "КП3", "КП4", "КП5" });
+		List<Integer> levelPointPenalties = Arrays.asList(new Integer[] { 120, 120, 120, 120, 60 });
+		levelPoint.addCheckpoints(levelPointNames, levelPointPenalties);
+		for (Checkpoint checkpoint : levelPoint.getCheckpoints())
 		{
 			checkpointsMap.put(checkpoint.getCheckpointOrder(), checkpoint);
 		}
@@ -28,12 +33,12 @@ public class CheckedStateTest extends TestCase
 
 	public void testSetUp()
 	{
-		assertEquals("КП3", checkpointsMap.get(new Integer(2)).getCheckpointName());
-		assertEquals(120, checkpointsMap.get(new Integer(8)).getCheckpointPenalty());
-		assertEquals(14, checkpointsMap.size());
+		assertEquals("КП3", checkpointsMap.get(new Integer(3)).getCheckpointName());
+		assertEquals(120, checkpointsMap.get(new Integer(4)).getCheckpointPenalty());
+		assertEquals(5, checkpointsMap.size());
 
-		assertEquals(14, level.getCheckpoints().size());
-		assertEquals("А1", level.getCheckpointByOrderNum(9).getCheckpointName());
-		assertEquals(30, level.getCheckpointByOrderNum(9).getCheckpointPenalty());
+		assertEquals(5, levelPoint.getCheckpoints().size());
+		assertEquals("КП1", levelPoint.getCheckpointByOrderNum(1).getCheckpointName());
+		assertEquals(60, levelPoint.getCheckpointByOrderNum(5).getCheckpointPenalty());
 	}
 }

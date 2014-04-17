@@ -1,10 +1,10 @@
 package ru.mmb.terminal.activity.input.history;
 
 import static ru.mmb.terminal.activity.Constants.KEY_CURRENT_TEAM_NUMBER;
-import ru.mmb.terminal.activity.ActivityStateWithTeamAndLevel;
+import ru.mmb.terminal.activity.ActivityStateWithTeamAndScanPoint;
 import android.os.Bundle;
 
-public class HistoryActivityState extends ActivityStateWithTeamAndLevel
+public class HistoryActivityState extends ActivityStateWithTeamAndScanPoint
 {
 	private String teamNumber = null;
 
@@ -17,8 +17,7 @@ public class HistoryActivityState extends ActivityStateWithTeamAndLevel
 	public void save(Bundle savedInstanceState)
 	{
 		super.save(savedInstanceState);
-		if (teamNumber != null)
-		    savedInstanceState.putString(KEY_CURRENT_TEAM_NUMBER, teamNumber);
+		if (teamNumber != null) savedInstanceState.putString(KEY_CURRENT_TEAM_NUMBER, teamNumber);
 	}
 
 	@Override

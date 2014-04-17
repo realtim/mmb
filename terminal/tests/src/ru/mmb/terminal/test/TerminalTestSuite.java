@@ -4,7 +4,7 @@ import junit.framework.TestSuite;
 import ru.mmb.terminal.test.activity.input.data.checkpoints.CheckedStateTest;
 import ru.mmb.terminal.test.model.history.DataStorageTest;
 import ru.mmb.terminal.test.model.history.TeamLevelPointsStorageTest;
-import ru.mmb.terminal.test.model.history.LevelPointRecordsTest;
+import ru.mmb.terminal.test.model.history.ScanPointRecordsTest;
 
 public class TerminalTestSuite extends TestSuite
 {
@@ -12,7 +12,7 @@ public class TerminalTestSuite extends TestSuite
 	{
 		TestSuite suite = new TestSuite("Terminal test suite");
 		suite.addTestSuite(CheckedStateTest.class);
-		suite.addTestSuite(LevelPointRecordsTest.class);
+		suite.addTestSuite(ScanPointRecordsTest.class);
 		suite.addTestSuite(TeamLevelPointsStorageTest.class);
 		suite.addTestSuite(DataStorageTest.class);
 		return suite;

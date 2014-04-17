@@ -3,43 +3,43 @@ package ru.mmb.terminal.model.history;
 import java.util.Date;
 
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.TeamLevelPoint;
+import ru.mmb.terminal.model.TeamResult;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
 
 public class HistoryInfo implements Comparable<HistoryInfo>
 {
 	private final Team team;
-	private final TeamLevelPoint teamLevelPoint;
+	private final TeamResult teamResult;
 	private final TeamDismissedState teamDismissedState;
 	private final boolean compareByLevelPoint;
 	private final Date comparisonDate;
 
-	public HistoryInfo(Integer teamId, TeamLevelPoint teamLevelPoint, TeamDismissedState teamDismissedState)
+	public HistoryInfo(Integer teamId, TeamResult teamResult, TeamDismissedState teamDismissedState)
 	{
 		this.team = TeamsRegistry.getInstance().getTeamById(teamId);
-		this.teamLevelPoint = teamLevelPoint;
+		this.teamResult = teamResult;
 		this.teamDismissedState = teamDismissedState;
 
-		if (teamLevelPoint == null && teamDismissedState == null)
-		    throw new RuntimeException("HistoryInfo failed. teamLevelPoint and teamDismissState NULL for team ["
+		if (teamResult == null && teamDismissedState == null)
+		    throw new RuntimeException("HistoryInfo failed. teamResult and teamDismissState NULL for team ["
 		            + teamId + "]");
 
-		this.compareByLevelPoint = !isCompareByDismissed(teamLevelPoint, teamDismissedState);
+		this.compareByLevelPoint = !isCompareByDismissed(teamResult, teamDismissedState);
 		this.comparisonDate =
-		    (this.compareByLevelPoint) ? teamLevelPoint.getRecordDateTime()
+		    (this.compareByLevelPoint) ? teamResult.getRecordDateTime()
 		            : teamDismissedState.getLastRecordDateTime();
 	}
 
-	private boolean isCompareByDismissed(TeamLevelPoint teamLevelPoint,
+	private boolean isCompareByDismissed(TeamResult teamResult,
 	        TeamDismissedState teamDismissedState)
 	{
-		if (teamLevelPoint == null) return true;
-		return teamDismissedState.getLastRecordDateTime().after(teamLevelPoint.getRecordDateTime());
+		if (teamResult == null) return true;
+		return teamDismissedState.getLastRecordDateTime().after(teamResult.getRecordDateTime());
 	}
 
-	public String buildLevelPointInfoText()
+	public String buildScanPointInfoText()
 	{
-		return (teamLevelPoint == null) ? "" : teamLevelPoint.buildInfoText();
+		return (teamResult == null) ? "" : teamResult.buildInfoText();
 	}
 
 	public String buildMembersInfo()
@@ -57,9 +57,9 @@ public class HistoryInfo implements Comparable<HistoryInfo>
 		return team;
 	}
 
-	public Integer getLevelPointUserId()
+	public Integer getUserId()
 	{
-		return teamLevelPoint.getUserId();
+		return teamResult.getUserId();
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public class HistoryInfo implements Comparable<HistoryInfo>
 		{
 			if (compareByLevelPoint && another.compareByLevelPoint)
 			{
-				result = teamLevelPoint.compareTo(another.teamLevelPoint);
+				result = teamResult.compareTo(another.teamResult);
 			}
 		}
 		return result;

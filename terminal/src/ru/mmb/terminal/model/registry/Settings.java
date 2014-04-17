@@ -6,7 +6,6 @@ import java.io.File;
 import java.util.Properties;
 
 import ru.mmb.terminal.db.TerminalDB;
-import ru.mmb.terminal.model.BarCodeLastExportDates;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -22,12 +21,10 @@ public class Settings
 	private static final String LAST_EXPORT_DATE = "last_export_date";
 	private static final String TRANSP_USER_ID = "transp_user_id";
 	private static final String TRANSP_USER_PASSWORD = "transp_user_password";
-	private static final String BARCODE_LAST_EXPORT_DATES = "barcode_last_export_dates";
 
 	private static Settings instance = null;
 
 	private Properties settings = null;
-	private final BarCodeLastExportDates barCodeLastExportDates = new BarCodeLastExportDates();
 
 	private Context currentContext = null;
 	private boolean settingsLoaded = false;
@@ -83,7 +80,6 @@ public class Settings
 		loadProperty(LAST_EXPORT_DATE);
 		loadProperty(TRANSP_USER_ID);
 		loadProperty(TRANSP_USER_PASSWORD);
-		loadBarCodeLastExportDates();
 	}
 
 	private void loadProperty(String propertyName)
@@ -93,12 +89,6 @@ public class Settings
 		{
 			settings.put(propertyName, value);
 		}
-	}
-
-	private void loadBarCodeLastExportDates()
-	{
-		String value = preferences.getString(BARCODE_LAST_EXPORT_DATES, null);
-		if (value != null) barCodeLastExportDates.loadFromString(value);
 	}
 
 	public String getPathToTerminalDB()
@@ -235,18 +225,6 @@ public class Settings
 	public void setTranspUserPassword(String transpUserPassword)
 	{
 		setValue(TRANSP_USER_PASSWORD, transpUserPassword);
-	}
-
-	public String getBarCodeLastExportDate(Integer levelPointId)
-	{
-		String result = barCodeLastExportDates.get(levelPointId);
-		return result == null ? "" : result;
-	}
-
-	public void setBarCodeLastExportDate(Integer levelPointId, String lastExportDate)
-	{
-		barCodeLastExportDates.put(levelPointId, lastExportDate);
-		setValue(BARCODE_LAST_EXPORT_DATES, barCodeLastExportDates.saveToString());
 	}
 
 	private boolean setValue(String settingName, String newValue)

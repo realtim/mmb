@@ -9,8 +9,9 @@ import java.util.Set;
 
 import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.LevelPoint;
-import ru.mmb.terminal.model.TeamLevelDismiss;
-import ru.mmb.terminal.model.TeamLevelPoint;
+import ru.mmb.terminal.model.ScanPoint;
+import ru.mmb.terminal.model.TeamDismiss;
+import ru.mmb.terminal.model.TeamResult;
 import ru.mmb.terminal.model.exception.DataStorageException;
 
 public class DataStorage
@@ -18,7 +19,7 @@ public class DataStorage
 	private static DataStorage instance = null;
 
 	/**
-	 * DataStorage is recreated for level point.<br>
+	 * DataStorage is recreated for scan point.<br>
 	 * Initialization load must be performed only once on history activity
 	 * creation.<br>
 	 * Special static methods will make data storage usable from
@@ -27,12 +28,12 @@ public class DataStorage
 	 * @param levelPoint
 	 * @return
 	 */
-	public static DataStorage getInstance(LevelPoint levelPoint)
+	public static DataStorage getInstance(ScanPoint scanPoint)
 	{
 		if (instance == null
-		        || instance.getLevelPoint().getLevelPointId() != levelPoint.getLevelPointId())
+		        || instance.getScanPoint().getScanPointId() != scanPoint.getScanPointId())
 		{
-			instance = new DataStorage(levelPoint);
+			instance = new DataStorage(scanPoint);
 		}
 		return instance;
 	}
@@ -42,56 +43,66 @@ public class DataStorage
 		instance = null;
 	}
 
-	private final LevelPoint levelPoint;
+	private final ScanPoint scanPoint;
 
-	private final Set<Integer> levelPointTeams = new HashSet<Integer>();
-	private final TeamLevelPointsStorage teamLevelPoints = new TeamLevelPointsStorage();
-	private final TeamDismissedStorage teamDismissed = new TeamDismissedStorage();
+	private final Set<Integer> scanPointTeams = new HashSet<Integer>();
+	private final TeamResultsStorage teamResultsStorage = new TeamResultsStorage();
+	private final TeamDismissedStorage teamDismissedStorage = new TeamDismissedStorage();
 
-	private DataStorage(LevelPoint levelPoint)
+	private DataStorage(ScanPoint scanPoint)
 	{
-		this.levelPoint = levelPoint;
-		initLevelPointTeams();
-		initTeamLevelPoints();
-		initTeamDismissed();
+		this.scanPoint = scanPoint;
+		initScanPointTeams();
+		initTeamResultsStorage();
+		initTeamDismissedStorage();
 	}
 
-	private void initLevelPointTeams()
+	private void initScanPointTeams()
 	{
-		levelPointTeams.clear();
-		TerminalDB.getConnectedInstance().appendLevelPointTeams(levelPoint, levelPointTeams);
-	}
-
-	private void initTeamLevelPoints()
-	{
-		List<TeamLevelPoint> inputData =
-		    TerminalDB.getConnectedInstance().loadTeamLevelPoints(levelPoint);
-		for (TeamLevelPoint teamLevelPoint : inputData)
+		scanPointTeams.clear();
+		for (LevelPoint levelPoint : scanPoint.getLevelPoints().values())
 		{
-			teamLevelPoints.put(teamLevelPoint);
+			TerminalDB.getConnectedInstance().appendLevelPointTeams(levelPoint, scanPointTeams);
 		}
 	}
 
-	private void initTeamDismissed()
+	private void initTeamResultsStorage()
 	{
-		List<TeamLevelDismiss> dismissed =
-		    TerminalDB.getConnectedInstance().loadDismissedMembers(levelPoint);
-		for (TeamLevelDismiss teamLevelDismiss : dismissed)
+		for (LevelPoint levelPoint : scanPoint.getLevelPoints().values())
 		{
-			teamDismissed.put(teamLevelDismiss);
+			List<TeamResult> inputData =
+			    TerminalDB.getConnectedInstance().loadTeamResults(levelPoint);
+			for (TeamResult teamLevelPoint : inputData)
+			{
+				teamResultsStorage.put(teamLevelPoint);
+			}
+		}
+	}
+
+	private void initTeamDismissedStorage()
+	{
+		for (LevelPoint levelPoint : scanPoint.getLevelPoints().values())
+		{
+			List<TeamDismiss> dismissed =
+			    TerminalDB.getConnectedInstance().loadDismissedMembers(levelPoint);
+			for (TeamDismiss teamDismiss : dismissed)
+			{
+				teamDismissedStorage.put(teamDismiss);
+			}
 		}
 	}
 
 	public List<HistoryInfo> getHistory()
 	{
 		List<HistoryInfo> result = new ArrayList<HistoryInfo>();
-		Set<Integer> teamIds = new HashSet<Integer>(levelPointTeams);
-		List<TeamLevelPoint> levelPointsHistory = teamLevelPoints.getHistory();
-		for (TeamLevelPoint teamLevelPoint : levelPointsHistory)
+		Set<Integer> teamIds = new HashSet<Integer>(scanPointTeams);
+		List<TeamResult> resultsHistory = teamResultsStorage.getHistory();
+		for (TeamResult teamResult : resultsHistory)
 		{
-			Integer teamId = teamLevelPoint.getTeam().getTeamId();
-			TeamDismissedState teamDismissedState = teamDismissed.getTeamDismissedState(teamId);
-			result.add(new HistoryInfo(teamId, teamLevelPoint, teamDismissedState));
+			Integer teamId = teamResult.getTeam().getTeamId();
+			TeamDismissedState teamDismissedState =
+			    teamDismissedStorage.getTeamDismissedState(teamId);
+			result.add(new HistoryInfo(teamId, teamResult, teamDismissedState));
 			teamIds.remove(teamId);
 		}
 		appendDismissedWithoutData(teamIds, result);
@@ -104,9 +115,10 @@ public class DataStorage
 		int addedCount = 0;
 		for (Integer teamId : teamIds)
 		{
-			if (teamDismissed.containsTeamId(teamId))
+			if (teamDismissedStorage.containsTeamId(teamId))
 			{
-				TeamDismissedState teamDismissedState = teamDismissed.getTeamDismissedState(teamId);
+				TeamDismissedState teamDismissedState =
+				    teamDismissedStorage.getTeamDismissedState(teamId);
 				result.add(new HistoryInfo(teamId, null, teamDismissedState));
 				addedCount++;
 			}
@@ -124,58 +136,56 @@ public class DataStorage
 		}
 	}
 
-	private Set<Integer> getLevelPointTeams()
+	private Set<Integer> getScanPointTeams()
 	{
-		return levelPointTeams;
+		return scanPointTeams;
 	}
 
-	private TeamLevelPointsStorage getTeamLevelPoints()
+	private TeamResultsStorage getTeamResultsStorage()
 	{
-		return teamLevelPoints;
+		return teamResultsStorage;
 	}
 
-	public LevelPoint getLevelPoint()
+	public ScanPoint getScanPoint()
 	{
-		return levelPoint;
+		return scanPoint;
 	}
 
-	private TeamDismissedStorage getTeamDismissed()
+	private TeamDismissedStorage getTeamDismissedStorage()
 	{
-		return teamDismissed;
+		return teamDismissedStorage;
 	}
 
-	public static void putTeamLevelPoint(TeamLevelPoint teamLevelPoint)
+	public static void putTeamResult(TeamResult teamResult)
 	{
-		if (instance.getLevelPoint().getLevelPointId() == teamLevelPoint.getLevelPointId())
+		if (instance.getScanPoint().getScanPointId() == teamResult.getScanPointId())
 		{
-			instance.getTeamLevelPoints().put(teamLevelPoint);
-			instance.getLevelPointTeams().add(teamLevelPoint.getTeamId());
+			instance.getTeamResultsStorage().put(teamResult);
+			instance.getScanPointTeams().add(teamResult.getTeamId());
 		}
 		else
 		{
 			String message =
-			    "Fatal error." + "\n" + "Current HISTORY data storage level point ["
-			            + instance.getLevelPoint() + "]" + "\n"
-			            + "Putting new team level point to [" + teamLevelPoint.getLevelPoint()
-			            + "]";
+			    "Fatal error." + "\n" + "Current HISTORY data storage scan point ["
+			            + instance.getScanPoint() + "]" + "\n" + "Putting new team result to ["
+			            + teamResult.getScanPoint() + "]";
 			throw new DataStorageException(message);
 		}
 	}
 
-	public static void putTeamLevelDismiss(TeamLevelDismiss teamLevelDismiss)
+	public static void putTeamDismiss(TeamDismiss teamDismiss)
 	{
-		if (instance.getLevelPoint().getLevelPointId() == teamLevelDismiss.getLevelPointId())
+		if (instance.getScanPoint().getScanPointId() == teamDismiss.getScanPointId())
 		{
-			instance.getTeamDismissed().put(teamLevelDismiss);
-			instance.getLevelPointTeams().add(teamLevelDismiss.getTeamId());
+			instance.getTeamDismissedStorage().put(teamDismiss);
+			instance.getScanPointTeams().add(teamDismiss.getTeamId());
 		}
 		else
 		{
 			String message =
-			    "Fatal error." + "\n" + "Current data storage level point ["
-			            + instance.getLevelPoint() + "]" + "\n"
-			            + "Putting new team level dismiss to [" + teamLevelDismiss.getLevelPoint()
-			            + "]";
+			    "Fatal error." + "\n" + "Current data storage scan point ["
+			            + instance.getScanPoint() + "]" + "\n" + "Putting new team dismiss to ["
+			            + teamDismiss.getScanPoint() + "]";
 			throw new DataStorageException(message);
 		}
 	}
