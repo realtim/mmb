@@ -38,7 +38,7 @@
             </LinearLayout>
 
             <TextView
-                android:id="@+id/inputHistoryRow_levelPointText"
+                android:id="@+id/inputHistoryRow_scanPointInfoText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"

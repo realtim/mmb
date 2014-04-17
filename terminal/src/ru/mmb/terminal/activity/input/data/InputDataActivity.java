@@ -53,7 +53,7 @@ public class InputDataActivity extends Activity implements StateChangeListener
 		btnOk = (Button) findViewById(R.id.inputData_okButton);
 		btnWithdraw = (Button) findViewById(R.id.inputData_withdrawButton);
 
-		setTitle(currentState.getLevelPointText(this));
+		setTitle(currentState.getScanPointText(this));
 		if (currentState.getCurrentTeam() != null)
 		{
 			labTeamName.setText(currentState.getCurrentTeam().getTeamName());

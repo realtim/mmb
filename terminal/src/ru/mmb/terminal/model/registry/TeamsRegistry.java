@@ -14,8 +14,7 @@ public class TeamsRegistry
 
 	private List<Team> teams = null;
 	private final Map<Integer, Team> teamByIdMap = new HashMap<Integer, Team>();
-	private final Map<Integer, Map<Integer, Team>> teamsByNumber =
-	    new HashMap<Integer, Map<Integer, Team>>();
+	private final Map<Integer, Team> teamByNumberMap = new HashMap<Integer, Team>();
 
 	public static TeamsRegistry getInstance()
 	{
@@ -56,22 +55,11 @@ public class TeamsRegistry
 
 	private void refreshTeamsByNumberMap()
 	{
-		clearTeamsByNumber();
+		teamByNumberMap.clear();
 		for (Team team : teams)
 		{
-			Integer distanceId = team.getDistanceId();
-			if (!teamsByNumber.containsKey(distanceId))
-			    teamsByNumber.put(distanceId, new HashMap<Integer, Team>());
-			Map<Integer, Team> distanceTeamsByNumber = teamsByNumber.get(distanceId);
-			distanceTeamsByNumber.put(new Integer(team.getTeamNum()), team);
+			teamByNumberMap.put(new Integer(team.getTeamNum()), team);
 		}
-	}
-
-	private void clearTeamsByNumber()
-	{
-		for (Map<Integer, Team> teams : teamsByNumber.values())
-			teams.clear();
-		teamsByNumber.clear();
 	}
 
 	public List<Team> getTeams(int distanceId)
@@ -89,10 +77,8 @@ public class TeamsRegistry
 		return teamByIdMap.get(new Integer(teamId));
 	}
 
-	public Team getTeamByNumber(Integer distanceId, Integer teamNumber)
+	public Team getTeamByNumber(int teamNumber)
 	{
-		Map<Integer, Team> distanceTeams = teamsByNumber.get(distanceId);
-		if (distanceTeams == null) return null;
-		return distanceTeams.get(teamNumber);
+		return teamByNumberMap.get(teamNumber);
 	}
 }

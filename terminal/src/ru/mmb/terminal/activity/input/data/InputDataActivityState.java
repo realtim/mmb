@@ -8,16 +8,13 @@ import java.text.ParseException;
 import java.util.Date;
 
 import ru.mmb.terminal.R;
-import ru.mmb.terminal.activity.ActivityStateWithTeamAndLevel;
+import ru.mmb.terminal.activity.ActivityStateWithTeamAndScanPoint;
 import ru.mmb.terminal.activity.LevelPointType;
-import ru.mmb.terminal.db.InputDataRecord;
+import ru.mmb.terminal.db.TeamResultRecord;
 import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.Checkpoint;
-import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
-import ru.mmb.terminal.model.StartType;
-import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.TeamLevelPoint;
+import ru.mmb.terminal.model.TeamResult;
 import ru.mmb.terminal.model.checkpoints.CheckedState;
 import ru.mmb.terminal.model.history.DataStorage;
 import ru.mmb.terminal.model.registry.Settings;
@@ -26,7 +23,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 
-public class InputDataActivityState extends ActivityStateWithTeamAndLevel
+public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint
 {
 	private CheckedState checkedState = new CheckedState();
 	private DateRecord inputDate = new DateRecord();
@@ -124,15 +121,23 @@ public class InputDataActivityState extends ActivityStateWithTeamAndLevel
 		}
 	}
 
-	public boolean isCommonStart()
-	{
-		if (getCurrentLevelPointType() == LevelPointType.FINISH) return false;
-		return getCurrentLevel().getLevelStartType() == StartType.COMMON_START;
-	}
-
 	public boolean needInputCheckpoints()
 	{
 		return getCurrentLevelPointType() == LevelPointType.FINISH;
+	}
+
+	private LevelPointType getCurrentLevelPointType()
+	{
+		LevelPoint levelPoint = getLevelPointForTeam();
+		return levelPoint.getPointType().isStart() ? LevelPointType.START : LevelPointType.FINISH;
+	}
+
+	public boolean isCommonStart()
+	{
+		if (getCurrentLevelPointType() == LevelPointType.FINISH) return false;
+
+		LevelPoint levelPoint = getLevelPointForTeam();
+		return levelPoint.getLevelPointMinDateTime().equals(levelPoint.getLevelPointMaxDateTime());
 	}
 
 	public void setInputDate(Date date)
@@ -143,7 +148,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndLevel
 
 	public void initInputDateFromCommonStart()
 	{
-		inputDate = new DateRecord(getCurrentLevel().getLevelBegTime());
+		inputDate = new DateRecord(getLevelPointForTeam().getLevelPointMinDateTime());
 	}
 
 	public String getResultText(Activity context)
@@ -188,21 +193,15 @@ public class InputDataActivityState extends ActivityStateWithTeamAndLevel
 	}
 
 	@Override
-	public void setCurrentLevel(Level currentLevel)
-	{
-		super.setCurrentLevel(currentLevel);
-		checkedState.setLevel(currentLevel);
-	}
-
-	@Override
 	protected void update(boolean fromSavedBundle)
 	{
 		super.update(fromSavedBundle);
-		checkedState.setLevel(getCurrentLevel());
+		LevelPoint levelPoint = getLevelPointForTeam();
+		checkedState.setLevelPoint(levelPoint);
 		if (!fromSavedBundle)
 		{
-			InputDataRecord previousRecord =
-			    TerminalDB.getConnectedInstance().getExistingTeamLevelPointRecord(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam());
+			TeamResultRecord previousRecord =
+			    TerminalDB.getConnectedInstance().getExistingTeamResultRecord(levelPoint, getCurrentTeam());
 			if (previousRecord != null)
 			{
 				checkedState.loadTakenCheckpoints(previousRecord.getCheckedMap());
@@ -226,19 +225,17 @@ public class InputDataActivityState extends ActivityStateWithTeamAndLevel
 
 	public void saveInputDataToDB(Date recordDateTime)
 	{
-		TerminalDB.getConnectedInstance().saveInputData(getCurrentLevelPoint(), getCurrentTeam(), inputDate.toDate(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
+		TerminalDB.getConnectedInstance().saveTeamResult(getLevelPointForTeam(), getCurrentTeam(), inputDate.toDate(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
 	}
 
 	public void putTeamLevelPointToDataStorage(Date recordDateTime)
 	{
-		Team team = getCurrentTeam();
-		LevelPoint levelPoint = getCurrentLevelPoint();
-		TeamLevelPoint teamLevelPoint =
-		    new TeamLevelPoint(team.getTeamId(), Settings.getInstance().getUserId(), Settings.getInstance().getDeviceId(), levelPoint.getLevelPointId(), checkedState.getTakenCheckpointsRawText(), inputDate.toDate(), recordDateTime);
-		teamLevelPoint.setTeam(team);
-		teamLevelPoint.setLevelPoint(levelPoint);
-		teamLevelPoint.initTakenCheckpoints();
-		DataStorage.putTeamLevelPoint(teamLevelPoint);
+		TeamResult teamResult =
+		    new TeamResult(getCurrentTeam().getTeamId(), Settings.getInstance().getUserId(), Settings.getInstance().getDeviceId(), getCurrentScanPoint().getScanPointId(), checkedState.getTakenCheckpointsRawText(), inputDate.toDate(), recordDateTime);
+		teamResult.setTeam(getCurrentTeam());
+		teamResult.setScanPoint(getCurrentScanPoint());
+		teamResult.initTakenCheckpoints();
+		DataStorage.putTeamResult(teamResult);
 	}
 
 	public boolean isEditingExistingRecord()

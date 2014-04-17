@@ -6,7 +6,6 @@ import java.util.List;
 
 import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.Distance;
-import ru.mmb.terminal.model.Level;
 
 public class DistancesRegistry
 {
@@ -33,12 +32,6 @@ public class DistancesRegistry
 		try
 		{
 			distances = TerminalDB.getConnectedInstance().loadDistances(CurrentRaid.getId());
-			for (Distance distance : distances)
-			{
-				List<Level> levels =
-				    TerminalDB.getConnectedInstance().loadLevels(distance.getDistanceId());
-				distance.addLoadedLevels(levels);
-			}
 		}
 		catch (Exception e)
 		{

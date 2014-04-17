@@ -7,7 +7,7 @@ import java.util.TreeMap;
 
 import ru.mmb.terminal.model.Participant;
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.TeamLevelDismiss;
+import ru.mmb.terminal.model.TeamDismiss;
 import ru.mmb.terminal.model.User;
 import ru.mmb.terminal.model.registry.UsersRegistry;
 
@@ -39,14 +39,14 @@ public class TeamDismissedState
 		lastRecordDateTime = (new GregorianCalendar(1900, 1, 1, 0, 0)).getTime();
 	}
 
-	public void add(TeamLevelDismiss teamLevelDismiss)
+	public void add(TeamDismiss teamLevelDismiss)
 	{
 		User dismissedUser = teamLevelDismiss.getTeamUser();
 		teamDismissedState.put(dismissedUser, true);
 		updateLastRecordDateTime(teamLevelDismiss);
 	}
 
-	private void updateLastRecordDateTime(TeamLevelDismiss teamLevelDismiss)
+	private void updateLastRecordDateTime(TeamDismiss teamLevelDismiss)
 	{
 		Date recordDateTime = teamLevelDismiss.getRecordDateTime();
 		if (lastRecordDateTime == null || lastRecordDateTime.before(recordDateTime))

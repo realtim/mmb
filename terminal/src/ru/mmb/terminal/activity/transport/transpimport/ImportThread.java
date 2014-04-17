@@ -1,6 +1,7 @@
 package ru.mmb.terminal.activity.transport.transpimport;
 
 import ru.mmb.terminal.model.registry.DistancesRegistry;
+import ru.mmb.terminal.model.registry.ScanPointsRegistry;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
 import ru.mmb.terminal.model.registry.UsersRegistry;
 import ru.mmb.terminal.transport.importer.ImportState;
@@ -45,12 +46,12 @@ public class ImportThread extends Thread
 		if (needRefreshRegistries)
 		{
 			DistancesRegistry.getInstance().refresh();
+			ScanPointsRegistry.getInstance().refresh();
 			TeamsRegistry.getInstance().refresh();
 			UsersRegistry.getInstance().refresh();
 
 			// update data storages after import
 			ru.mmb.terminal.model.history.DataStorage.reset();
-			ru.mmb.terminal.model.barcode.DataStorage.reset();
 		}
 
 		System.out.println("ImportThread finished.");

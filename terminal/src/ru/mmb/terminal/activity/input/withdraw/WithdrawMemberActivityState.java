@@ -9,20 +9,19 @@ import java.util.Date;
 import java.util.List;
 
 import ru.mmb.terminal.R;
-import ru.mmb.terminal.activity.ActivityStateWithTeamAndLevel;
+import ru.mmb.terminal.activity.ActivityStateWithTeamAndScanPoint;
 import ru.mmb.terminal.activity.input.withdraw.list.TeamMemberRecord;
 import ru.mmb.terminal.db.TerminalDB;
-import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Participant;
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.TeamLevelDismiss;
+import ru.mmb.terminal.model.TeamDismiss;
 import ru.mmb.terminal.model.history.DataStorage;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
 import ru.mmb.terminal.model.registry.UsersRegistry;
 import android.app.Activity;
 import android.os.Bundle;
 
-public class WithdrawMemberActivityState extends ActivityStateWithTeamAndLevel
+public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoint
 {
 	private final List<Participant> prevWithdrawnMembers = new ArrayList<Participant>();
 	private final List<Participant> currWithdrawnMembers = new ArrayList<Participant>();
@@ -80,10 +79,10 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndLevel
 
 	private void updatePrevWithdrawnMembers()
 	{
-		if (getCurrentLevel() != null && getCurrentTeam() != null)
+		if (getCurrentScanPoint() != null && getCurrentTeam() != null)
 		{
 			prevWithdrawnMembers.clear();
-			prevWithdrawnMembers.addAll(TerminalDB.getConnectedInstance().getWithdrawnMembers(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam()));
+			prevWithdrawnMembers.addAll(TerminalDB.getConnectedInstance().getDismissedMembers(getLevelPointForTeam(), getCurrentTeam()));
 		}
 	}
 
@@ -170,23 +169,21 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndLevel
 
 	public void saveCurrWithdrawnToDB(Date recordDateTime)
 	{
-		TerminalDB.getConnectedInstance().saveWithdrawnMembers(getCurrentLevelPoint(), getCurrentLevel(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
+		TerminalDB.getConnectedInstance().saveDismissedMembers(getLevelPointForTeam(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
 	}
 
 	public void putCurrWithdrawnToDataStorage(Date recordDateTime)
 	{
-		Team team = getCurrentTeam();
-		LevelPoint levelPoint = getCurrentLevelPoint();
 		for (Participant withdrawn : currWithdrawnMembers)
 		{
-			TeamLevelDismiss teamLevelDismiss =
-			    new TeamLevelDismiss(levelPoint.getLevelPointId(), team.getTeamId(), withdrawn.getUserId(), recordDateTime);
+			TeamDismiss teamDismiss =
+			    new TeamDismiss(getCurrentScanPoint().getScanPointId(), getCurrentTeam().getTeamId(), withdrawn.getUserId(), recordDateTime);
 			// init reference fields
-			teamLevelDismiss.setLevelPoint(levelPoint);
-			teamLevelDismiss.setTeam(team);
-			teamLevelDismiss.setTeamUser(UsersRegistry.getInstance().getUserById(withdrawn.getUserId()));
+			teamDismiss.setScanPoint(getCurrentScanPoint());
+			teamDismiss.setTeam(getCurrentTeam());
+			teamDismiss.setTeamUser(UsersRegistry.getInstance().getUserById(withdrawn.getUserId()));
 
-			DataStorage.putTeamLevelDismiss(teamLevelDismiss);
+			DataStorage.putTeamDismiss(teamDismiss);
 		}
 	}
 }

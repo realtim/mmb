@@ -6,40 +6,40 @@ import java.util.List;
 
 import junit.framework.TestCase;
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.TeamLevelPoint;
-import ru.mmb.terminal.model.history.LevelPointRecord;
-import ru.mmb.terminal.model.history.LevelPointRecords;
-import ru.mmb.terminal.model.history.LevelPointRecordsException;
+import ru.mmb.terminal.model.TeamResult;
+import ru.mmb.terminal.model.history.ScanPointRecord;
+import ru.mmb.terminal.model.history.ScanPointRecords;
+import ru.mmb.terminal.model.history.ScanPointRecordsException;
 import ru.mmb.terminal.util.DateFormat;
 
-public class LevelPointRecordsTest extends TestCase
+public class ScanPointRecordsTest extends TestCase
 {
 	private static final boolean CHECK_SINGLE = true;
 
 	private TestBasicData testBasicData;
-	private LevelPointRecords levelPointRecords;
+	private ScanPointRecords scanPointRecords;
 
 	@Override
 	protected void setUp() throws Exception
 	{
 		TestBasicData.reset();
 		testBasicData = TestBasicData.getInstance();
-		levelPointRecords = new LevelPointRecords();
+		scanPointRecords = new ScanPointRecords();
 	}
 
 	public void testAddLevelPointRecord() throws ParseException
 	{
 		Team team = testBasicData.getTeamById(1);
 		Date recordDateTime = TestUtils.parseFullDate("20120516162030.500");
-		TeamLevelPoint teamLevelPoint =
+		TeamResult teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП2,КП3", DateFormat.parse("201205161400"), recordDateTime);
 		Integer userId = teamLevelPoint.getUserId();
 
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
-		assertEquals(1, levelPointRecords.getRecordDates().size());
+		assertEquals(1, scanPointRecords.getRecordDates().size());
 
-		LevelPointRecord teamRecord = levelPointRecords.getByDate(recordDateTime);
+		ScanPointRecord teamRecord = scanPointRecords.getByDate(recordDateTime);
 		assertNotNull(teamRecord);
 		assertEquals(1, teamRecord.size());
 
@@ -53,25 +53,25 @@ public class LevelPointRecordsTest extends TestCase
 	{
 		Team team = testBasicData.getTeamById(1);
 		Date recordDateTime = TestUtils.parseFullDate("20120516162030.500");
-		TeamLevelPoint teamLevelPoint =
+		TeamResult teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП2,КП3", DateFormat.parse("201205161400"), recordDateTime);
 		Integer userId = teamLevelPoint.getUserId();
 
-		levelPointRecords.put(teamLevelPoint);
-		assertEquals(1, levelPointRecords.getRecordDates().size());
-		assertNotNull(levelPointRecords.getDateForUser(userId));
-		assertEquals(recordDateTime, levelPointRecords.getDateForUser(userId));
+		scanPointRecords.put(teamLevelPoint);
+		assertEquals(1, scanPointRecords.getRecordDates().size());
+		assertNotNull(scanPointRecords.getDateForUser(userId));
+		assertEquals(recordDateTime, scanPointRecords.getDateForUser(userId));
 
 		recordDateTime = TestUtils.parseFullDate("20120516162500.111");
 		teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП3,КП4", DateFormat.parse("201205161305"), recordDateTime);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
-		assertEquals(1, levelPointRecords.getRecordDates().size());
-		assertNotNull(levelPointRecords.getDateForUser(userId));
-		assertEquals(TestUtils.parseFullDate("20120516162500.111"), levelPointRecords.getDateForUser(userId));
+		assertEquals(1, scanPointRecords.getRecordDates().size());
+		assertNotNull(scanPointRecords.getDateForUser(userId));
+		assertEquals(TestUtils.parseFullDate("20120516162500.111"), scanPointRecords.getDateForUser(userId));
 
-		LevelPointRecord teamRecord = levelPointRecords.getByDate(recordDateTime);
+		ScanPointRecord teamRecord = scanPointRecords.getByDate(recordDateTime);
 		assertNotNull(teamRecord);
 		assertEquals(1, teamRecord.size());
 
@@ -90,16 +90,16 @@ public class LevelPointRecordsTest extends TestCase
 		{
 			Team team = testBasicData.getTeamById(1);
 			Date recordDateTime = TestUtils.parseFullDate("20120516162500.111");
-			TeamLevelPoint teamLevelPoint =
+			TeamResult teamLevelPoint =
 			    TestUtils.createTeamLevelPoint(team, "КП1,КП3,КП4", DateFormat.parse("201205161305"), recordDateTime);
-			levelPointRecords.put(teamLevelPoint);
+			scanPointRecords.put(teamLevelPoint);
 
 			recordDateTime = TestUtils.parseFullDate("20120516162030.500");
 			teamLevelPoint =
 			    TestUtils.createTeamLevelPoint(team, "КП1,КП2,КП3", DateFormat.parse("201205161400"), recordDateTime);
-			levelPointRecords.put(teamLevelPoint);
+			scanPointRecords.put(teamLevelPoint);
 		}
-		catch (LevelPointRecordsException e)
+		catch (ScanPointRecordsException e)
 		{
 			wasError = true;
 		}
@@ -113,18 +113,18 @@ public class LevelPointRecordsTest extends TestCase
 		int userId1 = 10001;
 		testBasicData.setUserId(userId1);
 		Date recordDateTime1 = TestUtils.parseFullDate("20120516162030.500");
-		TeamLevelPoint teamLevelPoint =
+		TeamResult teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП2,КП3", DateFormat.parse("201205161400"), recordDateTime1);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
 		int userId2 = 10002;
 		testBasicData.setUserId(userId2);
 		Date recordDateTime2 = TestUtils.parseFullDate("20120516162500.111");
 		teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП3,КП4,КП5", DateFormat.parse("201205161305"), recordDateTime2);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
-		assertEquals(2, levelPointRecords.getRecordDates().size());
+		assertEquals(2, scanPointRecords.getRecordDates().size());
 
 		checkUserDate(userId1, "20120516162030.500");
 		checkUserDate(userId2, "20120516162500.111");
@@ -135,17 +135,17 @@ public class LevelPointRecordsTest extends TestCase
 
 	private void checkUserDate(int userId1, String dateString) throws ParseException
 	{
-		assertNotNull(levelPointRecords.getDateForUser(userId1));
-		assertEquals(TestUtils.parseFullDate(dateString), levelPointRecords.getDateForUser(userId1));
+		assertNotNull(scanPointRecords.getDateForUser(userId1));
+		assertEquals(TestUtils.parseFullDate(dateString), scanPointRecords.getDateForUser(userId1));
 	}
 
 	private void checkRecordForUser(int userId, Date recordDateTime, String checkDateString,
 	        int takenSize, boolean checkRecordSingle)
 	{
-		LevelPointRecord teamRecord = levelPointRecords.getByDate(recordDateTime);
+		ScanPointRecord teamRecord = scanPointRecords.getByDate(recordDateTime);
 		assertNotNull(teamRecord);
 		if (checkRecordSingle) assertEquals(1, teamRecord.size());
-		TeamLevelPoint teamLevelPoint = teamRecord.getByUserId(userId);
+		TeamResult teamLevelPoint = teamRecord.getByUserId(userId);
 		assertEquals(takenSize, teamLevelPoint.getTakenCheckpoints().size());
 		assertEquals(DateFormat.parse(checkDateString), teamLevelPoint.getCheckDateTime());
 	}
@@ -157,17 +157,17 @@ public class LevelPointRecordsTest extends TestCase
 		int userId1 = 10001;
 		testBasicData.setUserId(userId1);
 		Date recordDateTime = TestUtils.parseFullDate("20120516162000.000");
-		TeamLevelPoint teamLevelPoint =
+		TeamResult teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП2,КП3", DateFormat.parse("201205161400"), recordDateTime);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
 		int userId2 = 10002;
 		testBasicData.setUserId(userId2);
 		teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП3,КП4,КП5", DateFormat.parse("201205161305"), recordDateTime);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
-		assertEquals(1, levelPointRecords.getRecordDates().size());
+		assertEquals(1, scanPointRecords.getRecordDates().size());
 
 		checkUserDate(userId1, "20120516162000.000");
 		checkUserDate(userId2, "20120516162000.000");
@@ -183,22 +183,22 @@ public class LevelPointRecordsTest extends TestCase
 		int userId1 = 10001;
 		testBasicData.setUserId(userId1);
 		Date recordDateTime1 = TestUtils.parseFullDate("20120516162030.500");
-		TeamLevelPoint teamLevelPoint =
+		TeamResult teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП2,КП3", DateFormat.parse("201205161400"), recordDateTime1);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
 		int userId2 = 10002;
 		testBasicData.setUserId(userId2);
 		Date recordDateTime2 = TestUtils.parseFullDate("20120516162500.111");
 		teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП3,КП4,КП5", DateFormat.parse("201205161305"), recordDateTime2);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
-		LevelPointRecord teamRecord = levelPointRecords.getLastRecord();
+		ScanPointRecord teamRecord = scanPointRecords.getLastRecord();
 		assertNotNull(teamRecord);
 		assertEquals(1, teamRecord.size());
 
-		List<TeamLevelPoint> teamLevelPoints = teamRecord.getTeamLevelPoints();
+		List<TeamResult> teamLevelPoints = teamRecord.getTeamResults();
 		assertNotNull(teamLevelPoints);
 		assertEquals(1, teamLevelPoints.size());
 		teamLevelPoint = teamLevelPoints.get(0);
@@ -214,21 +214,21 @@ public class LevelPointRecordsTest extends TestCase
 		int userId1 = 10001;
 		testBasicData.setUserId(userId1);
 		Date recordDateTime = TestUtils.parseFullDate("20120516162000.000");
-		TeamLevelPoint teamLevelPoint =
+		TeamResult teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП2,КП3", DateFormat.parse("201205161400"), recordDateTime);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
 		int userId2 = 10002;
 		testBasicData.setUserId(userId2);
 		teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП3,КП4,КП5", DateFormat.parse("201205161305"), recordDateTime);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
-		LevelPointRecord teamRecord = levelPointRecords.getLastRecord();
+		ScanPointRecord teamRecord = scanPointRecords.getLastRecord();
 		assertNotNull(teamRecord);
 		assertEquals(2, teamRecord.size());
 
-		List<TeamLevelPoint> teamLevelPoints = teamRecord.getTeamLevelPoints();
+		List<TeamResult> teamLevelPoints = teamRecord.getTeamResults();
 		assertEquals(2, teamLevelPoints.size());
 		teamLevelPoint = teamLevelPoints.get(0);
 		checkRecord(teamLevelPoint, userId1, "201205161400", 3);
@@ -236,7 +236,7 @@ public class LevelPointRecordsTest extends TestCase
 		checkRecord(teamLevelPoint, userId2, "201205161305", 4);
 	}
 
-	private void checkRecord(TeamLevelPoint record, int userId, String checkDateString,
+	private void checkRecord(TeamResult record, int userId, String checkDateString,
 	        int takenSize)
 	{
 		assertNotNull(record);
@@ -252,37 +252,37 @@ public class LevelPointRecordsTest extends TestCase
 		int userId1 = 10001;
 		testBasicData.setUserId(userId1);
 		Date recordDateTime = TestUtils.parseFullDate("20120516162000.000");
-		TeamLevelPoint teamLevelPoint =
+		TeamResult teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП2,КП3", DateFormat.parse("201205161400"), recordDateTime);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
 		int userId2 = 10002;
 		testBasicData.setUserId(userId2);
 		teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1,КП3,КП4,КП5", DateFormat.parse("201205161305"), recordDateTime);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
-		assertEquals(1, levelPointRecords.size());
-		LevelPointRecord teamRecord = levelPointRecords.getByDate(recordDateTime);
+		assertEquals(1, scanPointRecords.size());
+		ScanPointRecord teamRecord = scanPointRecords.getByDate(recordDateTime);
 		assertEquals(2, teamRecord.size());
 
 		Date recordDateTime2 = TestUtils.parseFullDate("20120516162559.123");
 		teamLevelPoint =
 		    TestUtils.createTeamLevelPoint(team, "КП1", DateFormat.parse("201205161200"), recordDateTime2);
-		levelPointRecords.put(teamLevelPoint);
+		scanPointRecords.put(teamLevelPoint);
 
-		assertEquals(2, levelPointRecords.size());
+		assertEquals(2, scanPointRecords.size());
 
-		teamRecord = levelPointRecords.getByDate(recordDateTime);
+		teamRecord = scanPointRecords.getByDate(recordDateTime);
 		assertEquals(1, teamRecord.size());
-		assertEquals(recordDateTime, levelPointRecords.getDateForUser(userId1));
-		teamRecord = levelPointRecords.getByDate(recordDateTime2);
+		assertEquals(recordDateTime, scanPointRecords.getDateForUser(userId1));
+		teamRecord = scanPointRecords.getByDate(recordDateTime2);
 		assertEquals(1, teamRecord.size());
-		assertEquals(recordDateTime2, levelPointRecords.getDateForUser(userId2));
+		assertEquals(recordDateTime2, scanPointRecords.getDateForUser(userId2));
 
-		assertEquals(recordDateTime2, levelPointRecords.getLastDate());
-		teamRecord = levelPointRecords.getLastRecord();
-		teamLevelPoint = teamRecord.getTeamLevelPoints().get(0);
+		assertEquals(recordDateTime2, scanPointRecords.getLastDate());
+		teamRecord = scanPointRecords.getLastRecord();
+		teamLevelPoint = teamRecord.getTeamResults().get(0);
 		checkRecord(teamLevelPoint, userId2, "201205161200", 1);
 	}
 }

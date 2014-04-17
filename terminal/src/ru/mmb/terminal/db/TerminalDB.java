@@ -4,14 +4,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import ru.mmb.terminal.model.BarCodeScan;
 import ru.mmb.terminal.model.Distance;
-import ru.mmb.terminal.model.Level;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.Participant;
+import ru.mmb.terminal.model.ScanPoint;
 import ru.mmb.terminal.model.Team;
-import ru.mmb.terminal.model.TeamLevelDismiss;
-import ru.mmb.terminal.model.TeamLevelPoint;
+import ru.mmb.terminal.model.TeamDismiss;
+import ru.mmb.terminal.model.TeamResult;
 import ru.mmb.terminal.model.User;
 import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.transport.model.MetaTable;
@@ -23,14 +22,15 @@ public class TerminalDB
 	private static TerminalDB instance = null;
 
 	private SQLiteDatabase db;
-	private Withdraw withdraw;
-	private InputData inputData;
+
 	private Distances distances;
-	private Levels levels;
+	private ScanPoints scanPoints;
+	private LevelPoints levelPoints;
 	private Teams teams;
 	private MetaTables metaTables;
 	private Users users;
-	private BarCodeScans barCodeScans;
+	private TeamResults teamResults;
+	private TeamDismissed teamDismissed;
 
 	private IDGenerator idGenerator;
 
@@ -63,15 +63,15 @@ public class TerminalDB
 			    SQLiteDatabase.openDatabase(Settings.getInstance().getPathToTerminalDB(), null, SQLiteDatabase.OPEN_READWRITE);
 			performTestQuery();
 			// Log.d("TerminalDB", "db open SUCCESS");
-			withdraw = new Withdraw(db);
-			inputData = new InputData(db);
 			distances = new Distances(db);
-			levels = new Levels(db);
+			scanPoints = new ScanPoints(db);
+			levelPoints = new LevelPoints(db);
 			teams = new Teams(db);
 			idGenerator = new IDGenerator(db);
 			metaTables = new MetaTables(db);
 			users = new Users(db);
-			barCodeScans = new BarCodeScans(db);
+			teamResults = new TeamResults(db);
+			teamDismissed = new TeamDismissed(db);
 		}
 		catch (SQLiteException e)
 		{
@@ -107,21 +107,21 @@ public class TerminalDB
 		}
 	}
 
-	public List<Participant> getWithdrawnMembers(LevelPoint levelPoint, Level level, Team team)
+	public List<Participant> getDismissedMembers(LevelPoint levelPoint, Team team)
 	{
-		return withdraw.getWithdrawnMembers(levelPoint, level, team);
+		return teamDismissed.getDismissedMembers(levelPoint, team);
 	}
 
-	public void saveWithdrawnMembers(LevelPoint levelPoint, Level level, Team team,
-	        List<Participant> withdrawnMembers, Date recordDateTime)
+	public void saveDismissedMembers(LevelPoint levelPoint, Team team,
+	        List<Participant> dismissedMembers, Date recordDateTime)
 	{
-		withdraw.saveWithdrawnMembers(levelPoint, level, team, withdrawnMembers, recordDateTime);
+		teamDismissed.saveDismissedMembers(levelPoint, team, dismissedMembers, recordDateTime);
 	}
 
-	public void saveInputData(LevelPoint levelPoint, Team team, Date checkDateTime,
+	public void saveTeamResult(LevelPoint levelPoint, Team team, Date checkDateTime,
 	        String takenCheckpoints, Date recordDateTime)
 	{
-		inputData.saveInputData(levelPoint, team, checkDateTime, takenCheckpoints, recordDateTime);
+		teamResults.saveTeamResult(levelPoint, team, checkDateTime, takenCheckpoints, recordDateTime);
 	}
 
 	public SQLiteDatabase getDb()
@@ -134,11 +134,6 @@ public class TerminalDB
 		return distances.loadDistances(raidId);
 	}
 
-	public List<Level> loadLevels(int distanceId)
-	{
-		return levels.loadLevels(distanceId);
-	}
-
 	public List<Team> loadTeams()
 	{
 		return teams.loadTeams();
@@ -149,10 +144,9 @@ public class TerminalDB
 		return idGenerator.getNextId();
 	}
 
-	public InputDataRecord getExistingTeamLevelPointRecord(LevelPoint levelPoint, Level level,
-	        Team team)
+	public TeamResultRecord getExistingTeamResultRecord(LevelPoint levelPoint, Team team)
 	{
-		return inputData.getExistingTeamLevelPointRecord(levelPoint, level, team);
+		return teamResults.getExistingTeamResultRecord(levelPoint, team);
 	}
 
 	public List<MetaTable> loadMetaTables()
@@ -160,9 +154,9 @@ public class TerminalDB
 		return metaTables.loadMetaTables();
 	}
 
-	public List<TeamLevelPoint> loadTeamLevelPoints(LevelPoint levelPoint)
+	public List<TeamResult> loadTeamResults(LevelPoint levelPoint)
 	{
-		return inputData.loadTeamLevelPoints(levelPoint);
+		return teamResults.loadTeamResults(levelPoint);
 	}
 
 	public List<User> loadUsers()
@@ -170,25 +164,24 @@ public class TerminalDB
 		return users.loadUsers();
 	}
 
-	public List<TeamLevelDismiss> loadDismissedMembers(LevelPoint levelPoint)
+	public List<TeamDismiss> loadDismissedMembers(LevelPoint levelPoint)
 	{
-		return withdraw.loadDismissedMembers(levelPoint);
+		return teamDismissed.loadDismissedMembers(levelPoint);
 	}
 
 	public void appendLevelPointTeams(LevelPoint levelPoint, Set<Integer> teams)
 	{
-		inputData.appendLevelPointTeams(levelPoint, teams);
-		withdraw.appendLevelPointTeams(levelPoint, teams);
+		teamResults.appendLevelPointTeams(levelPoint, teams);
+		teamDismissed.appendLevelPointTeams(levelPoint, teams);
 	}
 
-	public List<BarCodeScan> loadBarCodeScans(LevelPoint levelPoint)
+	public List<ScanPoint> loadScanPoints(int raidId)
 	{
-		return barCodeScans.loadBarCodeScans(levelPoint);
+		return scanPoints.loadScanPoints(raidId);
 	}
 
-	public void saveBarCodeScan(LevelPoint levelPoint, Team team, Date checkDateTime,
-	        Date recordDateTime)
+	public List<LevelPoint> loadLevelPoints(int raidId)
 	{
-		barCodeScans.saveBarCodeScan(levelPoint, team, checkDateTime, recordDateTime);
+		return levelPoints.loadLevelPoints(raidId);
 	}
 }

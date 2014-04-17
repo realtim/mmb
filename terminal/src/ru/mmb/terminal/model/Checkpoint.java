@@ -6,28 +6,28 @@ public class Checkpoint implements Serializable, Comparable<Checkpoint>
 {
 	private static final long serialVersionUID = 8167279135428904030L;
 
-	private int levelId;
+	private int levelPointId;
 	private int checkpointOrder;
 	private String checkpointName;
 	private int checkpointPenalty;
 
-	private transient Level level = null;
+	private transient LevelPoint levelPoint = null;
 
 	public Checkpoint()
 	{
 	}
 
-	public Checkpoint(int levelId, int checkpointOrder, String checkpointName, int checkpointPenalty)
+	public Checkpoint(int levelPointId, int checkpointOrder, String checkpointName, int checkpointPenalty)
 	{
-		this.levelId = levelId;
+		this.levelPointId = levelPointId;
 		this.checkpointOrder = checkpointOrder;
 		this.checkpointName = checkpointName;
 		this.checkpointPenalty = checkpointPenalty;
 	}
 
-	public int getLevelId()
+	public int getLevelPointId()
 	{
-		return levelId;
+		return levelPointId;
 	}
 
 	public int getCheckpointOrder()
@@ -45,14 +45,14 @@ public class Checkpoint implements Serializable, Comparable<Checkpoint>
 		return checkpointPenalty;
 	}
 
-	public Level getLevel()
+	public LevelPoint getLevelPoint()
 	{
-		return level;
+		return levelPoint;
 	}
 
-	public void setLevel(Level level)
+	public void setLevelPoint(LevelPoint levelPoint)
 	{
-		this.level = level;
+		this.levelPoint = levelPoint;
 	}
 
 	@Override

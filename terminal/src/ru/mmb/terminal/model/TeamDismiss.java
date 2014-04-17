@@ -2,33 +2,33 @@ package ru.mmb.terminal.model;
 
 import java.util.Date;
 
-public class TeamLevelDismiss
+public class TeamDismiss
 {
-	private final int levelPointId;
+	private final int scanPointId;
 	private final int teamId;
 	private final int teamUserId;
 	private final Date recordDateTime;
 
-	private LevelPoint levelPoint = null;
+	private ScanPoint scanPoint = null;
 	private Team team = null;
 	private User teamUser = null;
 
-	public TeamLevelDismiss(int levelPointId, int teamId, int teamUserId, Date recordDateTime)
+	public TeamDismiss(int scanPointId, int teamId, int teamUserId, Date recordDateTime)
 	{
-		this.levelPointId = levelPointId;
+		this.scanPointId = scanPointId;
 		this.teamId = teamId;
 		this.teamUserId = teamUserId;
 		this.recordDateTime = recordDateTime;
 	}
 
-	public LevelPoint getLevelPoint()
+	public ScanPoint getScanPoint()
 	{
-		return levelPoint;
+		return scanPoint;
 	}
 
-	public void setLevelPoint(LevelPoint levelPoint)
+	public void setScanPoint(ScanPoint scanPoint)
 	{
-		this.levelPoint = levelPoint;
+		this.scanPoint = scanPoint;
 	}
 
 	public Team getTeam()
@@ -51,9 +51,9 @@ public class TeamLevelDismiss
 		this.teamUser = teamUser;
 	}
 
-	public int getLevelPointId()
+	public int getScanPointId()
 	{
-		return levelPointId;
+		return scanPointId;
 	}
 
 	public int getTeamId()
@@ -69,5 +69,10 @@ public class TeamLevelDismiss
 	public Date getRecordDateTime()
 	{
 		return recordDateTime;
+	}
+
+	public LevelPoint getLevelPoint()
+	{
+		return scanPoint.getLevelPointByDistance(team.getDistanceId());
 	}
 }

@@ -16,7 +16,7 @@ public class HistoryRow extends LinearLayout implements Checkable
 
 	private final TextView tvTeamNum;
 	private final TextView tvTeamName;
-	private final TextView tvLevelPoint;
+	private final TextView tvScanPointInfo;
 	private final TextView tvMembers;
 	private final TextView tvDismissed;
 
@@ -28,7 +28,7 @@ public class HistoryRow extends LinearLayout implements Checkable
 		LayoutInflater.from(context).inflate(R.layout.input_history_row, this, true);
 		tvTeamNum = (TextView) findViewById(R.id.inputHistoryRow_teamNumText);
 		tvTeamName = (TextView) findViewById(R.id.inputHistoryRow_teamNameText);
-		tvLevelPoint = (TextView) findViewById(R.id.inputHistoryRow_levelPointText);
+		tvScanPointInfo = (TextView) findViewById(R.id.inputHistoryRow_scanPointInfoText);
 		tvMembers = (TextView) findViewById(R.id.inputHistoryRow_membersText);
 		tvDismissed = (TextView) findViewById(R.id.inputHistoryRow_dismissedText);
 		defaultColor = tvTeamNum.getTextColors().getColorForState(ENABLED_STATE_SET, Color.LTGRAY);
@@ -57,7 +57,7 @@ public class HistoryRow extends LinearLayout implements Checkable
 		{
 			tvTeamNum.setTextColor(selectedColor);
 			tvTeamName.setTextColor(selectedColor);
-			tvLevelPoint.setTextColor(selectedColor);
+			tvScanPointInfo.setTextColor(selectedColor);
 			tvMembers.setTextColor(selectedColor);
 			tvDismissed.setTextColor(selectedColor);
 		}
@@ -65,7 +65,7 @@ public class HistoryRow extends LinearLayout implements Checkable
 		{
 			tvTeamNum.setTextColor(defaultColor);
 			tvTeamName.setTextColor(tanColor);
-			tvLevelPoint.setTextColor(defaultColor);
+			tvScanPointInfo.setTextColor(defaultColor);
 			tvMembers.setTextColor(defaultColor);
 			tvDismissed.setTextColor(defaultColor);
 		}

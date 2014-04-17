@@ -17,14 +17,14 @@ public class HistoryListRecord implements Comparable<HistoryListRecord>
 		return historyInfo.getTeam().getTeamNum();
 	}
 
-	public String getTeamLevelPointText()
+	public String getScanPointInfoText()
 	{
-		return historyInfo.buildLevelPointInfoText();
+		return historyInfo.buildScanPointInfoText();
 	}
 
 	public Integer getUserId()
 	{
-		return historyInfo.getLevelPointUserId();
+		return historyInfo.getUserId();
 	}
 
 	@Override

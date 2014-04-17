@@ -3,23 +3,19 @@ package ru.mmb.terminal.test.model.history;
 import java.util.List;
 
 import junit.framework.TestCase;
-import ru.mmb.terminal.model.Distance;
-import ru.mmb.terminal.model.Level;
-import ru.mmb.terminal.model.LevelPoint;
+import ru.mmb.terminal.model.ScanPoint;
 import ru.mmb.terminal.model.history.DataStorage;
 import ru.mmb.terminal.model.history.HistoryInfo;
-import ru.mmb.terminal.model.registry.DistancesRegistry;
+import ru.mmb.terminal.model.registry.ScanPointsRegistry;
 
 public class DataStorageTest extends TestCase
 {
 	// Last test level without intersection with UI.
 	public void testLoadDataFromDB()
 	{
-		Distance distance = DistancesRegistry.getInstance().getDistanceById(1);
-		Level level = distance.getLevelById(1);
-		LevelPoint levelPoint = level.getFinishPoint();
+		ScanPoint scanPoint = ScanPointsRegistry.getInstance().getScanPointById(3);
 
-		DataStorage dataStorage = DataStorage.getInstance(levelPoint);
+		DataStorage dataStorage = DataStorage.getInstance(scanPoint);
 
 		@SuppressWarnings("unused")
 		List<HistoryInfo> history = dataStorage.getHistory();

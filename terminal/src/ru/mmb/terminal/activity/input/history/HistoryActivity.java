@@ -59,7 +59,7 @@ public class HistoryActivity extends Activity
 		editTeamNumber.setOnEditorActionListener(teamNumberChangeListener);
 		editTeamNumber.setSoftKeyboardBackListener(teamNumberChangeListener);
 
-		dataStorage = DataStorage.getInstance(currentState.getCurrentLevelPoint());
+		dataStorage = DataStorage.getInstance(currentState.getCurrentScanPoint());
 
 		lvHistory = (ListView) findViewById(R.id.inputHistory_historyList);
 		historyAdapter = new HistoryAdapter(this, R.layout.input_history_row);
@@ -67,7 +67,7 @@ public class HistoryActivity extends Activity
 
 		lvHistory.setOnItemLongClickListener(new LvHistoryItemLongClickListener());
 
-		setTitle(currentState.getLevelPointText(this));
+		setTitle(currentState.getScanPointText(this));
 
 		refreshHistory();
 	}
@@ -89,7 +89,7 @@ public class HistoryActivity extends Activity
 		try
 		{
 			Integer teamNumber = Integer.parseInt(editTeamNumber.getText().toString());
-			return TeamsRegistry.getInstance().getTeamByNumber(currentState.getCurrentDistance().getDistanceId(), teamNumber);
+			return TeamsRegistry.getInstance().getTeamByNumber(teamNumber);
 		}
 		catch (NumberFormatException e)
 		{
