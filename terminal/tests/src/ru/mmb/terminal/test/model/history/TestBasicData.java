@@ -60,7 +60,10 @@ public class TestBasicData
 		    Arrays.asList(new String[] { "КП1", "КП2", "КП3", "КП4", "КП5" });
 		List<Integer> levelPointPenalties = Arrays.asList(new Integer[] { 120, 120, 120, 120, 60 });
 		result.addCheckpoints(levelPointNames, levelPointPenalties);
+
 		result.setDistance(distance);
+
+		scanPoint.addLevelPoint(result);
 		result.setScanPoint(scanPoint);
 
 		return result;

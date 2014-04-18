@@ -20,13 +20,11 @@ public class TeamResultRecord implements Comparable<TeamResultRecord>
 		this.recordDateTime = DateFormat.parse(recordDateTime);
 		this.checkDateTime = DateFormat.parse(checkDateTime);
 
-		if (!levelPoint.getPointType().isFinish())
+		if (levelPoint.getPointType().isFinish())
 		{
-			throw new RuntimeException("InputDataRecord() levelpoint is not finish.");
+			buildCheckedMap(levelPoint);
+			fillCheckedMap(takenCheckpoints, levelPoint);
 		}
-
-		buildCheckedMap(levelPoint);
-		fillCheckedMap(takenCheckpoints, levelPoint);
 	}
 
 	private void buildCheckedMap(LevelPoint levelPoint)

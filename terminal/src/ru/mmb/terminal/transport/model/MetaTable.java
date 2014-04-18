@@ -270,6 +270,6 @@ public class MetaTable
 
 	public boolean needClearBeforeImport()
 	{
-		return !("TeamLevelPoints".equals(tableName) || "TeamLevelDismiss".equals(tableName) || "BarCodeScans".equals(tableName));
+		return !("TeamLevelPoints".equals(tableName) || "TeamLevelDismiss".equals(tableName));
 	}
 }

@@ -61,6 +61,7 @@ public class TerminalDB
 		{
 			db =
 			    SQLiteDatabase.openDatabase(Settings.getInstance().getPathToTerminalDB(), null, SQLiteDatabase.OPEN_READWRITE);
+			// Log.d("TerminalDB", "db open " + Settings.getInstance().getPathToTerminalDB());
 			performTestQuery();
 			// Log.d("TerminalDB", "db open SUCCESS");
 			distances = new Distances(db);

@@ -79,7 +79,7 @@ INSERT INTO MetaColumns VALUES(11, 2, 'distance_id', 0, 'INTEGER', 1);
 INSERT INTO MetaColumns VALUES(12, 2, 'raid_id', 1, 'INTEGER', 0);
 INSERT INTO MetaColumns VALUES(13, 2, 'distance_name', 2, 'TEXT', 0);
 /* scanpoints */
-INSERT INTO MetaColumns VALUES(21, 3, 'sacnpoint_id', 0, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(21, 3, 'scanpoint_id', 0, 'INTEGER', 1);
 INSERT INTO MetaColumns VALUES(22, 3, 'raid_id', 1, 'INTEGER', 0);
 INSERT INTO MetaColumns VALUES(23, 3, 'scanpoint_name', 2, 'TEXT', 0);
 INSERT INTO MetaColumns VALUES(24, 3, 'scanpoint_order', 3, 'INTEGER', 0);

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ru.mmb.terminal"
-    android:versionCode="10005"
-    android:versionName="1.4" >
+    android:versionCode="10006"
+    android:versionName="1.5" >
 
     <uses-sdk 
         android:minSdkVersion="7"
@@ -24,21 +24,15 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.input.start.StartInputActivity" />
-        <activity android:name=".activity.level.SelectLevelActivity" />
+        <activity android:name=".activity.scanpoint.SelectScanPointActivity" />
         <activity
             android:name=".activity.input.history.HistoryActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name=".activity.input.barcode.BarCodeActivity"
-            android:windowSoftInputMode="stateHidden" />
         <activity android:name=".activity.input.data.InputDataActivity" />
         <activity android:name=".activity.input.withdraw.WithdrawMemberActivity" />
-        <activity android:name=".activity.transport.transpimport.TransportImportActivity" >
-        </activity>
-        <activity android:name=".activity.transport.transpexport.TransportExportActivity" >
-        </activity>
-        <activity android:name=".activity.settings.SettingsActivity" >
-        </activity>
+        <activity android:name=".activity.transport.transpimport.TransportImportActivity" />
+        <activity android:name=".activity.transport.transpexport.TransportExportActivity" />
+        <activity android:name=".activity.settings.SettingsActivity" />
         <activity android:name="com.filedialog.FileDialog" >
         </activity>
     </application>
