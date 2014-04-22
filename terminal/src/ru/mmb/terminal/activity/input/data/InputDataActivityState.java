@@ -18,10 +18,10 @@ import ru.mmb.terminal.model.TeamResult;
 import ru.mmb.terminal.model.checkpoints.CheckedState;
 import ru.mmb.terminal.model.history.DataStorage;
 import ru.mmb.terminal.model.registry.Settings;
+import ru.mmb.terminal.util.PrettyDateFormat;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 
 public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint
 {
@@ -63,7 +63,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint
 	{
 		inputDate.setHour(hour);
 		inputDate.setMinute(minute);
-		Log.d("input data activity", "set hour: " + hour + " and minute: " + minute);
+		// Log.d("input data activity", "set hour: " + hour + " and minute: " + minute);
 		fireStateChanged();
 	}
 
@@ -241,5 +241,29 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint
 	public boolean isEditingExistingRecord()
 	{
 		return editingExistingRecord;
+	}
+
+	public boolean checkDateCorrect()
+	{
+		LevelPoint levelPoint = getLevelPointForTeam();
+		Date editedDate = inputDate.toDate();
+		// Check intervals slightly shifted (-10 min before start and +10 min after finish).
+		// Let server scripts decide, approve such times or not.
+		Date shiftedStart = new Date(editedDate.getTime() + 10 * 60 * 1000);
+		Date shiftedEnd = new Date(editedDate.getTime() - 10 * 60 * 1000);
+		return shiftedStart.after(levelPoint.getLevelPointMinDateTime())
+		        && shiftedEnd.before(levelPoint.getLevelPointMaxDateTime());
+	}
+
+	public String buildDateErrorMessage(InputDataActivity context)
+	{
+		LevelPoint levelPoint = getLevelPointForTeam();
+		String message = context.getResources().getString(R.string.input_data_date_error_message);
+		message = message.replace("${inputDate}", inputDate.toPrettyString());
+		message =
+		    message.replace("${dateFrom}", PrettyDateFormat.format(levelPoint.getLevelPointMinDateTime()));
+		message =
+		    message.replace("${dateTo}", PrettyDateFormat.format(levelPoint.getLevelPointMaxDateTime()));
+		return message;
 	}
 }

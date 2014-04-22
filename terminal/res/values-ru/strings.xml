@@ -36,6 +36,7 @@
     <string name="input_data_res_finish_time">Время финиша:</string>
     <string name="input_data_res_missed">Пропущено:</string>
     <string name="input_data_res_taken">Взято:</string>
+    <string name="input_data_date_error_message">Дата ${inputDate} не попадает в интервал [${dateFrom}, ${dateTo}].</string>
     <string name="input_data_withdraw_member">Сход</string>
     <string name="input_withdraw_no_team_number">333</string>
     <string name="input_withdraw_no_team">&lt;Команда не выбрана></string>

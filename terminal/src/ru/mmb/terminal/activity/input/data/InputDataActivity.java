@@ -11,12 +11,12 @@ import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class InputDataActivity extends Activity implements StateChangeListener
 {
@@ -72,12 +72,12 @@ public class InputDataActivity extends Activity implements StateChangeListener
 	{
 		if (currentState.isEditingExistingRecord())
 		{
-			Log.d("input_data", "record exists");
+			//Log.d("input_data", "record exists");
 			panelExistsIndicator.setBackgroundResource(R.color.LightSkyBlue);
 		}
 		else
 		{
-			Log.d("input_data", "record NOT exists");
+			//Log.d("input_data", "record NOT exists");
 			panelExistsIndicator.setBackgroundResource(R.color.Pink);
 		}
 	}
@@ -85,7 +85,7 @@ public class InputDataActivity extends Activity implements StateChangeListener
 	@Override
 	public void onStateChange()
 	{
-		Log.d("input data", "state change fired");
+		//Log.d("input data", "state change fired");
 		labResult.setText(currentState.getResultText(this));
 	}
 
@@ -109,6 +109,12 @@ public class InputDataActivity extends Activity implements StateChangeListener
 		public void onClick(View v)
 		{
 			Date recordDateTime = new Date();
+			if (!currentState.checkDateCorrect())
+			{
+				String message = currentState.buildDateErrorMessage(InputDataActivity.this);
+				Toast.makeText(InputDataActivity.this, message, Toast.LENGTH_LONG).show();
+				return;
+			}
 			currentState.saveInputDataToDB(recordDateTime);
 			currentState.putTeamLevelPointToDataStorage(recordDateTime);
 			setResult(RESULT_OK);

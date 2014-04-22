@@ -69,6 +69,7 @@ INSERT INTO MetaTables VALUES(6,'Users',NULL);
 INSERT INTO MetaTables VALUES(7,'TeamUsers',NULL);
 INSERT INTO MetaTables VALUES(8,'TeamLevelDismiss','teamleveldismiss_date');
 INSERT INTO MetaTables VALUES(9,'TeamLevelPoints','teamlevelpoint_date');
+INSERT INTO MetaTables VALUES(10,'BarCodeScans','barcodescan_date');
 
 /* raids */
 INSERT INTO MetaColumns VALUES(1, 1, 'raid_id', 0, 'INTEGER', 1);
@@ -123,6 +124,12 @@ INSERT INTO MetaColumns VALUES(105, 9, 'device_id', 4, 'INTEGER', 0);
 INSERT INTO MetaColumns VALUES(106, 9, 'teamlevelpoint_datetime', 5, 'LONG_DATE', 0);
 INSERT INTO MetaColumns VALUES(107, 9, 'teamlevelpoint_points', 6, 'TEXT', 0);
 INSERT INTO MetaColumns VALUES(108, 9, 'teamlevelpoint_comment', 7, 'TEXT', 0);
+/*barcodescans*/
+INSERT INTO MetaColumns VALUES(121, 10, 'levelpoint_id', 0, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(122, 10, 'team_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(123, 10, 'barcodescan_date', 2, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(124, 10, 'device_id', 3, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(125, 10, 'teamlevelpoint_datetime', 4, 'LONG_DATE', 0);
 
 COMMIT;
 
