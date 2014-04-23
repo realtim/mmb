@@ -53,6 +53,7 @@ if (!isset($MyPHPScript)) return;
 
            // просмотр существующего
                 //echo $viewsubmode;
+		//
 
 		$pUserId = $_REQUEST['UserId'];
 
