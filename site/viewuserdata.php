@@ -54,7 +54,7 @@ if (!isset($MyPHPScript)) return;
            // просмотр существующего
                 //echo $viewsubmode;
 
-		$pUserId = $_POST['UserId'];
+		$pUserId = $_REQUEST['UserId'];
 
 		if ($pUserId <= 0)
 		{
@@ -222,6 +222,12 @@ if (!isset($MyPHPScript)) return;
 		document.UserDevicesForm.submit();
 	}
 
+	// Функция отправки сообщения
+	function SendMessage()
+	{ 
+		document.UserSendMessageForm.action.value = "SendMessage";
+		document.UserSendMessageForm.submit();
+	}
 
 </script>
 <!-- Конец вывода javascrpit -->
@@ -414,6 +420,31 @@ if (!isset($MyPHPScript)) return;
 
 	   }
 	   // Конец проверки на режим правки
+	   
+	  
+	  // 23/04/2014 Отправка сообщения через почту 
+	  if ($viewmode <> 'Add' and !empty($UserId))
+	  {
+		// Выводим спсиок устройств, которые относятся к данному пользователю 
+	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Cообщение для '.$UserName.':</div>'."\r\n");
+		print('<form  name = "UserSendMessageForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
+		print('<input type = "hidden" name = "action" value = "">'."\r\n");
+		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
+		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
+	  
+
+                $TabIndex = 1;
+	        $DisabledText = '';
+		print('<div align = "left" style = "padding-top: 5px;"><textarea name="MessageText"  rows="4" cols="50" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
+	        title = "Текст сообщения">Текст сообщения</textarea></div>'."\r\n");
+    	        print('</br><input type="button" onClick = "javascript: SendMessage();"  name="SendMessageButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
+                   
+	        print('</form>'."\r\n");
+
+	   }
+	   // Конец проверки на режим правки и авторизованного пользоватлея
+
+	   
 	   
 ?>
 

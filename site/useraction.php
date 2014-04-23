@@ -927,7 +927,7 @@ if (!isset($MyPHPScript)) return;
 
 
 
-}
+   }
    // ============ Получение конфигурации ====================================
    elseif ($action == 'GetDeviceId')
    {
@@ -1017,6 +1017,78 @@ if (!isset($MyPHPScript)) return;
 	die();
 	return;
 
+     } 
+     // ============ Отправка сообщения другому пользователю ====================================
+     elseif ($action == "SendMessage")  {
+    // 
+  
+  	     $view = "ViewUserData";
+	     $viewmode = "";
+
+             $pUserId = $_POST['UserId'];
+             $pText = $_POST['MessageText'];
+
+	     if (empty($pText) or trim($pText) == 'Текст сообщения')
+	     {
+   		$statustext = "Укажите тексто сообщения.";
+	        $alert = 1; 
+                $viewsubmode = ""; 
+                return; 
+	     }
+
+
+        //     echo 'pUserId '.$pUserId.'now  '.$NowUserId;
+	
+             // Если вызвали с таким действием, должны быть определны оба пользователя
+             if ($pUserId <= 0 or $UserId <= 0)
+	     {
+	      return;
+	     }
+	   
+	     $AllowEdit = 0;
+	     // Права на редактирование
+             if (($pUserId == $UserId) || $Administrator)
+	     {
+		  $AllowEdit = 1;
+	     } else {
+
+	       $AllowEdit = 0;
+               // выходим
+	       return;
+	     }
+
+             if ($AllowEdit == 1)
+	     {
+	   
+		$sql = "select user_email, user_name, user_birthyear from  Users where user_id = ".$pUserId;
+		$rs = MySqlQuery($sql);  
+                $row = mysql_fetch_assoc($rs);
+                mysql_free_result($rs);
+     		$UserEmail = $row['user_email'];  
+		$UserName = $row['user_name']; 
+
+  	
+		$statustext = 'Сообщение выслано.';
+                $view = "";
+
+	        $Sql = "select user_name from  Users where user_id = ".$UserId;
+		$Result = MySqlQuery($Sql);  
+		$Row = mysql_fetch_assoc($Result);
+		$SendMessageUserName = $Row['user_name'];
+		mysql_free_result($Result);
+
+		$Msg = "Уважаемый пользователь ".$UserName."!\r\n\r\n";
+		$Msg =  $Msg."Через сайт ММБ пользователь ".$SendMessageUserName." отправил Вам следующее сообщение:\r\n\r\n";
+		$Msg =  $Msg.$pText;
+		$Msg =  $Msg."\r\n"."Для ответа необходимо автооризоваться и открыть карточку пользователя  ".$SendMessageUserName."\r\n";
+		$Msg =  $Msg.$MyHttpLink.$MyLocation."?action=UserInfo&UserId=".$UserId."\r\n";
+		
+			    
+                // Отправляем письмо
+		SendMail(trim($UserEmail), $Msg, $UserName);
+
+            }
+	    // Конец проверки на права редактирования
 	   
    }  else {
    // если никаких действий не требуется
