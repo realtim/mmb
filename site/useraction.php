@@ -1036,7 +1036,6 @@ if (!isset($MyPHPScript)) return;
                 return; 
 	     }
 
-
         //     echo 'pUserId '.$pUserId.'now  '.$NowUserId;
 	
              // Если вызвали с таким действием, должны быть определны оба пользователя
@@ -1045,20 +1044,6 @@ if (!isset($MyPHPScript)) return;
 	      return;
 	     }
 	   
-	     $AllowEdit = 0;
-	     // Права на редактирование
-             if (($pUserId == $UserId) || $Administrator)
-	     {
-		  $AllowEdit = 1;
-	     } else {
-
-	       $AllowEdit = 0;
-               // выходим
-	       return;
-	     }
-
-             if ($AllowEdit == 1)
-	     {
 	   
 		$sql = "select user_email, user_name, user_birthyear from  Users where user_id = ".$pUserId;
 		$rs = MySqlQuery($sql);  
@@ -1087,8 +1072,6 @@ if (!isset($MyPHPScript)) return;
                 // Отправляем письмо
 		SendMail(trim($UserEmail), $Msg, $UserName);
 
-            }
-	    // Конец проверки на права редактирования
 	   
    }  else {
    // если никаких действий не требуется
