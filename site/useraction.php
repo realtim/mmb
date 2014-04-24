@@ -1062,9 +1062,18 @@ if (!isset($MyPHPScript)) return;
 		$SendMessageUserName = $Row['user_name'];
 		mysql_free_result($Result);
 
-		$Msg = "Уважаемый пользователь ".$UserName."!\r\n\r\n";
+                $pTextArr = explode('\r\n', $pText); 
+
+		$Msg = "Уважаемый пользователь ".$UserName."!\r\n";
 		$Msg =  $Msg."Через сайт ММБ пользователь ".$SendMessageUserName." отправил Вам следующее сообщение:\r\n\r\n";
-		$Msg =  $Msg.$pText;
+
+                foreach ($pTextArr as $NowString) {
+ 
+                 
+		   $Msg =  $Msg.$NowString."\r\n";
+
+		}
+//		$Msg =  $Msg.$pText;
 		$Msg =  $Msg."\r\n"."Для ответа необходимо автооризоваться и открыть карточку пользователя  ".$SendMessageUserName."\r\n";
 		$Msg =  $Msg.$MyHttpLink.$MyLocation."?action=UserInfo&UserId=".$UserId."\r\n";
 		

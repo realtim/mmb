@@ -427,7 +427,7 @@ if (!isset($MyPHPScript)) return;
 	  if ($viewmode <> 'Add' and !empty($UserId))
 	  {
 		// Выводим спсиок устройств, которые относятся к данному пользователю 
-	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Cообщение для '.$UserName.':</div>'."\r\n");
+	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Cообщение для пользователя '.$UserName.':</div>'."\r\n");
 		print('<form  name = "UserSendMessageForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
