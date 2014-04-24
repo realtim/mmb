@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Timer;
 
 import ru.mmb.terminal.R;
+import ru.mmb.terminal.activity.ActivityStateWithTeamAndScanPoint;
 import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.transport.importer.ImportState;
 import android.app.Activity;
@@ -25,16 +26,18 @@ public class TransportImportActivity extends Activity
 {
 	private final int CONSOLE_CHAR_LIMIT = 20000;
 
+	protected ActivityStateWithTeamAndScanPoint currentState;
+
 	private String fileName = null;
 	private String messagesText = "";
 	private ImportState importState = null;
 	private Handler refreshHandler;
 	private Timer refreshTimer = null;
 
-	private Button btnSelectFile;
-	private TextView labFileName;
-	private Button btnStart;
-	private Button btnStop;
+	protected Button btnSelectFile;
+	protected TextView labFileName;
+	protected Button btnStart;
+	protected Button btnStop;
 	private TextView labCurrentTable;
 	private TextView labRowsProcessed;
 	private TextView areaMessages;
@@ -46,19 +49,12 @@ public class TransportImportActivity extends Activity
 
 		Settings.getInstance().setCurrentContext(this);
 
-		setContentView(R.layout.transp_import);
+		currentState = new ActivityStateWithTeamAndScanPoint(getCurrentStatePrefix());
+		currentState.initialize(this, savedInstanceState);
 
-		btnSelectFile = (Button) findViewById(R.id.transpImport_selectFile);
-		labFileName = (TextView) findViewById(R.id.transpImport_fileName);
-		btnStart = (Button) findViewById(R.id.transpImport_startBtn);
-		btnStop = (Button) findViewById(R.id.transpImport_stopBtn);
-		labCurrentTable = (TextView) findViewById(R.id.transpImport_currentTable);
-		labRowsProcessed = (TextView) findViewById(R.id.transpImport_rowsProcessed);
-		areaMessages = (TextView) findViewById(R.id.transpImport_messages);
+		setContentView(getFormLayoutResourceId());
 
-		btnSelectFile.setOnClickListener(new SelectFileClickListener());
-		btnStart.setOnClickListener(new StartClickListener());
-		btnStop.setOnClickListener(new StopClickListener());
+		initVisualElementVariables();
 
 		refreshHandler = new Handler()
 		{
@@ -81,10 +77,57 @@ public class TransportImportActivity extends Activity
 			}
 		};
 
-		setTitle(getResources().getString(R.string.transp_import_title));
+		setTitle();
 
+		refreshAll();
+	}
+
+	protected int getFormLayoutResourceId()
+	{
+		return R.layout.transp_import;
+	}
+
+	protected String getCurrentStatePrefix()
+	{
+		return "transport.import";
+	}
+
+	protected void initVisualElementVariables()
+	{
+		btnSelectFile = (Button) findViewById(R.id.transpImport_selectFile);
+		labFileName = (TextView) findViewById(R.id.transpImport_fileName);
+		btnStart = (Button) findViewById(R.id.transpImport_startBtn);
+		btnStop = (Button) findViewById(R.id.transpImport_stopBtn);
+		labCurrentTable = (TextView) findViewById(R.id.transpImport_currentTable);
+		labRowsProcessed = (TextView) findViewById(R.id.transpImport_rowsProcessed);
+		areaMessages = (TextView) findViewById(R.id.transpImport_messages);
+
+		btnSelectFile.setOnClickListener(new SelectFileClickListener());
+		btnStart.setOnClickListener(new StartClickListener());
+		btnStop.setOnClickListener(new StopClickListener());
+	}
+
+	protected void setTitle()
+	{
+		setTitle(getResources().getString(R.string.transp_import_dicts_title));
+	}
+
+	protected void refreshAll()
+	{
 		refreshFileName();
 		refreshState();
+	}
+
+	public ActivityStateWithTeamAndScanPoint getCurrentState()
+	{
+		return currentState;
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState)
+	{
+		super.onSaveInstanceState(outState);
+		currentState.save(outState);
 	}
 
 	@Override
@@ -122,28 +165,43 @@ public class TransportImportActivity extends Activity
 		}
 	}
 
-	private void refreshState()
+	protected void refreshState()
 	{
-		if (importState == null)
+		btnSelectFile.setEnabled(!isImportRunning());
+		btnStart.setEnabled(isImportPossible());
+		btnStop.setEnabled(isImportRunning());
+		refreshInfoLabels();
+		if (isImportRunning())
 		{
-			btnSelectFile.setEnabled(true);
-			btnStart.setEnabled(fileName != null);
-			btnStop.setEnabled(false);
-			labCurrentTable.setText(getResources().getString(R.string.transp_import_no_table));
-			labRowsProcessed.setText(getResources().getString(R.string.transp_import_no_rows));
-		}
-		else
-		{
-			btnSelectFile.setEnabled(false);
-			btnStart.setEnabled(false);
-			btnStop.setEnabled(true);
-			labCurrentTable.setText(importState.getCurrentTable());
-			labRowsProcessed.setText(importState.getProcessedRowsText());
 			rebuildMessagesText();
 		}
 	}
 
-	private void rebuildMessagesText()
+	private void refreshInfoLabels()
+	{
+		if (isImportRunning())
+		{
+			labCurrentTable.setText(importState.getCurrentTable());
+			labRowsProcessed.setText(importState.getProcessedRowsText());
+		}
+		else
+		{
+			labCurrentTable.setText(getResources().getString(R.string.transp_import_no_table));
+			labRowsProcessed.setText(getResources().getString(R.string.transp_import_no_rows));
+		}
+	}
+
+	public boolean isImportRunning()
+	{
+		return importState != null;
+	}
+
+	protected boolean isImportPossible()
+	{
+		return !isImportRunning() && (fileName != null);
+	}
+
+	protected void rebuildMessagesText()
 	{
 		String toAppend = "";
 		List<String> extractedMessages = importState.extractMessages();
@@ -220,7 +278,7 @@ public class TransportImportActivity extends Activity
 		{
 			importState = new ImportState();
 			ImportThread thread =
-			    new ImportThread(fileName, importState, TransportImportActivity.this);
+			    new ImportThread(fileName, importState, currentState.getCurrentScanPoint(), TransportImportActivity.this);
 			thread.start();
 			clearMessages();
 			refreshState();
@@ -241,6 +299,7 @@ public class TransportImportActivity extends Activity
 	protected void onPause()
 	{
 		super.onPause();
+		currentState.saveToSharedPreferences(getPreferences(MODE_PRIVATE));
 		terminateImport();
 	}
 
@@ -248,6 +307,7 @@ public class TransportImportActivity extends Activity
 	protected void onStop()
 	{
 		super.onStop();
+		currentState.saveToSharedPreferences(getPreferences(MODE_PRIVATE));
 		terminateImport();
 	}
 }

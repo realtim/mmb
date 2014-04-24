@@ -6,6 +6,7 @@ import ru.mmb.terminal.activity.input.start.StartInputActivity;
 import ru.mmb.terminal.activity.settings.SettingsActivity;
 import ru.mmb.terminal.activity.transport.transpexport.TransportExportActivity;
 import ru.mmb.terminal.activity.transport.transpimport.TransportImportActivity;
+import ru.mmb.terminal.activity.transport.transpimport.TransportImportBarcodeActivity;
 import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
@@ -27,6 +28,7 @@ public class MainActivity extends Activity
 
 	private Button btnInputData;
 	private Button btnImportData;
+	private Button btnImportBarcodeData;
 	private Button btnExportData;
 	private Button btnSettings;
 
@@ -54,12 +56,14 @@ public class MainActivity extends Activity
 
 		btnInputData = (Button) findViewById(R.id.main_inputDataBtn);
 		btnImportData = (Button) findViewById(R.id.main_importDataBtn);
+		btnImportBarcodeData = (Button) findViewById(R.id.main_importBarcodeDataBtn);
 		btnExportData = (Button) findViewById(R.id.main_exportDataBtn);
 		btnSettings = (Button) findViewById(R.id.main_settingsBtn);
 		//		btnGenerate = (Button) findViewById(R.id.main_generateBtn);
 
 		btnInputData.setOnClickListener(new InputDataClickListener());
 		btnImportData.setOnClickListener(new ImportDataClickListener());
+		btnImportBarcodeData.setOnClickListener(new ImportBarcodeDataClickListener());
 		btnExportData.setOnClickListener(new ExportDataClickListener());
 		btnSettings.setOnClickListener(new SettingsClickListener());
 		//		btnGenerate.setOnClickListener(new GenerateClickListener());
@@ -130,6 +134,17 @@ public class MainActivity extends Activity
 		public void onClick(View v)
 		{
 			Intent intent = new Intent(getApplicationContext(), TransportImportActivity.class);
+			startActivity(intent);
+		}
+	}
+
+	private class ImportBarcodeDataClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			Intent intent =
+			    new Intent(getApplicationContext(), TransportImportBarcodeActivity.class);
 			startActivity(intent);
 		}
 	}

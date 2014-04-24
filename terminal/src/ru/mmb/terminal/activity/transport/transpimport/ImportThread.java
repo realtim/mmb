@@ -1,5 +1,6 @@
 package ru.mmb.terminal.activity.transport.transpimport;
 
+import ru.mmb.terminal.model.ScanPoint;
 import ru.mmb.terminal.model.registry.DistancesRegistry;
 import ru.mmb.terminal.model.registry.ScanPointsRegistry;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
@@ -12,13 +13,15 @@ public class ImportThread extends Thread
 {
 	private final ImportState importState;
 	private final String fileName;
+	private final ScanPoint scanPoint;
 	private final TransportImportActivity activity;
 
-	public ImportThread(String fileName, ImportState importState, TransportImportActivity activity)
+	public ImportThread(String fileName, ImportState importState, ScanPoint scanPoint, TransportImportActivity activity)
 	{
 		super();
 		this.fileName = fileName;
 		this.importState = importState;
+		this.scanPoint = scanPoint;
 		this.activity = activity;
 	}
 
@@ -28,7 +31,7 @@ public class ImportThread extends Thread
 		boolean needRefreshRegistries = false;
 		try
 		{
-			new Importer(importState).importPackage(fileName);
+			new Importer(importState, scanPoint).importPackage(fileName);
 			importState.setFinished(true);
 			needRefreshRegistries = !importState.isTerminated();
 		}

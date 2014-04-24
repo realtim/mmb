@@ -12,6 +12,7 @@
     <string name="main_current_raid_id">Current raid ID: %d</string>
     <string name="main_input_data">Input data</string>
     <string name="main_import_data">Import</string>
+    <string name="main_import_barcode_data">Import barcodes</string>
     <string name="main_export_data">Export</string>
     <string name="main_title">MMB terminal</string>
     <string name="main_settings">Settings</string>
@@ -57,8 +58,11 @@
     <string name="file_dialog_create">Save</string>
     <string name="file_dialog_no_data">No Data</string>
     <string name="file_dialog_err">Error</string>
-    <string name="transp_import_title">Import</string>
-    <string name="transp_import_select_file">Choose import file</string>
+    <string name="transp_import_dicts_title">Import dictionaries</string>
+    <string name="transp_import_barcode_title">Import barcode data</string>
+    <string name="transp_import_barcode_select_scan_point">Select input point</string>
+    <string name="transp_import_barcode_no_scan_point">&lt;No input point selected></string>
+    <string name="transp_import_select_file">Select import file</string>
     <string name="transp_import_no_file_selected">&lt;No file selected></string>
     <string name="transp_import_start">Start</string>
     <string name="transp_import_stop">Stop</string>

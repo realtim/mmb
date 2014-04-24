@@ -9,6 +9,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ru.mmb.terminal.model.ScanPoint;
+import ru.mmb.terminal.transport.importer.barcode.BarcodeFileReader;
 import ru.mmb.terminal.transport.model.ImportBarCodeMetaTable;
 import ru.mmb.terminal.transport.model.MetaTable;
 import ru.mmb.terminal.transport.registry.MetaTablesRegistry;
@@ -17,27 +19,38 @@ import android.util.Log;
 
 public class Importer
 {
-	private static final String TABLE_BAR_CODE_SCANS = "BarCodeScans";
+	public static final String TABLE_BAR_CODE_SCANS = "BarCodeScans";
 
 	private static final int ROWS_IN_BATCH = 200;
 
-	private InputStreamReader reader;
 	private final ImportState importState;
+	private final ScanPoint scanPoint;
 
-	public Importer(ImportState importState)
+	public Importer(ImportState importState, ScanPoint scanPoint)
 	{
 		this.importState = importState;
+		this.scanPoint = scanPoint;
 	}
 
 	public void importPackage(String fileName) throws IOException, FileNotFoundException,
 	        JSONException
 	{
-		reader = new InputStreamReader(new FileInputStream(fileName), "UTF8");
-
 		importState.appendMessage("Import started.");
 
-		String jsonString = JSONUtils.readFromInputStream(reader, 32768);
-		JSONObject tables = new JSONObject(jsonString);
+		JSONObject tables;
+		if (fileName.toUpperCase().endsWith(".TXT"))
+		{
+			if (scanPoint == null)
+			{
+				importState.appendMessage("Import failed. ScanPoint for barcode scans import not defined.");
+				return;
+			}
+			tables = readBarCodeScanData(fileName, scanPoint.getScanPointId());
+		}
+		else
+		{
+			tables = readJsonTablesPackage(fileName);
+		}
 
 		importState.appendMessage("File loaded to JSON object.");
 
@@ -64,6 +77,19 @@ public class Importer
 			resetImportState(metaTable, tableRows.length());
 			importTableRows(dataSaver, tableRows);
 		}
+	}
+
+	private JSONObject readBarCodeScanData(String fileName, int scanPointId) throws IOException,
+	        JSONException
+	{
+		return new BarcodeFileReader(fileName, scanPointId).readBarCodeScanData();
+	}
+
+	private JSONObject readJsonTablesPackage(String fileName) throws IOException, JSONException
+	{
+		InputStreamReader reader = new InputStreamReader(new FileInputStream(fileName), "UTF8");
+		String jsonString = JSONUtils.readFromInputStream(reader, 32768);
+		return new JSONObject(jsonString);
 	}
 
 	private MetaTable getMetaTable(String tableName)
