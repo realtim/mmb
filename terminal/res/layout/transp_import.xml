@@ -10,7 +10,10 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/global_padding"
+        android:paddingRight="@dimen/global_padding"
+        android:paddingTop="@dimen/global_padding" >
 
         <TextView
             android:id="@+id/transpImport_fileName"
@@ -33,7 +36,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:layout_marginTop="@dimen/global_padding" >
+        android:layout_marginTop="@dimen/global_padding"
+        android:paddingLeft="@dimen/global_padding"
+        android:paddingRight="@dimen/global_padding" >
 
         <Button
             android:id="@+id/transpImport_startBtn"

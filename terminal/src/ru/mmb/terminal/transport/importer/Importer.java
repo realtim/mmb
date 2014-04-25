@@ -1,7 +1,6 @@
 package ru.mmb.terminal.transport.importer;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -32,8 +31,7 @@ public class Importer
 		this.scanPoint = scanPoint;
 	}
 
-	public void importPackage(String fileName) throws IOException, FileNotFoundException,
-	        JSONException
+	public void importPackage(String fileName) throws Exception
 	{
 		importState.appendMessage("Import started.");
 
@@ -79,10 +77,9 @@ public class Importer
 		}
 	}
 
-	private JSONObject readBarCodeScanData(String fileName, int scanPointId) throws IOException,
-	        JSONException
+	private JSONObject readBarCodeScanData(String fileName, int scanPointId) throws Exception
 	{
-		return new BarcodeFileReader(fileName, scanPointId).readBarCodeScanData();
+		return new BarcodeFileReader(fileName, scanPointId, importState).readBarCodeScanData();
 	}
 
 	private JSONObject readJsonTablesPackage(String fileName) throws IOException, JSONException
