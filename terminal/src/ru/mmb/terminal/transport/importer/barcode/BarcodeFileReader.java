@@ -27,15 +27,15 @@ public class BarcodeFileReader
 	    new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 	private final String fileName;
-	private final int scanPointId;
+	private final int scanPointOrder;
 	private final ImportState importState;
 
 	private int recordsAdded = 0;
 
-	public BarcodeFileReader(String fileName, int scanPointId, ImportState importState)
+	public BarcodeFileReader(String fileName, ScanPoint scanPoint, ImportState importState)
 	{
 		this.fileName = fileName;
-		this.scanPointId = scanPointId;
+		this.scanPointOrder = scanPoint.getScanPointOrder();
 		this.importState = importState;
 	}
 
@@ -76,7 +76,7 @@ public class BarcodeFileReader
 			//Log.d("ImportBarcodes", parsedBarcode.toString());
 
 			// Ignore lines from other scan point.
-			if (parsedBarcode.scanPointId != scanPointId) return;
+			if (parsedBarcode.scanPointOrder != scanPointOrder) return;
 			if (!parsedBarcode.prepareTeamAndLevelPoint())
 			{
 				if (parsedBarcode.errorMessage != null)
@@ -101,7 +101,7 @@ public class BarcodeFileReader
 	{
 		ParsedBarcode result = new ParsedBarcode();
 		String[] inputParts = inputLine.split(",");
-		result.scanPointId = Integer.parseInt(inputParts[0].trim());
+		result.scanPointOrder = Integer.parseInt(inputParts[0].trim());
 		result.teamNumber = Integer.parseInt(inputParts[1].trim().substring(2, 6));
 		String dateString = inputParts[3].trim() + " " + inputParts[2].trim();
 		result.barcodeScanDate = BARCODE_DATE_FORMAT.parse(dateString);
@@ -110,7 +110,7 @@ public class BarcodeFileReader
 
 	private class ParsedBarcode
 	{
-		private int scanPointId;
+		private int scanPointOrder;
 		private int teamNumber;
 		private Date barcodeScanDate;
 		private String errorMessage = null;
@@ -136,10 +136,10 @@ public class BarcodeFileReader
 
 		public boolean prepareTeamAndLevelPoint()
 		{
-			scanPoint = ScanPointsRegistry.getInstance().getScanPointById(scanPointId);
+			scanPoint = ScanPointsRegistry.getInstance().getScanPointByOrder(scanPointOrder);
 			if (scanPoint == null)
 			{
-				errorMessage = "Scan point not found by ID: " + scanPointId;
+				errorMessage = "Scan point not found by order: " + scanPointOrder;
 				return false;
 			}
 			team = TeamsRegistry.getInstance().getTeamByNumber(teamNumber);
@@ -162,8 +162,9 @@ public class BarcodeFileReader
 		@Override
 		public String toString()
 		{
-			return "ParsedBarcode [scanPointId=" + scanPointId + ", teamNumber=" + teamNumber
-			        + ", barcodeScanDate=" + barcodeScanDate + "]";
+			return "ParsedBarcode [scanPointOrder=" + scanPointOrder + ", teamNumber=" + teamNumber
+			        + ", barcodeScanDate=" + barcodeScanDate + ", errorMessage=" + errorMessage
+			        + "]";
 		}
 	}
 }

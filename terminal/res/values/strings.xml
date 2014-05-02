@@ -90,6 +90,8 @@
     <string name="transp_export_data_incremental">Export incremental</string>
     <string name="transp_export_data_last_export_date">Last export date:</string>
     <string name="transp_export_data_no_last_export">&lt;Unknown></string>
+    <string name="transp_export_data_format_txt">TXT</string>
+    <string name="transp_export_data_format_json">JSON</string>
     <string name="transp_export_error">Export failed.</string>
     <string name="transp_export_success">Export success.</string>
     <string name="transp_export_running">Running</string>

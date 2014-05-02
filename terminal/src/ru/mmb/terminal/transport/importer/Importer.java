@@ -43,7 +43,7 @@ public class Importer
 				importState.appendMessage("Import failed. ScanPoint for barcode scans import not defined.");
 				return;
 			}
-			tables = readBarCodeScanData(fileName, scanPoint.getScanPointId());
+			tables = readBarCodeScanData(fileName);
 		}
 		else
 		{
@@ -77,9 +77,9 @@ public class Importer
 		}
 	}
 
-	private JSONObject readBarCodeScanData(String fileName, int scanPointId) throws Exception
+	private JSONObject readBarCodeScanData(String fileName) throws Exception
 	{
-		return new BarcodeFileReader(fileName, scanPointId, importState).readBarCodeScanData();
+		return new BarcodeFileReader(fileName, scanPoint, importState).readBarCodeScanData();
 	}
 
 	private JSONObject readJsonTablesPackage(String fileName) throws IOException, JSONException

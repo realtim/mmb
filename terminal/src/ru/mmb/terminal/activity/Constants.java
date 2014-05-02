@@ -8,6 +8,7 @@ public class Constants
 	public static final String KEY_CURRENT_SCAN_POINT = "current.scanpoint";
 	public static final String KEY_CURRENT_TEAM_NUMBER = "current.team.number";
 	public static final String KEY_CURRENT_TEAM = "current.team";
+	public static final String KEY_CURRENT_EXPORT_FORMAT = "current.export.format";
 	public static final String KEY_CURRENT_INPUT_CHECKPOINTS_STATE =
 	    "current.input.checkpoint.state";
 	public static final String KEY_CURRENT_INPUT_CHECKED_DATE = "current.input.checked.date";

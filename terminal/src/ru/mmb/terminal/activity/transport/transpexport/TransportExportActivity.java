@@ -1,7 +1,6 @@
 package ru.mmb.terminal.activity.transport.transpexport;
 
 import ru.mmb.terminal.R;
-import ru.mmb.terminal.activity.ActivityStateWithTeamAndScanPoint;
 import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.transport.exporter.ExportState;
 import android.app.Activity;
@@ -11,7 +10,7 @@ import android.widget.LinearLayout;
 
 public class TransportExportActivity extends Activity
 {
-	private ActivityStateWithTeamAndScanPoint currentState;
+	private TransportExportActivityState currentState;
 
 	private LinearLayout progressBarPanel;
 	private ExportDataPanel exportDataPanel;
@@ -24,7 +23,7 @@ public class TransportExportActivity extends Activity
 
 		Settings.getInstance().setCurrentContext(this);
 
-		currentState = new ActivityStateWithTeamAndScanPoint("transport.export");
+		currentState = new TransportExportActivityState();
 		currentState.initialize(this, savedInstanceState);
 
 		setContentView(R.layout.transp_export);
@@ -73,7 +72,7 @@ public class TransportExportActivity extends Activity
 		}
 	}
 
-	public ActivityStateWithTeamAndScanPoint getCurrentState()
+	public TransportExportActivityState getCurrentState()
 	{
 		return currentState;
 	}

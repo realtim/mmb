@@ -2,6 +2,7 @@ package ru.mmb.terminal.activity.transport.transpexport;
 
 import static ru.mmb.terminal.activity.Constants.KEY_EXPORT_RESULT_MESSAGE;
 import ru.mmb.terminal.R;
+import ru.mmb.terminal.transport.exporter.ExportFormat;
 import ru.mmb.terminal.transport.exporter.ExportMode;
 import ru.mmb.terminal.transport.exporter.ExportState;
 import android.os.Bundle;
@@ -13,17 +14,19 @@ public abstract class ExportThread extends Thread
 	private final TransportExportActivity activity;
 	private final ExportMode exportMode;
 	private final ExportState exportState;
+	private final ExportFormat exportFormat;
 	private final Handler finishHandler;
 
 	protected abstract String exportData() throws Exception;
 
-	public ExportThread(TransportExportActivity activity, Handler finishHandler, ExportMode exportMode, ExportState exportState)
+	public ExportThread(TransportExportActivity activity, Handler finishHandler, ExportMode exportMode, ExportState exportState, ExportFormat exportFormat)
 	{
 		super();
 		this.activity = activity;
 		this.finishHandler = finishHandler;
 		this.exportMode = exportMode;
 		this.exportState = exportState;
+		this.exportFormat = exportFormat;
 	}
 
 	public ExportMode getExportMode()
@@ -50,7 +53,6 @@ public abstract class ExportThread extends Thread
 		try
 		{
 			fileName = exportData();
-			// fileName = new DataExporter(exportMode, exportState).exportData();
 		}
 		catch (Exception e)
 		{
@@ -83,5 +85,10 @@ public abstract class ExportThread extends Thread
 			return activity.getResources().getString(R.string.transp_export_error) + "\n"
 			        + errorMessage;
 		}
+	}
+
+	public ExportFormat getExportFormat()
+	{
+		return exportFormat;
 	}
 }

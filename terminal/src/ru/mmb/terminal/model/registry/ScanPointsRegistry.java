@@ -2,11 +2,14 @@ package ru.mmb.terminal.model.registry;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ru.mmb.terminal.db.TerminalDB;
 import ru.mmb.terminal.model.Distance;
 import ru.mmb.terminal.model.LevelPoint;
+import ru.mmb.terminal.model.LevelPointDiscount;
 import ru.mmb.terminal.model.ScanPoint;
 
 public class ScanPointsRegistry
@@ -15,6 +18,8 @@ public class ScanPointsRegistry
 
 	private List<ScanPoint> scanPoints = null;
 	private DistancesRegistry distancesRegistry;
+
+	private List<LevelPoint> levelPoints;
 
 	public static ScanPointsRegistry getInstance()
 	{
@@ -38,13 +43,16 @@ public class ScanPointsRegistry
 			distancesRegistry = DistancesRegistry.getInstance();
 			// Now load scanPoints and levelPoints.
 			scanPoints = TerminalDB.getConnectedInstance().loadScanPoints(CurrentRaid.getId());
-			List<LevelPoint> levelPoints =
-			    TerminalDB.getConnectedInstance().loadLevelPoints(CurrentRaid.getId());
+			levelPoints = TerminalDB.getConnectedInstance().loadLevelPoints(CurrentRaid.getId());
 			updateDistanceForLevelPoints(levelPoints);
 			for (ScanPoint scanPoint : scanPoints)
 			{
 				addLevelPointsToScanPoint(scanPoint, levelPoints);
 			}
+			// Load levelPointDiscounts.
+			List<LevelPointDiscount> discounts =
+			    TerminalDB.getConnectedInstance().loadLevelPointDiscounts(CurrentRaid.getId());
+			addDiscountsToLevelPoints(discounts);
 		}
 		catch (Exception e)
 		{
@@ -72,6 +80,40 @@ public class ScanPointsRegistry
 				levelPoint.setScanPoint(scanPoint);
 			}
 		}
+	}
+
+	private void addDiscountsToLevelPoints(List<LevelPointDiscount> discounts)
+	{
+		Map<Integer, List<LevelPoint>> distanceLevelPoints = groupLevelPointsByDistance();
+		for (LevelPointDiscount discount : discounts)
+		{
+			int distanceId = discount.getDistanceId();
+			List<LevelPoint> levelPointsGroup = distanceLevelPoints.get(distanceId);
+			if (levelPointsGroup == null) continue;
+			for (LevelPoint levelPoint : levelPointsGroup)
+			{
+				if (levelPoint.containsLevelPointDiscount(discount))
+				{
+					levelPoint.addLevelPointDiscount(discount);
+				}
+			}
+		}
+	}
+
+	private Map<Integer, List<LevelPoint>> groupLevelPointsByDistance()
+	{
+		Map<Integer, List<LevelPoint>> result = new HashMap<Integer, List<LevelPoint>>();
+		for (LevelPoint levelPoint : levelPoints)
+		{
+			List<LevelPoint> distancePoints = result.get(levelPoint.getDistanceId());
+			if (distancePoints == null)
+			{
+				distancePoints = new ArrayList<LevelPoint>();
+				result.put(levelPoint.getDistanceId(), distancePoints);
+			}
+			distancePoints.add(levelPoint);
+		}
+		return result;
 	}
 
 	public List<ScanPoint> getScanPoints()
@@ -106,5 +148,14 @@ public class ScanPointsRegistry
 	public int getScanPointIndex(ScanPoint scanPoint)
 	{
 		return scanPoints.indexOf(scanPoint);
+	}
+
+	public ScanPoint getScanPointByOrder(int scanPointOrder)
+	{
+		for (ScanPoint scanPoint : scanPoints)
+		{
+			if (scanPoint.getScanPointOrder() == scanPointOrder) return scanPoint;
+		}
+		return null;
 	}
 }

@@ -5,13 +5,17 @@ import org.json.JSONObject;
 
 import android.database.Cursor;
 
-public class DataExtractorToJSON extends DataExtractor
+public class DataExtractorToJson extends DataExtractor
 {
-	private final JSONArray records;
+	private JSONArray records;
 
-	public DataExtractorToJSON(ExportMode exportMode, JSONArray records)
+	public DataExtractorToJson(ExportMode exportMode)
 	{
 		super(exportMode);
+	}
+
+	public void setTargetRecords(JSONArray records)
+	{
 		this.records = records;
 	}
 

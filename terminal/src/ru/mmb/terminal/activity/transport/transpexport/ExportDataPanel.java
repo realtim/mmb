@@ -3,6 +3,7 @@ package ru.mmb.terminal.activity.transport.transpexport;
 import static ru.mmb.terminal.activity.Constants.KEY_EXPORT_RESULT_MESSAGE;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.model.registry.Settings;
+import ru.mmb.terminal.transport.exporter.ExportFormat;
 import ru.mmb.terminal.transport.exporter.ExportMode;
 import ru.mmb.terminal.transport.exporter.ExportState;
 import android.os.Handler;
@@ -10,6 +11,7 @@ import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +20,8 @@ public class ExportDataPanel
 	private final TransportExportActivity activity;
 
 	private final TextView labLastExportDate;
+	private final RadioButton radioFormatTxt;
+	private final RadioButton radioFormatJson;
 	private final Button btnFullExport;
 	private final Button btnIncrementalExport;
 
@@ -29,10 +33,15 @@ public class ExportDataPanel
 
 		labLastExportDate =
 		    (TextView) activity.findViewById(R.id.transpExportData_lastExportTextView);
+		radioFormatTxt = (RadioButton) activity.findViewById(R.id.transpExportData_formatTxtRadio);
+		radioFormatJson =
+		    (RadioButton) activity.findViewById(R.id.transpExportData_formatJsonRadio);
 		btnFullExport = (Button) activity.findViewById(R.id.transpExportData_fullExportBtn);
 		btnIncrementalExport =
 		    (Button) activity.findViewById(R.id.transpExportData_incrementalExportBtn);
 
+		radioFormatTxt.setOnClickListener(new FormatRadioClickListener());
+		radioFormatJson.setOnClickListener(new FormatRadioClickListener());
 		btnFullExport.setOnClickListener(new FullClickListener());
 		btnIncrementalExport.setOnClickListener(new IncrementalClickListener());
 
@@ -70,6 +79,7 @@ public class ExportDataPanel
 	public void refreshState()
 	{
 		refreshLastExportDate();
+		refreshRadioState();
 		buttonsSetEnabled();
 	}
 
@@ -86,8 +96,22 @@ public class ExportDataPanel
 		}
 	}
 
+	private void refreshRadioState()
+	{
+		if (activity.getCurrentState().getExportFormat() == ExportFormat.TXT)
+		{
+			radioFormatTxt.setChecked(true);
+		}
+		else
+		{
+			radioFormatJson.setChecked(true);
+		}
+	}
+
 	private void buttonsSetEnabled()
 	{
+		radioFormatTxt.setEnabled(getExportState() == null);
+		radioFormatJson.setEnabled(getExportState() == null);
 		btnFullExport.setEnabled(getExportState() == null);
 		btnIncrementalExport.setEnabled(getExportState() == null);
 	}
@@ -98,8 +122,24 @@ public class ExportDataPanel
 		getActivity().refreshState();
 
 		ExportDataThread thread =
-		    new ExportDataThread(getActivity(), exportFinishHandler, exportMode, getExportState());
+		    new ExportDataThread(getActivity(), exportFinishHandler, exportMode, getExportState(), activity.getCurrentState().getExportFormat());
 		thread.start();
+	}
+
+	private class FormatRadioClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			if (radioFormatTxt.isChecked())
+			{
+				activity.getCurrentState().setExportFormat(ExportFormat.TXT);
+			}
+			else
+			{
+				activity.getCurrentState().setExportFormat(ExportFormat.JSON);
+			}
+		}
 	}
 
 	private class FullClickListener implements OnClickListener

@@ -22,6 +22,12 @@ levelpoint_maxdatetime TEXT, scanpoint_id INTEGER, PRIMARY KEY (levelpoint_id));
 CREATE INDEX IDXLP_distance_id ON LevelPoints (distance_id);
 CREATE INDEX IDXLP_scanpoint_id ON LevelPoints (scanpoint_id);
 
+CREATE TABLE LevelPointDiscounts (levelpointdiscount_id INTEGER NOT NULL, 
+distance_id INTEGER NOT NULL, levelpointdiscount_value INTEGER, levelpointdiscount_start INTEGER, levelpointdiscount_finish INTEGER, 
+PRIMARY KEY (levelpointdiscount_id));
+
+CREATE INDEX IDXLPD_distance_id ON LevelPointDiscounts (distance_id);
+
 CREATE TABLE Teams (team_id INTEGER NOT NULL, team_name TEXT NOT NULL, distance_id INTEGER NOT NULL, 
 team_num INTEGER NOT NULL, PRIMARY KEY (team_id));
 
@@ -49,6 +55,8 @@ CREATE INDEX IDXTLP_accelerator_1 ON TeamLevelPoints (levelpoint_id, team_id);
 CREATE INDEX IDXTLP_update_date ON TeamLevelPoints (teamlevelpoint_date);
 
 
+
+
 CREATE TABLE MetaTables (table_id INTEGER NOT NULL, table_name TEXT NOT NULL, 
 update_date_column_name TEXT, PRIMARY KEY (table_id));
 
@@ -70,6 +78,7 @@ INSERT INTO MetaTables VALUES(7,'TeamUsers',NULL);
 INSERT INTO MetaTables VALUES(8,'TeamLevelDismiss','teamleveldismiss_date');
 INSERT INTO MetaTables VALUES(9,'TeamLevelPoints','teamlevelpoint_date');
 INSERT INTO MetaTables VALUES(10,'BarCodeScans','barcodescan_date');
+INSERT INTO MetaTables VALUES(11,'LevelPointDiscounts',NULL);
 
 /* raids */
 INSERT INTO MetaColumns VALUES(1, 1, 'raid_id', 0, 'INTEGER', 1);
@@ -124,12 +133,18 @@ INSERT INTO MetaColumns VALUES(105, 9, 'device_id', 4, 'INTEGER', 0);
 INSERT INTO MetaColumns VALUES(106, 9, 'teamlevelpoint_datetime', 5, 'LONG_DATE', 0);
 INSERT INTO MetaColumns VALUES(107, 9, 'teamlevelpoint_points', 6, 'TEXT', 0);
 INSERT INTO MetaColumns VALUES(108, 9, 'teamlevelpoint_comment', 7, 'TEXT', 0);
-/*barcodescans*/
+/* arcodescans */
 INSERT INTO MetaColumns VALUES(121, 10, 'levelpoint_id', 0, 'INTEGER', 1);
 INSERT INTO MetaColumns VALUES(122, 10, 'team_id', 1, 'INTEGER', 1);
 INSERT INTO MetaColumns VALUES(123, 10, 'barcodescan_date', 2, 'LONG_DATE', 0);
 INSERT INTO MetaColumns VALUES(124, 10, 'device_id', 3, 'INTEGER', 0);
 INSERT INTO MetaColumns VALUES(125, 10, 'teamlevelpoint_datetime', 4, 'LONG_DATE', 0);
+/* levelpointdiscounts */
+INSERT INTO MetaColumns VALUES(131, 11, 'levelpointdiscount_id', 0, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(132, 11, 'distance_id', 1, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(133, 11, 'levelpointdiscount_value', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(134, 11, 'levelpointdiscount_start', 3, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(135, 11, 'levelpointdiscount_finish', 4, 'INTEGER', 0);
 
 COMMIT;
 

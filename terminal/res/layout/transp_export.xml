@@ -46,6 +46,28 @@
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
 
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="right"
+            android:layout_marginTop="@dimen/global_padding" >
+
+            <RadioButton
+                android:id="@+id/transpExportData_formatTxtRadio"
+                android:layout_width="150dip"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/transp_export_data_format_txt" />
+
+            <RadioButton
+                android:id="@+id/transpExportData_formatJsonRadio"
+                android:layout_width="150dip"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/global_padding"
+                android:text="@string/transp_export_data_format_json" />
+        </RadioGroup>
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

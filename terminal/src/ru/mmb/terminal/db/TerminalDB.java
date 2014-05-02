@@ -6,6 +6,7 @@ import java.util.Set;
 
 import ru.mmb.terminal.model.Distance;
 import ru.mmb.terminal.model.LevelPoint;
+import ru.mmb.terminal.model.LevelPointDiscount;
 import ru.mmb.terminal.model.Participant;
 import ru.mmb.terminal.model.ScanPoint;
 import ru.mmb.terminal.model.Team;
@@ -26,6 +27,7 @@ public class TerminalDB
 	private Distances distances;
 	private ScanPoints scanPoints;
 	private LevelPoints levelPoints;
+	private LevelPointDiscounts levelPointDiscounts;
 	private Teams teams;
 	private MetaTables metaTables;
 	private Users users;
@@ -67,6 +69,7 @@ public class TerminalDB
 			distances = new Distances(db);
 			scanPoints = new ScanPoints(db);
 			levelPoints = new LevelPoints(db);
+			levelPointDiscounts = new LevelPointDiscounts(db);
 			teams = new Teams(db);
 			idGenerator = new IDGenerator(db);
 			metaTables = new MetaTables(db);
@@ -184,5 +187,10 @@ public class TerminalDB
 	public List<LevelPoint> loadLevelPoints(int raidId)
 	{
 		return levelPoints.loadLevelPoints(raidId);
+	}
+
+	public List<LevelPointDiscount> loadLevelPointDiscounts(int raidId)
+	{
+		return levelPointDiscounts.loadLevelPointDiscounts(raidId);
 	}
 }

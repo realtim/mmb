@@ -25,6 +25,7 @@ public class LevelPoint implements Serializable
 
 	private transient Distance distance = null;
 	private transient ScanPoint scanPoint = null;
+	private transient List<LevelPointDiscount> levelPointDiscounts = null;
 
 	private transient List<Checkpoint> checkpoints = null;
 	private transient Map<Integer, Checkpoint> checkpointsByOrder = null;
@@ -180,5 +181,35 @@ public class LevelPoint implements Serializable
 			if (checkpoint.getCheckpointName().equalsIgnoreCase(checkpointName)) return checkpoint;
 		}
 		return null;
+	}
+
+	private List<LevelPointDiscount> getLevelPointDiscountsInstance()
+	{
+		if (levelPointDiscounts == null) levelPointDiscounts = new ArrayList<LevelPointDiscount>();
+		return levelPointDiscounts;
+	}
+
+	public boolean containsLevelPointDiscount(LevelPointDiscount levelPointDiscount)
+	{
+		if (checkpoints == null || checkpoints.isEmpty()) return false;
+
+		int firstNum = checkpoints.get(0).getCheckpointOrder();
+		int lastNum = checkpoints.get(checkpoints.size() - 1).getCheckpointOrder();
+		return firstNum <= levelPointDiscount.getLevelPointDiscountStart()
+		        && lastNum >= levelPointDiscount.getLevelPointDiscountFinish();
+	}
+
+	public void addLevelPointDiscount(LevelPointDiscount levelPointDiscount)
+	{
+		List<LevelPointDiscount> discounts = getLevelPointDiscountsInstance();
+		if (!discounts.contains(levelPointDiscount))
+		{
+			discounts.add(levelPointDiscount);
+		}
+	}
+
+	public List<LevelPointDiscount> getLevelPointDiscounts()
+	{
+		return Collections.unmodifiableList(getLevelPointDiscountsInstance());
 	}
 }
