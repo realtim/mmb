@@ -61,7 +61,8 @@ if (!isset($MyPHPScript)) return;
 	function ResultViewModeChange()
 	{ 
           document.RaidTeamsForm.action.value = "ViewRaidTeams";          
-	  document.RaidTeamsForm.submit();
+          document.RaidTeamsForm.OrderType.value = "Place";          
+          document.RaidTeamsForm.submit();
          } 
 
         // Выгрузка данных для анализа
@@ -203,6 +204,7 @@ if (!isset($MyPHPScript)) return;
 		$OrderString = '';
 
 
+
 		  $sql = "select COALESCE(r.raid_ruleslink, '') as raid_ruleslink,
                                  COALESCE(r.raid_startlink, '') as raid_startlink,
                                  COALESCE(r.raid_kpwptlink, '') as raid_kpwptlink,
@@ -228,13 +230,16 @@ if (!isset($MyPHPScript)) return;
                 $RaidCloseDt = $Row['raid_closedate'];
                 $RaidNoShowResult = $Row['raid_noshowresult'];
    
-
+                 // 03/05/2014 Исправил порядок сортировки - раньше независисмо от устновленного  $OrderType могло сбрасываться 
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
-                if  (empty($OrderType) && $CanViewResults)
-                {
-  	           $OrderType = "Place";
-		} else {
+                if  (empty($OrderType))
+		{
+		   if ($CanViewResults)
+                   {
+  	            $OrderType = "Place";
+		   } else {
 	           $OrderType = "Num";
+                   }
 		}
 		// Конец разбора сортировки по умолчанию
 		   
@@ -267,7 +272,7 @@ if (!isset($MyPHPScript)) return;
 		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px;" 
                                onchange = "DistanceIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
                 $distanceselected =  (0 == $_REQUEST['DistanceId'] ? 'selected' : '');
-		  print('<option value = "0" '.$$distanceselected.' >дистанцию'."\r\n");
+		  print('<option value = "0" '.$distanceselected.' >дистанцию'."\r\n");
 		if (!isset($_REQUEST['DistanceId'])) $_REQUEST['DistanceId'] = "";
 	        while ($Row = mysql_fetch_assoc($Result))
 		{
