@@ -15,8 +15,11 @@
     <string name="main_import_barcode_data">Импорт штрих-кодов</string>
     <string name="main_export_data">Экспорт</string>
     <string name="main_title">ММБ терминал</string>
+    <string name="main_results">Результаты</string>
     <string name="main_settings">Настройки</string>
     <string name="main_progress_loading">Загрузка...</string>
+    <string name="results_team_report">Отчёт по команде</string>
+    <string name="results_group_report">Полный отчёт </string>
     <string name="input_start_select_scan_point">Выбор точки ввода</string>
     <string name="input_start_no_scan_point">&lt;Точка ввода не выбрана></string>
     <string name="input_start_proceed_input">Ввод данных</string>
@@ -93,5 +96,26 @@
     <string name="transp_export_error">Ошибка экспорта.</string>
     <string name="transp_export_success">Экспорт завершён.</string>
     <string name="transp_export_running">В процессе</string>
+    <string name="report_team_title">Поиск команды</string>
+    <string name="report_team_refresh_data">Обновить список</string>
+    <string name="report_team_mode_fast">Быстрый</string>
+    <string name="report_team_mode_usual">Обычный</string>
+    <string name="report_team_filter_clear">Очистить</string>
+    <string name="report_team_filter_hide">Скрыть</string>
+    <string name="report_team_filter_show_number">По номеру</string>
+    <string name="report_team_filter_show_full">Полный</string>
+    <string name="report_team_filter_number">Номер:</string>
+    <string name="report_team_filter_number_exact">Точно</string>
+    <string name="report_team_filter_team">Команда:</string>
+    <string name="report_team_filter_member">Участник:</string>
+    <string name="report_team_sort_num">Номер</string>
+    <string name="report_team_sort_team">Команда</string>
+    <string name="report_team_sort_member">Участник</string>
+    <string name="report_team_filter_status_number">Номер:</string>
+    <string name="report_team_filter_status_exact">точно</string>
+    <string name="report_team_filter_status_team">Команда:</string>
+    <string name="report_team_filter_status_member">Участник:</string>
+    <string name="report_team_filter_status_empty">Без фильтра</string>
+    <string name="report_team_result_error">Ошибка построения отчёта по команде.</string>
 
 </resources>

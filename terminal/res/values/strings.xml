@@ -15,9 +15,12 @@
     <string name="main_import_barcode_data">Import barcodes</string>
     <string name="main_export_data">Export</string>
     <string name="main_title">MMB terminal</string>
+    <string name="main_results">Results</string>
     <string name="main_settings">Settings</string>
     <string name="main_fill_data">Fill test data</string>
     <string name="main_progress_loading">Loading...</string>
+    <string name="results_team_report">Team report</string>
+    <string name="results_group_report">Group report</string>
     <string name="input_start_select_scan_point">Select input point</string>
     <string name="input_start_no_scan_point">&lt;No input point selected></string>
     <string name="input_start_proceed_input">Proceed input</string>
@@ -95,5 +98,26 @@
     <string name="transp_export_error">Export failed.</string>
     <string name="transp_export_success">Export success.</string>
     <string name="transp_export_running">Running</string>
+    <string name="report_team_title">Search team</string>
+    <string name="report_team_refresh_data">Refresh teams</string>
+    <string name="report_team_mode_fast">Fast mode</string>
+    <string name="report_team_mode_usual">Usual mode</string>
+    <string name="report_team_filter_clear">Clear filter</string>
+    <string name="report_team_filter_hide">Hide filter</string>
+    <string name="report_team_filter_show_number">Number filter</string>
+    <string name="report_team_filter_show_full">Full filter</string>
+    <string name="report_team_filter_number">Number:</string>
+    <string name="report_team_filter_number_exact">Exact</string>
+    <string name="report_team_filter_team">Team:</string>
+    <string name="report_team_filter_member">Member:</string>
+    <string name="report_team_sort_num">Num</string>
+    <string name="report_team_sort_team">Team</string>
+    <string name="report_team_sort_member">Member</string>
+    <string name="report_team_filter_status_number">Number:</string>
+    <string name="report_team_filter_status_exact">exact</string>
+    <string name="report_team_filter_status_team">Team:</string>
+    <string name="report_team_filter_status_member">Member:</string>
+    <string name="report_team_filter_status_empty">No filter</string>
+    <string name="report_team_result_error">Build team report failed.</string>
 
 </resources>

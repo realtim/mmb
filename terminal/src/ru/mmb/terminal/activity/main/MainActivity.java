@@ -3,6 +3,7 @@ package ru.mmb.terminal.activity.main;
 import static ru.mmb.terminal.activity.Constants.REQUEST_CODE_SETTINGS_ACTIVITY;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.activity.input.start.StartInputActivity;
+import ru.mmb.terminal.activity.report.ResultsActivity;
 import ru.mmb.terminal.activity.settings.SettingsActivity;
 import ru.mmb.terminal.activity.transport.transpexport.TransportExportActivity;
 import ru.mmb.terminal.activity.transport.transpimport.TransportImportActivity;
@@ -30,6 +31,7 @@ public class MainActivity extends Activity
 	private Button btnImportData;
 	private Button btnImportBarcodeData;
 	private Button btnExportData;
+	private Button btnResults;
 	private Button btnSettings;
 
 	//	private Button btnGenerate;
@@ -58,6 +60,7 @@ public class MainActivity extends Activity
 		btnImportData = (Button) findViewById(R.id.main_importDataBtn);
 		btnImportBarcodeData = (Button) findViewById(R.id.main_importBarcodeDataBtn);
 		btnExportData = (Button) findViewById(R.id.main_exportDataBtn);
+		btnResults = (Button) findViewById(R.id.main_resultsBtn);
 		btnSettings = (Button) findViewById(R.id.main_settingsBtn);
 		//		btnGenerate = (Button) findViewById(R.id.main_generateBtn);
 
@@ -65,6 +68,7 @@ public class MainActivity extends Activity
 		btnImportData.setOnClickListener(new ImportDataClickListener());
 		btnImportBarcodeData.setOnClickListener(new ImportBarcodeDataClickListener());
 		btnExportData.setOnClickListener(new ExportDataClickListener());
+		btnResults.setOnClickListener(new ResultsClickListener());
 		btnSettings.setOnClickListener(new SettingsClickListener());
 		//		btnGenerate.setOnClickListener(new GenerateClickListener());
 
@@ -99,6 +103,7 @@ public class MainActivity extends Activity
 		btnInputData.setEnabled(enabled);
 		btnImportData.setEnabled(enabled);
 		btnExportData.setEnabled(enabled);
+		btnResults.setEnabled(enabled);
 	}
 
 	@Override
@@ -155,6 +160,16 @@ public class MainActivity extends Activity
 		public void onClick(View v)
 		{
 			Intent intent = new Intent(getApplicationContext(), TransportExportActivity.class);
+			startActivity(intent);
+		}
+	}
+
+	private class ResultsClickListener implements OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			Intent intent = new Intent(getApplicationContext(), ResultsActivity.class);
 			startActivity(intent);
 		}
 	}

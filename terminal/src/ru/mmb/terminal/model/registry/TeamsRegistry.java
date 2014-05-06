@@ -72,6 +72,11 @@ public class TeamsRegistry
 		return result;
 	}
 
+	public List<Team> getTeams()
+	{
+		return new ArrayList<Team>(teams);
+	}
+
 	public Team getTeamById(int teamId)
 	{
 		return teamByIdMap.get(new Integer(teamId));

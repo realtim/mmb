@@ -4,7 +4,7 @@
     android:versionCode="10006"
     android:versionName="1.5" >
 
-    <uses-sdk 
+    <uses-sdk
         android:minSdkVersion="7"
         android:targetSdkVersion="18" />
 
@@ -33,6 +33,10 @@
         <activity android:name=".activity.transport.transpimport.TransportImportActivity" />
         <activity android:name=".activity.transport.transpimport.TransportImportBarcodeActivity" />
         <activity android:name=".activity.transport.transpexport.TransportExportActivity" />
+        <activity android:name=".activity.report.ResultsActivity" />
+        <activity
+            android:name=".activity.report.team.search.SearchTeamActivity"
+            android:windowSoftInputMode="stateHidden" />
         <activity android:name=".activity.settings.SettingsActivity" />
         <activity android:name="com.filedialog.FileDialog" >
         </activity>

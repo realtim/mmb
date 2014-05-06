@@ -17,6 +17,16 @@ public class Constants
 	    "current.input.withdrawn.checked";
 	public static final String KEY_EXPORT_RESULT_MESSAGE = "export.result.message";
 	public static final String KEY_LEVEL_SELECT_MODE = "level.select_mode";
+	public static final String KEY_REPORT_TEAM_SORT_COLUMN = "report.team.sort.column";
+	public static final String KEY_REPORT_TEAM_SORT_ORDER = "report.team.sort.order";
+	public static final String KEY_REPORT_TEAM_FAST_SELECT = "report.team.fast.select";
+	public static final String KEY_REPORT_TEAM_FILTER_STATE = "report.team.filter.state";
+	public static final String KEY_REPORT_TEAM_FILTER_NUMBER_EXACT =
+	    "report.team.filter.number.exact";
+	public static final String KEY_REPORT_TEAM_FILTER_NUMBER = "report.team.filter.number";
+	public static final String KEY_REPORT_TEAM_FILTER_TEAM = "report.team.filter.team";
+	public static final String KEY_REPORT_TEAM_FILTER_MEMBER = "report.team.filter.member";
+	public static final String KEY_REPORT_TEAM_RESULT_MESSAGE = "report.team.result.message";
 
 	public static final int REQUEST_CODE_DEFAULT_ACTIVITY = -1;
 	public static final int REQUEST_CODE_MAIN_ACTIVITY = 1;
