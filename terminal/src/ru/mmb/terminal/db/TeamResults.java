@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Set;
 
 import ru.mmb.terminal.model.LevelPoint;
+import ru.mmb.terminal.model.ScanPoint;
 import ru.mmb.terminal.model.Team;
 import ru.mmb.terminal.model.TeamResult;
+import ru.mmb.terminal.model.registry.ScanPointsRegistry;
 import ru.mmb.terminal.model.registry.Settings;
 import ru.mmb.terminal.model.registry.TeamsRegistry;
 import ru.mmb.terminal.util.DateFormat;
@@ -182,5 +184,45 @@ public class TeamResults
 			resultCursor.moveToNext();
 		}
 		resultCursor.close();
+	}
+
+	public List<TeamResult> loadTeamResults(Team team)
+	{
+		List<TeamResult> result = new ArrayList<TeamResult>();
+		String sql =
+		    "select " + TEAMLEVELPOINT_DATE + ", " + USER_ID + ", " + DEVICE_ID + ", " + TEAM_ID
+		            + ", " + LEVELPOINT_ID + ", " + TEAMLEVELPOINT_DATETIME + ", "
+		            + TEAMLEVELPOINT_POINTS + " from " + TABLE_TEAM_LEVEL_POINTS + " where "
+		            + TEAM_ID + " = " + team.getTeamId() + " order by " + LEVELPOINT_ID + ", "
+		            + TEAMLEVELPOINT_DATE;
+		Cursor resultCursor = db.rawQuery(sql, null);
+
+		resultCursor.moveToFirst();
+		while (!resultCursor.isAfterLast())
+		{
+			Date recordDateTime = DateFormat.parse(resultCursor.getString(0));
+			Integer userId = resultCursor.getInt(1);
+			Integer deviceId = resultCursor.getInt(2);
+			Integer teamId = resultCursor.getInt(3);
+			int levelPointId = resultCursor.getInt(4);
+			Date checkDateTime = DateFormat.parse(resultCursor.getString(5));
+			String takenCheckpointNames = resultCursor.getString(6);
+
+			ScanPoint scanPoint =
+			    ScanPointsRegistry.getInstance().getScanPointByLevelPointId(levelPointId);
+
+			TeamResult teamResult =
+			    new TeamResult(teamId, userId, deviceId, scanPoint.getScanPointId(), takenCheckpointNames, checkDateTime, recordDateTime);
+			// init reference fields
+			teamResult.setScanPoint(scanPoint);
+			teamResult.setTeam(team);
+			teamResult.initTakenCheckpoints();
+
+			result.add(teamResult);
+			resultCursor.moveToNext();
+		}
+		resultCursor.close();
+
+		return result;
 	}
 }

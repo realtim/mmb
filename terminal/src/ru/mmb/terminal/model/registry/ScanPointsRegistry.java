@@ -11,15 +11,15 @@ import ru.mmb.terminal.model.Distance;
 import ru.mmb.terminal.model.LevelPoint;
 import ru.mmb.terminal.model.LevelPointDiscount;
 import ru.mmb.terminal.model.ScanPoint;
+import ru.mmb.terminal.model.report.LevelsRegistry;
 
 public class ScanPointsRegistry
 {
 	private static ScanPointsRegistry instance = null;
 
 	private List<ScanPoint> scanPoints = null;
+	private List<LevelPoint> levelPoints = null;
 	private DistancesRegistry distancesRegistry;
-
-	private List<LevelPoint> levelPoints;
 
 	public static ScanPointsRegistry getInstance()
 	{
@@ -41,18 +41,25 @@ public class ScanPointsRegistry
 		{
 			// Init distances registry first.
 			distancesRegistry = DistancesRegistry.getInstance();
+
 			// Now load scanPoints and levelPoints.
 			scanPoints = TerminalDB.getConnectedInstance().loadScanPoints(CurrentRaid.getId());
+			Collections.sort(scanPoints);
+
 			levelPoints = TerminalDB.getConnectedInstance().loadLevelPoints(CurrentRaid.getId());
 			updateDistanceForLevelPoints(levelPoints);
 			for (ScanPoint scanPoint : scanPoints)
 			{
 				addLevelPointsToScanPoint(scanPoint, levelPoints);
 			}
+
 			// Load levelPointDiscounts.
 			List<LevelPointDiscount> discounts =
 			    TerminalDB.getConnectedInstance().loadLevelPointDiscounts(CurrentRaid.getId());
 			addDiscountsToLevelPoints(discounts);
+
+			// Rebuild report levels.
+			LevelsRegistry.buildLevels(scanPoints);
 		}
 		catch (Exception e)
 		{
@@ -155,6 +162,18 @@ public class ScanPointsRegistry
 		for (ScanPoint scanPoint : scanPoints)
 		{
 			if (scanPoint.getScanPointOrder() == scanPointOrder) return scanPoint;
+		}
+		return null;
+	}
+
+	public ScanPoint getScanPointByLevelPointId(int levelPointId)
+	{
+		for (LevelPoint levelPoint : levelPoints)
+		{
+			if (levelPoint.getLevelPointId() == levelPointId)
+			{
+				return levelPoint.getScanPoint();
+			}
 		}
 		return null;
 	}

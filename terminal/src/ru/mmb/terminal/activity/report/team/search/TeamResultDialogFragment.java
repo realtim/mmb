@@ -1,11 +1,15 @@
 package ru.mmb.terminal.activity.report.team.search;
 
+import ru.mmb.terminal.R;
 import ru.mmb.terminal.model.Team;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.webkit.WebView;
 
 public class TeamResultDialogFragment extends DialogFragment
 {
@@ -14,9 +18,13 @@ public class TeamResultDialogFragment extends DialogFragment
 	{
 		SearchTeamActivity activity = (SearchTeamActivity) getActivity();
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+		LayoutInflater inflater = getActivity().getLayoutInflater();
+		View dialogPanel = inflater.inflate(R.layout.report_team_result, null);
+		WebView webView = (WebView) dialogPanel.findViewById(R.id.reportTeamResult_webView);
+		webView.loadData(activity.getCurrentState().getResultMessage(), "text/html", null);
+		builder.setView(dialogPanel);
 		Team team = activity.getCurrentState().getCurrentTeam();
 		builder.setTitle(team.getTeamNum() + "    " + team.getTeamName());
-		builder.setMessage(activity.getCurrentState().getResultMessage());
 		builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
 		{
 			@Override

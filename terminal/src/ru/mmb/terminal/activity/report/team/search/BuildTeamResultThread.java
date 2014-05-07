@@ -3,6 +3,7 @@ package ru.mmb.terminal.activity.report.team.search;
 import static ru.mmb.terminal.activity.Constants.KEY_REPORT_TEAM_RESULT_MESSAGE;
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.model.Team;
+import ru.mmb.terminal.report.TeamReportBuilder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -48,8 +49,7 @@ public class BuildTeamResultThread extends Thread
 
 	private String buildTeamResult()
 	{
-		// TODO Auto-generated method stub
-		return "Build result not implemented";
+		return new TeamReportBuilder(team).buildFullReportString();
 	}
 
 	private Message prepareResultMessage(boolean wasError, String errorMessage)
@@ -69,8 +69,9 @@ public class BuildTeamResultThread extends Thread
 		}
 		else
 		{
-			return activity.getResources().getString(R.string.report_team_result_error) + "\n"
-			        + errorMessage;
+			return "<html><head><meta charset=\"UTF-8\"></head><body>"
+			        + activity.getResources().getString(R.string.report_team_result_error) + "\n"
+			        + errorMessage + "</body></html>";
 		}
 	}
 }

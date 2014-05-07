@@ -49,4 +49,10 @@ public class LevelPointDiscount implements Serializable
 	{
 		return levelPointDiscountFinish;
 	}
+
+	public boolean contains(Checkpoint checkpoint)
+	{
+		return levelPointDiscountStart <= checkpoint.getCheckpointOrder()
+		        && levelPointDiscountFinish >= checkpoint.getCheckpointOrder();
+	}
 }

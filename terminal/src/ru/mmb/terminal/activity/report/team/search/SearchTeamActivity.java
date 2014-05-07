@@ -115,6 +115,11 @@ public class SearchTeamActivity extends FragmentActivity
 		currentState.setCurrentTeam(null);
 	}
 
+	public SearchTeamActivityState getCurrentState()
+	{
+		return currentState;
+	}
+
 	public TeamsAdapter getAdapterBySortColumn(SortColumn sortColumn)
 	{
 		if (sortColumn == SortColumn.MEMBER)
@@ -229,10 +234,5 @@ public class SearchTeamActivity extends FragmentActivity
 			sortButtons.switchMode();
 			refreshModeButtonState();
 		}
-	}
-
-	public SearchTeamActivityState getCurrentState()
-	{
-		return currentState;
 	}
 }

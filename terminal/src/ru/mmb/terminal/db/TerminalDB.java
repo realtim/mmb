@@ -193,4 +193,9 @@ public class TerminalDB
 	{
 		return levelPointDiscounts.loadLevelPointDiscounts(raidId);
 	}
+
+	public List<TeamResult> loadTeamResults(Team team)
+	{
+		return teamResults.loadTeamResults(team);
+	}
 }

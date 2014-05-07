@@ -137,7 +137,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint
 		if (getCurrentLevelPointType() == LevelPointType.FINISH) return false;
 
 		LevelPoint levelPoint = getLevelPointForTeam();
-		return levelPoint.getLevelPointMinDateTime().equals(levelPoint.getLevelPointMaxDateTime());
+		return levelPoint.isCommonStart();
 	}
 
 	public void setInputDate(Date date)

@@ -212,4 +212,10 @@ public class LevelPoint implements Serializable
 	{
 		return Collections.unmodifiableList(getLevelPointDiscountsInstance());
 	}
+
+	public boolean isCommonStart()
+	{
+		if (pointType != PointType.START) return false;
+		return levelPointMinDateTime.equals(levelPointMaxDateTime);
+	}
 }
