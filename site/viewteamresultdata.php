@@ -143,7 +143,7 @@ print('<td style="text-align: center">Финиш</td>'."\n");
 print('<td>Комментарий</td>'."\n");
 print('</tr>'."\n\n");
 
-
+// 2014-05-10 Добавил проверку на неудаленность этапа
 // Выводим данные только, когда минимальное время начала этапа меньше или равно текущему
 // Довольно своеорбазно определяем год, чтобы не вводить его каждый раз
 $sql = "select l.level_id, l.level_name, l.level_pointnames, l.level_starttype,
@@ -175,7 +175,7 @@ $sql = "select l.level_id, l.level_name, l.level_pointnames, l.level_starttype,
 		inner join Levels l on d.distance_id = l.distance_id
 		left outer join TeamLevels tl
 			on l.level_id = tl.level_id and t.team_id = tl.team_id and tl.teamlevel_hide = 0
-	where t.team_id = ".$TeamId;
+	where l.level_hide = 0 and t.team_id = ".$TeamId;
 // Пока убрал ограничение по выдаче этапов от времени просмотра
 // $sql = $sql." and l.level_begtime <= now() ";
 $sql = $sql." order by l.level_order ";
