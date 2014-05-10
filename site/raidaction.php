@@ -1912,7 +1912,8 @@ elseif ($action == 'RecalculateLevels')
 	          where distance_id = ".$pDistanceId;        
 			
 	 MySqlQuery($sql);
-	 
+
+          // 2014-05-10 Исключилд старт и финиш из этапа	 
          // цикл по точкам
 	 $sql = "select lp.levelpoint_id, pt.pointtype_id, pt.pointtype_name,  
 	                lp.levelpoint_name, lp.levelpoint_penalty, 
@@ -1944,6 +1945,10 @@ elseif ($action == 'RecalculateLevels')
  	 while ($Row = mysql_fetch_assoc($Result))
 	 {
 
+
+//               echo 'pt '.$Row['pointtype_id'];
+
+               // 2014-05-10 Убрал старт и финиш из точек этапа 
                // Финиш или смена-карт - обновляем уже созжанный уровень
                if (($Row['pointtype_id'] == 2 or $Row['pointtype_id'] == 4) and ($LevelId > 0))
 	       {
@@ -1952,27 +1957,12 @@ elseif ($action == 'RecalculateLevels')
 			
 		  MySqlQuery($sqlPoint);
 
-                  if ($Row['levelpoint_discount'] <> 0) 
-		  {
-		     if ($LevelDiscountValue == 0)
-		     {
-			$LevelDiscountValue = $Row['levelpoint_discount'];
-                     }
-	             $LevelDiscountPoints .= ",1";
-		  } else {
-		     $LevelDiscountPoints .= ",0";
-		  }
-	       
-	          $LevelPoints .= ",".$Row['levelpoint_name'];
-          	  $LevelPenalties .= ",".$Row['levelpoint_penalty'];
-
-
   		  $sqlFinishLevel = "update Levels set   
                                                       level_minendtime = '".$Row['levelpoint_mindatetime']."'
 						      ,level_endtime = '".$Row['levelpoint_maxdatetime']."'		 
-						      ,level_pointnames = '".$LevelPoints."'		 
-						      ,level_pointpenalties = '".$LevelPenalties."'		 
-						      ,level_discountpoints = '".$LevelDiscountPoints."'		 
+						      ,level_pointnames = '".substr($LevelPoints, 1)."'		 
+						      ,level_pointpenalties = '".substr($LevelPenalties, 1)."'		 
+						      ,level_discountpoints = '".substr($LevelDiscountPoints, 1)."'		 
 						      ,level_discount = ".$LevelDiscountValue."		 
 						      ,level_name = CONCAT(level_name, '".trim($Row['levelpoint_name'])."')		 
 		 	            where level_id = ".$LevelId;
@@ -2021,26 +2011,11 @@ elseif ($action == 'RecalculateLevels')
 			
 		 MySqlQuery($sqlPoint);
 
-                 if ($Row['levelpoint_discount'] <> 0) 
-		 {
-		     if ($LevelDiscountValue == 0)
-		     {
-			$LevelDiscountValue = $Row['levelpoint_discount'];
-                     }
-
-	             $LevelDiscountPoints = "1";
-
-		 } else {
-
-		     $LevelDiscountPoints = "0";
-	  
-		 }
-
-	         $LevelPoints = $Row['levelpoint_name'];
-          	 $LevelPenalties = $Row['levelpoint_penalty'];
 	       }       
                // Конец проверки на старт или смену карт
              
+//	        echo  $Row['levelpoint_name'].'  '.$Row['pointtype_id']; 
+	     
 	       // Точка, кроме старта, финиша или смены карт 
 	       if ($LevelId > 0 and $Row['pointtype_id'] <> 1  and $Row['pointtype_id'] <> 2 and $Row['pointtype_id'] <> 4)
 	       {
