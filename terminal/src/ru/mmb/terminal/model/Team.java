@@ -99,4 +99,34 @@ public class Team implements Serializable
 		}
 		return null;
 	}
+
+	public String getMembersHtml()
+	{
+		return getMembersInfo("<br>");
+	}
+
+	public String getMembersText()
+	{
+		return getMembersInfo("\n");
+	}
+
+	private String getMembersInfo(String lineBreak)
+	{
+		if (members == null)
+		{
+			// Some members can be removed from team. Maybe all.
+			return "";
+		}
+
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < members.size(); i++)
+		{
+			if (i > 0)
+			{
+				sb.append(lineBreak);
+			}
+			sb.append(members.get(i).getUserName());
+		}
+		return sb.toString();
+	}
 }

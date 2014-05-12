@@ -25,16 +25,11 @@ public class TeamReportBuilder
 		return buildReport().toFullHtml();
 	}
 
-	private TeamReport buildReport()
+	public TeamReport buildReport()
 	{
 		List<TeamResult> teamResults = TerminalDB.getConnectedInstance().loadTeamResults(team);
 		teamResults = removeDuplicateDBRecords(teamResults);
 		return buildReport(teamResults);
-	}
-
-	public String buildCompactReportString()
-	{
-		return buildReport().toCompactString();
 	}
 
 	private List<TeamResult> removeDuplicateDBRecords(List<TeamResult> teamResults)

@@ -308,4 +308,33 @@ public class TeamLevel
 	{
 		return TeamReport.toHourMinuteString(duration);
 	}
+
+	public String toCompactHtml()
+	{
+		String timesString = "";
+		String missedString = "";
+		StringBuilder sb = new StringBuilder();
+		sb.append("<tr>");
+		for (LevelPoint levelPoint : level.getLevelPoints())
+		{
+			if (timesString.length() > 0)
+			{
+				timesString += " - ";
+			}
+			timesString += getTimeString(levelPoint);
+			if (levelPoint.getPointType().isFinish())
+			{
+				if (missedString.length() > 0)
+				{
+					missedString += "; ";
+				}
+				missedString += getMissedString(levelPoint);
+			}
+		}
+		sb.append("<td>").append(timesString).append("</td>");
+		sb.append("<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>");
+		sb.append("<td>").append(missedString).append("</td>");
+		sb.append("</tr>");
+		return sb.toString();
+	}
 }

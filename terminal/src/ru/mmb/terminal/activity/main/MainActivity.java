@@ -102,6 +102,7 @@ public class MainActivity extends Activity
 		boolean enabled = currentState.isEnabled();
 		btnInputData.setEnabled(enabled);
 		btnImportData.setEnabled(enabled);
+		btnImportBarcodeData.setEnabled(enabled);
 		btnExportData.setEnabled(enabled);
 		btnResults.setEnabled(enabled);
 	}

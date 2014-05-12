@@ -119,5 +119,11 @@
     <string name="report_team_filter_status_member">Member:</string>
     <string name="report_team_filter_status_empty">No filter</string>
     <string name="report_team_result_error">Build team report failed.</string>
+    <string name="report_global_title">Global report</string>
+    <string name="report_global_all_teams">All teams</string>
+    <string name="report_global_selected_teams">Selected teams</string>
+    <string name="report_global_start_builder">Start</string>
+    <string name="report_global_result_error">Build global report failed.</string>
+    <string name="results_title">Result reports</string>
 
 </resources>

@@ -1,6 +1,7 @@
 package ru.mmb.terminal.activity.report;
 
 import ru.mmb.terminal.R;
+import ru.mmb.terminal.activity.report.global.ReportGlobalResultActivity;
 import ru.mmb.terminal.activity.report.team.search.SearchTeamActivity;
 import ru.mmb.terminal.model.registry.Settings;
 import android.app.Activity;
@@ -29,6 +30,8 @@ public class ResultsActivity extends Activity
 
 		btnTeamReport.setOnClickListener(new TeamReportClickListener());
 		btnGroupReport.setOnClickListener(new GroupReportClickListener());
+
+		setTitle(getResources().getString(R.string.results_title));
 	}
 
 	private class TeamReportClickListener implements OnClickListener
@@ -46,8 +49,8 @@ public class ResultsActivity extends Activity
 		@Override
 		public void onClick(View v)
 		{
-			// Intent intent = new Intent(getApplicationContext(), SearchTeamActivity.class);
-			// startActivity(intent);
+			Intent intent = new Intent(getApplicationContext(), ReportGlobalResultActivity.class);
+			startActivity(intent);
 		}
 	}
 }

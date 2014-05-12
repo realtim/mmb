@@ -117,5 +117,11 @@
     <string name="report_team_filter_status_member">Участник:</string>
     <string name="report_team_filter_status_empty">Без фильтра</string>
     <string name="report_team_result_error">Ошибка построения отчёта по команде.</string>
+    <string name="report_global_title">Глобальный отчёт</string>
+    <string name="report_global_all_teams">Все команды</string>
+    <string name="report_global_selected_teams">Выбранные команды</string>
+    <string name="report_global_start_builder">Старт</string>
+    <string name="report_global_result_error">Ошибка построения глобального отчёта.</string>
+    <string name="results_title">Отчёты по результатам</string>
 
 </resources>

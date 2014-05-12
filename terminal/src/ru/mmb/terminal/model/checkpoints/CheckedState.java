@@ -8,7 +8,6 @@ import java.util.Map;
 
 import ru.mmb.terminal.model.Checkpoint;
 import ru.mmb.terminal.model.LevelPoint;
-import android.util.Log;
 
 public class CheckedState implements Serializable
 {
@@ -96,7 +95,7 @@ public class CheckedState implements Serializable
 			    sb.append("-").append(levelPoint.getCheckpointByOrderNum(interval.getEndNum()).getCheckpointName());
 			sb.append(",");
 		}
-		Log.d("missed checkpoints", sb.toString());
+		//Log.d("missed checkpoints", sb.toString());
 		return (sb.length() == 0) ? "-" : sb.toString().substring(0, sb.length() - 1);
 	}
 

@@ -27,11 +27,13 @@ public class Constants
 	public static final String KEY_REPORT_TEAM_FILTER_TEAM = "report.team.filter.team";
 	public static final String KEY_REPORT_TEAM_FILTER_MEMBER = "report.team.filter.member";
 	public static final String KEY_REPORT_TEAM_RESULT_MESSAGE = "report.team.result.message";
+	public static final String KEY_REPORT_GLOBAL_REPORT_MODE = "report.global.report.mode";
+	public static final String KEY_REPORT_GLOBAL_SELECTED_TEAMS = "report.global.selected.teams";
+	public static final String KEY_REPORT_GLOBAL_RESULT_MESSAGE = "report.global.result.message";
 
 	public static final int REQUEST_CODE_DEFAULT_ACTIVITY = -1;
 	public static final int REQUEST_CODE_MAIN_ACTIVITY = 1;
 	public static final int REQUEST_CODE_SETTINGS_ACTIVITY = 2;
-	public static final int REQUEST_CODE_LEVEL_ACTIVITY = 3;
 	public static final int REQUEST_CODE_INPUT_HISTORY_ACTIVITY = 4;
 	public static final int REQUEST_CODE_INPUT_DATA_ACTIVITY = 5;
 	public static final int REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY = 6;

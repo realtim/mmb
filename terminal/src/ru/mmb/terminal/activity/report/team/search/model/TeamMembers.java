@@ -26,13 +26,7 @@ public class TeamMembers extends TeamInfo implements TeamListRecord
 
 	public String getMemberNamesText()
 	{
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < memberNames.size(); i++)
-		{
-			if (i > 0) sb.append("\n");
-			sb.append(memberNames.get(i));
-		}
-		return sb.toString();
+		return getTeam().getMembersText();
 	}
 
 	@Override

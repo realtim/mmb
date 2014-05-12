@@ -141,24 +141,48 @@ public class TeamReport implements Comparable<TeamReport>
 	@Override
 	public int compareTo(TeamReport another)
 	{
+		// If both results FAIL, then no sort needed.
 		if (this.calcResult == FAIL && another.calcResult == FAIL)
 		{
 			return 0;
 		}
+		// Failed results must go after all NOT FAIL results.
 		if (this.calcResult == FAIL)
 		{
-			return -1;
+			return 1;
 		}
+		// Sort DESC by level point order (higher results to top).
 		if (lastVisitedPointOrder != another.lastVisitedPointOrder)
 		{
-			return new Integer(lastVisitedPointOrder).compareTo(new Integer(another.lastVisitedPointOrder));
+			return -1
+			        * (new Integer(lastVisitedPointOrder).compareTo(new Integer(another.lastVisitedPointOrder)));
 		}
+		// Sort ASC by duration in one lastVisitedPointOrder.
 		return new Long(duration).compareTo(new Long(another.duration));
 	}
 
-	public String toCompactString()
+	public String toCompactHtml(int rowNum)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		StringBuilder sb = new StringBuilder();
+		if (rowNum % 2 == 0)
+		{
+			sb.append("<tr>");
+		}
+		else
+		{
+			sb.append("<tr style=\"background-color:lightgrey\">");
+		}
+		sb.append("<td>").append(team.getTeamNum()).append("</td>");
+		sb.append("<td>").append(team.getTeamName()).append("</td>");
+		sb.append("<td>").append(team.getMembersHtml()).append("</td>");
+		sb.append("<td>").append(toHourMinuteString((int) duration)).append("</td>");
+		sb.append("<td><table cellspacing=\"3\">");
+		for (TeamLevel teamLevel : teamLevels)
+		{
+			sb.append(teamLevel.toCompactHtml());
+		}
+		sb.append("</table></td>");
+		sb.append("</tr>");
+		return sb.toString();
 	}
 }
