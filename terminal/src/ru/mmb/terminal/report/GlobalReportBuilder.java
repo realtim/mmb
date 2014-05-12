@@ -77,10 +77,10 @@ public class GlobalReportBuilder
 			String distanceReport = buildDistanceTeamsReport(distance);
 			if (distanceReport != null && distanceReport.length() > 0)
 			{
-				// team number; team name; team members; total time; table with levels
+				// row_number; team number; team name; team members; total time; table with levels
 				writer.write("<table cellspacing=\"5\">");
-				// writer.write("<col width=\"50\"><col width=\"175\"><col width=\"150\"><col width=\"50\">");
-				int columnCount = 5;
+				writer.write("<col width=\"50\"><col width=\"50\"><col width=\"175\"><col width=\"150\"><col width=\"50\"><col width=\"500\">");
+				int columnCount = 6;
 				writer.write("<tr><td colspan=\"" + columnCount + "\" /></tr>");
 				writer.write("<tr><td colspan=\"" + columnCount + "\">");
 				writer.write(distance.getDistanceName());

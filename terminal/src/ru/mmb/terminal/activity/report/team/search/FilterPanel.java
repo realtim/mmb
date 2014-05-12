@@ -1,27 +1,20 @@
 package ru.mmb.terminal.activity.report.team.search;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import ru.mmb.terminal.R;
 import ru.mmb.terminal.widget.EditTextWithSoftKeyboardSupport;
 import android.content.Context;
-import android.database.DataSetObserver;
-import android.view.KeyEvent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 
-public class FilterPanel extends ModeSwitchable
+public class FilterPanel
 {
 	private final SearchTeamActivityState currentState;
 	private final SearchTeamActivity searchTeamActivity;
@@ -39,12 +32,8 @@ public class FilterPanel extends ModeSwitchable
 	private final LinearLayout panelFilterNumber;
 	private final LinearLayout panelFilterTeamAndMember;
 
-	private final Map<TeamsAdapter, AdapterObserver> adapterObservers =
-	    new HashMap<TeamsAdapter, AdapterObserver>();
-
 	public FilterPanel(SearchTeamActivity context, SearchTeamActivityState currentState)
 	{
-		super(currentState);
 		this.currentState = currentState;
 		this.searchTeamActivity = context;
 		FilterChangeListener filterChangeListener = new FilterChangeListener();
@@ -71,68 +60,26 @@ public class FilterPanel extends ModeSwitchable
 		chkFilterNumberExact.setOnClickListener(new FilterNumberExactClickListener());
 		btnClearFilter.setOnClickListener(new ClearFilterClickListener());
 
-		editFilterNumber.setOnEditorActionListener(filterChangeListener);
-		editFilterNumber.setSoftKeyboardBackListener(filterChangeListener);
-		editFilterNumber.setOnFocusChangeListener(filterChangeListener);
+		editFilterNumber.addTextChangedListener(filterChangeListener);
 
-		editFilterTeam.setOnEditorActionListener(filterChangeListener);
-		editFilterTeam.setSoftKeyboardBackListener(filterChangeListener);
-		editFilterTeam.setOnFocusChangeListener(filterChangeListener);
+		editFilterTeam.addTextChangedListener(filterChangeListener);
 
-		editFilterMember.setOnEditorActionListener(filterChangeListener);
-		editFilterMember.setSoftKeyboardBackListener(filterChangeListener);
-		editFilterMember.setOnFocusChangeListener(filterChangeListener);
+		editFilterMember.addTextChangedListener(filterChangeListener);
 
 		if (context.getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE)
 		    btnHideFilter.setEnabled(false);
 
-		if (currentState.isTeamFastSelect()) switchToFastMode();
+		btnHideFilter.setText(searchTeamActivity.getResources().getString(R.string.report_team_filter_hide));
 
 		refreshFilterVisible();
 		refreshFilterNumberExact();
 		refreshFilterStatus();
 	}
 
-	@Override
-	protected void switchToFastMode()
-	{
-		currentState.setFilterState(FilterState.SHOW_JUST_NUMBER);
-		currentState.setFilterNumberExact(true);
-
-		chkFilterNumberExact.setEnabled(false);
-		editFilterTeam.setEnabled(false);
-		editFilterMember.setEnabled(false);
-		btnHideFilter.setEnabled(false);
-		btnHideFilter.setText(searchTeamActivity.getResources().getString(R.string.report_team_filter_hide));
-
-		refreshFilterVisible();
-		refreshFilterNumberExact();
-	}
-
-	@Override
-	protected void switchToUsualMode()
-	{
-		chkFilterNumberExact.setEnabled(true);
-		editFilterTeam.setEnabled(true);
-		editFilterMember.setEnabled(true);
-		btnHideFilter.setEnabled(true);
-		btnHideFilter.setText(searchTeamActivity.getResources().getString(R.string.report_team_filter_hide));
-
-		refreshFilterVisible();
-		refreshFilterNumberExact();
-	}
-
 	public void refreshFilterVisible()
 	{
 		if (searchTeamActivity.getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE)
 		    return;
-
-		if (currentState.isTeamFastSelect())
-		{
-			panelFilterNumber.setVisibility(View.VISIBLE);
-			panelFilterTeamAndMember.setVisibility(View.GONE);
-			return;
-		}
 
 		switch (currentState.getFilterState())
 		{
@@ -164,19 +111,6 @@ public class FilterPanel extends ModeSwitchable
 		labFilterStatus.setText(currentState.getFilterStatusText(searchTeamActivity));
 	}
 
-	public void addObserversToAdapters()
-	{
-		addAdapterObserver(SortColumn.NUMBER);
-	}
-
-	private void addAdapterObserver(SortColumn sortColumn)
-	{
-		TeamsAdapter adapter = searchTeamActivity.getAdapterBySortColumn(sortColumn);
-		AdapterObserver observer = new AdapterObserver();
-		adapter.registerDataSetObserver(observer);
-		adapterObservers.put(adapter, observer);
-	}
-
 	private void updateCurrentState()
 	{
 		currentState.setNumberFilter(editFilterNumber.getText().toString());
@@ -206,8 +140,6 @@ public class FilterPanel extends ModeSwitchable
 
 	public void focusNumberInputAndShowKeyboard()
 	{
-		if (!currentState.isTeamFastSelect()) return;
-
 		editFilterNumber.requestFocus();
 		InputMethodManager imm =
 		    (InputMethodManager) searchTeamActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -232,6 +164,7 @@ public class FilterPanel extends ModeSwitchable
 		{
 			currentState.setFilterNumberExact(!currentState.isFilterNumberExact());
 			refreshFilterNumberExact();
+			refreshFilter();
 		}
 	}
 
@@ -245,53 +178,6 @@ public class FilterPanel extends ModeSwitchable
 		}
 	}
 
-	private class FilterChangeListener implements OnEditorActionListener, OnFocusChangeListener
-	{
-		@Override
-		public void onFocusChange(View v, boolean hasFocus)
-		{
-			if (!hasFocus)
-			{
-				refreshFilter();
-			}
-		}
-
-		@Override
-		public boolean onEditorAction(TextView v, int actionId, KeyEvent event)
-		{
-			if (actionId == EditorInfo.IME_ACTION_UNSPECIFIED
-			        && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)
-			{
-				if (currentState.isTeamFastSelect())
-				{
-					TeamsAdapter adapter = searchTeamActivity.getCurrentAdapter();
-					AdapterObserver observer = adapterObservers.get(adapter);
-					if (observer != null) observer.setActive(true);
-				}
-				refreshFilter();
-			}
-			return false;
-		}
-	}
-
-	private class AdapterObserver extends DataSetObserver
-	{
-		private boolean active = false;
-
-		@Override
-		public void onChanged()
-		{
-			if (active && currentState.getNumberFilter() != null)
-			    searchTeamActivity.selectTeamAndShowReport();
-			active = false;
-		}
-
-		public void setActive(boolean active)
-		{
-			this.active = active;
-		}
-	}
-
 	public void setEnabled(boolean value)
 	{
 		panelFilterNumber.setEnabled(value);
@@ -300,6 +186,25 @@ public class FilterPanel extends ModeSwitchable
 		if (searchTeamActivity.getResources().getConfiguration().orientation != ORIENTATION_LANDSCAPE)
 		{
 			btnHideFilter.setEnabled(value);
+		}
+	}
+
+	private class FilterChangeListener implements TextWatcher
+	{
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before, int count)
+		{
+		}
+
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count, int after)
+		{
+		}
+
+		@Override
+		public void afterTextChanged(Editable s)
+		{
+			refreshFilter();
 		}
 	}
 }

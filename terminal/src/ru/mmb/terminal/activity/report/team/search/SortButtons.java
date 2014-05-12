@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
-public class SortButtons extends ModeSwitchable
+public class SortButtons
 {
 	private final Button btnSortByNumber;
 	private final Button btnSortByTeam;
@@ -25,8 +25,6 @@ public class SortButtons extends ModeSwitchable
 
 	public SortButtons(SearchTeamActivity context, SearchTeamActivityState currentState)
 	{
-		super(currentState);
-
 		this.btnSortByNumber = (Button) context.findViewById(R.id.reportTeam_sortByNumberButton);
 		this.btnSortByTeam = (Button) context.findViewById(R.id.reportTeam_sortByTeamButton);
 		this.btnSortByMember = (Button) context.findViewById(R.id.reportTeam_sortByMemberButton);
@@ -40,27 +38,7 @@ public class SortButtons extends ModeSwitchable
 		setOnClickListener(new SortButtonClickListener());
 		refreshButtonNames();
 
-		if (currentState.isTeamFastSelect()) switchToFastMode();
-
 		prevSortColumn = currentState.getSortColumn();
-	}
-
-	@Override
-	protected void switchToFastMode()
-	{
-		currentState.setSortColumn(SortColumn.NUMBER);
-		currentState.setSortOrder(SortOrder.ASC);
-		refreshButtonNames();
-
-		btnSortByTeam.setEnabled(false);
-		btnSortByMember.setEnabled(false);
-	}
-
-	@Override
-	protected void switchToUsualMode()
-	{
-		btnSortByTeam.setEnabled(true);
-		btnSortByMember.setEnabled(true);
 	}
 
 	private void initButtonNames(Context context)

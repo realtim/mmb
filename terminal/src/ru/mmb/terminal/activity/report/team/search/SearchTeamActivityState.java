@@ -1,6 +1,5 @@
 package ru.mmb.terminal.activity.report.team.search;
 
-import static ru.mmb.terminal.activity.Constants.KEY_REPORT_TEAM_FAST_SELECT;
 import static ru.mmb.terminal.activity.Constants.KEY_REPORT_TEAM_FILTER_MEMBER;
 import static ru.mmb.terminal.activity.Constants.KEY_REPORT_TEAM_FILTER_NUMBER;
 import static ru.mmb.terminal.activity.Constants.KEY_REPORT_TEAM_FILTER_NUMBER_EXACT;
@@ -21,8 +20,6 @@ public class SearchTeamActivityState extends ActivityStateWithTeamAndScanPoint
 
 	private FilterState filterState = FilterState.SHOW_JUST_NUMBER;
 	private boolean filterNumberExact = true;
-
-	private boolean teamFastSelect = true;
 
 	private String numberFilter = null;
 	private String teamFilter = null;
@@ -66,7 +63,6 @@ public class SearchTeamActivityState extends ActivityStateWithTeamAndScanPoint
 		super.save(savedInstanceState);
 		savedInstanceState.putSerializable(KEY_REPORT_TEAM_SORT_COLUMN, sortColumn);
 		savedInstanceState.putSerializable(KEY_REPORT_TEAM_SORT_ORDER, sortOrder);
-		savedInstanceState.putBoolean(KEY_REPORT_TEAM_FAST_SELECT, teamFastSelect);
 		savedInstanceState.putSerializable(KEY_REPORT_TEAM_FILTER_STATE, filterState);
 		savedInstanceState.putBoolean(KEY_REPORT_TEAM_FILTER_NUMBER_EXACT, filterNumberExact);
 		if (numberFilter != null)
@@ -88,8 +84,6 @@ public class SearchTeamActivityState extends ActivityStateWithTeamAndScanPoint
 		        (SortColumn) savedInstanceState.getSerializable(KEY_REPORT_TEAM_SORT_COLUMN);
 		if (savedInstanceState.containsKey(KEY_REPORT_TEAM_SORT_ORDER))
 		    sortOrder = (SortOrder) savedInstanceState.getSerializable(KEY_REPORT_TEAM_SORT_ORDER);
-		if (savedInstanceState.containsKey(KEY_REPORT_TEAM_FAST_SELECT))
-		    teamFastSelect = savedInstanceState.getBoolean(KEY_REPORT_TEAM_FAST_SELECT);
 		if (savedInstanceState.containsKey(KEY_REPORT_TEAM_FILTER_STATE))
 		    filterState =
 		        (FilterState) savedInstanceState.getSerializable(KEY_REPORT_TEAM_FILTER_STATE);
@@ -133,7 +127,6 @@ public class SearchTeamActivityState extends ActivityStateWithTeamAndScanPoint
 		SharedPreferences.Editor editor = preferences.edit();
 		editor.putString(getPrefix() + "." + KEY_REPORT_TEAM_SORT_COLUMN, getSortColumn().name());
 		editor.putString(getPrefix() + "." + KEY_REPORT_TEAM_SORT_ORDER, getSortOrder().name());
-		editor.putBoolean(getPrefix() + "." + KEY_REPORT_TEAM_FAST_SELECT, isTeamFastSelect());
 		editor.putString(getPrefix() + "." + KEY_REPORT_TEAM_FILTER_STATE, getFilterState().name());
 		editor.putBoolean(getPrefix() + "." + KEY_REPORT_TEAM_FILTER_NUMBER_EXACT, isFilterNumberExact());
 		editor.commit();
@@ -150,7 +143,6 @@ public class SearchTeamActivityState extends ActivityStateWithTeamAndScanPoint
 		String sortOrderName =
 		    preferences.getString(getPrefix() + "." + KEY_REPORT_TEAM_SORT_ORDER, "ASC");
 		setSortOrder(SortOrder.getByName(sortOrderName));
-		setTeamFastSelect(preferences.getBoolean(getPrefix() + "." + KEY_REPORT_TEAM_FAST_SELECT, true));
 		String filterStateName =
 		    preferences.getString(getPrefix() + "." + KEY_REPORT_TEAM_FILTER_STATE, "SHOW_JUST_NUMBER");
 		setFilterState(FilterState.getByName(filterStateName));
@@ -237,16 +229,6 @@ public class SearchTeamActivityState extends ActivityStateWithTeamAndScanPoint
 		if ("".equals(result))
 		    result = context.getResources().getString(R.string.report_team_filter_status_empty);
 		return result;
-	}
-
-	public boolean isTeamFastSelect()
-	{
-		return teamFastSelect;
-	}
-
-	public void setTeamFastSelect(boolean teamFastSelect)
-	{
-		this.teamFastSelect = teamFastSelect;
 	}
 
 	public String getResultMessage()

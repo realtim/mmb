@@ -332,7 +332,6 @@ public class TeamLevel
 			}
 		}
 		sb.append("<td>").append(timesString).append("</td>");
-		sb.append("<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>");
 		sb.append("<td>").append(missedString).append("</td>");
 		sb.append("</tr>");
 		return sb.toString();

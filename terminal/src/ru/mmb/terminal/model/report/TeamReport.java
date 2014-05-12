@@ -172,11 +172,12 @@ public class TeamReport implements Comparable<TeamReport>
 		{
 			sb.append("<tr style=\"background-color:lightgrey\">");
 		}
+		sb.append("<td>[? ").append(rowNum).append("]</td>");
 		sb.append("<td>").append(team.getTeamNum()).append("</td>");
 		sb.append("<td>").append(team.getTeamName()).append("</td>");
 		sb.append("<td>").append(team.getMembersHtml()).append("</td>");
 		sb.append("<td>").append(toHourMinuteString((int) duration)).append("</td>");
-		sb.append("<td><table cellspacing=\"3\">");
+		sb.append("<td><table cellspacing=\"3\"><col width=\"150\"><col width=\"300\">");
 		for (TeamLevel teamLevel : teamLevels)
 		{
 			sb.append(teamLevel.toCompactHtml());

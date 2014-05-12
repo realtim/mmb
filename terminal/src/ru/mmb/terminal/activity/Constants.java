@@ -19,7 +19,6 @@ public class Constants
 	public static final String KEY_LEVEL_SELECT_MODE = "level.select_mode";
 	public static final String KEY_REPORT_TEAM_SORT_COLUMN = "report.team.sort.column";
 	public static final String KEY_REPORT_TEAM_SORT_ORDER = "report.team.sort.order";
-	public static final String KEY_REPORT_TEAM_FAST_SELECT = "report.team.fast.select";
 	public static final String KEY_REPORT_TEAM_FILTER_STATE = "report.team.filter.state";
 	public static final String KEY_REPORT_TEAM_FILTER_NUMBER_EXACT =
 	    "report.team.filter.number.exact";

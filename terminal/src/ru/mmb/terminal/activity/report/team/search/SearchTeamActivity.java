@@ -14,7 +14,6 @@ import android.os.Message;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -57,9 +56,6 @@ public class SearchTeamActivity extends FragmentActivity
 		initListAdapters();
 		lvTeams.setOnItemLongClickListener(new LvTeamsItemLongClickListener());
 
-		btnMode = (Button) findViewById(R.id.reportTeam_modeButton);
-		btnMode.setOnClickListener(new ModeClickListener());
-
 		progressPanel = (LinearLayout) findViewById(R.id.reportTeam_progressPanel);
 		progressPanel.setVisibility(View.GONE);
 
@@ -78,7 +74,6 @@ public class SearchTeamActivity extends FragmentActivity
 		setTitle(getResources().getString(R.string.report_team_title));
 
 		refreshTeams(!CLEAR_SELECTED_TEAM);
-		refreshModeButtonState();
 	}
 
 	private void initListAdapters()
@@ -92,8 +87,6 @@ public class SearchTeamActivity extends FragmentActivity
 		items = dataProvider.getTeams(SortColumn.MEMBER);
 		adapterByMember = new TeamsAdapter(this, R.layout.report_team_search_row, items);
 		((TeamFilter) adapterByMember.getFilter()).initialize(items, currentState);
-
-		filterPanel.addObserversToAdapters();
 	}
 
 	public void refreshTeams()
@@ -128,14 +121,6 @@ public class SearchTeamActivity extends FragmentActivity
 			return adapterByNumber;
 	}
 
-	private void refreshModeButtonState()
-	{
-		if (currentState.isTeamFastSelect())
-			btnMode.setText(getResources().getString(R.string.report_team_mode_usual));
-		else
-			btnMode.setText(getResources().getString(R.string.report_team_mode_fast));
-	}
-
 	@Override
 	protected void onSaveInstanceState(Bundle outState)
 	{
@@ -153,24 +138,6 @@ public class SearchTeamActivity extends FragmentActivity
 	public TeamsAdapter getCurrentAdapter()
 	{
 		return getAdapterBySortColumn(currentState.getSortColumn());
-	}
-
-	public void selectTeamAndShowReport()
-	{
-		if (!currentState.isTeamFastSelect()) return;
-
-		// teams are already filtered
-		if (lvTeams.getAdapter().isEmpty()) return;
-
-		TeamListRecord teamListRecord = (TeamListRecord) lvTeams.getAdapter().getItem(0);
-		currentState.setCurrentTeam(teamListRecord.getTeam());
-
-		// hide soft keyboard
-		InputMethodManager imm =
-		    (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.hideSoftInputFromWindow(lvTeams.getApplicationWindowToken(), 0);
-
-		startBuildResultThread();
 	}
 
 	private class LvTeamsItemLongClickListener implements OnItemLongClickListener
@@ -221,18 +188,5 @@ public class SearchTeamActivity extends FragmentActivity
 	{
 		DialogFragment dialog = new TeamResultDialogFragment();
 		dialog.show(getSupportFragmentManager(), "TeamResultDialogFragment");
-	}
-
-	private class ModeClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			boolean newTeamFastSelect = !currentState.isTeamFastSelect();
-			currentState.setTeamFastSelect(newTeamFastSelect);
-			filterPanel.switchMode();
-			sortButtons.switchMode();
-			refreshModeButtonState();
-		}
 	}
 }

@@ -71,13 +71,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/global_padding"
                 android:text="@string/report_team_filter_hide" />
-
-            <Button
-                android:id="@+id/reportTeam_modeButton"
-                android:layout_width="100dip"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/global_padding"
-                android:text="@string/report_team_mode_fast" />
         </LinearLayout>
 
         <TextView
