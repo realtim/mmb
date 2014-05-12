@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
@@ -31,7 +30,6 @@ public class SearchTeamActivity extends FragmentActivity
 	private TeamsAdapter adapterByMember;
 
 	private ListView lvTeams;
-	private Button btnMode;
 	private LinearLayout progressPanel;
 
 	private FilterPanel filterPanel;
@@ -171,7 +169,6 @@ public class SearchTeamActivity extends FragmentActivity
 		progressPanel.setVisibility(View.VISIBLE);
 		sortButtons.setEnabled(false);
 		filterPanel.setEnabled(false);
-		btnMode.setEnabled(false);
 		lvTeams.setEnabled(false);
 	}
 
@@ -180,7 +177,6 @@ public class SearchTeamActivity extends FragmentActivity
 		progressPanel.setVisibility(View.GONE);
 		sortButtons.setEnabled(true);
 		filterPanel.setEnabled(true);
-		btnMode.setEnabled(true);
 		lvTeams.setEnabled(true);
 	}
 

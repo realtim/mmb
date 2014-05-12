@@ -172,7 +172,7 @@ public class TeamReport implements Comparable<TeamReport>
 		{
 			sb.append("<tr style=\"background-color:lightgrey\">");
 		}
-		sb.append("<td>[? ").append(rowNum).append("]</td>");
+		sb.append("<td>[? ").append(rowNum + 1).append("]</td>");
 		sb.append("<td>").append(team.getTeamNum()).append("</td>");
 		sb.append("<td>").append(team.getTeamName()).append("</td>");
 		sb.append("<td>").append(team.getMembersHtml()).append("</td>");
