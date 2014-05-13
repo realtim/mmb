@@ -312,7 +312,8 @@ if (isset($_FILES['android']))
 			{
 				$sql = "update TeamUsers set
 					teamuser_hide = ".$new_teamuser_hide.",
-					level_id = ".$new_level_dismiss."
+					level_id = ".$new_level_dismiss.",
+					levelpoint_id = ".$values[1]."
 					where user_id = ".$values[3]." and team_id = ".$values[2];
 				mysql_query($sql);
 				if (mysql_error()) die($sql.": ".mysql_error());
