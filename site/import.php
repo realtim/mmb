@@ -115,13 +115,15 @@ if (isset($_FILES['android']))
 			if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующее устройство ввода данных в строке #".$line_num." - ".$line);
 			mysql_free_result($Result);
 			// Проверяем наличие активной точки в базе
-			$sql = "select level_id, pointtype_id from LevelPoints where levelpoint_id = ".mysql_real_escape_string($values[1]);
+			$sql = "select level_id, pointtype_id, levelpoint_mindatetime, levelpoint_maxdatetime from LevelPoints where levelpoint_id = ".mysql_real_escape_string($values[1]);
 			$Result = mysql_query($sql);
 			if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующая активная точка в строке #".$line_num." - ".$line);
 			$Row = mysql_fetch_assoc($Result);
 			$level_id = $Row['level_id'];
 			$pointtype_id = $Row['pointtype_id'];
-			if (($pointtype_id <> 1) && ($pointtype_id <> 2)) die("Неподдерживаемый тип активной точка в строке #".$line_num." - ".$line);
+			if (($pointtype_id <> 1) && ($pointtype_id <> 2) && ($pointtype_id <> 4)) die("Неподдерживаемый тип активной точки в строке #".$line_num." - ".$line);
+			$begtime = $Row['levelpoint_mindatetime'];
+			$endtime = $Row['levelpoint_maxdatetime'];
 			mysql_free_result($Result);
 			// Проверяем наличие команды в базе
 			$sql = "select distance_id from Teams where team_id = ".mysql_real_escape_string($values[2]);
@@ -130,21 +132,10 @@ if (isset($_FILES['android']))
 			$Row = mysql_fetch_assoc($Result);
 			$distance_id = $Row['distance_id'];
 			mysql_free_result($Result);
-			// Проверяем, что команда с этой дистанции могла оказаться на этой точке
-			$sql = "select level_begtime, level_maxbegtime, level_endtime, level_minendtime from Levels where level_id = ".$level_id." and distance_id = ".$distance_id;
+			// Проверяем, что команда могла оказаться на этой точке
+			$sql = "select distance_id from Levels where level_id = ".$level_id." and distance_id = ".$distance_id;
 			$Result = mysql_query($sql);
-			if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующая команда в строке #".$line_num." - ".$line);
-			$Row = mysql_fetch_assoc($Result);
-			if ($pointtype_id == 1)
-			{
-				$begtime = $Row['level_begtime'];
-				$endtime = $Row['level_maxbegtime'];
-			}
-			elseif ($pointtype_id == 2)
-			{
-				$begtime = $Row['level_minendtime'];
-				$endtime = $Row['level_endtime'];
-			}
+			if (!$Result || mysql_num_rows($Result) <> 1) die("Команда не могла оказаться в этой точке в строке #".$line_num." - ".$line);
 			mysql_free_result($Result);
 		}
 		else die("Неизвестный тип данных '".$type."'");
@@ -189,7 +180,7 @@ if (isset($_FILES['android']))
 			// Берем из результатов список взятых КП
 			if ($values[6])	$visited_points = explode(',', $values[6]);
 			else $visited_points = array();
-			if (($pointtype_id <> 2) && count($visited_points)) die("взятые КП отмечены не на финише этапа в строке #".$line_num." - ".$line);
+			if (($pointtype_id <> 2) && ($pointtype_id <> 4) && count($visited_points)) die("взятые КП отмечены не на финише этапа/смене карт в строке #".$line_num." - ".$line);
 			// Помечаем их взятыми в битовом массиве
 			foreach ($visited_points as $point)
 			{
@@ -199,7 +190,7 @@ if (isset($_FILES['android']))
 			}
 			// Запоминаем сгеренированную строку для последующего сохранения в базе
 			$teamlevelpoint_points[$line_num] = implode(",", $bit_points);
-			if ($pointtype_id <> 2) $teamlevelpoint_points[$line_num] = "NULL";
+			if (($pointtype_id <> 2) && ($pointtype_id <> 4)) $teamlevelpoint_points[$line_num] = "NULL";
 		}
 	}
 	// Проверяем, что в конце файла был end
@@ -307,8 +298,8 @@ if (isset($_FILES['android']))
 				$Result = mysql_query($sql);
 				$Row = mysql_fetch_assoc($Result);
 				$old_levelpoint_order = $Row['levelpoint_order'];
+				mysql_free_result($Result);
 			}
-			mysql_free_result($Result);
 			// Если участник сошел на старте 1 этапа, то его надо удалить из команды
 			if ($new_levelpoint_order == 1)
 			{
@@ -431,7 +422,7 @@ if (isset($_FILES['android']))
 				$Old['teamlevel_begtime'] = $values[5];
 				if ($Old['teamlevel_progress'] == "0") $Old['teamlevel_progress'] = "1";
 			}
-			elseif ($pointtype_id == 2)
+			elseif (($pointtype_id == 2) || ($pointtype_id == 4))
 			{
 				// запись о приходе на финиш
 				$Old['teamlevel_endtime'] = $values[5];
@@ -440,7 +431,7 @@ if (isset($_FILES['android']))
 			}
 			if ($Old['teamlevel_comment'] == "") $Old['teamlevel_comment'] = $values[7];
 			// Заново вычисляем штраф на этапе
-			if ($pointtype_id == 2)
+			if (($pointtype_id == 2) || ($pointtype_id == 4))
 			{
 				$sql = "select level_pointpenalties from Levels where level_id = ".$level_id;
 				$Result = mysql_query($sql);
