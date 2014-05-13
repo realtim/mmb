@@ -722,7 +722,7 @@ send_mime_mail('Автор письма',
 		      inner join Distances d 
 		      on d.distance_id = t.distance_id
 		      inner join Levels l
-		      on l.distance_id = d.distance_id
+		      on l.distance_id = d.distance_id and l.level_hide = 0
 		 where t.team_id = ".$teamid;
 
 
