@@ -1949,7 +1949,7 @@ elseif ($action == 'RecalculateLevels')
 //               echo 'pt '.$Row['pointtype_id'];
 
                // 2014-05-10 Убрал старт и финиш из точек этапа 
-               // Финиш или смена-карт - обновляем уже созжанный уровень
+               // Финиш или смена-карт - обновляем уже созданный уровень
                if (($Row['pointtype_id'] == 2 or $Row['pointtype_id'] == 4) and ($LevelId > 0))
 	       {
 		  $sqlPoint = "update LevelPoints set level_id = ".$LevelId." 
@@ -1971,7 +1971,8 @@ elseif ($action == 'RecalculateLevels')
 	       }       
                // Конец проверки на финиш или смену карт
 
-               // Старт или смена-карт - записываем уровень
+               // Старт или смена-карт - записываем этап
+	       // Для смены карт нужно не забыть, что точка привязывается к предыдущему этапу
                if ($Row['pointtype_id'] == 1 or $Row['pointtype_id'] == 4)
 	       {
 
@@ -1993,26 +1994,33 @@ elseif ($action == 'RecalculateLevels')
 		    } else  {
  		       $StartType = 1;
 		    }
-		 }
-	         
- 		 $sqlStartLevel = "insert into Levels (distance_id, level_name, level_starttype,
+                 }	         
+		
+		 $sqlStartLevel = "insert into Levels (distance_id, level_name, level_starttype,
 		                                       level_hide, level_order, 
 			                               level_begtime, level_maxbegtime)
 			            values (".$pDistanceId.", '".trim($Row['levelpoint_name'])." - ', ".$StartType.",
 				              0, ".$LevelOrder.",
 				            '".$Row['levelpoint_mindatetime']."', '".$Row['levelpoint_maxdatetime']."')";
-		// При insert должен вернуться послений id - это реализовано в MySqlQuery
-                 //echo $sqlStartLevel;
+		
+		 // При insert должен вернуться послений id - это реализовано в MySqlQuery
+		 //echo $sqlStartLevel;
 		 $LevelId = MySqlQuery($sqlStartLevel);
-       
-       
-       		 $sqlPoint = "update LevelPoints set level_id = ".$LevelId." 
-			       where levelpoint_id = ".$Row['levelpoint_id'];        
+
+                 // Привязываем точку только в случае старта. 
+		 // Для смены карт точка уже привязан к прредыдущему этапу
+                 if ($Row['pointtype_id'] == 1)
+		 {
+
+		    $sqlPoint = "update LevelPoints set level_id = ".$LevelId." 
+				       where levelpoint_id = ".$Row['levelpoint_id'];        
 			
-		 MySqlQuery($sqlPoint);
+		     MySqlQuery($sqlPoint);
+		  }   
+		  // Конец проверки на привязку точки старта
 
 	       }       
-               // Конец проверки на старт или смену карт
+               // Конец проверки на необходимость создать новый этап (старт или смену карт)
              
 //	        echo  $Row['levelpoint_name'].'  '.$Row['pointtype_id']; 
 	     
