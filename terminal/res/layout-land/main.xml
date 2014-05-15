@@ -30,7 +30,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/global_double_padding"
                 android:text="@string/main_import_data" />
-            
+
             <Button
                 android:id="@+id/main_importBarcodeDataBtn"
                 android:layout_width="@dimen/main_button_width"
@@ -46,7 +46,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/global_padding"
                 android:text="@string/main_export_data" />
-            
+
             <Button
                 android:id="@+id/main_resultsBtn"
                 android:layout_width="@dimen/main_button_width"
@@ -62,6 +62,16 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/global_double_padding"
                 android:text="@string/main_settings" />
+
+            <!--
+            <Button
+                android:id="@+id/main_generateBtn"
+                android:layout_width="@dimen/main_button_width"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/global_padding"
+                android:text="Generate" />
+            -->
         </LinearLayout>
     </LinearLayout>
 
