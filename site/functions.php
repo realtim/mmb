@@ -594,6 +594,7 @@ send_mime_mail('Автор письма',
      function RecalcTeamLevelDuration($teamid)
      {
        
+       // 20/05/2014 Добавил ограничение на неудаленный этап
            // Несколько тонкостей: timediff возвращает тип time - он автоматом не преобразуется в daettime, поэтому
            // поле teamlevel_duration  должно иметь формат TIME_TO_SEC
            // Похоже, что в MySql UPDATE не может содержать WHERE  - приходится убирать в подзапрос 
@@ -616,12 +617,13 @@ send_mime_mail('Автор письма',
 								from TeamLevels tl2
 								      inner join Levels l2 
 								      on tl2.level_id = l2.level_id
-                                                                     
+                                                                         and l2.level_hide = 0 
 							      )  as tl3
 					      on  tl3.team_id = tl.team_id
 						  and  tl3.level_order = l.level_order - 1
 
 				      where tl.teamlevel_hide = 0 
+				            and l.level_hide = 0 
 					    and tl.teamlevel_progress = 2 
 					    and tl.teamlevel_endtime > 0
 					    and tl.team_id = ".$teamid."
@@ -645,8 +647,9 @@ send_mime_mail('Автор письма',
 		       tl.teamlevel_points,
 		       tl.teamlevel_id		        
 		from TeamLevels tl
-			inner join Levels l on l.level_id = tl.level_id
-		where tl.teamlevel_hide = 0 and tl.team_id = ".$teamid;
+		     inner join Levels l
+		     on l.level_id = tl.level_id
+		where tl.teamlevel_hide = 0 and l.level_hide = 0 and tl.team_id = ".$teamid;
 
 	$rs = MySqlQuery($sql);
 
@@ -722,8 +725,8 @@ send_mime_mail('Автор письма',
 		      inner join Distances d 
 		      on d.distance_id = t.distance_id
 		      inner join Levels l
-		      on l.distance_id = d.distance_id and l.level_hide = 0
-		 where t.team_id = ".$teamid;
+		      on l.distance_id = d.distance_id 
+		 where l.level_hide = 0 and t.team_id = ".$teamid;
 
 
 	$Result = MySqlQuery($sql);
@@ -743,7 +746,8 @@ send_mime_mail('Автор письма',
                                    MIN(COALESCE(tl.teamlevel_progress, 0)) as minprogress,
                                    count(*) as levelscount
 			    from  TeamLevels tl 
-			    where tl.teamlevel_hide = 0 and tl.team_id = ".$teamid."
+	    		          inner join Levels l on l.level_id = tl.level_id
+			    where tl.teamlevel_hide = 0 and l.level_hide = 0 and tl.team_id = ".$teamid."
 			    group by  tl.team_id
 			   )  a
 			  on  t.team_id = a.team_id
@@ -771,11 +775,14 @@ send_mime_mail('Автор письма',
         // В отличие от расчета результата здесь важно отсеять удаленные команды, т.к. иначе местобудлет неправильным       
         // Определяем результат на этапе для команды
         $sql = "  		      select (TIME_TO_SEC(COALESCE(tl.teamlevel_duration,0)) + COALESCE(tl.teamlevel_penalty, 0)*60) as result_in_sec
-				      from    TeamLevels  tl 
+				      from   TeamLevels  tl 
                                              inner join Teams t
                                              on t.team_id = tl.team_id
-				      where tl.teamlevel_hide = 0 
-                                           and t.team_hide = 0 
+					     inner join Levels l 
+					     on l.level_id = tl.level_id
+ 				      where tl.teamlevel_hide = 0 
+				            and l.level_hide = 0 
+                                            and t.team_hide = 0 
 					    and tl.teamlevel_progress = 2 
 					    and COALESCE(tl.teamlevel_duration,0) > 0
 					    and tl.team_id = ".$teamid."
@@ -790,14 +797,17 @@ send_mime_mail('Автор письма',
         // Смотрим сколько команд имеют результат лучше и прибавляем 1
         // Нельзя ставить <=, т.к. на одном месте может быть несколько команд
 	$sql_place = "  	      select  count(*) + 1 as result_place
-				      from    TeamLevels  tl 
+				      from   TeamLevels  tl 
                                              inner join Teams t
                                              on t.team_id = tl.team_id
+					     inner join Levels l 
+					     on l.level_id = tl.level_id
 				      where tl.teamlevel_hide = 0 
-                                           and t.team_hide = 0 
-					    and tl.teamlevel_progress = 2 
+                                            and t.team_hide = 0 
+					    and l.level_hide = 0 
+ 					    and tl.teamlevel_progress = 2 
 					    and COALESCE(tl.teamlevel_duration,0) > 0
-                                           and (TIME_TO_SEC(COALESCE(tl.teamlevel_duration,0)) + COALESCE(tl.teamlevel_penalty, 0)*60) < ". $TeamLevelResult."
+                                            and (TIME_TO_SEC(COALESCE(tl.teamlevel_duration,0)) + COALESCE(tl.teamlevel_penalty, 0)*60) < ". $TeamLevelResult."
 					    and tl.level_id = ".$levelid;
 
 	$Result_place  = MySqlQuery($sql_place);

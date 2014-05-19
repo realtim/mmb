@@ -39,7 +39,7 @@ if ($action == "ChangeTeamResult")
 			inner join Distances d on t.distance_id = d.distance_id
 			inner join Levels l on d.distance_id = l.distance_id
 			left outer join TeamLevels tl on l.level_id = tl.level_id and t.team_id = tl.team_id and tl.teamlevel_hide = 0
-		where t.team_id = ".$TeamId;
+		where l.level_hide = 0  and t.team_id = ".$TeamId;
 	$rs = MySqlQuery($sql);
 
 	// ================ Цикл обработки данных по этапам
