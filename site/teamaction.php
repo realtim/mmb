@@ -97,6 +97,15 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
+        // 20/05/2014 Добавил проверку на  угловые скобки
+	if (strchr($pTeamName, '>') or strchr($pTeamName, '<'))
+	{
+		$statustext = "Название не должно содержать уголвых скобок.";
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
+
 	if (($pTeamMapsCount <= 0) || ($pTeamMapsCount > 15))
 	{
 		$statustext = "Не указано число карт или недопустимое число карт.";
