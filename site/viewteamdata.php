@@ -505,7 +505,7 @@ print('</td></tr>'."\n\n");
 
 
 print('<tr><td class="input">'."\n");
-print('<a href = "'.$RaidRulesLink.'" target = "_blank">Полный текст положения</a>):<br/>'."\n");
+print('<a href = "'.$RaidRulesLink.'" target = "_blank">Полный текст положения</a>:<br/>'."\n");
 print('Прочитал и согласен с условиями участия в ММБ <input type="checkbox" name="Confirmation" value="on" tabindex="'.(++$TabIndex).'"'.$DisabledText.' title="Прочитал и согласен с условиями участия в ММБ"/>'."\n");
 print('</td></tr>'."\n\n");
 
