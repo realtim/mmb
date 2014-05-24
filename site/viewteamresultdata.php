@@ -320,8 +320,8 @@ if ($AllowEditResult == 1)
 	print('<input type="button" onClick="javascript: if (ValidateTeamResultDataForm()) submit();" name="SaveChangeResultButton" value="Сохранить результаты" tabindex="'.$TabIndex.'">'."\n");
 	$TabIndex++;
 	print('<select name="CaseView" onChange="javascript:document.TeamResultDataForm.view.value = document.TeamResultDataForm.CaseView.value;" class="leftmargin" tabindex="'.$TabIndex.'">'."\n");
-	print('<option value="ViewTeamData" selected >и остаться на этой странице'."\n");
-	print('<option value="ViewRaidTeams" >и перейти к списку команд'."\n");
+	print('<option value="ViewTeamData"  >и остаться на этой странице'."\n");
+	print('<option value="ViewRaidTeams" selected >и перейти к списку команд'."\n");
 	print('</select>'."\n");
 	$TabIndex++;
 	print('<input type="button" onClick="javascript: CancelResult();" name="CancelButton" value="Отмена" tabindex="'.$TabIndex.'">'."\n");
