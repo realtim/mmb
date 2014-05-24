@@ -520,8 +520,8 @@ if ($AllowEdit == 1)
 	print('<tr><td class="input" style="padding-top: 20px;">'."\n");
 	print('<input type="button" onClick="javascript: if (ValidateTeamDataForm()) submit();" name="RegisterButton" value="'.$SaveButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
 	print('<select name="CaseView" onChange="javascript:document.TeamDataForm.view.value = document.TeamDataForm.CaseView.value;" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
-	print('<option value="ViewTeamData"'.(($viewmode <> "Add") ? ' selected' : '').'>и остаться на этой странице</option>'."\n");
-	print('<option value="ViewRaidTeams"'.(($viewmode == "Add") ? ' selected' : '').'>и перейти к списку команд</option>'."\n");
+	print('<option value="ViewTeamData">и остаться на этой странице</option>'."\n");
+	print('<option value="ViewRaidTeams"  selected >и перейти к списку команд</option>'."\n");
 	print('</select>'."\n");
 	print('<input type="button" onClick="javascript: Cancel();" name="CancelButton" value="Отмена" tabindex="'.(++$TabIndex).'">'."\n");
 	print('</td></tr>'."\n\n");
@@ -530,7 +530,7 @@ if ($AllowEdit == 1)
 	if ($Administrator and $viewmode <> 'Add' and $TeamOutOfRange == 0) 
 	{
 	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
-	  	  print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите добавить эту команду в текущее объединение? \')) { AddTeamInUnion(); }"  name="UnionButton" value="'.$UnionButtonText.'" tabindex = "'.(++$TabIndex).'">'."\r\n");
+	  	  print('<input type="button" onClick = "javascript: AddTeamInUnion();"  name="UnionButton" value="'.$UnionButtonText.'" tabindex = "'.(++$TabIndex).'">'."\r\n");
           print('</td></tr>'."\r\n"); 
         }
 
