@@ -780,34 +780,42 @@ if (!isset($MyPHPScript)) return;
 		print('<td width = "50" style = "'.$thstyle.'">Результат</td>'."\r\n");
                 if ($OrderType == 'Place')   
                 {
-                  // дополнительное поле место
-		  print('  <td width = "50" style = "'.$thstyle.'">Место</td>'."\r\n");
+	                  // дополнительное поле место
+			  print('  <td width = "50" style = "'.$thstyle.'">Место</td>'."\r\n");
 
-                  // дополнительные поля в случае вывода  этапа
-                  if ($_REQUEST['LevelId'] > 0)
-                  {
-		    print('<td width = "50" style = "'.$thstyle.'">Штраф</td>
-			   <td width = "150" style = "'.$thstyle.'">Комментарий</td>
-			   <td width = "250" style = "'.$thstyle.'">Невзятые КП</td>'."\r\n");
-
-                        
-
-		  }
-
-
-                 if ($ResultViewMode == 'WithLevels') {
-		    print('<td width = "500"  style = "'.$thstyle.'">'."\r\n");
-                   print('<table border = "0" cellpadding = "0" style = "font-size: 100%"><tr>'."\r\n");
-		    print('<td width = "120" style = "'.$thstyle.'">Старт-Финиш</td>'."\r\n");
-		    print('<td width = "100" style = "'.$thstyle.'">Время (Штраф)</td>'."\r\n");
-		    print('<td width = "50" style = "'.$thstyle.'">Место</td>'."\r\n");
-		    print('<td width = "230" style = "'.$thstyle.'">Не взяты КП</td>'."\r\n");
-		    print('</tr></table>'."\r\n");
-
-                 } 
+	                  // дополнительные поля в случае вывода  этапа
+	                  if ($_REQUEST['LevelId'] > 0)
+	                  {
+			    print('<td width = "50" style = "'.$thstyle.'">Штраф</td>
+				   <td width = "150" style = "'.$thstyle.'">Комментарий</td>
+				   <td width = "250" style = "'.$thstyle.'">Невзятые КП</td>'."\r\n");
+			  } else {
+			  
+		            print('<td width = "150" style = "'.$thstyle.'">Комментарий</td>'."\r\n");
+			  
+			  }
+			  // Конце проверки, что отображается конкретный этап
 
 
-                }
+		          if ($ResultViewMode == 'WithLevels') 
+			  {
+				print('<td width = "500"  style = "'.$thstyle.'">'."\r\n");
+				print('<table border = "0" cellpadding = "0" style = "font-size: 100%"><tr>'."\r\n");
+				print('<td width = "120" style = "'.$thstyle.'">Старт-Финиш</td>'."\r\n");
+			        print('<td width = "100" style = "'.$thstyle.'">Время (Штраф)</td>'."\r\n");
+				print('<td width = "50" style = "'.$thstyle.'">Место</td>'."\r\n");
+				print('<td width = "230" style = "'.$thstyle.'">Не взяты КП</td>'."\r\n");
+				print('</tr></table>'."\r\n");
+
+			  } 
+			  // Конец проверки на отображение с этапами
+
+                }  else {
+		
+		  print('<td width = "150" style = "'.$thstyle.'">Комментарий</td>'."\r\n");
+
+		}
+                // Конец проверки на сортировку по месту 
 		print('</tr>'."\r\n");
 	
 		$TeamsCount = mysql_num_rows($Result);
@@ -933,22 +941,25 @@ if (!isset($MyPHPScript)) return;
 //			      ConvertTeamLevelPoints2($LevelPointNames, $LevelPointPenalties, $Row['teamlevel_points'], $_REQUEST['LevelId']); 
 			      print('</td>'."\r\n");
 
+			    } else {
+				print('<td width = "150" style = "'.$thstyle.'">'.GetTeamComment($Row['team_id']).'</td>'."\r\n");
 			    }
+			    // Конец проверки на вывод конкретного этапа
 
                            // Для вывода "с этапами" 
 			    if ($ResultViewMode == 'WithLevels')
-                           {
+                            {
 /*
 			      print('<td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_penalty'].'</td>
 				      <td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_comment'].'</td>
 				      <td width = "100" style = "'.$thstyle.'">'."\r\n");
 			      InvertTeamLevelPoints($Row['level_pointnames'], $Row['teamlevel_points']); 
   */
-                            print('<td>'."\r\n");
+                               print('<td>'."\r\n");
                                print('<table border = "0" cellpadding = "0" style = "font-size: 100%">'."\r\n");
 
-                            // Запрашиваем все этапы 
-			     $sql = "select level_id, level_starttype, 
+                               // Запрашиваем все этапы 
+			      $sql = "select level_id, level_starttype, 
                                            TIME_FORMAT(level_begtime, '%H:%i') as level_begtime,
                                            level_order, level_pointnames
                                     from  Levels l
@@ -956,8 +967,8 @@ if (!isset($MyPHPScript)) return;
 					  on l.distance_id = d.distance_id
                                     where  l.level_hide = 0 and d.distance_hide = 0 and l.distance_id = ".$Row['distance_id']."
                                     order by l.level_order ";
-			     //  echo 'sql '.$sql;
-			     $LevelResult = MySqlQuery($sql);
+			      //  echo 'sql '.$sql;
+			      $LevelResult = MySqlQuery($sql);
   
 			      while ($LevelRow = mysql_fetch_assoc($LevelResult))
 			      {
@@ -1041,10 +1052,13 @@ if (!isset($MyPHPScript)) return;
                               print('</tr></table>'."\r\n");
 
                            }
-                           // Конец проверки на формат вывода 
+                           // Конец проверки на формат вывода (с этапами)
              		   print('</td>'."\r\n");
     
+			} else {
+  			  print('<td width = "150" style = "'.$thstyle.'">'.GetTeamComment($Row['team_id']).'</td>'."\r\n");
 			}
+			// Конец проверки на вывод с сотрировкой по месту
 			print('</tr>'."\r\n");
 		}
 		mysql_free_result($Result);

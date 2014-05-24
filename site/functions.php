@@ -1070,5 +1070,35 @@ send_mime_mail('Автор письма',
        return($CheckString);
      }
      //Конец проверки корректности точек сканирования
+     
+     
+        // функция получения комментариядля команды 
+     function GetTeamComment($teamid)
+     {
+       
+	// Получаем информацию об этапах, которые могла проходить команда
+	$sql = "select tl.teamlevel_comment	        
+		from TeamLevels tl
+		     inner join Levels l
+		     on l.level_id = tl.level_id
+		where tl.teamlevel_hide = 0 and l.level_hide = 0 and tl.team_id = ".$teamid;
+
+	$rs = MySqlQuery($sql);
+
+	// ================ Цикл обработки данных по этапам
+	$Comment = "";
+	while ($Row = mysql_fetch_assoc($rs))
+	{
+		$Comment = trim($Comment.' '.trim($Row['teamlevel_comment']));
+         }
+	// Конец цикла по этапам
+	mysql_free_result($rs);
+	if ($Comment == '') {
+	 $Comment = "&nbsp;";
+	}
+        return ($Comment);
+     }
+     // конец функции получения общего комментария для команды 
+
 
 ?>
