@@ -531,6 +531,23 @@ function CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $Raid
 }
 
 
+// 04,06,2014
+// ----------------------------------------------------------------------------
+// Проверка возможности объединиться с пользователем
+
+function CanUnionRequest($Administrator, $User, $ParentUser)
+{
+
+	// Администратор может всегда
+	if ($Administrator) return(1);
+
+	// Оба пользователя должны быть определеные
+	if (!$User || !$ParentUser) return(0);
+
+        // Тут добавить проверку наличия записей в журнале объединения
+}
+// Конец проверки возможности объединиться с пользователем
+
 
 // ----------------------------------------------------------------------------
 
@@ -765,10 +782,11 @@ send_mime_mail('Автор письма',
      // конец функции пересчёта результата команды 
 
 
-
+     // 2014-06-04 Добавил условие, что команда должнабыть в зачете
      // функция вычисляет место команды на этапе (заготовка)
      function GetTeamLevelPlace($teamid, $levelid)
      {
+       
        
            // На самом деле  можно вычислять "на лету" хитрым подзапросом, но тут делаем простой вариант
  
@@ -783,6 +801,7 @@ send_mime_mail('Автор письма',
  				      where tl.teamlevel_hide = 0 
 				            and l.level_hide = 0 
                                             and t.team_hide = 0 
+					    and COALESCE(t.team_outofrange, 0) = 0
 					    and tl.teamlevel_progress = 2 
 					    and COALESCE(tl.teamlevel_duration,0) > 0
 					    and tl.team_id = ".$teamid."
@@ -804,6 +823,7 @@ send_mime_mail('Автор письма',
 					     on l.level_id = tl.level_id
 				      where tl.teamlevel_hide = 0 
                                             and t.team_hide = 0 
+					    and COALESCE(t.team_outofrange,0) = 0
 					    and l.level_hide = 0 
  					    and tl.teamlevel_progress = 2 
 					    and COALESCE(tl.teamlevel_duration,0) > 0
@@ -816,7 +836,55 @@ send_mime_mail('Автор письма',
 
         return ((int)$Row_place['result_place']);
      }
-     // конец функции расчета места команды
+     // конец функции расчета места команды на этапе
+
+
+
+     // функция вычисляет место команды в общем зачёте
+     function GetTeamPlace($teamid)
+     {
+       
+         // Здесь не проверяется прогресс команды,т.е. делается предположение (см. код расчета результата), что результат только для финишировавших команд
+	 // если это будет не так, то и алгоритм здесь нужно менять.
+        $sql = "  		      select TIME_TO_SEC(COALESCE(t.team_result,0)) as result_in_sec, t.distance_id 
+				      from   Teams t
+ 				      where  t.team_hide = 0 
+    					     and COALESCE(t.team_outofrange, 0) = 0
+					     and COALESCE(t.team_result,0) > 0
+					     and t.team_id = ".$teamid;
+
+	    //    echo $sql;
+
+	$Result  = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+        mysql_free_result($Result);
+
+        
+        $TeamResult =  $Row['result_in_sec'];
+        $DistanceId =  $Row['distance_id'];
+
+        $TeamPlace = 0;
+        if ($TeamResult > 0 and  $DistanceId > 0) {
+	        // Смотрим сколько команд имеют результат лучше и прибавляем 1
+	        // Нельзя ставить <=, т.к. на одном месте может быть несколько команд
+		$sql_place = "  	      select  count(*) + 1 as result_place
+					      from   Teams  t 
+					      where t.team_hide = 0 
+					            and t.distance_id = ".$DistanceId."
+					            and COALESCE(t.team_outofrange, 0) = 0
+						    and COALESCE(t.team_result,0) > 0
+	                                            and TIME_TO_SEC(COALESCE(t.team_result,0)) < ".$TeamResult;
+	   //     echo $sql_place;
+
+		$Result_place  = MySqlQuery($sql_place);
+		$Row_place = mysql_fetch_assoc($Result_place);
+	        mysql_free_result($Result_place);
+		$TeamPlace = (int)$Row_place['result_place'];
+		
+	}
+        return ($TeamPlace);
+     }
+     // конец функции расчета места команды в общем зачете
 
 
         // функция экранирует спец.символы

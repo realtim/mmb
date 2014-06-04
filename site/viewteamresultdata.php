@@ -129,9 +129,14 @@ $Result = MySqlQuery($sql);
 $Row = mysql_fetch_assoc($Result);
 $TeamResult = $Row['team_result'];
 mysql_free_result($Result);
+
+$TeamPlace = GetTeamPlace($TeamId);
+$TeamPlaceResult = "";
 if ($TeamResult == "00:00") $TeamResult = "-";
+if ($TeamPlace > 0) $TeamPlaceResult = " Место <b>".$TeamPlace."</b>";
+
 print('<tr><td colspan="5">'."\n");
-print('Общее время с учетом штрафов и бонусов: <b title="Обновляется после сохранения результатов">'.$TeamResult.'</b>'."\n");
+print('Общее время с учетом штрафов и бонусов: <b title="Обновляется после сохранения результатов">'.$TeamResult.'</b>'.$TeamPlaceResult."\n");
 print('</td></tr>'."\n\n");
 
 // ============ Шапка таблицы
@@ -193,9 +198,13 @@ while ($Row = mysql_fetch_assoc($Result))
 	$TeamLevelPoints = ($TeamLevelId > 0) ? $Row['teamlevel_points'] : '&nbsp;';
 	$TeamLevelComment = $Row['teamlevel_comment'];
 	$TeamLevelProgress = $Row['teamlevel_progress'];
+	$LevelId = $Row['level_id'];
+	$TeamLevelPlace = GetTeamLevelPlace($TeamId,$LevelId);
+        $TeamLevelPlaceString = "";
+	if ($TeamLevelPlace > 0) $TeamLevelPlaceString = ' ('.$TeamLevelPlace.')';
 
 	// ============ Название этапа
-	print('<tr><td><b>'.$Row['level_name'].'</b></td>'."\n");
+	print('<tr><td><b>'.$Row['level_name'].'</b>'.$TeamLevelPlaceString.'</td>'."\n");
 
 	// ============ Параметры старта/финиша
 	// Делаем оформление в зависимости от типа старта и соотношения гранчиных дат:
