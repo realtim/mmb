@@ -199,6 +199,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	$TeamLevelComment = $Row['teamlevel_comment'];
 	$TeamLevelProgress = $Row['teamlevel_progress'];
 	$LevelId = $Row['level_id'];
+
 	$TeamLevelPlace = GetTeamLevelPlace($TeamId,$LevelId);
         $TeamLevelPlaceString = "";
 	if ($TeamLevelPlace > 0) $TeamLevelPlaceString = ' ('.$TeamLevelPlace.')';

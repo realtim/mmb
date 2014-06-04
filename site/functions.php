@@ -807,34 +807,40 @@ send_mime_mail('Автор письма',
 					    and tl.team_id = ".$teamid."
 					    and tl.level_id = ".$levelid;
 
+
 	$Result  = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
         mysql_free_result($Result);
 
         $TeamLevelResult =  $Row['result_in_sec'];
+        $TeamLevelPlace = 0;
+        if ($TeamLevelResult > 0) {
 
-        // Смотрим сколько команд имеют результат лучше и прибавляем 1
-        // Нельзя ставить <=, т.к. на одном месте может быть несколько команд
-	$sql_place = "  	      select  count(*) + 1 as result_place
-				      from   TeamLevels  tl 
-                                             inner join Teams t
-                                             on t.team_id = tl.team_id
-					     inner join Levels l 
-					     on l.level_id = tl.level_id
-				      where tl.teamlevel_hide = 0 
-                                            and t.team_hide = 0 
-					    and COALESCE(t.team_outofrange,0) = 0
-					    and l.level_hide = 0 
- 					    and tl.teamlevel_progress = 2 
-					    and COALESCE(tl.teamlevel_duration,0) > 0
-                                            and (TIME_TO_SEC(COALESCE(tl.teamlevel_duration,0)) + COALESCE(tl.teamlevel_penalty, 0)*60) < ". $TeamLevelResult."
-					    and tl.level_id = ".$levelid;
+	        // Смотрим сколько команд имеют результат лучше и прибавляем 1
+	        // Нельзя ставить <=, т.к. на одном месте может быть несколько команд
+		$sql_place = "  	      select  count(*) + 1 as result_place
+					      from   TeamLevels  tl 
+			                             inner join Teams t
+			                             on t.team_id = tl.team_id
+						     inner join Levels l 
+						     on l.level_id = tl.level_id
+					      where tl.teamlevel_hide = 0 
+			                            and t.team_hide = 0 
+						    and COALESCE(t.team_outofrange,0) = 0
+						    and l.level_hide = 0 
+						    and tl.teamlevel_progress = 2 
+						    and COALESCE(tl.teamlevel_duration,0) > 0
+			                            and (TIME_TO_SEC(COALESCE(tl.teamlevel_duration,0)) + COALESCE(tl.teamlevel_penalty, 0)*60) < ". $TeamLevelResult."
+						    and tl.level_id = ".$levelid;
 
-	$Result_place  = MySqlQuery($sql_place);
-	$Row_place = mysql_fetch_assoc($Result_place);
-        mysql_free_result($Result_place);
+		//	echo $sql_place;
 
-        return ((int)$Row_place['result_place']);
+		$Result_place  = MySqlQuery($sql_place);
+		$Row_place = mysql_fetch_assoc($Result_place);
+		mysql_free_result($Result_place);
+		$TeamLevelPlace  = (int)$Row_place['result_place'];
+        }
+        return ($TeamLevelPlace);
      }
      // конец функции расчета места команды на этапе
 
