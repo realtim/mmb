@@ -276,6 +276,13 @@ if (!isset($MyPHPScript)) return;
 		document.FindTeamForm.submit();
 	}
 
+
+	function ViewUserUnionPage()
+	{ 
+		document.FindTeamForm.action.value = "ViewUserUnionPage";
+		document.FindTeamForm.submit();
+	}
+
 </script>
 
 <?php
@@ -364,7 +371,15 @@ if (!isset($MyPHPScript)) return;
 	// Объхединение команд
 	if ($Administrator || $Moderator)
 	{
-	    print('<tr><td><a href = "javascript:ViewAdminUnionPage();" title = "Страница администрирования объединения команд">Объединение</a></td></tr>'."\r\n"); 
+	    print('<tr><td><a href = "javascript:ViewAdminUnionPage();" title = "Страница администрирования объединения команд">Объединение команд</a></td></tr>'."\r\n"); 
+        }
+
+
+	// Объхединение пользователей могут смотреть все, зарегистрированные пользователи, но отображается по-разному:
+	// Администратоору - всё, остальным только их запросы или запросы с их участием 
+	if ($UserId)
+	{
+	    print('<tr><td><a href = "javascript:ViewUserUnionPage();" title = "Страница администрирования объединения пользователей">Связь пользователей</a></td></tr>'."\r\n"); 
         }
         
 	//print('<tr><td class = "input">Поиск:</td></tr>'."\r\n"); 

@@ -48,6 +48,8 @@ if (!isset($MyPHPScript)) return;
 	     $SaveButtonText = 'Зарегистрировать';
              // Кнопка "Сделать модератором" не выводится при добавлении пользователя
              $ModeratorButtonText = '';
+             // Кнопка "Объединить" не выводится при добавлении пользователя
+	     $UnionButtonText = '';
 
          } else {
 
@@ -94,6 +96,7 @@ if (!isset($MyPHPScript)) return;
 		$AllowEdit = 0;
 		$SaveButtonText = 'Сохранить изменения';
 		$ModeratorButtonText = 'Сделать модератором';
+		$UnionButtonText = 'Объединить';
 		
 
                 if (($pUserId == $UserId) || $Administrator)
@@ -193,6 +196,13 @@ if (!isset($MyPHPScript)) return;
 	}
 	// 
 
+	// Функция создания запроса на объединение
+	function MakeUnionRequest()
+	{ 
+		document.UserDataForm.action.value = "AddUserInUnion";
+		document.UserDataForm.submit();
+	}
+	// 
 
 	// Удалить пользователя
 	function HideUser()
@@ -316,13 +326,28 @@ if (!isset($MyPHPScript)) return;
          }
          // Конец вывода кнопок
 
+         $ModeratorUnionString = '';
+
          // для Администратора добавляем кнопку "Сделать модератором" в правке пользователя
 	 if ($Administrator and $viewmode <> 'Add') 
 	 {
-	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
-	  	  print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите сделать этого пользователя модератором текущего марш-броска? \')) { MakeModerator(); }"  name="ModeratorButton" value="'.$ModeratorButtonText.'" tabindex = "'.(++$TabIndex).'">'."\r\n");
-          print('</td></tr>'."\r\n"); 
+	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите сделать этого пользователя модератором текущего марш-броска? \')) { MakeModerator(); }"  name="ModeratorButton" value="'.$ModeratorButtonText.'" tabindex = "'.(++$TabIndex).'">';
          }
+	 
+
+	 if (CanUnionRequest($Administrator, $UserId, $pUserId)) {
+
+	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите оставить запрос на объединение с этим пользователем? \')) { MakeUnionRequest(); }"  name="UnionButton" value="'.$UnionButtonText.'" tabindex = "'.(++$TabIndex).'">';
+	 
+	 }
+
+	 
+	 if (trim($ModeratorUnionString) <> '') {
+	    print('<tr><td class = "input"  style =  "padding-top: 10px;">'.$ModeratorUnionString.'</td></tr>'."\r\n");
+	 }
+	 // Конец проверки, что есть кнопка сделать модератором или объединить
+
+         print('</tr>'."\r\n"); 
 
 	 if ($AllowEdit == 1) 
 	 {

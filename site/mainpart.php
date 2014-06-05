@@ -39,14 +39,17 @@ if (!isset($MyPHPScript)) return;
 		// Амнистия 
 		include("viewlevelpointdiscounts.php");
 	} elseif ($view == "ViewAdminModeratorsPage") {
-		// Результаты ММБ (по всем командам)
+		// Мордераторы
 		include("viewadminmoderatorspage.php");
 	} elseif ($view == "ViewAdminDataPage") {
-		// Результаты ММБ (по всем командам)
+		// Обмен данными 
 		include("viewadmindatapage.php");
 	} elseif ($view == "ViewAdminUnionPage") {
-		// Результаты ММБ (по всем командам)
+		// Объединение команд
 		include("viewadminunionpage.php");
+	} elseif ($view == "ViewUserUnionPage") {
+		// Связь пользователей
+		include("viewuserunionpage.php");
 	}
 
 	// Очищаем переменную

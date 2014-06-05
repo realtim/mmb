@@ -538,13 +538,21 @@ function CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $Raid
 function CanUnionRequest($Administrator, $User, $ParentUser)
 {
 
-	// Администратор может всегда
-	if ($Administrator) return(1);
 
 	// Оба пользователя должны быть определеные
 	if (!$User || !$ParentUser) return(0);
 
+	// Нельзя объединить с самим собой
+	if ($User == $ParentUser) return(0);
+
         // Тут добавить проверку наличия записей в журнале объединения
+
+
+         // Если выше проверки не сработали, то  Администратору можно 
+	if ($Administrator) return(1);
+
+        // Пока и всем остальным разрешаем делать запросы          
+        return(1);
 }
 // Конец проверки возможности объединиться с пользователем
 
