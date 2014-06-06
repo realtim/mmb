@@ -335,7 +335,7 @@ if (!isset($MyPHPScript)) return;
          }
 	 
 
-	 if (CanUnionRequest($Administrator, $UserId, $pUserId)) {
+	 if (CanRequestUserUnion($Administrator, $UserId, $pUserId)) {
 
 	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите оставить запрос на объединение с этим пользователем? \')) { MakeUnionRequest(); }"  name="UnionButton" value="'.$UnionButtonText.'" tabindex = "'.(++$TabIndex).'">';
 	 

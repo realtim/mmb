@@ -535,17 +535,25 @@ function CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $Raid
 // ----------------------------------------------------------------------------
 // Проверка возможности объединиться с пользователем
 
-function CanUnionRequest($Administrator, $User, $ParentUser)
+function CanRequestUserUnion($Administrator, $UserId, $ParentUserId)
 {
 
 
 	// Оба пользователя должны быть определеные
-	if (!$User || !$ParentUser) return(0);
+	if (!$UserId || !$ParentUserId) return(0);
 
 	// Нельзя объединить с самим собой
-	if ($User == $ParentUser) return(0);
+	if ($UserId == $ParentUserId) return(0);
 
         // Тут добавить проверку наличия записей в журнале объединения
+	   $Sql = "select count(*) as result from  UserUnionLogs where union_status <> 0 and  union_status <> 3 and user_id = ".$UserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $InUnion = $Row['result'];
+		 mysql_free_result($Result);
+
+         // Если есть в запросе, то нельзя
+	if ($InUnion) return(0);
 
 
          // Если выше проверки не сработали, то  Администратору можно 
@@ -555,6 +563,113 @@ function CanUnionRequest($Administrator, $User, $ParentUser)
         return(1);
 }
 // Конец проверки возможности объединиться с пользователем
+
+
+// 06,06,2014
+// ----------------------------------------------------------------------------
+// Проверка возможности подтвердить запрос на объединение
+
+function CanApproveUserUnion($Administrator, $UserRequestId, $UserId)
+{
+
+	if (!$UserRequestId) return(0);
+	
+	// Проверить статус запроса
+         $Sql = "select user_id, user_parentid, union_status from  UserUnionLogs where userunionlog_id = ".$UserRequestId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $NewUserId = $Row['user_id'];
+		 $ParentUserId = $Row['user_parentid'];
+		 $UnionStatus = $Row['union_status'];
+		 mysql_free_result($Result);
+
+		
+          // Подтвердить можно только созданный запрос 
+          if ($UnionStatus <> 1) {return(0);}
+	
+	
+
+         // Если выше проверки не сработали, то  Администратору можно 
+	if ($Administrator) return(1);
+
+        // Подтвердить может только администратор
+        return(0);
+}
+// Конец проверки возможности подтвердить объединение
+
+
+// 06,06,2014
+// ----------------------------------------------------------------------------
+// Проверка возможности откатить объединение
+function CanRollBackUserUnion($Administrator, $UserRequestId, $UserId)
+{
+
+	if (!$UserRequestId) return(0);
+
+	// Проверить статус запроса
+
+	         $Sql = "select user_id, user_parentid, union_status from  UserUnionLogs where userunionlog_id = ".$UserRequestId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $NewUserId = $Row['user_id'];
+		 $ParentUserId = $Row['user_parentid'];
+		 $UnionStatus = $Row['union_status'];
+		 mysql_free_result($Result);
+
+		
+          // Откатить можно только подтвержденный (уже объединённый) запрос 
+          if ($UnionStatus <> 2) {return(0);}
+
+
+
+         // Если выше проверки не сработали, то  Администратору можно 
+	if ($Administrator) return(1);
+
+        // Подтвердить может только администратор
+        return(0);
+}
+// Конец проверки возможности откатить объединение
+
+
+// 06,06,2014
+// ----------------------------------------------------------------------------
+// Проверка возможности отклонить объединение
+function CanRejectUserUnion($Administrator, $UserRequestId, $UserId)
+{
+
+	// Проверить статус запроса
+
+
+	         $Sql = "select user_id, user_parentid, union_status from  UserUnionLogs where userunionlog_id = ".$UserRequestId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $NewUserId = $Row['user_id'];
+		 $ParentUserId = $Row['user_parentid'];
+		 $UnionStatus = $Row['union_status'];
+		 mysql_free_result($Result);
+
+	//	echo $Sql;
+	//	echo 'stat '.$UnionStatus;
+          // Отклолнить можно только созданный запрос
+          if ($UnionStatus <> 1) {return(0);}
+         	 
+	// Все пользователя должны быть определеные
+	if (!$UserId || !$ParentUserId || !$NewUserId) return(0);
+
+        // Отклонить запрос может любой из двух пользователей
+        if ($UserId == $ParentUserId) return(1);
+
+        if ($UserId == $NewUserId) return(1);
+        // Тут добавить проверку наличия записей в журнале объединения
+
+         // Если выше проверки не сработали, то  Администратору можно 
+	if ($Administrator ) return(1);
+
+        // Пока и всем остальным разрешаем делать запросы          
+        return(0);
+}
+// Конец проверки возможности отклонить объединение
+
 
 
 // ----------------------------------------------------------------------------

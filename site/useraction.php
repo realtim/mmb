@@ -155,7 +155,12 @@ if (!isset($MyPHPScript)) return;
 	   }
 
 
-	   $sql = "select count(*) as resultcount from  Users where  trim(user_name) = '".$pUserName."' and user_birthyear = ".$pUserBirthYear." and user_id <> ".$pUserId;
+	   $sql = "select count(*) as resultcount
+	           from  Users 
+		   where  trim(user_name) = '".$pUserName."' 
+		          and user_birthyear = ".$pUserBirthYear." 
+			  and user_id <> ".$pUserId." 
+			  and userunionlog_id is null ";
            //echo $sql;
 	   $rs = MySqlQuery($sql);  
 	   $Row = mysql_fetch_assoc($rs);
@@ -1082,6 +1087,281 @@ if (!isset($MyPHPScript)) return;
 		SendMail(trim($UserEmail), $Msg, $UserName);
 
 	   
+   }     
+   // ============ Добавить пользхователя в объединение ====================================
+   
+   elseif ($action == "AddUserInUnion")  {
+	// Действие вызывается нажатием кнопки "Объединить"
+
+	if ($UserId <= 0)
+	{
+		$statustext = 'Пользователь не найден';
+		$alert = 1;
+		return;
+	}
+	if ($SessionId <= 0)
+	{
+		$statustext = 'Сессия не найдена';
+		$alert = 1;
+		return;
+	}
+
+        $pUserId = $_POST['UserId']; 
+       
+
+        if ($UserId == $pUserId) {
+		$statustext = 'Нельзя объединить с самим собой';
+		$alert = 1;
+		return;
+	}
+
+     
+        // Проверяем, что пользователя нет в объединении
+	$sql = " select userunionlog_id
+	         from UserUnionLogs 
+		 where union_status <> 0
+		       and union_status <> 3
+		       and user_id = ".$UserId; 
+
+ 
+	$Result = MySqlQuery($sql);
+        $RowsCount = mysql_num_rows($Result);
+
+	if ($RowsCount > 0)
+	{
+	        $statustext = 'Пользователь уже есть в объединении';				     
+
+		$view = "ViewUserUnionPage";
+		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
+
+	       return;
+	}
+
+
+	// Проверяем, что пользователь не скрыт
+	// здесь можно ещё проверить, что пользователь импортирован или любое другое условие
+	$sql = " select user_id 
+	         from Users 
+		 where user_hide = 0 
+		       and user_id = ".$pUserId; 
+
+
+ 
+	$Result = MySqlQuery($sql);
+        $RowsCount = mysql_num_rows($Result);
+
+	if ($RowsCount <= 0)
+	{
+	        $statustext = 'Пользователь скрыт';				     
+
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
+
+	       return;
+	}
+
+        $UnionRequestId = 0;
+   	$Sql = "insert into UserUnionLogs (user_id, userunionlog_dt, 
+		         user_parentid, union_status)
+			  values (".$UserId.", now(), ".$pUserId.",  1)";
+	$UnionRequestId = MySqlQuery($Sql);  
+			 
+        if ($UnionRequestId)
+        {
+
+                 $statustext = 'Создан запрос на объединение пользователей';				     
+
+	         $Sql = "select user_name, user_email, user_importattempt  from  Users where user_id = ".$pUserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $pUserName = $Row['user_name'];
+		 $pUserEmail = $Row['user_email'];
+		 $Import = $Row['user_importattempt'];
+		 mysql_free_result($Result);
+
+
+	         $Sql = "select user_name from  Users where user_id = ".$UserId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $pRequestUserName = $Row['user_name'];
+		 mysql_free_result($Result);
+
+
+                 $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
+		 $Msg =  $Msg."Сделан запрос на объединения Вас с пользователем ".$pRequestUserName."\r\n";
+		 $Msg =  $Msg."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил объединение, а Ваша учетная запись скрыта"."\r\n";
+		 $Msg =  $Msg."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на старницу 'Связь пользователей' и отклонить запрос."."\r\n\r\n";
+		 	   
+                  // Отправляем письмо
+		  SendMail(trim($pUserEmail), $Msg, $pUserName);
+
+
+           }
+	   // Конец проверки на успешное добавление запроса
+	   $view = "ViewUserUnionPage";
+	   $viewmode = "";
+
+
+  } elseif ($action == "RejectUnion")  {
+	// Действие вызывается нажатием кнопки "Отклонить" 
+    
+       $UserUnionLogId = $_POST['UserUnionLogId']; 
+
+       if (!CanRejectUserUnion($Administrator, $UserUnionLogId, $UserId)) {  
+
+		$statustext = 'Нет прав на отклонение запроса';
+		$alert = 1;
+		return;
+	      return;
+       }
+       
+       // ПРосто ставим статус в журнале - ничего больше делать не надол
+       $sql = " update UserUnionLogs set union_status = 0 
+			 where userunionlog_id = ".$UserUnionLogId;
+		       
+	MySqlQuery($sql);
+
+	   $view = "ViewUserUnionPage";
+	   $viewmode = "";
+       
+
+  } elseif ($action == "ApproveUnion")  {
+
+
+       $UserUnionLogId = $_POST['UserUnionLogId']; 
+
+       if (!CanApproveUserUnion($Administrator, $UserUnionLogId, $UserId)) {  
+
+		$statustext = 'Нет прав на подтверждение запроса';
+		$alert = 1;
+		return;
+	      return;
+       }
+
+
+	         $Sql = "select user_id, user_parentid  from  UserUnionLogs where userunionlog_id = ".$UserUnionLogId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $pUserId = $Row['user_id'];
+		 $pUserParentId = $Row['user_parentid'];
+		 mysql_free_result($Result);
+
+//echo $Sql;
+       // Перебрасываем ссылки, ставим признак скрытия пользователя
+
+        
+       // Скрываем старого пользователя
+       // Ключ журнала нужен исключительно для возможности потом переименовать пользователя - сделан уникальный ключ, который не допускаетодинаковое ФИО и год, но теперь я туда добавил ещё поле userunionlog_id
+       // Тонкость в том, что при отмене объеддинения наод проверять, что польщзователь не свопадает, иначе будет ошибка ключа
+        $sql = " update Users set user_hide = 1, userunionlog_id = ".$UserUnionLogId."  
+		 where user_id = ".$pUserParentId;
+
+
+//echo $sql;
+		       
+	MySqlQuery($sql);
+	
+       // Меняем ссылку в комнадах 
+        $sql = " update TeamUsers set user_id = ". $pUserId.", userunionlog_id = ".$UserUnionLogId." 
+		 where user_id = ". $pUserParentId;
+	
+	MySqlQuery($sql);
+         
+
+       // Меняем статус в журнале 
+       $sql = " update UserUnionLogs set union_status = 2 
+			 where userunionlog_id = ".$UserUnionLogId;
+		       
+
+	MySqlQuery($sql);
+
+	   $view = "ViewUserUnionPage";
+	   $viewmode = "";
+  
+  } elseif ($action == "RollBackUnion")  {
+
+
+       $UserUnionLogId = $_POST['UserUnionLogId']; 
+
+       if (!CanRollBackUserUnion($Administrator, $UserUnionLogId, $UserId)) {  
+
+		$statustext = 'Нет прав на откат объединения';
+		$alert = 1;
+		return;
+	      return;
+       }
+
+
+	         $Sql = "select user_id, user_parentid  from  UserUnionLogs where userunionlog_id = ".$UserUnionLogId;
+		 $Result = MySqlQuery($Sql);  
+		 $Row = mysql_fetch_assoc($Result);
+		 $pUserId = $Row['user_id'];
+		 $pUserParentId = $Row['user_parentid'];
+		 mysql_free_result($Result);
+
+
+           // Проверяем что новый пользователь не успел переименоваться в старого
+	   $sql = "select user_name
+	           from  Users 
+		   where  user_id = ".$pUserId;
+           //echo $sql;
+	   $rs = MySqlQuery($sql);  
+	   $Row = mysql_fetch_assoc($rs);
+           $UserName = $Row['user_name'];
+	   mysql_free_result($rs);
+
+           // Проверяем что новый пользователь не успел переименоваться в старого
+	   $sql = "select user_name
+	           from  Users 
+		   where  user_id = ".$pUserParentId;
+           //echo $sql;
+	   $rs = MySqlQuery($sql);  
+	   $Row = mysql_fetch_assoc($rs);
+           $ParentUserName = $Row['user_name'];
+	   mysql_free_result($rs);
+
+           // если успел - нового переименовываем
+           if (trim($UserName) == trim($ParentUserName)) {
+	   
+	        $sql = " update Users set user_name =  '".trim($UserName).'_'.$UserUnionLogId."'
+			 where user_id = ".$pUserId;
+	
+	//echo $sql;	       
+		MySqlQuery($sql);
+	   
+	   }
+
+       // Перебрасываем ссылки, ставим признак скрытия пользователя
+
+        
+       // Скрываем старого пользователя
+       // Ключ журнала нужен исключительно для возможности потом переименовать пользователя - сделан уникальный ключ, который не допускаетодинаковое ФИО и год, но теперь я туда добавил ещё поле userunionlog_id
+       // Тонкость в том, что при отмене объеддинения наод проверять, что польщзователь не свопадает, иначе будет ошибка ключа
+        $sql = " update Users set user_hide = 0, userunionlog_id = NULL 
+		 where userunionlog_id = ".$UserUnionLogId;
+		       
+	MySqlQuery($sql);
+	
+       // Меняем ссылку в комнадах 
+        $sql = " update TeamUsers set user_id = ". $pUserParentId.", userunionlog_id = NULL 
+		 where userunionlog_id = ".$UserUnionLogId;
+	
+	MySqlQuery($sql);
+         
+
+       // Меняем статус в журнале 
+       $sql = " update UserUnionLogs set union_status = 3 
+			 where userunionlog_id = ".$UserUnionLogId;
+		       
+
+	MySqlQuery($sql);
+
+	   $view = "ViewUserUnionPage";
+	   $viewmode = "";
+  
+
    }  else {
    // если никаких действий не требуется
 
