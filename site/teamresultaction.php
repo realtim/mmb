@@ -154,8 +154,12 @@ if ($action == "ChangeTeamResult")
 	RecalcTeamLevelDuration($TeamId);
 	// Пересчет штрафов 
 	RecalcTeamLevelPenalty($TeamId);
+
+        //  10/06/2014 если старцый ММБ. то не обновляем результат
 	// Обновляем результат команды
-	RecalcTeamResult($TeamId);
+	if (!$OldMmb) {
+		RecalcTeamResult($TeamId);
+	}
 
         //Если передали альтернативную страницу, на которую переходить (пока только одна возможность - на список команд)
 	$view = $_POST['view'];

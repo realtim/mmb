@@ -165,7 +165,11 @@ elseif ($action == 'RecalcRaidResults')
 		$RecalcTeamId = $Row['team_id'];
 		RecalcTeamLevelDuration($RecalcTeamId);
 		RecalcTeamLevelPenalty($RecalcTeamId);
-		RecalcTeamResult($RecalcTeamId);
+		//  10/06/2014 если старцый ММБ. то не обновляем результат
+		// Обновляем результат команды
+		if (!$OldMmb) {
+			RecalcTeamResult($RecalcTeamId);
+		}	
 	}
 	mysql_free_result($Result);
 
