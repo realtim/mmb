@@ -399,8 +399,14 @@ if (!isset($MyPHPScript)) return;
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
+
+			$TeamPlace = GetTeamPlace($Row['team_id']);
+			$TeamPlaceResult = "";
+			if ($TeamPlace > 0) $TeamPlaceResult = ", место <b>".$TeamPlace."</b>";
+
+
 		  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].','.$Row['raid_id'].');"  title = "Переход к карточке команды">'.$Row['team_name'].'</a> 
-		         (N '.$Row['team_num'].', дистанция: '.$Row['distance_name'].', ммб: '.$Row['raid_name'].')</div>'."\r\n");
+		         (N '.$Row['team_num'].$TeamPlaceResult.', дистанция: '.$Row['distance_name'].', ммб: '.$Row['raid_name'].')</div>'."\r\n");
 		}
 
                 mysql_free_result($Result);
