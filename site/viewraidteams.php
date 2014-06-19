@@ -825,6 +825,7 @@ if (!isset($MyPHPScript)) return;
                 $TeamPlace = 0;
                 $SamePlaceTeamCount = 1;
                 $PredResult = ''; 
+		$PredDistanceId = 0;
 		
 		while ($Row = mysql_fetch_assoc($Result))
 		{
@@ -916,6 +917,16 @@ if (!isset($MyPHPScript)) return;
 			if ($OrderType == 'Place')   
 			{
 			    print('<td width = "50" style = "'.$thstyle.'">'."\r\n");
+
+                            // Сбрасываем при смене дистанции
+			    if ($Row['distance_id'] <> $PredDistanceId)
+                            {
+			        $TeamPlace = 0;
+				$SamePlaceTeamCount = 1;
+				$PredResult = '';
+				$PredDistanceId = $Row['distance_id'];
+                            }
+			    
                             if ($Row['team_sresult'] == '00:00' or $Row['team_sresult'] == '' or $Row['team_outofrange'] == 1)
                             {
                                print('&nbsp;');

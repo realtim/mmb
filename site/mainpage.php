@@ -47,6 +47,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	     from RaidFiles
 	     where raid_id = ".$nextRaidId."        
                    and filetype_id = 1 
+		   and raidfile_hide = 0
 	     order by raidfile_id desc";
 	 
        	$ResultFile = MySqlQuery($sqlFile);  
@@ -65,6 +66,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	     from RaidFiles
 	     where raid_id = ".$nextRaidId."        
                    and filetype_id = 10 
+		   and raidfile_hide = 0
 	     order by raidfile_id desc";
 	 
        	$ResultFile = MySqlQuery($sqlFile);  

@@ -50,6 +50,9 @@ if (!isset($MyPHPScript)) return;
 	} elseif ($view == "ViewUserUnionPage") {
 		// Связь пользователей
 		include("viewuserunionpage.php");
+	} elseif ($view == "ViewRankPage") {
+		// Рейтинг
+		include("viewrankpage.php");
 	}
 
 	// Очищаем переменную

@@ -52,6 +52,13 @@ if (!($Administrator)) return;
 	}
 
 
+	function RecalcRaidRank()
+	{ 
+              document.AdminForm.action.value = "RecalcRaidRank";
+              document.AdminForm.RaidId.value = document.FindTeamForm.RaidId.value; 
+	      document.AdminForm.submit();
+              return true;
+	}
 
 
 </script>
@@ -93,6 +100,12 @@ if (!($Administrator)) return;
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="FindRaidErrorsButton" value="Найти ошибки"
                           onclick = "javascript: FindRaidErrors();"
                           tabindex = "104"></td></tr>'."\r\n");
+
+
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RecalcRaidRankButton" value="Пересчитать рейтинг"
+                          onclick = "javascript: RecalcRaidRank();"
+                          tabindex = "106"></td></tr>'."\r\n");
+
 
 
        //  показываем кнопку "Очистить таблицы" 

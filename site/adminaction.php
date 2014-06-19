@@ -253,7 +253,33 @@ if ($action == "ViewUserUnionPage")  {
 	$viewmode = "";
 
 }
+// =============== Показываем страницу рейтинга пользователей ===================
+if ($action == "ViewRankPage")  {
+    // Действие вызывается ссылкой Объединение
+   
+	$view = "ViewRankPage";
+	$viewmode = "";
 
+}
+// =============== Пересчет рейтинга для ММБ ===================
+elseif ($action == 'RecalcRaidRank')
+{
+	if ($RaidId <= 0)
+	{
+		$statustext = 'Марш-бросок не найден';
+		$view = "";
+		return;
+	}
+
+	if (!$Administrator && !$Moderator) return;
+
+	
+	$Result = 0;
+	$Result =  RecalcTeamUsersRank($RaidId); 
+
+	$statustext = 'Рейтинг участников марш-броска пересчитан';
+	$view = "ViewAdminDataPage";
+}
 // =============== Никаких действий не требуется ==============================
 else
 {

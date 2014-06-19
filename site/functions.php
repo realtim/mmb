@@ -1298,4 +1298,52 @@ send_mime_mail('Автор письма',
      // конец функции получения общего комментария для команды 
 
 
+     
+        // функция получения вклада в рейтинг
+     function RecalcTeamUsersRank($raidid)
+     {
+       
+       if ($raidid > 0)
+       {
+         $RaidWhereString = " and d.raid_id = ".$raidid." ";
+       } else {
+         $RaidWhereString = " ";
+       }
+  
+	$sql = "
+		update TeamUsers tu
+			inner join Teams t
+			on tu.team_id = t.team_id	
+		        inner join Users u
+		        on tu.user_id = u.user_id
+			inner join Distances d
+		        on t.distance_id = d.distance_id
+			inner join 
+			(
+			 select t.distance_id,  MIN(TIME_TO_SEC(COALESCE(t.team_result, 0))) as firstresult_in_sec 
+			 from Teams t
+		 	      inner join Distances d
+			      on t.distance_id = d.distance_id
+			 where d.distance_hide = 0 
+			       and t.team_hide = 0 
+		               and  COALESCE(t.team_outofrange, 0) = 0
+		               and  COALESCE(t.team_result, 0) > 0
+                         group by t.distance_id
+                        ) a
+                        on a.distance_id = t.distance_id
+		 SET teamuser_rank  =  (a.firstresult_in_sec + 0.00)/(TIME_TO_SEC(COALESCE(t.team_result, 0)) + 0.00) 
+		 where d.distance_hide = 0 
+		       and tu.teamuser_hide = 0
+		       and t.team_hide = 0 
+		       and  COALESCE(t.team_outofrange, 0) = 0
+		       and  COALESCE(t.team_result, 0) > 0
+                       ".$RaidWhereString ."
+                ";
+		 
+		 $rs = MySqlQuery($sql);
+       
+         return (1);
+     }
+     // конец функции получения вклада в рейтинг
+
 ?>

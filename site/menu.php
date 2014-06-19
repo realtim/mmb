@@ -283,6 +283,14 @@ if (!isset($MyPHPScript)) return;
 		document.FindTeamForm.submit();
 	}
 
+
+	function ViewRankPage()
+	{ 
+		document.FindTeamForm.action.value = "ViewRankPage";
+		document.FindTeamForm.submit();
+	}
+
+
 </script>
 
 <?php
@@ -381,6 +389,8 @@ if (!isset($MyPHPScript)) return;
 	{
 	    print('<tr><td><a href = "javascript:ViewUserUnionPage();" title = "Страница администрирования объединения пользователей">Связь пользователей</a></td></tr>'."\r\n"); 
         }
+
+        print('<tr><td><a href = "javascript:ViewRankPage();" title = "Страница рейтинга пользователей">Рейтинг</a></td></tr>'."\r\n"); 
         
 	//print('<tr><td class = "input">Поиск:</td></tr>'."\r\n"); 
 	print('<tr><td style = "padding-top: 15px;"><input  type="text" name="TeamNum" style = "width: 125px;" value="Номер команды" tabindex = "206"  title = "Будет выведена карточка команды с указанным номером для выбранного выше ММБ"
