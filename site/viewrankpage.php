@@ -40,7 +40,7 @@ if (!isset($MyPHPScript)) return;
 	        print('</form>'."\r\n");
 
                print('</br>'."\r\n");
- 	       print('<div style = "margin-top: 15px;" align = "left">Рейтинг по версии slazav: по всем ММБ суммируется отношение времени участника к времени лидера</div>'."\r\n");
+ 	       print('<div style = "margin-top: 15px;" align = "left">Рейтинг по версии slazav: по всем ММБ суммируется отношение времени лидера к времени участника</div>'."\r\n");
                print('</br>'."\r\n");
 
 
