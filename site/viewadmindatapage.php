@@ -64,6 +64,13 @@ if (!isset($MyPHPScript)) return;
               return true;
 	}
 
+	function RecalcAllRaidsRank()
+	{ 
+              document.AdminForm.action.value = "RecalcRaidRank";
+              document.AdminForm.RaidId.value = 0; 
+	      document.AdminForm.submit();
+              return true;
+	}
 
 
 </script>
@@ -110,6 +117,10 @@ if (!isset($MyPHPScript)) return;
                           onclick = "javascript: RecalcRaidRank();"
                           tabindex = "105"></td></tr>'."\r\n");
 
+
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RecalcAllRaidsResultsButton" value="Пересчитать рейтинг по всем ММБ"
+                          onclick = "javascript: RecalcAllRaidsRank();"
+                          tabindex = "106"></td></tr>'."\r\n");
 
        //  показываем кнопку "Очистить таблицы" 
 	  // print('<input type="button" style = "width:185px; margin-top:10px;" name="ClearTablesButton" value="Очистить таблицы"

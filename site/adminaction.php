@@ -280,6 +280,19 @@ elseif ($action == 'RecalcRaidRank')
 	$statustext = 'Рейтинг участников марш-броска пересчитан';
 	$view = "ViewAdminDataPage";
 }
+// =============== Пересчет рейтинга по всем ММБ ===================
+elseif ($action == 'RecalcAllRaidsRank')
+{
+	
+	if (!$Administrator) return;
+
+	
+	$Result = 0;
+	$Result =  RecalcTeamUsersRank(0); 
+
+	$statustext = 'Рейтинг участников всех марш-бросков пересчитан';
+	$view = "ViewAdminDataPage";
+}
 // =============== Никаких действий не требуется ==============================
 else
 {

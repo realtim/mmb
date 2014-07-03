@@ -1303,12 +1303,31 @@ send_mime_mail('Автор письма',
      function RecalcTeamUsersRank($raidid)
      {
        
+       
+       // 03/07/2014 ДОбавил условие, чтобы не считать рейтинг для сошедших
+              
        if ($raidid > 0)
        {
          $RaidWhereString = " and d.raid_id = ".$raidid." ";
        } else {
          $RaidWhereString = " ";
        }
+  
+        // Обнуляем рейтинг  
+  	$sql = "
+		update TeamUsers tu
+			inner join Teams t
+			on tu.team_id = t.team_id	
+		        inner join Users u
+		        on tu.user_id = u.user_id
+			inner join Distances d
+		        on t.distance_id = d.distance_id
+		 SET teamuser_rank = NULL 
+		 where 1= 1 ".$RaidWhereString ."
+                ";
+		 
+		 $rs = MySqlQuery($sql);
+
   
 	$sql = "
 		update TeamUsers tu
@@ -1334,6 +1353,8 @@ send_mime_mail('Автор письма',
 		 SET teamuser_rank  =  (a.firstresult_in_sec + 0.00)/(TIME_TO_SEC(COALESCE(t.team_result, 0)) + 0.00) 
 		 where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
+		       and tu.levelpoint_id is NULL
+		       and tu.level_id is NULL
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
 		       and  COALESCE(t.team_result, 0) > 0
