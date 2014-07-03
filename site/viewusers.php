@@ -51,10 +51,11 @@ if (!isset($MyPHPScript)) return;
 		
 		
                  
-		$sql = "select u.user_id, u.user_name, COALESCE(u.user_city, '') as user_city 
+		$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, COALESCE(u.user_city, '') as user_city 
 		        from  Users u
 			where ltrim(COALESCE(u.user_password, '')) <> '' 
                               and u.user_hide = 0
+                              and COALESCE(u.user_noshow, 0) = 0
                               and user_name like '%".trim($sqlFindString)."%'
 			order by user_name "; 
                 

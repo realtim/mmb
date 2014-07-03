@@ -108,7 +108,7 @@ if (!isset($MyPHPScript)) return;
                           print('<input type="button" style = "margin-left: 15px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите исключить команду из текущего объединения? \')) { HideTeamInUnion('.$Row['teamunionlog_id'].','.$Row['team_id'].'); }"  name="TeamHideButton" value="Скрыть" tabindex = "'.++$TabIndex.'">'."\r\n");
 	                  print('</div>'."\r\n");
 	  	  			
-			  $sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, tu.level_id, u.user_id
+			  $sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, tu.level_id, u.user_id
 				  from TeamUsers tu
 					inner join Users u
 					on tu.user_id = u.user_id
@@ -274,7 +274,7 @@ if (!isset($MyPHPScript)) return;
                      if ($Row['unionstatus'] == 'Объединены') 
 		     {
                         // Команда объединена
-			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,	
+			$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear,	
 					       tu.level_id, u.user_id, l.level_name,
 					       t.team_name as oldteam_name,
 					       t.team_num as  oldteam_num,
@@ -318,7 +318,7 @@ if (!isset($MyPHPScript)) return;
 
                         // Команда не объединена
 			 
-				$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear,	
+				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear,	
 					       tu.level_id, u.user_id, l.level_name,
 					       '' as oldteam_name,
 					       '' as oldteam_num,

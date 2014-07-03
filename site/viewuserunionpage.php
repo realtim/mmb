@@ -86,7 +86,7 @@ if (!isset($MyPHPScript)) return;
 			        WHEN uul.union_status = 0 THEN 'Отклонено'
 				ELSE ''
 			   END as unionstatus,
-			   u2.user_name as user_parentname, 
+			   CASE WHEN COALESCE(u2.user_noshow, 0) = 1 and u2.user_id <> ".$UserId."  and 0 = ".(int)($Administrator)." THEN '".$Anonimus."' ELSE u2.user_name END as user_parentname, 
 			   uul.user_parentid  as user_parentid, 
 			   uul.user_id  as user_id, 
 			   uul.userunionlog_id as log_id,

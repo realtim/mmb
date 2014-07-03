@@ -857,7 +857,7 @@ if (!isset($MyPHPScript)) return;
 			
 			if ($OrderType <> 'Errors')
 			{
-			$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, u.user_city,
+			$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
                                        tu.level_id, u.user_id, l.level_name,
 				       tu.levelpoint_id, lp.levelpoint_name 
 			        from  TeamUsers tu

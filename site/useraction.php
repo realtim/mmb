@@ -95,7 +95,12 @@ if (!isset($MyPHPScript)) return;
            $pUserConfirmNewPassword = $_POST['UserConfirmNewPassword']; 
          
 	   if ($pUserCity == $UserCityPlaceHolder) { $pUserCity = ''; }  
-	 
+
+           // 03/07/2014  Скрываем ФИО	 
+           if (!isset($_POST['UserNoShow'])) $_POST['UserNoShow'] = "";
+           $pUserNoShow = ($_POST['UserNoShow'] == 'on' ? 1 : 0);
+
+
    
 	   if ($action == 'AddUser')
 	   {
@@ -240,10 +245,10 @@ if (!isset($MyPHPScript)) return;
 
 		 $sql = "insert into  Users (user_email, user_name, user_birthyear, user_password, user_registerdt,
 		                             user_sessionfornewpassword, user_sendnewpasswordrequestdt, 
-					     user_prohibitadd, user_city)
+					     user_prohibitadd, user_city, user_noshow)
 		                     values ('".$pUserEmail."', '".$pUserName."', ".$pUserBirthYear.", '', now(),
 				             '".$ChangePasswordSessionId."', now(), 
-					      ".$pUserProhibitAdd.", '".$pUserCity."')";
+					      ".$pUserProhibitAdd.", '".$pUserCity."', ".$pUserNoShow.")";
 //                 echo $sql;  
                  // При insert должен вернуться послений id - это реализовано в  MySqlQuery
 		 $newUserId = MySqlQuery($sql);
@@ -303,12 +308,13 @@ if (!isset($MyPHPScript)) return;
              if ($AllowEdit == 1)
 	     {
 
-
+                  // 03/07/2014  Добавляем признак анонимности (скрывать ФИО)
 
 	         $sql = "update  Users set   user_email = trim('".$pUserEmail."'),
 		                             user_name = trim('".$pUserName."'),
 		                             user_city = trim('".$pUserCity."'),
 		                             user_prohibitadd = ".$pUserProhibitAdd.",
+		                             user_noshow = ".$pUserNoShow.",
 					     user_birthyear = ".$pUserBirthYear."
 	                 where user_id = ".$pUserId;
                  
@@ -585,6 +591,7 @@ if (!isset($MyPHPScript)) return;
 		        from  Users u
 			where ltrim(COALESCE(u.user_password, '')) <> '' 
                               and u.user_hide = 0 
+			      and COALESCE(u.user_noshow, 0) = 0
                               and user_name like '%".$sqlFindString."%'";
                 
 		//echo 'sql '.$sql;
@@ -1181,22 +1188,26 @@ if (!isset($MyPHPScript)) return;
 		 $Import = $Row['user_importattempt'];
 		 mysql_free_result($Result);
 
+                 // Проверяем, что пользовтельский email не является автогенерированным
+                 if (substr(trim($pUserEmail), -7) <> '@mmb.ru' && !empty($pUserName))
+		 {
 
-	         $Sql = "select user_name from  Users where user_id = ".$UserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $pRequestUserName = $Row['user_name'];
-		 mysql_free_result($Result);
+			$Sql = "select user_name from  Users where user_id = ".$UserId;
+			$Result = MySqlQuery($Sql);  
+			$Row = mysql_fetch_assoc($Result);
+			$pRequestUserName = $Row['user_name'];
+			mysql_free_result($Result);
 
 
-                 $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
-		 $Msg =  $Msg."Сделан запрос на объединения Вас с пользователем ".$pRequestUserName."\r\n";
-		 $Msg =  $Msg."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил объединение, а Ваша учетная запись скрыта"."\r\n";
-		 $Msg =  $Msg."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на старницу 'Связь пользователей' и отклонить запрос."."\r\n\r\n";
+			$Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
+			$Msg =  $Msg."Сделан запрос на объединения Вас с пользователем ".$pRequestUserName."\r\n";
+			$Msg =  $Msg."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил объединение, а Ваша учетная запись скрыта"."\r\n";
+			$Msg =  $Msg."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на старницу 'Связь пользователей' и отклонить запрос."."\r\n\r\n";
 		 	   
-                  // Отправляем письмо
-		  SendMail(trim($pUserEmail), $Msg, $pUserName);
-
+			// Отправляем письмо
+			SendMail(trim($pUserEmail), $Msg, $pUserName);
+		}
+		// Конец проверки, что пользователь не импортирован
 
            }
 	   // Конец проверки на успешное добавление запроса

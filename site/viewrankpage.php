@@ -48,7 +48,7 @@ if (!isset($MyPHPScript)) return;
 	  // RecalcTeamUsersRank(0);
 	  
 
-	  $sql = "  select tu.user_id, u.user_name,  SUM(tu.teamuser_rank) as userrank, 
+	  $sql = "  select tu.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name,  SUM(tu.teamuser_rank) as userrank, 
 	                   COUNT(tu.teamuser_id) as userrankcount, 
 			   0 as distance_id, '&nbsp;' as distance_name,  'Итог' as raid_name,
 			   '&nbsp;' as team_num, '&nbsp;' as team_name

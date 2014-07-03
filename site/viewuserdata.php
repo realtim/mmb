@@ -28,6 +28,8 @@ if (!isset($MyPHPScript)) return;
 	      if (!isset($_POST['UserProhibitAdd'])) $_POST['UserProhibitAdd'] = "";
 	      $UserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
 	      $UserCity = str_replace( '"', '&quot;', $_POST['UserCity']);
+              // 03/07/2014  Добавляем анонмиов
+	      $UserNoShow = ($_POST['UserNoShow'] == 'on' ? 1 : 0);
 
              } else {
 
@@ -36,6 +38,7 @@ if (!isset($MyPHPScript)) return;
 	      $UserBirthYear = 'Год рождения';
 	      $UserProhibitAdd = 0;
 	      $UserCity =  $UserCityPlaceHolder;
+	      $UserNoShow = 0;
 
              }
             
@@ -65,7 +68,8 @@ if (!isset($MyPHPScript)) return;
 		     return;
 		}
            
-		$sql = "select user_email, user_name, user_birthyear, user_prohibitadd, user_city from  Users where user_id = ".$pUserId;
+		$sql = "select user_email, CASE WHEN COALESCE(u.user_noshow, 0) = 1 and user_id <> ".$UserId." THEN '".$Anonimus."' ELSE u.user_name END as user_name,
+		         user_birthyear, user_prohibitadd, user_city, user_noshow from  Users u where user_id = ".$pUserId;
 		$rs = MySqlQuery($sql);  
                 $row = mysql_fetch_assoc($rs);
                 mysql_free_result($rs);
@@ -81,6 +85,7 @@ if (!isset($MyPHPScript)) return;
 		  $UserBirthYear = (int)$_POST['UserBirthYear'];
 		  $UserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
 		  $UserCity = str_replace( '"', '&quot;', $_POST['UserCity']);
+		  $UserNoShow = ($_POST['UserNoShow'] == 'on' ? 1 : 0);
 
                 } else {
 
@@ -89,6 +94,7 @@ if (!isset($MyPHPScript)) return;
 		  $UserBirthYear = (int)$row['user_birthyear'];  
 		  $UserProhibitAdd = $row['user_prohibitadd'];  
 		  $UserCity = str_replace( '"', '&quot;', $row['user_city']); 
+		  $UserNoShow = $row['user_noshow'];  
 
                 }
 
@@ -290,6 +296,10 @@ if (!isset($MyPHPScript)) return;
 
          print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
 	        title = "Даже зная адрес e-mail, другой пользователь не сможет сделать Вас участником своей команды - только Вы сами или модератор ММБ" /> Нельзя включать в команду другим пользователям</td></tr>'."\r\n");
+
+          // 03/07/2014 
+         print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserNoShow" '.(($UserNoShow == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+	        title = "Вместо ФИО будет выводится текст: \''.$Anonimus.'\' Исключения: 1) Вы сами, модератор и администратор увидят в карточке пользователя ФИО. 2) При запросе на объединение с другим пользователем, инициатором которого являетесь Вы, ему будет открываться Ваше ФИО в журнале объединений и письме, чтобы он знал, кто пытается его присоединить к себе." /> Не показывать моё ФИО в результатах, рейтингах и т.п.</td></tr>'."\r\n");
 
 	 if (($AllowEdit == 1) and  ($viewmode <> 'Add'))
         {

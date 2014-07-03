@@ -357,7 +357,7 @@ $RowMaxOutLevel = mysql_fetch_assoc($ResultMaxOutLevel);
 mysql_free_result($ResultMaxOutLevel);
 
 
-$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, tu.level_id, u.user_id, tu.levelpoint_id
+$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, tu.level_id, u.user_id, tu.levelpoint_id
 	from TeamUsers tu
 		inner join Users u
 		on tu.user_id = u.user_id
