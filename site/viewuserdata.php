@@ -246,6 +246,22 @@ if (!isset($MyPHPScript)) return;
 		document.UserSendMessageForm.submit();
 	}
 
+
+	// Функция добавления впечатдения
+	function AddLink()
+	{ 
+		document.UserLinksForm.action.value = "AddLink";
+		document.UserLinksForm.submit();
+	}
+
+	// Функция добавления впечатдения
+	function DelLink(linkid)
+	{ 
+                document.UserLinksForm.action.value = "DelLink";
+		document.UserLinksForm.UserLinkId.value = linkid;
+		document.UserLinksForm.submit();
+	}
+
 </script>
 <!-- Конец вывода javascrpit -->
 
@@ -442,7 +458,7 @@ if (!isset($MyPHPScript)) return;
 	  if ($viewmode <> 'Add' and $AllowEdit == 1)
 	  {
 		// Выводим спсиок устройств, которые относятся к данному пользователю 
-	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Устройства, принадлежащие пользователю:</div>'."\r\n");
+	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Устройства:</div>'."\r\n");
 		print('<form  name = "UserDevicesForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
@@ -503,6 +519,93 @@ if (!isset($MyPHPScript)) return;
 	   }
 	   // Конец проверки на режим правки и авторизованного пользоватлея
 
+
+          // 04.07.2014  Блок ссылок на впечатления.
+	  if ($viewmode <> 'Add' and $AllowEdit == 1)
+	  {
+		// Выводим спсиок впечатлений, которые относятся к данному пользователю 
+	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Впечатления:</div>'."\r\n");
+		print('<form  name = "UserLinksForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
+		print('<input type = "hidden" name = "action" value = "">'."\r\n");
+		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
+		print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\n");
+		print('<input type = "hidden" name = "UserLinkId" value = "0">'."\n");
+		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
+	  
+		
+                 
+		$sql = "select ul.userlink_id, ul.userlink_name, lt.linktype_name,
+		               ul.userlink_url, r.raid_name 
+		        from  UserLinks ul
+			      inner join LinkTypes lt  on ul.linktype_id = lt.linktype_id
+			      inner join Raids r on ul.raid_id = r.raid_id 
+			where ul.userlink_hide = 0 and ul.user_id = ".$pUserId."
+			order by userlink_id  "; 
+                //echo 'sql '.$sql;
+		$Result = MySqlQuery($sql);
+
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+
+                  $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : $Row['userlink_name'];
+		  print('<div align = "left" style = "padding-top: 5px;">'.$Row['raid_name'].' '.$Row['linktype_name'].' <a href = "'.$Row['userlink_url'].'" 
+		          title = "'.$Row['userlink_name'].'">'.$Label.'</a>'."\r\n");
+			      	        print('<input type="button" style = "margin-left: 20px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите удалить впечатление ? \')) {DelLink('.$Row['userlink_id'].');}"  name="DelLinkButton" value="Удалить" tabindex = "'.(++$TabIndex).'">'."\r\n");
+                  print('</div>'."\r\n");
+			  
+		}
+
+                mysql_free_result($Result);
+
+                $TabIndex = 1;
+	        $DisabledText = '';
+                $NewLinkName = 'Название (можно не заполнять)';
+                $NewLinkUrl = 'Адрес ссылки';
+
+		print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
+
+		// Показываем выпадающий список ММБ
+		print('<select name="LinkRaidId" class="leftmargin" tabindex="'.(++$TabIndex).'" ">'."\n");
+		$sql = "select raid_id, raid_name from Raids order by raid_id  desc";
+		$Result = MySqlQuery($sql);
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+			$raidselected =  ($Row['raid_id'] == $RaidId)  ? ' selected ' : '';
+			print('<option value="'.$Row['raid_id'].'" '.$raidselected.' >'.$Row['raid_name']."</option>\n");
+		}
+		mysql_free_result($Result);
+		print('</select>'."\n");
+
+		// Показываем выпадающий список типов ссылок
+		print('<select name="LinkTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'" ">'."\n");
+		$sql = "select linktype_id, linktype_name from LinkTypes where linktype_hide = 0  order by linktype_id ";
+		$Result = MySqlQuery($sql);
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+			$linktypeselected = '';
+			print('<option value="'.$Row['linktype_id'].'" '.$linktypeselected.' >'.$Row['linktype_name']."</option>\n");
+		}
+		mysql_free_result($Result);
+		print('</select>'."\n");
+ 
+		print('<input type="text" name="NewLinkName" size="30" value="'.$NewLinkName.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
+                onclick = "javascript: if (trimBoth(this.value) == \''.$NewLinkName.'\') {this.value=\'\';}" 
+                onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$NewLinkName.'\';}"
+	        title = "Название нового впечатления">'."\r\n");
+	        print('</div>'."\r\n");
+
+		print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
+
+		print('<input type="text" name="NewLinkUrl" size="50" value="'.$NewLinkUrl.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
+                onclick = "javascript: if (trimBoth(this.value) == \''.$NewLinkUrl.'\') {this.value=\'\';}" 
+                onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$NewLinkUrl.'\';}"
+	        title = "Адрес ссылки на впечатление">'."\r\n");
+    	        print('<input type="button" onClick = "javascript: AddLink();"  name="AddLinkButton" value="Добавить" tabindex = "'.(++$TabIndex).'">'."\r\n");
+                   
+	        print('</div></form>'."\r\n");
+
+	   }
+	   // Конец блока ссылок на впечатления
 	   
 	   
 ?>

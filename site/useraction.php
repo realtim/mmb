@@ -1371,7 +1371,191 @@ if (!isset($MyPHPScript)) return;
 
 	   $view = "ViewUserUnionPage";
 	   $viewmode = "";
-  
+
+   }
+
+   // ============ Добавление впечатления ====================================
+   elseif ($action == 'AddLink')
+   {
+   
+   
+	$pUserId = $_POST['UserId']; 
+
+	if ($pUserId <= 0)
+	{
+		$statustext = 'Пользователь не найден';
+		$alert = 1;
+		return;
+	}
+
+	if ($SessionId <= 0)
+	{
+		$statustext = 'Сессия не найдена';
+		$alert = 1;
+		return;
+	}
+
+	     $AllowEdit = 0;
+	     // Права на редактирование
+             if (($pUserId == $UserId) || $Administrator)
+	     {
+		  $AllowEdit = 1;
+	     } else {
+
+	       $AllowEdit = 0;
+               // выходим
+	       return;
+	     }
+
+		$pLinkName = trim($_POST['NewLinkName']); 
+		$pLinkUrl = trim($_POST['NewLinkUrl']); 
+		$pLinkTypeId = $_POST['LinkTypeId']; 
+        	$pLinkRaidId = $_POST['LinkRaidId']; 
+
+
+        if (!isset($pLinkRaidId)) {$pLinkRaidId = 0;}
+        if (!isset($pLinkTypeId)) {$pLinkTypeId = 0;}
+        if (!isset($pLinkUrl)) {$pLinkUrl = '';}
+        if (!isset($pLinkName)) {$pLinkName = '';}
+
+
+	if ($pLinkRaidId <= 0)
+	{
+		$statustext = 'ММБ не найден';
+		$alert = 1;
+		return;
+	}
+
+
+
+	if (empty($pLinkUrl) or $pLinkUrl == 'Адрес ссылки на впечатление')
+	{
+		$statustext = 'Не указан адрес ссылки';
+		$alert = 1;    
+		   $view = "ViewUserData";
+		   $viewmode = "";
+
+		return;
+	}
+
+
+	if (empty($pLinkTypeId))
+	{
+		$statustext = 'Не указан тип ссылки';
+		$alert = 1;    
+		   $view = "ViewUserData";
+		   $viewmode = "";
+
+		return;
+	}
+
+	if ($pLinkName == 'Название (можно не заполнять)')
+	{
+		$pLinkName = '';
+	}
+
+
+	// Прверяем, что нет ссылки с таким адресом
+           $sql = "select count(*) as resultcount from  UserLinks where trim(userlink_url) = '".trim($pLinkUrl)."'";
+      //     echo $sql;
+	   $rs = MySqlQuery($sql);  
+	   $Row = mysql_fetch_assoc($rs);
+           mysql_free_result($rs);
+	   if ($Row['resultcount'] > 0)
+	   {
+   		$statustext = "Уже есть впечатление  с такми адресом.";
+	        $alert = 1; 
+                $viewsubmode = "ReturnAfterError"; 
+                return; 
+	   }
+	   
+	// Прверяем, что не более трёх ссылок на ММБ 
+           $sql = "select count(*) as resultcount from  UserLinks where raid_id = ".$pLinkRaidId." and user_id = ".$pUserId;
+           //echo $sql;
+	   $rs = MySqlQuery($sql);  
+	   $Row = mysql_fetch_assoc($rs);
+           mysql_free_result($rs);
+	   if ($Row['resultcount'] >= 3)
+	   {
+   		$statustext = "Уже есть 3 впечатления на этот ММБ.";
+	        $alert = 1; 
+                $viewsubmode = "ReturnAfterError"; 
+                return; 
+	   }
+
+
+    		 $Sql = "insert into UserLinks (userlink_name, userlink_url, linktype_id, userlink_hide, raid_id, user_id) 
+		         values ('".$pLinkName."', '".$pLinkUrl."', ".$pLinkTypeId.", 0, ".$pLinkRaidId.", ".$pUserId.")";
+
+              //    echo $sql;
+		 MySqlQuery($Sql);  
+
+	   
+	           $statustext = 'Добавлено новое впечатление';				     
+		   $view = "ViewUserData";
+		   $viewmode = "";
+
+ }
+
+   // ============ Удаление впечатления ====================================
+   elseif ($action == 'DelLink')
+   {
+   
+   
+	$pUserId = $_POST['UserId']; 
+
+	if ($pUserId <= 0)
+	{
+		$statustext = 'Пользователь не найден';
+		$alert = 1;
+		return;
+	}
+
+	if ($SessionId <= 0)
+	{
+		$statustext = 'Сессия не найдена';
+		$alert = 1;
+		return;
+	}
+
+	     $AllowEdit = 0;
+	     // Права на редактирование
+             if (($pUserId == $UserId) || $Administrator)
+	     {
+		  $AllowEdit = 1;
+	     } else {
+
+	       $AllowEdit = 0;
+               // выходим
+	       return;
+	     }
+
+		$pUserLinkId = trim($_POST['UserLinkId']); 
+
+
+        if (!isset($pUserLinkId)) {$pUserLinkId = 0;}
+
+
+	if ($pUserLinkId <= 0)
+	{
+		$statustext = 'Ссылка не найдена';
+		$alert = 1;
+		return;
+	}
+
+
+
+
+    		 $Sql = "update  UserLinks set userlink_hide = 1 where userlink_id = ".$pUserLinkId;
+
+              //    echo $sql;
+		 MySqlQuery($Sql);  
+
+	   
+	           $statustext = 'Впечатление удалено';				     
+		   $view = "ViewUserData";
+		   $viewmode = "";
+
 
    }  else {
    // если никаких действий не требуется
