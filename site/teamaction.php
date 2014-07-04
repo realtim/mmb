@@ -803,7 +803,7 @@ elseif ($action == 'JsonExport')
 	// Distances: distance_id, raid_id, distance_name
 	$Sql = "select distance_id, raid_id, distance_name 
 		from Distances
-		where raid_id = ".$RaidId;
+		where distance_hide = 0 and raid_id = ".$RaidId;
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
@@ -812,10 +812,10 @@ elseif ($action == 'JsonExport')
 
 	// Teams: team_id, distance_id, team_name, team_num // *
 	$Sql = "select team_id, t.distance_id, team_name, team_num, team_usegps, team_greenpeace,
-		level_id, team_progress, team_result, team_registerdt 
+		level_id, team_progress, team_result, team_registerdt, team_outofrange 
 		from Teams t 
-			inner join Distances d on t.distance_id = d.distance_id 
-		where t.team_hide = 0  and d.raid_id = ".$RaidId;
+		     inner join Distances d on t.distance_id = d.distance_id 
+		where t.team_hide = 0 and d.distance_hide = 0  and d.raid_id = ".$RaidId;
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
@@ -823,12 +823,13 @@ elseif ($action == 'JsonExport')
 
 	// Users: user_id, user_name, user_birthyear // *
 	// Добавил олграничение - только по текущему ММБ
-	$Sql = "select u.user_id, u.user_name, u.user_birthyear 
+	$Sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name,
+	               u.user_birthyear, u.user_city 
 	        from Users u
 		     inner join TeamUsers tu on u.user_id = tu.user_id
 		     inner join Teams t on tu.team_id = t.team_id 
 		     inner join Distances d on t.distance_id = d.distance_id 
-		where u.user_hide = 0 and t.team_hide = 0 and tu.teamuser_hide = 0 and d.raid_id = ".$RaidId;
+		where u.user_hide = 0 and t.team_hide = 0 and tu.teamuser_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
 
 
 	$Result = MySqlQuery($Sql);
@@ -836,11 +837,11 @@ elseif ($action == 'JsonExport')
 	mysql_free_result($Result);
 
 	// TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
-	$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.level_id 
+	$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.level_id, tu.levelpoint_id, tu.teamuser_rank 
 	        from TeamUsers tu 
-			inner join Teams t on tu.team_id = t.team_id 
+		     inner join Teams t on tu.team_id = t.team_id 
 		     inner join Distances d on t.distance_id = d.distance_id 
-		where t.team_hide = 0 and tu.teamuser_hide = 0 and d.raid_id = ".$RaidId;
+		where t.team_hide = 0 and tu.teamuser_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
@@ -858,7 +859,7 @@ elseif ($action == 'JsonExport')
 		       level_minendtime, level_endtime, level_discountpoints, level_discount
 	        from Levels l 
 		     inner join Distances d on l.distance_id = d.distance_id 
-	        where d.raid_id = ".$RaidId;
+	        where  l.level_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
@@ -876,15 +877,53 @@ elseif ($action == 'JsonExport')
 		from TeamLevels tl 
 		     inner join Teams t on tl.team_id = t.team_id 
 		     inner join Distances d on t.distance_id = d.distance_id 
-		where t.team_hide = 0 and tl.teamlevel_hide = 0 and d.raid_id = ".$RaidId;
+		where t.team_hide = 0 and tl.teamlevel_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
 
 	$Result = MySqlQuery($Sql);
 
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevels"][] = $Row; }
 	mysql_free_result($Result);
 
-        }
+        // 04/07/2014 Добавляю точки и результаты в точках
 
+
+
+	$Sql = "select lp.levelpoint_id, lp.distance_id, lp.levelpoint_name, lp.levelpoint_order, lp.pointtype_id, 
+	               pt.pointtype_id,
+	               lp.levelpoint_penalty, lp.levelpoint_mindatetime,
+		       lp.levelpoint_maxdatetime
+	        from LevelPoints lp 
+		     inner join Distances d on lp.distance_id = d.distance_id 
+		     inner join PointTypes pt on lp.pointtype_id = pt.pointtype_id 
+	        where  lp.levelpoint_name = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+
+	$Result = MySqlQuery($Sql);
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row; }
+	mysql_free_result($Result);
+
+
+
+	// TeamLevelPoints: 
+	$Sql = "select tlp.teamlevelpoint_id, tlp.team_id, tlp.levelpoint_id, 
+		       tlp.teamlevelpoint_datetime, 
+		       tlp.teamlevelpoint_points, tlp.teamlevelpoint_comment,
+		       tlp.teamlevelpoint_penalty,
+		       tlp.teamlevelpoint_duration 
+		from TeamLevelPoints tlp 
+		     inner join Teams t on tlp.team_id = t.team_id 
+		     inner join Distances d on t.distance_id = d.distance_id 
+		where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+
+	$Result = MySqlQuery($Sql);
+
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelPoints"][] = $Row; }
+	mysql_free_result($Result);
+
+
+        }
+        // Конец проверки, что можно экспортировать данные по этапам
+	
+     
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
 	header("Content-Type: application/octet-stream");
 	header("Content-Disposition: attachment; filename=\"mmbdata.json\"");
