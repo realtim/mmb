@@ -401,7 +401,7 @@ if (!isset($MyPHPScript)) return;
 	 
 
           // Выводим спсиок команд, в которых участвовал данный пользователь 
-          print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Участвовал в командах:</div>'."\r\n");
+          print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Участвовал:</div>'."\r\n");
           print('<form  name = "UserTeamsForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
           print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	  print('<input type = "hidden" name = "RaidId" value = "0">'."\n");
@@ -413,7 +413,7 @@ if (!isset($MyPHPScript)) return;
 		$sql = "select tu.teamuser_id, t.team_name, t.team_id, 
 		               d.distance_name, r.raid_name, t.team_num, 
 			       r.raid_id, l.level_name, lp.levelpoint_name,
-			       l.level_id, lp.levelpoint_id  
+			       l.level_id, lp.levelpoint_id, COALESCE(tu.teamuser_rank, 0.00000) as teamuser_rank  
 		        from  TeamUsers tu
 			     inner join  Teams t
 			     on tu.team_id = t.team_id
@@ -449,7 +449,7 @@ if (!isset($MyPHPScript)) return;
 
 
 		  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].','.$Row['raid_id'].');"  title = "Переход к карточке команды">'.$Row['team_name'].'</a> 
-		         (N '.$Row['team_num'].$TeamPlaceResult.$TeamUserOff.', дистанция: '.$Row['distance_name'].', ммб: '.$Row['raid_name'].')</div>'."\r\n");
+		         N '.$Row['team_num'].$TeamPlaceResult.$TeamUserOff.' ('.$Row['teamuser_rank'].'), дистанция: '.$Row['distance_name'].', ммб: '.$Row['raid_name'].'</div>'."\r\n");
 		}
 
                 mysql_free_result($Result);

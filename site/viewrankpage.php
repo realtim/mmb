@@ -20,6 +20,13 @@ if (!isset($MyPHPScript)) return;
 	
 	
 	
+	// Посмотреть команду
+	function ViewTeamInfo(teamid)
+	{
+		document.RankUsersForm.TeamId.value = teamid;
+		document.RankUsersForm.action.value = "TeamInfo";
+		document.RankUsersForm.submit();
+	}
 
 
 
@@ -33,9 +40,21 @@ if (!isset($MyPHPScript)) return;
            	print('<form  name = "RankUsersForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
                 print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");
+	        print('<input type = "hidden" name = "TeamId" value = "0">'."\n");
 		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
 		
+		if (!isset($_POST['ShowAllRaids'])) {
+		  $ShowAllRaids = '';
+		} else {
+		  $ShowAllRaids = $_POST['ShowAllRaids'];
+		}
 		
+		
+		$DisabledText = '';
+		
+	        print('Отображать все марш-броски (долгая загрузка) <input type="checkbox"  autocomplete = "off" name="ShowAllRaids" '.(($ShowAllRaids == 'on') ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+	        title = "Отображать все марш-броски (долгая загрузка)" onclick = "javacript:document.RankUsersForm.action.value = \'ViewRankPage\';document.RankUsersForm.submit();" />'."\r\n");
+
 
 	        print('</form>'."\r\n");
 
@@ -107,16 +126,40 @@ if (!isset($MyPHPScript)) return;
                 $thstyle = 'padding: 5px 0px 0px 5px;';		
                // $thstyle = '';		
 
-                $ColumnWidth = 350;
-
-
-		print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
+               if ($ShowAllRaids) 
+	       {
+		$sqlRaids = "select r.raid_id, r.raid_name, d.distance_name, d.distance_id from Raids r 
+					     inner join Distances d on r.raid_id = d.raid_id and d.distance_hide = 0
+                             order by r.raid_id  desc, d.distance_id desc ";
+		$ResultRaids = MySqlQuery($sqlRaids);
+                $RowCount = mysql_num_rows($ResultRaids);
+                $TableWidth =  $RowCount*100 + 550;
+               } else {
+	         $TableWidth = 550;
+	       }
+		print('<table border = "1" width = "'.$TableWidth.'" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
 
 		print('<tr class = "gray">
  	                 <td width = "100" style = "'.$thstyle.'">N строки</td>
  	                 <td width = "350" style = "'.$thstyle.'">Пользователь</td>
-		         <td width = "100" style = "'.$thstyle.'">Рейтинг</td>
-			 </tr>'."\r\n");
+		         <td width = "100" align = "center" style = "'.$thstyle.'">Рейтинг</td>'."\r\n");
+
+               if ($ShowAllRaids) 
+	       {
+
+	     // Показываем  список ММБ
+		while ($RowRaids = mysql_fetch_assoc($ResultRaids))
+		{
+                         print('<td width = "100"  style = "'.$thstyle.'">'.$RowRaids['raid_name'].' '.$RowRaids['distance_name'].'</td>'."\r\n");
+		}
+		mysql_free_result($ResultRaids);
+               }
+	       
+		print('</tr>'."\r\n");
+ 	
+	
+	
+
 	
 	        $LineNum = 0;	
 	        // Сканируем команды
@@ -128,7 +171,55 @@ if (!isset($MyPHPScript)) return;
                      print('<tr>'."\r\n");
 		     print('<td align = "left" style = "'.$tdstyle.'">'.$LineNum.'</td>'."\r\n");
 		     print('<td align = "left" style = "'.$tdstyle.'"><a href = "javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a></td>'."\r\n");
-		     print('<td align = "left" style = "'.$tdstyle.'">'.$Row['userrank'].'</td>'."\r\n");
+		     print('<td align = "center" style = "'.$tdstyle.'">'.$Row['userrank'].'</td>'."\r\n");
+
+               if ($ShowAllRaids) 
+	       {
+
+                  // Показываем  список ММБ
+		$sqlRaids = "select r.raid_id, d.distance_id, a.team_name, a.team_id, a.team_outofrange,
+		                    a.level_name, a.levelpoint_name, a.teamuser_rank, a.level_id, a.levelpoint_id
+		        from Raids r 
+			     inner join Distances d on r.raid_id = d.raid_id and d.distance_hide = 0
+			     left outer join (select t.distance_id, t.team_name, t.team_id, t.team_outofrange,
+		                                     l.level_name, lp.levelpoint_name, tu.teamuser_rank,
+						     l.level_id, lp.levelpoint_id 
+			                      from Teams t 
+			                           inner join TeamUsers tu  on t.team_id = tu.team_id and tu.teamuser_hide = 0 and tu.user_id = ".$Row['user_id']."
+						   left outer join Levels l on tu.level_id = l.level_id
+			                           left outer join LevelPoints lp on tu.levelpoint_id = lp.levelpoint_id
+					      where   t.team_hide = 0) a
+                             on d.distance_id = a.distance_id					       	   
+		        order by r.raid_id  desc,  d.distance_id desc";
+		$ResultRaids = MySqlQuery($sqlRaids);
+		while ($RowRaids = mysql_fetch_assoc($ResultRaids))
+		{
+                         
+			 if (!empty($RowRaids['team_name']))
+			 {
+               			$TeamPlace = GetTeamPlace($RowRaids['team_id']);
+				$LevelId = $RowRaids['level_id'];
+				$LevelPointId = $RowRaids['levelpoint_id'];
+				$TeamPlaceResult = "";
+				// Есть место команды и нет схода участника
+				if ($TeamPlace > 0 and $LevelId == 0 and $LevelPointId == 0) $TeamPlaceResult = ", место ".$TeamPlace."";
+
+				$TeamUserOff = "";
+				// Есть место команды, но сход участника
+			//	if ($TeamPlace > 0 and $LevelId > 0) $TeamUserOff = ", сход на этапе <b>".$RowRaids['level_name']."</b>";
+			//	if ($TeamPlace > 0 and $LevelPointId > 0) $TeamUserOff = ", не явка в точку <b>".$RowRaids['levelpoint_name']."</b>";
+
+
+			   $TeamString = '<a href = "javascript:ViewTeamInfo('.$RowRaids['team_id'].');">'.$RowRaids['team_name'].'</a></br>'.$RowRaids['teamuser_rank'].$TeamPlaceResult.$TeamUserOff;
+			 } else {
+				$TeamString = '&nbsp;';
+			 }	
+			 
+                         print('<td align = "left" style = "'.$tdstyle.'">'. $TeamString.'</td>'."\r\n");
+		}
+		mysql_free_result($ResultRaids);
+               }
+
                      print('</tr>'."\r\n");
 			
 		}	
