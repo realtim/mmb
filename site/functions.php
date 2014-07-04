@@ -1350,7 +1350,15 @@ send_mime_mail('Автор письма',
                          group by t.distance_id
                         ) a
                         on a.distance_id = t.distance_id
-		 SET teamuser_rank  =  (a.firstresult_in_sec + 0.00)/(TIME_TO_SEC(COALESCE(t.team_result, 0)) + 0.00) 
+			inner join 
+			(
+			 select d.raid_id,  MAX(COALESCE(d.distance_length, 0)) as maxlength 
+			 from  Distances d
+			 where d.distance_hide = 0 
+			 group by d.raid_id
+                        ) b
+                        on d.raid_id = b.raid_id
+		 SET teamuser_rank  =  (a.firstresult_in_sec + 0.00)/(TIME_TO_SEC(COALESCE(t.team_result, 0)) + 0.00)*(CASE WHEN b.maxlength > 0 THEN  d.distance_length/(b.maxlength + 0.00) ELSE 1.00 END) 
 		 where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and tu.levelpoint_id is NULL

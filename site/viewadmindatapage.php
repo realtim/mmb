@@ -118,7 +118,7 @@ if (!isset($MyPHPScript)) return;
                           tabindex = "105"></td></tr>'."\r\n");
 
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RecalcAllRaidsResultsButton" value="Пересчитать рейтинг по всем ММБ"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:270px;" name="RecalcAllRaidsResultsButton" value="Пересчитать рейтинг по всем ММБ"
                           onclick = "javascript: RecalcAllRaidsRank();"
                           tabindex = "106"></td></tr>'."\r\n");
 
