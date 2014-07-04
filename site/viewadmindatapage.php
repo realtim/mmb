@@ -66,7 +66,7 @@ if (!isset($MyPHPScript)) return;
 
 	function RecalcAllRaidsRank()
 	{ 
-              document.AdminForm.action.value = "RecalcRaidRank";
+              document.AdminForm.action.value = "RecalcAllRaidsRank";
               document.AdminForm.RaidId.value = 0; 
 	      document.AdminForm.submit();
               return true;
