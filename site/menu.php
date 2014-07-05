@@ -459,7 +459,7 @@ if (!isset($MyPHPScript)) return;
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 	print('<tr><td><a href="http://www.livejournal.com/community/_mmb_" target = "_blank">ЖЖ</a></td></tr>'."\r\n"); 
 	print('<tr><td><a href="http://slazav.mccme.ru/maps/" target = "_blank">Карты</a></td></tr>'."\r\n"); 
-	print('<tr><td><a href="http://mmb.progressor.ru/vp.html" target = "_blank">Впечатления</a></td></tr>'."\r\n"); 
+	print('<tr><td><a href="vp.php" target = "_blank">Впечатления</a></td></tr>'."\r\n"); 
 	print('<tr><td><a href="http://mmb.progressor.ru/icons.html" target = "_blank">Значки</a></td></tr>'."\r\n"); 
 	print('<tr><td> <a href="http://slazav.mccme.ru/mmb/" target = "_blank">Архив</a></td></tr>'."\r\n"); 
 	print('</table>'."\r\n");
