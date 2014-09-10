@@ -1456,7 +1456,12 @@ if (!isset($MyPHPScript)) return;
 
 
 	// Прверяем, что нет ссылки с таким адресом
-           $sql = "select count(*) as resultcount from  UserLinks where trim(userlink_url) = '".trim($pLinkUrl)."'";
+           $sql = "select count(*) as resultcount 
+	           from  UserLinks 
+	           where trim(userlink_url) = '".trim($pLinkUrl)."'
+		         and userlink_hide = 0
+
+		   ";
       //     echo $sql;
 	   $rs = MySqlQuery($sql);  
 	   $Row = mysql_fetch_assoc($rs);
@@ -1470,7 +1475,11 @@ if (!isset($MyPHPScript)) return;
 	   }
 	   
 	// Прверяем, что не более трёх ссылок на ММБ 
-           $sql = "select count(*) as resultcount from  UserLinks where raid_id = ".$pLinkRaidId." and user_id = ".$pUserId;
+           $sql = "select count(*) as resultcount 
+	           from  UserLinks 
+		   where raid_id = ".$pLinkRaidId." 
+		     and userlink_hide = 0
+		     and user_id = ".$pUserId;
            //echo $sql;
 	   $rs = MySqlQuery($sql);  
 	   $Row = mysql_fetch_assoc($rs);
