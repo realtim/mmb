@@ -1375,4 +1375,65 @@ send_mime_mail('Автор письма',
      }
      // конец функции получения вклада в рейтинг
 
+
+     // Проверка неявки на старт в прошлое участие
+     function CheckNotStart($userid, $raidid)
+     {
+
+        $NotStart = 0;     
+        $PredRaidId = 0;
+
+	$sql = " select d.raid_id
+	         from TeamUsers tu
+		       inner join Teams t
+		       on t.team_id = tu.team_id
+		       inner join Distances d
+		       on t.distance_id = d.distance_id
+	         where d.raid_id < ".$raidid."
+		       and tu.user_id = ".$userid."
+		       and t.team_hide = 0
+		       and tu.teamuser_hide = 0 
+		 order  by d.raid_id DESC
+		 LIMIT 0,1";
+/*
+	$sql = " select r.raid_id 
+	         from Raids r
+	         where r.raid_id < ".$raidid."
+		 order  by raid_id DESC
+		 LIMIT 0,1";
+*/				 
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$PredRaidId = $Row['raid_id'];
+	mysql_free_result($Result);
+	
+	if ($PredRaidId > 0) {
+
+		$sql = " select count(*) as result
+		         from TeamUsers tu
+			       inner join Teams t
+			       on t.team_id = tu.team_id
+			       inner join Distances d
+			       on t.distance_id = d.distance_id
+		         where d.raid_id = ".$PredRaidId."
+			       and tu.user_id = ".$userid."
+			       and COALESCE(t.team_progress, 0) = 0 
+			       and t.team_hide = 0
+			       and tu.teamuser_hide = 0 ";
+
+	      // echo $sql;
+				 
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+		$NotStart = $Row['result'];
+		mysql_free_result($Result);
+
+	}
+	 // Конец проверки, что это не первый ММБ
+		    
+       return($NotStart);
+     }
+     //Конец статуса неявки на старт в прошлй раз
+     
+
 ?>

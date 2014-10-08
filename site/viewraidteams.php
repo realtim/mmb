@@ -875,6 +875,10 @@ if (!isset($MyPHPScript)) return;
 			{
 			  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
  
+                          // Отметка невыходна на старт в предыдущем ММБ                          
+                          if (CheckNotStart($UserRow['user_id'], $RaidId) > 0) {
+			    print(' <a title = "Участник заявлен, но не вышел на старт в прошлый раз" href = "#notstart">(?!)</a> ');
+			  } 
                           // Неявку участников показываем, если загружены результаты
 			  if ($CanViewResults) 
                           {
