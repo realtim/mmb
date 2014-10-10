@@ -837,15 +837,18 @@ if (!isset($MyPHPScript)) return;
 			} 
 
 			$TeamsCount--;
-                      
+                      /*
                        if ($Row['team_greenpeace'] == 1) {
                              $tdgreenstyle = 'background-color:#99ee99;';
                         } else {
                              $tdgreenstyle = '';
                         }
+		*/
+		        $tdgreenstyle = '';
 
  			print('<tr class = "'.$TrClass.'"><td style = "'.$tdgreenstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
-			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_outofrange'] == 1 ? ', Вне зачета!' : '').')'."\r\n");
+			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_greenpeace'] == 1 ? ', <a title = "Нет сломанным унитазам!" href = "#comment">ну!</a>' : '').
+				  ($Row['team_outofrange'] == 1 ? ', Вне зачета!' : '').')'."\r\n");
 
                         // прогресс команды показываем только когда открыты результаты
                         if ($CanViewResults) 
@@ -877,7 +880,7 @@ if (!isset($MyPHPScript)) return;
  
                           // Отметка невыходна на старт в предыдущем ММБ                          
                           if (CheckNotStart($UserRow['user_id'], $RaidId) > 0) {
-			    print(' <a title = "Участник заявлен, но не вышел на старт в прошлый раз" href = "#notstart">(?!)</a> ');
+			    print(' <a title = "Участник был заявлен, но не вышел на старт в прошлый раз" href = "#comment">(?!)</a> ');
 			  } 
                           // Неявку участников показываем, если загружены результаты
 			  if ($CanViewResults) 
@@ -1079,6 +1082,12 @@ if (!isset($MyPHPScript)) return;
 		mysql_free_result($Result);
 		print('</table>'."\r\n");
 	
+		print('<br/>'."\r\n");
+		print('<div id = "comment" align = "justify" style = "font-size: 80%;">Примечания: 1) Команды, взявшие на себя повышенные экологические обязательства,отмечаются знаком <b>ну!</b>
+		        <br/>2) Участники, которые не вышли на старт, 
+		         и при этом не удалили свою заявку до окончания регистрации, при следующей заявке отмечаются знаком <b>(?!)</b> 
+			 <br/></div>'."\r\n");
+
 
 ?>
 </form>
