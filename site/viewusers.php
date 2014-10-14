@@ -49,16 +49,31 @@ if (!isset($MyPHPScript)) return;
 	        print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\n");
 		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
 		
-		
-                 
-		$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, COALESCE(u.user_city, '') as user_city 
-		        from  Users u
-			where ltrim(COALESCE(u.user_password, '')) <> '' 
-                              and u.user_hide = 0
-                              and COALESCE(u.user_noshow, 0) = 0
-                              and user_name like '%".trim($sqlFindString)."%'
-			order by user_name "; 
-                
+	        if ($Administrator)
+		{
+
+			$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, 
+			                COALESCE(u.user_city, '') as user_city,
+			                CASE WHEN u.user_email like '%@mmb.ru' THEN 'импорт' ELSE '' END as  import, 
+			                CASE WHEN COALESCE(u.user_password, '') = '' THEN 'не активирован' ELSE '' END as noactive,   
+			                CASE WHEN COALESCE(u.user_hide, 0) = 1 THEN 'удалён' ELSE '' END as hide, 
+			                CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN 'скрыл данные' ELSE '' END as noshow
+			        from  Users u
+				where  u.user_name like '%".trim($sqlFindString)."%'
+				order by user_name "; 
+
+
+ 		} else {
+
+			$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, COALESCE(u.user_city, '') as user_city 
+			        from  Users u
+				where ltrim(COALESCE(u.user_password, '')) <> '' 
+	                              and u.user_hide = 0
+	                              and COALESCE(u.user_noshow, 0) = 0
+	                              and user_name like '%".trim($sqlFindString)."%'
+				order by user_name "; 
+		}
+		// Конец проверки на администратора                 
 		//echo 'sql '.$sql;
 		
 		$Result = MySqlQuery($sql);
@@ -71,7 +86,13 @@ if (!isset($MyPHPScript)) return;
 		
 			while ($Row = mysql_fetch_assoc($Result))
 			{
-			  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a> '.$Row['user_city'].'</div>'."\r\n");
+			  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a> '.$Row['user_city']."\r\n");
+			  if ($Administrator)
+			  {
+				  print(' '.$Row['import'].' '.$Row['noactive'].' '.$Row['hide'].' '.$Row['noshow']."\r\n");
+			  }
+
+			  print('</div>'."\r\n");
 			}
 
 		} else {
