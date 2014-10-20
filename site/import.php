@@ -32,7 +32,7 @@ else
 // Конец проверки, как именно используем скрипт: из интерфейса или отдельно
 
 
-// Устанавливаем часовой пояс по умолчанию
+  // Устанавливаем часовой пояс по умолчанию
   date_default_timezone_set("Europe/Moscow");
   // Подключаемся к базе
   $ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
@@ -174,23 +174,28 @@ if (isset($_FILES['android']))
 			$Row = mysql_fetch_assoc($Result);
 			$full_points = explode(',', $Row['level_pointnames']);
 			mysql_free_result($Result);
-			// Сначала считаем, что все КП невзятые
-			$bit_points = array();
-			foreach ($full_points as $n => $val) $bit_points[$n] = 0;
-			// Берем из результатов список взятых КП
-			if ($values[6])	$visited_points = explode(',', $values[6]);
-			else $visited_points = array();
-			if (($pointtype_id <> 2) && ($pointtype_id <> 4) && count($visited_points)) die("взятые КП отмечены не на финише этапа/смене карт в строке #".$line_num." - ".$line);
-			// Помечаем их взятыми в битовом массиве
-			foreach ($visited_points as $point)
+			// Обрабатываем список взятых КП, если он не NULL и зарегистрирован на СК/Финише
+			if (($values[6] == "NULL")  || (($pointtype_id <> 2) && ($pointtype_id <> 4)))
+				$teamlevelpoint_points[$line_num] = "NULL";
+			else
 			{
-				$index = array_search($point, $full_points, true);
-				if ($index === false) die("Несуществующее на этапе КП '".$point."' в строке #".$line_num." - ".$line);
-				$bit_points[$index] = 1;
+				// Сначала считаем, что все КП невзятые
+				$bit_points = array();
+				foreach ($full_points as $n => $val) $bit_points[$n] = 0;
+				// Берем из результатов список взятых КП
+				if ($values[6])	$visited_points = explode(',', $values[6]);
+				else $visited_points = array();
+				if (($pointtype_id <> 2) && ($pointtype_id <> 4) && count($visited_points)) die("взятые КП отмечены не на финише этапа/смене карт в строке #".$line_num." - ".$line);
+				// Помечаем их взятыми в битовом массиве
+				foreach ($visited_points as $point)
+				{
+					$index = array_search($point, $full_points, true);
+					if ($index === false) die("Несуществующее на этапе КП '".$point."' в строке #".$line_num." - ".$line);
+					$bit_points[$index] = 1;
+				}
+				// Запоминаем сгеренированную строку для последующего сохранения в базе
+				$teamlevelpoint_points[$line_num] = implode(",", $bit_points);
 			}
-			// Запоминаем сгеренированную строку для последующего сохранения в базе
-			$teamlevelpoint_points[$line_num] = implode(",", $bit_points);
-			if (($pointtype_id <> 2) && ($pointtype_id <> 4)) $teamlevelpoint_points[$line_num] = "NULL";
 		}
 	}
 	// Проверяем, что в конце файла был end
@@ -337,6 +342,10 @@ if (isset($_FILES['android']))
 			else
 			{
 				foreach ($Old as &$val) $val = mysql_real_escape_string($val);
+				// Если список взятых КП неизвестен (==NULL), то считаем его равным списку из уже имеющейся записи в базе
+				if ($teamlevelpoint_points[$line_num] == "NULL")
+					$teamlevelpoint_points[$line_num] = $Old['teamlevelpoint_points'];
+				// Сравниваем старую и новую записи
 				if (!$Old['teamlevelpoint_comment']) $Old['teamlevelpoint_comment'] = "NULL"; else $Old['teamlevelpoint_comment'] = "'".$Old['teamlevelpoint_comment']."'";
 				if (($Old['teamlevelpoint_date'] == $values[3]) &&
 				    ($Old['device_id'] == $values[4]) &&
