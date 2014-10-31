@@ -343,6 +343,9 @@ function ValidateTeam($Team, $Levels)
 		if ($teamlevel['teamlevel_begtime'] && ($teamlevel['teamlevel_progress'] == 0)) return(LogError($teamlevel['teamlevel_id'], 6));
 		if ($endtime && ($teamlevel['teamlevel_progress'] <> 2)) return(LogError($teamlevel['teamlevel_id'], 7));
 		if (!$endtime && ($teamlevel['teamlevel_progress'] == 2)) return(LogError($teamlevel['teamlevel_id'], 8));
+		// проверяем наличие времени финиша и списка КП у финишировавшей команды
+		if (($teamlevel['teamlevel_endtime'] == "") && !(strpos($teamlevel['teamlevel_points'], "1") === false)) return(LogError($teamlevel['teamlevel_id'], 12));
+		if (($teamlevel['teamlevel_endtime'] != "") && ($teamlevel['teamlevel_points'] == "")) return(LogError($teamlevel['teamlevel_id'], 13));
 		// проверяем длину списка КП и пересчитываем штраф
 		$level_pointpenalties = explode(',', $Levels['level_pointpenalties'][$n]);
 		$level_discountpoints = explode(',', $Levels['level_discountpoints'][$n]);
