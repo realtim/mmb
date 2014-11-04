@@ -565,7 +565,7 @@ if (!isset($MyPHPScript)) return;
 		print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
 
 		// Показываем выпадающий список ММБ
-		print('<select name="LinkRaidId" class="leftmargin" tabindex="'.(++$TabIndex).'" ">'."\n");
+		print('<select name="LinkRaidId"  tabindex="'.(++$TabIndex).'" ">'."\n");
 		$sql = "select raid_id, raid_name from Raids order by raid_id  desc";
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
