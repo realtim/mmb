@@ -5,6 +5,8 @@ $MyPHPScript = "self";
 include("functions.php");
 include("settings.php");
 
+
+
 ?>﻿
 <!-- saved from url=(0032)http://mmb.progressor.ru/vp.html -->
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
