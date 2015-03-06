@@ -91,9 +91,9 @@ public class BarcodeFileReader
 				recordsAdded++;
 			}
 		}
-		catch (ParseException e)
+		catch (Exception e)
 		{
-			importState.appendMessage(e.getMessage());
+			importState.appendMessage("PARSE ERROR: " + e.getMessage());
 		}
 	}
 
@@ -101,9 +101,11 @@ public class BarcodeFileReader
 	{
 		ParsedBarcode result = new ParsedBarcode();
 		String[] inputParts = inputLine.split(",");
-		result.scanPointOrder = Integer.parseInt(inputParts[0].trim());
-		result.teamNumber = Integer.parseInt(inputParts[1].trim().substring(2, 6));
-		String dateString = inputParts[3].trim() + " " + inputParts[2].trim();
+		// New field added: LOGGER_ID
+		// String loggerId = inputParts[0].trim();
+		result.scanPointOrder = Integer.parseInt(inputParts[1].trim());
+		result.teamNumber = Integer.parseInt(inputParts[2].trim().substring(2, 6));
+		String dateString = inputParts[4].trim() + " " + inputParts[3].trim();
 		result.barcodeScanDate = BARCODE_DATE_FORMAT.parse(dateString);
 		return result;
 	}

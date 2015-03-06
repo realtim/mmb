@@ -156,7 +156,7 @@ public class ImportBarCodeMetaTable extends MetaTable
 	private void appendNotExistingColumns(JSONObject targetJSON) throws JSONException
 	{
 		teamLevelPointsTable.getColumnByName(USER_ID).appendToJSON(targetJSON, new Integer(Settings.getInstance().getUserId()));
-		teamLevelPointsTable.getColumnByName(TEAMLEVELPOINT_POINTS).appendToJSON(targetJSON, "");
+		teamLevelPointsTable.getColumnByName(TEAMLEVELPOINT_POINTS).appendToJSON(targetJSON, "NULL");
 		teamLevelPointsTable.getColumnByName(TEAMLEVELPOINT_COMMENT).appendToJSON(targetJSON, null);
 	}
 }

@@ -58,7 +58,7 @@ public class TeamResults
 		{
 			String recordDateTime = resultCursor.getString(0);
 			String checkDateTime = resultCursor.getString(1);
-			String takenCheckpoints = resultCursor.getString(2);
+			String takenCheckpoints = replaceNullWithEmptyString(resultCursor.getString(2));
 			records.add(new TeamResultRecord(recordDateTime, checkDateTime, takenCheckpoints, levelPoint));
 			resultCursor.moveToNext();
 		}
@@ -68,6 +68,18 @@ public class TeamResults
 		if (records.size() > 0) result = records.get(records.size() - 1);
 
 		return result;
+	}
+
+	private String replaceNullWithEmptyString(String takenCheckpoints)
+	{
+		if ("NULL".equals(takenCheckpoints))
+		{
+			return "";
+		}
+		else
+		{
+			return takenCheckpoints;
+		}
 	}
 
 	public void saveTeamResult(LevelPoint levelPoint, Team team, Date checkDateTime,
@@ -152,7 +164,7 @@ public class TeamResults
 			Integer deviceId = resultCursor.getInt(2);
 			Integer teamId = resultCursor.getInt(3);
 			Date checkDateTime = DateFormat.parse(resultCursor.getString(4));
-			String takenCheckpointNames = resultCursor.getString(5);
+			String takenCheckpointNames = replaceNullWithEmptyString(resultCursor.getString(5));
 
 			TeamResult teamResult =
 			    new TeamResult(teamId, userId, deviceId, levelPoint.getScanPoint().getScanPointId(), takenCheckpointNames, checkDateTime, recordDateTime);
@@ -206,7 +218,7 @@ public class TeamResults
 			Integer teamId = resultCursor.getInt(3);
 			int levelPointId = resultCursor.getInt(4);
 			Date checkDateTime = DateFormat.parse(resultCursor.getString(5));
-			String takenCheckpointNames = resultCursor.getString(6);
+			String takenCheckpointNames = replaceNullWithEmptyString(resultCursor.getString(6));
 
 			ScanPoint scanPoint =
 			    ScanPointsRegistry.getInstance().getScanPointByLevelPointId(levelPointId);
