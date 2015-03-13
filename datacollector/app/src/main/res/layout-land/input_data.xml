@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/global_padding"
+    android:paddingLeft="@dimen/global_padding"
+    android:paddingRight="@dimen/global_padding"
+    android:paddingTop="@dimen/global_padding" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right" >
+            
+            <LinearLayout
+                android:id="@+id/inputData_existsIndicatorPanel"
+                android:layout_width="30dip"
+                android:layout_height="30dip"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="@dimen/global_padding"
+                android:background="@color/LightSkyBlue" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left" >
+
+                    <TextView
+                        android:id="@+id/inputData_teamNumberTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/input_data_no_team_number"
+                        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                    <TextView
+                        android:id="@+id/inputData_teamNameTextView"
+                        android:layout_width="400dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/global_padding"
+                        android:text="@string/input_data_no_team"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="@color/Tan" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/inputData_withdrawButton"
+                android:layout_width="100dip"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/global_padding"
+                android:text="@string/input_data_withdraw_member" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/inputData_datePanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/global_padding" >
+
+            <DatePicker
+                android:id="@+id/inputData_datePicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:id="@+id/inputData_timePanel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/global_padding" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="@dimen/global_padding"
+                android:orientation="vertical" >
+
+                <Button
+                    android:id="@+id/inputData_setNowButton"
+                    android:layout_width="100dip"
+                    android:layout_height="wrap_content"
+                    android:text="@string/input_data_time_now" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginLeft="@dimen/global_padding"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/inputData_resultTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right"
+                    android:text="@string/input_data_no_result"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <Button
+                    android:id="@+id/inputData_okButton"
+                    android:layout_width="100dip"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right"
+                    android:layout_marginTop="@dimen/global_padding"
+                    android:text="@string/input_data_ok" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/inputData_checkpointsTopPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/global_double_padding"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <Button
+                    android:id="@+id/inputData_checkAllButton"
+                    android:layout_width="100dip"
+                    android:layout_height="wrap_content"
+                    android:text="@string/input_data_check_all" />
+
+                <Button
+                    android:id="@+id/inputData_checkNothingButton"
+                    android:layout_width="100dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/global_padding"
+                    android:text="@string/input_data_check_nothing" />
+            </LinearLayout>
+
+            <TableLayout
+                android:id="@+id/inputData_checkpointsPanel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_padding" >
+            </TableLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
