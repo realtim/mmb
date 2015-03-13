@@ -1,0 +1,5 @@
+device_settings
+mmb_*
+test_*
+mmb.sql
+mmb_test.json
