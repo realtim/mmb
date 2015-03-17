@@ -55,6 +55,17 @@ CREATE INDEX IDXTLP_accelerator_1 ON TeamLevelPoints (levelpoint_id, team_id);
 CREATE INDEX IDXTLP_update_date ON TeamLevelPoints (teamlevelpoint_date);
 
 
+CREATE TABLE RawLoggerData (user_id INTEGER NOT NULL, device_id INTEGER NOT NULL, logger_id INTEGER NOT NULL, 
+scanpoint_id INTEGER NOT NULL, team_id INTEGER NOT NULL, rawloggerdata_date TEXT NOT NULL,
+PRIMARY KEY (logger_id, scanpoint_id, team_id));
+
+CREATE TABLE RawTeamLevelPoints (user_id INTEGER NOT NULL, device_id INTEGER NOT NULL, scanpoint_id INTEGER NOT NULL, 
+team_id INTEGER NOT NULL, rawteamlevelpoint_points TEXT, rawteamlevelpoint_date TEXT NOT NULL,
+PRIMARY KEY (user_id, scanpoint_id, team_id));
+
+CREATE TABLE RawTeamLevelDismiss (user_id INTEGR NOT NULL, device_id INTEGER NOT NULL, scanpoint_id INTEGER NOT NULL,
+team_id INTEGER NOT NULL, teamuser_id INTEGER NOT NULL, rawteamleveldismiss_date TEXT NOT NULL,
+PRIMARY KEY (user_id, scanpoint_id, team_id, teamuser_id));
 
 
 CREATE TABLE MetaTables (table_id INTEGER NOT NULL, table_name TEXT NOT NULL, 

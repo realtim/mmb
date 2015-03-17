@@ -5,47 +5,32 @@
     android:paddingBottom="@dimen/global_padding"
     android:paddingLeft="@dimen/global_padding"
     android:paddingRight="@dimen/global_padding"
-    android:paddingTop="@dimen/global_padding" >
+    android:paddingTop="@dimen/global_padding">
 
     <LinearLayout
         android:layout_width="@dimen/main_buttons_panel_width"
-        android:layout_height="wrap_content" >
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/main_transportBtn"
+                android:layout_width="@dimen/main_button_width"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/main_transport" />
 
             <Button
                 android:id="@+id/main_inputDataBtn"
                 android:layout_width="@dimen/main_button_width"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/main_input_data" />
-
-            <Button
-                android:id="@+id/main_importDataBtn"
-                android:layout_width="@dimen/main_button_width"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/global_double_padding"
-                android:text="@string/main_import_data" />
-
-            <Button
-                android:id="@+id/main_importBarcodeDataBtn"
-                android:layout_width="@dimen/main_button_width"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/global_padding"
-                android:text="@string/main_import_barcode_data" />
-
-            <Button
-                android:id="@+id/main_exportDataBtn"
-                android:layout_width="@dimen/main_button_width"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/global_padding"
-                android:text="@string/main_export_data" />
+                android:text="@string/main_input_data" />
 
             <Button
                 android:id="@+id/main_resultsBtn"
@@ -77,12 +62,12 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/main_dataBaseFileLabel"
@@ -130,6 +115,16 @@
                 android:layout_gravity="right"
                 android:layout_marginTop="@dimen/global_padding"
                 android:text="@string/main_current_raid_id"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/LightPink" />
+
+            <TextView
+                android:id="@+id/main_applicationModeLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_marginTop="@dimen/global_padding"
+                android:text="@string/main_application_mode"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@color/LightPink" />
         </LinearLayout>

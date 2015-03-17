@@ -1,40 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ru.mmb.datacollector" >
-	
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    package="ru.mmb.datacollector">
+
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/mmb"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
-            android:name="ru.mmb.datacollector.activity.main.MainActivity"
-            android:label="@string/app_name" >
+            android:name=".activity.main.MainActivity"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="ru.mmb.datacollector.activity.input.start.StartInputActivity" />
-        <activity android:name="ru.mmb.datacollector.activity.scanpoint.SelectScanPointActivity" />
+        <activity android:name=".activity.transport.TransportInputActivity" />
+        <activity android:name=".activity.transport.TransportReportActivity" />
+        <activity android:name=".activity.input.start.StartInputActivity" />
+        <activity android:name=".activity.input.scanpoint.SelectScanPointActivity" />
         <activity
-            android:name="ru.mmb.datacollector.activity.input.history.HistoryActivity"
+            android:name=".activity.input.data.history.HistoryActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity android:name="ru.mmb.datacollector.activity.input.data.InputDataActivity" />
-        <activity android:name="ru.mmb.datacollector.activity.input.withdraw.WithdrawMemberActivity" />
-        <activity android:name="ru.mmb.datacollector.activity.transport.transpimport.TransportImportActivity" />
-        <activity android:name="ru.mmb.datacollector.activity.transport.transpimport.TransportImportBarcodeActivity" />
-        <activity android:name="ru.mmb.datacollector.activity.transport.transpexport.TransportExportActivity" />
-        <activity android:name="ru.mmb.datacollector.activity.report.ResultsActivity" />
-        <activity android:name="ru.mmb.datacollector.activity.report.global.ReportGlobalResultActivity" />
+        <activity android:name=".activity.input.data.checkpoints.InputDataActivity" />
+        <activity android:name=".activity.input.data.withdraw.WithdrawMemberActivity" />
+        <activity android:name=".activity.transport.transpimport.TransportImportActivity" />
+        <activity android:name=".activity.transport.transpimport.TransportImportBarcodeActivity" />
+        <activity android:name=".activity.transport.transpexport.TransportExportActivity" />
+        <activity android:name=".activity.report.ResultsActivity" />
+        <activity android:name=".activity.report.global.ReportGlobalResultActivity" />
         <activity
-            android:name="ru.mmb.datacollector.activity.report.team.search.SearchTeamActivity"
+            android:name=".activity.report.team.search.SearchTeamActivity"
             android:windowSoftInputMode="stateHidden" />
-        <activity android:name="ru.mmb.datacollector.activity.settings.SettingsActivity" />
+        <activity android:name=".activity.settings.SettingsActivity" />
         <activity android:name="com.filedialog.FileDialog" />
+        <activity android:name=".activity.input.bclogger.start.StartWorkWithBCLoggerActivity" />
+        <activity android:name=".activity.input.bclogger.select.SelectBCLoggerActivity" />
     </application>
 
 </manifest>

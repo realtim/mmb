@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/global_padding"
+    android:paddingLeft="@dimen/global_padding"
+    android:paddingRight="@dimen/global_padding"
+    android:paddingTop="@dimen/global_padding">
+
+    <Button
+        android:id="@+id/transportReport_importDictionariesBtn"
+        android:layout_width="@dimen/main_button_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/transport_report_import_dictionaries" />
+
+    <Button
+        android:id="@+id/transportReport_receiveFromServerBtn"
+        android:layout_width="@dimen/main_button_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/global_padding"
+        android:text="@string/transport_report_receive_from_server" />
+
+    <Button
+        android:id="@+id/transportReport_receiveLoggerDataBtn"
+        android:layout_width="@dimen/main_button_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/global_padding"
+        android:text="@string/transport_report_receive_logger_data" />
+
+</LinearLayout>

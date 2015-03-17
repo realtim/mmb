@@ -1,17 +1,19 @@
 package ru.mmb.datacollector.activity;
 
-import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_SCAN_POINT;
-import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_TEAM;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
-import android.app.Activity;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
+
+import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_SCAN_POINT;
+import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_TEAM;
 
 public class ActivityStateWithTeamAndScanPoint extends CurrentState
 {
@@ -124,6 +126,7 @@ public class ActivityStateWithTeamAndScanPoint extends CurrentState
 		{
 			case Constants.REQUEST_CODE_DEFAULT_ACTIVITY:
 			case Constants.REQUEST_CODE_SCAN_POINT_ACTIVITY:
+            case Constants.REQUEST_CODE_INPUT_BCLOGGER_START_ACTIVITY:
 			case Constants.REQUEST_CODE_INPUT_HISTORY_ACTIVITY:
 			case Constants.REQUEST_CODE_INPUT_DATA_ACTIVITY:
 			case Constants.REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY:

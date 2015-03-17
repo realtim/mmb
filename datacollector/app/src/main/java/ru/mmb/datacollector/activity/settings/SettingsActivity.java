@@ -1,12 +1,5 @@
 package ru.mmb.datacollector.activity.settings;
 
-import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_SETTINGS_DB_FILE_DIALOG;
-import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG;
-
-import java.io.File;
-
-import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,247 +11,246 @@ import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.filedialog.FileDialog;
 import com.filedialog.SelectionMode;
 
-public class SettingsActivity extends FragmentActivity
-{
-	private TextView labelPathToDB;
-	private Button btnSelectDBFile;
+import java.io.File;
 
-	private Button btnImportDeviceJson;
+import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.model.registry.Settings;
 
-	private EditText editUserId;
-	private EditText editDeviceId;
-	private EditText editCurrentRaidId;
-	private EditText editTranspUserId;
-	private EditText editTranspUserPassword;
-	private TextEditorActionListener textEditorActionListener;
-	private TextEditorFocusChangeListener textEditorFocusChangeListener;
+import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_SETTINGS_DB_FILE_DIALOG;
+import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG;
 
-	private EditText currentEditor = null;
+public class SettingsActivity extends FragmentActivity {
+    private TextView labelPathToDB;
+    private Button btnSelectDBFile;
 
-	private DeviceJsonImporter deviceJsonImporter = null;
-	private boolean needStartDeviceDialog = false;
+    private Button btnImportDeviceJson;
 
-	/** Called when the activity is first created. */
+    private EditText editUserId;
+    private EditText editDeviceId;
+    private EditText editCurrentRaidId;
+    private EditText editTranspUserId;
+    private EditText editTranspUserPassword;
+    private TextEditorActionListener textEditorActionListener;
+    private TextEditorFocusChangeListener textEditorFocusChangeListener;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
+    private RadioButton rbApplicationModeInput;
+    private RadioButton rbApplicationModeReport;
+    private AppModeRadioButtonClickListener appModeRadioClickListener;
 
-		Settings.getInstance().setCurrentContext(this);
+    private EditText currentEditor = null;
 
-		setContentView(R.layout.settings);
+    private DeviceJsonImporter deviceJsonImporter = null;
+    private boolean needStartDeviceDialog = false;
 
-		labelPathToDB = (TextView) findViewById(R.id.settings_pathToDBLabel);
-		btnSelectDBFile = (Button) findViewById(R.id.settings_selectDBBtn);
-		btnSelectDBFile.setOnClickListener(new SelectDBFileClickListener());
+    /**
+     * Called when the activity is first created.
+     */
 
-		btnImportDeviceJson = (Button) findViewById(R.id.settings_importDeviceJsonBtn);
-		btnImportDeviceJson.setOnClickListener(new ImportDeviceJsonClickListener());
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		textEditorActionListener = new TextEditorActionListener();
-		textEditorFocusChangeListener = new TextEditorFocusChangeListener();
+        Settings.getInstance().setCurrentContext(this);
 
-		editUserId = (EditText) findViewById(R.id.settings_userIdEdit);
-		hookTextEditor(editUserId, EditorInfo.IME_ACTION_NEXT);
-		editDeviceId = (EditText) findViewById(R.id.settings_deviceIdEdit);
-		hookTextEditor(editDeviceId, EditorInfo.IME_ACTION_NEXT);
-		editCurrentRaidId = (EditText) findViewById(R.id.settings_currentRaidIdEdit);
-		hookTextEditor(editCurrentRaidId, EditorInfo.IME_ACTION_NEXT);
-		editTranspUserId = (EditText) findViewById(R.id.settings_transpUserIdEdit);
-		hookTextEditor(editTranspUserId, EditorInfo.IME_ACTION_NEXT);
-		editTranspUserPassword = (EditText) findViewById(R.id.settings_transpUserPasswordEdit);
-		hookTextEditor(editTranspUserPassword, EditorInfo.IME_ACTION_DONE);
+        setContentView(R.layout.settings);
 
-		refreshState();
-	}
+        labelPathToDB = (TextView) findViewById(R.id.settings_pathToDBLabel);
+        btnSelectDBFile = (Button) findViewById(R.id.settings_selectDBBtn);
+        btnSelectDBFile.setOnClickListener(new SelectDBFileClickListener());
 
-	private void hookTextEditor(EditText textEditor, int imeOptions)
-	{
-		textEditor.setImeOptions(imeOptions);
-		textEditor.setOnEditorActionListener(textEditorActionListener);
-		textEditor.setOnFocusChangeListener(textEditorFocusChangeListener);
-	}
+        btnImportDeviceJson = (Button) findViewById(R.id.settings_importDeviceJsonBtn);
+        btnImportDeviceJson.setOnClickListener(new ImportDeviceJsonClickListener());
 
-	public void refreshState()
-	{
-		setTitle(getResources().getString(R.string.settings_title));
+        textEditorActionListener = new TextEditorActionListener();
+        textEditorFocusChangeListener = new TextEditorFocusChangeListener();
 
-		labelPathToDB.setText(Settings.getInstance().getPathToDB());
-		editUserId.setText(Integer.toString(Settings.getInstance().getUserId()));
-		editDeviceId.setText(Integer.toString(Settings.getInstance().getDeviceId()));
-		editCurrentRaidId.setText(Integer.toString(Settings.getInstance().getCurrentRaidId()));
-		editTranspUserId.setText(Integer.toString(Settings.getInstance().getTranspUserId()));
-		editTranspUserPassword.setText(Settings.getInstance().getTranspUserPassword());
-	}
+        editUserId = (EditText) findViewById(R.id.settings_userIdEdit);
+        hookTextEditor(editUserId, EditorInfo.IME_ACTION_NEXT);
+        editDeviceId = (EditText) findViewById(R.id.settings_deviceIdEdit);
+        hookTextEditor(editDeviceId, EditorInfo.IME_ACTION_NEXT);
+        editCurrentRaidId = (EditText) findViewById(R.id.settings_currentRaidIdEdit);
+        hookTextEditor(editCurrentRaidId, EditorInfo.IME_ACTION_NEXT);
+        editTranspUserId = (EditText) findViewById(R.id.settings_transpUserIdEdit);
+        hookTextEditor(editTranspUserId, EditorInfo.IME_ACTION_NEXT);
+        editTranspUserPassword = (EditText) findViewById(R.id.settings_transpUserPasswordEdit);
+        hookTextEditor(editTranspUserPassword, EditorInfo.IME_ACTION_DONE);
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
-		switch (requestCode)
-		{
-			case REQUEST_CODE_SETTINGS_DB_FILE_DIALOG:
-				if (resultCode == Activity.RESULT_OK)
-				{
-					String dbFileName = data.getStringExtra(FileDialog.RESULT_PATH);
-					labelPathToDB.setText(dbFileName);
-					Settings.getInstance().setPathToDB(dbFileName);
-				}
-				break;
-			case REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG:
-				if (resultCode == Activity.RESULT_OK)
-				{
-					String deviceJsonName = data.getStringExtra(FileDialog.RESULT_PATH);
-					deviceJsonImporter = new DeviceJsonImporter(this);
-					if (deviceJsonImporter.prepareJsonObjects(deviceJsonName))
-					{
-						needStartDeviceDialog = true;
-					}
-					else
-					{
-						deviceJsonImporter = null;
-					}
-				}
-				break;
-			default:
-				super.onActivityResult(requestCode, resultCode, data);
-		}
-	}
+        rbApplicationModeInput = (RadioButton) findViewById(R.id.settings_appModeInputRadio);
+        rbApplicationModeReport = (RadioButton) findViewById(R.id.settings_appModeReportRadio);
+        appModeRadioClickListener = new AppModeRadioButtonClickListener();
+        rbApplicationModeInput.setOnClickListener(appModeRadioClickListener);
+        rbApplicationModeReport.setOnClickListener(appModeRadioClickListener);
 
-	@Override
-	protected void onResume()
-	{
-		super.onResume();
-		// DialogFragment is not created in onActivityResult, 
-		// because activity is yet not working there.
-		// So we are waiting for resume.
-		if (needStartDeviceDialog)
-		{
-			needStartDeviceDialog = false;
-			if (deviceJsonImporter != null) deviceJsonImporter.showImportDialog();
-		}
-	}
+        refreshState();
+    }
 
-	@Override
-	protected void onPause()
-	{
-		if (currentEditor != null)
-		{
-			onTextEditorContentsChanged(currentEditor);
-		}
-		super.onPause();
-	}
+    private void hookTextEditor(EditText textEditor, int imeOptions) {
+        textEditor.setImeOptions(imeOptions);
+        textEditor.setOnEditorActionListener(textEditorActionListener);
+        textEditor.setOnFocusChangeListener(textEditorFocusChangeListener);
+    }
 
-	private void onTextEditorContentsChanged(View view)
-	{
-		if (view == editUserId)
-		{
-			Settings.getInstance().setUserId(editUserId.getText().toString());
-		}
-		if (view == editDeviceId)
-		{
-			Settings.getInstance().setDeviceId(editDeviceId.getText().toString());
-		}
-		if (view == editCurrentRaidId)
-		{
-			Settings.getInstance().setCurrentRaidId(editCurrentRaidId.getText().toString());
-		}
-		if (view == editTranspUserId)
-		{
-			Settings.getInstance().setTranspUserId(editTranspUserId.getText().toString());
-		}
-		if (view == editTranspUserPassword)
-		{
-			Settings.getInstance().setTranspUserPassword(editTranspUserPassword.getText().toString());
-		}
-	}
+    public void refreshState() {
+        setTitle(getResources().getString(R.string.settings_title));
 
-	private class SelectDBFileClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Intent intent = new Intent(getBaseContext(), FileDialog.class);
-			String startPath = extractStartPath();
-			if (startPath != null)
-			{
-				intent.putExtra(FileDialog.START_PATH, startPath);
-			}
-			intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
-			intent.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
-			intent.putExtra(FileDialog.FORMAT_FILTER, new String[] { ".db" });
-			startActivityForResult(intent, REQUEST_CODE_SETTINGS_DB_FILE_DIALOG);
-		}
-	}
+        labelPathToDB.setText(Settings.getInstance().getPathToDB());
+        editUserId.setText(Integer.toString(Settings.getInstance().getUserId()));
+        editDeviceId.setText(Integer.toString(Settings.getInstance().getDeviceId()));
+        editCurrentRaidId.setText(Integer.toString(Settings.getInstance().getCurrentRaidId()));
+        editTranspUserId.setText(Integer.toString(Settings.getInstance().getTranspUserId()));
+        editTranspUserPassword.setText(Settings.getInstance().getTranspUserPassword());
+        if (Settings.MODE_INPUT.equals(Settings.getInstance().getApplicationMode())) {
+            rbApplicationModeInput.setChecked(true);
+        } else {
+            rbApplicationModeReport.setChecked(true);
+        }
+    }
 
-	private String extractStartPath()
-	{
-		String result = null;
-		String prevPathToDB = labelPathToDB.getText().toString();
-		if (!"".equals(prevPathToDB))
-		{
-			File dbFile = new File(prevPathToDB);
-			File dbFileDir = new File(dbFile.getParent());
-			if (dbFileDir.exists())
-			{
-				result = dbFileDir.getPath();
-			}
-		}
-		return result;
-	}
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_SETTINGS_DB_FILE_DIALOG:
+                if (resultCode == Activity.RESULT_OK) {
+                    String dbFileName = data.getStringExtra(FileDialog.RESULT_PATH);
+                    labelPathToDB.setText(dbFileName);
+                    Settings.getInstance().setPathToDB(dbFileName);
+                }
+                break;
+            case REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG:
+                if (resultCode == Activity.RESULT_OK) {
+                    String deviceJsonName = data.getStringExtra(FileDialog.RESULT_PATH);
+                    deviceJsonImporter = new DeviceJsonImporter(this);
+                    if (deviceJsonImporter.prepareJsonObjects(deviceJsonName)) {
+                        needStartDeviceDialog = true;
+                    } else {
+                        deviceJsonImporter = null;
+                    }
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
 
-	private class TextEditorActionListener implements OnEditorActionListener
-	{
-		@Override
-		public boolean onEditorAction(TextView view, int action, KeyEvent event)
-		{
-			if (action == EditorInfo.IME_ACTION_NEXT || action == EditorInfo.IME_ACTION_DONE)
-			{
-				onTextEditorContentsChanged(view);
-			}
-			return false;
-		}
-	}
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // DialogFragment is not created in onActivityResult,
+        // because activity is yet not working there.
+        // So we are waiting for resume.
+        if (needStartDeviceDialog) {
+            needStartDeviceDialog = false;
+            if (deviceJsonImporter != null) deviceJsonImporter.showImportDialog();
+        }
+    }
 
-	private class TextEditorFocusChangeListener implements OnFocusChangeListener
-	{
-		@Override
-		public void onFocusChange(View v, boolean hasFocus)
-		{
-			// This listener is attached only to EditText controls.
-			// So, here v is always EditText.
-			if (!hasFocus)
-			{
-				onTextEditorContentsChanged(v);
-			}
-			else
-			{
-				currentEditor = (EditText) v;
-			}
-		}
-	}
+    @Override
+    protected void onPause() {
+        if (currentEditor != null) {
+            onTextEditorContentsChanged(currentEditor);
+        }
+        super.onPause();
+    }
 
-	private class ImportDeviceJsonClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Intent intent = new Intent(getBaseContext(), FileDialog.class);
-			String startPath = extractStartPath();
-			if (startPath != null)
-			{
-				intent.putExtra(FileDialog.START_PATH, startPath);
-			}
-			intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
-			intent.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
-			intent.putExtra(FileDialog.FORMAT_FILTER, new String[] { ".json" });
-			startActivityForResult(intent, REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG);
-		}
-	}
+    private void onTextEditorContentsChanged(View view) {
+        if (view == editUserId) {
+            Settings.getInstance().setUserId(editUserId.getText().toString());
+        }
+        if (view == editDeviceId) {
+            Settings.getInstance().setDeviceId(editDeviceId.getText().toString());
+        }
+        if (view == editCurrentRaidId) {
+            Settings.getInstance().setCurrentRaidId(editCurrentRaidId.getText().toString());
+        }
+        if (view == editTranspUserId) {
+            Settings.getInstance().setTranspUserId(editTranspUserId.getText().toString());
+        }
+        if (view == editTranspUserPassword) {
+            Settings.getInstance().setTranspUserPassword(editTranspUserPassword.getText().toString());
+        }
+    }
+
+    private class SelectDBFileClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(getBaseContext(), FileDialog.class);
+            String startPath = extractStartPath();
+            if (startPath != null) {
+                intent.putExtra(FileDialog.START_PATH, startPath);
+            }
+            intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
+            intent.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
+            intent.putExtra(FileDialog.FORMAT_FILTER, new String[]{".db"});
+            startActivityForResult(intent, REQUEST_CODE_SETTINGS_DB_FILE_DIALOG);
+        }
+    }
+
+    private String extractStartPath() {
+        String result = null;
+        String prevPathToDB = labelPathToDB.getText().toString();
+        if (!"".equals(prevPathToDB)) {
+            File dbFile = new File(prevPathToDB);
+            File dbFileDir = new File(dbFile.getParent());
+            if (dbFileDir.exists()) {
+                result = dbFileDir.getPath();
+            }
+        }
+        return result;
+    }
+
+    private class TextEditorActionListener implements OnEditorActionListener {
+        @Override
+        public boolean onEditorAction(TextView view, int action, KeyEvent event) {
+            if (action == EditorInfo.IME_ACTION_NEXT || action == EditorInfo.IME_ACTION_DONE) {
+                onTextEditorContentsChanged(view);
+            }
+            return false;
+        }
+    }
+
+    private class TextEditorFocusChangeListener implements OnFocusChangeListener {
+        @Override
+        public void onFocusChange(View v, boolean hasFocus) {
+            // This listener is attached only to EditText controls.
+            // So, here v is always EditText.
+            if (!hasFocus) {
+                onTextEditorContentsChanged(v);
+            } else {
+                currentEditor = (EditText) v;
+            }
+        }
+    }
+
+    private class ImportDeviceJsonClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(getBaseContext(), FileDialog.class);
+            String startPath = extractStartPath();
+            if (startPath != null) {
+                intent.putExtra(FileDialog.START_PATH, startPath);
+            }
+            intent.putExtra(FileDialog.CAN_SELECT_DIR, false);
+            intent.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
+            intent.putExtra(FileDialog.FORMAT_FILTER, new String[]{".json"});
+            startActivityForResult(intent, REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG);
+        }
+    }
+
+    private class AppModeRadioButtonClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+            if (rbApplicationModeInput.isChecked()) {
+                Settings.getInstance().setApplicationMode(Settings.MODE_INPUT);
+            } else {
+                Settings.getInstance().setApplicationMode(Settings.MODE_REPORT);
+            }
+        }
+    }
 }

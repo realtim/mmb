@@ -1,11 +1,12 @@
 package ru.mmb.datacollector.activity.main;
 
+import android.content.Context;
+import android.os.Bundle;
+
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.CurrentState;
 import ru.mmb.datacollector.db.DatacollectorDB;
 import ru.mmb.datacollector.model.registry.Settings;
-import android.content.Context;
-import android.os.Bundle;
 
 public class MainActivityState extends CurrentState
 {
@@ -115,6 +116,16 @@ public class MainActivityState extends CurrentState
 			return context.getResources().getColor(R.color.LightPink);
 		}
 	}
+
+    public String getApplicationModeText(Context context)
+    {
+        String format = context.getResources().getString(R.string.main_application_mode);
+        String applicationMode = context.getResources().getString(R.string.settings_application_mode_input);
+        if (Settings.getInstance().isApplicationModeReport()) {
+            applicationMode = context.getResources().getString(R.string.settings_application_mode_report);
+        }
+        return String.format(format, applicationMode);
+    }
 
 	@Override
 	public void save(Bundle savedInstanceState)

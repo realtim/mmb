@@ -1,5 +1,8 @@
 package ru.mmb.datacollector.db;
 
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -15,8 +18,6 @@ import ru.mmb.datacollector.model.TeamResult;
 import ru.mmb.datacollector.model.User;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.transport.model.MetaTable;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 
 public class DatacollectorDB
 {
@@ -33,6 +34,7 @@ public class DatacollectorDB
 	private Users users;
 	private TeamResults teamResults;
 	private TeamDismissed teamDismissed;
+    private RawLoggerData rawLoggerData;
 
 	private IDGenerator idGenerator;
 
@@ -76,6 +78,7 @@ public class DatacollectorDB
 			users = new Users(db);
 			teamResults = new TeamResults(db);
 			teamDismissed = new TeamDismissed(db);
+            rawLoggerData = new RawLoggerData(db);
 		}
 		catch (SQLiteException e)
 		{
@@ -198,4 +201,16 @@ public class DatacollectorDB
 	{
 		return teamResults.loadTeamResults(team);
 	}
+
+    public ru.mmb.datacollector.model.RawLoggerData getExistingRecord(int loggerId, int scanpointId, int teamId) {
+        return rawLoggerData.getExistingRecord(loggerId, scanpointId, teamId);
+    }
+
+    public void updateExistingRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
+        rawLoggerData.updateExistingRecord(loggerId, scanpointId, teamId, recordDateTime);
+    }
+
+    public void insertNewRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
+        rawLoggerData.insertNewRecord(loggerId, scanpointId, teamId, recordDateTime);
+    }
 }

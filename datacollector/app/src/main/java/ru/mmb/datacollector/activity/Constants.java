@@ -8,6 +8,7 @@ public class Constants
 	public static final String KEY_CURRENT_SCAN_POINT = "current.scanpoint";
 	public static final String KEY_CURRENT_TEAM_NUMBER = "current.team.number";
 	public static final String KEY_CURRENT_TEAM = "current.team";
+    public static final String KEY_CURRENT_LOGGER_INFO = "current.logger.info";
 	public static final String KEY_CURRENT_EXPORT_FORMAT = "current.export.format";
 	public static final String KEY_CURRENT_INPUT_CHECKPOINTS_STATE =
 	    "current.input.checkpoint.state";
@@ -16,7 +17,6 @@ public class Constants
 	public static final String KEY_CURRENT_INPUT_WITHDRAWN_CHECKED =
 	    "current.input.withdrawn.checked";
 	public static final String KEY_EXPORT_RESULT_MESSAGE = "export.result.message";
-	public static final String KEY_LEVEL_SELECT_MODE = "level.select_mode";
 	public static final String KEY_REPORT_TEAM_SORT_COLUMN = "report.team.sort.column";
 	public static final String KEY_REPORT_TEAM_SORT_ORDER = "report.team.sort.order";
 	public static final String KEY_REPORT_TEAM_FILTER_STATE = "report.team.filter.state";
@@ -40,4 +40,7 @@ public class Constants
 	public static final int REQUEST_CODE_SETTINGS_DB_FILE_DIALOG = 9;
 	public static final int REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG = 10;
 	public static final int REQUEST_CODE_SCAN_POINT_ACTIVITY = 11;
+	public static final int REQUEST_CODE_INPUT_BCLOGGER_START_ACTIVITY = 12;
+	public static final int REQUEST_CODE_LAUNCH_BLUETOOTH_ACTIVITY = 13;
+    public static final int REQUEST_CODE_INPUT_BCLOGGER_SELECT_ACTIVITY = 14;
 }

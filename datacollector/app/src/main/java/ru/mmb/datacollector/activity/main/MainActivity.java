@@ -1,14 +1,5 @@
 package ru.mmb.datacollector.activity.main;
 
-import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_SETTINGS_ACTIVITY;
-import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.activity.input.start.StartInputActivity;
-import ru.mmb.datacollector.activity.report.ResultsActivity;
-import ru.mmb.datacollector.activity.settings.SettingsActivity;
-import ru.mmb.datacollector.activity.transport.transpexport.TransportExportActivity;
-import ru.mmb.datacollector.activity.transport.transpimport.TransportImportActivity;
-import ru.mmb.datacollector.activity.transport.transpimport.TransportImportBarcodeActivity;
-import ru.mmb.datacollector.model.registry.Settings;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,176 +8,149 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends Activity
-{
-	private MainActivityState currentState;
+import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.activity.input.start.StartInputActivity;
+import ru.mmb.datacollector.activity.report.ResultsActivity;
+import ru.mmb.datacollector.activity.settings.SettingsActivity;
+import ru.mmb.datacollector.activity.transport.TransportInputActivity;
+import ru.mmb.datacollector.activity.transport.TransportReportActivity;
+import ru.mmb.datacollector.model.registry.Settings;
 
-	private TextView labDBFile;
-	private TextView labConnection;
-	private TextView labUserId;
-	private TextView labDeviceId;
-	private TextView labCurrentRaidId;
+import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_SETTINGS_ACTIVITY;
 
-	private Button btnInputData;
-	private Button btnImportData;
-	private Button btnImportBarcodeData;
-	private Button btnExportData;
-	private Button btnResults;
-	private Button btnSettings;
+public class MainActivity extends Activity {
+    private MainActivityState currentState;
 
-	//	private Button btnGenerate;
+    private TextView labDBFile;
+    private TextView labConnection;
+    private TextView labUserId;
+    private TextView labDeviceId;
+    private TextView labCurrentRaidId;
+    private TextView labApplicationMode;
 
-	/** Called when the activity is first created. */
+    private Button btnTransport;
+    private Button btnInputData;
+    private Button btnResults;
+    private Button btnSettings;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
+    //	private Button btnGenerate;
 
-		Settings.getInstance().setCurrentContext(this);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		currentState = new MainActivityState();
-		currentState.initialize(this, savedInstanceState);
+        Settings.getInstance().setCurrentContext(this);
 
-		setContentView(R.layout.main);
+        currentState = new MainActivityState();
+        currentState.initialize(this, savedInstanceState);
 
-		labDBFile = (TextView) findViewById(R.id.main_dataBaseFileLabel);
-		labConnection = (TextView) findViewById(R.id.main_dataBaseConnectionLabel);
-		labUserId = (TextView) findViewById(R.id.main_userIDLabel);
-		labDeviceId = (TextView) findViewById(R.id.main_deviceIDLabel);
-		labCurrentRaidId = (TextView) findViewById(R.id.main_currentRaidIDLabel);
+        setContentView(R.layout.main);
 
-		btnInputData = (Button) findViewById(R.id.main_inputDataBtn);
-		btnImportData = (Button) findViewById(R.id.main_importDataBtn);
-		btnImportBarcodeData = (Button) findViewById(R.id.main_importBarcodeDataBtn);
-		btnExportData = (Button) findViewById(R.id.main_exportDataBtn);
-		btnResults = (Button) findViewById(R.id.main_resultsBtn);
-		btnSettings = (Button) findViewById(R.id.main_settingsBtn);
-		//		btnGenerate = (Button) findViewById(R.id.main_generateBtn);
+        labDBFile = (TextView) findViewById(R.id.main_dataBaseFileLabel);
+        labConnection = (TextView) findViewById(R.id.main_dataBaseConnectionLabel);
+        labUserId = (TextView) findViewById(R.id.main_userIDLabel);
+        labDeviceId = (TextView) findViewById(R.id.main_deviceIDLabel);
+        labCurrentRaidId = (TextView) findViewById(R.id.main_currentRaidIDLabel);
+        labApplicationMode = (TextView) findViewById(R.id.main_applicationModeLabel);
 
-		btnInputData.setOnClickListener(new InputDataClickListener());
-		btnImportData.setOnClickListener(new ImportDataClickListener());
-		btnImportBarcodeData.setOnClickListener(new ImportBarcodeDataClickListener());
-		btnExportData.setOnClickListener(new ExportDataClickListener());
-		btnResults.setOnClickListener(new ResultsClickListener());
-		btnSettings.setOnClickListener(new SettingsClickListener());
-		//		btnGenerate.setOnClickListener(new GenerateClickListener());
+        btnTransport = (Button) findViewById(R.id.main_transportBtn);
+        btnInputData = (Button) findViewById(R.id.main_inputDataBtn);
+        btnResults = (Button) findViewById(R.id.main_resultsBtn);
+        btnSettings = (Button) findViewById(R.id.main_settingsBtn);
+        //		btnGenerate = (Button) findViewById(R.id.main_generateBtn);
 
-		refreshState();
-	}
+        btnTransport.setOnClickListener(new TransportButtonClickListener());
+        btnInputData.setOnClickListener(new InputDataClickListener());
+        btnResults.setOnClickListener(new ResultsClickListener());
+        btnSettings.setOnClickListener(new SettingsClickListener());
+        //		btnGenerate.setOnClickListener(new GenerateClickListener());
 
-	private void refreshState()
-	{
-		setTitle(getResources().getString(R.string.main_title));
+        refreshState();
+    }
 
-		refreshLabels();
-		refreshButtons();
-	}
+    private void refreshState() {
+        setTitle(getResources().getString(R.string.main_title));
 
-	private void refreshLabels()
-	{
-		labDBFile.setText(currentState.getDBFileText(this));
-		labDBFile.setTextColor(currentState.getColor(this, currentState.isDBFileSelected()));
-		labConnection.setText(currentState.getConnectionText(this));
-		labConnection.setTextColor(currentState.getColor(this, currentState.isConnected()));
-		labUserId.setText(currentState.getUserIDText(this));
-		labUserId.setTextColor(currentState.getColor(this, currentState.isUserIdSelected()));
-		labDeviceId.setText(currentState.getDeviceIDText(this));
-		labDeviceId.setTextColor(currentState.getColor(this, currentState.isDeviceIdSelected()));
-		labCurrentRaidId.setText(currentState.getCurrentRaidIDText(this));
-		labCurrentRaidId.setTextColor(currentState.getColor(this, currentState.isCurrentRaidIdSelected()));
-	}
+        refreshLabels();
+        refreshButtons();
+    }
 
-	private void refreshButtons()
-	{
-		boolean enabled = currentState.isEnabled();
-		btnInputData.setEnabled(enabled);
-		btnImportData.setEnabled(enabled);
-		btnImportBarcodeData.setEnabled(enabled);
-		btnExportData.setEnabled(enabled);
-		btnResults.setEnabled(enabled);
-	}
+    private void refreshLabels() {
+        labDBFile.setText(currentState.getDBFileText(this));
+        labDBFile.setTextColor(currentState.getColor(this, currentState.isDBFileSelected()));
+        labConnection.setText(currentState.getConnectionText(this));
+        labConnection.setTextColor(currentState.getColor(this, currentState.isConnected()));
+        labUserId.setText(currentState.getUserIDText(this));
+        labUserId.setTextColor(currentState.getColor(this, currentState.isUserIdSelected()));
+        labDeviceId.setText(currentState.getDeviceIDText(this));
+        labDeviceId.setTextColor(currentState.getColor(this, currentState.isDeviceIdSelected()));
+        labCurrentRaidId.setText(currentState.getCurrentRaidIDText(this));
+        labCurrentRaidId.setTextColor(currentState.getColor(this, currentState.isCurrentRaidIdSelected()));
+        labApplicationMode.setText(currentState.getApplicationModeText(this));
+        // Application mode is always defined. It is INPUT by default.
+        labApplicationMode.setTextColor(currentState.getColor(this, true));
+    }
 
-	@Override
-	protected void onSaveInstanceState(Bundle outState)
-	{
-		super.onSaveInstanceState(outState);
-		currentState.save(outState);
-	}
+    private void refreshButtons() {
+        boolean enabled = currentState.isEnabled();
+        btnTransport.setEnabled(enabled);
+        btnInputData.setEnabled(enabled && Settings.getInstance().isApplicationModeInput());
+        btnResults.setEnabled(enabled && Settings.getInstance().isApplicationModeReport());
+    }
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
-		if (requestCode == REQUEST_CODE_SETTINGS_ACTIVITY)
-		{
-			refreshState();
-		}
-		super.onActivityResult(requestCode, resultCode, data);
-	}
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        currentState.save(outState);
+    }
 
-	private class InputDataClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Intent intent = new Intent(getApplicationContext(), StartInputActivity.class);
-			startActivity(intent);
-		}
-	}
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_SETTINGS_ACTIVITY) {
+            refreshState();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
-	private class ImportDataClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Intent intent = new Intent(getApplicationContext(), TransportImportActivity.class);
-			startActivity(intent);
-		}
-	}
+    private class TransportButtonClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+            if (Settings.getInstance().isApplicationModeInput()) {
+                Intent intent = new Intent(getApplicationContext(), TransportInputActivity.class);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(getApplicationContext(), TransportReportActivity.class);
+                startActivity(intent);
+            }
+        }
+    }
 
-	private class ImportBarcodeDataClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Intent intent =
-			    new Intent(getApplicationContext(), TransportImportBarcodeActivity.class);
-			startActivity(intent);
-		}
-	}
+    private class InputDataClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(getApplicationContext(), StartInputActivity.class);
+            startActivity(intent);
+        }
+    }
 
-	private class ExportDataClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Intent intent = new Intent(getApplicationContext(), TransportExportActivity.class);
-			startActivity(intent);
-		}
-	}
+    private class ResultsClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(getApplicationContext(), ResultsActivity.class);
+            startActivity(intent);
+        }
+    }
 
-	private class ResultsClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Intent intent = new Intent(getApplicationContext(), ResultsActivity.class);
-			startActivity(intent);
-		}
-	}
-
-	private class SettingsClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-			startActivityForResult(intent, REQUEST_CODE_SETTINGS_ACTIVITY);
-		}
-	}
+    private class SettingsClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_SETTINGS_ACTIVITY);
+        }
+    }
 
 	/*private class GenerateClickListener implements OnClickListener
-	{
+    {
 		@Override
 		public void onClick(View v)
 		{

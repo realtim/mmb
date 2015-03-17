@@ -6,22 +6,22 @@
     android:paddingBottom="@dimen/global_padding"
     android:paddingLeft="@dimen/global_padding"
     android:paddingRight="@dimen/global_padding"
-    android:paddingTop="@dimen/global_padding" >
+    android:paddingTop="@dimen/global_padding">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1" >
+        android:layout_weight="1">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -33,7 +33,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/global_padding" >
+                    android:layout_marginTop="@dimen/global_padding">
 
                     <TextView
                         android:id="@+id/settings_pathToDBLabel"
@@ -65,7 +65,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/global_padding" >
+                android:layout_marginTop="@dimen/global_padding">
 
                 <TextView
                     android:layout_width="250dip"
@@ -84,7 +84,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/global_padding" >
+                android:layout_marginTop="@dimen/global_padding">
 
                 <TextView
                     android:layout_width="250dip"
@@ -103,7 +103,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/global_padding" >
+                android:layout_marginTop="@dimen/global_padding">
 
                 <TextView
                     android:layout_width="250dip"
@@ -122,7 +122,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/global_padding" >
+                android:layout_marginTop="@dimen/global_padding">
 
                 <TextView
                     android:layout_width="250dip"
@@ -141,7 +141,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/global_padding" >
+                android:layout_marginTop="@dimen/global_padding">
 
                 <TextView
                     android:layout_width="250dip"
@@ -154,6 +154,37 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/global_padding">
+
+                <TextView
+                    android:layout_width="250dip"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_application_mode"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+                <RadioGroup
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/settings_appModeInputRadio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_application_mode_input" />
+
+                    <RadioButton
+                        android:id="@+id/settings_appModeReportRadio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/global_padding"
+                        android:text="@string/settings_application_mode_report" />
+                </RadioGroup>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

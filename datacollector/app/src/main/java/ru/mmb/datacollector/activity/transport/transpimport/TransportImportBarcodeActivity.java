@@ -3,7 +3,7 @@ package ru.mmb.datacollector.activity.transport.transpimport;
 import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_FILE_DIALOG;
 import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_SCAN_POINT_ACTIVITY;
 import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.activity.scanpoint.SelectScanPointActivity;
+import ru.mmb.datacollector.activity.input.scanpoint.SelectScanPointActivity;
 import ru.mmb.datacollector.model.registry.Settings;
 import android.content.Intent;
 import android.view.View;
