@@ -61,6 +61,15 @@
     <string name="input_bclogger_select_prompt_logger">Выберите LOGGER</string>
     <string name="input_bclogger_select_ok">OK</string>
 
+    <string name="input_bclogger_settings_logger_id">LOGGER ID:</string>
+    <string name="input_bclogger_settings_scanpoint">Точка ввода:</string>
+    <string name="input_bclogger_settings_pattern">Шаблон:</string>
+    <string name="input_bclogger_settings_time">Время:</string>
+    <string name="input_bclogger_settings_length_check">Проверять длину</string>
+    <string name="input_bclogger_settings_digits_check">Только цифры</string>
+    <string name="input_bclogger_settings_reload">Загрузить</string>
+    <string name="input_bclogger_settings_send">Отправить</string>
+
     <string name="transport_input_import_dictionaries">Импорт данных ММБ</string>
     <string name="transport_input_send_to_server">Отправить RAW на сервер</string>
     <string name="transport_input_send_logger_data">Отправить RAW данные сканеров</string>

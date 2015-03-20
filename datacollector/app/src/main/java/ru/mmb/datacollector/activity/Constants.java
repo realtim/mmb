@@ -43,4 +43,5 @@ public class Constants
 	public static final int REQUEST_CODE_INPUT_BCLOGGER_START_ACTIVITY = 12;
 	public static final int REQUEST_CODE_LAUNCH_BLUETOOTH_ACTIVITY = 13;
     public static final int REQUEST_CODE_INPUT_BCLOGGER_SELECT_ACTIVITY = 14;
+    public static final int REQUEST_CODE_INPUT_BCLOGGER_SETTINGS_ACTIVITY = 15;
 }

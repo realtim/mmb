@@ -11,9 +11,11 @@ import android.widget.TextView;
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.input.bclogger.ActivityStateWithScanPointAndLogger;
 import ru.mmb.datacollector.activity.input.bclogger.select.SelectBCLoggerActivity;
+import ru.mmb.datacollector.activity.input.bclogger.settings.LoggerSettingsActivity;
 import ru.mmb.datacollector.model.registry.Settings;
 
 import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_INPUT_BCLOGGER_SELECT_ACTIVITY;
+import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_INPUT_BCLOGGER_SETTINGS_ACTIVITY;
 import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_LAUNCH_BLUETOOTH_ACTIVITY;
 
 public class StartWorkWithBCLoggerActivity extends Activity {
@@ -45,7 +47,7 @@ public class StartWorkWithBCLoggerActivity extends Activity {
         initializeBluetoothAdapter();
 
         btnSelectLogger.setOnClickListener(new SelectLoggerClickListener());
-        //btnSettings.setOnClickListener(new SettingsClickListener());
+        btnSettings.setOnClickListener(new SettingsClickListener());
         //btnLoadData.setOnClickListener(new LoadDataClickListener());
 
         refreshState();
@@ -130,16 +132,16 @@ public class StartWorkWithBCLoggerActivity extends Activity {
         }
     }
 
-    /*
     private class SettingsClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(getApplicationContext(), BCLoggerSettingsActivity.class);
+            Intent intent = new Intent(getApplicationContext(), LoggerSettingsActivity.class);
             currentState.prepareStartActivityIntent(intent, REQUEST_CODE_INPUT_BCLOGGER_SETTINGS_ACTIVITY);
-            startActivityForResult(intent, REQUEST_CODE_INPUT_BCLOGGER_SETTINGS_ACTIVITY);
+            startActivity(intent);
         }
     }
 
+    /*
     private class LoadDataClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {

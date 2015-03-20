@@ -1,14 +1,5 @@
 package ru.mmb.datacollector.activity.transport.transpimport;
 
-import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_FILE_DIALOG;
-
-import java.util.List;
-import java.util.Timer;
-
-import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.activity.ActivityStateWithTeamAndScanPoint;
-import ru.mmb.datacollector.model.registry.Settings;
-import ru.mmb.datacollector.transport.importer.ImportState;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,6 +12,16 @@ import android.widget.TextView;
 
 import com.filedialog.FileDialog;
 import com.filedialog.SelectionMode;
+
+import java.util.List;
+import java.util.Timer;
+
+import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.activity.ActivityStateWithTeamAndScanPoint;
+import ru.mmb.datacollector.model.registry.Settings;
+import ru.mmb.datacollector.transport.importer.ImportState;
+
+import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_FILE_DIALOG;
 
 public class TransportImportActivity extends Activity
 {
@@ -61,7 +62,7 @@ public class TransportImportActivity extends Activity
 			@Override
 			public void handleMessage(Message msg)
 			{
-				if (importState == null) return;
+                if (importState == null) return;
 
 				if (importState.isFinished())
 				{

@@ -42,6 +42,7 @@
         <activity android:name="com.filedialog.FileDialog" />
         <activity android:name=".activity.input.bclogger.start.StartWorkWithBCLoggerActivity" />
         <activity android:name=".activity.input.bclogger.select.SelectBCLoggerActivity" />
+        <activity android:name=".activity.input.bclogger.settings.LoggerSettingsActivity" />
     </application>
 
 </manifest>

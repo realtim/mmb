@@ -133,6 +133,7 @@ public class ActivityStateWithScanPointAndLogger extends CurrentState {
         switch (activityRequestId) {
             case Constants.REQUEST_CODE_DEFAULT_ACTIVITY:
             case Constants.REQUEST_CODE_INPUT_BCLOGGER_SELECT_ACTIVITY:
+            case Constants.REQUEST_CODE_INPUT_BCLOGGER_SETTINGS_ACTIVITY:
                 if (getCurrentScanPoint() != null)
                     intent.putExtra(KEY_CURRENT_SCAN_POINT, getCurrentScanPoint());
                 if (getCurrentLoggerInfo() != null)

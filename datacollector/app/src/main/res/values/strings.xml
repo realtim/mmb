@@ -62,6 +62,15 @@
     <string name="input_bclogger_select_prompt_logger">Select LOGGER</string>
     <string name="input_bclogger_select_ok">OK</string>
 
+    <string name="input_bclogger_settings_logger_id">LOGGER ID:</string>
+    <string name="input_bclogger_settings_scanpoint">Scanpoint:</string>
+    <string name="input_bclogger_settings_pattern">Pattern:</string>
+    <string name="input_bclogger_settings_time">Time:</string>
+    <string name="input_bclogger_settings_length_check">Check length</string>
+    <string name="input_bclogger_settings_digits_check">Only digits</string>
+    <string name="input_bclogger_settings_reload">Reload</string>
+    <string name="input_bclogger_settings_send">Send</string>
+
     <string name="transport_input_import_dictionaries">Import raid data</string>
     <string name="transport_input_send_to_server">Send RAW to server</string>
     <string name="transport_input_send_logger_data">Send RAW scans to reporter</string>
@@ -73,8 +82,6 @@
 
     <string name="results_team_report">Team report</string>
     <string name="results_group_report">Group report</string>
-
-
 
     <string name="input_history_team_number">Team number:</string>
     <string name="input_history_team_not_found">Team [${teamNumber}] not found</string>

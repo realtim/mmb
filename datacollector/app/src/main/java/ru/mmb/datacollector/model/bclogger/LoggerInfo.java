@@ -44,4 +44,12 @@ public class LoggerInfo implements Serializable, Comparable<LoggerInfo> {
     public int compareTo(LoggerInfo another) {
         return loggerName.compareTo(another.loggerName);
     }
+
+    @Override
+    public String toString() {
+        return "LoggerInfo{" +
+               "loggerName='" + loggerName + '\'' +
+               ", loggerBTAddress='" + loggerBTAddress + '\'' +
+               '}';
+    }
 }
