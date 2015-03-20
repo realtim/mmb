@@ -71,6 +71,10 @@
     <string name="input_bclogger_settings_reload">Reload</string>
     <string name="input_bclogger_settings_send">Send</string>
 
+    <string name="input_bclogger_dataload_get_log">Get log</string>
+    <string name="input_bclogger_dataload_get_debug">Get debug</string>
+    <string name="input_bclogger_dataload_clear_device">Clear device</string>
+
     <string name="transport_input_import_dictionaries">Import raid data</string>
     <string name="transport_input_send_to_server">Send RAW to server</string>
     <string name="transport_input_send_logger_data">Send RAW scans to reporter</string>

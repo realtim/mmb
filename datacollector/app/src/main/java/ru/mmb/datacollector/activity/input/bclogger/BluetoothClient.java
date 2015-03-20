@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.os.PowerManager;
 import android.util.Log;
 
@@ -11,15 +13,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ru.mmb.datacollector.model.bclogger.LoggerInfo;
 
 public abstract class BluetoothClient {
+    public static final Pattern REGEXP_SCANNER_ID = Pattern.compile("-Scanner ID: (\\d{2})");
+    public static final Pattern REGEXP_SCANPOINT_ORDER = Pattern.compile("-Control Point: (\\d{2})");
+    public static final Pattern REGEXP_LENGTH_CHECKING = Pattern.compile("-Barcode string length checking: ([YN])");
+    public static final Pattern REGEXP_NUMBERS_ONLY = Pattern.compile("-Numbers only: ([YN])");
+    public static final Pattern REGEXP_PATTERN = Pattern.compile("-Barcode pattern: (\\S+)");
+    public static final Pattern REGEXP_DATE_TIME = Pattern.compile("(\\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2})");
+
+    private static final SimpleDateFormat loggerDateFormat = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
+    private static final SimpleDateFormat loggerTimeFormat = new SimpleDateFormat("HH:mm:ss");
+
     private static final UUID LOGGER_SERVICE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private final Context context;
     private final LoggerInfo loggerInfo;
+    private final Handler handler;
 
     private BluetoothSocket btSocket = null;
     private OutputStream outStream = null;
@@ -27,11 +45,10 @@ public abstract class BluetoothClient {
 
     private boolean terminated = false;
 
-    public abstract void writeToConsole(String message);
-
-    public BluetoothClient(Context context, LoggerInfo loggerInfo) {
+    public BluetoothClient(Context context, LoggerInfo loggerInfo, Handler handler) {
         this.context = context;
         this.loggerInfo = loggerInfo;
+        this.handler = handler;
     }
 
     public OutputStream getOutStream() {
@@ -40,6 +57,26 @@ public abstract class BluetoothClient {
 
     public InputStream getInStream() {
         return inStream;
+    }
+
+    public synchronized boolean isTerminated() {
+        return terminated;
+    }
+
+    public synchronized void terminate() {
+        this.terminated = true;
+    }
+
+    public void writeToConsole(String message) {
+        if (!isTerminated()) {
+            handler.sendMessage(Message.obtain(handler, ThreadMessageTypes.MSG_CONSOLE, message));
+        }
+    }
+
+    public void sendFinishedNotification() {
+        if (!isTerminated()) {
+            handler.sendMessage(Message.obtain(handler, ThreadMessageTypes.MSG_FINISHED));
+        }
     }
 
     public boolean connect() {
@@ -128,6 +165,7 @@ public abstract class BluetoothClient {
                 while (!isTerminated() && inStream.available() > 0) {
                     int bytes = inStream.read(Buffer);
                     inBuff.append(new String(Buffer, 0, bytes));
+                    writeToConsole("total bytes read: " + inBuff.length());
                     time_old = System.currentTimeMillis();
                 }
                 try {
@@ -157,11 +195,21 @@ public abstract class BluetoothClient {
         }
     }
 
-    public synchronized boolean isTerminated() {
-        return terminated;
+    public String getValueFromReplyByRegexp(String[] replyStrings, Pattern pattern) {
+        for (String replyString : replyStrings) {
+            Matcher matcher = pattern.matcher(replyString);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+        }
+        return null;
     }
 
-    public synchronized void terminate() {
-        this.terminated = true;
+    protected void updateLoggerTime() {
+        sendRequestWaitForReply("SETT\n");
+        Date currentTime = new Date();
+        String timeString =
+                loggerDateFormat.format(currentTime) + " " + loggerTimeFormat.format(currentTime);
+        sendRequestWaitForReply(timeString + "\n", 5000);
     }
 }

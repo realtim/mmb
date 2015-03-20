@@ -71,7 +71,7 @@ public class LoggerSettingsActivity extends Activity {
 
         consoleAppender = new ConsoleMessagesAppender(areaConsole);
         Handler bluetoothMessagesHandler = new BluetoothHandler(this, consoleAppender);
-        bluetoothClient = new LoggerSettingsBluetoothClient(this, currentState.getCurrentLoggerInfo(), currentState, bluetoothMessagesHandler);
+        bluetoothClient = new LoggerSettingsBluetoothClient(this, currentState.getCurrentLoggerInfo(), bluetoothMessagesHandler, currentState);
 
         setControlsEnabled(false);
         btnReload.setEnabled(true);

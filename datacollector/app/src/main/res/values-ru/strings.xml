@@ -70,6 +70,10 @@
     <string name="input_bclogger_settings_reload">Загрузить</string>
     <string name="input_bclogger_settings_send">Отправить</string>
 
+    <string name="input_bclogger_dataload_get_log">Загрузить данные</string>
+    <string name="input_bclogger_dataload_get_debug">Загрузить DEBUG</string>
+    <string name="input_bclogger_dataload_clear_device">Очистить файлы</string>
+
     <string name="transport_input_import_dictionaries">Импорт данных ММБ</string>
     <string name="transport_input_send_to_server">Отправить RAW на сервер</string>
     <string name="transport_input_send_logger_data">Отправить RAW данные сканеров</string>
