@@ -1,0 +1,98 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/Main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/btnEND"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/btnDL"
+        android:text="END" />
+
+    <Button
+        android:id="@+id/btnGETS"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:text="GETS" />
+
+    <TextView
+        android:id="@+id/Term"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/btnEND"
+        android:layout_below="@+id/btnEND"
+        android:width="2dp"
+        android:background="#ff2200ff"
+        android:enabled="true"
+        android:scrollbars="vertical"
+        android:singleLine="false"
+        android:textColor="#ffffff00"
+        android:textIsSelectable="true" />
+
+    <Button
+        android:id="@+id/btnGETL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="GETL" />
+
+
+    <Button
+        android:id="@+id/btnGETD"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="GETD" />
+
+    <Button
+        android:id="@+id/btnDL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/btnGETD"
+        android:text="DELLOG" />
+
+    <Button
+        android:id="@+id/btnCNCT"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/btnDL"
+        android:layout_toRightOf="@+id/btnDL"
+        android:text="Connect device#" />
+
+    <EditText
+        android:id="@+id/TxtBT"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/btnCNCT"
+        android:layout_toLeftOf="@+id/btnEND"
+        android:layout_toRightOf="@+id/btnCNCT"
+        android:width="2dp"
+        android:background="#ff05e4ff"
+        android:clickable="true"
+        android:editable="true"
+        android:enabled="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:inputType="number"
+        android:lines="1"
+        android:maxLength="2"
+        android:numeric="integer"
+        android:singleLine="true"
+        android:text="0"
+        android:textSize="35sp"
+        android:visibility="visible"
+        tools:ignore="Deprecated" />
+
+</RelativeLayout>
+<!-- From: file:/C:/Users/jekyll/AndroidstudioProjects/BCLogger_Manager/app/src/main/res/layout/activity_main.xml -->

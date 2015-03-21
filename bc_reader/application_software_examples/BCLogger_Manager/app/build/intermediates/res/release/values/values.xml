@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="http://schemas.android.com/tools">
+    <!-- From: file:/C:/Users/jekyll/AndroidstudioProjects/BCLogger_Manager/app/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="app_name" ns1:ignore="UnusedResources">BCLogger Manager</string>
+    <string name="menu_settings" ns1:ignore="UnusedResources">Settings</string>
+    <string name="title_activity_main">MainActivity</string>
+    <!-- From: file:/C:/Users/jekyll/AndroidstudioProjects/BCLogger_Manager/app/src/main/res/values/styles.xml -->
+    <eat-comment/>
+    <style name="AppTheme" parent="android:Theme.Light"/>
+</resources>

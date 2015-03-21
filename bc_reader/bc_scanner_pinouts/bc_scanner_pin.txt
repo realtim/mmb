@@ -1,0 +1,38 @@
+    key
+0123456789
+
+Laser Kraftway KLS-08? PS/2
+0 - 
+1 - +5v
+2 - GND
+3 - CLK PS/2
+4 -
+5 -
+6 - 
+7 - Data PS/2
+8 - *TX RS232
+9 - 
+
+CCD Poslink PS-900KB
+0 - 
+1 - RX RS232
+2 - ?
+3 - *TX RS232
+4 - ?
+5 - *+5v
+6 - CLK PS/2, ?USB?
+7 - *GND
+8 - Data PS/2, ?USB?
+9 - 
+
+Laser Kraftway KLS-01 USB
+0 - 
+1 - 
+2 - 
+3 - *GND
+4 - *+5v
+5 - USB1
+6 - USB2
+7 - 
+8 - *TX RS232
+9 - 
