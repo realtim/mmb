@@ -5,7 +5,9 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.Date;
 
+import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.Settings;
+import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.util.DateFormat;
 
 public class RawLoggerData {
@@ -35,6 +37,9 @@ public class RawLoggerData {
         if (!resultCursor.isAfterLast()) {
             String rawLoggerDataDate = resultCursor.getString(0);
             result = new ru.mmb.datacollector.model.RawLoggerData(loggerId, scanpointId, teamId, DateFormat.parse(rawLoggerDataDate));
+
+            result.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
+            result.setScanPoint(ScanPointsRegistry.getInstance().getScanPointById(scanpointId));
         }
         resultCursor.close();
 

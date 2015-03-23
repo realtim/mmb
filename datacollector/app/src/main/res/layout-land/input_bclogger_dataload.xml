@@ -26,12 +26,14 @@
             android:layout_marginTop="@dimen/global_padding"
             android:text="@string/input_bclogger_dataload_get_debug" />
 
+        <!--
         <Button
             android:id="@+id/inputBCLoggerDataload_clearDeviceButton"
             android:layout_width="250dip"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/global_padding"
             android:text="@string/input_bclogger_dataload_clear_device" />
+            -->
     </LinearLayout>
 
     <ScrollView

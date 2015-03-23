@@ -19,7 +19,7 @@ public class LoggerDataLoadActivity extends Activity {
 
     private Button btnGetLog;
     private Button btnGetDebug;
-    private Button btnClearDevice;
+    // private Button btnClearDevice;
     private TextView areaConsole;
 
     private ConsoleMessagesAppender consoleAppender;
@@ -39,12 +39,13 @@ public class LoggerDataLoadActivity extends Activity {
 
         btnGetLog = (Button) findViewById(R.id.inputBCLoggerDataload_getLogButton);
         btnGetDebug = (Button) findViewById(R.id.inputBCLoggerDataload_getDebugButton);
-        btnClearDevice = (Button) findViewById(R.id.inputBCLoggerDataload_clearDeviceButton);
+        // btnClearDevice = (Button) findViewById(R.id.inputBCLoggerDataload_clearDeviceButton);
         areaConsole = (TextView) findViewById(R.id.inputBCLoggerDataload_consoleTextView);
 
         setTitle(currentState.getScanPointAndLoggerText(this));
 
         btnGetLog.setOnClickListener(new GetLogClickListener());
+        // btnClearDevice.setOnClickListener(new ClearDeviceClickListener());
 
         consoleAppender = new ConsoleMessagesAppender(areaConsole);
         Handler bluetoothMessagesHandler = new BluetoothHandler(this, consoleAppender);
@@ -56,7 +57,7 @@ public class LoggerDataLoadActivity extends Activity {
     private void setControlsEnabled(boolean value) {
         btnGetLog.setEnabled(value);
         btnGetDebug.setEnabled(value);
-        btnClearDevice.setEnabled(value);
+        // btnClearDevice.setEnabled(value);
     }
 
     @Override
@@ -82,6 +83,22 @@ public class LoggerDataLoadActivity extends Activity {
             runningThread.start();
         }
     }
+
+    /*
+    private class ClearDeviceClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            setControlsEnabled(false);
+            runningThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    bluetoothClient.clearDevice();
+                }
+            });
+            runningThread.start();
+        }
+    }
+    */
 
     private static class BluetoothHandler extends Handler {
         private final LoggerDataLoadActivity owner;

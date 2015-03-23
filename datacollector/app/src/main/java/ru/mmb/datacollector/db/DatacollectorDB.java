@@ -202,15 +202,15 @@ public class DatacollectorDB
 		return teamResults.loadTeamResults(team);
 	}
 
-    public ru.mmb.datacollector.model.RawLoggerData getExistingRecord(int loggerId, int scanpointId, int teamId) {
+    public ru.mmb.datacollector.model.RawLoggerData getExistingLoggerRecord(int loggerId, int scanpointId, int teamId) {
         return rawLoggerData.getExistingRecord(loggerId, scanpointId, teamId);
     }
 
-    public void updateExistingRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
+    public void updateExistingLoggerRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
         rawLoggerData.updateExistingRecord(loggerId, scanpointId, teamId, recordDateTime);
     }
 
-    public void insertNewRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
+    public void insertNewLoggerRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
         rawLoggerData.insertNewRecord(loggerId, scanpointId, teamId, recordDateTime);
     }
 }

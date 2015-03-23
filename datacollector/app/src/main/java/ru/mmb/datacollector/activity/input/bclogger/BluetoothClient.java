@@ -140,13 +140,17 @@ public abstract class BluetoothClient {
     }
 
     public String sendRequestWaitForReply(String message) {
-        return sendRequestWaitForReply(message, 1000);
+        return sendRequestWaitForReply(message, 1000, true);
     }
 
-    public String sendRequestWaitForReply(String message, long waitTimeout) {
+    public String sendRequestWaitForReplySilent(String message) {
+        return sendRequestWaitForReply(message, 1000, false);
+    }
+
+    public String sendRequestWaitForReply(String message, long waitTimeout, boolean writeReplyToConsole) {
         byte[] msgBuffer = message.getBytes();
-        byte[] Buffer = new byte[8192];
-        StringBuffer inBuff = new StringBuffer();
+        byte[] replyBuffer = new byte[8192];
+        StringBuilder inBuff = new StringBuilder(5 * 1024 * 1024);
 
         writeToConsole("sending: " + message);
         try {
@@ -155,17 +159,23 @@ public abstract class BluetoothClient {
             writeToConsole("exception occurred during write: " + e.getMessage());
             return null;
         }
+
         writeToConsole("reading reply");
         try {
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
             PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Receiving data...");
             wl.acquire();
             long time_old = System.currentTimeMillis();
+            int bytesRead = 0;
             while (!isTerminated() && System.currentTimeMillis() - time_old < waitTimeout) {
                 while (!isTerminated() && inStream.available() > 0) {
-                    int bytes = inStream.read(Buffer);
-                    inBuff.append(new String(Buffer, 0, bytes));
-                    writeToConsole("total bytes read: " + inBuff.length());
+                    int bytes = inStream.read(replyBuffer);
+                    bytesRead += bytes;
+                    inBuff.append(new String(replyBuffer, 0, bytes));
+                    if (bytesRead > 30 * 1024) {
+                        writeToConsole("total bytes read: " + inBuff.length());
+                        bytesRead = 0;
+                    }
                     time_old = System.currentTimeMillis();
                 }
                 try {
@@ -178,7 +188,12 @@ public abstract class BluetoothClient {
             writeToConsole("exception occurred during read: " + e.getMessage());
             return null;
         }
-        writeToConsole("reply read: " + inBuff.toString());
+
+        writeToConsole("total bytes read: " + inBuff.length());
+        if (writeReplyToConsole) {
+            writeToConsole("reply read: " + inBuff.toString());
+        }
+
         return inBuff.toString();
     }
 
@@ -205,11 +220,21 @@ public abstract class BluetoothClient {
         return null;
     }
 
+    public String getWholeStringFromReplyByRegexp(String[] replyStrings, Pattern pattern) {
+        for (String replyString : replyStrings) {
+            Matcher matcher = pattern.matcher(replyString);
+            if (matcher.find()) {
+                return replyString;
+            }
+        }
+        return null;
+    }
+
     protected void updateLoggerTime() {
         sendRequestWaitForReply("SETT\n");
         Date currentTime = new Date();
         String timeString =
                 loggerDateFormat.format(currentTime) + " " + loggerTimeFormat.format(currentTime);
-        sendRequestWaitForReply(timeString + "\n", 5000);
+        sendRequestWaitForReply(timeString + "\n", 5000, true);
     }
 }

@@ -5,7 +5,7 @@ import android.widget.TextView;
 import java.util.LinkedList;
 
 public class ConsoleMessagesAppender {
-    private final int MAX_CAPACITY = 5000;
+    private final int MAX_CAPACITY = 300;
 
     private final TextView console;
     private LinkedList<String> messages = new LinkedList<String>();

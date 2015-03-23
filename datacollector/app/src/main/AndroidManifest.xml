@@ -43,6 +43,7 @@
         <activity android:name=".activity.input.bclogger.start.StartWorkWithBCLoggerActivity" />
         <activity android:name=".activity.input.bclogger.select.SelectBCLoggerActivity" />
         <activity android:name=".activity.input.bclogger.settings.LoggerSettingsActivity" />
+        <activity android:name=".activity.input.bclogger.dataload.LoggerDataLoadActivity" />
     </application>
 
 </manifest>
