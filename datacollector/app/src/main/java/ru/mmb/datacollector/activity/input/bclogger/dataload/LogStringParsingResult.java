@@ -9,7 +9,7 @@ public class LogStringParsingResult {
     private boolean regexpMatches = true;
     private boolean crcFailed = false;
     private boolean wrongLoggerId = false;
-    private boolean wrongTeamId = false;
+    private boolean wrongTeamNumber = false;
 
     private String loggerId;
     private String scanpointOrder;
@@ -49,12 +49,12 @@ public class LogStringParsingResult {
         this.wrongLoggerId = wrongLoggerId;
     }
 
-    public boolean isWrongTeamId() {
-        return wrongTeamId;
+    public boolean isWrongTeamNumber() {
+        return wrongTeamNumber;
     }
 
-    public void setWrongTeamId(boolean wrongTeamId) {
-        this.wrongTeamId = wrongTeamId;
+    public void setWrongTeamNumber(boolean wrongTeamNumber) {
+        this.wrongTeamNumber = wrongTeamNumber;
     }
 
     public String getLoggerId() {
@@ -81,7 +81,7 @@ public class LogStringParsingResult {
         this.teamInfo = teamInfo;
     }
 
-    public int extractTeamId() {
+    public int extractTeamNumber() {
         return Integer.parseInt(teamInfo.substring(2, 6));
     }
 
@@ -102,7 +102,7 @@ public class LogStringParsingResult {
     }
 
     public boolean isError() {
-        return !isRegexpMatches() || isWrongLoggerId() || isWrongTeamId() || isCrcFailed();
+        return !isRegexpMatches() || isWrongLoggerId() || isWrongTeamNumber() || isCrcFailed();
     }
 
     public String getErrorMessage() {
@@ -115,8 +115,8 @@ public class LogStringParsingResult {
         if (isWrongLoggerId()) {
             return "ERROR [" + source + "] check LOGGER_ID failed";
         }
-        if (isWrongTeamId()) {
-            return "ERROR [" + source + "] check TEAM_ID failed";
+        if (isWrongTeamNumber()) {
+            return "ERROR [" + source + "] check TEAM_NUMBER failed";
         }
         return "UNKNOWN ERROR";
     }
@@ -127,12 +127,12 @@ public class LogStringParsingResult {
         }
         Team team = null;
         try {
-            int teamId = extractTeamId();
-            team = TeamsRegistry.getInstance().getTeamById(teamId);
+            int teamNumber = extractTeamNumber();
+            team = TeamsRegistry.getInstance().getTeamByNumber(teamNumber);
         } catch (NumberFormatException e) {
         }
         if (team == null) {
-            setWrongTeamId(true);
+            setWrongTeamNumber(true);
         }
     }
 }

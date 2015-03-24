@@ -18,7 +18,8 @@ public class LoggerDataLoadActivity extends Activity {
     ActivityStateWithScanPointAndLogger currentState;
 
     private Button btnGetLog;
-    private Button btnGetDebug;
+    private Button btnGetErrors;
+    private Button btnClearConsole;
     // private Button btnClearDevice;
     private TextView areaConsole;
 
@@ -38,13 +39,16 @@ public class LoggerDataLoadActivity extends Activity {
         setContentView(R.layout.input_bclogger_dataload);
 
         btnGetLog = (Button) findViewById(R.id.inputBCLoggerDataload_getLogButton);
-        btnGetDebug = (Button) findViewById(R.id.inputBCLoggerDataload_getDebugButton);
+        btnGetErrors = (Button) findViewById(R.id.inputBCLoggerDataload_getErrorsButton);
+        btnClearConsole = (Button) findViewById(R.id.inputBCLoggerDataload_clearConsoleButton);
         // btnClearDevice = (Button) findViewById(R.id.inputBCLoggerDataload_clearDeviceButton);
         areaConsole = (TextView) findViewById(R.id.inputBCLoggerDataload_consoleTextView);
 
         setTitle(currentState.getScanPointAndLoggerText(this));
 
         btnGetLog.setOnClickListener(new GetLogClickListener());
+        btnGetErrors.setOnClickListener(new GetErrorsClickListener());
+        btnClearConsole.setOnClickListener(new ClearConsoleClickListener());
         // btnClearDevice.setOnClickListener(new ClearDeviceClickListener());
 
         consoleAppender = new ConsoleMessagesAppender(areaConsole);
@@ -56,7 +60,8 @@ public class LoggerDataLoadActivity extends Activity {
 
     private void setControlsEnabled(boolean value) {
         btnGetLog.setEnabled(value);
-        btnGetDebug.setEnabled(value);
+        btnGetErrors.setEnabled(value);
+        btnClearConsole.setEnabled(value);
         // btnClearDevice.setEnabled(value);
     }
 
@@ -81,6 +86,27 @@ public class LoggerDataLoadActivity extends Activity {
                 }
             });
             runningThread.start();
+        }
+    }
+
+    private class GetErrorsClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            setControlsEnabled(false);
+            runningThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    bluetoothClient.loadErrorsData();
+                }
+            });
+            runningThread.start();
+        }
+    }
+
+    private class ClearConsoleClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            consoleAppender.clear();
         }
     }
 

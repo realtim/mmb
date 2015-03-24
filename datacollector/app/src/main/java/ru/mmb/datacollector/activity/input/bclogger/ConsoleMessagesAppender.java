@@ -32,4 +32,9 @@ public class ConsoleMessagesAppender {
         }
         return sb.toString();
     }
+
+    public void clear() {
+        messages.clear();
+        console.setText("");
+    }
 }

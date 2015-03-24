@@ -7,8 +7,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,8 +17,10 @@ import ru.mmb.datacollector.activity.input.bclogger.BluetoothClient;
 import ru.mmb.datacollector.db.DatacollectorDB;
 import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.ScanPoint;
+import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.bclogger.LoggerInfo;
 import ru.mmb.datacollector.model.registry.Settings;
+import ru.mmb.datacollector.model.registry.TeamsRegistry;
 
 public class LoggerDataLoadBluetoothClient extends BluetoothClient {
     private static final Pattern REGEXP_LOG_DATA = Pattern.compile("(\\d{2}), (\\d{2}), (\\d{8}), (\\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), Line#=(\\d+), CRC8=(\\d+)");
@@ -44,6 +46,19 @@ public class LoggerDataLoadBluetoothClient extends BluetoothClient {
         sendFinishedNotification();
     }
 
+    public void loadErrorsData() {
+        boolean connected = connect();
+        if (connected) {
+            String loggerReply = sendRequestWaitForReplySilent("GETD\n");
+            if (loggerReply != null) {
+                saveLoggerReplyToLogFile(loggerReply, "errors");
+            }
+            updateLoggerTime();
+            disconnectImmediately();
+        }
+        sendFinishedNotification();
+    }
+
     public void loadLogData() {
         boolean connected = connect();
         if (connected) {
@@ -52,7 +67,7 @@ public class LoggerDataLoadBluetoothClient extends BluetoothClient {
             if (confLoggerId != null) {
                 String loggerReply = sendRequestWaitForReplySilent("GETL\n");
                 if (loggerReply != null) {
-                    saveLoggerReplyToLogFile(loggerReply);
+                    saveLoggerReplyToLogFile(loggerReply, "datalog");
                     parseAndSaveLogData(loggerReply);
                 }
             }
@@ -70,10 +85,11 @@ public class LoggerDataLoadBluetoothClient extends BluetoothClient {
         return null;
     }
 
-    private void saveLoggerReplyToLogFile(String loggerReply) {
+    private void saveLoggerReplyToLogFile(String loggerReply, String logFileName) {
         SimpleDateFormat currTimeFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
-        String fileName = Settings.getInstance().getExportDir() + "/" + "bclogger_datalog_" +
-                          currTimeFormat.format(new Date()) + ".txt";
+        String fileName =
+                Settings.getInstance().getExportDir() + "/" + "bclogger_" + logFileName + "_" +
+                currTimeFormat.format(new Date()) + ".txt";
         try {
             File outputFile = new File(fileName);
             if (!outputFile.exists()) outputFile.createNewFile();
@@ -81,9 +97,9 @@ public class LoggerDataLoadBluetoothClient extends BluetoothClient {
             writer.write(loggerReply);
             writer.flush();
             writer.close();
-            writeToConsole("datalog save to file SUCCESS");
+            writeToConsole(logFileName + " save to file SUCCESS");
         } catch (IOException e) {
-            writeToConsole("datalog save to file FAILED");
+            writeToConsole(logFileName + " save to file FAILED");
             writeToConsole("error: " + e.getMessage());
         }
     }
@@ -215,7 +231,7 @@ public class LoggerDataLoadBluetoothClient extends BluetoothClient {
 
     private LogStringParsingResult repeatLineRequest(String lineNumber) {
         for (int i = 0; i < 3; i++) {
-            String loggerReply = sendRequestWaitForReply("GETS\n");
+            String loggerReply = sendRequestWaitForReply("GET#L" + lineNumber + "\n");
             String[] replyStrings = loggerReply.split("\\n");
             String replyString = getWholeStringFromReplyByRegexp(replyStrings, REGEXP_LOG_DATA);
             if (replyString != null) {
@@ -234,19 +250,45 @@ public class LoggerDataLoadBluetoothClient extends BluetoothClient {
         try {
             int loggerId = Integer.parseInt(parsingResult.getLoggerId());
             int scanpointId = currentScanPoint.getScanPointId();
-            int teamId = parsingResult.extractTeamId();
-            Date recordDateTime = sdf.parse(parsingResult.getRecordDateTime());
+            int teamId = getTeamIdByNumber(parsingResult);
+            // Remove seconds from date, or existing records will be updated when no need.
+            // Dates in DB are saved without seconds, and before() or after() will return
+            // undesired results, if seconds are present in parsed result.
+            Date recordDateTime = trimToMinutes(sdf.parse(parsingResult.getRecordDateTime()));
             RawLoggerData existingRecord = DatacollectorDB.getConnectedInstance().getExistingLoggerRecord(loggerId, scanpointId, teamId);
             if (existingRecord != null) {
                 if (needUpdateExistingRecord(existingRecord, recordDateTime)) {
                     DatacollectorDB.getConnectedInstance().updateExistingLoggerRecord(loggerId, scanpointId, teamId, recordDateTime);
+                    writeToConsole("existing record updated");
+                } else {
+                    writeToConsole("existing record NOT updated");
                 }
             } else {
                 DatacollectorDB.getConnectedInstance().insertNewLoggerRecord(loggerId, scanpointId, teamId, recordDateTime);
+                writeToConsole("new record inserted");
             }
-        } catch (ParseException e) {
-            writeError("ERROR parsing date [" + parsingResult.getRecordDateTime() + "]");
+        } catch (Exception e) {
+            writeError("ERROR before saveToDB: " + e.getMessage());
         }
+    }
+
+    private int getTeamIdByNumber(LogStringParsingResult parsingResult) throws Exception {
+        int teamNumber = parsingResult.extractTeamNumber();
+        Team team = TeamsRegistry.getInstance().getTeamByNumber(teamNumber);
+        if (team == null) throw new Exception("team not found by number: " + teamNumber);
+        return team.getTeamId();
+    }
+
+    /*
+     * Code copied from stackoverflow.
+     */
+    private Date trimToMinutes(Date value) {
+        Calendar cal = Calendar.getInstance();
+        cal.clear();
+        cal.setTime(value);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 
     private boolean needUpdateExistingRecord(RawLoggerData existingRecord, Date recordDateTime) {
