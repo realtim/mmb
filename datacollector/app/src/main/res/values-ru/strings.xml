@@ -75,22 +75,9 @@
     <string name="input_bclogger_dataload_clear_device">Очистить файлы</string>
     <string name="input_bclogger_dataload_clear_console">Очистить консоль</string>
 
-    <string name="transport_input_import_dictionaries">Импорт данных ММБ</string>
-    <string name="transport_input_send_to_server">Отправить RAW на сервер</string>
-    <string name="transport_input_send_logger_data">Отправить RAW данные сканеров</string>
-    <string name="transport_input_save_data_to_file">Сохранить RAW в файл</string>
-
-    <string name="transport_report_import_dictionaries">Импорт данных ММБ</string>
-    <string name="transport_report_receive_from_server">Получить с сервера</string>
-    <string name="transport_report_receive_logger_data">Получить данные сканеров</string>
-
-    <string name="results_team_report">Отчёт по команде</string>
-    <string name="results_group_report">Полный отчёт </string>
-
-
-
     <string name="input_history_team_number">Номер команды:</string>
     <string name="input_history_team_not_found">Команда [${teamNumber}] не найдена</string>
+
     <string name="input_data_no_team">&lt;Команда не выбрана></string>
     <string name="input_data_no_team_number">333</string>
     <string name="input_data_time_now">Сейчас</string>
@@ -104,6 +91,7 @@
     <string name="input_data_res_taken">Взято:</string>
     <string name="input_data_date_error_message">Дата ${inputDate} не попадает в интервал [${dateFrom}, ${dateTo}].</string>
     <string name="input_data_withdraw_member">Сход</string>
+
     <string name="input_withdraw_no_team_number">333</string>
     <string name="input_withdraw_no_team">&lt;Команда не выбрана></string>
     <string name="input_withdraw_member_column">Участник</string>
@@ -113,6 +101,7 @@
     <string name="input_withdraw_already_withdrawn">Уже отмечен</string>
     <string name="input_withdraw_res_members">Сошедшие:</string>
     <string name="input_withdraw_res_no_members">&lt;Нет сошедших></string>
+
     <string name="file_dialog_location">Расположение</string>
     <string name="file_dialog_cant_read_folder">нельзя прочитать директорию!</string>
     <string name="file_dialog_new">Новый</string>
@@ -122,6 +111,16 @@
     <string name="file_dialog_create">Сохранить</string>
     <string name="file_dialog_no_data">Нет данных</string>
     <string name="file_dialog_err">Ошибка</string>
+
+    <string name="transport_input_import_dictionaries">Импорт данных ММБ</string>
+    <string name="transport_input_send_to_server">Отправить RAW на сервер</string>
+    <string name="transport_input_send_logger_data">Отправить RAW данные сканеров</string>
+    <string name="transport_input_save_data_to_file">Сохранить RAW в файл</string>
+
+    <string name="transport_report_import_dictionaries">Импорт данных ММБ</string>
+    <string name="transport_report_receive_from_server">Получить с сервера</string>
+    <string name="transport_report_receive_logger_data">Получить данные сканеров</string>
+
     <string name="transp_import_title">Импорт</string>
     <string name="transp_import_dicts_title">Импорт справочников</string>
     <string name="transp_import_barcode_title">Импорт данных со сканера штрих-кодов</string>
@@ -145,6 +144,15 @@
     <string name="transp_export_error">Ошибка экспорта.</string>
     <string name="transp_export_success">Экспорт завершён.</string>
     <string name="transp_export_running">В процессе</string>
+
+    <string name="transport_bclogger_receive_title">Загрузка данных LOGGER'ов</string>
+    <string name="transport_bclogger_receive_start_listening">Ждать подключения</string>
+    <string name="transport_bclogger_receive_stop_listening">Прервать ожидание</string>
+    <string name="transport_bclogger_receive_clear_console">Очистить консоль</string>
+
+    <string name="results_team_report">Отчёт по команде</string>
+    <string name="results_group_report">Полный отчёт </string>
+
     <string name="report_team_title">Поиск команды</string>
     <string name="report_team_refresh_data">Обновить список</string>
     <string name="report_team_mode_fast">Быстрый</string>
@@ -166,11 +174,13 @@
     <string name="report_team_filter_status_member">Участник:</string>
     <string name="report_team_filter_status_empty">Без фильтра</string>
     <string name="report_team_result_error">Ошибка построения отчёта по команде.</string>
+
     <string name="report_global_title">Глобальный отчёт</string>
     <string name="report_global_all_teams">Все команды</string>
     <string name="report_global_selected_teams">Выбранные команды</string>
     <string name="report_global_start_builder">Старт</string>
     <string name="report_global_result_error">Ошибка построения глобального отчёта.</string>
+
     <string name="results_title">Отчёты по результатам</string>
 
 </resources>

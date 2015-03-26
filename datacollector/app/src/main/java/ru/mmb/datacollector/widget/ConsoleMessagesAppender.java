@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.activity.input.bclogger;
+package ru.mmb.datacollector.widget;
 
 import android.widget.TextView;
 

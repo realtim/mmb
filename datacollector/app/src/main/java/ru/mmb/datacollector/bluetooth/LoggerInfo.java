@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.model.bclogger;
+package ru.mmb.datacollector.bluetooth;
 
 import java.io.Serializable;
 

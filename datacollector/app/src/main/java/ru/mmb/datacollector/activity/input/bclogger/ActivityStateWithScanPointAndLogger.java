@@ -9,7 +9,7 @@ import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.Constants;
 import ru.mmb.datacollector.activity.CurrentState;
 import ru.mmb.datacollector.model.ScanPoint;
-import ru.mmb.datacollector.model.bclogger.LoggerInfo;
+import ru.mmb.datacollector.bluetooth.LoggerInfo;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_LOGGER_INFO;

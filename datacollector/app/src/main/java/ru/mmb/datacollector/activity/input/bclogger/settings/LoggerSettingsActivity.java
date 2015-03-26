@@ -13,8 +13,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.activity.input.bclogger.ConsoleMessagesAppender;
-import ru.mmb.datacollector.activity.input.bclogger.ThreadMessageTypes;
+import ru.mmb.datacollector.widget.ConsoleMessagesAppender;
+import ru.mmb.datacollector.bluetooth.ThreadMessageTypes;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.Settings;
@@ -196,7 +196,7 @@ public class LoggerSettingsActivity extends Activity {
         public void handleMessage(Message msg) {
             if (msg.what == ThreadMessageTypes.MSG_CONSOLE) {
                 consoleAppender.appendMessage((String) msg.obj);
-            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED) {
+            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
                 owner.runningThread = null;
                 owner.updateControlsAfterCommunication();
             }

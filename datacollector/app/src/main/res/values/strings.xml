@@ -76,20 +76,9 @@
     <string name="input_bclogger_dataload_clear_device">Clear device</string>
     <string name="input_bclogger_dataload_clear_console">Clear console</string>
 
-    <string name="transport_input_import_dictionaries">Import raid data</string>
-    <string name="transport_input_send_to_server">Send RAW to server</string>
-    <string name="transport_input_send_logger_data">Send RAW scans to reporter</string>
-    <string name="transport_input_save_data_to_file">Save RAW to file</string>
-
-    <string name="transport_report_import_dictionaries">Import raid data</string>
-    <string name="transport_report_receive_from_server">Receive from server</string>
-    <string name="transport_report_receive_logger_data">Receive scans data</string>
-
-    <string name="results_team_report">Team report</string>
-    <string name="results_group_report">Group report</string>
-
     <string name="input_history_team_number">Team number:</string>
     <string name="input_history_team_not_found">Team [${teamNumber}] not found</string>
+
     <string name="input_data_no_team">&lt;No team selected></string>
     <string name="input_data_no_team_number">333</string>
     <string name="input_data_time_now">Now</string>
@@ -103,6 +92,7 @@
     <string name="input_data_res_taken">Checked:</string>
     <string name="input_data_date_error_message">Date ${inputDate} is not in interval [${dateFrom}, ${dateTo}].</string>
     <string name="input_data_withdraw_member">Withdraw</string>
+
     <string name="input_withdraw_no_team_number">333</string>
     <string name="input_withdraw_no_team">&lt;No team selected></string>
     <string name="input_withdraw_member_column">Member</string>
@@ -112,6 +102,7 @@
     <string name="input_withdraw_already_withdrawn">Already withdrawn</string>
     <string name="input_withdraw_res_members">Members to withdraw:</string>
     <string name="input_withdraw_res_no_members">&lt;Nobody selected></string>
+
     <string name="file_dialog_location">Location</string>
     <string name="file_dialog_cant_read_folder">folder can\'t be read!</string>
     <string name="file_dialog_new">New</string>
@@ -121,6 +112,16 @@
     <string name="file_dialog_create">Save</string>
     <string name="file_dialog_no_data">No Data</string>
     <string name="file_dialog_err">Error</string>
+
+    <string name="transport_input_import_dictionaries">Import raid data</string>
+    <string name="transport_input_send_to_server">Send RAW to server</string>
+    <string name="transport_input_send_logger_data">Send RAW scans to reporter</string>
+    <string name="transport_input_save_data_to_file">Save RAW to file</string>
+
+    <string name="transport_report_import_dictionaries">Import raid data</string>
+    <string name="transport_report_receive_from_server">Receive from server</string>
+    <string name="transport_report_receive_logger_data">Receive scans data</string>
+
     <string name="transp_import_dicts_title">Import dictionaries</string>
     <string name="transp_import_barcode_title">Import barcode data</string>
     <string name="transp_import_barcode_select_scan_point">Select input point</string>
@@ -145,6 +146,15 @@
     <string name="transp_export_error">Export failed.</string>
     <string name="transp_export_success">Export success.</string>
     <string name="transp_export_running">Running</string>
+
+    <string name="transport_bclogger_receive_title">Receive LOGGER data</string>
+    <string name="transport_bclogger_receive_start_listening">Start listening</string>
+    <string name="transport_bclogger_receive_stop_listening">Stop listening</string>
+    <string name="transport_bclogger_receive_clear_console">Clear console</string>
+
+    <string name="results_team_report">Team report</string>
+    <string name="results_group_report">Group report</string>
+
     <string name="report_team_title">Search team</string>
     <string name="report_team_refresh_data">Refresh teams</string>
     <string name="report_team_mode_fast">Fast mode</string>
@@ -166,11 +176,13 @@
     <string name="report_team_filter_status_member">Member:</string>
     <string name="report_team_filter_status_empty">No filter</string>
     <string name="report_team_result_error">Build team report failed.</string>
+
     <string name="report_global_title">Global report</string>
     <string name="report_global_all_teams">All teams</string>
     <string name="report_global_selected_teams">Selected teams</string>
     <string name="report_global_start_builder">Start</string>
     <string name="report_global_result_error">Build global report failed.</string>
+
     <string name="results_title">Result reports</string>
 
 </resources>

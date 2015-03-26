@@ -13,16 +13,16 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.mmb.datacollector.activity.input.bclogger.BluetoothClient;
+import ru.mmb.datacollector.activity.input.bclogger.InputBCLoggerBluetoothClient;
 import ru.mmb.datacollector.db.DatacollectorDB;
 import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
-import ru.mmb.datacollector.model.bclogger.LoggerInfo;
+import ru.mmb.datacollector.bluetooth.LoggerInfo;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 
-public class LoggerDataLoadBluetoothClient extends BluetoothClient {
+public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient {
     private static final Pattern REGEXP_LOG_DATA = Pattern.compile("(\\d{2}), (\\d{2}), (\\d{8}), (\\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), Line#=(\\d+), CRC8=(\\d+)");
     private static final Pattern REGEXP_TO_CHECK_CRC = Pattern.compile("(\\d{2}, \\d{2}, \\d{8}, \\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), Line#=\\d+, CRC8=\\d+");
 
@@ -43,7 +43,7 @@ public class LoggerDataLoadBluetoothClient extends BluetoothClient {
             sendRequestWaitForReply("DELLOG\n");
             disconnectImmediately();
         }
-        sendFinishedNotification();
+        sendFinishedSuccessNotification();
     }
 
     public void loadErrorsData() {
@@ -56,7 +56,7 @@ public class LoggerDataLoadBluetoothClient extends BluetoothClient {
             updateLoggerTime();
             disconnectImmediately();
         }
-        sendFinishedNotification();
+        sendFinishedSuccessNotification();
     }
 
     public void loadLogData() {
@@ -74,7 +74,7 @@ public class LoggerDataLoadBluetoothClient extends BluetoothClient {
             updateLoggerTime();
             disconnectImmediately();
         }
-        sendFinishedNotification();
+        sendFinishedSuccessNotification();
     }
 
     private String requestLoggerId() {

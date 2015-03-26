@@ -20,14 +20,14 @@ import java.util.TreeMap;
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.StateChangeListener;
 import ru.mmb.datacollector.activity.input.bclogger.ActivityStateWithScanPointAndLogger;
-import ru.mmb.datacollector.model.bclogger.LoggerInfo;
+import ru.mmb.datacollector.bluetooth.LoggerInfo;
 import ru.mmb.datacollector.model.registry.Settings;
 
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_LOGGER_INFO;
 
 /*
  * To start this activity bluetooth adapter MUST be enabled.
- * Check enabled state in StartWorkWithBCLoggerActivity.
+ * Check enabled state in calling activity.
  */
 public class SelectBCLoggerActivity extends Activity implements StateChangeListener {
     private ActivityStateWithScanPointAndLogger currentState;

@@ -10,8 +10,8 @@ import android.widget.TextView;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.input.bclogger.ActivityStateWithScanPointAndLogger;
-import ru.mmb.datacollector.activity.input.bclogger.ConsoleMessagesAppender;
-import ru.mmb.datacollector.activity.input.bclogger.ThreadMessageTypes;
+import ru.mmb.datacollector.widget.ConsoleMessagesAppender;
+import ru.mmb.datacollector.bluetooth.ThreadMessageTypes;
 import ru.mmb.datacollector.model.registry.Settings;
 
 public class LoggerDataLoadActivity extends Activity {
@@ -52,8 +52,8 @@ public class LoggerDataLoadActivity extends Activity {
         // btnClearDevice.setOnClickListener(new ClearDeviceClickListener());
 
         consoleAppender = new ConsoleMessagesAppender(areaConsole);
-        Handler bluetoothMessagesHandler = new BluetoothHandler(this, consoleAppender);
-        bluetoothClient = new LoggerDataLoadBluetoothClient(this, currentState.getCurrentLoggerInfo(), bluetoothMessagesHandler, currentState.getCurrentScanPoint());
+        Handler bluetoothHandler = new BluetoothHandler(this, consoleAppender);
+        bluetoothClient = new LoggerDataLoadBluetoothClient(this, currentState.getCurrentLoggerInfo(), bluetoothHandler, currentState.getCurrentScanPoint());
 
         setControlsEnabled(true);
     }
@@ -140,7 +140,7 @@ public class LoggerDataLoadActivity extends Activity {
         public void handleMessage(Message msg) {
             if (msg.what == ThreadMessageTypes.MSG_CONSOLE) {
                 consoleAppender.appendMessage((String) msg.obj);
-            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED) {
+            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
                 owner.runningThread = null;
                 owner.setControlsEnabled(true);
             }

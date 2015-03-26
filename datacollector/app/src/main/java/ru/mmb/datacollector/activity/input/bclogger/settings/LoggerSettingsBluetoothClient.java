@@ -3,10 +3,10 @@ package ru.mmb.datacollector.activity.input.bclogger.settings;
 import android.content.Context;
 import android.os.Handler;
 
-import ru.mmb.datacollector.activity.input.bclogger.BluetoothClient;
-import ru.mmb.datacollector.model.bclogger.LoggerInfo;
+import ru.mmb.datacollector.activity.input.bclogger.InputBCLoggerBluetoothClient;
+import ru.mmb.datacollector.bluetooth.LoggerInfo;
 
-public class LoggerSettingsBluetoothClient extends BluetoothClient {
+public class LoggerSettingsBluetoothClient extends InputBCLoggerBluetoothClient {
     private final LoggerSettingsActivityState currentState;
 
     public LoggerSettingsBluetoothClient(Context context, LoggerInfo loggerInfo, Handler handler, LoggerSettingsActivityState currentState) {
@@ -25,7 +25,7 @@ public class LoggerSettingsBluetoothClient extends BluetoothClient {
             }
             disconnectImmediately();
         }
-        sendFinishedNotification();
+        sendFinishedSuccessNotification();
     }
 
     private void parseReplyToCurrentState(String loggerReply) {
@@ -62,6 +62,6 @@ public class LoggerSettingsBluetoothClient extends BluetoothClient {
             currentState.setCommunicationSuccess(true);
             disconnectImmediately();
         }
-        sendFinishedNotification();
+        sendFinishedSuccessNotification();
     }
 }
