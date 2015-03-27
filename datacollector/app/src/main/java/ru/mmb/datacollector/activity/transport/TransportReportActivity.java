@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 
 import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.activity.transport.bclogger.receive.TransportLoggerReceiveActivity;
 import ru.mmb.datacollector.activity.transport.transpimport.TransportImportActivity;
 import ru.mmb.datacollector.model.registry.Settings;
 
@@ -28,6 +29,7 @@ public class TransportReportActivity extends Activity {
         btnReceiveLoggerData = (Button) findViewById(R.id.transportReport_receiveLoggerDataBtn);
 
         btnImportDictionaries.setOnClickListener(new ImportDictionariesClickListener());
+        btnReceiveLoggerData.setOnClickListener(new ReceiveLoggerDataClickListener());
 
         // TODO add all button click listeners
     }
@@ -36,6 +38,14 @@ public class TransportReportActivity extends Activity {
         @Override
         public void onClick(View v) {
             Intent intent = new Intent(getApplicationContext(), TransportImportActivity.class);
+            startActivity(intent);
+        }
+    }
+
+    private class ReceiveLoggerDataClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(getApplicationContext(), TransportLoggerReceiveActivity.class);
             startActivity(intent);
         }
     }

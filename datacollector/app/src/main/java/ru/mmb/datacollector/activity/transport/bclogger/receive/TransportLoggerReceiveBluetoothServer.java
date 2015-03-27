@@ -12,8 +12,8 @@ import java.util.UUID;
 import ru.mmb.datacollector.bluetooth.ThreadMessageTypes;
 
 public class TransportLoggerReceiveBluetoothServer {
-    private static final String BLUETOOTH_SERVICE_NAME = "DatacollectorReportDevice";
-    private static final UUID BLUETOOTH_SERVICE_UUID = UUID.fromString("747034d7-0266-44fd-92fe-da39c10468b0");
+    public static final String BLUETOOTH_SERVICE_NAME = "DatacollectorReportDevice";
+    public static final UUID BLUETOOTH_SERVICE_UUID = UUID.fromString("747034d7-0266-44fd-92fe-da39c10468b0");
 
     private final Handler handler;
 
@@ -30,13 +30,13 @@ public class TransportLoggerReceiveBluetoothServer {
     }
 
     public synchronized void terminate() {
-        this.terminated = true;
         if (serverSocket != null) {
             try {
                 serverSocket.close();
             } catch (IOException e) {
             }
         }
+        this.terminated = true;
     }
 
     public void writeToConsole(String message) {
@@ -71,12 +71,24 @@ public class TransportLoggerReceiveBluetoothServer {
         try {
             // this is a blocking call and will only return on a
             // successful connection or an exception or close
+            writeToConsole("listening for new connection");
             BluetoothSocket socket = serverSocket.accept();
             writeToConsole("client connected");
             sendAcceptSuccessNotification(socket);
         } catch (IOException e) {
             writeToConsole("error accepting client: " + e.getMessage());
             sendAcceptErrorNotification();
+        } finally {
+            safeCloseServerSocket();
+        }
+    }
+
+    private void safeCloseServerSocket() {
+        try {
+            if (serverSocket != null) {
+                serverSocket.close();
+            }
+        } catch (IOException e) {
         }
     }
 }

@@ -17,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.mmb.datacollector.bluetooth.BluetoothClient;
-import ru.mmb.datacollector.bluetooth.LoggerInfo;
+import ru.mmb.datacollector.bluetooth.DeviceInfo;
 
 public abstract class InputBCLoggerBluetoothClient extends BluetoothClient {
     public static final Pattern REGEXP_SCANNER_ID = Pattern.compile("-Scanner ID: (\\d{2})");
@@ -32,18 +32,17 @@ public abstract class InputBCLoggerBluetoothClient extends BluetoothClient {
 
     private static final UUID LOGGER_SERVICE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    private final LoggerInfo loggerInfo;
+    private final DeviceInfo deviceInfo;
 
-
-    public InputBCLoggerBluetoothClient(Context context, LoggerInfo loggerInfo, Handler handler) {
+    public InputBCLoggerBluetoothClient(Context context, DeviceInfo deviceInfo, Handler handler) {
         super(context, handler);
-        this.loggerInfo = loggerInfo;
+        this.deviceInfo = deviceInfo;
     }
 
     public boolean connect() {
         // create socket
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        BluetoothDevice device = btAdapter.getRemoteDevice(loggerInfo.getLoggerBTAddress());
+        BluetoothDevice device = btAdapter.getRemoteDevice(deviceInfo.getDeviceBTAddress());
         try {
             // !!! On HTC standard variant is not working.
             // btSocket = device.createRfcommSocketToServiceRecord(LOGGER_SERVICE_UUID);
@@ -59,10 +58,10 @@ public abstract class InputBCLoggerBluetoothClient extends BluetoothClient {
         btAdapter.cancelDiscovery();
         try {
             getSocket().connect();
-            writeToConsole("connected to " + loggerInfo.getLoggerName());
+            writeToConsole("connected to " + deviceInfo.getDeviceName());
         } catch (IOException e) {
             Log.e("BTCLIENT", "socket connect error", e);
-            writeToConsole("can't connect to " + loggerInfo.getLoggerName());
+            writeToConsole("can't connect to " + deviceInfo.getDeviceName());
             safeCloseSocket();
             return false;
         }

@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.activity.input.bclogger;
+package ru.mmb.datacollector.activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,20 +6,20 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.activity.Constants;
-import ru.mmb.datacollector.activity.CurrentState;
+import ru.mmb.datacollector.bluetooth.DeviceInfo;
 import ru.mmb.datacollector.model.ScanPoint;
-import ru.mmb.datacollector.bluetooth.LoggerInfo;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 
-import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_LOGGER_INFO;
+import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_BLUETOOTH_FILTER_JUST_LOGGERS;
+import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_DEVICE_INFO;
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_SCAN_POINT;
 
-public class ActivityStateWithScanPointAndLogger extends CurrentState {
+public class ActivityStateWithScanPointAndBTDevice extends CurrentState {
     private ScanPoint currentScanPoint = null;
-    private LoggerInfo currentLoggerInfo = null;
+    private DeviceInfo currentDeviceInfo = null;
+    private boolean filterJustLoggers = false;
 
-    public ActivityStateWithScanPointAndLogger(String prefix) {
+    public ActivityStateWithScanPointAndBTDevice(String prefix) {
         super(prefix);
     }
 
@@ -32,20 +32,29 @@ public class ActivityStateWithScanPointAndLogger extends CurrentState {
         fireStateChanged();
     }
 
-    public LoggerInfo getCurrentLoggerInfo() {
-        return currentLoggerInfo;
+    public DeviceInfo getCurrentDeviceInfo() {
+        return currentDeviceInfo;
     }
 
-    public void setCurrentLoggerInfo(LoggerInfo currentLoggerInfo) {
-        this.currentLoggerInfo = currentLoggerInfo;
+    public void setCurrentDeviceInfo(DeviceInfo currentDeviceInfo) {
+        this.currentDeviceInfo = currentDeviceInfo;
+    }
+
+    public boolean isFilterJustLoggers() {
+        return filterJustLoggers;
+    }
+
+    public void setFilterJustLoggers(boolean filterJustLoggers) {
+        this.filterJustLoggers = filterJustLoggers;
     }
 
     @Override
     public void save(Bundle savedInstanceState) {
         if (currentScanPoint != null)
             savedInstanceState.putSerializable(KEY_CURRENT_SCAN_POINT, currentScanPoint);
-        if (currentLoggerInfo != null)
-            savedInstanceState.putSerializable(KEY_CURRENT_LOGGER_INFO, currentLoggerInfo);
+        if (currentDeviceInfo != null)
+            savedInstanceState.putSerializable(KEY_CURRENT_DEVICE_INFO, currentDeviceInfo);
+        savedInstanceState.putBoolean(KEY_CURRENT_BLUETOOTH_FILTER_JUST_LOGGERS, filterJustLoggers);
     }
 
     @Override
@@ -55,8 +64,10 @@ public class ActivityStateWithScanPointAndLogger extends CurrentState {
         if (savedInstanceState.containsKey(KEY_CURRENT_SCAN_POINT))
             currentScanPoint =
                     (ScanPoint) savedInstanceState.getSerializable(KEY_CURRENT_SCAN_POINT);
-        if (savedInstanceState.containsKey(KEY_CURRENT_LOGGER_INFO))
-            currentLoggerInfo = (LoggerInfo) savedInstanceState.getSerializable(KEY_CURRENT_LOGGER_INFO);
+        if (savedInstanceState.containsKey(KEY_CURRENT_DEVICE_INFO))
+            currentDeviceInfo = (DeviceInfo) savedInstanceState.getSerializable(KEY_CURRENT_DEVICE_INFO);
+        if (savedInstanceState.containsKey(KEY_CURRENT_BLUETOOTH_FILTER_JUST_LOGGERS))
+            filterJustLoggers = savedInstanceState.getBoolean(KEY_CURRENT_BLUETOOTH_FILTER_JUST_LOGGERS);
     }
 
     @Override
@@ -73,8 +84,8 @@ public class ActivityStateWithScanPointAndLogger extends CurrentState {
         return currentScanPoint != null;
     }
 
-    public String getScanPointAndLoggerText(Activity activity) {
-        return getSelectedScanPointString(activity) + " - " + getSelectedLoggerText(activity);
+    public String getScanPointAndDeviceText(Activity activity) {
+        return getSelectedScanPointString(activity) + " - " + getSelectedDeviceText(activity);
     }
 
     private String getSelectedScanPointString(Activity activity) {
@@ -84,19 +95,25 @@ public class ActivityStateWithScanPointAndLogger extends CurrentState {
             return currentScanPoint.getScanPointName();
     }
 
-    private String getSelectedLoggerText(Activity activity) {
-        if (!isLoggerSelected())
-            return activity.getResources().getString(R.string.input_global_no_selected_logger);
+    private String getSelectedDeviceText(Activity activity) {
+        if (!isDeviceSelected())
+            return activity.getResources().getString(R.string.bluetooth_global_no_selected_device);
         else
-            return currentLoggerInfo.getLoggerName();
+            return currentDeviceInfo.getDeviceName();
+    }
+
+    public boolean isDeviceSelected() {
+        return currentDeviceInfo != null;
     }
 
     @Override
     protected void loadFromExtrasBundle(Bundle extras) {
         if (extras.containsKey(KEY_CURRENT_SCAN_POINT))
             currentScanPoint = (ScanPoint) extras.getSerializable(KEY_CURRENT_SCAN_POINT);
-        if (extras.containsKey(KEY_CURRENT_LOGGER_INFO))
-            setCurrentLoggerInfo((LoggerInfo) extras.getSerializable(KEY_CURRENT_LOGGER_INFO));
+        if (extras.containsKey(KEY_CURRENT_DEVICE_INFO))
+            setCurrentDeviceInfo((DeviceInfo) extras.getSerializable(KEY_CURRENT_DEVICE_INFO));
+        if (extras.containsKey(KEY_CURRENT_BLUETOOTH_FILTER_JUST_LOGGERS))
+            setFilterJustLoggers(extras.getBoolean(KEY_CURRENT_BLUETOOTH_FILTER_JUST_LOGGERS));
     }
 
     @Override
@@ -106,10 +123,12 @@ public class ActivityStateWithScanPointAndLogger extends CurrentState {
             editor.putInt(getPrefix() + "." +
                           KEY_CURRENT_SCAN_POINT, getCurrentScanPoint().getScanPointId());
         }
-        if (getCurrentLoggerInfo() != null) {
+        if (getCurrentDeviceInfo() != null) {
             editor.putString(getPrefix() + "." +
-                             KEY_CURRENT_LOGGER_INFO, getCurrentLoggerInfo().saveToString());
+                             KEY_CURRENT_DEVICE_INFO, getCurrentDeviceInfo().saveToString());
         }
+        editor.putBoolean(getPrefix() + "." +
+                          KEY_CURRENT_BLUETOOTH_FILTER_JUST_LOGGERS, isFilterJustLoggers());
         editor.commit();
     }
 
@@ -118,31 +137,29 @@ public class ActivityStateWithScanPointAndLogger extends CurrentState {
         ScanPointsRegistry scanPoints = ScanPointsRegistry.getInstance();
         int scanPointId = preferences.getInt(getPrefix() + "." + KEY_CURRENT_SCAN_POINT, -1);
         currentScanPoint = scanPoints.getScanPointById(scanPointId);
-        String loggerInfoString = preferences.getString(
-                getPrefix() + "." + KEY_CURRENT_LOGGER_INFO, null);
-        if (loggerInfoString != null) {
-            currentLoggerInfo = new LoggerInfo();
-            currentLoggerInfo.loadFromString(loggerInfoString);
+        String deviceInfoString = preferences.getString(
+                getPrefix() + "." + KEY_CURRENT_DEVICE_INFO, null);
+        if (deviceInfoString != null) {
+            currentDeviceInfo = new DeviceInfo();
+            currentDeviceInfo.loadFromString(deviceInfoString);
         } else {
-            currentLoggerInfo = null;
+            currentDeviceInfo = null;
         }
+        filterJustLoggers = preferences.getBoolean(
+                getPrefix() + "." + KEY_CURRENT_BLUETOOTH_FILTER_JUST_LOGGERS, false);
     }
 
     @Override
     public void prepareStartActivityIntent(Intent intent, int activityRequestId) {
         switch (activityRequestId) {
             case Constants.REQUEST_CODE_DEFAULT_ACTIVITY:
-            case Constants.REQUEST_CODE_INPUT_BCLOGGER_SELECT_ACTIVITY:
+            case Constants.REQUEST_CODE_BLUETOOTH_DEVICE_SELECT_ACTIVITY:
             case Constants.REQUEST_CODE_INPUT_BCLOGGER_SETTINGS_ACTIVITY:
             case Constants.REQUEST_CODE_INPUT_BCLOGGER_DATALOAD_ACTIVITY:
                 if (getCurrentScanPoint() != null)
                     intent.putExtra(KEY_CURRENT_SCAN_POINT, getCurrentScanPoint());
-                if (getCurrentLoggerInfo() != null)
-                    intent.putExtra(KEY_CURRENT_LOGGER_INFO, getCurrentLoggerInfo());
+                if (getCurrentDeviceInfo() != null)
+                    intent.putExtra(KEY_CURRENT_DEVICE_INFO, getCurrentDeviceInfo());
         }
-    }
-
-    public boolean isLoggerSelected() {
-        return currentLoggerInfo != null;
     }
 }

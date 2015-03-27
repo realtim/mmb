@@ -1,9 +1,6 @@
 package ru.mmb.datacollector.activity.transport.bclogger.receive;
 
-import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothSocket;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -12,25 +9,23 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.activity.bluetooth.BluetoothAdapterEnableActivity;
 import ru.mmb.datacollector.bluetooth.ThreadMessageTypes;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.widget.ConsoleMessagesAppender;
 
-import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_LAUNCH_BLUETOOTH_ACTIVITY;
 import static ru.mmb.datacollector.activity.transport.bclogger.receive.TransportLoggerReceiveActivityState.STATE_ADAPTER_DISABLED;
 import static ru.mmb.datacollector.activity.transport.bclogger.receive.TransportLoggerReceiveActivityState.STATE_IDLE;
 import static ru.mmb.datacollector.activity.transport.bclogger.receive.TransportLoggerReceiveActivityState.STATE_LISTENING;
 import static ru.mmb.datacollector.activity.transport.bclogger.receive.TransportLoggerReceiveActivityState.STATE_RECEIVING;
 
-public class TransportLoggerReceiveActivity extends Activity {
+public class TransportLoggerReceiveActivity extends BluetoothAdapterEnableActivity {
     private TransportLoggerReceiveActivityState currentState;
 
     private Button btnStartListening;
     private Button btnStopListening;
     private Button btnClearConsole;
     private TextView areaConsole;
-
-    private BluetoothAdapter bluetoothAdapter;
 
     private ConsoleMessagesAppender consoleAppender;
     private Handler bluetoothHandler;
@@ -90,28 +85,13 @@ public class TransportLoggerReceiveActivity extends Activity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_CODE_LAUNCH_BLUETOOTH_ACTIVITY);
-        } else {
+    protected void onAdapterStateChanged() {
+        if (isAdapterEnabled()) {
             currentState.setState(STATE_IDLE);
-            refreshState();
+        } else {
+            currentState.setState(STATE_ADAPTER_DISABLED);
         }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_CODE_LAUNCH_BLUETOOTH_ACTIVITY:
-                onLaunchBluetoothActivityResult(resultCode);
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-        }
+        refreshState();
     }
 
     @Override
@@ -125,31 +105,9 @@ public class TransportLoggerReceiveActivity extends Activity {
 
         if (socketThread != null) {
             bluetoothClient.terminate();
+            socketThread.interrupt();
             socketThread = null;
         }
-    }
-
-    private void onLaunchBluetoothActivityResult(int resultCode) {
-        if (resultCode == RESULT_OK) {
-            long time_old = System.currentTimeMillis();
-            while (!bluetoothAdapter.isEnabled()) {
-                if (System.currentTimeMillis() - time_old > 5000) {
-                    break;
-                }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                }
-            }
-            if (bluetoothAdapter.isEnabled()) {
-                currentState.setState(STATE_IDLE);
-            } else {
-                currentState.setState(STATE_ADAPTER_DISABLED);
-            }
-        } else {
-            currentState.setState(STATE_ADAPTER_DISABLED);
-        }
-        refreshState();
     }
 
     private void startReceiving(BluetoothSocket socket) {

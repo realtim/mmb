@@ -63,7 +63,7 @@ public class LoggerSettingsActivity extends Activity {
         btnSend = (Button) findViewById(R.id.inputBCLoggerSettings_sendButton);
         areaConsole = (TextView) findViewById(R.id.inputBCLoggerSettings_consoleTextView);
 
-        setTitle(currentState.getScanPointAndLoggerText(this));
+        setTitle(currentState.getScanPointAndDeviceText(this));
         setComboScanPointAdapter();
         labSelectedScanpoint.setText(currentState.getCurrentScanPoint().getScanPointName());
         btnReload.setOnClickListener(new ReloadClickListener());
@@ -71,7 +71,7 @@ public class LoggerSettingsActivity extends Activity {
 
         consoleAppender = new ConsoleMessagesAppender(areaConsole);
         Handler bluetoothMessagesHandler = new BluetoothHandler(this, consoleAppender);
-        bluetoothClient = new LoggerSettingsBluetoothClient(this, currentState.getCurrentLoggerInfo(), bluetoothMessagesHandler, currentState);
+        bluetoothClient = new LoggerSettingsBluetoothClient(this, currentState.getCurrentDeviceInfo(), bluetoothMessagesHandler, currentState);
 
         setControlsEnabled(false);
         btnReload.setEnabled(true);
@@ -150,6 +150,7 @@ public class LoggerSettingsActivity extends Activity {
         if (runningThread != null) {
             bluetoothClient.terminate();
             runningThread.interrupt();
+            runningThread = null;
         }
     }
 

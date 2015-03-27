@@ -51,15 +51,16 @@
     <string name="input_scan_point_prompt_scan_point">Выберите точку ввода</string>
     <string name="input_scan_point_ok">ОК</string>
 
+    <string name="bluetooth_global_no_selected_device">&lt;Устройство не выбрано></string>
+    <string name="bluetooth_select_device_title">DEVICE:</string>
+    <string name="bluetooth_select_device_prompt_device">Выберите устройство</string>
+    <string name="bluetooth_select_device_ok">OK</string>
+
     <string name="input_global_no_selected_logger">&lt;LOGGER не выбран></string>
     <string name="input_bclogger_start_no_logger">&lt;LOGGER не выбран></string>
     <string name="input_bclogger_start_select_logger">Выберите LOGGER</string>
     <string name="input_bclogger_start_settings">Настройки</string>
     <string name="input_bclogger_start_load_data">Загрузка данных</string>
-
-    <string name="input_bclogger_select_title">LOGGER:</string>
-    <string name="input_bclogger_select_prompt_logger">Выберите LOGGER</string>
-    <string name="input_bclogger_select_ok">OK</string>
 
     <string name="input_bclogger_settings_logger_id">LOGGER ID:</string>
     <string name="input_bclogger_settings_scanpoint">Точка ввода:</string>
@@ -145,10 +146,16 @@
     <string name="transp_export_success">Экспорт завершён.</string>
     <string name="transp_export_running">В процессе</string>
 
-    <string name="transport_bclogger_receive_title">Загрузка данных LOGGER'ов</string>
+    <string name="transport_bclogger_receive_title">Загрузка данных LOGGERов</string>
     <string name="transport_bclogger_receive_start_listening">Ждать подключения</string>
     <string name="transport_bclogger_receive_stop_listening">Прервать ожидание</string>
     <string name="transport_bclogger_receive_clear_console">Очистить консоль</string>
+
+    <string name="transport_bclogger_send_title">Отправить данные LOGGERов</string>
+    <string name="transport_bclogger_send_no_device">&lt;Report планшет не выбран></string>
+    <string name="transport_bclogger_send_select_device">Выберите report планшет</string>
+    <string name="transport_bclogger_send_send_data">Отправить данные</string>
+    <string name="transport_bclogger_send_clear_console">Очистить консоль</string>
 
     <string name="results_team_report">Отчёт по команде</string>
     <string name="results_group_report">Полный отчёт </string>

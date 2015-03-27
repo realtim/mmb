@@ -1,8 +1,8 @@
 package ru.mmb.datacollector.activity.input.bclogger.settings;
 
-import ru.mmb.datacollector.activity.input.bclogger.ActivityStateWithScanPointAndLogger;
+import ru.mmb.datacollector.activity.ActivityStateWithScanPointAndBTDevice;
 
-public class LoggerSettingsActivityState extends ActivityStateWithScanPointAndLogger {
+public class LoggerSettingsActivityState extends ActivityStateWithScanPointAndBTDevice {
     private String loggerId;
     private String scanpointOrder;
     private String pattern;

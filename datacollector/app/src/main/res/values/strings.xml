@@ -52,15 +52,16 @@
     <string name="input_scan_point_prompt_scan_point">Select input point</string>
     <string name="input_scan_point_ok">OK</string>
 
+    <string name="bluetooth_global_no_selected_device">&lt;No device selected></string>
+    <string name="bluetooth_select_device_title">DEVICE:</string>
+    <string name="bluetooth_select_device_prompt_device">Select device</string>
+    <string name="bluetooth_select_device_ok">OK</string>
+
     <string name="input_global_no_selected_logger">&lt;No logger selected></string>
     <string name="input_bclogger_start_no_logger">&lt;No logger selected></string>
     <string name="input_bclogger_start_select_logger">Select logger</string>
     <string name="input_bclogger_start_settings">Logger settings</string>
     <string name="input_bclogger_start_load_data">Load data from logger</string>
-
-    <string name="input_bclogger_select_title">LOGGER:</string>
-    <string name="input_bclogger_select_prompt_logger">Select LOGGER</string>
-    <string name="input_bclogger_select_ok">OK</string>
 
     <string name="input_bclogger_settings_logger_id">LOGGER ID:</string>
     <string name="input_bclogger_settings_scanpoint">Scanpoint:</string>
@@ -122,6 +123,7 @@
     <string name="transport_report_receive_from_server">Receive from server</string>
     <string name="transport_report_receive_logger_data">Receive scans data</string>
 
+    <string name="transp_import_title">Import</string>
     <string name="transp_import_dicts_title">Import dictionaries</string>
     <string name="transp_import_barcode_title">Import barcode data</string>
     <string name="transp_import_barcode_select_scan_point">Select input point</string>
@@ -151,6 +153,12 @@
     <string name="transport_bclogger_receive_start_listening">Start listening</string>
     <string name="transport_bclogger_receive_stop_listening">Stop listening</string>
     <string name="transport_bclogger_receive_clear_console">Clear console</string>
+
+    <string name="transport_bclogger_send_title">Send LOGGER data</string>
+    <string name="transport_bclogger_send_no_device">&lt;No report device selected></string>
+    <string name="transport_bclogger_send_select_device">Select report device</string>
+    <string name="transport_bclogger_send_send_data">Send data</string>
+    <string name="transport_bclogger_send_clear_console">Clear console</string>
 
     <string name="results_team_report">Team report</string>
     <string name="results_group_report">Group report</string>

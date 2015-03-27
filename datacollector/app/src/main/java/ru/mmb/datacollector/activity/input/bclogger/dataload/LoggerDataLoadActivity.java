@@ -9,13 +9,13 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.activity.input.bclogger.ActivityStateWithScanPointAndLogger;
+import ru.mmb.datacollector.activity.ActivityStateWithScanPointAndBTDevice;
 import ru.mmb.datacollector.widget.ConsoleMessagesAppender;
 import ru.mmb.datacollector.bluetooth.ThreadMessageTypes;
 import ru.mmb.datacollector.model.registry.Settings;
 
 public class LoggerDataLoadActivity extends Activity {
-    ActivityStateWithScanPointAndLogger currentState;
+    ActivityStateWithScanPointAndBTDevice currentState;
 
     private Button btnGetLog;
     private Button btnGetErrors;
@@ -33,7 +33,7 @@ public class LoggerDataLoadActivity extends Activity {
 
         Settings.getInstance().setCurrentContext(this);
 
-        currentState = new ActivityStateWithScanPointAndLogger("input.bclogger.dataload");
+        currentState = new ActivityStateWithScanPointAndBTDevice("input.bclogger.dataload");
         currentState.initialize(this, savedInstanceState);
 
         setContentView(R.layout.input_bclogger_dataload);
@@ -44,7 +44,7 @@ public class LoggerDataLoadActivity extends Activity {
         // btnClearDevice = (Button) findViewById(R.id.inputBCLoggerDataload_clearDeviceButton);
         areaConsole = (TextView) findViewById(R.id.inputBCLoggerDataload_consoleTextView);
 
-        setTitle(currentState.getScanPointAndLoggerText(this));
+        setTitle(currentState.getScanPointAndDeviceText(this));
 
         btnGetLog.setOnClickListener(new GetLogClickListener());
         btnGetErrors.setOnClickListener(new GetErrorsClickListener());
@@ -53,7 +53,7 @@ public class LoggerDataLoadActivity extends Activity {
 
         consoleAppender = new ConsoleMessagesAppender(areaConsole);
         Handler bluetoothHandler = new BluetoothHandler(this, consoleAppender);
-        bluetoothClient = new LoggerDataLoadBluetoothClient(this, currentState.getCurrentLoggerInfo(), bluetoothHandler, currentState.getCurrentScanPoint());
+        bluetoothClient = new LoggerDataLoadBluetoothClient(this, currentState.getCurrentDeviceInfo(), bluetoothHandler, currentState.getCurrentScanPoint());
 
         setControlsEnabled(true);
     }
@@ -72,6 +72,7 @@ public class LoggerDataLoadActivity extends Activity {
         if (runningThread != null) {
             bluetoothClient.terminate();
             runningThread.interrupt();
+            runningThread = null;
         }
     }
 

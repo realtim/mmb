@@ -50,22 +50,12 @@ public class TransportImportActivity extends Activity
 
 		Settings.getInstance().setCurrentContext(this);
 
-		currentState = new ActivityStateWithTeamAndScanPoint("transport.import");
+		currentState = new ActivityStateWithTeamAndScanPoint(getCurrentStatePrefix());
 		currentState.initialize(this, savedInstanceState);
 
-		setContentView(R.layout.transp_import);
+		setContentView(getFormLayoutResourceId());
 
-        btnSelectFile = (Button) findViewById(R.id.transpImport_selectFile);
-        labFileName = (TextView) findViewById(R.id.transpImport_fileName);
-        btnStart = (Button) findViewById(R.id.transpImport_startBtn);
-        btnStop = (Button) findViewById(R.id.transpImport_stopBtn);
-        labCurrentTable = (TextView) findViewById(R.id.transpImport_currentTable);
-        labRowsProcessed = (TextView) findViewById(R.id.transpImport_rowsProcessed);
-        areaMessages = (TextView) findViewById(R.id.transpImport_messages);
-
-        btnSelectFile.setOnClickListener(new SelectFileClickListener());
-        btnStart.setOnClickListener(new StartClickListener());
-        btnStop.setOnClickListener(new StopClickListener());
+		initVisualElementVariables();
 
 		refreshHandler = new Handler()
 		{
@@ -88,9 +78,39 @@ public class TransportImportActivity extends Activity
 			}
 		};
 
-        setTitle(getResources().getString(R.string.transp_import_dicts_title));
+		setTitle();
 
 		refreshAll();
+	}
+
+	protected int getFormLayoutResourceId()
+	{
+		return R.layout.transp_import;
+	}
+
+	protected String getCurrentStatePrefix()
+	{
+		return "transport.import";
+	}
+
+	protected void initVisualElementVariables()
+	{
+		btnSelectFile = (Button) findViewById(R.id.transpImport_selectFile);
+		labFileName = (TextView) findViewById(R.id.transpImport_fileName);
+		btnStart = (Button) findViewById(R.id.transpImport_startBtn);
+		btnStop = (Button) findViewById(R.id.transpImport_stopBtn);
+		labCurrentTable = (TextView) findViewById(R.id.transpImport_currentTable);
+		labRowsProcessed = (TextView) findViewById(R.id.transpImport_rowsProcessed);
+		areaMessages = (TextView) findViewById(R.id.transpImport_messages);
+
+		btnSelectFile.setOnClickListener(new SelectFileClickListener());
+		btnStart.setOnClickListener(new StartClickListener());
+		btnStop.setOnClickListener(new StopClickListener());
+	}
+
+	protected void setTitle()
+	{
+		setTitle(getResources().getString(R.string.transp_import_dicts_title));
 	}
 
 	protected void refreshAll()

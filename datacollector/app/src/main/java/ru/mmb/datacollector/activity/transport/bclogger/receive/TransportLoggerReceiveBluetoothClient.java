@@ -19,7 +19,7 @@ public class TransportLoggerReceiveBluetoothClient extends BluetoothClient {
         String loggerData = null;
         try {
             if (streamsOpened) {
-                loggerData = receiveData(1000, false);
+                loggerData = receiveData(1000, true);
                 if (loggerData == null) {
                     sendFinishedErrorNotification();
                     return;
@@ -38,6 +38,6 @@ public class TransportLoggerReceiveBluetoothClient extends BluetoothClient {
 
     private void parseAndSaveLoggerData(String loggerData) {
         // TODO implement
-        writeToConsole("received data: "+loggerData);
+        writeToConsole("received data: " + loggerData);
     }
 }

@@ -41,9 +41,11 @@
         <activity android:name=".activity.settings.SettingsActivity" />
         <activity android:name="com.filedialog.FileDialog" />
         <activity android:name=".activity.input.bclogger.start.StartWorkWithBCLoggerActivity" />
-        <activity android:name=".activity.input.bclogger.select.SelectBCLoggerActivity" />
+        <activity android:name=".activity.bluetooth.BluetoothSelectDeviceActivity" />
         <activity android:name=".activity.input.bclogger.settings.LoggerSettingsActivity" />
         <activity android:name=".activity.input.bclogger.dataload.LoggerDataLoadActivity" />
+        <activity android:name=".activity.transport.bclogger.receive.TransportLoggerReceiveActivity" />
+        <activity android:name=".activity.transport.bclogger.send.TransportLoggerSendActivity" />
     </application>
 
 </manifest>

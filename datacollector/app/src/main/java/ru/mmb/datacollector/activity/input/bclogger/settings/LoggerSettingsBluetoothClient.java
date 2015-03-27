@@ -4,13 +4,13 @@ import android.content.Context;
 import android.os.Handler;
 
 import ru.mmb.datacollector.activity.input.bclogger.InputBCLoggerBluetoothClient;
-import ru.mmb.datacollector.bluetooth.LoggerInfo;
+import ru.mmb.datacollector.bluetooth.DeviceInfo;
 
 public class LoggerSettingsBluetoothClient extends InputBCLoggerBluetoothClient {
     private final LoggerSettingsActivityState currentState;
 
-    public LoggerSettingsBluetoothClient(Context context, LoggerInfo loggerInfo, Handler handler, LoggerSettingsActivityState currentState) {
-        super(context, loggerInfo, handler);
+    public LoggerSettingsBluetoothClient(Context context, DeviceInfo deviceInfo, Handler handler, LoggerSettingsActivityState currentState) {
+        super(context, deviceInfo, handler);
         this.currentState = currentState;
     }
 

@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 
 import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.activity.transport.bclogger.send.TransportLoggerSendActivity;
 import ru.mmb.datacollector.activity.transport.transpimport.TransportImportActivity;
 import ru.mmb.datacollector.model.registry.Settings;
 
@@ -30,6 +31,7 @@ public class TransportInputActivity extends Activity {
         btnSaveDataToFile = (Button) findViewById(R.id.transportInput_saveDataToFileBtn);
 
         btnImportDictionaries.setOnClickListener(new ImportDictionariesClickListener());
+        btnSendLoggerData.setOnClickListener(new SendLoggerDataClickListener());
 
         // TODO add all button click listeners
     }
@@ -38,6 +40,14 @@ public class TransportInputActivity extends Activity {
         @Override
         public void onClick(View v) {
             Intent intent = new Intent(getApplicationContext(), TransportImportActivity.class);
+            startActivity(intent);
+        }
+    }
+
+    private class SendLoggerDataClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(getApplicationContext(), TransportLoggerSendActivity.class);
             startActivity(intent);
         }
     }

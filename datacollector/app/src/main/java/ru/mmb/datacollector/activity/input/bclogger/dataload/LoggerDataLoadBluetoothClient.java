@@ -14,11 +14,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.mmb.datacollector.activity.input.bclogger.InputBCLoggerBluetoothClient;
+import ru.mmb.datacollector.bluetooth.DeviceInfo;
 import ru.mmb.datacollector.db.DatacollectorDB;
 import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
-import ru.mmb.datacollector.bluetooth.LoggerInfo;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 
@@ -32,8 +32,8 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
     private String confLoggerId;
     private PrintWriter errorLog;
 
-    public LoggerDataLoadBluetoothClient(Context context, LoggerInfo loggerInfo, Handler handler, ScanPoint currentScanPoint) {
-        super(context, loggerInfo, handler);
+    public LoggerDataLoadBluetoothClient(Context context, DeviceInfo deviceInfo, Handler handler, ScanPoint currentScanPoint) {
+        super(context, deviceInfo, handler);
         this.currentScanPoint = currentScanPoint;
     }
 
