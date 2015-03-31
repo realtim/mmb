@@ -66,7 +66,7 @@ public class TransportLoggerReceiveActivity extends BluetoothAdapterEnableActivi
         switch (currentState.getState()) {
             case STATE_IDLE:
                 btnStartListening.setEnabled(true);
-                btnStopListening.setEnabled(true);
+                btnStopListening.setEnabled(false);
                 btnClearConsole.setEnabled(true);
                 break;
             case STATE_LISTENING:

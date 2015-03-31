@@ -11,6 +11,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public abstract class BluetoothClient {
+    public static final String END_OF_MESSAGE = "<!--EOF-->";
+    public static final boolean COMM_SILENT = false;
+    public static final boolean COMM_VERBOSE = true;
+
     private final Context context;
     private final Handler handler;
 
@@ -49,7 +53,7 @@ public abstract class BluetoothClient {
         this.socket = socket;
     }
 
-    protected void writeToConsole(String message) {
+    protected synchronized void writeToConsole(String message) {
         if (!isTerminated()) {
             handler.sendMessage(Message.obtain(handler, ThreadMessageTypes.MSG_CONSOLE, message));
         }
@@ -116,8 +120,16 @@ public abstract class BluetoothClient {
     }
 
     protected boolean sendData(String message) {
+        return sendData(message, COMM_VERBOSE);
+    }
+
+    protected boolean sendData(String message, boolean writeMessageToConsole) {
         byte[] buffer = message.getBytes();
-        writeToConsole("sending: " + message);
+        if (writeMessageToConsole) {
+            writeToConsole("sending: " + message);
+        } else {
+            writeToConsole("sending data");
+        }
         try {
             outStream.write(buffer);
         } catch (IOException e) {
@@ -126,6 +138,14 @@ public abstract class BluetoothClient {
         }
         writeToConsole("data sent");
         return true;
+    }
+
+    protected boolean sendDataWithEndOfMessage(String message) {
+        return sendDataWithEndOfMessage(message, COMM_VERBOSE);
+    }
+
+    protected boolean sendDataWithEndOfMessage(String message, boolean writeMessageToConsole) {
+        return sendData(message + END_OF_MESSAGE, writeMessageToConsole);
     }
 
     protected String receiveData(long waitTimeout, boolean writeReplyToConsole) {
@@ -169,6 +189,64 @@ public abstract class BluetoothClient {
         return result.toString();
     }
 
+    protected String receiveDataWithEndOfMessage(boolean writeReplyToConsole) {
+        byte[] readBuffer = new byte[8192];
+        StringBuilder result = new StringBuilder(5 * 1024 * 1024);
+
+        writeToConsole("reading reply");
+        try {
+            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Receiving data...");
+            wl.acquire();
+            int bytesRead = 0;
+            while (!isTerminated()) {
+                int bytesInSession = 0;
+                while (!isTerminated() && inStream.available() > 0) {
+                    int bytes = inStream.read(readBuffer);
+                    bytesRead += bytes;
+                    bytesInSession += bytes;
+                    result.append(new String(readBuffer, 0, bytes));
+                    if (bytesRead > 30 * 1024) {
+                        writeToConsole("total bytes read: " + result.length());
+                        bytesRead = 0;
+                    }
+                }
+                // check end_of_message only if needed
+                if (bytesInSession > 0 && result.length() > END_OF_MESSAGE.length()) {
+                    if (checkEndOfMessageArrived(result)) {
+                        writeToConsole("end of message marker received");
+                        break;
+                    }
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                }
+            }
+            wl.release();
+        } catch (IOException e) {
+            writeToConsole("exception occurred during read: " + e.getMessage());
+            return null;
+        }
+
+        writeToConsole("total bytes read: " + result.length());
+        if (writeReplyToConsole) {
+            writeToConsole("reply read: " + result.toString());
+        }
+
+        // cut off end of message marker before return
+        return result.toString().substring(0, result.length() - END_OF_MESSAGE.length());
+    }
+
+    private boolean checkEndOfMessageArrived(StringBuilder receivedBytes) {
+        int markerLength = END_OF_MESSAGE.length();
+        int receivedLength = receivedBytes.length();
+        char[] lastChars = new char[markerLength];
+        receivedBytes.getChars(receivedLength - markerLength, receivedLength, lastChars, 0);
+        String lastCharsString = new String(lastChars);
+        return END_OF_MESSAGE.equals(lastCharsString);
+    }
+
     protected String sendRequestWaitForReply(String message) {
         return sendRequestWaitForReply(message, 1000, true);
     }
@@ -177,10 +255,10 @@ public abstract class BluetoothClient {
         return sendRequestWaitForReply(message, 1000, false);
     }
 
-    protected String sendRequestWaitForReply(String message, long waitTimeout, boolean writeReplyToConsole) {
-        boolean success = sendData(message);
+    protected String sendRequestWaitForReply(String message, long waitTimeout, boolean writeToConsole) {
+        boolean success = sendData(message, writeToConsole);
         if (success) {
-            return receiveData(waitTimeout, writeReplyToConsole);
+            return receiveData(waitTimeout, writeToConsole);
         } else {
             return null;
         }

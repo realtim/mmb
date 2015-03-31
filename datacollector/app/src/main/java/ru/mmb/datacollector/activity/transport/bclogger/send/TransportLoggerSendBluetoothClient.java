@@ -7,11 +7,19 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import ru.mmb.datacollector.activity.transport.bclogger.receive.TransportLoggerReceiveBluetoothServer;
 import ru.mmb.datacollector.bluetooth.BluetoothClient;
 import ru.mmb.datacollector.bluetooth.DeviceInfo;
+import ru.mmb.datacollector.transport.exporter.DataExtractorToJson;
+import ru.mmb.datacollector.transport.exporter.ExportMode;
+import ru.mmb.datacollector.transport.exporter.ExportState;
+import ru.mmb.datacollector.transport.model.MetaTable;
+import ru.mmb.datacollector.transport.registry.MetaTablesRegistry;
 
 public class TransportLoggerSendBluetoothClient extends BluetoothClient {
     private final DeviceInfo deviceInfo;
@@ -48,19 +56,41 @@ public class TransportLoggerSendBluetoothClient extends BluetoothClient {
         return openCommunicationStreams();
     }
 
-    public void sendLoggerData(String data) {
+    public void sendLoggerData() {
+        writeToConsole("");
+        String loggerData = generateLoggerDataJSON();
+        if (loggerData == null) {
+            writeToConsole("no data to export");
+            return;
+        }
         boolean connected = connect();
         if (connected) {
-            boolean success = sendData(data);
+            boolean success = sendDataWithEndOfMessage(loggerData, COMM_SILENT);
             if (success) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
-                receiveData(1000, true);
+                // wait for transaction OK signal
+                receiveDataWithEndOfMessage(COMM_VERBOSE);
             }
             disconnectImmediately();
         }
         sendFinishedSuccessNotification();
+    }
+
+    private String generateLoggerDataJSON() {
+        DataExtractorToJson dataExtractor = new DataExtractorToJson(ExportMode.FULL);
+        MetaTable table = MetaTablesRegistry.getInstance().getTableByName("RawLoggerData");
+        table.setExportWhereAppendix("");
+        JSONObject mainContainer = new JSONObject();
+        JSONArray records = new JSONArray();
+        dataExtractor.setTargetRecords(records);
+        dataExtractor.setCurrentTable(table);
+        try {
+            if (dataExtractor.hasRecordsToExport()) {
+                dataExtractor.exportNewRecords(new ExportState());
+            }
+            mainContainer.put("RawLoggerData", records);
+        } catch (Exception e) {
+            return null;
+        }
+        return mainContainer.toString();
     }
 }

@@ -162,7 +162,7 @@ public class TransportLoggerSendActivity extends BluetoothAdapterEnableActivity 
             socketThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    bluetoothClient.sendLoggerData("test data");
+                    bluetoothClient.sendLoggerData();
                 }
             });
             socketThread.start();

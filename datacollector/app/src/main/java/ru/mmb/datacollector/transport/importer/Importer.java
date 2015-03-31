@@ -1,12 +1,14 @@
 package ru.mmb.datacollector.transport.importer;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.transport.importer.barcode.BarcodeFileReader;
@@ -14,7 +16,6 @@ import ru.mmb.datacollector.transport.model.ImportBarCodeMetaTable;
 import ru.mmb.datacollector.transport.model.MetaTable;
 import ru.mmb.datacollector.transport.registry.MetaTablesRegistry;
 import ru.mmb.datacollector.util.JSONUtils;
-import android.util.Log;
 
 public class Importer
 {

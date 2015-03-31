@@ -90,6 +90,7 @@ INSERT INTO MetaTables VALUES(8,'TeamLevelDismiss','teamleveldismiss_date');
 INSERT INTO MetaTables VALUES(9,'TeamLevelPoints','teamlevelpoint_date');
 INSERT INTO MetaTables VALUES(10,'BarCodeScans','barcodescan_date');
 INSERT INTO MetaTables VALUES(11,'LevelPointDiscounts',NULL);
+INSERT INTO MetaTables VALUES(12,'RawLoggerData',NULL);
 
 /* raids */
 INSERT INTO MetaColumns VALUES(1, 1, 'raid_id', 0, 'INTEGER', 1);
@@ -156,6 +157,13 @@ INSERT INTO MetaColumns VALUES(132, 11, 'distance_id', 1, 'INTEGER', 0);
 INSERT INTO MetaColumns VALUES(133, 11, 'levelpointdiscount_value', 2, 'INTEGER', 0);
 INSERT INTO MetaColumns VALUES(134, 11, 'levelpointdiscount_start', 3, 'INTEGER', 0);
 INSERT INTO MetaColumns VALUES(135, 11, 'levelpointdiscount_finish', 4, 'INTEGER', 0);
+/* rawloggerdata */
+INSERT INTO MetaColumns VALUES(141, 12, 'user_id', 0, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(142, 12, 'device_id', 1, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(143, 12, 'logger_id', 2, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(144, 12, 'scanpoint_id', 3, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(145, 12, 'team_id', 4, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(146, 12, 'rawloggerdata_date', 5, 'LONG_DATE', 0);
 
 COMMIT;
 
