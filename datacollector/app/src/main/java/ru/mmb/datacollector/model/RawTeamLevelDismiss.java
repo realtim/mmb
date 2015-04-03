@@ -2,7 +2,7 @@ package ru.mmb.datacollector.model;
 
 import java.util.Date;
 
-public class RawTeamDismiss
+public class RawTeamLevelDismiss
 {
 	private final int scanPointId;
 	private final int teamId;
@@ -13,7 +13,7 @@ public class RawTeamDismiss
 	private Team team = null;
 	private User teamUser = null;
 
-	public RawTeamDismiss(int scanPointId, int teamId, int teamUserId, Date recordDateTime)
+	public RawTeamLevelDismiss(int scanPointId, int teamId, int teamUserId, Date recordDateTime)
 	{
 		this.scanPointId = scanPointId;
 		this.teamId = teamId;

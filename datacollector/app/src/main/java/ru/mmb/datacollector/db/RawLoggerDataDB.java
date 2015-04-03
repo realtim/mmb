@@ -5,12 +5,13 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.Date;
 
+import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.util.DateFormat;
 
-public class RawLoggerData {
+public class RawLoggerDataDB {
     private static final String TABLE_RAW_LOGGER_DATA = "RawLoggerData";
 
     private static final String USER_ID = "user_id";
@@ -22,12 +23,12 @@ public class RawLoggerData {
 
     private final SQLiteDatabase db;
 
-    public RawLoggerData(SQLiteDatabase db) {
+    public RawLoggerDataDB(SQLiteDatabase db) {
         this.db = db;
     }
 
-    public ru.mmb.datacollector.model.RawLoggerData getExistingRecord(int loggerId, int scanpointId, int teamId) {
-        ru.mmb.datacollector.model.RawLoggerData result = null;
+    public RawLoggerData getExistingRecord(int loggerId, int scanpointId, int teamId) {
+        RawLoggerData result = null;
         String sql =
                 "select t." + RAWLOGGERDATA_DATE + " from " + TABLE_RAW_LOGGER_DATA + " as t " +
                 " where t." + LOGGER_ID + " = " + loggerId + " and t." + SCANPOINT_ID + " = " +
@@ -39,8 +40,8 @@ public class RawLoggerData {
             return null;
         }
 
-        String rawLoggerDataDate = resultCursor.getString(0);
-        result = new ru.mmb.datacollector.model.RawLoggerData(loggerId, scanpointId, teamId, DateFormat.parse(rawLoggerDataDate));
+        String recordDateTime = resultCursor.getString(0);
+        result = new RawLoggerData(loggerId, scanpointId, teamId, DateFormat.parse(recordDateTime));
 
         result.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
         result.setScanPoint(ScanPointsRegistry.getInstance().getScanPointById(scanpointId));

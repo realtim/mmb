@@ -11,9 +11,11 @@ import ru.mmb.datacollector.model.Distance;
 import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.LevelPointDiscount;
 import ru.mmb.datacollector.model.Participant;
+import ru.mmb.datacollector.model.RawLoggerData;
+import ru.mmb.datacollector.model.RawTeamLevelDismiss;
+import ru.mmb.datacollector.model.RawTeamLevelPoints;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
-import ru.mmb.datacollector.model.TeamDismiss;
 import ru.mmb.datacollector.model.TeamResult;
 import ru.mmb.datacollector.model.User;
 import ru.mmb.datacollector.model.registry.Settings;
@@ -25,16 +27,17 @@ public class DatacollectorDB
 
 	private SQLiteDatabase db;
 
-	private Distances distances;
-	private ScanPoints scanPoints;
-	private LevelPoints levelPoints;
-	private LevelPointDiscounts levelPointDiscounts;
-	private Teams teams;
-	private MetaTables metaTables;
-	private Users users;
-	private TeamResults teamResults;
-	private TeamDismissed teamDismissed;
-    private RawLoggerData rawLoggerData;
+	private DistancesDB distancesDB;
+	private ScanPointsDB scanPointsDB;
+	private LevelPointsDB levelPointsDB;
+	private LevelPointDiscountsDB levelPointDiscountsDB;
+	private TeamsDB teamsDB;
+	private MetaTablesDB metaTablesDB;
+	private UsersDB usersDB;
+	private TeamResultsDB teamResultsDB;
+    private RawLoggerDataDB rawLoggerDataDB;
+    private RawTeamLevelPointsDB rawTeamLevelPointsDB;
+    private RawTeamLevelDismissDB rawTeamLevelDismissDB;
 
 	private IDGenerator idGenerator;
 
@@ -68,25 +71,24 @@ public class DatacollectorDB
 			// Log.d("DatacollectorDB", "db open " + Settings.getInstance().getPathToDB());
 			performTestQuery();
 			// Log.d("DatacollectorDB", "db open SUCCESS");
-			distances = new Distances(db);
-			scanPoints = new ScanPoints(db);
-			levelPoints = new LevelPoints(db);
-			levelPointDiscounts = new LevelPointDiscounts(db);
-			teams = new Teams(db);
+			distancesDB = new DistancesDB(db);
+			scanPointsDB = new ScanPointsDB(db);
+			levelPointsDB = new LevelPointsDB(db);
+			levelPointDiscountsDB = new LevelPointDiscountsDB(db);
+			teamsDB = new TeamsDB(db);
 			idGenerator = new IDGenerator(db);
-			metaTables = new MetaTables(db);
-			users = new Users(db);
-			teamResults = new TeamResults(db);
-			teamDismissed = new TeamDismissed(db);
-            rawLoggerData = new RawLoggerData(db);
+			metaTablesDB = new MetaTablesDB(db);
+			usersDB = new UsersDB(db);
+            rawLoggerDataDB = new RawLoggerDataDB(db);
+            rawTeamLevelPointsDB = new RawTeamLevelPointsDB(db);
+            rawTeamLevelDismissDB = new RawTeamLevelDismissDB(db);
+            teamResultsDB = new TeamResultsDB(db);
 		}
 		catch (SQLiteException e)
 		{
 			if (db != null)
 			{
-				// Log.d("DatacollectorDB", "db open FAILURE");
 				db.close();
-				// Log.d("DatacollectorDB", "db closed");
 				db = null;
 			}
 		}
@@ -96,7 +98,7 @@ public class DatacollectorDB
 	{
 		if (db == null) return;
 
-		Distances.performTestQuery(db);
+		DistancesDB.performTestQuery(db);
 	}
 
 	public boolean isConnected()
@@ -109,41 +111,23 @@ public class DatacollectorDB
 		if (isConnected())
 		{
 			db.close();
-			// Log.d("DatacollectorDB", "close connection OK");
 			db = null;
 		}
 	}
 
-	public List<Participant> getDismissedMembers(LevelPoint levelPoint, Team team)
-	{
-		return teamDismissed.getDismissedMembers(levelPoint, team);
-	}
-
-	public void saveDismissedMembers(LevelPoint levelPoint, Team team,
-	        List<Participant> dismissedMembers, Date recordDateTime)
-	{
-		teamDismissed.saveDismissedMembers(levelPoint, team, dismissedMembers, recordDateTime);
-	}
-
-	public void saveTeamResult(LevelPoint levelPoint, Team team, Date checkDateTime,
-	        String takenCheckpoints, Date recordDateTime)
-	{
-		teamResults.saveTeamResult(levelPoint, team, checkDateTime, takenCheckpoints, recordDateTime);
-	}
-
-	public SQLiteDatabase getDb()
-	{
-		return db;
-	}
+    public SQLiteDatabase getDb()
+    {
+        return db;
+    }
 
 	public List<Distance> loadDistances(int raidId)
 	{
-		return distances.loadDistances(raidId);
+		return distancesDB.loadDistances(raidId);
 	}
 
 	public List<Team> loadTeams()
 	{
-		return teams.loadTeams();
+		return teamsDB.loadTeams();
 	}
 
 	public int getNextId()
@@ -151,66 +135,81 @@ public class DatacollectorDB
 		return idGenerator.getNextId();
 	}
 
-	public TeamResultRecord getExistingTeamResultRecord(LevelPoint levelPoint, Team team)
+    public List<MetaTable> loadMetaTables()
+    {
+        return metaTablesDB.loadMetaTables();
+    }
+
+    public List<User> loadUsers()
+    {
+        return usersDB.loadUsers();
+    }
+
+    public List<ScanPoint> loadScanPoints(int raidId)
+    {
+        return scanPointsDB.loadScanPoints(raidId);
+    }
+
+    public List<LevelPoint> loadLevelPoints(int raidId)
+    {
+        return levelPointsDB.loadLevelPoints(raidId);
+    }
+
+    public List<LevelPointDiscount> loadLevelPointDiscounts(int raidId)
+    {
+        return levelPointDiscountsDB.loadLevelPointDiscounts(raidId);
+    }
+
+	public RawTeamLevelPointsRecord getExistingTeamResultRecord(ScanPoint scanPoint, Team team)
 	{
-		return teamResults.getExistingTeamResultRecord(levelPoint, team);
+		return rawTeamLevelPointsDB.getExistingTeamResultRecord(scanPoint, team);
 	}
 
-	public List<MetaTable> loadMetaTables()
+    public List<RawTeamLevelPoints> loadRawTeamLevelPoints(ScanPoint scanPoint) {
+        return rawTeamLevelPointsDB.loadRawTeamLevelPoints(scanPoint);
+    }
+
+    public void saveRawTeamLevelPoints(ScanPoint scanPoint, Team team, String takenCheckpoints, Date recordDateTime)
+    {
+        rawTeamLevelPointsDB.saveRawTeamLevelPoints(scanPoint, team, takenCheckpoints, recordDateTime);
+    }
+
+	public List<RawTeamLevelDismiss> loadDismissedMembers(ScanPoint scanPoint)
 	{
-		return metaTables.loadMetaTables();
+		return rawTeamLevelDismissDB.loadDismissedMembers(scanPoint);
 	}
 
-	public List<TeamResult> loadTeamResults(LevelPoint levelPoint)
-	{
-		return teamResults.loadTeamResults(levelPoint);
-	}
+    public List<Participant> getDismissedMembers(ScanPoint scanPoint, Team team)
+    {
+        return rawTeamLevelDismissDB.getDismissedMembers(scanPoint, team);
+    }
 
-	public List<User> loadUsers()
-	{
-		return users.loadUsers();
-	}
+    public void saveDismissedMembers(ScanPoint scanPoint, Team team,
+                                     List<Participant> dismissedMembers, Date recordDateTime)
+    {
+        rawTeamLevelDismissDB.saveDismissedMembers(scanPoint, team, dismissedMembers, recordDateTime);
+    }
 
-	public List<TeamDismiss> loadDismissedMembers(LevelPoint levelPoint)
+	public void appendScanPointTeams(ScanPoint scanPoint, Set<Integer> teams)
 	{
-		return teamDismissed.loadDismissedMembers(levelPoint);
-	}
-
-	public void appendLevelPointTeams(LevelPoint levelPoint, Set<Integer> teams)
-	{
-		teamResults.appendLevelPointTeams(levelPoint, teams);
-		teamDismissed.appendLevelPointTeams(levelPoint, teams);
-	}
-
-	public List<ScanPoint> loadScanPoints(int raidId)
-	{
-		return scanPoints.loadScanPoints(raidId);
-	}
-
-	public List<LevelPoint> loadLevelPoints(int raidId)
-	{
-		return levelPoints.loadLevelPoints(raidId);
-	}
-
-	public List<LevelPointDiscount> loadLevelPointDiscounts(int raidId)
-	{
-		return levelPointDiscounts.loadLevelPointDiscounts(raidId);
+		rawTeamLevelPointsDB.appendScanPointTeams(scanPoint, teams);
+        rawTeamLevelDismissDB.appendScanPointTeams(scanPoint, teams);
 	}
 
 	public List<TeamResult> loadTeamResults(Team team)
 	{
-		return teamResults.loadTeamResults(team);
+		return teamResultsDB.loadTeamResults(team);
 	}
 
-    public ru.mmb.datacollector.model.RawLoggerData getExistingLoggerRecord(int loggerId, int scanpointId, int teamId) {
-        return rawLoggerData.getExistingRecord(loggerId, scanpointId, teamId);
+    public RawLoggerData getExistingLoggerRecord(int loggerId, int scanpointId, int teamId) {
+        return rawLoggerDataDB.getExistingRecord(loggerId, scanpointId, teamId);
     }
 
     public void updateExistingLoggerRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
-        rawLoggerData.updateExistingRecord(loggerId, scanpointId, teamId, recordDateTime);
+        rawLoggerDataDB.updateExistingRecord(loggerId, scanpointId, teamId, recordDateTime);
     }
 
     public void insertNewLoggerRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
-        rawLoggerData.insertNewRecord(loggerId, scanpointId, teamId, recordDateTime);
+        rawLoggerDataDB.insertNewRecord(loggerId, scanpointId, teamId, recordDateTime);
     }
 }

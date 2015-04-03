@@ -6,15 +6,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import ru.mmb.datacollector.model.TeamResult;
+import ru.mmb.datacollector.model.RawTeamLevelPoints;
 
 public class ScanPointRecord
 {
-	private final Map<Integer, TeamResult> scanPointRecord = new TreeMap<Integer, TeamResult>();
+	private final Map<Integer, RawTeamLevelPoints> scanPointRecord = new TreeMap<Integer, RawTeamLevelPoints>();
 
-	public TeamResult put(TeamResult teamResult)
+	public RawTeamLevelPoints put(RawTeamLevelPoints rawTeamLevelPoints)
 	{
-		return scanPointRecord.put(teamResult.getUserId(), teamResult);
+		return scanPointRecord.put(rawTeamLevelPoints.getUserId(), rawTeamLevelPoints);
 	}
 
 	public boolean containsUserId(Integer userId)
@@ -32,12 +32,12 @@ public class ScanPointRecord
 		scanPointRecord.clear();
 	}
 
-	public TeamResult getByUserId(Integer userId)
+	public RawTeamLevelPoints getByUserId(Integer userId)
 	{
 		return scanPointRecord.get(userId);
 	}
 
-	public TeamResult removeByUserId(Integer userId)
+	public RawTeamLevelPoints removeByUserId(Integer userId)
 	{
 		return scanPointRecord.remove(userId);
 	}
@@ -52,9 +52,9 @@ public class ScanPointRecord
 		return scanPointRecord.isEmpty();
 	}
 
-	public List<TeamResult> getTeamResults()
+	public List<RawTeamLevelPoints> getRawTeamLevelPoints()
 	{
-		List<TeamResult> result = new ArrayList<TeamResult>();
+		List<RawTeamLevelPoints> result = new ArrayList<RawTeamLevelPoints>();
 		result.addAll(scanPointRecord.values());
 		return result;
 	}

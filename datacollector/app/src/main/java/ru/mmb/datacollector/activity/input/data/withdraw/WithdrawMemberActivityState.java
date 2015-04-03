@@ -1,6 +1,7 @@
 package ru.mmb.datacollector.activity.input.data.withdraw;
 
-import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_WITHDRAWN_CHECKED;
+import android.app.Activity;
+import android.os.Bundle;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,177 +14,143 @@ import ru.mmb.datacollector.activity.ActivityStateWithTeamAndScanPoint;
 import ru.mmb.datacollector.activity.input.data.withdraw.list.TeamMemberRecord;
 import ru.mmb.datacollector.db.DatacollectorDB;
 import ru.mmb.datacollector.model.Participant;
+import ru.mmb.datacollector.model.RawTeamLevelDismiss;
 import ru.mmb.datacollector.model.Team;
-import ru.mmb.datacollector.model.TeamDismiss;
 import ru.mmb.datacollector.model.history.DataStorage;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.model.registry.UsersRegistry;
-import android.app.Activity;
-import android.os.Bundle;
 
-public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoint
-{
-	private final List<Participant> prevWithdrawnMembers = new ArrayList<Participant>();
-	private final List<Participant> currWithdrawnMembers = new ArrayList<Participant>();
+import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_WITHDRAWN_CHECKED;
 
-	public WithdrawMemberActivityState()
-	{
-		super("input.withdraw");
-	}
+public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoint {
+    private final List<Participant> prevWithdrawnMembers = new ArrayList<Participant>();
+    private final List<Participant> currWithdrawnMembers = new ArrayList<Participant>();
 
-	public List<Participant> getAllWithdrawnMembers()
-	{
-		List<Participant> result = new ArrayList<Participant>();
-		result.addAll(prevWithdrawnMembers);
-		result.addAll(currWithdrawnMembers);
-		return result;
-	}
+    public WithdrawMemberActivityState() {
+        super("input.withdraw");
+    }
 
-	public boolean isPrevWithdrawn(Participant member)
-	{
-		return prevWithdrawnMembers.contains(member);
-	}
+    public List<Participant> getAllWithdrawnMembers() {
+        List<Participant> result = new ArrayList<Participant>();
+        result.addAll(prevWithdrawnMembers);
+        result.addAll(currWithdrawnMembers);
+        return result;
+    }
 
-	public boolean isCurrWithdrawn(Participant member)
-	{
-		return currWithdrawnMembers.contains(member);
-	}
+    public boolean isPrevWithdrawn(Participant member) {
+        return prevWithdrawnMembers.contains(member);
+    }
 
-	public void setCurrWithdrawn(Participant member, boolean withdraw)
-	{
-		if (withdraw)
-		{
-			if (!currWithdrawnMembers.contains(member))
-			{
-				currWithdrawnMembers.add(member);
-				Collections.sort(currWithdrawnMembers);
-				fireStateChanged();
-			}
-		}
-		else
-		{
-			if (currWithdrawnMembers.contains(member))
-			{
-				currWithdrawnMembers.remove(member);
-				fireStateChanged();
-			}
-		}
-	}
+    public boolean isCurrWithdrawn(Participant member) {
+        return currWithdrawnMembers.contains(member);
+    }
 
-	@Override
-	protected void update(boolean fromSavedBundle)
-	{
-		super.update(fromSavedBundle);
-		updatePrevWithdrawnMembers();
-	}
+    public void setCurrWithdrawn(Participant member, boolean withdraw) {
+        if (withdraw) {
+            if (!currWithdrawnMembers.contains(member)) {
+                currWithdrawnMembers.add(member);
+                Collections.sort(currWithdrawnMembers);
+                fireStateChanged();
+            }
+        } else {
+            if (currWithdrawnMembers.contains(member)) {
+                currWithdrawnMembers.remove(member);
+                fireStateChanged();
+            }
+        }
+    }
 
-	private void updatePrevWithdrawnMembers()
-	{
-		if (getCurrentScanPoint() != null && getCurrentTeam() != null)
-		{
-			prevWithdrawnMembers.clear();
-			prevWithdrawnMembers.addAll(DatacollectorDB.getConnectedInstance().getDismissedMembers(getLevelPointForTeam(), getCurrentTeam()));
-		}
-	}
+    @Override
+    protected void update(boolean fromSavedBundle) {
+        super.update(fromSavedBundle);
+        updatePrevWithdrawnMembers();
+    }
 
-	public CharSequence getResultText(Activity context)
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append(context.getResources().getString(R.string.input_withdraw_res_members));
-		sb.append("\n");
-		if (currWithdrawnMembers.size() == 0)
-		{
-			sb.append(context.getResources().getString(R.string.input_withdraw_res_no_members));
-		}
-		else
-		{
-			for (int i = 0; i < currWithdrawnMembers.size(); i++)
-			{
-				if (i > 0) sb.append("; ");
-				Participant member = currWithdrawnMembers.get(i);
-				sb.append(member.getUserName());
-			}
-		}
-		return sb.toString();
-	}
+    private void updatePrevWithdrawnMembers() {
+        if (getCurrentScanPoint() != null && getCurrentTeam() != null) {
+            prevWithdrawnMembers.clear();
+            prevWithdrawnMembers.addAll(DatacollectorDB.getConnectedInstance().getDismissedMembers(getCurrentScanPoint(), getCurrentTeam()));
+        }
+    }
 
-	public List<TeamMemberRecord> getMemberRecords()
-	{
-		List<TeamMemberRecord> result = new ArrayList<TeamMemberRecord>();
-		for (Participant member : getCurrentTeam().getMembers())
-		{
-			result.add(new TeamMemberRecord(member, isPrevWithdrawn(member)));
-		}
-		Collections.sort(result);
-		return result;
-	}
+    public CharSequence getResultText(Activity context) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(context.getResources().getString(R.string.input_withdraw_res_members));
+        sb.append("\n");
+        if (currWithdrawnMembers.size() == 0) {
+            sb.append(context.getResources().getString(R.string.input_withdraw_res_no_members));
+        } else {
+            for (int i = 0; i < currWithdrawnMembers.size(); i++) {
+                if (i > 0) sb.append("; ");
+                Participant member = currWithdrawnMembers.get(i);
+                sb.append(member.getUserName());
+            }
+        }
+        return sb.toString();
+    }
 
-	@Override
-	public void save(Bundle savedInstanceState)
-	{
-		super.save(savedInstanceState);
-		savedInstanceState.putSerializable(KEY_CURRENT_INPUT_WITHDRAWN_CHECKED, (Serializable) getCurrWithdrawnIds());
-	}
+    public List<TeamMemberRecord> getMemberRecords() {
+        List<TeamMemberRecord> result = new ArrayList<TeamMemberRecord>();
+        for (Participant member : getCurrentTeam().getMembers()) {
+            result.add(new TeamMemberRecord(member, isPrevWithdrawn(member)));
+        }
+        Collections.sort(result);
+        return result;
+    }
 
-	private List<Integer> getCurrWithdrawnIds()
-	{
-		List<Integer> result = new ArrayList<Integer>();
-		for (Participant member : currWithdrawnMembers)
-		{
-			result.add(member.getUserId());
-		}
-		return result;
-	}
+    @Override
+    public void save(Bundle savedInstanceState) {
+        super.save(savedInstanceState);
+        savedInstanceState.putSerializable(KEY_CURRENT_INPUT_WITHDRAWN_CHECKED, (Serializable) getCurrWithdrawnIds());
+    }
 
-	@Override
-	public void load(Bundle savedInstanceState)
-	{
-		super.load(savedInstanceState);
-		currWithdrawnMembers.clear();
-		if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_WITHDRAWN_CHECKED))
-		{
-			@SuppressWarnings("unchecked")
-			List<Integer> idList =
-			    (List<Integer>) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_WITHDRAWN_CHECKED);
-			loadCurrWithdrawnMembers(idList);
-		}
-	}
+    private List<Integer> getCurrWithdrawnIds() {
+        List<Integer> result = new ArrayList<Integer>();
+        for (Participant member : currWithdrawnMembers) {
+            result.add(member.getUserId());
+        }
+        return result;
+    }
 
-	private void loadCurrWithdrawnMembers(List<Integer> idList)
-	{
-		if (getCurrentTeam() != null)
-		{
-			int teamId = getCurrentTeam().getTeamId();
-			Team team = TeamsRegistry.getInstance().getTeamById(teamId);
-			if (team != null)
-			{
-				for (Integer participantId : idList)
-				{
-					Participant member = team.getMember(participantId);
-					if (member != null && !currWithdrawnMembers.contains(member))
-					    currWithdrawnMembers.add(member);
-				}
-			}
-		}
-	}
+    @Override
+    public void load(Bundle savedInstanceState) {
+        super.load(savedInstanceState);
+        currWithdrawnMembers.clear();
+        if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_WITHDRAWN_CHECKED)) {
+            @SuppressWarnings("unchecked")
+            List<Integer> idList =
+                    (List<Integer>) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_WITHDRAWN_CHECKED);
+            loadCurrWithdrawnMembers(idList);
+        }
+    }
 
-	public void saveCurrWithdrawnToDB(Date recordDateTime)
-	{
-		DatacollectorDB.getConnectedInstance().saveDismissedMembers(getLevelPointForTeam(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
-	}
+    private void loadCurrWithdrawnMembers(List<Integer> idList) {
+        if (getCurrentTeam() != null) {
+            int teamId = getCurrentTeam().getTeamId();
+            Team team = TeamsRegistry.getInstance().getTeamById(teamId);
+            if (team != null) {
+                for (Integer participantId : idList) {
+                    Participant member = team.getMember(participantId);
+                    if (member != null && !currWithdrawnMembers.contains(member))
+                        currWithdrawnMembers.add(member);
+                }
+            }
+        }
+    }
 
-	public void putCurrWithdrawnToDataStorage(Date recordDateTime)
-	{
-		for (Participant withdrawn : currWithdrawnMembers)
-		{
-			TeamDismiss teamDismiss =
-			    new TeamDismiss(getCurrentScanPoint().getScanPointId(), getCurrentTeam().getTeamId(), withdrawn.getUserId(), recordDateTime);
-			// init reference fields
-			teamDismiss.setScanPoint(getCurrentScanPoint());
-			teamDismiss.setTeam(getCurrentTeam());
-			teamDismiss.setTeamUser(UsersRegistry.getInstance().getUserById(withdrawn.getUserId()));
+    public void saveCurrWithdrawnToDB(Date recordDateTime) {
+        DatacollectorDB.getConnectedInstance().saveDismissedMembers(getCurrentScanPoint(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
+    }
 
-			DataStorage.putTeamDismiss(teamDismiss);
-		}
-	}
+    public void putCurrWithdrawnToDataStorage(Date recordDateTime) {
+        for (Participant withdrawn : currWithdrawnMembers) {
+            RawTeamLevelDismiss rawTeamLevelDismiss =
+                    new RawTeamLevelDismiss(getCurrentScanPoint().getScanPointId(), getCurrentTeam().getTeamId(), withdrawn.getUserId(), recordDateTime);
+            // init reference fields
+            rawTeamLevelDismiss.setScanPoint(getCurrentScanPoint());
+            rawTeamLevelDismiss.setTeam(getCurrentTeam());
+            rawTeamLevelDismiss.setTeamUser(UsersRegistry.getInstance().getUserById(withdrawn.getUserId()));
+            DataStorage.putRawTeamDismiss(rawTeamLevelDismiss);
+        }
+    }
 }

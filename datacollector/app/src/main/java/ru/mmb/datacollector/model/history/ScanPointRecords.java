@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeMap;
 
-import ru.mmb.datacollector.model.TeamResult;
+import ru.mmb.datacollector.model.RawTeamLevelPoints;
 
 public class ScanPointRecords
 {
@@ -16,10 +16,10 @@ public class ScanPointRecords
 	private Date lastDate = null;
 	private ScanPointRecord lastScanPointRecord = null;
 
-	public void put(TeamResult teamResult)
+	public void put(RawTeamLevelPoints rawTeamLevelPoints)
 	{
-		Date recordDateTime = teamResult.getRecordDateTime();
-		Integer userId = teamResult.getUserId();
+		Date recordDateTime = rawTeamLevelPoints.getRecordDateTime();
+		Integer userId = rawTeamLevelPoints.getUserId();
 		if (userToDate.containsKey(userId))
 		{
 			if (userToDate.get(userId).after(recordDateTime))
@@ -28,7 +28,7 @@ public class ScanPointRecords
 		}
 
 		ScanPointRecord teamRecord = getOrCreate(recordDateTime);
-		teamRecord.put(teamResult);
+		teamRecord.put(rawTeamLevelPoints);
 		// update accelerators
 		userToDate.put(userId, recordDateTime);
 		lastDate = scanPointRecords.lastKey();

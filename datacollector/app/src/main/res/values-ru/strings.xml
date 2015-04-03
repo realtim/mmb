@@ -81,16 +81,12 @@
 
     <string name="input_data_no_team">&lt;Команда не выбрана></string>
     <string name="input_data_no_team_number">333</string>
-    <string name="input_data_time_now">Сейчас</string>
     <string name="input_data_check_all">Все</string>
     <string name="input_data_check_nothing">Очистить</string>
     <string name="input_data_no_result">&lt;Результат не определён></string>
     <string name="input_data_ok">ОК</string>
-    <string name="input_data_res_start_time">Время старта:</string>
-    <string name="input_data_res_finish_time">Время финиша:</string>
     <string name="input_data_res_missed">Пропущено:</string>
     <string name="input_data_res_taken">Взято:</string>
-    <string name="input_data_date_error_message">Дата ${inputDate} не попадает в интервал [${dateFrom}, ${dateTo}].</string>
     <string name="input_data_withdraw_member">Сход</string>
 
     <string name="input_withdraw_no_team_number">333</string>

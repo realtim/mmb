@@ -12,7 +12,6 @@ public class Constants {
     public static final String KEY_CURRENT_EXPORT_FORMAT = "current.export.format";
     public static final String KEY_CURRENT_INPUT_CHECKPOINTS_STATE =
             "current.input.checkpoint.state";
-    public static final String KEY_CURRENT_INPUT_CHECKED_DATE = "current.input.checked.date";
     public static final String KEY_CURRENT_INPUT_EXISTING_RECORD = "current.input.existing.record";
     public static final String KEY_CURRENT_INPUT_WITHDRAWN_CHECKED =
             "current.input.withdrawn.checked";

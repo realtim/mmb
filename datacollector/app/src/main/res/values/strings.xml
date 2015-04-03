@@ -82,16 +82,12 @@
 
     <string name="input_data_no_team">&lt;No team selected></string>
     <string name="input_data_no_team_number">333</string>
-    <string name="input_data_time_now">Now</string>
     <string name="input_data_check_all">Check all</string>
     <string name="input_data_check_nothing">Clear</string>
     <string name="input_data_no_result">&lt;Result undefined></string>
     <string name="input_data_ok">OK</string>
-    <string name="input_data_res_start_time">Start time:</string>
-    <string name="input_data_res_finish_time">Finish time:</string>
     <string name="input_data_res_missed">Missed:</string>
     <string name="input_data_res_taken">Checked:</string>
-    <string name="input_data_date_error_message">Date ${inputDate} is not in interval [${dateFrom}, ${dateTo}].</string>
     <string name="input_data_withdraw_member">Withdraw</string>
 
     <string name="input_withdraw_no_team_number">333</string>

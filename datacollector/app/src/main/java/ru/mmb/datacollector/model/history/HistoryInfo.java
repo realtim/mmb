@@ -2,77 +2,66 @@ package ru.mmb.datacollector.model.history;
 
 import java.util.Date;
 
+import ru.mmb.datacollector.model.RawTeamLevelPoints;
 import ru.mmb.datacollector.model.Team;
-import ru.mmb.datacollector.model.TeamResult;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 
-public class HistoryInfo implements Comparable<HistoryInfo>
-{
-	private final Team team;
-	private final TeamResult teamResult;
-	private final TeamDismissedState teamDismissedState;
-	private final boolean compareByLevelPoint;
-	private final Date comparisonDate;
+public class HistoryInfo implements Comparable<HistoryInfo> {
+    private final Team team;
+    private final RawTeamLevelPoints rawTeamLevelPoints;
+    private final TeamDismissedState teamDismissedState;
+    private final boolean compareByLevelPoint;
+    private final Date comparisonDate;
 
-	public HistoryInfo(Integer teamId, TeamResult teamResult, TeamDismissedState teamDismissedState)
-	{
-		this.team = TeamsRegistry.getInstance().getTeamById(teamId);
-		this.teamResult = teamResult;
-		this.teamDismissedState = teamDismissedState;
+    public HistoryInfo(Integer teamId, RawTeamLevelPoints rawTeamLevelPoints, TeamDismissedState teamDismissedState) {
+        this.team = TeamsRegistry.getInstance().getTeamById(teamId);
+        this.rawTeamLevelPoints = rawTeamLevelPoints;
+        this.teamDismissedState = teamDismissedState;
 
-		if (teamResult == null && teamDismissedState == null)
-		    throw new RuntimeException("HistoryInfo failed. teamResult and teamDismissState NULL for team ["
-		            + teamId + "]");
+        if (rawTeamLevelPoints == null && teamDismissedState == null)
+            throw new RuntimeException(
+                    "HistoryInfo failed. rawTeamLevelPoints and teamDismissState NULL for team ["
+                    + teamId + "]");
 
-		this.compareByLevelPoint = !isCompareByDismissed(teamResult, teamDismissedState);
-		this.comparisonDate =
-		    (this.compareByLevelPoint) ? teamResult.getRecordDateTime()
-		            : teamDismissedState.getLastRecordDateTime();
-	}
+        this.compareByLevelPoint = !isCompareByDismissed(rawTeamLevelPoints, teamDismissedState);
+        this.comparisonDate =
+                (this.compareByLevelPoint) ? rawTeamLevelPoints.getRecordDateTime()
+                        : teamDismissedState.getLastRecordDateTime();
+    }
 
-	private boolean isCompareByDismissed(TeamResult teamResult,
-	        TeamDismissedState teamDismissedState)
-	{
-		if (teamResult == null) return true;
-		return teamDismissedState.getLastRecordDateTime().after(teamResult.getRecordDateTime());
-	}
+    private boolean isCompareByDismissed(RawTeamLevelPoints rawTeamLevelPoints, TeamDismissedState teamDismissedState) {
+        if (rawTeamLevelPoints == null) return true;
+        return teamDismissedState.getLastRecordDateTime().after(rawTeamLevelPoints.getRecordDateTime());
+    }
 
-	public String buildScanPointInfoText()
-	{
-		return (teamResult == null) ? "" : teamResult.buildInfoText();
-	}
+    public String buildScanPointInfoText() {
+        return (rawTeamLevelPoints == null) ? "" : rawTeamLevelPoints.buildInfoText();
+    }
 
-	public String buildMembersInfo()
-	{
-		return teamDismissedState.buildMembersInfo();
-	}
+    public String buildMembersInfo() {
+        return teamDismissedState.buildMembersInfo();
+    }
 
-	public String buildDismissedInfo()
-	{
-		return teamDismissedState.buildDismissedInfo();
-	}
+    public String buildDismissedInfo() {
+        return teamDismissedState.buildDismissedInfo();
+    }
 
-	public Team getTeam()
-	{
-		return team;
-	}
+    public Team getTeam() {
+        return team;
+    }
 
-	public Integer getUserId()
-	{
-		return teamResult.getUserId();
-	}
+    public Integer getUserId() {
+        return rawTeamLevelPoints.getUserId();
+    }
 
-	@Override
-	public int compareTo(HistoryInfo another)
-	{
-		int result = comparisonDate.compareTo(another.comparisonDate);
-		if (result == 0)
-		{
-			if (compareByLevelPoint && another.compareByLevelPoint)
-			{
-				result = teamResult.compareTo(another.teamResult);
-			}
-		}
-		return result;
-	}
+    @Override
+    public int compareTo(HistoryInfo another) {
+        int result = comparisonDate.compareTo(another.comparisonDate);
+        if (result == 0) {
+            if (compareByLevelPoint && another.compareByLevelPoint) {
+                result = rawTeamLevelPoints.compareTo(another.rawTeamLevelPoints);
+            }
+        }
+        return result;
+    }
 }

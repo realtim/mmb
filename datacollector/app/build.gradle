@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "ru.mmb.datacollector"
-        minSdkVersion 7
+        minSdkVersion 10
         targetSdkVersion 21
         versionCode 20000
         versionName "2.0"

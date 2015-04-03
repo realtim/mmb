@@ -20,6 +20,7 @@
 
             <LinearLayout
                 android:id="@+id/inputData_existsIndicatorPanel"
+                android:orientation="horizontal"
                 android:layout_width="30dip"
                 android:layout_height="30dip"
                 android:layout_gravity="center_vertical"
@@ -65,38 +66,6 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/inputData_datePanel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/global_padding" >
-
-            <DatePicker
-                android:id="@+id/inputData_datePicker"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <LinearLayout
-                android:id="@+id/inputData_timePanel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/global_padding" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="@dimen/global_padding"
-                android:orientation="vertical" >
-
-                <Button
-                    android:id="@+id/inputData_setNowButton"
-                    android:layout_width="100dip"
-                    android:layout_height="wrap_content"
-                    android:text="@string/input_data_time_now" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/inputData_checkpointsTopPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -138,7 +107,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:orientation="vertical" >
-
+
+
                 <TextView
                     android:id="@+id/inputData_resultTextView"
                     android:layout_width="wrap_content"
