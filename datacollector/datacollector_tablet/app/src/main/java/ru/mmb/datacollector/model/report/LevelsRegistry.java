@@ -10,18 +10,36 @@ import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.PointType;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.registry.DistancesRegistry;
+import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 
 public class LevelsRegistry
 {
+    private static LevelsRegistry instance = null;
+
 	private static final Map<Integer, List<Level>> levels = new HashMap<Integer, List<Level>>();
 	private static final Map<Integer, Level> levelsByLevelPoints = new HashMap<Integer, Level>();
 
-	public static void buildLevels(List<ScanPoint> scanPoints)
+    public static LevelsRegistry getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new LevelsRegistry();
+        }
+        return instance;
+    }
+
+    private LevelsRegistry()
+    {
+        refresh();
+    }
+
+	public void refresh()
 	{
 		levels.clear();
 		levelsByLevelPoints.clear();
 
 		List<Distance> distances = DistancesRegistry.getInstance().getDistances();
+        List<ScanPoint> scanPoints = ScanPointsRegistry.getInstance().getScanPoints();
 		for (Distance distance : distances)
 		{
 			int distanceId = distance.getDistanceId();
@@ -30,7 +48,7 @@ public class LevelsRegistry
 		}
 	}
 
-	private static List<Level> buildDistanceLevels(int distanceId, List<ScanPoint> scanPoints)
+	private List<Level> buildDistanceLevels(int distanceId, List<ScanPoint> scanPoints)
 	{
 		List<Level> result = new ArrayList<Level>();
 		Level level = null;
@@ -54,12 +72,12 @@ public class LevelsRegistry
 		return result;
 	}
 
-	public static List<Level> getLevels(int distanceId)
+	public List<Level> getLevels(int distanceId)
 	{
 		return levels.get(distanceId);
 	}
 
-	public static Level getLevelByLevelPointId(int levelPointId)
+	public Level getLevelByLevelPointId(int levelPointId)
 	{
 		return levelsByLevelPoints.get(levelPointId);
 	}

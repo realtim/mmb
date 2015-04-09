@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.CurrentState;
-import ru.mmb.datacollector.db.DatacollectorDB;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.registry.Settings;
 
 public class MainActivityState extends CurrentState
@@ -47,7 +47,7 @@ public class MainActivityState extends CurrentState
 
 	public boolean isConnected()
 	{
-		return DatacollectorDB.getRawInstance().isConnected();
+		return SQLiteDatabaseAdapter.getRawInstance().isConnected();
 	}
 
 	public String getConnectionText(Context context)

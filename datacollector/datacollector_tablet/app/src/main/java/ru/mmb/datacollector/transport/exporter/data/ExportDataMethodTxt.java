@@ -6,8 +6,8 @@ import java.io.IOException;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.transport.exporter.DataExtractor;
 import ru.mmb.datacollector.transport.exporter.ExportState;
-import ru.mmb.datacollector.transport.model.MetaTable;
-import ru.mmb.datacollector.transport.registry.MetaTablesRegistry;
+import ru.mmb.datacollector.model.meta.MetaTable;
+import ru.mmb.datacollector.model.registry.MetaTablesRegistry;
 
 public class ExportDataMethodTxt implements ExportDataMethod
 {

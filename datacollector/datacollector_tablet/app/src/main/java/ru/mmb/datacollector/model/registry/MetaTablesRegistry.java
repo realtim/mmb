@@ -1,11 +1,11 @@
-package ru.mmb.datacollector.transport.registry;
+package ru.mmb.datacollector.model.registry;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ru.mmb.datacollector.db.DatacollectorDB;
-import ru.mmb.datacollector.transport.model.MetaTable;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
+import ru.mmb.datacollector.model.meta.MetaTable;
 
 public class MetaTablesRegistry
 {
@@ -32,7 +32,7 @@ public class MetaTablesRegistry
 	{
 		try
 		{
-			tables = DatacollectorDB.getConnectedInstance().loadMetaTables();
+			tables = SQLiteDatabaseAdapter.getConnectedInstance().loadMetaTables();
 			fillTablesByName();
 		}
 		catch (Exception e)

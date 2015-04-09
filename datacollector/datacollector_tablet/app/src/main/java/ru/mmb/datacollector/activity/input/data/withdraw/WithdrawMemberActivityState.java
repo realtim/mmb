@@ -12,7 +12,7 @@ import java.util.List;
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.ActivityStateWithTeamAndScanPoint;
 import ru.mmb.datacollector.activity.input.data.withdraw.list.TeamMemberRecord;
-import ru.mmb.datacollector.db.DatacollectorDB;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.Participant;
 import ru.mmb.datacollector.model.RawTeamLevelDismiss;
 import ru.mmb.datacollector.model.Team;
@@ -69,7 +69,7 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     private void updatePrevWithdrawnMembers() {
         if (getCurrentScanPoint() != null && getCurrentTeam() != null) {
             prevWithdrawnMembers.clear();
-            prevWithdrawnMembers.addAll(DatacollectorDB.getConnectedInstance().getDismissedMembers(getCurrentScanPoint(), getCurrentTeam()));
+            prevWithdrawnMembers.addAll(SQLiteDatabaseAdapter.getConnectedInstance().getDismissedMembers(getCurrentScanPoint(), getCurrentTeam()));
         }
     }
 
@@ -139,7 +139,7 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     }
 
     public void saveCurrWithdrawnToDB(Date recordDateTime) {
-        DatacollectorDB.getConnectedInstance().saveDismissedMembers(getCurrentScanPoint(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
+        SQLiteDatabaseAdapter.getConnectedInstance().saveDismissedMembers(getCurrentScanPoint(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
     }
 
     public void putCurrWithdrawnToDataStorage(Date recordDateTime) {

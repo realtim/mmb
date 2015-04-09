@@ -75,7 +75,7 @@ public class RawTeamLevelPointsDB {
             Integer deviceId = resultCursor.getInt(1);
             Integer teamId = resultCursor.getInt(2);
             Date recordDateTime = DateFormat.parse(resultCursor.getString(3));
-            String takenCheckpointNames = replaceNullWithEmptyString(resultCursor.getString(5));
+            String takenCheckpointNames = replaceNullWithEmptyString(resultCursor.getString(4));
 
             RawTeamLevelPoints rawTeamLevelPoints =
                     new RawTeamLevelPoints(teamId, userId, deviceId, scanPoint.getScanPointId(), takenCheckpointNames, recordDateTime);

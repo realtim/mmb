@@ -1,14 +1,15 @@
 package ru.mmb.datacollector.transport.importer;
 
-import java.util.Date;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ru.mmb.datacollector.db.DatacollectorDB;
-import ru.mmb.datacollector.transport.model.MetaTable;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import java.util.Date;
+
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
+import ru.mmb.datacollector.model.meta.MetaTable;
 
 /**
  * Data synchronization disabled.<br>
@@ -27,7 +28,7 @@ public class DataSaver
 	public DataSaver()
 	{
 		// DatacollectorDB.getRawInstance() will never be null, but db can be null.
-		db = DatacollectorDB.getRawInstance().getDb();
+		db = SQLiteDatabaseAdapter.getRawInstance().getDb();
 	}
 
 	public void setCurrentTable(MetaTable metaTable)

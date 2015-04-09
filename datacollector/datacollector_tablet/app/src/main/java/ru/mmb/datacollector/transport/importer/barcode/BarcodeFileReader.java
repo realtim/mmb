@@ -19,7 +19,7 @@ import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.transport.importer.ImportState;
 import ru.mmb.datacollector.transport.importer.Importer;
-import ru.mmb.datacollector.transport.model.datatype.DataTypes;
+import ru.mmb.datacollector.model.meta.datatype.DataTypes;
 
 public class BarcodeFileReader
 {

@@ -1,13 +1,15 @@
 package ru.mmb.datacollector.activity.transport.transpimport;
 
+import android.os.Message;
+
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.registry.DistancesRegistry;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.model.registry.UsersRegistry;
+import ru.mmb.datacollector.model.report.LevelsRegistry;
 import ru.mmb.datacollector.transport.importer.ImportState;
 import ru.mmb.datacollector.transport.importer.Importer;
-import android.os.Message;
 
 public class ImportThread extends Thread
 {
@@ -52,6 +54,7 @@ public class ImportThread extends Thread
 			ScanPointsRegistry.getInstance().refresh();
 			TeamsRegistry.getInstance().refresh();
 			UsersRegistry.getInstance().refresh();
+            LevelsRegistry.getInstance().refresh();
 
 			// update data storages after import
 			ru.mmb.datacollector.model.history.DataStorage.reset();

@@ -3,7 +3,7 @@ package ru.mmb.datacollector.report;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.mmb.datacollector.db.DatacollectorDB;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.TeamResult;
 import ru.mmb.datacollector.model.report.Level;
@@ -27,7 +27,7 @@ public class TeamReportBuilder
 
 	public TeamReport buildReport()
 	{
-		List<TeamResult> teamResults = DatacollectorDB.getConnectedInstance().loadTeamResults(team);
+		List<TeamResult> teamResults = SQLiteDatabaseAdapter.getConnectedInstance().loadTeamResults(team);
 		teamResults = removeDuplicateDBRecords(teamResults);
 		return buildReport(teamResults);
 	}
@@ -71,7 +71,7 @@ public class TeamReportBuilder
 	private List<TeamLevel> createTeamLevels()
 	{
 		List<TeamLevel> result = new ArrayList<TeamLevel>();
-		List<Level> levels = LevelsRegistry.getLevels(team.getDistanceId());
+		List<Level> levels = LevelsRegistry.getInstance().getLevels(team.getDistanceId());
 		for (Level level : levels)
 		{
 			TeamLevel teamLevel = new TeamLevel(level);

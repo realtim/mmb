@@ -8,7 +8,7 @@ import java.util.Date;
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.ActivityStateWithTeamAndScanPoint;
 import ru.mmb.datacollector.activity.LevelPointType;
-import ru.mmb.datacollector.db.DatacollectorDB;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.db.RawTeamLevelPointsRecord;
 import ru.mmb.datacollector.model.Checkpoint;
 import ru.mmb.datacollector.model.LevelPoint;
@@ -103,7 +103,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         checkedState.setLevelPoint(levelPoint);
         if (!fromSavedBundle) {
             RawTeamLevelPointsRecord previousRecord =
-                    DatacollectorDB.getConnectedInstance().getExistingTeamResultRecord(getCurrentScanPoint(), getCurrentTeam());
+                    SQLiteDatabaseAdapter.getConnectedInstance().getExistingTeamResultRecord(getCurrentScanPoint(), getCurrentTeam());
             if (previousRecord != null) {
                 checkedState.loadTakenCheckpoints(previousRecord.getCheckedMap());
                 editingExistingRecord = true;
@@ -122,7 +122,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
     }
 
     public void saveInputDataToDB(Date recordDateTime) {
-        DatacollectorDB.getConnectedInstance().saveRawTeamLevelPoints(getCurrentScanPoint(), getCurrentTeam(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
+        SQLiteDatabaseAdapter.getConnectedInstance().saveRawTeamLevelPoints(getCurrentScanPoint(), getCurrentTeam(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
     }
 
     public void putTeamLevelPointToDataStorage(Date recordDateTime) {

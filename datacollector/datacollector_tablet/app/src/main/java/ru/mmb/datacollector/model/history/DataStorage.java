@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ru.mmb.datacollector.db.DatacollectorDB;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.RawTeamLevelDismiss;
 import ru.mmb.datacollector.model.RawTeamLevelPoints;
 import ru.mmb.datacollector.model.ScanPoint;
@@ -52,12 +52,12 @@ public class DataStorage {
 
     private void initScanPointTeams() {
         scanPointTeams.clear();
-        DatacollectorDB.getConnectedInstance().appendScanPointTeams(scanPoint, scanPointTeams);
+        SQLiteDatabaseAdapter.getConnectedInstance().appendScanPointTeams(scanPoint, scanPointTeams);
     }
 
     private void initRawTeamLevelPointsStorage() {
         List<RawTeamLevelPoints> inputData =
-                DatacollectorDB.getConnectedInstance().loadRawTeamLevelPoints(scanPoint);
+                SQLiteDatabaseAdapter.getConnectedInstance().loadRawTeamLevelPoints(scanPoint);
         for (RawTeamLevelPoints rawTeamLevelPoints : inputData) {
             rawTeamLevelPointsStorage.put(rawTeamLevelPoints);
         }
@@ -65,7 +65,7 @@ public class DataStorage {
 
     private void initTeamDismissedStorage() {
         List<RawTeamLevelDismiss> dismissed =
-                DatacollectorDB.getConnectedInstance().loadDismissedMembers(scanPoint);
+                SQLiteDatabaseAdapter.getConnectedInstance().loadDismissedMembers(scanPoint);
         for (RawTeamLevelDismiss rawTeamLevelDismiss : dismissed) {
             teamDismissedStorage.put(rawTeamLevelDismiss);
         }

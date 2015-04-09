@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.transport.model.datatype;
+package ru.mmb.datacollector.model.meta.datatype;
 
 import org.json.JSONException;
 import org.json.JSONObject;

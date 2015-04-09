@@ -1,7 +1,7 @@
 package ru.mmb.datacollector.transport.exporter;
 
-import ru.mmb.datacollector.db.DatacollectorDB;
-import ru.mmb.datacollector.transport.model.MetaTable;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
+import ru.mmb.datacollector.model.meta.MetaTable;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -16,7 +16,7 @@ public abstract class DataExtractor
 	public DataExtractor(ExportMode exportMode)
 	{
 		// DatacollectorDB.getRawInstance() will never be null, but db can be null.
-		this.db = DatacollectorDB.getRawInstance().getDb();
+		this.db = SQLiteDatabaseAdapter.getRawInstance().getDb();
 		this.exportMode = exportMode;
 	}
 

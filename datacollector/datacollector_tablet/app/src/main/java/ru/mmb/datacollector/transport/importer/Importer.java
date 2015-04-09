@@ -12,9 +12,9 @@ import java.io.InputStreamReader;
 
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.transport.importer.barcode.BarcodeFileReader;
-import ru.mmb.datacollector.transport.model.ImportBarCodeMetaTable;
-import ru.mmb.datacollector.transport.model.MetaTable;
-import ru.mmb.datacollector.transport.registry.MetaTablesRegistry;
+import ru.mmb.datacollector.model.meta.ImportBarCodeMetaTable;
+import ru.mmb.datacollector.model.meta.MetaTable;
+import ru.mmb.datacollector.model.registry.MetaTablesRegistry;
 import ru.mmb.datacollector.util.JSONUtils;
 
 public class Importer

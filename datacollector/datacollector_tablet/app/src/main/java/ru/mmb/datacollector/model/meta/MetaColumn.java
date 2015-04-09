@@ -1,9 +1,9 @@
-package ru.mmb.datacollector.transport.model;
+package ru.mmb.datacollector.model.meta;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ru.mmb.datacollector.transport.model.datatype.DataType;
+import ru.mmb.datacollector.model.meta.datatype.DataType;
 import android.database.Cursor;
 
 public class MetaColumn

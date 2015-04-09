@@ -1,15 +1,15 @@
 package ru.mmb.datacollector.model.report;
 
-import static ru.mmb.datacollector.model.report.LevelCalcResult.COMPLETE;
-import static ru.mmb.datacollector.model.report.LevelCalcResult.EMPTY;
-import static ru.mmb.datacollector.model.report.LevelCalcResult.FAIL;
-import static ru.mmb.datacollector.model.report.LevelCalcResult.NOT_FINISHED;
-
 import java.util.List;
 
 import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.TeamResult;
+
+import static ru.mmb.datacollector.model.report.LevelCalcResult.COMPLETE;
+import static ru.mmb.datacollector.model.report.LevelCalcResult.EMPTY;
+import static ru.mmb.datacollector.model.report.LevelCalcResult.FAIL;
+import static ru.mmb.datacollector.model.report.LevelCalcResult.NOT_FINISHED;
 
 public class TeamReport implements Comparable<TeamReport>
 {
@@ -43,7 +43,7 @@ public class TeamReport implements Comparable<TeamReport>
 			{
 				LevelPoint levelPoint =
 				    teamResult.getScanPoint().getLevelPointByDistance(distanceId);
-				Level level = LevelsRegistry.getLevelByLevelPointId(levelPoint.getLevelPointId());
+				Level level = LevelsRegistry.getInstance().getLevelByLevelPointId(levelPoint.getLevelPointId());
 				if (teamLevel.getLevel() == level)
 				{
 					teamLevel.addTeamResult(levelPoint, teamResult);

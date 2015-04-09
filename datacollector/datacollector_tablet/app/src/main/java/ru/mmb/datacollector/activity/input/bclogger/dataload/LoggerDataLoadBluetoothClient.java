@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 import ru.mmb.datacollector.activity.input.bclogger.InputBCLoggerBluetoothClient;
 import ru.mmb.datacollector.bluetooth.DeviceInfo;
-import ru.mmb.datacollector.db.DatacollectorDB;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
@@ -255,16 +255,16 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
             // Dates in DB are saved without seconds, and before() or after() will return
             // undesired results, if seconds are present in parsed result.
             Date recordDateTime = trimToMinutes(sdf.parse(parsingResult.getRecordDateTime()));
-            RawLoggerData existingRecord = DatacollectorDB.getConnectedInstance().getExistingLoggerRecord(loggerId, scanpointId, teamId);
+            RawLoggerData existingRecord = SQLiteDatabaseAdapter.getConnectedInstance().getExistingLoggerRecord(loggerId, scanpointId, teamId);
             if (existingRecord != null) {
                 if (needUpdateExistingRecord(existingRecord, recordDateTime)) {
-                    DatacollectorDB.getConnectedInstance().updateExistingLoggerRecord(loggerId, scanpointId, teamId, recordDateTime);
+                    SQLiteDatabaseAdapter.getConnectedInstance().updateExistingLoggerRecord(loggerId, scanpointId, teamId, recordDateTime);
                     writeToConsole("existing record updated");
                 } else {
                     writeToConsole("existing record NOT updated");
                 }
             } else {
-                DatacollectorDB.getConnectedInstance().insertNewLoggerRecord(loggerId, scanpointId, teamId, recordDateTime);
+                SQLiteDatabaseAdapter.getConnectedInstance().insertNewLoggerRecord(loggerId, scanpointId, teamId, recordDateTime);
                 writeToConsole("new record inserted");
             }
         } catch (Exception e) {

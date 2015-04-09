@@ -1,13 +1,14 @@
-package ru.mmb.datacollector.transport.model.datatype;
+package ru.mmb.datacollector.model.meta.datatype;
 
-import java.util.Date;
+import android.database.Cursor;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Date;
+
 import ru.mmb.datacollector.util.DateFormat;
 import ru.mmb.datacollector.util.TransportDateFormat;
-import android.database.Cursor;
 
 public class LongDateDataType extends DataType<Date>
 {

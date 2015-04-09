@@ -2,11 +2,14 @@ package ru.mmb.datacollector.model.registry;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import java.io.File;
 import java.util.Properties;
 
-import ru.mmb.datacollector.db.DatacollectorDB;
+import ru.mmb.datacollector.conf.ConfigurationAdapter;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
+import ru.mmb.datacollector.model.report.LevelsRegistry;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -91,10 +94,10 @@ public class Settings {
     public void setPathToDB(String pathToDB) {
         boolean changed = setValue(PATH_TO_DB, pathToDB);
         if (changed) {
-            DatacollectorDB.getRawInstance().closeConnection();
+            SQLiteDatabaseAdapter.getRawInstance().closeConnection();
             // reconnect in getInstance
-            DatacollectorDB.getRawInstance().tryConnectToDB();
-            if (DatacollectorDB.getRawInstance().isConnected()) {
+            SQLiteDatabaseAdapter.getRawInstance().tryConnectToDB();
+            if (SQLiteDatabaseAdapter.getRawInstance().isConnected()) {
                 DistancesRegistry.getInstance().refresh();
                 TeamsRegistry.getInstance().refresh();
                 UsersRegistry.getInstance().refresh();
@@ -162,10 +165,15 @@ public class Settings {
     public void setCurrentRaidId(String currentRaidId) {
         boolean changed = setValue(CURRENT_RAID_ID, currentRaidId);
         if (changed) {
-            if (DatacollectorDB.getConnectedInstance() != null) {
+            if (SQLiteDatabaseAdapter.getConnectedInstance() != null) {
                 DistancesRegistry.getInstance().refresh();
+                ScanPointsRegistry.getInstance().refresh();
                 TeamsRegistry.getInstance().refresh();
                 UsersRegistry.getInstance().refresh();
+                LevelsRegistry.getInstance().refresh();
+                Log.d("SETTINGS",
+                        "current raid ID: " +
+                        ConfigurationAdapter.getInstance().getCurrentRaidId());
             }
         }
     }

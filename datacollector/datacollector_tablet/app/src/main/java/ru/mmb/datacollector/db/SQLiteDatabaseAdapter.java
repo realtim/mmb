@@ -2,6 +2,7 @@ package ru.mmb.datacollector.db;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.util.Log;
 
 import java.util.Date;
 import java.util.List;
@@ -19,12 +20,10 @@ import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.TeamResult;
 import ru.mmb.datacollector.model.User;
 import ru.mmb.datacollector.model.registry.Settings;
-import ru.mmb.datacollector.transport.model.MetaTable;
+import ru.mmb.datacollector.model.meta.MetaTable;
 
-public class DatacollectorDB
+public class SQLiteDatabaseAdapter extends DatabaseAdapter
 {
-	private static DatacollectorDB instance = null;
-
 	private SQLiteDatabase db;
 
 	private DistancesDB distancesDB;
@@ -41,36 +40,20 @@ public class DatacollectorDB
 
 	private IDGenerator idGenerator;
 
-	public static DatacollectorDB getRawInstance()
-	{
-		if (instance == null)
-		{
-			instance = new DatacollectorDB();
-			instance.tryConnectToDB();
-		}
-		return instance;
-	}
-
-	public static DatacollectorDB getConnectedInstance()
-	{
-		DatacollectorDB result = getRawInstance();
-		if (!result.isConnected()) return null;
-		return result;
-	}
-
-	private DatacollectorDB()
+	private SQLiteDatabaseAdapter()
 	{
 	}
 
+    @Override
 	public void tryConnectToDB()
 	{
 		try
 		{
 			db =
 			    SQLiteDatabase.openDatabase(Settings.getInstance().getPathToDB(), null, SQLiteDatabase.OPEN_READWRITE);
-			// Log.d("DatacollectorDB", "db open " + Settings.getInstance().getPathToDB());
+			// Log.d("SQLiteDatabaseAdapter", "db open " + Settings.getInstance().getPathToDB());
 			performTestQuery();
-			// Log.d("DatacollectorDB", "db open SUCCESS");
+			// Log.d("SQLiteDatabaseAdapter", "db open SUCCESS");
 			distancesDB = new DistancesDB(db);
 			scanPointsDB = new ScanPointsDB(db);
 			levelPointsDB = new LevelPointsDB(db);
@@ -101,6 +84,7 @@ public class DatacollectorDB
 		DistancesDB.performTestQuery(db);
 	}
 
+    @Override
 	public boolean isConnected()
 	{
 		return db != null;
@@ -120,11 +104,13 @@ public class DatacollectorDB
         return db;
     }
 
+    @Override
 	public List<Distance> loadDistances(int raidId)
 	{
 		return distancesDB.loadDistances(raidId);
 	}
 
+    @Override
 	public List<Team> loadTeams()
 	{
 		return teamsDB.loadTeams();
@@ -140,21 +126,25 @@ public class DatacollectorDB
         return metaTablesDB.loadMetaTables();
     }
 
+    @Override
     public List<User> loadUsers()
     {
         return usersDB.loadUsers();
     }
 
+    @Override
     public List<ScanPoint> loadScanPoints(int raidId)
     {
         return scanPointsDB.loadScanPoints(raidId);
     }
 
+    @Override
     public List<LevelPoint> loadLevelPoints(int raidId)
     {
         return levelPointsDB.loadLevelPoints(raidId);
     }
 
+    @Override
     public List<LevelPointDiscount> loadLevelPointDiscounts(int raidId)
     {
         return levelPointDiscountsDB.loadLevelPointDiscounts(raidId);
@@ -211,5 +201,25 @@ public class DatacollectorDB
 
     public void insertNewLoggerRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
         rawLoggerDataDB.insertNewRecord(loggerId, scanpointId, teamId, recordDateTime);
+    }
+
+    public static void init() {
+        DatabaseAdapter.databaseAdapterFactory = new SQLiteDatatbaseAdapterFactory();
+        Log.d("DATABASE_ADAPTER", "initialized");
+    }
+
+    public static SQLiteDatabaseAdapter getRawInstance() {
+        return (SQLiteDatabaseAdapter) DatabaseAdapter.getRawInstance();
+    }
+
+    public static SQLiteDatabaseAdapter getConnectedInstance() {
+        return (SQLiteDatabaseAdapter) DatabaseAdapter.getConnectedInstance();
+    }
+
+    private static class SQLiteDatatbaseAdapterFactory implements DatabaseAdapterFactory {
+        @Override
+        public DatabaseAdapter createDatabaseAdapter() {
+            return new SQLiteDatabaseAdapter();
+        }
     }
 }

@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.transport.model;
+package ru.mmb.datacollector.model.meta;
 
 import android.database.Cursor;
 import android.util.Log;

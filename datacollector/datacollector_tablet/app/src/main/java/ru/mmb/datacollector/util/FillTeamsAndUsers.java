@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.mmb.datacollector.db.DatacollectorDB;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.Team;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -18,7 +18,7 @@ public class FillTeamsAndUsers
 
 	public static void execute()
 	{
-		db = DatacollectorDB.getConnectedInstance().getDb();
+		db = SQLiteDatabaseAdapter.getConnectedInstance().getDb();
 		try
 		{
 			importTeams();
@@ -144,7 +144,7 @@ public class FillTeamsAndUsers
 				db.execSQL(userBirthyearSql, new Object[] { new Integer(userInfo.getUserId()),
 				        userInfo.getUserName(), userInfo.getUserBirthYear() });
 			}
-			int localId = DatacollectorDB.getConnectedInstance().getNextId();
+			int localId = SQLiteDatabaseAdapter.getConnectedInstance().getNextId();
 			db.execSQL(teamUserSql, new Object[] { new Integer(localId),
 			        new Integer(userInfo.getUserId()), new Integer(userInfo.getTeamId()) });
 		}

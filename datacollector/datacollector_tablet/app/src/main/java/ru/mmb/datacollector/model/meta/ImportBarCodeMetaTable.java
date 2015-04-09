@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.transport.model;
+package ru.mmb.datacollector.model.meta;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ru.mmb.datacollector.model.registry.Settings;
-import ru.mmb.datacollector.transport.registry.MetaTablesRegistry;
+import ru.mmb.datacollector.model.registry.MetaTablesRegistry;
 
 public class ImportBarCodeMetaTable extends MetaTable
 {

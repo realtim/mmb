@@ -12,8 +12,8 @@ import org.json.JSONObject;
 import ru.mmb.datacollector.bluetooth.BluetoothClient;
 import ru.mmb.datacollector.transport.importer.DataSaver;
 import ru.mmb.datacollector.transport.importer.ImportState;
-import ru.mmb.datacollector.transport.model.MetaTable;
-import ru.mmb.datacollector.transport.registry.MetaTablesRegistry;
+import ru.mmb.datacollector.model.meta.MetaTable;
+import ru.mmb.datacollector.model.registry.MetaTablesRegistry;
 
 public class TransportLoggerReceiveBluetoothClient extends BluetoothClient {
     private boolean streamsOpened = false;

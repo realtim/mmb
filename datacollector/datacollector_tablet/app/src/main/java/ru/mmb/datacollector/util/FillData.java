@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import ru.mmb.datacollector.db.DatacollectorDB;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.Distance;
 import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.Participant;
@@ -34,13 +34,13 @@ public class FillData {
                 String takenCheckpoints = "";
                 Date startDate = levelPoint.getLevelPointMinDateTime();
                 for (Team team : teams) {
-                    DatacollectorDB.getConnectedInstance().saveRawTeamLevelPoints(scanPoint, team, takenCheckpoints, new Date());
+                    SQLiteDatabaseAdapter.getConnectedInstance().saveRawTeamLevelPoints(scanPoint, team, takenCheckpoints, new Date());
                 }
             } else if (levelPoint.getPointType().isFinish()) {
                 String takenCheckpoints = levelPoint.getCheckpoints().get(0).getCheckpointName();
                 Date finishDate = levelPoint.getLevelPointMaxDateTime();
                 for (Team team : teams) {
-                    DatacollectorDB.getConnectedInstance().saveRawTeamLevelPoints(scanPoint, team, takenCheckpoints, new Date());
+                    SQLiteDatabaseAdapter.getConnectedInstance().saveRawTeamLevelPoints(scanPoint, team, takenCheckpoints, new Date());
                 }
             }
         }
@@ -58,7 +58,7 @@ public class FillData {
                 if (i == 0) continue;
                 withdrawnMembers.add(members.get(i));
             }
-            DatacollectorDB.getConnectedInstance().saveDismissedMembers(finishPoint, team, withdrawnMembers, new Date());
+            SQLiteDatabaseAdapter.getConnectedInstance().saveDismissedMembers(finishPoint, team, withdrawnMembers, new Date());
         }
     }
 }

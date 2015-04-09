@@ -5,85 +5,69 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ru.mmb.datacollector.db.DatacollectorDB;
+import ru.mmb.datacollector.db.DatabaseAdapter;
 import ru.mmb.datacollector.model.Team;
 
-public class TeamsRegistry
-{
+public class TeamsRegistry {
 	private static TeamsRegistry instance = null;
 
 	private List<Team> teams = null;
 	private final Map<Integer, Team> teamByIdMap = new HashMap<Integer, Team>();
 	private final Map<Integer, Team> teamByNumberMap = new HashMap<Integer, Team>();
 
-	public static TeamsRegistry getInstance()
-	{
-		if (instance == null)
-		{
+	public static TeamsRegistry getInstance() {
+		if (instance == null) {
 			instance = new TeamsRegistry();
 		}
 		return instance;
 	}
 
-	private TeamsRegistry()
-	{
+	private TeamsRegistry() {
 		refresh();
 	}
 
-	public void refresh()
-	{
-		try
-		{
-			teams = DatacollectorDB.getConnectedInstance().loadTeams();
+	public void refresh() {
+		try {
+			teams = DatabaseAdapter.getConnectedInstance().loadTeams();
 			refreshTeamByIdMap();
 			refreshTeamsByNumberMap();
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			throw new RuntimeException("Team list load failed.", e);
 		}
 	}
 
-	private void refreshTeamByIdMap()
-	{
+	private void refreshTeamByIdMap() {
 		teamByIdMap.clear();
-		for (Team team : teams)
-		{
+		for (Team team : teams) {
 			teamByIdMap.put(new Integer(team.getTeamId()), team);
 		}
 	}
 
-	private void refreshTeamsByNumberMap()
-	{
+	private void refreshTeamsByNumberMap() {
 		teamByNumberMap.clear();
-		for (Team team : teams)
-		{
+		for (Team team : teams) {
 			teamByNumberMap.put(new Integer(team.getTeamNum()), team);
 		}
 	}
 
-	public List<Team> getTeams(int distanceId)
-	{
+	public List<Team> getTeams(int distanceId) {
 		List<Team> result = new ArrayList<Team>();
-		for (Team team : teams)
-		{
-			if (team.getDistanceId() == distanceId) result.add(team);
+		for (Team team : teams) {
+			if (team.getDistanceId() == distanceId)
+				result.add(team);
 		}
 		return result;
 	}
 
-	public List<Team> getTeams()
-	{
+	public List<Team> getTeams() {
 		return new ArrayList<Team>(teams);
 	}
 
-	public Team getTeamById(int teamId)
-	{
+	public Team getTeamById(int teamId) {
 		return teamByIdMap.get(new Integer(teamId));
 	}
 
-	public Team getTeamByNumber(int teamNumber)
-	{
+	public Team getTeamByNumber(int teamNumber) {
 		return teamByNumberMap.get(teamNumber);
 	}
 }

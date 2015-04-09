@@ -8,10 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ru.mmb.datacollector.transport.model.MetaColumn;
-import ru.mmb.datacollector.transport.model.MetaTable;
-import ru.mmb.datacollector.transport.model.datatype.DataType;
-import ru.mmb.datacollector.transport.model.datatype.DataTypes;
+import ru.mmb.datacollector.model.meta.MetaColumn;
+import ru.mmb.datacollector.model.meta.MetaTable;
+import ru.mmb.datacollector.model.meta.datatype.DataType;
+import ru.mmb.datacollector.model.meta.datatype.DataTypes;
 
 public class MetaTablesDB
 {

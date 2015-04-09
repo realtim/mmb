@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ru.mmb.datacollector.conf.ConfigurationAdapter;
 import ru.mmb.datacollector.model.Participant;
 import ru.mmb.datacollector.model.Team;
-import ru.mmb.datacollector.model.registry.CurrentRaid;
 
 public class TeamsDB
 {
@@ -44,7 +44,7 @@ public class TeamsDB
 		    "select t." + TEAM_ID + ", t." + DISTANCE_ID + ", t." + TEAM_NAME + ", t." + TEAM_NUM
 		            + " from " + TABLE_TEAMS + " as t where t." + DISTANCE_ID + " in (select d."
 		            + DISTANCE_ID + " from " + TABLE_DISTANCES + " as d where d." + RAID_ID + " = "
-		            + CurrentRaid.getId() + ")";
+		            + getCurrentRaidId() + ")";
 		Cursor resultCursor = db.rawQuery(sql, null);
 
 		resultCursor.moveToFirst();
@@ -64,6 +64,10 @@ public class TeamsDB
 		return result;
 	}
 
+    private int getCurrentRaidId() {
+        return ConfigurationAdapter.getInstance().getCurrentRaidId();
+    }
+
 	private void loadTeamUsers(List<Team> teams)
 	{
 		List<Participant> participants = new ArrayList<Participant>();
@@ -73,7 +77,7 @@ public class TeamsDB
 		            + TABLE_TEAMUSERS + " as tu on (u." + USER_ID + " = tu." + USER_ID + ") join "
 		            + TABLE_TEAMS + " as t on (tu." + TEAM_ID + " = t." + TEAM_ID + ") where t."
 		            + DISTANCE_ID + " in (select d." + DISTANCE_ID + " from " + TABLE_DISTANCES
-		            + " as d where d." + RAID_ID + " = " + CurrentRaid.getId() + ") and (tu."
+		            + " as d where d." + RAID_ID + " = " + getCurrentRaidId() + ") and (tu."
 		            + TEAMUSER_HIDE + " is NULL or tu." + TEAMUSER_HIDE + " = 0)";
 		Cursor resultCursor = db.rawQuery(sql, null);
 
