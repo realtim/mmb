@@ -63,7 +63,7 @@ CREATE TABLE RawTeamLevelPoints (user_id INTEGER NOT NULL, device_id INTEGER NOT
 team_id INTEGER NOT NULL, rawteamlevelpoints_points TEXT, rawteamlevelpoints_date TEXT NOT NULL,
 PRIMARY KEY (user_id, scanpoint_id, team_id));
 
-CREATE TABLE RawTeamLevelDismiss (user_id INTEGR NOT NULL, device_id INTEGER NOT NULL, scanpoint_id INTEGER NOT NULL,
+CREATE TABLE RawTeamLevelDismiss (user_id INTEGER NOT NULL, device_id INTEGER NOT NULL, scanpoint_id INTEGER NOT NULL,
 team_id INTEGER NOT NULL, teamuser_id INTEGER NOT NULL, rawteamleveldismiss_date TEXT NOT NULL,
 PRIMARY KEY (user_id, scanpoint_id, team_id, teamuser_id));
 
