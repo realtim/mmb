@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.server;
+package ru.mmb.datacollector.servlet;
 
 import java.io.IOException;
 
