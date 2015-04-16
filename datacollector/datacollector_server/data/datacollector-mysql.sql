@@ -52,7 +52,7 @@ CREATE TABLE `datacollector`.`Teams` (
 
 CREATE TABLE `datacollector`.`Users` (
   `user_id` int(11) NOT NULL,
-  `user_name` varchar(50) NOT NULL,
+  `user_name` varchar(100) NOT NULL,
   `user_birthyear` int(11) NOT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -149,85 +149,82 @@ INSERT INTO MetaTables VALUES(13,'RawTeamLevelPoints',NULL);
 INSERT INTO MetaTables VALUES(14,'RawTeamLevelDismiss',NULL);
 
 /* raids */
-INSERT INTO MetaColumns VALUES(1, 1, 'raid_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(2, 1, 'raid_name', 1, 'TEXT', 0);
-INSERT INTO MetaColumns VALUES(3, 1, 'raid_registrationenddate', 2, 'SHORT_DATE', 0);
+INSERT INTO MetaColumns VALUES(1, 1, 'raid_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(2, 1, 'raid_name', 2, 'TEXT', 0);
+INSERT INTO MetaColumns VALUES(3, 1, 'raid_registrationenddate', 3, 'SHORT_DATE', 0);
 /* distances */
-INSERT INTO MetaColumns VALUES(11, 2, 'distance_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(12, 2, 'raid_id', 1, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(13, 2, 'distance_name', 2, 'TEXT', 0);
+INSERT INTO MetaColumns VALUES(11, 2, 'distance_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(12, 2, 'raid_id', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(13, 2, 'distance_name', 3, 'TEXT', 0);
 /* scanpoints */
-INSERT INTO MetaColumns VALUES(21, 3, 'scanpoint_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(22, 3, 'raid_id', 1, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(23, 3, 'scanpoint_name', 2, 'TEXT', 0);
-INSERT INTO MetaColumns VALUES(24, 3, 'scanpoint_order', 3, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(21, 3, 'scanpoint_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(22, 3, 'raid_id', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(23, 3, 'scanpoint_name', 3, 'TEXT', 0);
+INSERT INTO MetaColumns VALUES(24, 3, 'scanpoint_order', 4, 'INTEGER', 0);
 /* levelpoints */
-INSERT INTO MetaColumns VALUES(31, 4, 'levelpoint_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(32, 4, 'pointtype_id', 1, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(33, 4, 'distance_id', 2, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(34, 4, 'levelpoint_name', 3, 'TEXT', 0);
-INSERT INTO MetaColumns VALUES(35, 4, 'levelpoint_order', 4, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(36, 4, 'levelpoint_penalty', 5, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(37, 4, 'levelpoint_mindatetime', 6, 'LONG_DATE', 0);
-INSERT INTO MetaColumns VALUES(38, 4, 'levelpoint_maxdatetime', 7, 'LONG_DATE', 0);
-INSERT INTO MetaColumns VALUES(39, 4, 'scanpoint_id', 8, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(31, 4, 'levelpoint_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(32, 4, 'pointtype_id', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(33, 4, 'distance_id', 3, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(34, 4, 'levelpoint_name', 4, 'TEXT', 0);
+INSERT INTO MetaColumns VALUES(35, 4, 'levelpoint_order', 5, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(36, 4, 'levelpoint_penalty', 6, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(37, 4, 'levelpoint_mindatetime', 7, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(38, 4, 'levelpoint_maxdatetime', 8, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(39, 4, 'scanpoint_id', 9, 'INTEGER', 0);
 /* teams */
-INSERT INTO MetaColumns VALUES(51, 5, 'team_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(52, 5, 'distance_id', 1, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(53, 5, 'team_name', 2, 'TEXT', 0);
-INSERT INTO MetaColumns VALUES(54, 5, 'team_num', 3, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(51, 5, 'team_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(52, 5, 'distance_id', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(53, 5, 'team_name', 3, 'TEXT', 0);
+INSERT INTO MetaColumns VALUES(54, 5, 'team_num', 4, 'INTEGER', 0);
 /* users */
-INSERT INTO MetaColumns VALUES(61, 6, 'user_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(62, 6, 'user_name', 1, 'TEXT', 0);
-INSERT INTO MetaColumns VALUES(63, 6, 'user_birthyear', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(61, 6, 'user_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(62, 6, 'user_name', 2, 'TEXT', 0);
+INSERT INTO MetaColumns VALUES(63, 6, 'user_birthyear', 3, 'INTEGER', 0);
 /* teamusers */
-INSERT INTO MetaColumns VALUES(81, 7, 'teamuser_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(82, 7, 'team_id', 1, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(83, 7, 'user_id', 2, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(84, 7, 'teamuser_hide', 3, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(81, 7, 'teamuser_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(82, 7, 'team_id', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(83, 7, 'user_id', 3, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(84, 7, 'teamuser_hide', 4, 'INTEGER', 0);
 /* teamleveldismiss */
-INSERT INTO MetaColumns VALUES(91, 8, 'user_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(92, 8, 'levelpoint_id', 1, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(93, 8, 'team_id', 2, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(94, 8, 'teamuser_id', 3, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(95, 8, 'teamleveldismiss_date', 4, 'LONG_DATE', 0);
-INSERT INTO MetaColumns VALUES(96, 8, 'device_id', 5, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(91, 8, 'user_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(92, 8, 'levelpoint_id', 2, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(93, 8, 'team_id', 3, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(94, 8, 'teamuser_id', 4, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(95, 8, 'teamleveldismiss_date', 5, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(96, 8, 'device_id', 6, 'INTEGER', 0);
 /* teamlevelpoints */
-INSERT INTO MetaColumns VALUES(101, 9, 'user_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(102, 9, 'levelpoint_id', 1, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(103, 9, 'team_id', 2, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(104, 9, 'teamlevelpoint_date', 3, 'LONG_DATE', 0);
-INSERT INTO MetaColumns VALUES(105, 9, 'device_id', 4, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(106, 9, 'teamlevelpoint_datetime', 5, 'LONG_DATE', 0);
-INSERT INTO MetaColumns VALUES(107, 9, 'teamlevelpoint_points', 6, 'TEXT', 0);
-INSERT INTO MetaColumns VALUES(108, 9, 'teamlevelpoint_comment', 7, 'TEXT', 0);
+INSERT INTO MetaColumns VALUES(101, 9, 'user_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(102, 9, 'levelpoint_id', 2, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(103, 9, 'team_id', 3, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(104, 9, 'teamlevelpoint_date', 4, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(105, 9, 'device_id', 5, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(106, 9, 'teamlevelpoint_datetime', 6, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(107, 9, 'teamlevelpoint_points', 7, 'TEXT', 0);
+INSERT INTO MetaColumns VALUES(108, 9, 'teamlevelpoint_comment', 8, 'TEXT', 0);
 /* levelpointdiscounts */
-INSERT INTO MetaColumns VALUES(131, 11, 'levelpointdiscount_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(132, 11, 'distance_id', 1, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(133, 11, 'levelpointdiscount_value', 2, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(134, 11, 'levelpointdiscount_start', 3, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(135, 11, 'levelpointdiscount_finish', 4, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(131, 11, 'levelpointdiscount_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(132, 11, 'distance_id', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(133, 11, 'levelpointdiscount_value', 3, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(134, 11, 'levelpointdiscount_start', 4, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(135, 11, 'levelpointdiscount_finish', 5, 'INTEGER', 0);
 /* rawloggerdata */
-INSERT INTO MetaColumns VALUES(141, 12, 'user_id', 0, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(142, 12, 'device_id', 1, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(143, 12, 'logger_id', 2, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(144, 12, 'scanpoint_id', 3, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(145, 12, 'team_id', 4, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(146, 12, 'rawloggerdata_date', 5, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(141, 12, 'user_id', 1, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(142, 12, 'device_id', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(143, 12, 'logger_id', 3, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(144, 12, 'scanpoint_id', 4, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(145, 12, 'team_id', 5, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(146, 12, 'rawloggerdata_date', 6, 'LONG_DATE', 0);
 /* rawteamlevelpoints */
-INSERT INTO MetaColumns VALUES(151, 13, 'user_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(152, 13, 'device_id', 1, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(153, 13, 'scanpoint_id', 2, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(154, 13, 'team_id', 3, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(155, 13, 'rawteamlevelpoints_points', 4, 'TEXT', 0);
-INSERT INTO MetaColumns VALUES(156, 13, 'rawteamlevelpoints_date', 5, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(151, 13, 'user_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(152, 13, 'device_id', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(153, 13, 'scanpoint_id', 3, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(154, 13, 'team_id', 4, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(155, 13, 'rawteamlevelpoints_points', 5, 'TEXT', 0);
+INSERT INTO MetaColumns VALUES(156, 13, 'rawteamlevelpoints_date', 6, 'LONG_DATE', 0);
 /* rawteamleveldismiss */
-INSERT INTO MetaColumns VALUES(161, 14, 'user_id', 0, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(162, 14, 'device_id', 1, 'INTEGER', 0);
-INSERT INTO MetaColumns VALUES(163, 14, 'scanpoint_id', 2, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(164, 14, 'team_id', 3, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(165, 14, 'teamuser_id', 4, 'INTEGER', 1);
-INSERT INTO MetaColumns VALUES(166, 14, 'rawteamleveldismiss_date', 5, 'LONG_DATE', 0);
-
-
-
+INSERT INTO MetaColumns VALUES(161, 14, 'user_id', 1, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(162, 14, 'device_id', 2, 'INTEGER', 0);
+INSERT INTO MetaColumns VALUES(163, 14, 'scanpoint_id', 3, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(164, 14, 'team_id', 4, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(165, 14, 'teamuser_id', 5, 'INTEGER', 1);
+INSERT INTO MetaColumns VALUES(166, 14, 'rawteamleveldismiss_date', 6, 'LONG_DATE', 0);

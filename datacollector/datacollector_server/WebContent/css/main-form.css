@@ -1,0 +1,10 @@
+.mf-table-cell {
+	display: table-cell;
+	padding: 5px;	
+}
+
+.mf-table-cell-right {
+	display: table-cell;
+	padding: 5px;
+	text-align: right;	
+}

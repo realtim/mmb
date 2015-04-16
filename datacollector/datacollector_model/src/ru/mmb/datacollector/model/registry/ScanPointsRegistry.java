@@ -20,7 +20,7 @@ public class ScanPointsRegistry {
 	private List<LevelPoint> levelPoints = null;
 	private DistancesRegistry distancesRegistry;
 
-	public static ScanPointsRegistry getInstance() {
+	public static synchronized ScanPointsRegistry getInstance() {
 		if (instance == null) {
 			instance = new ScanPointsRegistry();
 		}

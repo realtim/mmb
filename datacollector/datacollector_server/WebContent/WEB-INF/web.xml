@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="ru.mmb.datacollector.server" version="3.0">
   <display-name>datacollector_server</display-name>
+  
   <context-param>
   	<param-name>current.raid.id</param-name>
   	<param-value>23</param-value>
@@ -21,6 +22,17 @@
   	<param-name>mysql.connection.password</param-name>
   	<param-value>datacollector</param-value>
   </context-param>
+  <context-param>
+  	<param-name>file.upload.temp.dir</param-name>
+  	<param-value>c:/tmp</param-value>
+  </context-param>
+  
+  <listener>
+    <listener-class>
+      org.apache.commons.fileupload.servlet.FileCleanerCleanup
+    </listener-class>
+  </listener>
+  
   <security-constraint>
     <web-resource-collection>
       <web-resource-name>All Access</web-resource-name>
@@ -59,6 +71,7 @@
     <description></description>
     <role-name>dataserver</role-name>
   </security-role>
+  
   <session-config>
     <session-timeout>30</session-timeout>
   </session-config>

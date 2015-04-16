@@ -6,6 +6,7 @@ public class Settings {
 	public static final String MYSQL_CONNECTION_STRING = "mysql.connection.string";
 	public static final String MYSQL_CONNECTION_USERNAME = "mysql.connection.username";
 	public static final String MYSQL_CONNECTION_PASSWORD = "mysql.connection.password";
+	public static final String FILE_UPLOAD_TEMP_DIR = "file.upload.temp.dir";
 
 	private static Settings instance = null;
 
@@ -25,6 +26,16 @@ public class Settings {
 	private String dbConnectionString = "jdbc:mysql://localhost:3306/datacollector";
 	private String dbUserName = "datacollector";
 	private String dbPassword = "datacollector";
+
+	private String fileUploadTempDir = "c:\\tmp";
+
+	public String getFileUploadTempDir() {
+		return fileUploadTempDir;
+	}
+
+	public void setFileUploadTempDir(String fileUploadTempDir) {
+		this.fileUploadTempDir = fileUploadTempDir;
+	}
 
 	public int getCurrentRaidId() {
 		return currentRaidId;
@@ -70,6 +81,6 @@ public class Settings {
 	public String toString() {
 		return "\nSettings:\n\tcurrentRaidId=" + currentRaidId + "\n\tdbPoolSize=" + dbPoolSize
 				+ "\n\tdbConnectionString=" + dbConnectionString + "\n\tdbUserName=" + dbUserName + "\n\tdbPassword="
-				+ dbPassword;
+				+ dbPassword + "\n\tfileUploadTempDir=" + fileUploadTempDir;
 	}
 }

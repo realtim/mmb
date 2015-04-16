@@ -15,7 +15,7 @@ public class TeamsRegistry {
 	private final Map<Integer, Team> teamByIdMap = new HashMap<Integer, Team>();
 	private final Map<Integer, Team> teamByNumberMap = new HashMap<Integer, Team>();
 
-	public static TeamsRegistry getInstance() {
+	public static synchronized TeamsRegistry getInstance() {
 		if (instance == null) {
 			instance = new TeamsRegistry();
 		}

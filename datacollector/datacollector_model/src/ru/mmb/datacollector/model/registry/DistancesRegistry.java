@@ -13,7 +13,7 @@ public class DistancesRegistry {
 
 	private List<Distance> distances = null;
 
-	public static DistancesRegistry getInstance() {
+	public static synchronized DistancesRegistry getInstance() {
 		if (instance == null) {
 			instance = new DistancesRegistry();
 		}

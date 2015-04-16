@@ -13,7 +13,7 @@ public class UsersRegistry {
 
 	private final Map<Integer, User> users = new HashMap<Integer, User>();
 
-	public static UsersRegistry getInstance() {
+	public static synchronized UsersRegistry getInstance() {
 		if (instance == null) {
 			instance = new UsersRegistry();
 		}
