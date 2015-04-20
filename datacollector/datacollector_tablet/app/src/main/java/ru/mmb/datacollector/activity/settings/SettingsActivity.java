@@ -37,6 +37,9 @@ public class SettingsActivity extends FragmentActivity {
     private EditText editCurrentRaidId;
     private EditText editTranspUserId;
     private EditText editTranspUserPassword;
+    private EditText editDataServerUrl;
+    private EditText editDataServerUserName;
+    private EditText editDataServerPassword;
     private TextEditorActionListener textEditorActionListener;
     private TextEditorFocusChangeListener textEditorFocusChangeListener;
 
@@ -80,7 +83,13 @@ public class SettingsActivity extends FragmentActivity {
         editTranspUserId = (EditText) findViewById(R.id.settings_transpUserIdEdit);
         hookTextEditor(editTranspUserId, EditorInfo.IME_ACTION_NEXT);
         editTranspUserPassword = (EditText) findViewById(R.id.settings_transpUserPasswordEdit);
-        hookTextEditor(editTranspUserPassword, EditorInfo.IME_ACTION_DONE);
+        hookTextEditor(editTranspUserId, EditorInfo.IME_ACTION_NEXT);
+        editDataServerUrl = (EditText) findViewById(R.id.settings_dataServerUrlEdit);
+        hookTextEditor(editDataServerUrl, EditorInfo.IME_ACTION_NEXT);
+        editDataServerUserName = (EditText) findViewById(R.id.settings_dataServerUserNameEdit);
+        hookTextEditor(editDataServerUserName, EditorInfo.IME_ACTION_NEXT);
+        editDataServerPassword = (EditText) findViewById(R.id.settings_dataServerPasswordEdit);
+        hookTextEditor(editDataServerPassword, EditorInfo.IME_ACTION_DONE);
 
         rbApplicationModeInput = (RadioButton) findViewById(R.id.settings_appModeInputRadio);
         rbApplicationModeReport = (RadioButton) findViewById(R.id.settings_appModeReportRadio);
@@ -111,6 +120,9 @@ public class SettingsActivity extends FragmentActivity {
         } else {
             rbApplicationModeReport.setChecked(true);
         }
+        editDataServerUrl.setText(Settings.getInstance().getDataServerUrl());
+        editDataServerUserName.setText(Settings.getInstance().getDataServerUserName());
+        editDataServerPassword.setText(Settings.getInstance().getDataServerPassword());
     }
 
     @Override
@@ -174,6 +186,15 @@ public class SettingsActivity extends FragmentActivity {
         }
         if (view == editTranspUserPassword) {
             Settings.getInstance().setTranspUserPassword(editTranspUserPassword.getText().toString());
+        }
+        if (view == editDataServerUrl) {
+            Settings.getInstance().setDataServerUrl(editDataServerUrl.getText().toString());
+        }
+        if (view == editDataServerUserName) {
+            Settings.getInstance().setDataServerUserName(editDataServerUserName.getText().toString());
+        }
+        if (view == editDataServerPassword) {
+            Settings.getInstance().setDataServerPassword(editDataServerPassword.getText().toString());
         }
     }
 

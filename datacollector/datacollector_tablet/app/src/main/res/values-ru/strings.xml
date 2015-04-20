@@ -40,6 +40,9 @@
     <string name="settings_application_mode">Режим работы:</string>
     <string name="settings_application_mode_input">ВВОД ДАННЫХ</string>
     <string name="settings_application_mode_report">ОТЧЁТЫ</string>
+    <string name="settings_data_server_url">URL (cервер данных):</string>
+    <string name="settings_data_server_user_name">Логин (сервер данных):</string>
+    <string name="settings_data_server_password">Пароль (сервер данных):</string>
 
     <string name="input_global_no_selected_scan_point">&lt;Точка ввода не выбрана></string>
     <string name="input_start_no_scan_point">&lt;Точка ввода не выбрана></string>
@@ -149,6 +152,10 @@
     <string name="transport_bclogger_send_select_device">Выберите report планшет</string>
     <string name="transport_bclogger_send_send_data">Отправить данные</string>
     <string name="transport_bclogger_send_clear_console">Очистить консоль</string>
+
+    <string name="transport_http_send_title">Отправить RAW данные на сервер</string>
+    <string name="transport_http_send_send_data">Отправить данные</string>
+    <string name="transport_http_send_clear_console">Очистить консоль</string>
 
     <string name="results_team_report">Отчёт по команде</string>
     <string name="results_group_report">Полный отчёт </string>

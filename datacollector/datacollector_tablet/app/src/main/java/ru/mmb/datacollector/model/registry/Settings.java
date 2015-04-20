@@ -28,6 +28,9 @@ public class Settings {
     private static final String LAST_EXPORT_DATE = "last_export_date";
     private static final String TRANSP_USER_ID = "transp_user_id";
     private static final String TRANSP_USER_PASSWORD = "transp_user_password";
+    private static final String DATA_SERVER_URL = "data_server_url";
+    private static final String DATA_SERVER_USER_NAME = "data_server_user_name";
+    private static final String DATA_SERVER_PASSWORD = "data_server_password";
 
     private static Settings instance = null;
 
@@ -78,6 +81,9 @@ public class Settings {
         loadProperty(LAST_EXPORT_DATE);
         loadProperty(TRANSP_USER_ID);
         loadProperty(TRANSP_USER_PASSWORD);
+        loadProperty(DATA_SERVER_URL);
+        loadProperty(DATA_SERVER_USER_NAME);
+        loadProperty(DATA_SERVER_PASSWORD);
     }
 
     private void loadProperty(String propertyName) {
@@ -114,7 +120,7 @@ public class Settings {
         return result;
     }
 
-    private String getMMBPathFromDBFile() {
+    public String getMMBPathFromDBFile() {
         String result = settings.getProperty(PATH_TO_DB, "");
         if (!"".equals(result)) {
             File dbFile = new File(result);
@@ -200,6 +206,30 @@ public class Settings {
 
     public void setTranspUserPassword(String transpUserPassword) {
         setValue(TRANSP_USER_PASSWORD, transpUserPassword);
+    }
+
+    public String getDataServerUrl() {
+        return settings.getProperty(DATA_SERVER_URL, "");
+    }
+
+    public void setDataServerUrl(String dataServerUrl) {
+        setValue(DATA_SERVER_URL, dataServerUrl);
+    }
+
+    public String getDataServerUserName() {
+        return settings.getProperty(DATA_SERVER_USER_NAME, "");
+    }
+
+    public void setDataServerUserName(String dataServerUserName) {
+        setValue(DATA_SERVER_USER_NAME, dataServerUserName);
+    }
+
+    public String getDataServerPassword() {
+        return settings.getProperty(DATA_SERVER_PASSWORD, "");
+    }
+
+    public void setDataServerPassword(String dataServerPassword) {
+        setValue(DATA_SERVER_PASSWORD, dataServerPassword);
     }
 
     private boolean setValue(String settingName, String newValue) {

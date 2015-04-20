@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/global_padding"
+    android:paddingLeft="@dimen/global_padding"
+    android:paddingRight="@dimen/global_padding"
+    android:paddingTop="@dimen/global_padding" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/transportHttpSend_sendDataButton"
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/global_padding"
+            android:text="@string/transport_http_send_send_data" />
+
+        <Button
+            android:id="@+id/transportHttpSend_clearConsoleButton"
+            android:layout_width="250dip"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/global_padding"
+            android:text="@string/transport_http_send_clear_console" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/transportHttpSend_consoleScroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/global_padding"
+        android:fillViewport="true"
+        android:scrollbars="vertical" >
+
+        <TextView
+            android:id="@+id/transportHttpSend_consoleTextView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:inputType="textMultiLine" />
+    </ScrollView>
+</LinearLayout>

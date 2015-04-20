@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".application.ApplicationWithSingletonsInit"
@@ -47,6 +48,7 @@
         <activity android:name=".activity.input.bclogger.dataload.LoggerDataLoadActivity" />
         <activity android:name=".activity.transport.bclogger.receive.TransportLoggerReceiveActivity" />
         <activity android:name=".activity.transport.bclogger.send.TransportLoggerSendActivity" />
+        <activity android:name=".activity.transport.http.send.TransportHttpSendActivity" />
     </application>
 
 </manifest>

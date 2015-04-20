@@ -8,6 +8,7 @@ import android.widget.Button;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.transport.bclogger.send.TransportLoggerSendActivity;
+import ru.mmb.datacollector.activity.transport.http.send.TransportHttpSendActivity;
 import ru.mmb.datacollector.activity.transport.transpexport.TransportExportActivity;
 import ru.mmb.datacollector.activity.transport.transpimport.TransportImportActivity;
 import ru.mmb.datacollector.model.registry.Settings;
@@ -32,16 +33,23 @@ public class TransportInputActivity extends Activity {
         btnSaveDataToFile = (Button) findViewById(R.id.transportInput_saveDataToFileBtn);
 
         btnImportDictionaries.setOnClickListener(new ImportDictionariesClickListener());
+        btnSendToServer.setOnClickListener(new SendToServerClickListener());
         btnSendLoggerData.setOnClickListener(new SendLoggerDataClickListener());
         btnSaveDataToFile.setOnClickListener(new SaveToDataFileClickListener());
-
-        // TODO add all button click listeners
     }
 
     private class ImportDictionariesClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
             Intent intent = new Intent(getApplicationContext(), TransportImportActivity.class);
+            startActivity(intent);
+        }
+    }
+
+    private class SendToServerClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(getApplicationContext(), TransportHttpSendActivity.class);
             startActivity(intent);
         }
     }

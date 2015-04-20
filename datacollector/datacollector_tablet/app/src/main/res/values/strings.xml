@@ -41,6 +41,9 @@
     <string name="settings_application_mode">Application mode:</string>
     <string name="settings_application_mode_input">INPUT</string>
     <string name="settings_application_mode_report">REPORT</string>
+    <string name="settings_data_server_url">Data server URL:</string>
+    <string name="settings_data_server_user_name">Data server login:</string>
+    <string name="settings_data_server_password">Data server password:</string>
 
     <string name="input_global_no_selected_scan_point">&lt;No input point selected></string>
     <string name="input_start_no_scan_point">&lt;No input point selected></string>
@@ -150,6 +153,10 @@
     <string name="transport_bclogger_send_select_device">Select report device</string>
     <string name="transport_bclogger_send_send_data">Send data</string>
     <string name="transport_bclogger_send_clear_console">Clear console</string>
+
+    <string name="transport_http_send_title">Send RAW data to server</string>
+    <string name="transport_http_send_send_data">Send data</string>
+    <string name="transport_http_send_clear_console">Clear console</string>
 
     <string name="results_team_report">Team report</string>
     <string name="results_group_report">Group report</string>
