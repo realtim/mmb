@@ -28,7 +28,6 @@ public class RawTeamLevelDismissDB {
     private static final String TEAMUSER_ID = "teamuser_id";
     private static final String DISMISS_DATE = "rawteamleveldismiss_date";
     private static final String SCANPOINT_ORDER = "scanpoint_order";
-    private static final String DISTANCE_ID = "distance_id";
 
     private static final String TEMPLATE_TEAMUSER_ID = "%teamuser_id%";
 

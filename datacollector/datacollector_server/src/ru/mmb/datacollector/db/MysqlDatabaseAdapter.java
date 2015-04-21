@@ -8,8 +8,13 @@ import org.apache.logging.log4j.Logger;
 import ru.mmb.datacollector.model.Distance;
 import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.LevelPointDiscount;
+import ru.mmb.datacollector.model.RawLoggerData;
+import ru.mmb.datacollector.model.RawTeamLevelDismiss;
+import ru.mmb.datacollector.model.RawTeamLevelPoints;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
+import ru.mmb.datacollector.model.TeamLevelDismiss;
+import ru.mmb.datacollector.model.TeamLevelPoints;
 import ru.mmb.datacollector.model.User;
 import ru.mmb.datacollector.model.meta.MetaTable;
 
@@ -83,5 +88,25 @@ public class MysqlDatabaseAdapter extends DatabaseAdapter {
 
 	public List<MetaTable> loadMetaTables() {
 		return MetaTablesDB.loadMetaTables();
+	}
+
+	public List<RawLoggerData> loadRawLoggerData(int scanPointId) {
+		return RawLoggerDataDB.loadRawLoggerData(scanPointId);
+	}
+
+	public List<RawTeamLevelPoints> loadRawTeamLevelPoints(int scanPointId) {
+		return RawTeamLevelPointsDB.loadRawTeamLevelPoints(scanPointId);
+	}
+
+	public List<RawTeamLevelDismiss> loadRawTeamLevelDismiss(int scanPointId) {
+		return RawTeamLevelDismissDB.loadRawTeamLevelDismiss(scanPointId);
+	}
+
+	public String getTeamLevelPointsInsertSql(TeamLevelPoints teamLevelPoints) {
+		return TeamLevelPointsDB.getTeamLevelPointsInsertSql(teamLevelPoints);
+	}
+
+	public String getTeamLevelDismissInsertSql(TeamLevelDismiss teamLevelDismiss) {
+		return TeamLevelDismissDB.getTeamLevelDismissInsertSql(teamLevelDismiss);
 	}
 }

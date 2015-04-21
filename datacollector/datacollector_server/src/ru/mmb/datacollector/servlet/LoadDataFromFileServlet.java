@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import ru.mmb.datacollector.conf.ServletConfigurationAdapter;
 import ru.mmb.datacollector.conf.Settings;
+import ru.mmb.datacollector.converter.DataConverter;
 import ru.mmb.datacollector.db.MysqlDatabaseAdapter;
 import ru.mmb.datacollector.transport.importer.ImportState;
 import ru.mmb.datacollector.transport.importer.Importer;
@@ -69,6 +70,7 @@ public class LoadDataFromFileServlet extends HttpServlet {
 		logger.info("settings loaded" + Settings.getInstance().toString());
 		ServletConfigurationAdapter.init();
 		MysqlDatabaseAdapter.init();
+		DataConverter.init();
 		logger.info("servlet initialized");
 	}
 
@@ -78,6 +80,14 @@ public class LoadDataFromFileServlet extends HttpServlet {
 		} else {
 			return defaultValue;
 		}
+	}
+
+	@Override
+	public void destroy() {
+		super.destroy();
+		logger.info("servlet stopping");
+		DataConverter.stop();
+		logger.info("servlet stopped");
 	}
 
 	/**

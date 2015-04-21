@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,6 +20,7 @@ import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
+import ru.mmb.datacollector.util.DateUtils;
 
 public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient {
     private static final Pattern REGEXP_LOG_DATA = Pattern.compile("(\\d{2}), (\\d{2}), (\\d{8}), (\\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), Line#=(\\d+), CRC8=(\\d+)");
@@ -254,7 +254,7 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
             // Remove seconds from date, or existing records will be updated when no need.
             // Dates in DB are saved without seconds, and before() or after() will return
             // undesired results, if seconds are present in parsed result.
-            Date recordDateTime = trimToMinutes(sdf.parse(parsingResult.getRecordDateTime()));
+            Date recordDateTime = DateUtils.trimToMinutes(sdf.parse(parsingResult.getRecordDateTime()));
             RawLoggerData existingRecord = SQLiteDatabaseAdapter.getConnectedInstance().getExistingLoggerRecord(loggerId, scanpointId, teamId);
             if (existingRecord != null) {
                 if (needUpdateExistingRecord(existingRecord, recordDateTime)) {
@@ -277,18 +277,6 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
         Team team = TeamsRegistry.getInstance().getTeamByNumber(teamNumber);
         if (team == null) throw new Exception("team not found by number: " + teamNumber);
         return team.getTeamId();
-    }
-
-    /*
-     * Code copied from stackoverflow.
-     */
-    private Date trimToMinutes(Date value) {
-        Calendar cal = Calendar.getInstance();
-        cal.clear();
-        cal.setTime(value);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
     }
 
     private boolean needUpdateExistingRecord(RawLoggerData existingRecord, Date recordDateTime) {

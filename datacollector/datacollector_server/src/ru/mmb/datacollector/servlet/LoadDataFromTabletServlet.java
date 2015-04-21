@@ -14,6 +14,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import ru.mmb.datacollector.converter.DataConverter;
 import ru.mmb.datacollector.transport.importer.ImportState;
 import ru.mmb.datacollector.transport.importer.Importer;
 
@@ -48,6 +49,8 @@ public class LoadDataFromTabletServlet extends HttpServlet {
 
 			String jsonPackage = decodeJsonPackage(data);
 			importJsonPackage(jsonPackage);
+			// send request to recalculate RAW data
+			DataConverter.offerRequest();
 		} catch (Exception e) {
 			logger.error("data processing error: " + e.getMessage());
 			logger.debug("error trace: ", e);

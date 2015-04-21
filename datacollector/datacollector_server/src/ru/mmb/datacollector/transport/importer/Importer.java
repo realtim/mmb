@@ -14,7 +14,7 @@ import ru.mmb.datacollector.model.registry.MetaTablesRegistry;
 public class Importer {
 	private static final Logger logger = LogManager.getLogger(Importer.class);
 
-	private static final int ROWS_IN_BATCH = 200;
+	public static final int ROWS_IN_BATCH = 200;
 
 	private final ImportState importState;
 

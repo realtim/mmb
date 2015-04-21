@@ -2,7 +2,9 @@ package ru.mmb.datacollector.model;
 
 import java.util.Date;
 
-public class RawTeamLevelDismiss {
+import ru.mmb.datacollector.model.registry.UsersRegistry;
+
+public class TeamLevelDismiss {
 	private final int userId;
 	private final int deviceId;
 	private final int scanPointId;
@@ -10,30 +12,16 @@ public class RawTeamLevelDismiss {
 	private final int teamUserId;
 	private final Date recordDateTime;
 
-	private ScanPoint scanPoint = null;
 	private Team team = null;
-	private User teamUser = null;
+	private ScanPoint scanPoint = null;
 
-	public RawTeamLevelDismiss(int scanPointId, int teamId, int teamUserId, Date recordDateTime) {
-		this(0, 0, scanPointId, teamId, teamUserId, recordDateTime);
-	}
-
-	public RawTeamLevelDismiss(int userId, int deviceId, int scanPointId, int teamId, int teamUserId,
-			Date recordDateTime) {
+	public TeamLevelDismiss(int userId, int deviceId, int scanPointId, int teamId, int teamUserId, Date recordDateTime) {
 		this.userId = userId;
 		this.deviceId = deviceId;
 		this.scanPointId = scanPointId;
 		this.teamId = teamId;
 		this.teamUserId = teamUserId;
 		this.recordDateTime = recordDateTime;
-	}
-
-	public ScanPoint getScanPoint() {
-		return scanPoint;
-	}
-
-	public void setScanPoint(ScanPoint scanPoint) {
-		this.scanPoint = scanPoint;
 	}
 
 	public Team getTeam() {
@@ -44,12 +32,20 @@ public class RawTeamLevelDismiss {
 		this.team = team;
 	}
 
-	public User getTeamUser() {
-		return teamUser;
+	public ScanPoint getScanPoint() {
+		return scanPoint;
 	}
 
-	public void setTeamUser(User teamUser) {
-		this.teamUser = teamUser;
+	public void setScanPoint(ScanPoint scanPoint) {
+		this.scanPoint = scanPoint;
+	}
+
+	public int getUserId() {
+		return userId;
+	}
+
+	public int getDeviceId() {
+		return deviceId;
 	}
 
 	public int getScanPointId() {
@@ -68,11 +64,8 @@ public class RawTeamLevelDismiss {
 		return recordDateTime;
 	}
 
-	public int getUserId() {
-		return userId;
-	}
-
-	public int getDeviceId() {
-		return deviceId;
+	public String buildSuccesMessage() {
+		User teamUser = UsersRegistry.getInstance().getUserById(teamUserId);
+		return "[teamUser=[" + teamUser.getUserName() + "]]";
 	}
 }
