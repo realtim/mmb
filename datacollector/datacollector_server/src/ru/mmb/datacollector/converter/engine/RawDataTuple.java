@@ -1,4 +1,6 @@
-package ru.mmb.datacollector.converter;
+package ru.mmb.datacollector.converter.engine;
+
+import java.util.Date;
 
 import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.RawTeamLevelPoints;
@@ -39,7 +41,15 @@ public class RawDataTuple {
 	}
 
 	public boolean isFull() {
-		return rawLoggerData != null && rawTeamLevelPoints != null;
+		if (rawLoggerData == null)
+			return false;
+		int distanceId = rawLoggerData.getTeam().getDistanceId();
+		if (rawLoggerData.getScanPoint().getLevelPointByDistance(distanceId).getPointType().isStart()) {
+			// on start no checkpoints record is needed
+			return true;
+		} else {
+			return rawTeamLevelPoints != null;
+		}
 	}
 
 	public String buildNotFullMessage() {
@@ -54,10 +64,17 @@ public class RawDataTuple {
 	}
 
 	public TeamLevelPoints combineData(Team team) {
-		TeamLevelPoints result = new TeamLevelPoints(team.getTeamId(), rawTeamLevelPoints.getUserId(),
-				rawTeamLevelPoints.getDeviceId(), rawLoggerData.getScanPointId(),
-				rawTeamLevelPoints.getTakenCheckpointNames(), rawLoggerData.getRecordDateTime(),
-				rawTeamLevelPoints.getRecordDateTime());
+		int teamId = team.getTeamId();
+		int userId = rawTeamLevelPoints != null ? rawTeamLevelPoints.getUserId() : rawLoggerData.getUserId();
+		int deviceId = rawTeamLevelPoints != null ? rawTeamLevelPoints.getDeviceId() : rawLoggerData.getDeviceId();
+		int scanPointId = rawLoggerData.getScanPointId();
+		String takenCheckpointNames = rawTeamLevelPoints != null ? rawTeamLevelPoints.getTakenCheckpointNames() : "";
+		Date checkedDateTime = rawLoggerData.getRecordDateTime();
+		Date recordDateTime = rawTeamLevelPoints != null ? rawTeamLevelPoints.getRecordDateTime() : rawLoggerData
+				.getRecordDateTime();
+		TeamLevelPoints result = new TeamLevelPoints(teamId, userId, deviceId, scanPointId, takenCheckpointNames,
+				checkedDateTime, recordDateTime);
+		// init reference fields
 		result.setScanPoint(rawLoggerData.getScanPoint());
 		result.setTeam(team);
 		return result;

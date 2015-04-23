@@ -20,6 +20,8 @@ public class RawLoggerDataDB {
 
 	private static final String TABLE_RAW_LOGGER_DATA = "RawLoggerData";
 
+	private static final String USER_ID = "user_id";
+	private static final String DEVICE_ID = "device_id";
 	private static final String LOGGER_ID = "logger_id";
 	private static final String SCANPOINT_ID = "scanpoint_id";
 	private static final String TEAM_ID = "team_id";
@@ -32,16 +34,19 @@ public class RawLoggerDataDB {
 			Statement stmt = null;
 			ResultSet rs = null;
 			try {
-				String sql = "select t.`" + LOGGER_ID + "`, t.`" + TEAM_ID + "`, t.`" + RAWLOGGERDATA_DATE + "` from "
-						+ TABLE_RAW_LOGGER_DATA + " as t " + " where t.`" + SCANPOINT_ID + "` = " + scanPointId;
+				String sql = "select t.`" + USER_ID + "`, t.`" + DEVICE_ID + "`, t.`" + LOGGER_ID + "`, t.`" + TEAM_ID
+						+ "`, t.`" + RAWLOGGERDATA_DATE + "` from `" + TABLE_RAW_LOGGER_DATA + "` as t " + " where t.`"
+						+ SCANPOINT_ID + "` = " + scanPointId;
 				stmt = conn.createStatement();
 				rs = stmt.executeQuery(sql);
 				while (rs.next()) {
-					int loggerId = rs.getInt(1);
-					int teamId = rs.getInt(2);
-					String recordDate = rs.getString(2);
+					int userId = rs.getInt(1);
+					int deviceId = rs.getInt(2);
+					int loggerId = rs.getInt(3);
+					int teamId = rs.getInt(4);
+					String recordDate = rs.getString(5);
 
-					RawLoggerData rawLoggerData = new RawLoggerData(loggerId, scanPointId, teamId,
+					RawLoggerData rawLoggerData = new RawLoggerData(userId, deviceId, loggerId, scanPointId, teamId,
 							DateFormat.parse(recordDate));
 					// init reference fields
 					rawLoggerData.setScanPoint(ScanPointsRegistry.getInstance().getScanPointById(scanPointId));

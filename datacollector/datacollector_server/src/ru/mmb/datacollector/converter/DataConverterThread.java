@@ -17,43 +17,52 @@ public class DataConverterThread extends Thread {
 	private static final Logger logger = LogManager.getLogger(DataConverterThread.class);
 
 	private final BlockingQueue<ConvertRequest> converterQueue;
-	private boolean terminated = false;
+	private volatile boolean terminated = false;
 
 	public DataConverterThread(BlockingQueue<ConvertRequest> converterQueue) {
 		super("data_converter_thread");
 		this.converterQueue = converterQueue;
 	}
 
-	public synchronized void terminate() {
+	public void terminate() {
 		terminated = true;
 		interrupt();
+		// wait some time
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+		}
 	}
 
-	public synchronized boolean isTerminated() {
+	public boolean isTerminated() {
 		return terminated;
 	}
 
 	@Override
 	public void run() {
-		logger.info("data conferter thread started");
+		// when application destroy listener fires, logger system is already shut down
+		logger.info("data converter thread started");
 		while (!isTerminated()) {
 			try {
 				converterQueue.take();
 				performConvertation();
 			} catch (InterruptedException e) {
-				logger.info("data conferter thread interrupted");
+				System.out.println("data converter thread interrupted");
 			}
 		}
-		logger.info("data conferter thread stopped");
+		System.out.println("data converter thread stopped");
 	}
 
 	private void performConvertation() {
 		if (isTerminated()) {
 			return;
 		}
+		logger.info("data convertation started");
 		deleteRecordsFromTargetTables();
+		logger.info("tables cleared");
 		new TeamLevelPointsEngine(this).convertTeamLevelPoints();
 		new TeamLevelDismissEngine(this).convertTeamLevelDismiss();
+		logger.info("data convertation finished");
 	}
 
 	private void deleteRecordsFromTargetTables() {

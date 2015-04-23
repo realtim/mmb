@@ -19,13 +19,23 @@ public class TeamLevelPointsDB {
 	public static synchronized String getTeamLevelPointsInsertSql(TeamLevelPoints teamLevelPoints) {
 		int distanceId = teamLevelPoints.getTeam().getDistanceId();
 		LevelPoint levelPoint = teamLevelPoints.getScanPoint().getLevelPointByDistance(distanceId);
-		String sql = "insert into `" + TABLE_TEAM_LEVEL_POINTS + "`(`" + TEAMLEVELPOINT_DATE + "`, `" + USER_ID
-				+ "`, `" + DEVICE_ID + "`, " + LEVELPOINT_ID + "`, `" + TEAM_ID + "`, `" + TEAMLEVELPOINT_DATETIME
-				+ "`, `" + TEAMLEVELPOINT_POINTS + "`, `" + TEAMLEVELPOINT_COMMENT + "`) " + "values('"
-				+ DateFormat.format(teamLevelPoints.getRecordDateTime()) + "', " + teamLevelPoints.getUserId() + ", "
-				+ teamLevelPoints.getDeviceId() + ", " + levelPoint.getLevelPointId() + ", "
-				+ teamLevelPoints.getTeamId() + ", '" + DateFormat.format(teamLevelPoints.getCheckDateTime()) + "', '"
-				+ teamLevelPoints.getTakenCheckpointNames() + "', '')";
+		String sql = null;
+		if (levelPoint.getPointType().isStart()) {
+			sql = "insert into `" + TABLE_TEAM_LEVEL_POINTS + "`(`" + TEAMLEVELPOINT_DATE + "`, `" + USER_ID + "`, `"
+					+ DEVICE_ID + "`, `" + LEVELPOINT_ID + "`, `" + TEAM_ID + "`, `" + TEAMLEVELPOINT_DATETIME + "`) "
+					+ "values('" + DateFormat.format(teamLevelPoints.getRecordDateTime()) + "', "
+					+ teamLevelPoints.getUserId() + ", " + teamLevelPoints.getDeviceId() + ", "
+					+ levelPoint.getLevelPointId() + ", " + teamLevelPoints.getTeamId() + ", '"
+					+ DateFormat.format(teamLevelPoints.getCheckDateTime()) + "')";
+		} else {
+			sql = "insert into `" + TABLE_TEAM_LEVEL_POINTS + "`(`" + TEAMLEVELPOINT_DATE + "`, `" + USER_ID + "`, `"
+					+ DEVICE_ID + "`, `" + LEVELPOINT_ID + "`, `" + TEAM_ID + "`, `" + TEAMLEVELPOINT_DATETIME + "`, `"
+					+ TEAMLEVELPOINT_POINTS + "`, `" + TEAMLEVELPOINT_COMMENT + "`) " + "values('"
+					+ DateFormat.format(teamLevelPoints.getRecordDateTime()) + "', " + teamLevelPoints.getUserId()
+					+ ", " + teamLevelPoints.getDeviceId() + ", " + levelPoint.getLevelPointId() + ", "
+					+ teamLevelPoints.getTeamId() + ", '" + DateFormat.format(teamLevelPoints.getCheckDateTime())
+					+ "', '" + teamLevelPoints.getTakenCheckpointNames() + "', '')";
+		}
 		return sql;
 	}
 }

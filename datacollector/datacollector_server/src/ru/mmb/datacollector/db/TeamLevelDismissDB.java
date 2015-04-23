@@ -17,7 +17,7 @@ public class TeamLevelDismissDB {
 	public static synchronized String getTeamLevelDismissInsertSql(TeamLevelDismiss teamLevelDismiss) {
 		int distanceId = teamLevelDismiss.getTeam().getDistanceId();
 		LevelPoint levelPoint = teamLevelDismiss.getScanPoint().getLevelPointByDistance(distanceId);
-		String sql = "insert into `" + TABLE_TEAM_LEVEL_DISMISS + "`(`" + USER_ID + "`, `" + DEVICE_ID + "`, "
+		String sql = "insert into `" + TABLE_TEAM_LEVEL_DISMISS + "`(`" + USER_ID + "`, `" + DEVICE_ID + "`, `"
 				+ LEVELPOINT_ID + "`, `" + TEAM_ID + "`, `" + TEAMUSER_ID + "`, `" + DISMISS_DATE + "`) " + "values("
 				+ teamLevelDismiss.getUserId() + ", " + teamLevelDismiss.getDeviceId() + ", "
 				+ levelPoint.getLevelPointId() + ", " + teamLevelDismiss.getTeamId() + ", "

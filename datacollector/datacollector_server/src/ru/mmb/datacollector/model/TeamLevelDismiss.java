@@ -68,4 +68,13 @@ public class TeamLevelDismiss {
 		User teamUser = UsersRegistry.getInstance().getUserById(teamUserId);
 		return "[teamUser=[" + teamUser.getUserName() + "]]";
 	}
+
+	public String buildRecordDateTimeEarlierMessage() {
+		User teamUser = UsersRegistry.getInstance().getUserById(teamUserId);
+		return "[creatorUserId=" + userId + ", teamUser=[" + teamUser.getUserName() + "]]";
+	}
+
+	public boolean isRecordDateTimeEarlier(TeamLevelDismiss other) {
+		return this.getRecordDateTime().before(other.getRecordDateTime());
+	}
 }

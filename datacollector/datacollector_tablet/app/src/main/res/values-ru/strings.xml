@@ -157,6 +157,10 @@
     <string name="transport_http_send_send_data">Отправить данные</string>
     <string name="transport_http_send_clear_console">Очистить консоль</string>
 
+    <string name="transport_http_receive_title">Получить обработанные данные с сервера</string>
+    <string name="transport_http_receive_receive_data">Получить данные</string>
+    <string name="transport_http_receive_clear_console">Очистить консоль</string>
+
     <string name="results_team_report">Отчёт по команде</string>
     <string name="results_group_report">Полный отчёт </string>
 

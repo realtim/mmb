@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.activity.transport.http.send;
+package ru.mmb.datacollector.activity.transport.http.receive;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -13,19 +13,19 @@ import ru.mmb.datacollector.activity.transport.http.ThreadMessageTypes;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.widget.ConsoleMessagesAppender;
 
-import static ru.mmb.datacollector.activity.transport.http.send.TransportHttpSendActivityState.STATE_HTTP_SENDING;
-import static ru.mmb.datacollector.activity.transport.http.send.TransportHttpSendActivityState.STATE_IDLE;
+import static ru.mmb.datacollector.activity.transport.http.receive.TransportHttpReceiveActivityState.STATE_HTTP_RECEIVING;
+import static ru.mmb.datacollector.activity.transport.http.receive.TransportHttpReceiveActivityState.STATE_IDLE;
 
-public class TransportHttpSendActivity extends Activity {
-    private TransportHttpSendActivityState currentState;
+public class TransportHttpReceiveActivity extends Activity {
+    private TransportHttpReceiveActivityState currentState;
 
-    private Button btnSendData;
+    private Button btnReceiveData;
     private Button btnClearConsole;
     private TextView areaConsole;
 
     private ConsoleMessagesAppender consoleAppender;
     private Handler httpHandler;
-    private TransportHttpSendClient httpClient;
+    private TransportHttpReceiveClient httpClient;
     private Thread httpThread = null;
 
     @Override
@@ -34,18 +34,18 @@ public class TransportHttpSendActivity extends Activity {
 
         Settings.getInstance().setCurrentContext(this);
 
-        currentState = new TransportHttpSendActivityState();
+        currentState = new TransportHttpReceiveActivityState();
 
-        setContentView(R.layout.transport_http_send);
+        setContentView(R.layout.transport_http_receive);
 
-        btnSendData = (Button) findViewById(R.id.transportHttpSend_sendDataButton);
-        btnClearConsole = (Button) findViewById(R.id.transportHttpSend_clearConsoleButton);
-        areaConsole = (TextView) findViewById(R.id.transportHttpSend_consoleTextView);
+        btnReceiveData = (Button) findViewById(R.id.transportHttpReceive_receiveDataButton);
+        btnClearConsole = (Button) findViewById(R.id.transportHttpReceive_clearConsoleButton);
+        areaConsole = (TextView) findViewById(R.id.transportHttpReceive_consoleTextView);
 
-        btnSendData.setOnClickListener(new SendDataClickListener());
+        btnReceiveData.setOnClickListener(new ReceiveDataClickListener());
         btnClearConsole.setOnClickListener(new ClearConsoleClickListener());
 
-        setTitle(getResources().getString(R.string.transport_http_send_title));
+        setTitle(getResources().getString(R.string.transport_http_receive_title));
 
         consoleAppender = new ConsoleMessagesAppender(areaConsole);
         httpHandler = new HttpHandler(this, consoleAppender);
@@ -56,12 +56,12 @@ public class TransportHttpSendActivity extends Activity {
     private void refreshState() {
         switch (currentState.getState()) {
             case STATE_IDLE:
-                btnSendData.setEnabled(true);
+                btnReceiveData.setEnabled(true);
                 btnClearConsole.setEnabled(true);
                 break;
-            case STATE_HTTP_SENDING:
+            case STATE_HTTP_RECEIVING:
             default:
-                btnSendData.setEnabled(false);
+                btnReceiveData.setEnabled(false);
                 btnClearConsole.setEnabled(false);
                 break;
         }
@@ -78,12 +78,12 @@ public class TransportHttpSendActivity extends Activity {
         }
     }
 
-    private class SendDataClickListener implements View.OnClickListener {
+    private class ReceiveDataClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            currentState.setState(STATE_HTTP_SENDING);
+            currentState.setState(STATE_HTTP_RECEIVING);
             refreshState();
-            httpClient = new TransportHttpSendClient(httpHandler);
+            httpClient = new TransportHttpReceiveClient(httpHandler);
             httpThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -102,10 +102,10 @@ public class TransportHttpSendActivity extends Activity {
     }
 
     private static class HttpHandler extends Handler {
-        private final TransportHttpSendActivity owner;
+        private final TransportHttpReceiveActivity owner;
         private final ConsoleMessagesAppender consoleAppender;
 
-        private HttpHandler(TransportHttpSendActivity owner, ConsoleMessagesAppender consoleAppender) {
+        private HttpHandler(TransportHttpReceiveActivity owner, ConsoleMessagesAppender consoleAppender) {
             super();
             this.owner = owner;
             this.consoleAppender = consoleAppender;

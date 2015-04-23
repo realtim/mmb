@@ -32,7 +32,7 @@ public class Importer
 		this.scanPoint = scanPoint;
 	}
 
-	public void importPackage(String fileName) throws Exception
+	public void importPackageFromFile(String fileName) throws Exception
 	{
 		importState.appendMessage("Import started.");
 
@@ -53,30 +53,34 @@ public class Importer
 
 		importState.appendMessage("File loaded to JSON object.");
 
-		DataSaver dataSaver = new DataSaver();
-		JSONArray names = tables.names();
-		for (int i = 0; i < names.length(); i++)
-		{
-			if (importState.isTerminated()) break;
-			String tableName = names.getString(i);
-			importState.appendMessage("Importing table: " + tableName);
-			MetaTable metaTable = getMetaTable(tableName);
-			if (metaTable == null)
-			{
-				importState.appendMessage("Meta table not found.");
-				continue;
-			}
-			dataSaver.setCurrentTable(metaTable);
-			if (metaTable.needClearBeforeImport())
-			{
-				dataSaver.clearCurrentTable();
-				Log.d("data saver", "table cleared: " + tableName);
-			}
-			JSONArray tableRows = tables.getJSONArray(tableName);
-			resetImportState(metaTable, tableRows.length());
-			importTableRows(dataSaver, tableRows);
-		}
+		importPackageFromJsonObject(tables);
 	}
+
+    public void importPackageFromJsonObject(JSONObject tables) throws Exception {
+        DataSaver dataSaver = new DataSaver();
+        JSONArray names = tables.names();
+        for (int i = 0; i < names.length(); i++)
+        {
+            if (importState.isTerminated()) break;
+            String tableName = names.getString(i);
+            importState.appendMessage("Importing table: " + tableName);
+            MetaTable metaTable = getMetaTable(tableName);
+            if (metaTable == null)
+            {
+                importState.appendMessage("Meta table not found.");
+                continue;
+            }
+            dataSaver.setCurrentTable(metaTable);
+            if (metaTable.needClearBeforeImport())
+            {
+                dataSaver.clearCurrentTable();
+                Log.d("data saver", "table cleared: " + tableName);
+            }
+            JSONArray tableRows = tables.getJSONArray(tableName);
+            resetImportState(metaTable, tableRows.length());
+            importTableRows(dataSaver, tableRows);
+        }
+    }
 
 	private JSONObject readBarCodeScanData(String fileName) throws Exception
 	{

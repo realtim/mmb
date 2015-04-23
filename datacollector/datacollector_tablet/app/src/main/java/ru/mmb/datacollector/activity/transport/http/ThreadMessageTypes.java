@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.activity.transport.http.send;
+package ru.mmb.datacollector.activity.transport.http;
 
 public class ThreadMessageTypes {
     public static final int MSG_CONSOLE = 1;

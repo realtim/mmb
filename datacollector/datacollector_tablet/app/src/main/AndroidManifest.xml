@@ -49,6 +49,7 @@
         <activity android:name=".activity.transport.bclogger.receive.TransportLoggerReceiveActivity" />
         <activity android:name=".activity.transport.bclogger.send.TransportLoggerSendActivity" />
         <activity android:name=".activity.transport.http.send.TransportHttpSendActivity" />
+        <activity android:name=".activity.transport.http.receive.TransportHttpReceiveActivity" />
     </application>
 
 </manifest>

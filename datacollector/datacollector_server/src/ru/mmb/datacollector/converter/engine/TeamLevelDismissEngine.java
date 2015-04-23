@@ -2,7 +2,9 @@ package ru.mmb.datacollector.converter.engine;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,37 +22,37 @@ import ru.mmb.datacollector.transport.importer.Importer;
 public class TeamLevelDismissEngine extends AbstractConvertationEngine {
 	private static final Logger logger = LogManager.getLogger(TeamLevelDismissEngine.class);
 
+	private ScanPoint currentScanPoint;
+
 	public TeamLevelDismissEngine(DataConverterThread owner) {
 		super(owner);
 	}
 
 	public void convertTeamLevelDismiss() {
+		logger.info("TeamLevelDismiss convertation started");
 		List<ScanPoint> scanPoints = ScanPointsRegistry.getInstance().getScanPoints();
 		for (ScanPoint scanPoint : scanPoints) {
 			if (isTerminated()) {
 				return;
 			}
-			processTeamLevelDismissForScanPoint(scanPoint);
+			currentScanPoint = scanPoint;
+			processTeamLevelDismissForScanPoint();
 		}
+		logger.info("TeamLevelDismiss convertation finished");
 	}
 
-	private void processTeamLevelDismissForScanPoint(ScanPoint scanPoint) {
+	private void processTeamLevelDismissForScanPoint() {
 		List<RawTeamLevelDismiss> rawTeamLevelDismissList = MysqlDatabaseAdapter.getConnectedInstance()
-				.loadRawTeamLevelDismiss(scanPoint.getScanPointId());
-		List<TeamLevelDismiss> recordsToSave = prepareRecordsToSave(rawTeamLevelDismissList, scanPoint);
+				.loadRawTeamLevelDismiss(currentScanPoint.getScanPointId());
+		List<TeamLevelDismiss> convertedRecords = convertToTeamLevelDismiss(rawTeamLevelDismissList);
+		List<TeamLevelDismiss> recordsToSave = removeDuplicates(convertedRecords);
 		saveTeamLevelDismissRecords(recordsToSave);
 	}
 
-	private List<TeamLevelDismiss> prepareRecordsToSave(List<RawTeamLevelDismiss> sourceList, ScanPoint scanPoint) {
+	private List<TeamLevelDismiss> convertToTeamLevelDismiss(List<RawTeamLevelDismiss> sourceList) {
 		List<TeamLevelDismiss> result = new ArrayList<TeamLevelDismiss>();
 		for (RawTeamLevelDismiss rawTeamLevelDismiss : sourceList) {
-
-			//!!!!! TODO check record date time for two PK equal records
-
 			TeamLevelDismiss teamLevelDismiss = copyTeamLevelDismiss(rawTeamLevelDismiss);
-			String message = buildSuccessPrefix(scanPoint, rawTeamLevelDismiss.getTeam())
-					+ teamLevelDismiss.buildSuccesMessage();
-			logger.info(message);
 			result.add(teamLevelDismiss);
 		}
 		return result;
@@ -66,8 +68,43 @@ public class TeamLevelDismissEngine extends AbstractConvertationEngine {
 		return teamLevelDismiss;
 	}
 
-	private String buildSuccessPrefix(ScanPoint scanPoint, Team team) {
-		return "SUCCESS building TeamLevelDismiss " + buildPrefix(scanPoint, team) + "user dismissed ";
+	private List<TeamLevelDismiss> removeDuplicates(List<TeamLevelDismiss> teamLevelDismissList) {
+		Map<RawDismissKey, TeamLevelDismiss> uniqueRecords = new HashMap<RawDismissKey, TeamLevelDismiss>();
+		for (TeamLevelDismiss currentRecord : teamLevelDismissList) {
+			RawDismissKey currentRecordKey = new RawDismissKey(currentRecord.getTeamId(), currentRecord.getTeamUserId());
+			if (uniqueRecords.containsKey(currentRecordKey)) {
+				TeamLevelDismiss existingRecord = uniqueRecords.get(currentRecordKey);
+				String message = buildErrorPrefix(currentRecord.getTeam());
+				if (existingRecord.isRecordDateTimeEarlier(currentRecord)) {
+					uniqueRecords.put(currentRecordKey, currentRecord);
+					message += existingRecord.buildRecordDateTimeEarlierMessage();
+				} else {
+					message += currentRecord.buildRecordDateTimeEarlierMessage();
+				}
+				logger.error(message);
+			} else {
+				uniqueRecords.put(currentRecordKey, currentRecord);
+			}
+		}
+		return copyUniqueRecordsToList(uniqueRecords);
+	}
+
+	private List<TeamLevelDismiss> copyUniqueRecordsToList(Map<RawDismissKey, TeamLevelDismiss> uniqueRecords) {
+		List<TeamLevelDismiss> result = new ArrayList<TeamLevelDismiss>();
+		for (TeamLevelDismiss teamLevelDismiss : uniqueRecords.values()) {
+			String message = buildSuccessPrefix(teamLevelDismiss.getTeam()) + teamLevelDismiss.buildSuccesMessage();
+			logger.info(message);
+			result.add(teamLevelDismiss);
+		}
+		return result;
+	}
+
+	private String buildSuccessPrefix(Team team) {
+		return "SUCCESS building TeamLevelDismiss " + buildPrefix(currentScanPoint, team) + "user dismissed ";
+	}
+
+	private String buildErrorPrefix(Team team) {
+		return "CHECK FAILED duplicate TeamLevelDismiss " + buildPrefix(currentScanPoint, team) + "user dismissed ";
 	}
 
 	private void saveTeamLevelDismissRecords(List<TeamLevelDismiss> recordsToSave) {
@@ -80,6 +117,7 @@ public class TeamLevelDismissEngine extends AbstractConvertationEngine {
 					return;
 				}
 				String sql = MysqlDatabaseAdapter.getConnectedInstance().getTeamLevelDismissInsertSql(teamLevelDismiss);
+				logger.debug(sql);
 				batchStatement.addBatch(sql);
 				recordsInserted++;
 				if (recordsInserted % Importer.ROWS_IN_BATCH == 0) {
@@ -88,7 +126,7 @@ public class TeamLevelDismissEngine extends AbstractConvertationEngine {
 			}
 			commitBatch();
 		} catch (Exception e) {
-			logger.error("error saving data to TeamLevelPoints: " + e.getMessage());
+			logger.error("error saving data to TeamLevelDismiss: " + e.getMessage());
 			logger.debug("error trace: ", e);
 		} finally {
 			try {

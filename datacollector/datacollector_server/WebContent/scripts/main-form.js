@@ -8,8 +8,14 @@ function initControls() {
 	initLoginForm();
 	$("#logout_button").button().click(logoutClick);
 	// init Dictionaries upload
-	$("#upload_dicts_button").button();
+	$("#upload_dicts_button").button().css("width", "150px");
 	initUploadForm($("#upload_dicts_form"), $("#upload_dicts_file"));
+	// init RAW upload
+	$("#upload_raw_button").button().css("width", "150px");
+	initUploadForm($("#upload_raw_form"), $("#upload_raw_file"));
+	// init Download to site
+	$("#download_to_site_button").button().click(downloadToSiteClick);
+	$("#download_to_site_button").button().css("width", "150px");
 	
 	// Refresh state
 	disableControls();
@@ -19,11 +25,17 @@ function initControls() {
 function disableControls() {
 	$("#upload_dicts_file").prop("disabled", true);
 	$("#upload_dicts_button").button("option", "disabled", true);
+	$("#upload_raw_file").prop("disabled", true);
+	$("#upload_raw_button").button("option", "disabled", true);
+	$("#download_to_site_button").button("option", "disabled", true);
 }
 
 function enableControls() {
 	$("#upload_dicts_file").prop("disabled", false);
 	$("#upload_dicts_button").button("option", "disabled", false);
+	$("#upload_raw_file").prop("disabled", false);
+	$("#upload_raw_button").button("option", "disabled", false);
+	$("#download_to_site_button").button("option", "disabled", false);
 }
 
 function refreshState(delay) {
@@ -102,4 +114,8 @@ function initUploadForm(uploadForm, uploadFileInput) {
 
         ev.preventDefault();
     });
+}
+
+function downloadToSiteClick() {
+	window.location = "https://" + getBaseUrlNoProtocol() + "/secure/downloadDataForSite";
 }

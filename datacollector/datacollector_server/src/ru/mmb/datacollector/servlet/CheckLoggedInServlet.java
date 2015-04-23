@@ -16,7 +16,7 @@ import com.google.gson.Gson;
 /**
  * Servlet implementation class CheckLoggedInServlet
  */
-@WebServlet(name = "checkLoggedIn", urlPatterns = { "/unchecked/checkLoggedIn" })
+@WebServlet("/unchecked/checkLoggedIn")
 public class CheckLoggedInServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 

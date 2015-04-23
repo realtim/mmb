@@ -6,9 +6,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -21,73 +18,25 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import ru.mmb.datacollector.conf.ServletConfigurationAdapter;
 import ru.mmb.datacollector.conf.Settings;
 import ru.mmb.datacollector.converter.DataConverter;
-import ru.mmb.datacollector.db.MysqlDatabaseAdapter;
 import ru.mmb.datacollector.transport.importer.ImportState;
 import ru.mmb.datacollector.transport.importer.Importer;
 
 /**
  * Servlet implementation class LoadDataFromFileServlet
  */
-@WebServlet(name = "loadDataFromFile", urlPatterns = { "/secure/loadDataFromFile" }, loadOnStartup = 1)
+@WebServlet("/secure/loadDataFromFile")
 public class LoadDataFromFileServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private static final Logger logger = LogManager.getLogger(LoadDataFromFileServlet.class);
-
-	@SuppressWarnings("unused")
-	private ServletConfig servletConfig;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
 	public LoadDataFromFileServlet() {
 		super();
-	}
-
-	/**
-	 * @see Servlet#init(ServletConfig)
-	 */
-	public void init(ServletConfig config) throws ServletException {
-		this.servletConfig = config;
-		ServletContext context = config.getServletContext();
-		logger.info("servlet initializing");
-		Settings.getInstance().setCurrentRaidId(
-				Integer.parseInt(getContextParameter(context, Settings.CURRENT_RAID_ID, "-1")));
-		Settings.getInstance().setDbPoolSize(
-				Integer.parseInt(getContextParameter(context, Settings.MYSQL_CONNECTION_POOL_SIZE, "10")));
-		Settings.getInstance().setDbConnectionString(
-				getContextParameter(context, Settings.MYSQL_CONNECTION_STRING,
-						"jdbc:mysql://localhost:3306/datacollector"));
-		Settings.getInstance().setDbUserName(
-				getContextParameter(context, Settings.MYSQL_CONNECTION_USERNAME, "datacollector"));
-		Settings.getInstance().setDbPassword(
-				getContextParameter(context, Settings.MYSQL_CONNECTION_PASSWORD, "datacollector"));
-		Settings.getInstance().setFileUploadTempDir(
-				getContextParameter(context, Settings.FILE_UPLOAD_TEMP_DIR, "c:\\tmp"));
-		logger.info("settings loaded" + Settings.getInstance().toString());
-		ServletConfigurationAdapter.init();
-		MysqlDatabaseAdapter.init();
-		DataConverter.init();
-		logger.info("servlet initialized");
-	}
-
-	private String getContextParameter(ServletContext context, String parameterName, String defaultValue) {
-		if (context.getInitParameter(parameterName) != null) {
-			return context.getInitParameter(parameterName);
-		} else {
-			return defaultValue;
-		}
-	}
-
-	@Override
-	public void destroy() {
-		super.destroy();
-		logger.info("servlet stopping");
-		DataConverter.stop();
-		logger.info("servlet stopped");
 	}
 
 	/**
@@ -148,6 +97,8 @@ public class LoadDataFromFileServlet extends HttpServlet {
 		logger.trace("received string:\n" + jsonString);
 		importJsonPackage(jsonString);
 		logger.debug("import finished");
+		// send request to recalculate RAW data
+		DataConverter.offerRequest();
 	}
 
 	private void importJsonPackage(String jsonPackage) throws Exception {

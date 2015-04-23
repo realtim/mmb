@@ -7,6 +7,8 @@ public class Settings {
 	public static final String MYSQL_CONNECTION_USERNAME = "mysql.connection.username";
 	public static final String MYSQL_CONNECTION_PASSWORD = "mysql.connection.password";
 	public static final String FILE_UPLOAD_TEMP_DIR = "file.upload.temp.dir";
+	public static final String TRANSPORT_USER_ID = "transport.user.id";
+	public static final String TRANSPORT_USER_PASSWORD = "transport.user.password";
 
 	private static Settings instance = null;
 
@@ -28,6 +30,9 @@ public class Settings {
 	private String dbPassword = "datacollector";
 
 	private String fileUploadTempDir = "c:\\tmp";
+
+	private String transportUserId = "";
+	private String transportUserPassword = "";
 
 	public String getFileUploadTempDir() {
 		return fileUploadTempDir;
@@ -81,6 +86,23 @@ public class Settings {
 	public String toString() {
 		return "\nSettings:\n\tcurrentRaidId=" + currentRaidId + "\n\tdbPoolSize=" + dbPoolSize
 				+ "\n\tdbConnectionString=" + dbConnectionString + "\n\tdbUserName=" + dbUserName + "\n\tdbPassword="
-				+ dbPassword + "\n\tfileUploadTempDir=" + fileUploadTempDir;
+				+ dbPassword + "\n\tfileUploadTempDir=" + fileUploadTempDir + "\n\ttransportUserId=" + transportUserId
+				+ "\n\ttransportUserPassword=" + transportUserPassword;
+	}
+
+	public String getTransportUserId() {
+		return transportUserId;
+	}
+
+	public void setTransportUserId(String transportUserId) {
+		this.transportUserId = transportUserId;
+	}
+
+	public String getTransportUserPassword() {
+		return transportUserPassword;
+	}
+
+	public void setTransportUserPassword(String transportUserPassword) {
+		this.transportUserPassword = transportUserPassword;
 	}
 }

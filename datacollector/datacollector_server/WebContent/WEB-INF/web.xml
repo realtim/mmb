@@ -25,6 +25,14 @@
     <param-name>file.upload.temp.dir</param-name>
     <param-value>c:/tmp</param-value>
   </context-param>
+  <context-param>
+    <param-name>transport.user.id</param-name>
+    <param-value>31</param-value>
+  </context-param>
+  <context-param>
+    <param-name>transport.user.password</param-name>
+    <param-value>0bcdb947f34e3dd9ea0922906aa81c11</param-value>
+  </context-param>
   <listener>
     <listener-class>
       org.apache.commons.fileupload.servlet.FileCleanerCleanup

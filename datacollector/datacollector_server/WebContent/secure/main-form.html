@@ -58,8 +58,8 @@
 		<!-- Upload dictionaries form -->
 		<div style="display: table;">
 			<div style="display: table-row;">
-				<div id="upload_dicts_label" class="mf-table-cell">
-					Загрузка справочников:
+				<div id="upload_dicts_label" class="mf-table-cell" style="width: 175px;">
+					Загрузка update.json:
 				</div>
 				<form id="upload_dicts_form" action="/datacollector_server/secure/loadDataFromFile" method="POST" enctype="multipart/form-data">
 					<div class="mf-table-cell">
@@ -72,7 +72,38 @@
 			</div>
 		</div>
 		
-		<!-- Upload dictionaries status bar -->
+		<!-- Upload RAW form -->
+		<div style="display: table;">
+			<div style="display: table-row;">
+				<div id="upload_raw_label" class="mf-table-cell" style="width: 175px;">
+					Загрузка RAW данных:
+				</div>
+				<form id="upload_raw_form" action="/datacollector_server/secure/loadDataFromFile" method="POST" enctype="multipart/form-data">
+					<div class="mf-table-cell">
+						<input type="file" name="upload_raw_file" id="upload_raw_file" size="60" style="width: 350px;" />
+					</div>
+					<div class="mf-table-cell">
+						<input type="submit" id="upload_raw_button" value="Загрузить" />
+					</div>
+				</form>
+			</div>
+		</div>
+		
+		<!-- Download data to site form -->
+		<div style="display: table;">
+			<div style="display: table-row;">
+				<div id="download_to_site_label" class="mf-table-cell" style="width: 175px;">
+					Выгрузка готовых данных в файл:
+				</div>
+				<div class="mf-table-cell" style="width: 350px;">
+				</div>
+				<div class="mf-table-cell">
+					<button id="download_to_site_button">Выгрузить</button>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Status bar -->
 		<div id="status_label" style="padding: 5px;">
 		</div>
 	</div>

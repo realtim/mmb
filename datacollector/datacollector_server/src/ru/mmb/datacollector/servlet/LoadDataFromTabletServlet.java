@@ -23,7 +23,7 @@ import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 /**
  * Servlet implementation class LoadDataFromTabletServlet
  */
-@WebServlet(name = "loadDataFromTablet", urlPatterns = { "/secure/loadDataFromTablet" })
+@WebServlet("/secure/loadDataFromTablet")
 public class LoadDataFromTabletServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 

@@ -158,6 +158,10 @@
     <string name="transport_http_send_send_data">Send data</string>
     <string name="transport_http_send_clear_console">Clear console</string>
 
+    <string name="transport_http_receive_title">Receive merged data server</string>
+    <string name="transport_http_receive_receive_data">Receive data</string>
+    <string name="transport_http_receive_clear_console">Clear console</string>
+
     <string name="results_team_report">Team report</string>
     <string name="results_group_report">Group report</string>
 

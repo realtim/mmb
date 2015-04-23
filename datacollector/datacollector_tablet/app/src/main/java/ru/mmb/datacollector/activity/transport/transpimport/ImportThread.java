@@ -33,7 +33,7 @@ public class ImportThread extends Thread
 		boolean needRefreshRegistries = false;
 		try
 		{
-			new Importer(importState, scanPoint).importPackage(fileName);
+			new Importer(importState, scanPoint).importPackageFromFile(fileName);
 			importState.setFinished(true);
 			needRefreshRegistries = !importState.isTerminated();
 		}

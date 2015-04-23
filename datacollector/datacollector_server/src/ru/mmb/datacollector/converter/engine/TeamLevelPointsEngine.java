@@ -10,7 +10,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import ru.mmb.datacollector.converter.DataConverterThread;
-import ru.mmb.datacollector.converter.RawDataTuple;
 import ru.mmb.datacollector.db.ConnectionPool;
 import ru.mmb.datacollector.db.MysqlDatabaseAdapter;
 import ru.mmb.datacollector.model.RawLoggerData;
@@ -24,27 +23,32 @@ import ru.mmb.datacollector.transport.importer.Importer;
 public class TeamLevelPointsEngine extends AbstractConvertationEngine {
 	private static final Logger logger = LogManager.getLogger(TeamLevelPointsEngine.class);
 
+	private ScanPoint currentScanPoint;
+
 	public TeamLevelPointsEngine(DataConverterThread owner) {
 		super(owner);
 	}
 
 	public void convertTeamLevelPoints() {
+		logger.info("TeamLevelPoints convertation started");
 		List<ScanPoint> scanPoints = ScanPointsRegistry.getInstance().getScanPoints();
 		for (ScanPoint scanPoint : scanPoints) {
 			if (isTerminated()) {
 				return;
 			}
-			processTeamLevelPointsForScanPoint(scanPoint);
+			currentScanPoint = scanPoint;
+			processTeamLevelPointsForScanPoint();
 		}
+		logger.info("TeamLevelPoints convertation finished");
 	}
 
-	private void processTeamLevelPointsForScanPoint(ScanPoint scanPoint) {
+	private void processTeamLevelPointsForScanPoint() {
 		List<RawLoggerData> rawLoggerDataList = MysqlDatabaseAdapter.getConnectedInstance().loadRawLoggerData(
-				scanPoint.getScanPointId());
+				currentScanPoint.getScanPointId());
 		List<RawTeamLevelPoints> rawTeamLevelPointsList = MysqlDatabaseAdapter.getConnectedInstance()
-				.loadRawTeamLevelPoints(scanPoint.getScanPointId());
+				.loadRawTeamLevelPoints(currentScanPoint.getScanPointId());
 		Map<Team, RawDataTuple> joinedRecords = buildJoinedRawDataRecords(rawLoggerDataList, rawTeamLevelPointsList);
-		List<TeamLevelPoints> recordsToSave = prepareRecordsToSave(joinedRecords, scanPoint);
+		List<TeamLevelPoints> recordsToSave = prepareRecordsToSave(joinedRecords);
 		saveTeamLevelPointsRecords(recordsToSave);
 	}
 
@@ -68,36 +72,35 @@ public class TeamLevelPointsEngine extends AbstractConvertationEngine {
 		return result;
 	}
 
-	private List<TeamLevelPoints> prepareRecordsToSave(Map<Team, RawDataTuple> joinedRecords, ScanPoint scanPoint) {
+	private List<TeamLevelPoints> prepareRecordsToSave(Map<Team, RawDataTuple> joinedRecords) {
 		List<TeamLevelPoints> result = new ArrayList<TeamLevelPoints>();
 		for (Map.Entry<Team, RawDataTuple> entry : joinedRecords.entrySet()) {
 			RawDataTuple rawDataTuple = entry.getValue();
 			Team team = entry.getKey();
 			if (!rawDataTuple.isFull()) {
-				String message = buildErrorPrefix(scanPoint, team) + rawDataTuple.buildNotFullMessage();
+				String message = buildErrorPrefix(team) + rawDataTuple.buildNotFullMessage();
 				logger.error(message);
 				continue;
 			}
 			TeamLevelPoints teamLevelPoints = rawDataTuple.combineData(team);
 			if (!teamLevelPoints.isCheckDateTimeInMinMaxInterval()) {
-				String message = buildErrorPrefix(scanPoint, team)
-						+ teamLevelPoints.buildCheckDateTimeNotInIntervalMessage();
+				String message = buildErrorPrefix(team) + teamLevelPoints.buildCheckDateTimeNotInIntervalMessage();
 				logger.error(message);
 				continue;
 			}
-			String message = buildSuccessPrefix(scanPoint, team) + teamLevelPoints.buildSuccesMessage();
+			String message = buildSuccessPrefix(team) + teamLevelPoints.buildSuccesMessage();
 			logger.info(message);
 			result.add(teamLevelPoints);
 		}
 		return result;
 	}
 
-	private String buildSuccessPrefix(ScanPoint scanPoint, Team team) {
-		return "SUCCESS building TeamLevelPoints " + buildPrefix(scanPoint, team);
+	private String buildSuccessPrefix(Team team) {
+		return "SUCCESS building TeamLevelPoints " + buildPrefix(currentScanPoint, team);
 	}
 
-	private String buildErrorPrefix(ScanPoint scanPoint, Team team) {
-		return "ERROR building TeamLevelPoints " + buildPrefix(scanPoint, team);
+	private String buildErrorPrefix(Team team) {
+		return "ERROR building TeamLevelPoints " + buildPrefix(currentScanPoint, team);
 	}
 
 	private void saveTeamLevelPointsRecords(List<TeamLevelPoints> recordsToSave) {
@@ -110,6 +113,7 @@ public class TeamLevelPointsEngine extends AbstractConvertationEngine {
 					return;
 				}
 				String sql = MysqlDatabaseAdapter.getConnectedInstance().getTeamLevelPointsInsertSql(teamLevelPoints);
+				logger.debug(sql);
 				batchStatement.addBatch(sql);
 				recordsInserted++;
 				if (recordsInserted % Importer.ROWS_IN_BATCH == 0) {
