@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.activity.report.team.search.model;
+package ru.mmb.datacollector.activity.report.team.result.model;
 
 import ru.mmb.datacollector.model.Team;
 

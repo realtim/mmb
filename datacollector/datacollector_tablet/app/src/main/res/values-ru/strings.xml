@@ -161,13 +161,20 @@
     <string name="transport_http_receive_receive_data">Получить данные</string>
     <string name="transport_http_receive_clear_console">Очистить консоль</string>
 
+    <string name="results_search_team_on_point">Поиск команды на точке</string>
     <string name="results_team_report">Отчёт по команде</string>
     <string name="results_group_report">Полный отчёт </string>
 
-    <string name="report_team_title">Поиск команды</string>
-    <string name="report_team_refresh_data">Обновить список</string>
-    <string name="report_team_mode_fast">Быстрый</string>
-    <string name="report_team_mode_usual">Обычный</string>
+    <string name="team_search_start_no_scan_point">&lt;Точка ввода не выбрана></string>
+    <string name="team_search_start_select_scan_point">Выбор точки ввода</string>
+    <string name="team_search_start_search_team_on_scanpoint">Поиск команды на точке</string>
+
+    <string name="report_team_search_title">Поиск команды</string>
+    <string name="report_team_search_arrival_column">Время на точке</string>
+    <string name="report_team_search_team_num_column">Номер</string>
+    <string name="report_team_search_team_name_column">Команда</string>
+    <string name="report_team_search_team_members_column">Участники</string>
+
     <string name="report_team_filter_clear">Очистить</string>
     <string name="report_team_filter_hide">Скрыть</string>
     <string name="report_team_filter_show_number">По номеру</string>
@@ -176,6 +183,8 @@
     <string name="report_team_filter_number_exact">Точно</string>
     <string name="report_team_filter_team">Команда:</string>
     <string name="report_team_filter_member">Участник:</string>
+
+    <string name="report_team_title">Поиск команды</string>
     <string name="report_team_sort_num">Номер</string>
     <string name="report_team_sort_team">Команда</string>
     <string name="report_team_sort_member">Участник</string>

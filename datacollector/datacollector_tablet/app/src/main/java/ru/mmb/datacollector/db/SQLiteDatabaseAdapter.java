@@ -203,6 +203,10 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter
         rawLoggerDataDB.insertNewRecord(loggerId, scanpointId, teamId, recordDateTime);
     }
 
+    public List<RawLoggerData> loadRawLoggerData(ScanPoint scanPoint) {
+        return rawLoggerDataDB.loadRawLoggerData(scanPoint);
+    }
+
     public static void init() {
         DatabaseAdapter.databaseAdapterFactory = new SQLiteDatatbaseAdapterFactory();
         Log.d("DATABASE_ADAPTER", "initialized");

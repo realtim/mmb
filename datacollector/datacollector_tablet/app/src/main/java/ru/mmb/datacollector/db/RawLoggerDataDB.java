@@ -3,9 +3,12 @@ package ru.mmb.datacollector.db;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import ru.mmb.datacollector.model.RawLoggerData;
+import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
@@ -79,5 +82,31 @@ public class RawLoggerDataDB {
         } finally {
             db.endTransaction();
         }
+    }
+
+    public List<RawLoggerData> loadRawLoggerData(ScanPoint scanPoint) {
+        List<RawLoggerData> result = new ArrayList<RawLoggerData>();
+        String whereCondition = SCANPOINT_ID + " = " + scanPoint.getScanPointId();
+        Cursor resultCursor =
+                db.query(TABLE_RAW_LOGGER_DATA, new String[] { LOGGER_ID, TEAM_ID, RAWLOGGERDATA_DATE }, whereCondition, null, null, null, null);
+
+        resultCursor.moveToFirst();
+        while (!resultCursor.isAfterLast())
+        {
+            int loggerId = resultCursor.getInt(0);
+            int teamId = resultCursor.getInt(1);
+            Date rawLoggerDataDate = DateFormat.parse(resultCursor.getString(2));
+
+            RawLoggerData rawLoggerData = new RawLoggerData(loggerId, scanPoint.getScanPointId(), teamId, rawLoggerDataDate);
+            // init refrence fields
+            rawLoggerData.setScanPoint(scanPoint);
+            rawLoggerData.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
+
+            result.add(rawLoggerData);
+            resultCursor.moveToNext();
+        }
+        resultCursor.close();
+
+        return result;
     }
 }

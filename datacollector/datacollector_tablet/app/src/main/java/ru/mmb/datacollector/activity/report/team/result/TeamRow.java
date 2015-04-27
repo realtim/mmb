@@ -1,12 +1,13 @@
-package ru.mmb.datacollector.activity.report.team.search;
+package ru.mmb.datacollector.activity.report.team.result;
 
-import ru.mmb.datacollector.R;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.widget.Checkable;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import ru.mmb.datacollector.R;
 
 public class TeamRow extends LinearLayout implements Checkable
 {
@@ -22,7 +23,7 @@ public class TeamRow extends LinearLayout implements Checkable
 	public TeamRow(Context context)
 	{
 		super(context);
-		LayoutInflater.from(context).inflate(R.layout.report_team_search_row, this, true);
+		LayoutInflater.from(context).inflate(R.layout.report_team_result_row, this, true);
 		tvNum = (TextView) findViewById(R.id.reportTeamRow_numText);
 		tvTeam = (TextView) findViewById(R.id.reportTeamRow_teamText);
 		tvMember = (TextView) findViewById(R.id.reportTeamRow_memberText);

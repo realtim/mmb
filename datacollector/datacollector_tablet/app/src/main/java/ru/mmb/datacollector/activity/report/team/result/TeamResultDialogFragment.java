@@ -1,7 +1,5 @@
-package ru.mmb.datacollector.activity.report.team.search;
+package ru.mmb.datacollector.activity.report.team.result;
 
-import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.model.Team;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -11,15 +9,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.WebView;
 
+import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.model.Team;
+
 public class TeamResultDialogFragment extends DialogFragment
 {
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState)
 	{
-		SearchTeamActivity activity = (SearchTeamActivity) getActivity();
+		TeamResultActivity activity = (TeamResultActivity) getActivity();
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 		LayoutInflater inflater = getActivity().getLayoutInflater();
-		View dialogPanel = inflater.inflate(R.layout.report_team_result, null);
+		View dialogPanel = inflater.inflate(R.layout.report_team_result_web_view, null);
 		WebView webView = (WebView) dialogPanel.findViewById(R.id.reportTeamResult_webView);
 		webView.loadData(activity.getCurrentState().getResultMessage(), "text/html", null);
 		builder.setView(dialogPanel);

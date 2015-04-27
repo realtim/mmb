@@ -1,38 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android" >
-    <TextView
-        android:id="@+id/teamSearchRow_arrivalText"
-        android:layout_width="0dip"
-        android:layout_height="?android:attr/listPreferredItemHeight"
-        android:layout_weight="20"
-        android:gravity="right|center_vertical"
-        android:singleLine="true"
-        android:text="Arrival" />
 
     <TextView
-        android:id="@+id/teamSearchRow_numText"
+        android:id="@+id/reportTeamRow_numText"
         android:layout_width="0dip"
         android:layout_height="?android:attr/listPreferredItemHeight"
-        android:layout_weight="10"
+        android:layout_weight="15"
         android:gravity="right|center_vertical"
         android:singleLine="true"
         android:text="Num" />
 
     <TextView
-        android:id="@+id/teamSearchRow_teamText"
+        android:id="@+id/reportTeamRow_teamText"
         android:layout_width="0dip"
         android:layout_height="?android:attr/listPreferredItemHeight"
-        android:layout_weight="35"
+        android:layout_weight="45"
         android:gravity="center_horizontal|center_vertical"
         android:singleLine="true"
         android:text="Team" />
 
     <TextView
-        android:id="@+id/teamSearchRow_membersText"
+        android:id="@+id/reportTeamRow_memberText"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:layout_weight="35"
+        android:layout_weight="40"
         android:gravity="left"
-        android:text="Members" />
+        android:text="Member" />
+
 </merge>

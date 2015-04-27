@@ -1,14 +1,14 @@
-package ru.mmb.datacollector.activity.report.team.search;
+package ru.mmb.datacollector.activity.report.team.result;
 
 import java.util.Comparator;
 
-import ru.mmb.datacollector.activity.report.team.search.model.TeamListRecord;
+import ru.mmb.datacollector.activity.report.team.result.model.TeamListRecord;
 
 public class TeamMemberItemsComparator implements Comparator<TeamListRecord>
 {
-	private final SearchTeamActivityState currentState;
+	private final TeamResultActivityState currentState;
 
-	public TeamMemberItemsComparator(SearchTeamActivityState currentState)
+	public TeamMemberItemsComparator(TeamResultActivityState currentState)
 	{
 		this.currentState = currentState;
 	}

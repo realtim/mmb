@@ -1,13 +1,24 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="DEBUG">
+<Configuration status="WARN">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
       <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
     </Console>
+    <RollingFile name="LogFile" fileName="logs/datacollector.log" filePattern="logs/datacollector.log.%i">
+      <Policies>
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="20"/>
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+    </RollingFile>
   </Appenders>
   <Loggers>
-    <Root level="debug">
+    <Root level="WARN">
       <AppenderRef ref="Console"/>
     </Root>
+    <Logger name="ru.mmb.datacollector" level="DEBUG" additivity="false">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="LogFile"/>
+    </Logger>
   </Loggers>
 </Configuration>

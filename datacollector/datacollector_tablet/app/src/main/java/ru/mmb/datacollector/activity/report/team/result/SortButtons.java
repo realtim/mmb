@@ -1,13 +1,14 @@
-package ru.mmb.datacollector.activity.report.team.search;
+package ru.mmb.datacollector.activity.report.team.result;
+
+import android.content.Context;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import ru.mmb.datacollector.R;
-import android.content.Context;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 
 public class SortButtons
 {
@@ -15,15 +16,15 @@ public class SortButtons
 	private final Button btnSortByTeam;
 	private final Button btnSortByMember;
 
-	private final SearchTeamActivityState currentState;
-	private final SearchTeamActivity searchTeamActivity;
+	private final TeamResultActivityState currentState;
+	private final TeamResultActivity teamResultActivity;
 
 	private final Map<SortColumn, String> buttonNames = new HashMap<SortColumn, String>();
 	private final Map<SortColumn, Button> buttons = new HashMap<SortColumn, Button>();
 
 	private SortColumn prevSortColumn = SortColumn.NUMBER;
 
-	public SortButtons(SearchTeamActivity context, SearchTeamActivityState currentState)
+	public SortButtons(TeamResultActivity context, TeamResultActivityState currentState)
 	{
 		this.btnSortByNumber = (Button) context.findViewById(R.id.reportTeam_sortByNumberButton);
 		this.btnSortByTeam = (Button) context.findViewById(R.id.reportTeam_sortByTeamButton);
@@ -31,7 +32,7 @@ public class SortButtons
 
 		this.currentState = currentState;
 
-		this.searchTeamActivity = context;
+		this.teamResultActivity = context;
 
 		initButtonNames(context);
 		initButtons();
@@ -100,7 +101,7 @@ public class SortButtons
 				prevSortColumn = newSortColumn;
 			}
 			refreshButtonNames();
-			searchTeamActivity.refreshTeams();
+			teamResultActivity.refreshTeams();
 		}
 	}
 

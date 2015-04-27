@@ -162,13 +162,20 @@
     <string name="transport_http_receive_receive_data">Receive data</string>
     <string name="transport_http_receive_clear_console">Clear console</string>
 
+    <string name="results_search_team_on_point">Search team on point</string>
     <string name="results_team_report">Team report</string>
     <string name="results_group_report">Group report</string>
 
-    <string name="report_team_title">Search team</string>
-    <string name="report_team_refresh_data">Refresh teams</string>
-    <string name="report_team_mode_fast">Fast mode</string>
-    <string name="report_team_mode_usual">Usual mode</string>
+    <string name="team_search_start_no_scan_point">&lt;No input point selected></string>
+    <string name="team_search_start_select_scan_point">Select input point</string>
+    <string name="team_search_start_search_team_on_scanpoint">Search team on input point</string>
+
+    <string name="report_team_search_title">Search team</string>
+    <string name="report_team_search_arrival_column">Arrival time</string>
+    <string name="report_team_search_team_num_column">Num</string>
+    <string name="report_team_search_team_name_column">Team</string>
+    <string name="report_team_search_team_members_column">Members</string>
+
     <string name="report_team_filter_clear">Clear filter</string>
     <string name="report_team_filter_hide">Hide filter</string>
     <string name="report_team_filter_show_number">Number filter</string>
@@ -177,6 +184,8 @@
     <string name="report_team_filter_number_exact">Exact</string>
     <string name="report_team_filter_team">Team:</string>
     <string name="report_team_filter_member">Member:</string>
+
+    <string name="report_team_title">Search team</string>
     <string name="report_team_sort_num">Num</string>
     <string name="report_team_sort_team">Team</string>
     <string name="report_team_sort_member">Member</string>
