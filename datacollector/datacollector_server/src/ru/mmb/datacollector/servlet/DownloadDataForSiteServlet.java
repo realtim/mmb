@@ -1,5 +1,7 @@
 package ru.mmb.datacollector.servlet;
 
+import static ru.mmb.datacollector.transport.exporter.method.ExportDataMethod.EXPORT_WITH_RAW;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -41,7 +43,7 @@ public class DownloadDataForSiteServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		ExportResult exportResult = null;
 		try {
-			exportResult = new DataExporter(new ExportState(), ExportFormat.TXT).exportData();
+			exportResult = new DataExporter(new ExportState(), ExportFormat.TXT).exportData(!EXPORT_WITH_RAW);
 		} catch (Exception e) {
 			logger.error("data export error: " + e.getMessage());
 		}

@@ -20,7 +20,8 @@ public class ExportDataMethodTxt implements ExportDataMethod {
 	}
 
 	@Override
-	public void exportData() throws Exception {
+	public void exportData(boolean exportWithRaw) throws Exception {
+		// for site no RAW tables export needed
 		writeHeader();
 		if (exportState.isTerminated())
 			return;

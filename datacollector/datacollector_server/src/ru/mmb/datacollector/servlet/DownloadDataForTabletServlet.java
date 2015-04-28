@@ -1,5 +1,7 @@
 package ru.mmb.datacollector.servlet;
 
+import static ru.mmb.datacollector.transport.exporter.method.ExportDataMethod.EXPORT_WITH_RAW;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -44,7 +46,8 @@ public class DownloadDataForTabletServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		byte[] bytesToSend = null;
 		try {
-			ExportResult exportResult = new DataExporter(new ExportState(), ExportFormat.JSON).exportData();
+			ExportResult exportResult = new DataExporter(new ExportState(), ExportFormat.JSON)
+					.exportData(EXPORT_WITH_RAW);
 			bytesToSend = encodeFileBody(exportResult.getFileBody());
 		} catch (Exception e) {
 			logger.error("data export error: " + e.getMessage());

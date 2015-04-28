@@ -87,5 +87,7 @@
 	        basedir="WebContent"
 	        needxmlfile="false">
 	    </war>
+		<delete dir="WebContent/WEB-INF/classes/org"/>
+		<delete dir="WebContent/WEB-INF/classes/ru"/>
 	</target>
 </project>

@@ -21,17 +21,25 @@ public class ExportDataMethodJson implements ExportDataMethod {
 	}
 
 	@Override
-	public void exportData() throws Exception {
+	public void exportData(boolean exportWithRaw) throws Exception {
 		JSONObject mainContainer = new JSONObject();
 		if (exportState.isTerminated())
 			return;
-		exportTable("RawLoggerData", mainContainer);
+		if (exportWithRaw) {
+			exportTable("RawLoggerData", mainContainer);
+			if (exportState.isTerminated())
+				return;
+			exportTable("RawTeamLevelDismiss", mainContainer);
+			if (exportState.isTerminated())
+				return;
+			exportTable("RawTeamLevelPoints", mainContainer);
+			if (exportState.isTerminated())
+				return;
+		}
+		exportTable("TeamLevelDismiss", mainContainer);
 		if (exportState.isTerminated())
 			return;
-		exportTable("RawTeamLevelDismiss", mainContainer);
-		if (exportState.isTerminated())
-			return;
-		exportTable("RawTeamLevelPoints", mainContainer);
+		exportTable("TeamLevelPoints", mainContainer);
 		if (exportState.isTerminated())
 			return;
 		writer.write(mainContainer.toString());
