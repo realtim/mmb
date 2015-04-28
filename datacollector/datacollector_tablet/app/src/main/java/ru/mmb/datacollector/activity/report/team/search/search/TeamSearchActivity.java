@@ -3,6 +3,7 @@ package ru.mmb.datacollector.activity.report.team.search.search;
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -16,7 +17,10 @@ public class TeamSearchActivity extends Activity implements FilterStateChangeLis
     private FilterPanel filterPanel;
 
     private ListView lvTeams;
+    private DataProvider dataProvider;
     private TeamsAdapter teamsAdapter;
+
+    private TextView labTeamsCount;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -35,8 +39,12 @@ public class TeamSearchActivity extends Activity implements FilterStateChangeLis
         filterPanel.addFilterStateChangeListener(this);
 
         lvTeams = (ListView) findViewById(R.id.teamSearch_teamsList);
+        dataProvider = new DataProvider(currentState.getCurrentScanPoint());
         initListAdapter();
         lvTeams.setAdapter(teamsAdapter);
+
+        labTeamsCount = (TextView) findViewById(R.id.teamSearch_teamsCountTextView);
+        labTeamsCount.setText(Integer.toString(dataProvider.getTeams().size()));
 
         setTitle(getResources().getString(R.string.report_team_search_title));
 
@@ -44,8 +52,7 @@ public class TeamSearchActivity extends Activity implements FilterStateChangeLis
     }
 
     private void initListAdapter() {
-        DataProvider dataProvider = new DataProvider();
-        List<TeamListRecord> items = dataProvider.getTeams(currentState.getCurrentScanPoint());
+        List<TeamListRecord> items = dataProvider.getTeams();
         teamsAdapter = new TeamsAdapter(this, R.layout.report_team_search_row, items);
         ((TeamFilter) teamsAdapter.getFilter()).initialize(items, currentState);
     }

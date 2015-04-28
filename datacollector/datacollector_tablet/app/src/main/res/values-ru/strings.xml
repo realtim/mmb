@@ -174,6 +174,7 @@
     <string name="report_team_search_team_num_column">Номер</string>
     <string name="report_team_search_team_name_column">Команда</string>
     <string name="report_team_search_team_members_column">Участники</string>
+    <string name="report_team_search_teams_count">Пришло команд:</string>
 
     <string name="report_team_filter_clear">Очистить</string>
     <string name="report_team_filter_hide">Скрыть</string>

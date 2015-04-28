@@ -175,6 +175,7 @@
     <string name="report_team_search_team_num_column">Num</string>
     <string name="report_team_search_team_name_column">Team</string>
     <string name="report_team_search_team_members_column">Members</string>
+    <string name="report_team_search_teams_count">Teams count:</string>
 
     <string name="report_team_filter_clear">Clear filter</string>
     <string name="report_team_filter_hide">Hide filter</string>
