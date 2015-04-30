@@ -263,7 +263,7 @@ public abstract class TransportHttpClient {
             if (statusCode == HttpURLConnection.HTTP_OK) {
                 JSONObject checkResult = new JSONObject(responseString);
                 boolean result = checkResult.getBoolean("userLoggedIn");
-                String message = result ? "OK" : "FAIL";
+                String message = result ? "logged in" : "logged out";
                 writeToConsole("checkLoggedIn result: " + message);
                 return result;
             }

@@ -14,20 +14,12 @@ import java.util.regex.Pattern;
 
 import ru.mmb.datacollector.activity.input.bclogger.InputBCLoggerBluetoothClient;
 import ru.mmb.datacollector.bluetooth.DeviceInfo;
-import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
-import ru.mmb.datacollector.model.LevelPoint;
-import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.ScanPoint;
-import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.registry.Settings;
-import ru.mmb.datacollector.model.registry.TeamsRegistry;
-import ru.mmb.datacollector.util.DateUtils;
 
 public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient {
     private static final Pattern REGEXP_LOG_DATA = Pattern.compile("(\\d{2}), (\\d{2}), (\\d{8}), (\\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), Line#=(\\d+), CRC8=(\\d+)");
     private static final Pattern REGEXP_TO_CHECK_CRC = Pattern.compile("(\\d{2}, \\d{2}, \\d{8}, \\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), Line#=\\d+, CRC8=\\d+");
-
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss, yyyy/MM/dd");
 
     private final ScanPoint currentScanPoint;
     private String confLoggerId;
@@ -116,11 +108,17 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
     private void parseAndSaveLogData(String loggerReply) {
         errorLog = createErrorLog();
         if (errorLog == null) return;
+        LoggerDataSaver dataSaver = new LoggerDataSaver(this);
+        dataSaver.init();
         try {
             String[] replyStrings = loggerReply.split("\\n");
             boolean inDataLines = false;
             int linesProcessed = 0;
             for (String replyString : replyStrings) {
+                // stop parsing if thread is terminated
+                if (isTerminated()) {
+                    break;
+                }
                 // Log.d("DATA_LOAD_BT", "data line: " + replyString);
                 if ("====".equals(replyString.trim())) {
                     if (!inDataLines) {
@@ -156,18 +154,20 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
                     int scanpointOrder = Integer.parseInt(parsingResult.getScanpointOrder());
                     if (scanpointOrder == currentScanPoint.getScanPointOrder()) {
                         writeToConsole(replyString);
-                        saveToDB(parsingResult);
+                        dataSaver.saveToDB(currentScanPoint, parsingResult);
                     }
                 }
             }
+            dataSaver.flushData();
             writeToConsole("log import finished");
         } finally {
             errorLog.flush();
             errorLog.close();
+            dataSaver.releaseResources();
         }
     }
 
-    private void writeError(String message) {
+    public void writeError(String message) {
         errorLog.write(message + "\n");
         writeToConsole(message);
     }
@@ -253,60 +253,5 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
             }
         }
         return null;
-    }
-
-    private void saveToDB(LogStringParsingResult parsingResult) {
-        try {
-            int loggerId = Integer.parseInt(parsingResult.getLoggerId());
-            int scanpointId = currentScanPoint.getScanPointId();
-            int teamId = getTeamIdByNumber(parsingResult);
-            // Remove seconds from date, or existing records will be updated when no need.
-            // Dates in DB are saved without seconds, and before() or after() will return
-            // undesired results, if seconds are present in parsed result.
-            Date recordDateTime = DateUtils.trimToMinutes(sdf.parse(parsingResult.getRecordDateTime()));
-            recordDateTime = substituteForCommonStart(recordDateTime, teamId);
-            RawLoggerData existingRecord = SQLiteDatabaseAdapter.getConnectedInstance().getExistingLoggerRecord(loggerId, scanpointId, teamId);
-            if (existingRecord != null) {
-                if (needUpdateExistingRecord(existingRecord, recordDateTime)) {
-                    SQLiteDatabaseAdapter.getConnectedInstance().updateExistingLoggerRecord(loggerId, scanpointId, teamId, recordDateTime);
-                    writeToConsole("existing record updated");
-                } else {
-                    writeToConsole("existing record NOT updated");
-                }
-            } else {
-                SQLiteDatabaseAdapter.getConnectedInstance().insertNewLoggerRecord(loggerId, scanpointId, teamId, recordDateTime);
-                writeToConsole("new record inserted");
-            }
-        } catch (Exception e) {
-            writeError("ERROR before saveToDB: " + e.getMessage());
-        }
-    }
-
-    private int getTeamIdByNumber(LogStringParsingResult parsingResult) throws Exception {
-        int teamNumber = parsingResult.extractTeamNumber();
-        Team team = TeamsRegistry.getInstance().getTeamByNumber(teamNumber);
-        if (team == null) throw new Exception("team not found by number: " + teamNumber);
-        return team.getTeamId();
-    }
-
-    private Date substituteForCommonStart(Date recordDateTime, int teamId) {
-        Team team = TeamsRegistry.getInstance().getTeamById(teamId);
-        LevelPoint levelPoint = currentScanPoint.getLevelPointByDistance(team.getDistanceId());
-        if (levelPoint.isCommonStart()) {
-            return levelPoint.getLevelPointMinDateTime();
-        } else {
-            return recordDateTime;
-        }
-    }
-
-    private boolean needUpdateExistingRecord(RawLoggerData existingRecord, Date recordDateTime) {
-        int distanceId = existingRecord.getTeam().getDistanceId();
-        if (currentScanPoint.getLevelPointByDistance(distanceId).getPointType().isStart()) {
-            // start record - use last check
-            return existingRecord.getRecordDateTime().before(recordDateTime);
-        } else {
-            // finish record - use first check
-            return existingRecord.getRecordDateTime().after(recordDateTime);
-        }
     }
 }

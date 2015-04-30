@@ -195,12 +195,12 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter
         return rawLoggerDataDB.getExistingRecord(loggerId, scanpointId, teamId);
     }
 
-    public void updateExistingLoggerRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
-        rawLoggerDataDB.updateExistingRecord(loggerId, scanpointId, teamId, recordDateTime);
+    public String getUpdateExistingLoggerRecordSql(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
+        return rawLoggerDataDB.getUpdateExistingLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime);
     }
 
-    public void insertNewLoggerRecord(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
-        rawLoggerDataDB.insertNewRecord(loggerId, scanpointId, teamId, recordDateTime);
+    public String getInsertNewLoggerRecordSql(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
+        return rawLoggerDataDB.getInsertNewLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime);
     }
 
     public List<RawLoggerData> loadRawLoggerData(ScanPoint scanPoint) {

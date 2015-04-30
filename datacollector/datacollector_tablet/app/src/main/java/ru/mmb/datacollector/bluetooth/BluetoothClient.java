@@ -53,7 +53,7 @@ public abstract class BluetoothClient {
         this.socket = socket;
     }
 
-    protected synchronized void writeToConsole(String message) {
+    public synchronized void writeToConsole(String message) {
         if (!isTerminated()) {
             handler.sendMessage(Message.obtain(handler, ThreadMessageTypes.MSG_CONSOLE, message));
         }
@@ -131,7 +131,13 @@ public abstract class BluetoothClient {
             writeToConsole("sending data");
         }
         try {
-            outStream.write(buffer);
+            int packageSize = 10000;
+            for (int currentPos = 0; currentPos < buffer.length; currentPos += packageSize) {
+                int bytesToSend = ((currentPos + packageSize) < buffer.length) ? packageSize :
+                        buffer.length - currentPos;
+                outStream.write(buffer, currentPos, bytesToSend);
+                outStream.flush();
+            }
         } catch (IOException e) {
             writeToConsole("exception occurred during write: " + e.getMessage());
             return false;
@@ -190,7 +196,7 @@ public abstract class BluetoothClient {
     }
 
     protected String receiveDataWithEndOfMessage(boolean writeReplyToConsole) {
-        byte[] readBuffer = new byte[8192];
+        byte[] readBuffer;
         StringBuilder result = new StringBuilder(5 * 1024 * 1024);
 
         writeToConsole("reading reply");
@@ -202,10 +208,14 @@ public abstract class BluetoothClient {
             while (!isTerminated()) {
                 int bytesInSession = 0;
                 while (!isTerminated() && inStream.available() > 0) {
-                    int bytes = inStream.read(readBuffer);
-                    bytesRead += bytes;
-                    bytesInSession += bytes;
-                    result.append(new String(readBuffer, 0, bytes));
+                    int bytesAvailable = inStream.available();
+                    readBuffer = new byte[bytesAvailable];
+                    int bytes = inStream.read(readBuffer, 0, bytesAvailable);
+                    if (bytes > 0) {
+                        bytesRead += bytes;
+                        bytesInSession += bytes;
+                        result.append(new String(readBuffer, 0, bytes));
+                    }
                     if (bytesRead > 30 * 1024) {
                         writeToConsole("total bytes read: " + result.length());
                         bytesRead = 0;
