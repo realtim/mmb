@@ -51,7 +51,7 @@
             android:id="@+id/inputStart_proceedInputBtn"
             android:layout_width="300dip"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/global_padding"
+            android:layout_marginTop="@dimen/global_double_padding"
             android:layout_gravity="right"
             android:text="@string/input_start_proceed_input" />
     </LinearLayout>

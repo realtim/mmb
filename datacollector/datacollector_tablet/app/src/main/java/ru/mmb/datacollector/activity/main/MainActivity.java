@@ -15,6 +15,7 @@ import ru.mmb.datacollector.activity.settings.SettingsActivity;
 import ru.mmb.datacollector.activity.transport.TransportInputActivity;
 import ru.mmb.datacollector.activity.transport.TransportReportActivity;
 import ru.mmb.datacollector.model.registry.Settings;
+import ru.mmb.datacollector.util.FillData;
 
 import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_SETTINGS_ACTIVITY;
 
@@ -33,7 +34,7 @@ public class MainActivity extends Activity {
     private Button btnResults;
     private Button btnSettings;
 
-    //	private Button btnGenerate;
+    private Button btnGenerate;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,13 +58,16 @@ public class MainActivity extends Activity {
         btnInputData = (Button) findViewById(R.id.main_inputDataBtn);
         btnResults = (Button) findViewById(R.id.main_resultsBtn);
         btnSettings = (Button) findViewById(R.id.main_settingsBtn);
-        //		btnGenerate = (Button) findViewById(R.id.main_generateBtn);
+        btnGenerate = (Button) findViewById(R.id.main_generateBtn);
 
         btnTransport.setOnClickListener(new TransportButtonClickListener());
         btnInputData.setOnClickListener(new InputDataClickListener());
         btnResults.setOnClickListener(new ResultsClickListener());
         btnSettings.setOnClickListener(new SettingsClickListener());
-        //		btnGenerate.setOnClickListener(new GenerateClickListener());
+        btnGenerate.setOnClickListener(new GenerateClickListener());
+
+        // comment this line to show Generate button
+        btnGenerate.setVisibility(View.GONE);
 
         refreshState();
     }
@@ -149,12 +153,12 @@ public class MainActivity extends Activity {
         }
     }
 
-	/*private class GenerateClickListener implements OnClickListener
+	private class GenerateClickListener implements OnClickListener
     {
 		@Override
 		public void onClick(View v)
 		{
-			FillBarCodeData.execute();
+			FillData.execute();
 		}
-	}*/
+	}
 }

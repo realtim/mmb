@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import ru.mmb.datacollector.activity.input.bclogger.InputBCLoggerBluetoothClient;
 import ru.mmb.datacollector.bluetooth.DeviceInfo;
 import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
+import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
@@ -87,9 +88,10 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
 
     private void saveLoggerReplyToLogFile(String loggerReply, String logFileName) {
         SimpleDateFormat currTimeFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
+        createDatalogDirIfNotExists();
         String fileName =
-                Settings.getInstance().getExportDir() + "/" + "bclogger_" + logFileName + "_" +
-                currTimeFormat.format(new Date()) + ".txt";
+                Settings.getInstance().getMMBPathFromDBFile() + "/datalog/" + "bclogger_" +
+                logFileName + "_" + currTimeFormat.format(new Date()) + ".txt";
         try {
             File outputFile = new File(fileName);
             if (!outputFile.exists()) outputFile.createNewFile();
@@ -104,6 +106,13 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
         }
     }
 
+    private void createDatalogDirIfNotExists() {
+        File datalogDir = new File(Settings.getInstance().getMMBPathFromDBFile() + "/datalog");
+        if (!datalogDir.exists()) {
+            datalogDir.mkdir();
+        }
+    }
+
     private void parseAndSaveLogData(String loggerReply) {
         errorLog = createErrorLog();
         if (errorLog == null) return;
@@ -112,7 +121,7 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
             boolean inDataLines = false;
             int linesProcessed = 0;
             for (String replyString : replyStrings) {
-                writeToConsole("data line: " + replyString);
+                // Log.d("DATA_LOAD_BT", "data line: " + replyString);
                 if ("====".equals(replyString.trim())) {
                     if (!inDataLines) {
                         // got start of data lines marker
@@ -124,8 +133,6 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
                     }
                 }
                 if (!inDataLines) continue;
-
-                writeToConsole("processing data line");
 
                 linesProcessed++;
                 if (linesProcessed % 50 == 0) {
@@ -148,6 +155,7 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
                 } else {
                     int scanpointOrder = Integer.parseInt(parsingResult.getScanpointOrder());
                     if (scanpointOrder == currentScanPoint.getScanPointOrder()) {
+                        writeToConsole(replyString);
                         saveToDB(parsingResult);
                     }
                 }
@@ -166,8 +174,9 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
 
     private PrintWriter createErrorLog() {
         SimpleDateFormat currTimeFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
-        String fileName = Settings.getInstance().getExportDir() + "/" + "bclogger_load_errors_" +
-                          currTimeFormat.format(new Date()) + ".txt";
+        createDatalogDirIfNotExists();
+        String fileName = Settings.getInstance().getMMBPathFromDBFile() + "/datalog/" +
+                          "bclogger_load_errors_" + currTimeFormat.format(new Date()) + ".txt";
         File outputFile = new File(fileName);
         try {
             if (!outputFile.exists()) outputFile.createNewFile();
@@ -255,6 +264,7 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
             // Dates in DB are saved without seconds, and before() or after() will return
             // undesired results, if seconds are present in parsed result.
             Date recordDateTime = DateUtils.trimToMinutes(sdf.parse(parsingResult.getRecordDateTime()));
+            recordDateTime = substituteForCommonStart(recordDateTime, teamId);
             RawLoggerData existingRecord = SQLiteDatabaseAdapter.getConnectedInstance().getExistingLoggerRecord(loggerId, scanpointId, teamId);
             if (existingRecord != null) {
                 if (needUpdateExistingRecord(existingRecord, recordDateTime)) {
@@ -277,6 +287,16 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
         Team team = TeamsRegistry.getInstance().getTeamByNumber(teamNumber);
         if (team == null) throw new Exception("team not found by number: " + teamNumber);
         return team.getTeamId();
+    }
+
+    private Date substituteForCommonStart(Date recordDateTime, int teamId) {
+        Team team = TeamsRegistry.getInstance().getTeamById(teamId);
+        LevelPoint levelPoint = currentScanPoint.getLevelPointByDistance(team.getDistanceId());
+        if (levelPoint.isCommonStart()) {
+            return levelPoint.getLevelPointMinDateTime();
+        } else {
+            return recordDateTime;
+        }
     }
 
     private boolean needUpdateExistingRecord(RawLoggerData existingRecord, Date recordDateTime) {

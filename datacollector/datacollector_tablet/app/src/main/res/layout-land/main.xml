@@ -48,7 +48,6 @@
                 android:layout_marginTop="@dimen/global_double_padding"
                 android:text="@string/main_settings" />
 
-            <!--
             <Button
                 android:id="@+id/main_generateBtn"
                 android:layout_width="@dimen/main_button_width"
@@ -56,7 +55,6 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/global_padding"
                 android:text="Generate" />
-            -->
         </LinearLayout>
     </LinearLayout>
 
