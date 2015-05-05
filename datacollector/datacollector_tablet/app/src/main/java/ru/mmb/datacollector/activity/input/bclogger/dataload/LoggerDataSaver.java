@@ -18,12 +18,12 @@ import ru.mmb.datacollector.util.DateUtils;
 public class LoggerDataSaver {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss, yyyy/MM/dd");
 
-    private final LoggerDataLoadBluetoothClient owner;
+    private final LoggerDataProcessor owner;
     private final SQLiteDatabase db;
     private int recordsToSave;
     private ScanPoint scanPoint;
 
-    public LoggerDataSaver(LoggerDataLoadBluetoothClient owner) {
+    public LoggerDataSaver(LoggerDataProcessor owner) {
         this.owner = owner;
         this.db = SQLiteDatabaseAdapter.getRawInstance().getDb();
     }

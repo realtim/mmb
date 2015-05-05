@@ -1,5 +1,7 @@
 package ru.mmb.datacollector.model.history;
 
+import android.util.Log;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
@@ -22,8 +24,10 @@ public class ScanPointRecords
 		Integer userId = rawTeamLevelPoints.getUserId();
 		if (userToDate.containsKey(userId))
 		{
-			if (userToDate.get(userId).after(recordDateTime))
-			    throw new ScanPointRecordsException("New record update date is before existing record for the same user.");
+			if (userToDate.get(userId).after(recordDateTime)) {
+                Log.e("HISTORY_DATA_STORAGE", "New record update date is before existing record for the same user.");
+                //throw new ScanPointRecordsException("New record update date is before existing record for the same user.");
+            }
 			removeUserFromPreviousRecord(userId);
 		}
 

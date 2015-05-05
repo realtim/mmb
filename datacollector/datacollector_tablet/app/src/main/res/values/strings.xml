@@ -65,6 +65,7 @@
     <string name="input_bclogger_start_select_logger">Select logger</string>
     <string name="input_bclogger_start_settings">Logger settings</string>
     <string name="input_bclogger_start_load_data">Load data from logger</string>
+    <string name="input_bclogger_start_import_file">Import datalog from file</string>
 
     <string name="input_bclogger_settings_logger_id">LOGGER ID:</string>
     <string name="input_bclogger_settings_scanpoint">Scanpoint:</string>
@@ -79,6 +80,11 @@
     <string name="input_bclogger_dataload_get_debug">Get errors</string>
     <string name="input_bclogger_dataload_clear_device">Clear device</string>
     <string name="input_bclogger_dataload_clear_console">Clear console</string>
+
+    <string name="input_bclogger_fileimport_select_file">Select import file</string>
+    <string name="input_bclogger_fileimport_no_file_selected">&lt;No file selected></string>
+    <string name="input_bclogger_fileimport_import_file">Start import</string>
+    <string name="input_bclogger_fileimport_clear_console">Clear console</string>
 
     <string name="input_history_team_number">Team number:</string>
     <string name="input_history_team_not_found">Team [${teamNumber}] not found</string>

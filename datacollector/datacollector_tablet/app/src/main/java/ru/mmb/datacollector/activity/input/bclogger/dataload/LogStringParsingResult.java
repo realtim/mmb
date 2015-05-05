@@ -122,7 +122,7 @@ public class LogStringParsingResult {
     }
 
     public void checkConsistencyErrors(String confLoggerId) {
-        if (!confLoggerId.equals(loggerId)) {
+        if (confLoggerId != null && !confLoggerId.equals(loggerId)) {
             setWrongLoggerId(true);
         }
         Team team = null;

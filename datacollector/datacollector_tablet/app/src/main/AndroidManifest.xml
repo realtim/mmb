@@ -47,6 +47,7 @@
         <activity android:name=".activity.bluetooth.BluetoothSelectDeviceActivity"/>
         <activity android:name=".activity.input.bclogger.settings.LoggerSettingsActivity"/>
         <activity android:name=".activity.input.bclogger.dataload.LoggerDataLoadActivity"/>
+        <activity android:name=".activity.input.bclogger.fileimport.LoggerFileImportActivity"/>
         <activity android:name=".activity.transport.bclogger.receive.TransportLoggerReceiveActivity"/>
         <activity android:name=".activity.transport.bclogger.send.TransportLoggerSendActivity"/>
         <activity android:name=".activity.transport.http.send.TransportHttpSendActivity"/>
