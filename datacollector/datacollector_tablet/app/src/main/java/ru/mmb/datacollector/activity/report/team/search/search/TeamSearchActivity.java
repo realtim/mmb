@@ -46,7 +46,7 @@ public class TeamSearchActivity extends Activity implements FilterStateChangeLis
         labTeamsCount = (TextView) findViewById(R.id.teamSearch_teamsCountTextView);
         labTeamsCount.setText(Integer.toString(dataProvider.getTeams().size()));
 
-        setTitle(getResources().getString(R.string.report_team_search_title));
+        setTitle(currentState.getCurrentScanPoint().getScanPointName());
 
         refreshTeams();
     }

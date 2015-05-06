@@ -66,6 +66,7 @@ public class StartWorkWithBCLoggerActivity extends BluetoothAdapterEnableActivit
         btnSelectLogger.setEnabled(isAdapterEnabled());
         btnSettings.setEnabled(canEnable);
         btnLoadData.setEnabled(canEnable);
+        btnImportFile.setEnabled(canEnable);
     }
 
     @Override
