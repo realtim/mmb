@@ -129,9 +129,6 @@
 
     <string name="transp_import_title">Импорт</string>
     <string name="transp_import_dicts_title">Импорт справочников</string>
-    <string name="transp_import_barcode_title">Импорт данных со сканера штрих-кодов</string>
-    <string name="transp_import_barcode_select_scan_point">Выбор точки ввода</string>
-    <string name="transp_import_barcode_no_scan_point">&lt;Точка ввода не выбрана></string>
     <string name="transp_import_select_file">Выбор файла импорта</string>
     <string name="transp_import_no_file_selected">&lt;Файл не выбран></string>
     <string name="transp_import_start">Старт</string>

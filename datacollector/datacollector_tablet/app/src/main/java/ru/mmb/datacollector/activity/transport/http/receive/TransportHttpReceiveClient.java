@@ -49,7 +49,7 @@ public class TransportHttpReceiveClient extends TransportHttpClient {
             ImportState importState = new ImportState();
             startImportListenerThread(importState);
             try {
-                new Importer(importState, null).importPackageFromJsonObject(new JSONObject(jsonString));
+                new Importer(importState).importPackageFromJsonObject(new JSONObject(jsonString));
             } finally {
                 stopImportListenerThread();
             }

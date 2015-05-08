@@ -130,9 +130,6 @@
 
     <string name="transp_import_title">Import</string>
     <string name="transp_import_dicts_title">Import dictionaries</string>
-    <string name="transp_import_barcode_title">Import barcode data</string>
-    <string name="transp_import_barcode_select_scan_point">Select input point</string>
-    <string name="transp_import_barcode_no_scan_point">&lt;No input point selected></string>
     <string name="transp_import_select_file">Select import file</string>
     <string name="transp_import_no_file_selected">&lt;No file selected></string>
     <string name="transp_import_start">Start</string>

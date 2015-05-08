@@ -34,7 +34,6 @@
         <activity android:name=".activity.input.data.checkpoints.InputDataActivity"/>
         <activity android:name=".activity.input.data.withdraw.WithdrawMemberActivity"/>
         <activity android:name=".activity.transport.transpimport.TransportImportActivity"/>
-        <activity android:name=".activity.transport.transpimport.TransportImportBarcodeActivity"/>
         <activity android:name=".activity.transport.transpexport.TransportExportActivity"/>
         <activity android:name=".activity.report.ResultsActivity"/>
         <activity android:name=".activity.report.global.ReportGlobalResultActivity"/>
