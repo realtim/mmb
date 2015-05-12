@@ -62,15 +62,19 @@ public class LoggerReplyParser {
                     }
                 }
 
-                parsingResult.checkConsistencyErrors(confLoggerId);
+                parsingResult.checkConsistencyErrors(confLoggerId, currentScanPoint);
 
-                if (parsingResult.isError()) {
+                if (parsingResult.isFatalError()) {
                     owner.writeError(parsingResult.getErrorMessage());
                 } else {
                     int scanpointOrder = Integer.parseInt(parsingResult.getScanpointOrder());
                     if (scanpointOrder == currentScanPoint.getScanPointOrder()) {
-                        owner.writeToConsole(replyString);
-                        dataSaver.saveToDB(currentScanPoint, parsingResult);
+                        if (parsingResult.isWrongRecordDateTime()) {
+                            owner.writeError(parsingResult.getErrorMessage());
+                        } else {
+                            owner.writeToConsole(replyString);
+                            dataSaver.saveToDB(currentScanPoint, parsingResult);
+                        }
                     }
                 }
             }
