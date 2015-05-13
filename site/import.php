@@ -7,8 +7,6 @@ if (isset($MyPHPScript) and $action == 'LoadRaidDataFile')
 }
 else 
 {
-
-
   // Общие настройки
   include("settings.php");
   // Библиотека функций
@@ -37,8 +35,6 @@ else
   // Подключаемся к базе
   $ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
   if ($ConnectionId <= 0) die(mysql_error());
-  // Устанавливаем временную зону
-  mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
   // Устанавливаем кодировку для взаимодействия
   mysql_query('set names \'utf8\'', $ConnectionId);
   // Выбираем БД ММБ
@@ -55,12 +51,16 @@ if (isset($_FILES['android']))
 	// ====== В первый цикл просто проверяем данные, ничего не записывая в базу
 	$type = "";
 	$password = "";
+	$valid_users = array();
+	$valid_devices = array();
+	$teamlevelpoint_points = array();
+	$teamlevelpoint_datetime = array();
 	foreach ($lines as $line_num => $line)
 	{
 		// Проверка существования пользователя, от имени которого загружаем
 		if ($line_num == 0)
 		{
-			$sql = "select user_password from Users where user_id = ".mysql_real_escape_string($line);
+			$sql = "select user_password from Users where user_id = ".mysql_real_escape_string($line)." and user_hide = 0";
 			$Result = mysql_query($sql);
 			if (!$Result) die("Автор файла данных отсутствует в базе");
 			$Row = mysql_fetch_assoc($Result);
@@ -104,18 +104,26 @@ if (isset($_FILES['android']))
 			if (count($values) < 6) die("Некорректное число параметров в строке #".$line_num." - ".$line);
 			foreach ($values as &$value) $value = trim($value, '"');
 			// Проверяем наличие в базе оператора данных
-			$sql = "select user_id from Users where user_id = ".mysql_real_escape_string($values[0]);
-			$Result = mysql_query($sql);
-			if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующий автор данных в строке #".$line_num." - ".$line);
-			mysql_free_result($Result);
+			if (!in_array($values[0], $valid_users))
+			{
+				$sql = "select user_id from Users where user_id = ".mysql_real_escape_string($values[0]." and user_hide = 0");
+				$Result = mysql_query($sql);
+				if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующий автор данных в строке #".$line_num." - ".$line);
+				mysql_free_result($Result);
+				$valid_users[] = $values[0];
+			}
 			// Проверяем наличие в базе устройства для ввода данных
 			if ($type == "TeamLevelPoints") $device_id = $values[4]; else $device_id = $values[5];
-			$sql = "select device_id from Devices where device_id = ".mysql_real_escape_string($device_id);
-			$Result = mysql_query($sql);
-			if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующее устройство ввода данных в строке #".$line_num." - ".$line);
-			mysql_free_result($Result);
+			if (!in_array($device_id, $valid_devices))
+			{
+				$sql = "select device_id from Devices where device_id = ".mysql_real_escape_string($device_id);
+				$Result = mysql_query($sql);
+				if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующее устройство ввода данных в строке #".$line_num." - ".$line);
+				mysql_free_result($Result);
+				$valid_devices[] = $device_id;
+			}
 			// Проверяем наличие активной точки в базе
-			$sql = "select level_id, pointtype_id, levelpoint_mindatetime, levelpoint_maxdatetime from LevelPoints where levelpoint_id = ".mysql_real_escape_string($values[1]);
+			$sql = "select level_id, pointtype_id, levelpoint_mindatetime, levelpoint_maxdatetime from LevelPoints where levelpoint_id = ".mysql_real_escape_string($values[1]." and levelpoint_hide = 0");
 			$Result = mysql_query($sql);
 			if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующая активная точка в строке #".$line_num." - ".$line);
 			$Row = mysql_fetch_assoc($Result);
@@ -126,16 +134,19 @@ if (isset($_FILES['android']))
 			$endtime = $Row['levelpoint_maxdatetime'];
 			mysql_free_result($Result);
 			// Проверяем наличие команды в базе
-			$sql = "select distance_id from Teams where team_id = ".mysql_real_escape_string($values[2]);
+			$sql = "select distance_id from Teams where team_id = ".mysql_real_escape_string($values[2])." and team_hide = 0";
 			$Result = mysql_query($sql);
 			if (!$Result || mysql_num_rows($Result) <> 1) die("Несуществующая команда в строке #".$line_num." - ".$line);
 			$Row = mysql_fetch_assoc($Result);
 			$distance_id = $Row['distance_id'];
 			mysql_free_result($Result);
 			// Проверяем, что команда могла оказаться на этой точке
-			$sql = "select distance_id from Levels where level_id = ".$level_id." and distance_id = ".$distance_id;
+			$sql = "select distance_id, level_maxbegtime, level_starttype from Levels where level_id = ".$level_id." and distance_id = ".$distance_id." and level_hide = 0";
 			$Result = mysql_query($sql);
 			if (!$Result || mysql_num_rows($Result) <> 1) die("Команда не могла оказаться в этой точке в строке #".$line_num." - ".$line);
+			$Row = mysql_fetch_assoc($Result);
+			$level_starttype = $Row['level_starttype'];
+			$level_maxbegtime = $Row['level_maxbegtime'];
 			mysql_free_result($Result);
 		}
 		else die("Неизвестный тип данных '".$type."'");
@@ -157,16 +168,21 @@ if (isset($_FILES['android']))
 		{
 			// Проверяем точное число параметров в строке
 			if (count($values) <> 8) die("Некорректное число параметров в строке #".$line_num." - ".$line);
-			// Проверяем, что команда отметилась на контрольной точке в то время, когда точка была открыта
-			$sql = "select * from Levels WHERE UNIX_TIMESTAMP('".$values[5]."') >= UNIX_TIMESTAMP('".$begtime."') and UNIX_TIMESTAMP('".$values[5]."') <= UNIX_TIMESTAMP('".$endtime."') LIMIT 1";
-			$Result = mysql_query($sql);
-			if (!$Result || !mysql_num_rows($Result)) die("Время прихода на контрольную точку не совпадает со временем ее работы в строке #".$line_num." - ".$line);
-			mysql_free_result($Result);
-			// Проверяем, что время регистрации результата >= времени прихода команды
-			$sql = "select * from Levels WHERE UNIX_TIMESTAMP('".$values[3]."') >= UNIX_TIMESTAMP('".$values[5]."') LIMIT 1";
-			$Result = mysql_query($sql);
-			if (!$Result || !mysql_num_rows($Result)) die("Время регистрации результата меньше времени регистрируемого результата в строке #".$line_num." - ".$line);
-			mysql_free_result($Result);
+			// Если это не одновременный старт, то команда не может отметиться раньше начала работы точки
+			if (($pointtype_id == 1) && ($level_starttype == 2))
+				$teamlevelpoint_datetime[$line_num] = $level_maxbegtime;
+			else
+			{
+				if ($values[5] < $begtime) die("Команда пришла на контрольную точку до начала ее работы в строке #".$line_num." - ".$line);
+			}
+			// Если это не старт, то команда не может отметиться после закрытия точки
+			if ($values[5] > $endtime)
+			{
+				if ($pointtype_id <> 1) die("Команда пришла на контрольную точку после окончания ее работы в строке #".$line_num." - ".$line);
+				else $teamlevelpoint_datetime[$line_num] = $level_maxbegtime;
+			}
+			// Проверяем, что время ввода списка КП >= времени прихода команды
+			if ($values[3] < $values[5]) die("Время ввода списка КП меньше времени регистрируемого результата в строке #".$line_num." - ".$line);
 			// Получаем список полный КП этапа, на котором зарегистрирован результат
 			$sql = "select level_pointnames from Levels where level_id = ".$level_id;
 			$Result = mysql_query($sql);
@@ -185,7 +201,6 @@ if (isset($_FILES['android']))
 				// Берем из результатов список взятых КП
 				if ($values[6])	$visited_points = explode(',', $values[6]);
 				else $visited_points = array();
-				if (($pointtype_id <> 2) && ($pointtype_id <> 4) && count($visited_points)) die("взятые КП отмечены не на финише этапа/смене карт в строке #".$line_num." - ".$line);
 				// Помечаем их взятыми в битовом массиве
 				foreach ($visited_points as $point)
 				{
@@ -213,7 +228,7 @@ if (isset($_FILES['android']))
 	{
 		// Логин и пароль уже не проверяем
 		if (($line_num == 0) || ($line_num == 1)) continue;
-		// Смена типа данных (но пока все равно поддерживается только TeamLevelPoints)
+		// Смена типа данных
 		if ($line == "---TeamLevelPoints")
 		{
 			$type = "TeamLevelPoints";
@@ -233,19 +248,18 @@ if (isset($_FILES['android']))
 			$values = explode(';', $line);
 			foreach ($values as &$value) $value = mysql_real_escape_string(trim($value, '"'));
 			// Выясняем, есть ли уже такая запись
-			$sql = "select teamleveldismiss_date, device_id from TeamLevelDismiss where user_id = ".$values[0].
-				" and levelpoint_id = ".$values[1]." and team_id = ".$values[2]." and teamuser_id = ".$values[3];
+			$sql = "select teamleveldismiss_date from TeamLevelDismiss where levelpoint_id = ".$values[1].
+				" and team_id = ".$values[2]." and teamuser_id = ".$values[3];
 			$Result = mysql_query($sql);
+			unset($Old);
 			$Old = mysql_fetch_assoc($Result);
-			if (!$Old) $Record = "new";
-			else
+			if (isset($Old['teamleveldismiss_date']) && $Old['teamleveldismiss_date'])
 			{
-				foreach ($Old as &$val) $val = mysql_real_escape_string($val);
-				if (($Old['teamleveldismiss_date'] == $values[4]) &&
-				    ($Old['device_id'] == $values[5]))
-					$Record = "unchanged";
+				// обновляем запись в базе только если дата ввода данных в файле больше, чем в базе
+				if ($Old['teamleveldismiss_date'] >= $values[4]) $Record = "unchanged";
 				else $Record = "updated";
 			}
+			else $Record = "new";
 			mysql_free_result($Result);
 			// Если записи раньше не было - вставляем ее в таблицу
 			if ($Record == "new")
@@ -265,7 +279,7 @@ if (isset($_FILES['android']))
 				$sql = "update TeamLevelDismiss set
 					teamleveldismiss_date = '".$values[4]."',
 					device_id = ".$values[5]."
-					where user_id = ".$values[0]." and levelpoint_id = ".$values[1].
+					where levelpoint_id = ".$values[1].
 					" and team_id = ".$values[2]." and teamuser_id = ".$values[3];
 				mysql_query($sql);
 				if (mysql_error()) die($sql.": ".mysql_error());
@@ -334,27 +348,20 @@ if (isset($_FILES['android']))
 			foreach ($values as &$value) $value = mysql_real_escape_string(trim($value, '"'));
 			if ($values[7] == "") $values[7] = "NULL";
 			if ($values[7] != "NULL") $values[7] = "'".$values[7]."'";
+			// заменяем при необходимости время старта команды на время закрытия старта
+			if (isset($teamlevelpoint_datetime[$line_num])) $values[5] = $teamlevelpoint_datetime[$line_num];
 			// Выясняем, есть ли уже такая запись
-			$sql = "select teamlevelpoint_date, device_id, teamlevelpoint_datetime, teamlevelpoint_points, teamlevelpoint_comment from TeamLevelPoints where user_id = ".$values[0]." and levelpoint_id = ".$values[1]." and team_id = ".$values[2];
+			$sql = "select teamlevelpoint_date from TeamLevelPoints where levelpoint_id = ".$values[1]." and team_id = ".$values[2];
 			$Result = mysql_query($sql);
+			unset($Old);
 			$Old = mysql_fetch_assoc($Result);
-			if (!$Old) $Record = "new";
-			else
+			if (isset($Old['teamlevelpoint_date']) && $Old['teamlevelpoint_date'])
 			{
-				foreach ($Old as &$val) $val = mysql_real_escape_string($val);
-				// Если список взятых КП неизвестен (==NULL), то считаем его равным списку из уже имеющейся записи в базе
-				if ($teamlevelpoint_points[$line_num] == "NULL")
-					$teamlevelpoint_points[$line_num] = $Old['teamlevelpoint_points'];
-				// Сравниваем старую и новую записи
-				if (!$Old['teamlevelpoint_comment']) $Old['teamlevelpoint_comment'] = "NULL"; else $Old['teamlevelpoint_comment'] = "'".$Old['teamlevelpoint_comment']."'";
-				if (($Old['teamlevelpoint_date'] == $values[3]) &&
-				    ($Old['device_id'] == $values[4]) &&
-				    ($Old['teamlevelpoint_datetime'] == $values[5]) &&
-				    ($Old['teamlevelpoint_points'] == $teamlevelpoint_points[$line_num]) &&
-				    ($Old['teamlevelpoint_comment'] == $values[7]))
-					$Record = "unchanged";
+				// обновляем запись в базе только если дата ввода данных в файле больше, чем в базе
+				if ($Old['teamlevelpoint_date'] >= $values[3]) $Record = "unchanged";
 				else $Record = "updated";
 			}
+			else $Record = "new";
 			mysql_free_result($Result);
 			// Если записи раньше не было - вставляем ее в таблицу
 			if ($Record == "new")
@@ -377,7 +384,7 @@ if (isset($_FILES['android']))
 					teamlevelpoint_datetime = '".$values[5]."',
 					teamlevelpoint_points = '".$teamlevelpoint_points[$line_num]."',
 					teamlevelpoint_comment = ".$values[7]."
-					where user_id = ".$values[0]." and levelpoint_id = ".$values[1]." and team_id = ".$values[2];
+					where levelpoint_id = ".$values[1]." and team_id = ".$values[2];
 				mysql_query($sql);
 				if (mysql_error()) die($sql.": ".mysql_error());
 			}
