@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.activity.report.team.search;
+package ru.mmb.datacollector.activity.report.team.result;
 
 import static ru.mmb.datacollector.activity.Constants.KEY_REPORT_TEAM_RESULT_MESSAGE;
 import ru.mmb.datacollector.R;
@@ -10,12 +10,12 @@ import android.os.Message;
 
 public class BuildTeamResultThread extends Thread
 {
-	private final SearchTeamActivity activity;
+	private final TeamResultActivity activity;
 	private final Handler finishHandler;
 	private final Team team;
 	private String teamResult;
 
-	public BuildTeamResultThread(SearchTeamActivity activity, Handler finishHandler, Team team)
+	public BuildTeamResultThread(TeamResultActivity activity, Handler finishHandler, Team team)
 	{
 		super();
 		this.activity = activity;
@@ -23,7 +23,7 @@ public class BuildTeamResultThread extends Thread
 		this.team = team;
 	}
 
-	public SearchTeamActivity getActivity()
+	public TeamResultActivity getActivity()
 	{
 		return activity;
 	}

@@ -2,6 +2,7 @@ package ru.mmb.datacollector.converter.engine;
 
 import java.util.Date;
 
+import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.RawTeamLevelPoints;
 import ru.mmb.datacollector.model.Team;
@@ -70,6 +71,7 @@ public class RawDataTuple {
 		int scanPointId = rawLoggerData.getScanPointId();
 		String takenCheckpointNames = rawTeamLevelPoints != null ? rawTeamLevelPoints.getTakenCheckpointNames() : "";
 		Date checkedDateTime = rawLoggerData.getRecordDateTime();
+		checkedDateTime = substituteForCommonStart(checkedDateTime, team);
 		Date recordDateTime = rawTeamLevelPoints != null ? rawTeamLevelPoints.getRecordDateTime() : rawLoggerData
 				.getRecordDateTime();
 		TeamLevelPoints result = new TeamLevelPoints(teamId, userId, deviceId, scanPointId, takenCheckpointNames,
@@ -78,5 +80,14 @@ public class RawDataTuple {
 		result.setScanPoint(rawLoggerData.getScanPoint());
 		result.setTeam(team);
 		return result;
+	}
+
+	private Date substituteForCommonStart(Date checkedDateTime, Team team) {
+		LevelPoint levelPoint = rawLoggerData.getScanPoint().getLevelPointByDistance(team.getDistanceId());
+		if (levelPoint.isCommonStart()) {
+			return levelPoint.getLevelPointMinDateTime();
+		} else {
+			return checkedDateTime;
+		}
 	}
 }

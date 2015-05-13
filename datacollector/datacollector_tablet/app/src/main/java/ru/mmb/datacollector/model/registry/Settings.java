@@ -148,6 +148,10 @@ public class Settings {
         return getMMBPathFromDBFile();
     }
 
+    public String getDatalogDir() {
+        return getMMBPathFromDBFile() + "/datalog";
+    }
+
     public int getDeviceId() {
         return getIntSetting(DEVICE_ID);
     }

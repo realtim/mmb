@@ -21,7 +21,7 @@ public class Importer
 {
 	public static final String TABLE_BAR_CODE_SCANS = "BarCodeScans";
 
-	private static final int ROWS_IN_BATCH = 200;
+	public static final int ROWS_IN_BATCH = 200;
 
 	private final ImportState importState;
 	private final ScanPoint scanPoint;
@@ -112,17 +112,17 @@ public class Importer
 	private void importTableRows(DataSaver dataSaver, JSONArray tableRows) throws JSONException
 	{
 		dataSaver.beginTransaction();
-		Log.d("data saver", "started first transaction");
+		Log.d("DATA_SAVER", "started first transaction");
 		for (int j = 0; j < tableRows.length(); j++)
 		{
 			if (needSaveBatch(j))
 			{
 				dataSaver.setTransactionSuccessful();
 				dataSaver.endTransaction();
-				Log.d("data saver", "records batch commited");
+				Log.d("DATA_SAVER", "records batch commited");
 
 				dataSaver.beginTransaction();
-				Log.d("data saver", "started transaction");
+				Log.d("DATA_SAVER", "started transaction");
 			}
 			if (importState.isTerminated()) break;
 			try
@@ -139,7 +139,7 @@ public class Importer
 		}
 		dataSaver.setTransactionSuccessful();
 		dataSaver.endTransaction();
-		Log.d("data saver", "remaining records batch commited");
+		Log.d("DATA_SAVER", "remaining records batch commited");
 	}
 
 	private boolean needSaveBatch(int j)

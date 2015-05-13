@@ -1,15 +1,16 @@
-package ru.mmb.datacollector.activity.report.team.search;
+package ru.mmb.datacollector.activity.report.team.result;
 
-import java.util.List;
-
-import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.activity.report.team.search.model.TeamListRecord;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
+
+import java.util.List;
+
+import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.activity.report.team.result.model.TeamListRecord;
 
 public class TeamsAdapter extends ArrayAdapter<TeamListRecord>
 {

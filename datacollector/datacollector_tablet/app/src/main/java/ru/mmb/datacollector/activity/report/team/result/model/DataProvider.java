@@ -1,9 +1,9 @@
-package ru.mmb.datacollector.activity.report.team.search.model;
+package ru.mmb.datacollector.activity.report.team.result.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.mmb.datacollector.activity.report.team.search.SortColumn;
+import ru.mmb.datacollector.activity.report.team.result.SortColumn;
 import ru.mmb.datacollector.model.Participant;
 import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;

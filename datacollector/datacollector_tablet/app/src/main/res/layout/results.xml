@@ -6,7 +6,7 @@
     android:paddingBottom="@dimen/global_padding"
     android:paddingLeft="@dimen/global_padding"
     android:paddingRight="@dimen/global_padding"
-    android:paddingTop="@dimen/global_padding" >
+    android:paddingTop="@dimen/global_double_padding" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,10 +15,18 @@
         android:orientation="vertical" >
 
         <Button
+            android:id="@+id/results_searchTeamOnPoint"
+            android:layout_width="@dimen/main_button_width"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/results_search_team_on_point" />
+
+        <Button
             android:id="@+id/results_showTeamReport"
             android:layout_width="@dimen/main_button_width"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/global_double_padding"
             android:text="@string/results_team_report" />
 
         <Button
@@ -26,7 +34,7 @@
             android:layout_width="@dimen/main_button_width"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/global_padding"
+            android:layout_marginTop="@dimen/global_double_padding"
             android:text="@string/results_group_report" />
     </LinearLayout>
 

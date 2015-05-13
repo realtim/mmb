@@ -130,6 +130,7 @@ public class ActivityStateWithTeamAndScanPoint extends CurrentState
 			case Constants.REQUEST_CODE_INPUT_HISTORY_ACTIVITY:
 			case Constants.REQUEST_CODE_INPUT_DATA_ACTIVITY:
 			case Constants.REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY:
+			case Constants.REQUEST_CODE_TEAM_SEARCH_ACTIVITY:
 				if (getCurrentScanPoint() != null)
 				    intent.putExtra(KEY_CURRENT_SCAN_POINT, getCurrentScanPoint());
 				if (getCurrentTeam() != null) intent.putExtra(KEY_CURRENT_TEAM, getCurrentTeam());

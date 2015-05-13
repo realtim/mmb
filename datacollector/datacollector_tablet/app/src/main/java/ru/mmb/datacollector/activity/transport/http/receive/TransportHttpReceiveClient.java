@@ -18,6 +18,8 @@ import ru.mmb.datacollector.transport.importer.ImportState;
 import ru.mmb.datacollector.transport.importer.Importer;
 
 public class TransportHttpReceiveClient extends TransportHttpClient {
+    private ImportProgressThread importProgressThread = null;
+
     public TransportHttpReceiveClient(Handler handler) {
         super(handler);
     }
@@ -44,7 +46,13 @@ public class TransportHttpReceiveClient extends TransportHttpClient {
         if (receivedData != null) {
             writeToConsole("receiveData chars arrived: " + receivedData.length());
             String jsonString = decodeReceivedData(receivedData);
-            new Importer(new ImportState(), null).importPackageFromJsonObject(new JSONObject(jsonString));
+            ImportState importState = new ImportState();
+            startImportListenerThread(importState);
+            try {
+                new Importer(importState, null).importPackageFromJsonObject(new JSONObject(jsonString));
+            } finally {
+                stopImportListenerThread();
+            }
             writeToConsole("receiveData data imported");
         }
     }
@@ -67,5 +75,55 @@ public class TransportHttpReceiveClient extends TransportHttpClient {
             zipInput.close();
         }
         return result;
+    }
+
+    private void startImportListenerThread(ImportState importState) {
+        importProgressThread = new ImportProgressThread(importState);
+        importProgressThread.start();
+    }
+
+    private void stopImportListenerThread() {
+        if (importProgressThread != null) {
+            importProgressThread.setTerminated(true);
+            importProgressThread.interrupt();
+            importProgressThread = null;
+        }
+    }
+
+    private class ImportProgressThread extends Thread {
+        private final ImportState importState;
+
+        private volatile boolean terminated = false;
+
+        public ImportProgressThread(ImportState importState) {
+            super();
+            this.importState = importState;
+        }
+
+        private synchronized void setTerminated(boolean value) {
+            this.terminated = value;
+        }
+
+        @Override
+        public void run() {
+            while (!terminated) {
+                writeImportStateToConsole();
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+
+        private void writeImportStateToConsole() {
+            // when package is parsed on import start no table is selected yet
+            if (importState.getCurrentTable() == null) {
+                return;
+            }
+            String message =
+                    importState.getCurrentTable() + " " + importState.getRowsProcessed() + "/" +
+                    importState.getTotalRows();
+            writeToConsole(message);
+        }
     }
 }

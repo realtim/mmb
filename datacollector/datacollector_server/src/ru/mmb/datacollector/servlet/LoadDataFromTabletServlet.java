@@ -1,5 +1,6 @@
 package ru.mmb.datacollector.servlet;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
@@ -17,8 +18,6 @@ import org.apache.logging.log4j.Logger;
 import ru.mmb.datacollector.converter.DataConverter;
 import ru.mmb.datacollector.transport.importer.ImportState;
 import ru.mmb.datacollector.transport.importer.Importer;
-
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 
 /**
  * Servlet implementation class LoadDataFromTabletServlet
@@ -60,7 +59,7 @@ public class LoadDataFromTabletServlet extends HttpServlet {
 	private String decodeJsonPackage(String data) throws IOException {
 		String result = null;
 		byte[] decodedZip = Base64.decodeBase64(data);
-		GZIPInputStream zipInput = new GZIPInputStream(new ByteInputStream(decodedZip, decodedZip.length));
+		GZIPInputStream zipInput = new GZIPInputStream(new ByteArrayInputStream(decodedZip));
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			byte[] buffer = new byte[4096];

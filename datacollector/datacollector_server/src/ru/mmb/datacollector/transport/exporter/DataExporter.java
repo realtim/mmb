@@ -27,12 +27,12 @@ public class DataExporter {
 		this.exportFormat = exportFormat;
 	}
 
-	public ExportResult exportData() throws Exception {
+	public ExportResult exportData(boolean exportWithRaw) throws Exception {
 		String fileName = generateFileName();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		writer = new BufferedWriter(new OutputStreamWriter(baos, "UTF8"));
 		try {
-			createExportDataMethod().exportData();
+			createExportDataMethod().exportData(exportWithRaw);
 		} finally {
 			writer.close();
 		}

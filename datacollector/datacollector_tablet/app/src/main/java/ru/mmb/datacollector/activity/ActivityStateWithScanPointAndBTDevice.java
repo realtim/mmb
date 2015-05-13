@@ -156,6 +156,7 @@ public class ActivityStateWithScanPointAndBTDevice extends CurrentState {
             case Constants.REQUEST_CODE_BLUETOOTH_DEVICE_SELECT_ACTIVITY:
             case Constants.REQUEST_CODE_INPUT_BCLOGGER_SETTINGS_ACTIVITY:
             case Constants.REQUEST_CODE_INPUT_BCLOGGER_DATALOAD_ACTIVITY:
+            case Constants.REQUEST_CODE_INPUT_BCLOGGER_FILEIMPORT_ACTIVITY:
                 if (getCurrentScanPoint() != null)
                     intent.putExtra(KEY_CURRENT_SCAN_POINT, getCurrentScanPoint());
                 if (getCurrentDeviceInfo() != null)

@@ -1,9 +1,8 @@
 package ru.mmb.datacollector.activity.input.bclogger.dataload;
 
 import android.app.Activity;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.os.*;
+import android.os.Process;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -83,6 +82,7 @@ public class LoggerDataLoadActivity extends Activity {
             runningThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                     bluetoothClient.loadLogData();
                 }
             });

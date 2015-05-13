@@ -14,23 +14,48 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:gravity="right">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="@string/report_team_search_teams_count" />
+
+            <TextView
+                android:id="@+id/teamSearch_teamsCountTextView"
+                android:layout_width="50dip"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="@dimen/global_padding"
+                android:gravity="right"
+                android:textAlignment="gravity"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="25" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/global_padding">
 
             <Button
-                android:id="@+id/reportTeam_filterClearButton"
+                android:id="@+id/teamSearch_filterClearButton"
                 android:layout_width="100dip"
                 android:layout_height="wrap_content"
                 android:text="@string/report_team_filter_clear" />
 
             <Button
-                android:id="@+id/reportTeam_filterHideButton"
+                android:id="@+id/teamSearch_filterHideButton"
                 android:layout_width="120dip"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/global_padding"
                 android:text="@string/report_team_filter_hide" />
 
             <TextView
-                android:id="@+id/reportTeam_filterStatusTextView"
+                android:id="@+id/teamSearch_filterStatusTextView"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -45,7 +70,7 @@
             android:orientation="vertical" >
 
             <LinearLayout
-                android:id="@+id/reportTeam_filterNumberPanel"
+                android:id="@+id/teamSearch_filterNumberPanel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/global_padding" >
@@ -56,7 +81,7 @@
                     android:text="@string/report_team_filter_number" />
 
                 <ru.mmb.datacollector.widget.EditTextWithSoftKeyboardSupport
-                    android:id="@+id/reportTeam_filterNumberEdit"
+                    android:id="@+id/teamSearch_filterNumberEdit"
                     android:layout_width="100dip"
                     android:layout_height="wrap_content"
                     android:imeOptions="actionDone|flagNoEnterAction"
@@ -64,7 +89,7 @@
                     android:maxLength="4" />
 
                 <CheckBox
-                    android:id="@+id/reportTeam_filterNumberExactCheck"
+                    android:id="@+id/teamSearch_filterNumberExactCheck"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/global_padding"
@@ -72,7 +97,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/reportTeam_filterTeamAndMemberPanel"
+                android:id="@+id/teamSearch_filterTeamAndMemberPanel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/global_padding" >
@@ -83,7 +108,7 @@
                     android:text="@string/report_team_filter_team" />
 
                 <ru.mmb.datacollector.widget.EditTextWithSoftKeyboardSupport
-                    android:id="@+id/reportTeam_filterTeamEdit"
+                    android:id="@+id/teamSearch_filterTeamEdit"
                     android:layout_width="0dip"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -97,7 +122,7 @@
                     android:text="@string/report_team_filter_member" />
 
                 <ru.mmb.datacollector.widget.EditTextWithSoftKeyboardSupport
-                    android:id="@+id/reportTeam_filterMemberEdit"
+                    android:id="@+id/teamSearch_filterMemberEdit"
                     android:layout_width="0dip"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -112,49 +137,52 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/global_padding" >
 
-        <Button
-            android:id="@+id/reportTeam_sortByNumberButton"
+        <TextView
+            android:id="@+id/teamSearch_arrivalColumnTextView"
             android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="15"
-            android:gravity="left|center_vertical"
-            android:text="@string/report_team_sort_num" />
+            android:layout_height="?android:attr/listPreferredItemHeight"
+            android:layout_weight="20"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="@string/report_team_search_arrival_column"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/primary_text_dark" />
 
-        <Button
-            android:id="@+id/reportTeam_sortByTeamButton"
+        <TextView
+            android:id="@+id/teamSearch_teamNumColumnTextView"
             android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="45"
-            android:text="@string/report_team_sort_team" />
+            android:layout_height="?android:attr/listPreferredItemHeight"
+            android:layout_weight="10"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="@string/report_team_search_team_num_column"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/primary_text_dark" />
 
-        <Button
-            android:id="@+id/reportTeam_sortByMemberButton"
+        <TextView
+            android:id="@+id/teamSearch_teamNameColumnTextView"
             android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="40"
-            android:text="@string/report_team_sort_member" />
+            android:layout_height="?android:attr/listPreferredItemHeight"
+            android:layout_weight="35"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="@string/report_team_search_team_name_column"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/primary_text_dark" />
+
+        <TextView
+            android:id="@+id/teamSearch_teamMembersColumnTextView"
+            android:layout_width="0dip"
+            android:layout_height="?android:attr/listPreferredItemHeight"
+            android:layout_weight="35"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="@string/report_team_search_team_members_column"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/primary_text_dark" />
     </LinearLayout>
 
     <ListView
-        android:id="@+id/reportTeam_teamsList"
+        android:id="@+id/teamSearch_teamsList"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:choiceMode="singleChoice" >
     </ListView>
-
-    <LinearLayout
-        android:id="@+id/reportTeam_progressPanel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="@dimen/global_padding"
-        android:layout_marginTop="@dimen/global_padding" >
-
-        <ProgressBar
-            android:id="@+id/reportTeam_resultWaitingProgress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
 </LinearLayout>

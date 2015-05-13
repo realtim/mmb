@@ -1,4 +1,4 @@
-package ru.mmb.datacollector.activity.report.team.search;
+package ru.mmb.datacollector.activity.report.team.result;
 
 public enum SortColumn
 {

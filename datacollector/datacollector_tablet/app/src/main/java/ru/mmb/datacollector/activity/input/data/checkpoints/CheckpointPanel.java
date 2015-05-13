@@ -87,7 +87,8 @@ public class CheckpointPanel
 	private void buildSeparatorRow(TableRow tableRow)
 	{
 		TextView dummyText = new TextView(inputDataActivity);
-		dummyText.setText("");
+		dummyText.setText(" ");
+        dummyText.setMinHeight(35);
 		tableRow.addView(dummyText);
 	}
 
