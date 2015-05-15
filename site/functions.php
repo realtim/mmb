@@ -28,8 +28,9 @@ if (!isset($MyPHPScript)) return;
 	    return -1; 
 	 }
 
+//  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
 	 //  устанавливаем временную зону
-	 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);  
+//	 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);  
 	 //  устанавливаем кодировку для взаимодействия
 	 mysql_query('set names \'utf8\'', $ConnectionId);  
          // Выбираем БД ММБ
