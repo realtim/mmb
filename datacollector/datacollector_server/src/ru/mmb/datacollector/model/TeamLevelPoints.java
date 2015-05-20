@@ -57,8 +57,8 @@ public class TeamLevelPoints {
 
 	public boolean isCheckDateTimeInMinMaxInterval() {
 		LevelPoint levelPoint = scanPoint.getLevelPointByDistance(team.getDistanceId());
-		return levelPoint.getLevelPointMinDateTime().before(checkDateTime)
-				&& levelPoint.getLevelPointMaxDateTime().after(checkDateTime);
+		return levelPoint.getLevelPointMinDateTime().getTime() <= checkDateTime.getTime()
+				&& levelPoint.getLevelPointMaxDateTime().getTime() >= checkDateTime.getTime();
 	}
 
 	public Team getTeam() {
