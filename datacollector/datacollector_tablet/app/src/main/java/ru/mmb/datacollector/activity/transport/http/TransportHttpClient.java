@@ -109,8 +109,8 @@ public abstract class TransportHttpClient {
     protected HttpsURLConnection prepareConnectionForGet(URL url) throws Exception {
         HttpsURLConnection result = (HttpsURLConnection) url.openConnection();
         result.setSSLSocketFactory(sslContext.getSocketFactory());
-        result.setReadTimeout(15000);
-        result.setConnectTimeout(30000);
+        result.setReadTimeout(30000);
+        result.setConnectTimeout(15000);
         result.setRequestMethod("GET");
         return result;
     }
@@ -118,8 +118,8 @@ public abstract class TransportHttpClient {
     protected HttpsURLConnection prepareConnectionForFormPost(URL url, int contentLength) throws Exception {
         HttpsURLConnection result = (HttpsURLConnection) url.openConnection();
         result.setSSLSocketFactory(sslContext.getSocketFactory());
-        result.setReadTimeout(15000);
-        result.setConnectTimeout(30000);
+        result.setReadTimeout(30000);
+        result.setConnectTimeout(15000);
         result.setRequestMethod("POST");
         result.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         result.setRequestProperty("Content-Length", Integer.toString(contentLength));
