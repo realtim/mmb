@@ -112,7 +112,7 @@ if (!isset($MyPHPScript)) return;
    // Удаляем закрытые сессии
   function ClearSessions() {
          // права на  delete у пользователя есть только на  таблицу Sessions
-       $Result = MySqlQuery("delete from Sessions where session_status = 1");
+       $Result = MySqlQuery("delete from Sessions where session_status = 1 or session_status = 3");
       return;
   }
 
