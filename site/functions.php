@@ -130,7 +130,7 @@ if (!isset($MyPHPScript)) return;
       CloseInactiveSessions(20);
 
       // Очищаем таблицу
-   //   ClearSessions();
+      ClearSessions();
   //   echo $SessionId;
       $Result = MySqlQuery("select user_id, connection_id, session_updatetime, session_starttime
                             from   Sessions 
@@ -1435,6 +1435,200 @@ send_mime_mail('Автор письма',
        return($NotStart);
      }
      //Конец статуса неявки на старт в прошлй раз
+   // Генерация точек КП в TeamLevelPoint по строчке teamlevelpoin_points
+     // для данной $teamlevelpointid
+     
+     function GenerateTeamLevelPointsFromString($teamlevelpointid)
+     {
+
+
+	$sql = " select tlp.teamlevelpoint_points, tlp.levelpoint_id, tlp.team_id
+	         from TeamLevelPoints tlp
+	         where tlp.teamlevelpoint_id = ".$teamlevelpointid;
+
+
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$LevelPointsString = trim($Row['teamlevelpoint_points']);
+	$LevelPointId = $Row['levelpoint_id'];
+	$TeamId = $Row['team_id'];
+	mysql_free_result($Result);
+	
+	
+	if ( $LevelPointsString == '' or empty($LevelPointId)) {
+
+	 return;
+
+	}
+
+        $LevelPointsArr = explode(',', $LevelPointsString);
+
+        // Теперь получаем список точек дистанции на основании текущей точки
+        
+	$sql = " select lp1.levelpoint_id, lp1.levelpoint_order 
+	         from LevelPoints lp1
+		       inner join LevelPoints lp2
+		       on lp1.level_id = lp2.level_id
+	         where lp2.levelpoint_id = ".$LevelPointId."
+		       and lp1.pointtype_id in (3,5)
+		 order  by lp1.levelpoint_order ASC";
+
+      //  echo $sql;
+	$Result = MySqlQuery($sql);
+	$i=0;
+	
+	// ================ Цикл обработки контрольных точек этапа
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+		$i++;
+		$NowLevelPointOrder = $Row['levelpoint_order'];
+		$NowLevelPointId = $Row['levelpoint_id'];
+		
+		$sqltlp = " select tlp.teamlevelpoint_id
+			 from TeamLevelPoints tlp
+			 where tlp.team_id = ".$TeamId." and tlp.levelpoint_id = ".$NowLevelPointId;
+
+
+		$ResultTlp = MySqlQuery($sqltlp);
+		$RowTlp = mysql_fetch_assoc($ResultTlp);
+		$TlpExists = $RowTlp['teamlevelpoint_id'];
+		mysql_free_result($ResultTlp);
+		
+		
+		// Вставляем КП в список, если стоит 1
+		if ((int)$LevelPointsArr[$i-1] == 1 and empty($TlpExists)) {
+	
+			$sqltlp = " insert into TeamLevelPoints(device_id, levelpoint_id, team_id)
+			         values(1, ".$NowLevelPointId.", ".$TeamId.")";
+
+
+			$ResultTlp = MySqlQuery($sqltlp);
+				
+		}
+		
+         }
+	// Конец цикла по контрольным точкам этапа
+
+	mysql_free_result($Result);
+		    
+       return;
+     }
+     //Конец генерации точек по строке 
+     
+     
+     // Генерация доп. точек для ММБ по существующим
+     function GenerateAdditionLevelPointsForRaid($raidid)
+     {
+
+
+	$Sql = "select teamlevelpoint_id 
+	        from TeamLevelPoints tlp
+		     inner join LevelPoints lp
+		     on lp.levelpoint_id = tlp.levelpoint_id
+		     inner join Distances d
+		     on lp.distance_id = d.distance_id
+	        where d.raid_id = ".$raidid."
+                     and TRIM(COALESCE(tlp.teamlevelpoint_points, '')) <> ''
+                     and TRIM(COALESCE(tlp.teamlevelpoint_points, '')) <> 'NULL'
+	       ";
+
+//     LIMIT 0,300";
+	  
+	       
+	$Result2 = MySqlQuery($Sql);  
+
+        while ($Row2 = mysql_fetch_assoc($Result2))
+        {
+                   
+          set_time_limit(10);
+    	  $TeamLevelPointId2 = $Row2['teamlevelpoint_id'];
+	 // print($TeamLevelPointId."\r\n");
+	  	  
+	  GenerateTeamLevelPointsFromString($TeamLevelPointId2);
+        }
+        mysql_free_result($Result2);
+   
+     set_time_limit(30);
+
+     return;
+     }
+     //Конец генерации точек для ММБ 
+     
+     
+     // функция пересчитывает результат команды по точкам
+     function RecalcTeamLevelPointsResult($teamid)
+     {
+
+        // Считаем длительность для каждой точки, по которой есть данные
+        //  прогрессом команды является максимальная по номеру взятая точка со временем
+        // с амнистией может быть проблема, если интервал будет пересекаться с токой замера времени
+	
+ 
+	$sql = " select COALESCE(tlp.teamlevelpoint_datetime, lp.levelpoint_mindatetime) as teamlevelpoint_datetime, 
+	                tlp.teamlevelpoint_id,
+			lp.pointtype_id  
+		 from TeamLevelPoints tlp 
+		      inner join LevelPoints lp 
+		      on tlp.levelpoint_id = lp.levelpoint_id
+		 where tlp.team_id = ".$teamid."
+		       and (tlp.teamlevelpoint_datetime is not null 
+		            or (lp.pointtype_id = 1 and lp.levelpoint_mindatetime = lp.levelpoint_maxdatetime)) 
+		 order by lp.levelpoint_order ASC ";
+
+
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+        $PredDateTime = 0; 
+        $TeamDuration = 0; 
+
+        while ($Row = mysql_fetch_assoc($Result))
+        {
+                   
+          $TeamLevelPointDT = $Row['teamlevelpoint_datetime'];
+	  $TeamLevelPointId = $Row['teamlevelpoint_id'];
+	  $PointTypeId = $Row['pointtype_id'];
+     
+          if (!empty($PredDateTime) and $PointTypeId <> 1) {
+	     $Duration = date_diff($PredDateTime, $TeamLevelPointDT);
+	     
+	     if (!empty($Duration)) {
+	     
+	       // Пишем для данной точки
+	      
+	       $TeamDuration = $TeamDuration + $Duration;
+	      
+		$sqlupd = "UPDATE TeamLevelPoints 
+		           WHERE teamlevelelpoint_id = ".$TeamLevelPointId.
+			  "SET teamlevelpoint_duration = ".$Duration; 
+        	$ResultUpd = MySqlQuery($sqlpd);
+	        mysql_free_result($ResultUpd);
+      
+	     
+	     }
+	  
+	  }
+     
+         
+	  $PredDateTime = $TeamLevelPointDT;
+           
+	  	  
+        }
+        mysql_free_result($Result);
+
+        // Обновляем общие данные по команде
+	
+		$sqlupd = "UPDATE Teams
+		           WHERE team_id = ".$teamid.
+			  "SET team_duration = ".$TeamDuration; 
+        	$ResultUpd = MySqlQuery($sqlpd);
+	        mysql_free_result($ResultUpd);
+      
+	
+     }
+     // конец функции пересчёта данных по команде по точкам 
+
+          
+     
      
 
 ?>
