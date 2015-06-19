@@ -34,7 +34,7 @@ print('</br>'."\n");
 		{
                      print('<tr>'."\r\n");
 			     print('<td align = "left" style = "'.$tdstyle.'">');
-			     print('&nbsp; <img src = "'.trim($MyStoreHttpLink).trim($Row['raidfile_name']).'">'."\n");
+			     print('&nbsp; <img src = "'.trim($MyStoreHttpLink).trim($Row['raidfile_name']).'"  height = "512" wight = "512">'."\n");
 			     print('</td>'."\r\n");
                      print('</tr>'."\r\n");
 		}	
