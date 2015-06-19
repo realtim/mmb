@@ -1188,6 +1188,7 @@ elseif ($action == 'AddLevelPoint')
                 $pLevelPointMaxTime = $_POST['MaxTime'];
 
 		$pScanPointId = $_POST['ScanPointId'];
+		$pLevelId = $_POST['LevelId'];
 
          // тут по-хорошему нужны проверки
 
@@ -1241,9 +1242,9 @@ elseif ($action == 'AddLevelPoint')
 	     
 		$sql = "insert into LevelPoints (distance_id, levelpoint_name, pointtype_id, 
 			levelpoint_penalty, levelpoint_order, levelpoint_hide, 
-			levelpoint_mindatetime, levelpoint_maxdatetime, scanpoint_id)
+			levelpoint_mindatetime, levelpoint_maxdatetime, scanpoint_id, level_id)
 			values (".$pDistanceId.", '".$pPointName."', ".$pPointTypeId.",
-			        ".$pPointPenalty." , ".($LastOrder + 1).", 0, ".$MinYDTs.", ".$MaxYDTs.", ".$pScanPointId.")";
+			        ".$pPointPenalty." , ".($LastOrder + 1).", 0, ".$MinYDTs.", ".$MaxYDTs.", ".$pScanPointId.", ".$pLevelId.")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$LevelPointId = MySqlQuery($sql);
 		
@@ -1324,6 +1325,7 @@ elseif ($action == 'LevelPointChange')
                 $pLevelPointMaxTime = $_POST['MaxTime'];
 
 		$pScanPointId = $_POST['ScanPointId'];
+		$pLevelId = $_POST['LevelId'];
 
         // тут надо поставить проверки
       // год всегда пишем текущий. если надо - можно добавить поле для года
@@ -1359,6 +1361,7 @@ elseif ($action == 'LevelPointChange')
 
 		
         $sql = "update LevelPoints  set pointtype_id = ".$pPointTypeId." 
+	                                ,level_id = '".$pLevelId."'
 	                                ,scanpoint_id = '".$pScanPointId."'
 	                                ,levelpoint_name = '".$pPointName."'
 	                                ,levelpoint_penalty = ".$pPointPenalty."
@@ -1412,9 +1415,12 @@ elseif ($action == 'HideLevelPoint')
 		$LevelOrder = $Row['levelpoint_order'];
 
 
+        //  19.06.2015 ПРобуем удалить точку физически
+
+        $sql = "delete from LevelPoints where levelpoint_id = ".$pLevelPointId;        
        
-        $sql = "update LevelPoints set levelpoint_hide = 1, levelpoint_order = 0 
-	        where levelpoint_id = ".$pLevelPointId;        
+//        $sql = "update LevelPoints set levelpoint_hide = 1, levelpoint_order = 0 
+//	        where levelpoint_id = ".$pLevelPointId;        
 			
 	 MySqlQuery($sql);
 
