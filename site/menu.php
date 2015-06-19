@@ -291,6 +291,20 @@ if (!isset($MyPHPScript)) return;
 	}
 
 
+	function ViewRaidsUsersLinksPage()
+	{ 
+		document.FindTeamForm.action.value = "ViewUsersLinksPage";
+		document.FindTeamForm.submit();
+	}
+
+	function ViewAllRaidsBadgesPage()
+	{ 
+		document.FindTeamForm.action.value = "ViewAllBadgesPage";
+		document.FindTeamForm.submit();
+	}
+
+
+
 </script>
 
 <?php
@@ -354,8 +368,9 @@ if (!isset($MyPHPScript)) return;
 	 
 
 
+          // Не показываем, т.к. некрасиво смотрится и не очень интересно
         // Точки показываем только после финиша
-	if ($Administrator || $Moderator || $RaidStage >= 5)
+	if ($Administrator || $Moderator)
         {
 	  print('<tr><td><a href = "javascript:ViewLevelPoints();" title = "Список точек (КП) для выбранного выше ММБ">Точки (КП)</a></td></tr>'."\r\n"); 
         }
@@ -368,7 +383,8 @@ if (!isset($MyPHPScript)) return;
 
 
         // Файлы
-        print('<tr><td><a href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Файлы</a></td></tr>'."\r\n"); 
+        print('<tr><td><a href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Материалы</a></td></tr>'."\r\n"); 
+    
 
 
 
@@ -391,6 +407,14 @@ if (!isset($MyPHPScript)) return;
 	{
 	    print('<tr><td><a href = "javascript:ViewUserUnionPage();" title = "Страница администрирования объединения пользователей">Связь пользователей</a></td></tr>'."\r\n"); 
         }
+
+
+        // Впечатления
+        print('<tr><td><a href = "javascript:ViewRaidsUsersLinksPage();" title = "Список впечатлений для выбранного выше ММБ">Впечатления</a></td></tr>'."\r\n"); 
+
+        // Все значки
+        print('<tr><td><a href = "javascript:ViewAllRaidsBadgesPage();" title = "Значки для всех ММБ">Все значки</a></td></tr>'."\r\n"); 
+
 
         print('<tr><td><a href = "javascript:ViewRankPage();" title = "Страница рейтинга пользователей">Рейтинг</a></td></tr>'."\r\n"); 
         
@@ -461,9 +485,9 @@ if (!isset($MyPHPScript)) return;
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 	print('<tr><td><a href="http://www.livejournal.com/community/_mmb_" target = "_blank">ЖЖ</a></td></tr>'."\r\n"); 
 	print('<tr><td><a href="http://slazav.mccme.ru/maps/" target = "_blank">Карты</a></td></tr>'."\r\n"); 
-	print('<tr><td><a href="'.$MyLocation.'vp.php" target = "_blank">Впечатления</a></td></tr>'."\r\n"); 
-	print('<tr><td><a href="http://mmb.progressor.ru/icons.html" target = "_blank">Значки</a></td></tr>'."\r\n"); 
-	print('<tr><td> <a href="http://slazav.mccme.ru/mmb/" target = "_blank">Архив</a></td></tr>'."\r\n"); 
+	print('<tr><td><a href="'.$MyLocation.'vp_old.html" target = "_blank">Архив впечатлений</a></td></tr>'."\r\n"); 
+	//print('<tr><td><a href="http://mmb.progressor.ru/icons.html" target = "_blank">Значки</a></td></tr>'."\r\n"); 
+	print('<tr><td> <a href="http://slazav.mccme.ru/mmb/" target = "_blank">Архив сайта</a></td></tr>'."\r\n"); 
 	print('</table>'."\r\n");
 
 	print('</br>'."\r\n");

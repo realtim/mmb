@@ -2062,6 +2062,29 @@ elseif ($action == 'RecalculateLevels')
 	 
 	
 }
+// ============ Впечатления  =============
+elseif ($action == 'ViewUsersLinksPage')
+{
+	if ($RaidId <= 0)
+	{
+		$statustext = 'Id ММБ не указан';
+		$alert = 1;
+		return;
+	}
+	
+//       	print '2';
+	$view = "ViewUsersLinks";
+	$viewmode = "";
+}
+// ============ Значки  =============
+elseif ($action == 'ViewAllBadgesPage')
+{
+	
+  //     	print '1';
+	$view = "ViewAllBadges";
+	$viewmode = "";
+}
+
 // ============ Никаких действий не требуется =================================
 else
 {

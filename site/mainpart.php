@@ -53,6 +53,12 @@ if (!isset($MyPHPScript)) return;
 	} elseif ($view == "ViewRankPage") {
 		// Рейтинг
 		include("viewrankpage.php");
+	} elseif ($view == "ViewAllBadges") {
+		// Все значки
+		include("viewallbadges.php");
+	} elseif ($view == "ViewUsersLinks") {
+		// Впечатления
+		include("viewuserslinks.php");
 	}
 
 	// Очищаем переменную
