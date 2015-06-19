@@ -328,7 +328,9 @@ if (!isset($MyPHPScript)) return;
                 mysql_free_result($Result);
 	print('</select>'."\r\n");  
 	print('</td></tr>'."\r\n");
-	if (CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
+ 
+        // 19/06/2015 Пользователь должен быть авторизован и иметь права
+	if ($UserId && CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
 		print('<tr><td><a href = "javascript:NewTeam();" title = "Переход к форме регистрации новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n"); 
 	}
