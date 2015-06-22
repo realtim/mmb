@@ -336,6 +336,10 @@ print('GPS <input type="checkbox" name="TeamUseGPS" value="on"'.(($TeamUseGPS ==
 // ============ Число карт
 print('&nbsp; Число карт <input type="text" name="TeamMapsCount" size="2" maxlength="2" value="'.$TeamMapsCount.'" tabindex="'.(++$TabIndex).'"'
 	.$OnClickText.$DisabledText.' title="Число заказанных на команду карт на каждый из этапов"> &nbsp;'."\n");
+
+// ============ расчет стоимости
+print('&nbsp; К оплате: <b>'.CalcualteTeamPayment($TeamId).'</b> руб. &nbsp;'."\n");
+
 print('</td></tr>'."\n\n");
 
 // ============ Нет сломанным унитазам!

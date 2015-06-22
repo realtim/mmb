@@ -1377,13 +1377,13 @@ send_mime_mail('Автор письма',
      // конец функции получения вклада в рейтинг
 
 
-     // Проверка неявки на старт в прошлое участие
-     function CheckNotStart($userid, $raidid)
+      // Получить предыдущий ММБ (по отношению к заданному), когда пользователь регистрировался
+     function GetPredRaidForUser($userid, $raidid)
      {
 
-        $NotStart = 0;     
         $PredRaidId = 0;
 
+         // Находим предыдущий марш-бросок (по отношению к заданному), когда пользователь регистрировался
 	$sql = " select d.raid_id
 	         from TeamUsers tu
 		       inner join Teams t
@@ -1396,19 +1396,24 @@ send_mime_mail('Автор письма',
 		       and tu.teamuser_hide = 0 
 		 order  by d.raid_id DESC
 		 LIMIT 0,1";
-/*
-	$sql = " select r.raid_id 
-	         from Raids r
-	         where r.raid_id < ".$raidid."
-		 order  by raid_id DESC
-		 LIMIT 0,1";
-*/				 
 	$Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
 	$PredRaidId = $Row['raid_id'];
 	mysql_free_result($Result);
 	
-	if ($PredRaidId > 0) {
+       return($PredRaidId);
+     }
+     //Конец получения предыдущго ММБ
+
+     // Проверка неявки на старт в прошлое участие
+     function CheckNotStart($userid, $raidid)
+     {
+
+        $NotStart = 0;     
+        $PredRaidId = GetPredRaidForUser($userid, $raidid);
+	
+	// Проверяем  что участник не явился на старт
+	if ($PredRaidId) {
 
 		$sql = " select count(*) as result
 		         from TeamUsers tu
@@ -1430,12 +1435,90 @@ send_mime_mail('Автор письма',
 		mysql_free_result($Result);
 
 	}
-	 // Конец проверки, что это не первый ММБ
+	 // Конец проверки, что участник не явился
+
+        // Если явился сбрасываем ММБ
+	if ($NotStart == 0) {
+	 $PredRaidId = 0;
+	} 
 		    
-       return($NotStart);
+       return($PredRaidId);
      }
      //Конец статуса неявки на старт в прошлй раз
-   // Генерация точек КП в TeamLevelPoint по строчке teamlevelpoin_points
+
+     // Расчет стоимости участия
+     function CalcualteTeamPayment($teamid)
+     {
+
+        $TeamMapPayment = 0;
+	$sql = " select t.team_mapscount * r.raid_mapprice as mappayment
+	         from  Teams t
+		       inner join Distances d
+		       on t.distance_id = d.distance_id
+		       inner join Raids r
+		       on d.raid_id = r.raid_id
+	         where t.team_id = ".$teamid."
+		       and t.team_hide = 0
+		 LIMIT 0,1";
+
+
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$TeamMapPayment = $Row['mappayment'];
+	mysql_free_result($Result);
+  
+
+	$sql = " select d.raid_id, tu.user_id
+	         from TeamUsers tu
+		       inner join Teams t
+		       on t.team_id = tu.team_id
+		       inner join Distances d
+		       on t.distance_id = d.distance_id
+		       inner join Raids r
+		       on d.raid_id = r.raid_id
+	         where t.team_id = ".$teamid."
+		       and t.team_hide = 0
+		       and tu.teamuser_hide = 0 ";
+
+	$Result = MySqlQuery($sql);
+
+
+        $TeamUsersNoStartPayment = 0;
+	// ================ Цикл обработки участников
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+
+           $PredRaidId =  CheckNotStart($Row['user_id'], $Row['raid_id']);
+
+	   if ($PredRaidId) {
+
+	     $UserNoStartPayment = 0;
+	     $sqlUser =   " select r.raid_nostartprice as usernostartpayment
+	                from  Raids r
+		        where r.raid_id = ".$PredRaidId."
+			LIMIT 0,1";
+	     $ResultUser = MySqlQuery($sqlUser);
+	     $RowUser = mysql_fetch_assoc($ResultUser);
+	     $UserNoStartPayment = $RowUser['usernostartpayment'];
+	     mysql_free_result($ResultUser);
+  	   
+	     $TeamUsersNoStartPayment += $UserNoStartPayment; 
+	   }
+	   
+	         
+        }
+	// Конец цикла обработки участников
+	mysql_free_result($Result);
+  
+        return ($TeamMapPayment + $TeamUsersNoStartPayment); 
+   
+     }
+     // Конец расчета стоимости участия	
+
+
+     
+     
+     // Генерация точек КП в TeamLevelPoint по строчке teamlevelpoin_points
      // для данной $teamlevelpointid
      
      function GenerateTeamLevelPointsFromString($teamlevelpointid)

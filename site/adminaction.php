@@ -64,7 +64,8 @@ if (empty($RaidId))
   print($CardsArr.'<br />'."\n");
   print('====<br />'."\n");
 
-  print('Дистанция;Номер;GPS;Название;Участники;Карты<br />'."\n");
+
+  print('Дистанция;Номер;GPS;Название;Участники;Карты;Сумма<br />'."\n");
   $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name,
 	  t.team_mapscount, d.distance_name, d.distance_id
 	  from Teams t
@@ -88,7 +89,7 @@ if (empty($RaidId))
 	{
 		if ($First == 1)
 		{
-			print($Row['distance_name'].';'.$Row['team_num'].';'.($Row['team_usegps'] == 1 ? '+' : '').';'.$Row['team_name'].';'.$UserRow['user_name'].' '.$UserRow['user_birthyear'].';'.$Row['team_mapscount'].'<br />'."\n");
+			print($Row['distance_name'].';'.$Row['team_num'].';'.($Row['team_usegps'] == 1 ? '+' : '').';'.$Row['team_name'].';'.$UserRow['user_name'].' '.$UserRow['user_birthyear'].';'.$Row['team_mapscount'].';'.CalcualteTeamPayment($Row['team_id']).'<br />'."\n");
 			$First = 0;
 		}
 		else
