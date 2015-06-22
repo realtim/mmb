@@ -62,6 +62,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	$pRaidFilePrefix = $_POST['RaidFilePrefix'];
         $pRaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
         $pRaidMapPrice = (int)$_POST['RaidMapPrice'];
+	$pRaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
 
 /*
         // Обрабатываем зхагрузку файла эмблемы
@@ -210,7 +211,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
                 $sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
 		                           raid_startpoint, raid_finishpoint, raid_closedate,
 					   raid_noshowresult, raid_fileprefix,
-					   raid_readonlyhoursbeforestart, raid_mapprice
+					   raid_readonlyhoursbeforestart, raid_mapprice, raid_nostartprice
 					   )
 			values (trim('".$pRaidName."'), trim('".$pRaidPeriod."')  ";
 		
@@ -234,6 +235,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		$sql.= ", trim('".$pRaidFilePrefix."') " ;
 		$sql.= ", ".$pRaidReadOnlyHoursBeforeStart;
 		$sql.= ", ".$pRaidMapPrice;
+		$sql.= ", ".$pRaidNoStartPrice;
 		$sql.= ")";
 
 
@@ -353,6 +355,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		$sql.= ", raid_noshowresult = ".$pRaidNoShowResult." ";
 		$sql.= ", raid_readonlyhoursbeforestart = ".$pRaidReadOnlyHoursBeforeStart." ";
 		$sql.= ", raid_mapprice = ".$pRaidMapPrice." ";
+		$sql.= ", raid_nostartprice = ".$pRaidNoStartPrice." ";
 		$sql.= ", raid_fileprefix = trim('".$pRaidFilePrefix."') ";
 		$sql.=  " where raid_id = ".$RaidId; 
 	    
@@ -482,9 +485,12 @@ elseif ($action == 'HideDistance')
                 }
 	 
 
+	// 22.06.2015 Заменил на удаление дистанции
+        $sql = "delete Distances where distance_id = ".$pDistanceId;   
+
        
-        $sql = "update Distances set distance_hide = 1
-	        where distance_id = ".$pDistanceId;   
+    //    $sql = "update Distances set distance_hide = 1
+	//        where distance_id = ".$pDistanceId;   
 			
 	MySqlQuery($sql);
 

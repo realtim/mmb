@@ -35,6 +35,7 @@ if ($viewmode == 'Add')
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
 	        $RaidMapPrice = (int)$_POST['RaidMapPrice'];
+	        $RaidNoStartPrice = (int)$_POST['NoStartPrice'];
         
                 
 
@@ -60,6 +61,7 @@ if ($viewmode == 'Add')
                 $RaidReadOnlyHoursBeforeStart = 8;
                 $RaidFilePrefix = '';
 		$RaidMapPrice = 0;
+		$RaidNoStartPrice = 0;
         
 
 	}
@@ -87,7 +89,7 @@ else
 		       r.raid_startlink, r.raid_finishpoint, r.raid_closedate,
 		       r.raid_znlink, COALESCE(r.raid_noshowresult, 0) as raid_noshowresult,
 		       COALESCE(r.raid_readonlyhoursbeforestart, 8) as raid_readonlyhoursbeforestart,  
-		       COALESCE(r.raid_mapprice, 8) as raid_mapprice,  
+		       COALESCE(r.raid_mapprice, 8) as raid_mapprice,  COALESCE(r.raid_nostartprice, 8) as raid_nostartprice,  
 		       r.raid_fileprefix,
       	               (CASE WHEN r.raid_closedate is null THEN 1 ELSE 0 END) as raid_clearclosedate,
 		       (select count(*) from Distances where distance_hide = 0 and raid_id = ".$RaidId.") as raid_distancescount
@@ -119,6 +121,7 @@ else
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
                 $RaidMapPrice = (int)$_POST['RaidMapPrice'];
+                $RaidNoStartPrice = (int)$_POST['NoStartPrice'];
 
 	}
 	else
@@ -141,6 +144,7 @@ else
                 $RaidReadOnlyHoursBeforeStart = (int)$Row['raid_readonlyhoursbeforestart'];
 		$RaidFilePrefix = $Row['raid_fileprefix'];
                 $RaidMapPrice = (int)$Row['raid_mapprice'];
+                $RaidNoStartPrice = (int)$Row['raid_nostartprice'];
 
 	}
 
@@ -308,6 +312,12 @@ print('<tr><td class="input">Стоимость одного комплекта 
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidMapPrice.'\') {this.value=\'\';}"')
 	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidMapPrice.'\';}"')
 	.' title="Стоимость одного комплекта карт (руб.)"></td></tr>'."\r\n");
+
+// ============ Стоимость (штраф) с участника за неявку на старт на этот ММБ
+print('<tr><td class="input">Стоимость неявки (руб.) <input type="text" name="RaidNoStartPrice" size="6" maxlength="6" value="'.$RaidNoStartPrice.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidNoStartPrice.'\') {this.value=\'\';}"')
+	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidNoStartPrice.'\';}"')
+	.' title="Стоимость неявки (руб.)"></td></tr>'."\r\n");
 
 
 
