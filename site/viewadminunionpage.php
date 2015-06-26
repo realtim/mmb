@@ -108,7 +108,7 @@ if (!isset($MyPHPScript)) return;
                           print('<input type="button" style = "margin-left: 15px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите исключить команду из текущего объединения? \')) { HideTeamInUnion('.$Row['teamunionlog_id'].','.$Row['team_id'].'); }"  name="TeamHideButton" value="Скрыть" tabindex = "'.++$TabIndex.'">'."\r\n");
 	                  print('</div>'."\r\n");
 	  	  			
-			  $sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, tu.level_id, u.user_id
+			  $sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id
 				  from TeamUsers tu
 					inner join Users u
 					on tu.user_id = u.user_id
@@ -274,16 +274,16 @@ if (!isset($MyPHPScript)) return;
                      if ($Row['unionstatus'] == 'Объединены') 
 		     {
                         // Команда объединена
-			$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear,	
-					       tu.level_id, u.user_id, l.level_name,
+			$sql = "select         tu.teamuser_id, 
+			                       CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name,
+					       u.user_birthyear,	
+					       u.user_id, 
 					       t.team_name as oldteam_name,
 					       t.team_num as  oldteam_num,
 			                       DATE_FORMAT(tul.teamunionlog_dt, '%d.%m %H:%i:%s')  as unionlog_dt  
 				        from  TeamUsers tu
 					      inner join  Users u
 					      on tu.user_id = u.user_id
-		                              left outer join Levels l
-					      on tu.level_id = l.level_id
 					      inner join  TeamUsers tu2
 					      on tu2.user_id = tu.user_id
 					      inner join  Teams t
@@ -301,9 +301,7 @@ if (!isset($MyPHPScript)) return;
 				$sql = "select null as teamuser_id,
 				               '' as user_name,
 					       '' as user_birthyear,	
-					       '' as level_id, 
 					       null as user_id,
-					       '' as level_name,
 					       t.team_name as oldteam_name,
 					       t.team_num as  oldteam_num,
 			                       DATE_FORMAT(tul.teamunionlog_dt, '%d.%m %H:%i:%s')  as unionlog_dt  
@@ -319,15 +317,13 @@ if (!isset($MyPHPScript)) return;
                         // Команда не объединена
 			 
 				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear,	
-					       tu.level_id, u.user_id, l.level_name,
+					       u.user_id, 
 					       '' as oldteam_name,
 					       '' as oldteam_num,
 					       '' as  unionlog_dt  
 				        from  TeamUsers tu
 					      inner join  Users u
 					      on tu.user_id = u.user_id
-		                              left outer join Levels l
-					      on tu.level_id = l.level_id
 					where tu.teamuser_hide = 0 and team_id = ".$Row['team_id'];
 			 
 			 

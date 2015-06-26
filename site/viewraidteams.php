@@ -442,8 +442,10 @@ if (!isset($MyPHPScript)) return;
                                           on tl.team_id = t.team_id 
                                           inner join TeamUsers tu
                                           on tl.team_id = tu.team_id 
+                                          left outer join LevelPoints lp2
+                                          on tu.levelpoint_id = lp2.levelpoint_id
                                           left outer join Levels l2
-                                          on tu.level_id = l2.level_id
+                                          on lp2.level_id = l2.level_id
                                      where tl.level_id =  l.level_id 
                                            and tl.teamlevel_progress > 0
                                            and tl.teamlevel_hide = 0
@@ -467,8 +469,10 @@ if (!isset($MyPHPScript)) return;
                                           on tl.team_id = t.team_id 
                                           inner join TeamUsers tu
                                           on tl.team_id = tu.team_id 
+                                          left outer join LevelPoints lp2
+                                          on tu.levelpoint_id = lp2.levelpoint_id
                                           left outer join Levels l2
-                                          on tu.level_id = l2.level_id
+                                          on lp2.level_id = l2.level_id
                                      where tl.level_id =  l.level_id 
                                            and tl.teamlevel_progress = 2
 					    and tl.teamlevel_endtime > 0
@@ -861,13 +865,11 @@ if (!isset($MyPHPScript)) return;
 			if ($OrderType <> 'Errors')
 			{
 			$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
-                                       tu.level_id, u.user_id, l.level_name,
+                                       u.user_id, 
 				       tu.levelpoint_id, lp.levelpoint_name 
 			        from  TeamUsers tu
 				     inner join  Users u
 				     on tu.user_id = u.user_id
-                                     left outer join Levels l
- 				     on tu.level_id = l.level_id
                                      left outer join LevelPoints lp
  				     on tu.levelpoint_id = lp.levelpoint_id
  				where tu.teamuser_hide = 0 and team_id = ".$Row['team_id']; 
@@ -888,10 +890,6 @@ if (!isset($MyPHPScript)) return;
 				if ($UserRow['levelpoint_name'] <> '')
 				{
 				    print('<i>Не явился(-ась) в: '.$UserRow['levelpoint_name'].'</i>'."\r\n");
-				} 
-				elseif ($UserRow['level_name'] <> '')
-				{
-  				    print('<i>Сход: '.$UserRow['level_name'].'</i>'."\r\n");
 				} 
                           }
 			  print('</div>'."\r\n");

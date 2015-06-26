@@ -1363,7 +1363,6 @@ send_mime_mail('Автор письма',
 		 where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and tu.levelpoint_id is NULL
-		       and tu.level_id is NULL
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
 		       and  COALESCE(t.team_result, 0) > 0

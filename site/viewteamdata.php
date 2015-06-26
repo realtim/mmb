@@ -353,15 +353,8 @@ print('</td></tr>'."\n\n");
 // ============ Участники
 print('<tr><td class="input">'."\n");
 
-//25.11.2013 Опредляем, есть ли этап схода у какого-нибудь участника. Если есть - отображаем старый вариант - сход на этапе 
-$sqloutlevel = "select MAX(COALESCE(tu.level_id, 0)) as outlevelflag
-	from TeamUsers tu where team_id = ".$TeamId;
-$ResultMaxOutLevel = MySqlQuery($sqloutlevel);
-$RowMaxOutLevel = mysql_fetch_assoc($ResultMaxOutLevel);
-mysql_free_result($ResultMaxOutLevel);
 
-
-$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, tu.level_id, u.user_id, tu.levelpoint_id
+$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id, tu.levelpoint_id
 	from TeamUsers tu
 		inner join Users u
 		on tu.user_id = u.user_id
@@ -380,26 +373,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	// (так как тут есть список этапов)
 	if ($AllowViewResults)
 	{
-           // 25.11.2013  для ММБ  Если указан этап схода хотя бы у одного из  участников 	 
-	   if  ($RowMaxOutLevel['outlevelflag'] > 0)
-	   {
-		// Список этапов, чтобы выбрать, на каком сошёл участник
-		print('Сход: <select name="UserOut'.$Row['teamuser_id'].'" style="width: 100px; margin-right: 15px;" title="Этап, на котором сошёл участник" onChange="javascript:if (confirm(\'Вы уверены, что хотите отметить сход участника: '.$Row['user_name'].'? \')) { TeamUserOut('.$Row['teamuser_id'].', this.value); }" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
-		$sqllevels = "select level_id, level_name from Levels l where l.level_hide = 0 and l.distance_id = ".$DistanceId." order by level_order";
-		$ResultLevels = MySqlQuery($sqllevels);
-		$userlevelselected = ($Row['level_id'] == 0 ? ' selected' : '');
-		print('<option value="0"'.$userlevelselected.'>-</option>'."\n");
-		while ($RowLevels = mysql_fetch_assoc($ResultLevels))
-		{
-			$userlevelselected = ($RowLevels['level_id'] == $Row['level_id'] ? 'selected' : '');
-			print('<option value="'.$RowLevels['level_id'].'"'.$userlevelselected.'>'.$RowLevels['level_name']."</option>\n");
-		}
-		mysql_free_result($ResultLevels);
-		print('</select>'."\n");
-		
-	   } else {
-	     // новый вариант с точкой
-
+  
 		print('Неявка в: <select name="UserNotInPoint'.$Row['teamuser_id'].'" style="width: 100px; margin-right: 15px;" title="Точка, в которую не явился участник" onChange="javascript:if (confirm(\'Вы уверены, что хотите отметить неявку участника: '.$Row['user_name'].'? \')) { TeamUserNotInPoint('.$Row['teamuser_id'].', this.value); }" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
 		$sqllevelpoints = "select levelpoint_id, levelpoint_name from LevelPoints lp inner join Levels l on lp.level_id= l.level_id  where lp.pointtype_id <> 5 and l.level_hide = 0 and l.distance_id = ".$DistanceId." order by levelpoint_order";
 		$ResultLevelPoints = MySqlQuery($sqllevelpoints);
@@ -413,7 +387,6 @@ while ($Row = mysql_fetch_assoc($Result))
 		mysql_free_result($ResultLevelPoints);
 		print('</select>'."\n");
 	   
-	   }	
 	}
 
 	// ФИО и год рождения участника

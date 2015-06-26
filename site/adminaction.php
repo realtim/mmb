@@ -77,7 +77,7 @@ if (empty($RaidId))
 
   while ($Row = mysql_fetch_assoc($Result))
   {
-	$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, tu.level_id, u.user_id
+	$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, u.user_id
 		from TeamUsers tu
 			inner join Users u on tu.user_id = u.user_id
 		where tu.teamuser_hide = 0   and team_id = ".$Row['team_id']."

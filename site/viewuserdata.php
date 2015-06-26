@@ -412,8 +412,8 @@ if (!isset($MyPHPScript)) return;
                  
 		$sql = "select tu.teamuser_id, t.team_name, t.team_id, 
 		               d.distance_name, r.raid_name, t.team_num, 
-			       r.raid_id, l.level_name, lp.levelpoint_name,
-			       l.level_id, lp.levelpoint_id, COALESCE(tu.teamuser_rank, 0.00000) as teamuser_rank  
+			       r.raid_id, lp.levelpoint_name,
+			       lp.levelpoint_id, COALESCE(tu.teamuser_rank, 0.00000) as teamuser_rank  
 		        from  TeamUsers tu
 			     inner join  Teams t
 			     on tu.team_id = t.team_id
@@ -421,8 +421,6 @@ if (!isset($MyPHPScript)) return;
 			     on t.distance_id = d.distance_id
 			     inner join  Raids r
 			     on d.raid_id = r.raid_id
-			     left outer join Levels  l
-			     on tu.level_id = l.level_id
 			     left outer join LevelPoints  lp
 			     on tu.levelpoint_id = lp.levelpoint_id
 			where tu.teamuser_hide = 0 and user_id = ".$pUserId."
@@ -434,17 +432,15 @@ if (!isset($MyPHPScript)) return;
 		{
 
 			$TeamPlace = GetTeamPlace($Row['team_id']);
-			$LevelId = $Row['level_id'];
 			$LevelPointId = $Row['levelpoint_id'];
 			$TeamPlaceResult = "";
 			// Есть место команды и нет схода участника
-			if ($TeamPlace > 0 and $LevelId == 0 and $LevelPointId == 0) $TeamPlaceResult = ", место <b>".$TeamPlace."</b>";
+			if ($TeamPlace > 0 and $LevelPointId == 0) $TeamPlaceResult = ", место <b>".$TeamPlace."</b>";
 
                
 
 			$TeamUserOff = "";
 			// Есть место команды, но сход участника
-			if ($TeamPlace > 0 and $LevelId > 0) $TeamUserOff = ", сход на этапе <b>".$Row['level_name']."</b>";
 			if ($TeamPlace > 0 and $LevelPointId > 0) $TeamUserOff = ", не явка в точку <b>".$Row['levelpoint_name']."</b>";
 
 
