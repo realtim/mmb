@@ -1636,6 +1636,234 @@ send_mime_mail('Автор письма',
      }
      //Конец генерации точек для ММБ 
      
+
+
+
+
+
+  // Генерация точек КП в TeamLevelPoint по строчке teamlevels_points
+     // для данной $teamlevelid
+     
+     function GenerateTeamLevelPointsFromTeamLevelString($teamlevelid)
+     {
+
+
+       // Данные о КП, а также информация для старта и финиша
+	$sql = " select tl.teamlevel_points, tl.level_id, tl.team_id,
+	                tl.teamlevel_begtime,  tl.teamlevel_endtime, 
+			tl.teamlevel_comment, tl.teamlevel_penalty, 
+			tl.teamlevel_duration
+	         from TeamLevels tl
+	         where tl.teamlevel_id = ".$teamlevelid;
+
+
+       // echo $sql;
+
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$LevelPointsString = trim($Row['teamlevel_points']);
+	$LevelId = $Row['level_id'];
+	$TeamId = $Row['team_id'];
+	$StartTime = $Row['teamlevel_begtime'];
+        // Дальше идёт информация дл я записи в точку "финиш" 
+	$FinishTime = $Row['teamlevel_endtime'];
+	$Comment = $Row['teamlevel_comment'];
+	$Penalty = $Row['teamlevel_penalty'];
+	$Duration = $Row['teamlevel_duration'];
+	mysql_free_result($Result);
+	
+	
+	if ( $LevelPointsString == '' or empty($LevelId)) {
+
+	 return;
+
+	}
+
+        $LevelPointsArr = explode(',', $LevelPointsString);
+
+        $StartLevelPointId = 0;
+
+        // Получаем старт этапа
+	$sql = " select lp1.levelpoint_id
+	         from LevelPoints lp1
+	         where lp1.level_id = ".$LevelId."
+		       and lp1.pointtype_id in (1,4)
+		 order by  lp1.levelpoint_order ASC     
+		 LIMIT 0,1";
+
+      //  echo $sql;
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$StartLevelPointId = $Row['levelpoint_id'];
+	mysql_free_result($Result);
+
+
+       if ($StartLevelPointId) {
+
+                $StartTlpExists = 0;
+
+		$sqltlp = " select tlp.teamlevelpoint_id
+		    from TeamLevelPoints tlp
+		    where tlp.team_id = ".$TeamId." and tlp.levelpoint_id = ".$StartLevelPointId;
+
+		$ResultTlp = MySqlQuery($sqltlp);
+		$RowTlp = mysql_fetch_assoc($ResultTlp);
+		$StartTlpExists = $RowTlp['teamlevelpoint_id'];
+		mysql_free_result($ResultTlp);
+	
+	
+		// Пишем старт
+		if (!$StartTlpExists) {
+	
+			$sqltlp = " insert into TeamLevelPoints(device_id, levelpoint_id, team_id, 
+			                                        teamlevelpoint_datetime)
+			         values(1, ".$StartLevelPointId.", ".$TeamId.", '".$StartTime."')";
+
+                      //  echo $sqltlp;
+
+			$ResultTlp = MySqlQuery($sqltlp);
+				
+		}
+	}
+	// Конец проверки на существование точки старта
+
+        $FinishLevelPointId = 0;
+
+
+        // Получаем финиш этапа
+	$sql = " select lp1.levelpoint_id
+	         from LevelPoints lp1
+	         where lp1.level_id = ".$LevelId."
+		       and lp1.pointtype_id in (2,4)
+		 order by  lp1.levelpoint_order ASC     
+		 LIMIT 0,1";
+
+      //  echo $sql;
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	$FinishLevelPointId = $Row['levelpoint_id'];
+	mysql_free_result($Result);
+
+
+       if ($FinishLevelPointId) {
+	
+		$FinishTlpExists = 0;
+	
+		$sqltlp = " select tlp.teamlevelpoint_id
+			    from TeamLevelPoints tlp
+			    where tlp.team_id = ".$TeamId." and tlp.levelpoint_id = ".$FinishLevelPointId;
+
+
+		$ResultTlp = MySqlQuery($sqltlp);
+		$RowTlp = mysql_fetch_assoc($ResultTlp);
+		$FinishTlpExists = $RowTlp['teamlevelpoint_id'];
+		mysql_free_result($ResultTlp);
+
+		// Пишем финиш
+		if (!$FinishTlpExists) {
+	
+			$sqltlp = " insert into TeamLevelPoints(device_id, levelpoint_id, team_id,
+			                                        teamlevelpoint_datetime, teamlevelpoint_comment,
+								teamlevelpoint_duration, teamlevelpoint_penalty)
+			         values(1, ".$FinishLevelPointId.", ".$TeamId.", '".$FinishTime."', '".trim($Comment)."', '".$Duration."', ".$Penalty.")";
+                     //   echo $sqltlp;
+
+			$ResultTlp = MySqlQuery($sqltlp);
+				
+		}
+	}
+	// Конец проверки на существование точки финиша
+
+
+
+        // Теперь получаем список КП
+	$sql = " select lp1.levelpoint_id, lp1.levelpoint_order 
+	         from LevelPoints lp1
+		       inner join Levels l2
+		       on lp1.level_id = l2.level_id
+	         where l2.level_id = ".$LevelId."
+		       and lp1.pointtype_id in (3,5)
+		 order  by lp1.levelpoint_order ASC";
+
+      //  echo $sql;
+	$Result = MySqlQuery($sql);
+	$i=0;
+	
+	// ================ Цикл обработки контрольных точек этапа
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+		$i++;
+		$NowLevelPointOrder = $Row['levelpoint_order'];
+		$NowLevelPointId = $Row['levelpoint_id'];
+		
+		$sqltlp = " select tlp.teamlevelpoint_id
+			 from TeamLevelPoints tlp
+			 where tlp.team_id = ".$TeamId." and tlp.levelpoint_id = ".$NowLevelPointId;
+
+
+		$ResultTlp = MySqlQuery($sqltlp);
+		$RowTlp = mysql_fetch_assoc($ResultTlp);
+		$TlpExists = $RowTlp['teamlevelpoint_id'];
+		mysql_free_result($ResultTlp);
+		
+		
+		// Вставляем КП в список, если стоит 1
+		if ((int)$LevelPointsArr[$i-1] == 1 and empty($TlpExists)) {
+	
+			$sqltlp = " insert into TeamLevelPoints(device_id, levelpoint_id, team_id)
+			         values(1, ".$NowLevelPointId.", ".$TeamId.")";
+
+
+			$ResultTlp = MySqlQuery($sqltlp);
+				
+		}
+		
+         }
+	// Конец цикла по контрольным точкам этапа
+
+	mysql_free_result($Result);
+		    
+       return;
+     }
+     //Конец генерации точек по строке 
+     
+     
+
+
+ // Генерация точек для ММБ по этапам
+     function GenerateLevelPointsForRaidFromLevels($raidid)
+     {
+
+
+	$Sql = "select tl.teamlevel_id 
+	        from TeamLevels tl
+		     inner join Levels l
+		     on tl.level_id = l.level_id
+		     inner join Distances d
+		     on l.distance_id = d.distance_id
+	        where d.raid_id = ".$raidid."
+                     and COALESCE(tl.teamlevel_progress, 0) > 0
+	       ";
+
+	       
+	$Result2 = MySqlQuery($Sql);  
+
+        while ($Row2 = mysql_fetch_assoc($Result2))
+        {
+                   
+          set_time_limit(10);
+    	  $TeamLevelId2 = $Row2['teamlevel_id'];
+	  	  
+	  GenerateTeamLevelPointsFromTeamLevelString($TeamLevelId2);
+        }
+        mysql_free_result($Result2);
+   
+     set_time_limit(30);
+
+     return;
+     }
+     //Конец генерации точек для ММБ 
+   
      
      // функция пересчитывает результат команды по точкам
      function RecalcTeamLevelPointsResult($teamid)
