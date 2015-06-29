@@ -409,7 +409,8 @@ elseif ($action == 'FindTeam')
 }
 
 // ============ Информация о команде по Id ====================================
-elseif ($action == 'TeamInfo')
+// ПРопускаем также события для редактирвоания результата
+elseif ($action == 'TeamInfo' or $action == 'TlpInfo'  or $action == 'AddTlp' or $action == 'ChangeTlp' or $action == 'HideTlp')
 {
 	if ($TeamId <= 0)
 	{

@@ -6,10 +6,12 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+//echo 'action '.$action;
+
 // =============== Изменение/добавление результатов команды ===================
 if ($action == "ChangeTeamResult")
 {
-	$view = "ViewTeamData";
+	//$view = "ViewTeamData";
 	$viewmode = "";
 	if ($TeamId <= 0) return;
 
@@ -167,7 +169,243 @@ if ($action == "ChangeTeamResult")
 
 
 }
-// =============== Никаких действий не требуется ==============================
+// ============ Добавить точку  =============
+elseif ($action == 'AddTlp')
+{
+
+
+	//$view = "ViewLevelPoints";
+	$viewmode = "AddTlp";
+
+
+	// Общая проверка возможности редактирования
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на ввод  результата для точки";
+		$alert = 0;
+		return;
+	}
+
+		$pTeamId = $_POST['TeamId'];
+		$pLevelPointId = $_POST['LevelPointId'];
+                //$pPointName = $_POST['PointName'];
+		
+	        $pTlpYear = $_POST['TlpYear'];
+                $pTlpDate = $_POST['TlpDate'];
+                $pTlpTime = $_POST['TlpTime'];
+                $pTlpComment = $_POST['TlpComment'];
+
+
+         // тут по-хорошему нужны проверки
+	if ($pTeamId <= 0 or $pLevelPointId <= 0)
+	{
+		$statustext = 'Не определён ключ команды или ключ точки для результата.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "EditTlp";
+		return;
+	}
+
+
+	
+                // год всегда пишем текущий. если надо - можно добавить поле для года
+
+	        $TlpYDTs = "'".$pTlpYear."-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
+                
+		//echo 	$TlpYDTs;
+
+		 $sql = " select count(*) as countresult 
+		          from TeamLevelPoints
+		          where team_id = ".$pTeamId."
+			        and levelpoint_id = ".$pLevelPointId; 
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $AlreadyExists = (int)$Row['countresult'];
+		mysql_free_result($Result);
+
+	   if  ($AlreadyExists > 0)
+	   {
+			$statustext = 'Результаты по точке уже есть.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+
+             // потом добавить время макс. и мин.
+	     
+		$sql = "insert into TeamLevelPoints (team_id, levelpoint_id, 
+                        device_id,
+			teamlevelpoint_datetime, teamlevelpoint_comment)
+			values (".$pTeamId.", ".$pLevelPointId.", 1, 
+			        ".$TlpYDTs.", '".$pTlpComment."')";
+
+
+               //  echo $sql;
+		// При insert должен вернуться послений id - это реализовано в MySqlQuery
+		$TeamLevelPointId = MySqlQuery($sql);
+		
+		if ($TeamLevelPointId <= 0)
+		{
+			$statustext = 'Ошибка записи нового результата для точки.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+		}
+	
+/*
+	 $statustext = CheckLevelPoints($DistanceId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
+*/
+	$view = $_POST['view'];
+	if (empty($view)) $view = "ViewTeamData";
+
+
+
+ }
+ elseif ($action == "TlpInfo")  
+ {
+    // Действие вызывается кнопокй "Править" в таблице точек
+
+	$view = $_POST['view'];
+	if (empty($view)) $view = "ViewTeamData";
+	$viewmode = "EditTlp";
+ }
+ // ============ Правка точки  =============
+elseif ($action == 'ChangeTlp')
+{
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку результата для точки";
+		$alert = 0;
+		return;
+	}
+
+  
+
+        $pTeamLevelPointId = $_POST['TeamLevelPointId'];
+
+
+	if ($pTeamLevelPointId <= 0)
+	{
+		$statustext = 'Не определён ключ результата для точки.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "EditTlp";
+		return;
+	}
+
+
+
+		$pLevelPointId = $_POST['LevelPointId'];
+		$pTeamId = $_POST['TeamId'];
+     
+		$pTlpYear = $_POST['TlpYear'];
+                $pTlpDate = $_POST['TlpDate'];
+                $pTlpTime = $_POST['TlpTime'];
+                $pTlpComment = $_POST['TlpComment'];
+
+		$TlpYDTs = "'".$pTlpYear."-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
+         
+	
+	if ($pTeamId <= 0 or $pLevelPointId <= 0)
+	{
+		$statustext = 'Не определён ключ команды или ключ точки для результата.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "EditTlp";
+		return;
+	}
+
+	
+	
+	
+		 $sql = " select count(*) as countresult 
+		          from TeamLevelPoints
+		          where team_id = ".$pTeamId."
+			        and levelpoint_id = ".$pLevelPointId." 
+				and teamlevelpoint_id <> ".$pTeamLevelPointId;
+                
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+	        $AlreadyExists = (int)$Row['countresult'];
+		mysql_free_result($Result);
+
+	   if  ($AlreadyExists > 0)
+	   {
+			$statustext = 'Результаты по точке уже есть.';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+           }
+
+
+
+	
+
+		
+        $sql = "update TeamLevelPoints  set levelpoint_id = ".$pLevelPointId." 
+	                                ,team_id = ".$pTeamId."
+	                                ,teamlevelpoint_comment = '".$pTlpComment."'
+	                                ,teamlevelpoint_datetime = ".$TlpYDTs."
+	        where teamlevelpoint_id = ".$pTeamLevelPointId;        
+			
+	//echo $sql;
+			
+	 MySqlQuery($sql);
+    
+    /*   
+	 $statustext = CheckLevelPoints($DistanceId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
+	*/	
+
+}
+// ============ Удаление точки  =============
+elseif ($action == 'HideTlp')
+{
+	if (!$Administrator && !$Moderator)
+	{
+		$statustext = "Нет прав на правку результата для точки";
+		$alert = 0;
+		return;
+	}
+
+        $pTeamLevelPointId = $_POST['TeamLevelPointId'];
+
+
+	if ($pTeamLevelPointId <= 0)
+	{
+		$statustext = 'Не определён ключ результата для точки.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterError";
+		$viewmode = "Edit";
+		return;
+	}
+	
+
+        $sql = "delete from TeamLevelPoints where teamlevelpoint_id = ".$pTeamLevelPointId;        
+       
+			
+	 MySqlQuery($sql);
+
+/*
+	 $statustext = CheckLevelPoints($DistanceId);
+	 if (!empty($error))
+	 {
+		$alert = 1;
+	 }
+*/
+
+		
+
+}
 else
 {
 }
