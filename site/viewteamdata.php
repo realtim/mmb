@@ -354,10 +354,12 @@ print('</td></tr>'."\n\n");
 print('<tr><td class="input">'."\n");
 
 
-$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id, tu.levelpoint_id
+$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id, COALESCE(tld.levelpoint_id, 0) as levelpoint_id
 	from TeamUsers tu
 		inner join Users u
 		on tu.user_id = u.user_id
+                left outer join TeamLevelDismiss tld
+		on tu.teamuser_id = tld.teamuser_id
 	where tu.teamuser_hide = 0 and team_id = ".$TeamId;
 $Result = MySqlQuery($sql);
 

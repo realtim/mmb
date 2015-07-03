@@ -468,14 +468,21 @@ elseif ($action == 'HideTeamUser')
 	if ($TeamUserCount > 1)
 	// Кто-то ещё остается
 	{
-		$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
+
+                // 07.2015 Заменил на физическое удаление
+		$sql = "delete from TeamUsers where teamuser_id = ".$HideTeamUserId;
+
+		//$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
 		$rs = MySqlQuery($sql);
 		$view = "ViewTeamData";
 	}
 	else
 	// Это был последний участник
 	{
-		$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
+
+		$sql = "delete from TeamUsers where teamuser_id = ".$HideTeamUserId;
+
+//		$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
 		$rs = MySqlQuery($sql);
 		$sql = "update Teams set team_hide = 1 where team_id = ".$TeamId;
 		$rs = MySqlQuery($sql);
@@ -581,10 +588,42 @@ elseif ($action == 'TeamUserNotInPoint')
 		return;
 	}
 
+        // Смотрим, есть ли точка сход в TeamLevelDismiss
+	
+	$sql = "select teamleveldismiss_id from TeamLevelDismiss where teamuser_id = ".$HideTeamUserId;
+	$Result = MySqlQuery($sql);
+	$Row = mysql_fetch_assoc($Result);
+	mysql_free_result($Result);
+	$DismissId = $Row['teamleveldismiss_id'];
+	
+	if ($LevelPointId) {
+		if ($DismissId) {
+		// Точка уже есть и пользователь сошёл - обновляем точку
+			$sql = "update TeamLevelDismiss set levelpoint_id = ".$LevelPointId." where teamleveldismiss_id = ".$DismissId;
+			$rs = MySqlQuery($sql);
+		} else {
+		// Точки нет, а пользователь сошёл - создаём точку
+			$sql = "insert into TeamLevelDismiss (teamuser_id, levelpoint_id, device_id) 
+			        values (".$HideTeamUserId.", ".$LevelPointId.", 1) ";
+			$rs = MySqlQuery($sql);
+		}
+	} else {
+		if ($DismissId) {
+		// Точка есть, а пользователь не сошёл - удаляем точку
+			$sql = "delete from TeamLevelDismiss where teamleveldismiss_id = ".$DismissId;
+			$rs = MySqlQuery($sql);
+		} else {
+		// ТОчка нет и пользователь не сошёл - ничего не делаем
+		   return;
+		}
+	}
+        // Конец разбора возможных ситуаций со сходами и наличием точки в TeamLevelDismiss
+
+/*
 	$sql = "update TeamUsers set levelpoint_id = ".($LevelPointId > 0 ? $LevelPointId : 'null' )." where teamuser_id = ".$HideTeamUserId;
 	$rs = MySqlQuery($sql);
 	$view = "ViewTeamData";
-
+*/
 	// Письмо об изменениях	всем, кроме автора изменений
 	// !!! Сход относится к результатам на дистанции и об их изменений письма слать не надо
 	$sql = "select user_name from Users where user_id = ".$UserId;
