@@ -49,8 +49,10 @@ if ($action == "RegisterNewTeam")
 elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 {
 	if ($action == "AddTeam") $viewmode = "Add"; else $viewmode = "";
-	$view = "ViewTeamData";
+	//$view = "ViewTeamData";
+	$view = $_POST['view'];
 
+        // echo '111 '.$view;
 	// пока валим всё в одну кучу - проверяем ниже
 	$pDistanceId = (int)$_POST['DistanceId'];
 	$pTeamNum = (int) $_POST['TeamNum'];
@@ -73,6 +75,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$statustext = "Не найден идентификатор команды.";
 		$alert = 1;
+		$view = "ViewTeamData";
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
@@ -80,6 +83,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$statustext = "Не указана дистанция.";
 		$alert = 1;
+		$view = "ViewTeamData";
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
@@ -87,6 +91,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$statustext = "Не указан ММБ.";
 		$alert = 1;
+		$view = "ViewTeamData";
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
@@ -94,6 +99,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$statustext = "Не указано название.";
 		$alert = 1;
+		$view = "ViewTeamData";
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
@@ -102,6 +108,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$statustext = "Название не должно содержать уголвых скобок.";
 		$alert = 1;
+		$view = "ViewTeamData";
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
@@ -110,6 +117,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$statustext = "Не указано число карт или недопустимое число карт.";
 		$alert = 1;
+		$view = "ViewTeamData";
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
@@ -119,6 +127,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$statustext = "Подтвердите, что прочитали и согласны с правилами участия в ММБ.";
 		$alert = 1;
+		$view = "ViewTeamData";
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
@@ -137,6 +146,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$statustext = "Уже есть команда с таким названием.";
 		$alert = 1;
+		$view = "ViewTeamData";
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
@@ -153,6 +163,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$statustext = "Уже есть команда с таким номером.";
 		$alert = 1;
+		$view = "ViewTeamData";
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
@@ -164,6 +175,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	{
 		$statustext = "Для ММБ до 2012 года нужно указывать номер команды.";
 		$alert = 1;
+		$view = "ViewTeamData";
 		$viewsubmode = "ReturnAfterError";
 		return;
 	}
@@ -183,6 +195,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		{
 			$statustext = 'Пользователь с таким email не найден.';
 			$alert = 1;
+			$view = "ViewTeamData";
 			$viewsubmode = "ReturnAfterError";
 			return;
 		}
@@ -192,6 +205,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			$NewUserId = 0;
 			$statustext = 'Пользователь запретил добавлять себя в команду другим пользователям.';
 			$alert = 1;
+			$view = "ViewTeamData";
 			$viewsubmode = "ReturnAfterError";
 			return;
 		}
@@ -209,6 +223,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			$NewUserId = 0;
 			$statustext = 'Пользователь с таким email уже включен в другую команду';
 			$alert = 1;
+			$view = "ViewTeamData";
 			$viewsubmode = "ReturnAfterError";
 			return;
 		}
@@ -220,6 +235,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			$NewUserId = 0;
 			$statustext = 'Добавление новых участников закрыто';
 			$alert = 1;
+			$view = "ViewTeamData";
 			$viewsubmode = "ReturnAfterError";
 			return;
 		}
@@ -232,6 +248,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			$NewUserId = 0;
 			$statustext = "Для новой команды должен быть указан email участника.";
 			$alert = 1;
+			$view = "ViewTeamData";
 			$viewsubmode = "ReturnAfterError";
 			return;
 		}
@@ -282,6 +299,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		{
 			$statustext = 'Ошибка записи новой команды.';
 			$alert = 1;
+			$view = "ViewTeamData";
 			$viewsubmode = "ReturnAfterError";
 			return;
 		}
@@ -376,7 +394,6 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	// Конец отправки писем
 
 	// Если передали альтернативную страницу, на которую переходить (пока только одна возможность - на список команд)
-	$view = $_POST['view'];
 	if (empty($view)) $view = "ViewTeamData";
 }
 
@@ -537,6 +554,11 @@ elseif ($action == 'HideTeamUser')
 		mysql_free_result($Result);
 	}
 	// Конец отправки писем об удалении
+
+	$view = $_POST['view'];
+	if (empty($view)) $view = "ViewTeamData";
+
+
 }
 
 // ============ Смена этапа схода участника команды ===========================
@@ -614,6 +636,9 @@ elseif ($action == 'TeamUserNotInPoint')
 			$rs = MySqlQuery($sql);
 		} else {
 		// ТОчка нет и пользователь не сошёл - ничего не делаем
+			$view = $_POST['view'];
+			if (empty($view)) $view = "ViewTeamData";
+
 		   return;
 		}
 	}
@@ -653,6 +678,10 @@ elseif ($action == 'TeamUserNotInPoint')
 		SendMail($Row['user_email'], $Msg, $Row['user_name']);
 	}
 	mysql_free_result($Result);
+
+	$view = $_POST['view'];
+	if (empty($view)) $view = "ViewTeamData";
+
 }
 
 

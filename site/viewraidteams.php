@@ -866,12 +866,14 @@ if (!isset($MyPHPScript)) return;
 			{
 			$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
                                        u.user_id, 
-				       tu.levelpoint_id, lp.levelpoint_name 
+				       tld.levelpoint_id, lp.levelpoint_name 
 			        from  TeamUsers tu
 				     inner join  Users u
 				     on tu.user_id = u.user_id
+                                     left outer join TeamLevelDismiss tld
+ 				     on tu.teamuser_id = tld.teamuser_id
                                      left outer join LevelPoints lp
- 				     on tu.levelpoint_id = lp.levelpoint_id
+ 				     on tld.levelpoint_id = lp.levelpoint_id
  				where tu.teamuser_hide = 0 and team_id = ".$Row['team_id']; 
 			//echo 'sql '.$sql;
 			$UserResult = MySqlQuery($sql);

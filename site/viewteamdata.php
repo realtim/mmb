@@ -216,10 +216,11 @@ else $AllowViewResults = 0;
 
 <?php
 // Выводим начало формы с командой
-print('<form name="TeamDataForm" action="'.$MyPHPScript.'" method="post" onSubmit="'.$OnSubmitFunction.'">'."\n");
+print('<form name="TeamDataForm" action="'.$MyPHPScript.'#'.$TeamNum.'" method="post" onSubmit="'.$OnSubmitFunction.'">'."\n");
 print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 print('<input type="hidden" name="action" value="">'."\n");
-print('<input type="hidden" name="view" value="'.(($viewmode == "Add") ? 'ViewRaidTeams' : 'ViewTeamData').'">'."\n");
+print('<input type="hidden" name="view" value="ViewRaidTeams">'."\n");
+//print('<input type="hidden" name="view" value="'.(($viewmode == "Add") ? 'ViewRaidTeams' : 'ViewTeamData').'">'."\n");
 print('<input type="hidden" name="TeamId" value="'.$TeamId.'">'."\n");
 print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
 print('<input type="hidden" name="HideTeamUserId" value="0">'."\n");
@@ -499,8 +500,8 @@ if ($AllowEdit == 1)
 	print('<tr><td class="input" style="padding-top: 20px;">'."\n");
 	print('<input type="button" onClick="javascript: if (ValidateTeamDataForm()) submit();" name="RegisterButton" value="'.$SaveButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
 	print('<select name="CaseView" onChange="javascript:document.TeamDataForm.view.value = document.TeamDataForm.CaseView.value;" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
-	print('<option value="ViewTeamData">и остаться на этой странице</option>'."\n");
-	print('<option value="ViewRaidTeams"  selected >и перейти к списку команд</option>'."\n");
+	print('<option value="ViewTeamData" >и остаться на этой странице</option>'."\n");
+	print('<option value="ViewRaidTeams" selected>и перейти к списку команд</option>'."\n");
 	print('</select>'."\n");
 	print('<input type="button" onClick="javascript: Cancel();" name="CancelButton" value="Отмена" tabindex="'.(++$TabIndex).'">'."\n");
 	print('</td></tr>'."\n\n");
