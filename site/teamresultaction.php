@@ -405,6 +405,10 @@ elseif ($action == 'HideTlp')
 			
 	 MySqlQuery($sql);
 
+        // Пересчитываем результаты
+        RecalcTeamLevelPointsDuration(0, $pTeamId);
+
+
 /*
 	 $statustext = CheckLevelPoints($DistanceId);
 	 if (!empty($error))
