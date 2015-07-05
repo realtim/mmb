@@ -270,6 +270,13 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$alert = 0;
 		return;
 	}
+	
+	// Определяем ключ предыдущего марш-броска, в который данный пользователь заявлялся, но не участвовал
+	$NotStartPreviousRaidId = 0;
+	if  ($NewUserId > 0) {
+		$NotStartPreviousRaidId = CheckNotStart($NewUserId, $RaidId);	
+	}
+	
 
 	// Добавляем/изменяем команду в базе
 	$TeamActionTextForEmail = "";
@@ -303,7 +310,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			$viewsubmode = "ReturnAfterError";
 			return;
 		}
-		$sql = "insert into TeamUsers (team_id, user_id) values (".$TeamId.", ".$NewUserId.")";
+
+		$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid) values (".$TeamId.", ".$NewUserId.", ".$NotStartPreviousRaidId.")";
 		MySqlQuery($sql);
 		$TeamActionTextForEmail = "создана команда";
 		$SendEmailToAllTeamUsers = 1;
@@ -343,7 +351,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		// Если добавляли участника
 		if ($NewUserId > 0)
 		{
-			$sql = "insert into TeamUsers (team_id, user_id) values (".$TeamId.", ".$NewUserId.")";
+			$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid) values (".$TeamId.", ".$NewUserId.", ".$NotStartPreviousRaidId.")";
 			MySqlQuery($sql);
 			$sql = "select user_name from Users where user_id = ".$NewUserId;
 			$Result = MySqlQuery($sql);
