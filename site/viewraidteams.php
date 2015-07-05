@@ -866,7 +866,8 @@ if (!isset($MyPHPScript)) return;
 			{
 			$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
                                        u.user_id, 
-				       tld.levelpoint_id, lp.levelpoint_name 
+				       tld.levelpoint_id, lp.levelpoint_name,
+				       tu.teamuser_notstartraidid 
 			        from  TeamUsers tu
 				     inner join  Users u
 				     on tu.user_id = u.user_id
@@ -883,7 +884,7 @@ if (!isset($MyPHPScript)) return;
 			  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
  
                           // Отметка невыходна на старт в предыдущем ММБ                          
-                          if (CheckNotStart($UserRow['user_id'], $RaidId) > 0) {
+                          if ($UserRow['teamuser_notstartraidid'] > 0) {
 			    print(' <a title = "Участник был заявлен, но не вышел на старт в прошлый раз" href = "#comment">(?!)</a> ');
 			  } 
                           // Неявку участников показываем, если загружены результаты

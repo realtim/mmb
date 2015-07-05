@@ -355,12 +355,17 @@ print('</td></tr>'."\n\n");
 print('<tr><td class="input">'."\n");
 
 
-$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id, COALESCE(tld.levelpoint_id, 0) as levelpoint_id
+$sql = "select tu.teamuser_id, 
+               tu.teamuser_notstartraidid, 
+	       r.raid_nostartprice,
+               CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id, COALESCE(tld.levelpoint_id, 0) as levelpoint_id
 	from TeamUsers tu
 		inner join Users u
 		on tu.user_id = u.user_id
                 left outer join TeamLevelDismiss tld
 		on tu.teamuser_id = tld.teamuser_id
+                left outer join Raids r
+		on tu.teamuser_notstartraidid = r.raid_id
 	where tu.teamuser_hide = 0 and team_id = ".$TeamId;
 $Result = MySqlQuery($sql);
 
@@ -394,6 +399,12 @@ while ($Row = mysql_fetch_assoc($Result))
 
 	// ФИО и год рождения участника
 	print('<a href="javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a> '.$Row['user_birthyear']."\n");
+ 
+        // Отметка невыходна на старт в предыдущем ММБ                          
+        if ($Row['teamuser_notstartraidid'] > 0) {
+	    print(' <a title = "Участник был заявлен, но не вышел на старт в прошлый раз" href = "#comment">(?!)</a> ');
+        } 
+
 	print('</div>'."\n");
 }
 mysql_free_result($Result);
