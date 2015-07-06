@@ -42,6 +42,7 @@ if ($viewmode == 'Add')
 		ReverseClearArrays();
 
 		$DistanceId = $_POST['DistanceId'];
+		$LevelPointId = $_POST['LevelPointId'];
                 $DiscountValue = $_POST['DiscountValue'];
                 $DiscountStart = $_POST['DiscountStart'];
                 $DiscountFinish = $_POST['DiscountFinish'];
@@ -56,7 +57,8 @@ if ($viewmode == 'Add')
 
                 // дистанция уже должна быть инициализирована в raidactions!
                 if (empty($DistanceId)) {return;}
-		
+
+                $LevelPointId = 0;
                 $DiscountValue = 0;
                 $DiscountStart = 0;
                 $DiscountFinish = 0;
@@ -89,7 +91,8 @@ else
 	               lpd.levelpointdiscount_value,  
 	               lpd.levelpointdiscount_start,  
 	               lpd.levelpointdiscount_finish,
-		       lpd.distance_id  
+		       lpd.distance_id,
+		       lpd.levelpoint_id  
 		from LevelPointDiscounts lpd
 		where lpd.levelpointdiscount_id = ".$pLevelPointDiscountId;
 	$Result = MySqlQuery($sql);
@@ -102,6 +105,7 @@ else
 		ReverseClearArrays();
 
 		$DistanceId = $_POST['DistanceId'];
+		$LevelPointId = $_POST['LevelPointId'];
                 $DiscountValue = $_POST['DiscountValue'];
                 $DiscountStart = $_POST['DiscountStart'];
                 $DiscountFinish = $_POST['DiscountFinish'];
@@ -113,6 +117,7 @@ else
                 $DiscountStart = $Row['levelpointdiscount_start'];
                 $DiscountFinish = $Row['levelpointdiscount_finish'];
 		$DistanceId = $Row['distance_id'];
+		$LevelPointId = $Row['levelpoint_id'];
 
  	}	
 
@@ -231,7 +236,21 @@ if ($AllowEdit == 1)
                 title = "Порядковый номер первого КП в амнистии">'."\r\n");
 
 	print('</td></tr>'."\n\n");
-
+	print('<tr><td class="input">'."\n");
+	print('Дистанция: </span>'."\n");
+	// Показываем выпадающий список точек
+	// ограничыиваем пока Сменой карт и Финишем
+	print('<select name="LevelPointId" class="leftmargin" tabindex="'.(++$TabIndex).'"  ">'."\n");
+	$sql = "select levelpoint_id, levelpoint_name from LevelPoints where pointtype_id in (2,4) and distance_id = ".$DistanceId." order by levelpoint_order ";
+	$Result = MySqlQuery($sql);
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+		$levelpointselected = ($Row['levelpoint_id'] == $LevelPointId ? 'selected' : '');
+		print('<option value="'.$Row['levelpoint_id'].'" '.$levelpointselected.' >'.$Row['levelpoint_name']."</option>\n");
+	}
+	mysql_free_result($Result);
+	print('</select>'."\n");
+	print('</td></tr>'."\n\n");
 
 	// ================ Submit для формы ==========================================
 	print('</tr><td class="input" style="padding-top: 20px;">'."\n");
@@ -270,8 +289,12 @@ if (empty($DistanceId))
 	$sql = "select lpd.levelpointdiscount_id, 
 	               lpd.levelpointdiscount_value,
 		       lpd.levelpointdiscount_start,
-		       lpd.levelpointdiscount_finish
+		       lpd.levelpointdiscount_finish,
+		       lpd.levelpoint_id,
+		       lp.levelpoint_name
 		from LevelPointDiscounts lpd
+		     left outer join LevelPoints lp
+		     on lp.levelpoint_id =   lpd.levelpoint_id
 		where lpd.levelpointdiscount_hide = 0 and lpd.distance_id = ".$DistanceId."
 		order by levelpointdiscount_id";
 	
@@ -287,7 +310,8 @@ if (empty($DistanceId))
 		print('<tr class = "gray">
 		         <td width = "150" style = "'.$thstyle.'">Амнистия (минуты)</td>
 		         <td width = "150" style = "'.$thstyle.'">Порядковый номер с</td>
-		         <td width = "150" style = "'.$thstyle.'">по</td>'."\r\n");
+		         <td width = "150" style = "'.$thstyle.'">по</td>
+		         <td width = "150" style = "'.$thstyle.'">Точка зачёта амнистии</td>'."\r\n");
 
 		if ($AllowEdit == 1)
 		{
@@ -304,7 +328,8 @@ if (empty($DistanceId))
                      print('<tr>'."\r\n");
 		     print('<td align = "left" style = "'.$tdstyle.'">'.$Row['levelpointdiscount_value'].'</td>
 		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpointdiscount_start'].'</td>
-		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpointdiscount_finish'].'</td>');
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpointdiscount_finish'].'</td>
+		             <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_name'].'</td>');
 
   		     if ($AllowEdit == 1)
 		     {

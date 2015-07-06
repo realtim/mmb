@@ -1666,10 +1666,18 @@ elseif ($action == 'AddLevelPointDiscount')
                 $pDiscountStart = (int)$_POST['DiscountStart'];
                 $pDiscountFinish = (int)$_POST['DiscountFinish'];
                 $pDiscountValue = (int)$_POST['DiscountValue'];
+		$pLevelPointId = (int)$_POST['LevelPointId'];
                 
 
 
          // тут по-хорошему нужны проверки
+		if  (empty($pLevelPointId))
+		   {
+			$statustext = 'Не указана точка зачёта амнистии';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+	           }
       
 	   if  (empty($pDiscountValue) or ($pDiscountFinish < $pDiscountStart) or empty($pDiscountStart) or empty($pDiscountFinish))
 	   {
@@ -1700,7 +1708,7 @@ elseif ($action == 'AddLevelPointDiscount')
       	         $sql = " select count(*) as countresult 
 		          from LevelPoints
 		          where levelpoint_hide = 0  and distance_id = ".$pDistanceId."
-			        and pointtype_id in (1,2,4) 
+			        and pointtype_id in (1,2,3,4) 
 			        and (levelpoint_order <= ".$pDiscountFinish." 
 				and levelpoint_order >= ".$pDiscountStart.")";
 				 
@@ -1724,8 +1732,8 @@ elseif ($action == 'AddLevelPointDiscount')
              // потом добавить время макс. и мин.
 	     
 		$sql = "insert into LevelPointDiscounts (distance_id, levelpointdiscount_start, levelpointdiscount_finish, 
-			levelpointdiscount_hide, levelpointdiscount_value)
-			values (".$pDistanceId.", ".$pDiscountStart.", ".$pDiscountFinish.", 0, ".$pDiscountValue.")";
+			levelpointdiscount_hide, levelpointdiscount_value, levelpoint_id)
+			values (".$pDistanceId.", ".$pDiscountStart.", ".$pDiscountFinish.", 0, ".$pDiscountValue.",".$pLevelPointId.")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$LevelPointDiscountId = MySqlQuery($sql);
 		
@@ -1777,9 +1785,20 @@ elseif ($action == 'LevelPointDiscountChange')
                 $pDiscountStart = (int)$_POST['DiscountStart'];
                 $pDiscountFinish = (int)$_POST['DiscountFinish'];
                 $pDiscountValue = (int)$_POST['DiscountValue'];
-           
-        // тут надо поставить проверки
+           	$pLevelPointId = (int)$_POST['LevelPointId'];
+                
 
+
+         // тут по-хорошему нужны проверки
+		if  (empty($pLevelPointId))
+		   {
+			$statustext = 'Не указана точка зачёта амнистии';
+			$alert = 1;
+			$viewsubmode = "ReturnAfterError";
+			return;
+	           }
+     
+     
 	   if  (empty($pDiscountValue) or ($pDiscountFinish < $pDiscountStart) or empty($pDiscountStart) or empty($pDiscountFinish))
 	   {
 			$statustext = 'Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.';
@@ -1812,7 +1831,7 @@ elseif ($action == 'LevelPointDiscountChange')
       	         $sql = " select count(*) as countresult 
 		          from LevelPoints
 		          where levelpoint_hide = 0  and distance_id = ".$pDistanceId."
-			        and pointtype_id in (1,2,4) 
+			        and pointtype_id in (1,2,3,4) 
 			        and (levelpoint_order <= ".$pDiscountFinish." 
 				and levelpoint_order >= ".$pDiscountStart.")";
 				 
@@ -1837,6 +1856,7 @@ elseif ($action == 'LevelPointDiscountChange')
         $sql = "update LevelPointDiscounts  set levelpointdiscount_value = ".$pDiscountValue."
 	                                ,levelpointdiscount_start = ".$pDiscountStart."
 	                                ,levelpointdiscount_finish = ".$pDiscountFinish."
+	                                ,levelpoint_id = ".$pLevelPointId."
 	       where 	levelpointdiscount_id = ".$pLevelPointDiscountId;        
 			
 	//echo $sql;
