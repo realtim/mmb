@@ -29,6 +29,7 @@ if (!isset($MyPHPScript)) return;
         // Смена сортировки
 	function OrderTypeChange()
 	{ 
+/*
             if (this.value=='Num')
             {
                  document.RaidTeamsForm.LevelId.disabled=true;
@@ -37,6 +38,7 @@ if (!isset($MyPHPScript)) return;
                  document.RaidTeamsForm.LevelId.disabled=false;
                  document.RaidTeamsForm.ResultViewMode.disabled=false;
             }
+*/
 	    document.RaidTeamsForm.action.value = "ViewRaidTeams";          
 	    document.RaidTeamsForm.submit();
 	  
@@ -205,13 +207,7 @@ if (!isset($MyPHPScript)) return;
 
 
 
-		  $sql = "select COALESCE(r.raid_ruleslink, '') as raid_ruleslink,
-                                 COALESCE(r.raid_startlink, '') as raid_startlink,
-                                 COALESCE(r.raid_kpwptlink, '') as raid_kpwptlink,
-                                 COALESCE(r.raid_legendlink, '') as raid_legendlink,
-                                 COALESCE(r.raid_ziplink, '') as raid_ziplink,
-                                 COALESCE(r.raid_znlink, '') as raid_znlink,
-				 raid_registrationenddate,  raid_closedate,
+		  $sql = "select raid_registrationenddate,  raid_closedate,
 				 COALESCE(r.raid_noshowresult, 0) as raid_noshowresult
 			  from  Raids r
 			  where r.raid_id = ".$RaidId."
@@ -220,12 +216,6 @@ if (!isset($MyPHPScript)) return;
 		  $Result = MySqlQuery($sql);
 		  $Row = mysql_fetch_assoc($Result);
 		  mysql_free_result($Result);
-                $RaidRulesLink = trim($Row['raid_ruleslink']);
-                $RaidStartLink = trim($Row['raid_startlink']);
-                $RaidKpWptLink = trim($Row['raid_kpwptlink']);
-                $RaidLegendLink = trim($Row['raid_legendlink']);
-                $RaidZipLink = trim($Row['raid_ziplink']);
-                $RaidZnLink = trim($Row['raid_znlink']);
                 $RaidRegisterEndDt = $Row['raid_registrationenddate'];
                 $RaidCloseDt = $Row['raid_closedate'];
                 $RaidNoShowResult = $Row['raid_noshowresult'];
@@ -282,29 +272,26 @@ if (!isset($MyPHPScript)) return;
 		print('</select>'."\r\n");  
 		mysql_free_result($Result);		
 
-		if (!isset($_REQUEST['LevelId'])) $_REQUEST['LevelId'] = "";
+//		if (!isset($_REQUEST['LevelId'])) $_REQUEST['LevelId'] = "";
 	
 	        // Режим отображения результатов
                 if (isset($_REQUEST['ResultViewMode'])) $ResultViewMode = $_REQUEST['ResultViewMode']; else $ResultViewMode = "";
 	
-                // Сбрасываем режим отображения, если задан этап
-                if ($_REQUEST['LevelId'] > 0) {
-                       $ResultViewMode = "";
-                }
 	
 		// Определяем, можно ли показывать пользователю информацию об этапах дистанции
-		if ($CanViewLevels)
+/*
+ 	 	if ($CanViewLevels)
 		{
-		    $sql = "select level_id, d.distance_name, CONCAT(trim(level_name), ' (', trim(d.distance_name), ')') as level_name
-                            from  Levels l
+		    $sql = "select levelpoint_id, d.distance_name, CONCAT(trim(lp.levelpoint_name), ' (', trim(d.distance_name), ')') as levelpoint_name
+                            from  LevelPoints l
                                 inner join Distances d
-                                on l.distance_id = d.distance_id
-                            where l.level_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+                                on lp.distance_id = d.distance_id
+                            where d.raid_id = ".$RaidId;
                     if (!empty($_REQUEST['DistanceId']))
                     {
 			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
                     }
-                    $sql = $sql." order by d.distance_name, l.level_order ";
+                    $sql = $sql." order by d.distance_name, lp.levelpoint_order ";
 		    //  echo 'sql '.$sql;
 		    $Result = MySqlQuery($sql);
 
@@ -333,39 +320,11 @@ if (!isset($MyPHPScript)) return;
 
 		}
 
+*/
 		print('</div>'."\r\n");
             	
 		print('<div align = "left" style = "margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
-
-		// 08.12.2013  Добавил ссылку на новый раздел 
-                // Для 2013 нужно ссылки проставить в таблице без повторной загрузки
-		if ($RaidId >= 22)
-		{
-	                print('<a  style = "font-size:80%; margin-right: 15px;"  href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Файлы</a>'."\r\n");
-
-                } else {
-
-			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidRulesLink.'" target = "_blank">Положение</a> '."\r\n");
-			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidStartLink.'" target = "_blank">Информация о старте</a> '."\r\n");
-			if (trim($RaidKpWptLink) <> '')
-			{
-			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidKpWptLink.'" target = "_blank">Точки КП</a> '."\r\n");
-			}
-			if (trim($RaidLegendLink) <> '')
-			{
-			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidLegendLink.'" target = "_blank">Легенды</a> '."\r\n");
-			}
-	                if (trim($RaidZipLink) <> '')
-			{
-			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidZipLink.'" target = "_blank">ZIP всех материалов</a> '."\r\n");
-			}
-	                if (trim($RaidZnLink) <> '')
-			{
-			print('<a  style = "font-size:80%; margin-right: 15px;" href = "'.$RaidZnLink.'" target = "_blank");">Значок</a> '."\r\n");
-			}
-                }
-                // Конец проверки на вывод ссылки на раздел, а не на отдельные файлы
- 
+		print('<a  style = "font-size:80%; margin-right: 15px;"  href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Файлы</a>'."\r\n");
 		print('<a  style = "font-size:80%; margin-right: 15px;" href = "javascript: JsonExport();">Json</a> '."\r\n");
 		print('</div>'."\r\n");
 
@@ -413,79 +372,42 @@ if (!isset($MyPHPScript)) return;
 		    
 
                 // Показываем этапы
-		if ($CanViewLevels)
+		if ($CanViewLevels and  $OrderType == 'Place')  
 		{
 
                     // Нужно доработать проыерку старта,т.к. нельзя прямо проверять время старта - на этапах с общим стартом его нет
                     // Добавлен расчет статистики
-		    $sql = "select  d.distance_name, l.level_id, l.level_name,
-                                    l.level_pointnames, l.level_starttype,
-                                    l.level_pointpenalties, l.level_order,
-				    DATE_FORMAT(l.level_begtime,    '%d.%m %H:%i') as level_sbegtime,
-				    DATE_FORMAT(l.level_maxbegtime, '%d.%m %H:%i') as level_smaxbegtime,
-                                    DATE_FORMAT(l.level_minendtime, '%d.%m %H:%i') as level_sminendtime,
-                                    DATE_FORMAT(l.level_endtime,    '%d.%m %H:%i') as level_sendtime,
-                                    l.level_begtime, l.level_maxbegtime, l.level_minendtime,
-                                    l.level_endtime, 
+		    $sql = "select  d.distance_name, lp.levelpoint_id, lp.levelpoint_name,
+                                    pt.pointtype_name, lp.levelpoint_order,
+				     lp.levelpoint_penalty,
+				    DATE_FORMAT(lp.levelpoint_mindatetime, '%d.%m %H:%i') as levelpoint_smindatetime,
+				    DATE_FORMAT(lp.levelpoint_maxdatetime, '%d.%m %H:%i') as levelpoint_smaxdatetime,
                                     (select count(*) 
-                                     from TeamLevels tl
+                                     from TeamLevelPoints tlp
                                           inner join Teams t
-                                          on tl.team_id = t.team_id 
-                                     where tl.level_id =  l.level_id 
-                                           and tl.teamlevel_progress > 0
-                                           and tl.teamlevel_hide = 0
-                                           and t.team_hide = 0
-                                    ) as teamstartcount,
+                                          on tlp.team_id = t.team_id 
+                                     where tlp.levelpoint_id =  lp.levelpoint_id 
+                                    ) as teamscount,
                                     (select count(*) 
-                                     from TeamLevels tl
+                                     from TeamLevelPoints tlp
                                           inner join Teams t
-                                          on tl.team_id = t.team_id 
+                                          on tlp.team_id = t.team_id 
                                           inner join TeamUsers tu
-                                          on tl.team_id = tu.team_id 
-                                          left outer join LevelPoints lp2
-                                          on tu.levelpoint_id = lp2.levelpoint_id
-                                          left outer join Levels l2
-                                          on lp2.level_id = l2.level_id
-                                     where tl.level_id =  l.level_id 
-                                           and tl.teamlevel_progress > 0
-                                           and tl.teamlevel_hide = 0
-                                           and tu.teamuser_hide = 0
+                                          on t.team_id = tu.team_id 
+                                          left outer join TeamLevelDismiss tld
+                                          on tu.teamuser_id = tld.teamuser_id
+					  left outer join LevelPoints lp2
+					  on tld.levelpoint_id = lp2.levelpoint_id
+                                     where tlp.levelpoint_id =  lp.levelpoint_id 
                                            and t.team_hide = 0
-                                           and COALESCE(l2.level_order, l.level_order + 1) > l.level_order 
-                                    ) as teamuserstartcount,
-				     (select count(*) 
-                                     from TeamLevels tl
-                                          inner join Teams t
-                                          on tl.team_id = t.team_id 
-                                     where tl.level_id = l.level_id 
-                                           and tl.teamlevel_progress = 2
-					    and tl.teamlevel_endtime > 0
-					    and tl.teamlevel_hide = 0
-                                           and t.team_hide = 0
-                                   ) as teamfinishcount,
-                                    (select count(*) 
-                                     from TeamLevels tl
-                                          inner join Teams t
-                                          on tl.team_id = t.team_id 
-                                          inner join TeamUsers tu
-                                          on tl.team_id = tu.team_id 
-                                          left outer join LevelPoints lp2
-                                          on tu.levelpoint_id = lp2.levelpoint_id
-                                          left outer join Levels l2
-                                          on lp2.level_id = l2.level_id
-                                     where tl.level_id =  l.level_id 
-                                           and tl.teamlevel_progress = 2
-					    and tl.teamlevel_endtime > 0
-                                           and tl.teamlevel_hide = 0
-                                           and tu.teamuser_hide = 0
-                                           and COALESCE(l2.level_order, l.level_order + 1) > l.level_order 
-                                           and t.team_hide = 0
-                                    ) as teamuserfinishcount
-
-                            from  Levels l
+                                           and COALESCE(lp2.levelpoint_order, lp.levelpoint_order + 1) > lp.levelpoint_order 
+                                    ) as teamuserscount
+                            from  LevelPoints lp
                                   inner join Distances d
-                                  on d.distance_id = l.distance_id
-                            where    l.level_hide = 0 and d.distance_hide = 0 and  d.raid_id = ".$RaidId;
+                                  on d.distance_id = lp.distance_id
+				  inner join PointTypes pt
+				  on lp.pointtype_id = pt.pointtype_id
+                            where  d.raid_id = ".$RaidId;
 
                     // $sql = $sql." and l.level_begtime <= now() ";
 
@@ -493,20 +415,25 @@ if (!isset($MyPHPScript)) return;
                     {
 			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
                     }
-                    if (!empty($_REQUEST['LevelId']))
+                 /*
+		    if (!empty($_REQUEST['LevelId']))
                     {
 			$sql = $sql." and l.level_id = ".$_REQUEST['LevelId'];
                     }
-                    $sql = $sql." order by d.distance_name, l.level_order ";
+                   */ $sql = $sql." order by d.distance_name, lp.levelpoint_order ";
 
 	            // echo $sql;
 
 		    print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");
 		    print('<tr class = "gray">'."\r\n");
 		    print('<td width = "100">Дистанция</td>'."\r\n");
-		    print('<td width = "300">Этап (по ссылкам - карты)</td>'."\r\n");
-		    print('<td width = "400">Тип старта (границы по времени)'."\r\n");
-		    print('<td width = "70">Число КП'."\r\n");
+		    print('<td width = "100">Точка</td>'."\r\n");
+		    print('<td width = "100">Тип и границы времени'."\r\n");
+		    print('<td width = "100">Время с'."\r\n");
+		    print('<td width = "100">по'."\r\n");
+		    print('<td width = "100">Штраф за невзятие'."\r\n");
+		    print('<td width = "100">Команд'."\r\n");
+		    print('<td width = "100">Участников'."\r\n");
 		    print('</tr>'."\r\n");
 		    $Result = MySqlQuery($sql);
 
@@ -514,163 +441,33 @@ if (!isset($MyPHPScript)) return;
 		    while ($Row = mysql_fetch_assoc($Result))
 		    {
 
-			// По этому ключу потом определяем, есть ли уже строчка в teamLevels или её нужно создать
-
-			$TeamLevelId = $Row['level_id'];
-			$LevelStartType = $Row['level_starttype'];
-			$LevelPointNames =  $Row['level_pointnames'];
-			$LevelPointPenalties =  $Row['level_pointpenalties'];
-
-			$LevelStartTeamCount =  $Row['teamstartcount'];
-			$LevelFinishTeamCount =  $Row['teamfinishcount'];
-			$LevelStartTeamUserCount =  $Row['teamuserstartcount'];
-			$LevelFinishTeamUserCount =  $Row['teamuserfinishcount'];
-
-			//   $LevelMapLink = $Row['level_maplink'];
-
-			// Проверяем, что строчка с названиями КП указана
-			if (trim($LevelPointNames) <> '')
-			{
-			    $PointsCount = count(explode(',', $LevelPointNames));
-			} else {
-			    $PointsCount = 0;
-			}
-                  
-
-			// Если старт не задан - считаем общим
-			if (empty($LevelStartType))
-			{
-			    $LevelStartType = 2;
-			}
-
-			// Делаем оформление в зависимости от типа старта и соотношения  гранчиных дат:
-			// Есди даты границ совпадают - выводим только первую
-			// Если есть даты старта и фнишиа и они совпадают - выодим только дату старта
-			if ($LevelStartType == 1)
-			{
-			    $LevelStartTypeText = 'Старт по готовности:  ';
-			    if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_smaxbegtime']), 0, 5))
-			    {
-				$LevelStartTypeText = $LevelStartTypeText.$Row['level_sbegtime'].' - '.substr(trim($Row['level_smaxbegtime']), 6);
-			    } else {
-				$LevelStartTypeText = $LevelStartTypeText.$Row['level_sbegtime'].' - '.$Row['level_smaxbegtime'];
-			    }
-			    $LevelStartTypeText = $LevelStartTypeText.' </br> Финиш: ';
-
-			} elseif ($LevelStartType == 2) {
-			    $LevelStartTypeText = 'Старт общий: '.$Row['level_sbegtime'];
-			    $LevelStartTypeText = $LevelStartTypeText.' </br> Финиш: ';
-
-			} elseif ($LevelStartType == 3) {
-			    $LevelStartTypeText = 'Старт во время финиша предыдущего этапа </br> Финиш: ';
-
-			}
-
-
-			// Дополняем рамками финиша
-			// Проверяем на одинаковые даты
-			if (substr(trim($Row['level_sminendtime']), 0, 5) == substr(trim($Row['level_sendtime']), 0, 5))
-			{
-			    if (substr(trim($Row['level_sbegtime']), 0, 5) == substr(trim($Row['level_sendtime']), 0, 5))
-			    {
-				$LevelStartTypeText = $LevelStartTypeText.substr(trim($Row['level_sminendtime']), 6).' - '.substr(trim($Row['level_sendtime']), 6);
-			    } else {
-				$LevelStartTypeText = $LevelStartTypeText.$Row['level_sminendtime'].' - '.substr(trim($Row['level_sendtime']), 6);
-			    }
-			} else {
-			    $LevelStartTypeText = $LevelStartTypeText.$Row['level_sminendtime'].' - '.$Row['level_sendtime'];
-			}
-
-			$LevelStartTypeText = $LevelStartTypeText.' ';
-       
-			// сторим строчку для текущего этапа
 			print('<tr><td>'.$Row['distance_name'].'</td>'."\r\n");
-
-			print('<td>'.$Row['level_name']."\r\n");
-
-			$sql = 'select levelmaplink_url, levelmapozilink_url
-                                from LevelMapLinks
-                                where level_id = '.$Row['level_id'].'
-                                order by levelmaplink_id';
-
-			// echo $sql;
-			$ResultMap = MySqlQuery($sql);
-       
-			$MapsCount = 0;
-			$MapString = '';
-			// теперь цикл обработки данных по этапам
-			while ($RowMap = mysql_fetch_assoc($ResultMap))
-			{
-			    $MapsCount++;
-			    $MapString = $MapString.', <a href = "'.trim($RowMap['levelmaplink_url']).'" target = "_blank">'.$MapsCount.'</a>';
-			    if (trim($RowMap['levelmapozilink_url']) <> '')
-			    {
-			      $MapString = $MapString.' <a href = "'.trim($RowMap['levelmapozilink_url']).'" target = "_blank">map</a>';
-			    }  
-			}
-			mysql_free_result($ResultMap);
-			if (!empty($MapString))
-			{
-			    $MapString = '('.trim(substr(trim($MapString), 1)).')';
-			    print($MapString."\r\n");
-			}
-
-                        // Впечатываем статитстику старт/финиш
-
-
-			print('</br>'.$LevelStartTeamCount.'/'.$LevelStartTeamUserCount.' - '.$LevelFinishTeamCount.'/'.$LevelFinishTeamUserCount.' '."\r\n");
-			print('</td>'."\r\n");
-
-			print('<td>'.$LevelStartTypeText.'</td>
-			       <td>'.$PointsCount.'</td>
-			       </tr>'."\r\n");
+			print('<td>'.$Row['levelpoint_name'].'</td>'."\r\n");
+			print('<td>'.$Row['pointtype_name'].'</td>'."\r\n");
+			print('<td>'.$Row['levelpoint_smindatetime'].'</td>'."\r\n");
+			print('<td>'.$Row['levelpoint_smaxdatetime'].'</td>'."\r\n");
+			print('<td>'.$Row['levelpoint_penalty'].'</td>'."\r\n");
+			print('<td>'.$Row['teamscount'].'</td>'."\r\n");
+			print('<td>'.$Row['teamuserscount'].'</td>'."\r\n");
+			print('</tr>'."\r\n");
 
 		    }
-		    // конец цикла по этапам
+		    // конец цикла по точкам
 		    mysql_free_result($Result);
 		    print('</table>'."\r\n");
 		}
 
 		// ============ Вывод списка команд ===========================
 
-		// Готовим строчки с описанием схода с этапов
-		$DistanceId = 0;
-		$DismissNames = array();
-		$sql = "select  COALESCE(l.level_name, '') as level_name, d.distance_id 
-		          from Distances d 
-			       left outer join Levels l 
-			       on d.distance_id = l.distance_id
-			          and l.level_hide = 0  
-			where d.distance_hide = 0 and d.raid_id = ".$RaidId.'
-			order by d.distance_id, l.level_order';
-                $Result = MySqlQuery($sql);
-		while ($Row = mysql_fetch_assoc($Result))
-		{
-			if ($DistanceId <> $Row['distance_id'])
-			{
-				$DistanceId = $Row['distance_id'];
-				$TeamProgress = 0;
-			}
-			if (!$TeamProgress)
-			{
-				if ($RaidStage < 4) $DismissNames[$DistanceId][0] = '';
-				else $DismissNames[$DistanceId][0] = "\n".'<br><i>Не вышла на старт</i>';
-			}
-			else $DismissNames[$DistanceId][$TeamProgress] = "\n".'<br><i>Не вышла на этап '.$Row['level_name'].'</i>';
-			$DismissNames[$DistanceId][$TeamProgress + 1] = "\n".'<br><i>Сход или выход за КВ этапа '.$Row['level_name'].'</i>';
-			$DismissNames[$DistanceId][$TeamProgress + 2] = '';
-			$TeamProgress += 2;
-		}
-		mysql_free_result($Result);
-
+	
 		// Выводим список команд
 		if  ($OrderType == 'Num')
                 {
 
                   // Сортировка по номеру (в обратном порядке)
 		  $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
-		               t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
-                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult, 
+		               t.team_mapscount, 
+			       d.distance_name, d.distance_id,
 			       COALESCE(t.team_outofrange, 0) as  team_outofrange 
 		        from  Teams t
 			     inner join  Distances d 
@@ -687,18 +484,19 @@ if (!isset($MyPHPScript)) return;
                 } elseif ($OrderType == 'Place') {
                   // Сортировка по месту требует более хитрого запроса
 
-
-		   if (empty($_REQUEST['LevelId']))
-		   {
-
 		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
-		               t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
+		               t.team_mapscount, t.team_progress, 
+		               COALESCE(t.team_progressdetail, 0) as team_progressdetail,
+			       d.distance_name, d.distance_id,
                                TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
-			       COALESCE(t.team_outofrange, 0) as  team_outofrange 
-
+			       COALESCE(t.team_outofrange, 0) as  team_outofrange,
+			       COALESCE(lp.levelpoint_name, '') as levelpoint_name
 			  from  Teams t
 				inner join  Distances d 
 				on t.distance_id = d.distance_id
+				left outer join LevelPoints lp
+				on lp.distance_id = t.distance_id
+				   and lp.levelpoint_order = t.team_progress
 			  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
 
 		      if (!empty($_REQUEST['DistanceId']))
@@ -706,51 +504,13 @@ if (!isset($MyPHPScript)) return;
 			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
 		      }
 
-		      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_result asc, team_num asc ";
+		      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_progressdetail asc, team_result asc, team_num asc ";
 		    
-		     } else {
-                          // Если фильтруем по этапу, то другой запрос
-
-		      $sql = " select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
-				      t.team_mapscount, t.team_progress, d.distance_name, d.distance_id,
-				      CASE WHEN COALESCE(tl.teamlevel_duration, 0) > 0 
-                                          THEN TIME_FORMAT(SEC_TO_TIME(TIME_TO_SEC(tl.teamlevel_duration) + COALESCE(tl.teamlevel_penalty, 0)*60), '%H:%i') 
-                                          ELSE ''
-                                      END as  team_sresult,
-			              COALESCE(t.team_outofrange, 0) as  team_outofrange, 
-                                      TIME_FORMAT(SEC_TO_TIME(COALESCE(tl.teamlevel_penalty, 0)*60), '%H:%i') as teamlevel_penalty,
-                                      tl.teamlevel_points, tl.teamlevel_comment, l.level_pointnames
-			    from  TeamLevels tl 
-				  inner join Levels l 
-				  on tl.level_id = l.level_id 
-                                  inner join Teams t
-                                  on t.team_id = tl.team_id 
-				  inner join  Distances d 
-				  on t.distance_id = d.distance_id
-			    where tl.teamlevel_hide = 0 
-                                 and tl.level_id = ".$_REQUEST['LevelId']." 
-                                 and tl.teamlevel_progress > 0
-                                 and t.team_hide = 0
-                                 and l.level_hide = 0  
-				 and d.distance_hide = 0
-			    order by team_outofrange, tl.teamlevel_progress desc, team_sresult asc, t.team_num asc";
-
-                     }
-
+		
 		} elseif ($OrderType == 'Errors') {
-		// Ставим первыми те команды, у которых хотя бы на одном из этапов код ошибки или комментарий отличен от нуля
-			$sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name,  t.team_outofrange,  t.team_greenpeace, t.team_mapscount, t.team_progress, d.distance_name, d.distance_id, TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
-					(select count(*) from Teams t2, Distances d2, Levels l, TeamLevels tl
-					where t2.team_id = t.team_id and t2.distance_id = d2.distance_id and l.distance_id = d2.distance_id and tl.team_id = t.team_id and tl.level_id = l.level_id
-						and (((tl.error_id is not NULL) and (tl.error_id <> 0)) or (tl.teamlevel_comment is not NULL))
-					) as n_err
-				from Teams t, Distances d
-				where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId." and t.distance_id = d.distance_id";
-			if (!empty($_REQUEST['DistanceId']))
-			{
-				$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
-			}
-			$sql = $sql." order by n_err desc, t.team_progress desc, t.team_result asc, t.team_id asc";
+		
+                       // Не знаю, как будет реализовано
+		
 		}
 
           	//echo 'sql '.$sql;
@@ -764,62 +524,42 @@ if (!isset($MyPHPScript)) return;
                 $thstyle = 'border-color: #000000; border-style: solid; border-width: 1px 1px 1px 1px; padding: 5px 0px 2px 5px;';		
                 $thstyle = '';		
 
-                $ColumnWidth = 0;
-                if ($ResultViewMode == 'WithLevels') {
-                    $ColumnWidth = 175;
-                } else {
-                    $ColumnWidth = 350;
-                }
 
 
 //		print('<table width = "'.(($_REQUEST['LevelId'] > 0 and  $OrderType == 'Place') ? '1015' : '815').'" border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
 		print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");  
-		print('<tr class = "gray">
-		         <td width = "50" style = "'.$thstyle.'">Номер</td>
-			 <td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда (gps, дистанция, карт)</td>');
+		print('<tr class = "gray">'."\r\n");  
 
+		if ($OrderType == 'Num') {
 
-		if ($OrderType <> 'Errors') print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>');
-		else print('<td style = "'.$thstyle.'">Ошибки</td>');
-		print('<td width = "50" style = "'.$thstyle.'">Результат</td>'."\r\n");
-                if ($OrderType == 'Place')   
-                {
-	                  // дополнительное поле место
-			  print('  <td width = "50" style = "'.$thstyle.'">Место</td>'."\r\n");
-
-	                  // дополнительные поля в случае вывода  этапа
-	                  if ($_REQUEST['LevelId'] > 0)
-	                  {
-			    print('<td width = "50" style = "'.$thstyle.'">Штраф</td>
-				   <td width = "150" style = "'.$thstyle.'">Комментарий</td>
-				   <td width = "250" style = "'.$thstyle.'">Невзятые КП</td>'."\r\n");
-			  } else {
-			  
-		            print('<td width = "150" style = "'.$thstyle.'">Комментарий</td>'."\r\n");
-			  
-			  }
-			  // Конце проверки, что отображается конкретный этап
-
-
-		          if ($ResultViewMode == 'WithLevels') 
-			  {
-				print('<td width = "500"  style = "'.$thstyle.'">'."\r\n");
-				print('<table border = "0" cellpadding = "0" style = "font-size: 100%"><tr>'."\r\n");
-				print('<td width = "120" style = "'.$thstyle.'">Старт-Финиш</td>'."\r\n");
-			        print('<td width = "100" style = "'.$thstyle.'">Время (Штраф)</td>'."\r\n");
-				print('<td width = "50" style = "'.$thstyle.'">Место</td>'."\r\n");
-				print('<td width = "230" style = "'.$thstyle.'">Не взяты КП</td>'."\r\n");
-				print('</tr></table>'."\r\n");
-
-			  } 
-			  // Конец проверки на отображение с этапами
-
-                }  else {
+			$ColumnWidth = 350;
+			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
 		
-		  print('<td width = "150" style = "'.$thstyle.'">Комментарий</td>'."\r\n");
+		} elseif ($OrderType == 'Place') {
+		
 
+	                $ColumnWidth = 0;
+	                if ($ResultViewMode == 'WithLevels') {
+	                    $ColumnWidth = 175;
+	                } else {
+	                    $ColumnWidth = 350;
+	                }
+
+			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Точка финиша</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Комментарий</td>'."\r\n");  
+
+
+		} elseif ($OrderType == 'Errors') {
+		
 		}
-                // Конец проверки на сортировку по месту 
+	
 		print('</tr>'."\r\n");
 	
 		$TeamsCount = mysql_num_rows($Result);
@@ -841,91 +581,67 @@ if (!isset($MyPHPScript)) return;
 			} 
 
 			$TeamsCount--;
-                      /*
-                       if ($Row['team_greenpeace'] == 1) {
-                             $tdgreenstyle = 'background-color:#99ee99;';
-                        } else {
-                             $tdgreenstyle = '';
-                        }
-		*/
-		        $tdgreenstyle = '';
 
- 			print('<tr class = "'.$TrClass.'"><td style = "'.$tdgreenstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td><td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
+ 			print('<tr class = "'.$TrClass.'">
+			       <td style = "'.$tdstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
+			       <td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
 			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_greenpeace'] == 1 ? ', <a title = "Нет сломанным унитазам!" href = "#comment">ну!</a>' : '').
-				  ($Row['team_outofrange'] == 1 ? ', Вне зачета!' : '').')'."\r\n");
+				  ($Row['team_outofrange'] == 1 ? ', Вне зачета!' : '').')
+			        </td><td style = "'.$tdstyle.'">'."\r\n");
 
-                        // прогресс команды показываем только когда открыты результаты
-                        if ($CanViewResults) 
-			{
-                            print($DismissNames[$Row['distance_id']][$Row['team_progress']]."\r\n");
-                        }
-			
-			print('</td><td style = "'.$tdstyle.'">'."\r\n");
-			
+                        // Формируем колонку Участники			
 			if ($OrderType <> 'Errors')
 			{
-			$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
-                                       u.user_id, 
-				       tld.levelpoint_id, lp.levelpoint_name,
-				       tu.teamuser_notstartraidid 
-			        from  TeamUsers tu
-				     inner join  Users u
-				     on tu.user_id = u.user_id
-                                     left outer join TeamLevelDismiss tld
- 				     on tu.teamuser_id = tld.teamuser_id
-                                     left outer join LevelPoints lp
- 				     on tld.levelpoint_id = lp.levelpoint_id
- 				where tu.teamuser_hide = 0 and team_id = ".$Row['team_id']; 
-			//echo 'sql '.$sql;
-			$UserResult = MySqlQuery($sql);
+				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
+					       u.user_id, 
+					       tld.levelpoint_id, lp.levelpoint_name,
+					       tu.teamuser_notstartraidid 
+				        from  TeamUsers tu
+					     inner join  Users u
+					     on tu.user_id = u.user_id
+		                             left outer join TeamLevelDismiss tld
+					     on tu.teamuser_id = tld.teamuser_id
+		                             left outer join LevelPoints lp
+					     on tld.levelpoint_id = lp.levelpoint_id
+					where tu.teamuser_hide = 0 and team_id = ".$Row['team_id']; 
+				//echo 'sql '.$sql;
+				$UserResult = MySqlQuery($sql);
 
-			while ($UserRow = mysql_fetch_assoc($UserResult))
-			{
-			  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
+				while ($UserRow = mysql_fetch_assoc($UserResult))
+				{
+				  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
  
-                          // Отметка невыходна на старт в предыдущем ММБ                          
-                          if ($UserRow['teamuser_notstartraidid'] > 0) {
-			    print(' <a title = "Участник был заявлен, но не вышел на старт в прошлый раз" href = "#comment">(?!)</a> ');
-			  } 
-                          // Неявку участников показываем, если загружены результаты
-			  if ($CanViewResults) 
-                          {
-				if ($UserRow['levelpoint_name'] <> '')
-				{
-				    print('<i>Не явился(-ась) в: '.$UserRow['levelpoint_name'].'</i>'."\r\n");
-				} 
-                          }
-			  print('</div>'."\r\n");
-			}  
-		        mysql_free_result($UserResult);
-			}
-			elseif ($Row['n_err'] > 0)
-			{
-				$sql = 'select l.level_name, teamlevel_comment, tl.error_id, e.error_name from TeamLevels tl
-						inner join Levels l on l.level_id = tl.level_id
-						inner join Errors e on e.error_id = tl.error_id
-					where tl.team_id = '.$Row['team_id'].' and ((tl.error_id <> 0) or (tl.teamlevel_comment is not NULL))';
-				$ErrResult = MySqlQuery($sql);
-				while ($ErrRow = mysql_fetch_assoc($ErrResult))
-				{
-					echo $ErrRow['level_name'].', ';
-					if ($ErrRow['error_id'] > 0) echo 'ошибка';
-					elseif ($ErrRow['error_id'] < 0) echo 'предупреждение';
-					else echo 'комментарий';
-					if ($ErrRow['error_id']) echo ": <strong>".$ErrRow['error_name']."</strong>";
-					else echo ": <em>".$ErrRow['teamlevel_comment']."</em>";
-					echo "<br />";
-				}
-				mysql_free_result($ErrResult);
-			}
-
-			print('</td><td>'.$Row['team_sresult']."\r\n");
+		                  // Отметка невыходна на старт в предыдущем ММБ                          
+		                  if ($UserRow['teamuser_notstartraidid'] > 0) {
+				    print(' <a title = "Участник был заявлен, но не вышел на старт в прошлый раз" href = "#comment">(?!)</a> ');
+				  } 
+        
+		                  // Неявку участников показываем, если загружены результаты
+				  if ($CanViewResults) 
+		                  {
+					if ($UserRow['levelpoint_name'] <> '')
+					{
+					    print('<i>Не явился(-ась) в: '.$UserRow['levelpoint_name'].'</i>'."\r\n");
+					} 
+		                  }
+				  print('</div>'."\r\n");
+				}  
+			        mysql_free_result($UserResult);
+			} 
+			// Конец формирования колонкуи Участники
 			print('</td>'."\r\n");
+
+
                        // Сортировка "по месту"
 			if ($OrderType == 'Place')   
 			{
-			    print('<td width = "50" style = "'.$thstyle.'">'."\r\n");
 
+
+			    print('<td>'.$Row['levelpoint_name'].'</td>'."\r\n");
+			    print('<td>'.$Row['team_sresult'].'</td>'."\r\n");
+
+                            // Формируем место    
+			    print('<td>'."\r\n");	
                             // Сбрасываем при смене дистанции
 			    if ($Row['distance_id'] <> $PredDistanceId)
                             {
@@ -935,7 +651,7 @@ if (!isset($MyPHPScript)) return;
 				$PredDistanceId = $Row['distance_id'];
                             }
 			    
-                            if ($Row['team_sresult'] == '00:00' or $Row['team_sresult'] == '' or $Row['team_outofrange'] == 1)
+                            if ($Row['team_sresult'] == '00:00' or $Row['team_sresult'] == '' or $Row['team_outofrange'] == 1 or $Row['team_progressdetail'] > 0)
                             {
                                print('&nbsp;');
                             } elseif($Row['team_sresult'] <>  $PredResult) {
@@ -950,132 +666,18 @@ if (!isset($MyPHPScript)) return;
                             }
 			    print('</td>'."\r\n");
 
-                           // Если фильтровали по этапу, то нужныдополнительные колонки 
-			    if ($_REQUEST['LevelId'] > 0)
-			    {
-			      print('<td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_penalty'].'</td>
-				      <td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_comment'].'</td>
-				      <td width = "100" style = "'.$thstyle.'">'."\r\n");
-			      InvertTeamLevelPoints($Row['level_pointnames'], $Row['teamlevel_points']); 
-//			      ConvertTeamLevelPoints2($LevelPointNames, $LevelPointPenalties, $Row['teamlevel_points'], $_REQUEST['LevelId']); 
-			      print('</td>'."\r\n");
-
-			    } else {
-				print('<td width = "150" style = "'.$thstyle.'">'.GetTeamComment($Row['team_id']).'</td>'."\r\n");
+                              // Формируем комментарий
+			    //print('<td  style = "'.$tdstyle.'">'.GetTeamComment($Row['team_id']).'</td>'."\r\n");
+			    print('<td>'."\r\n");
+			    if ($Row['team_progressdetail'] == 1) {
+		                print('Выход за КВ'."\r\n");
+			    } elseif ($Row['team_progressdetail'] == 2) { 
+		                print('Не взято обязательное КП'."\r\n");
+	                    } else {
+				print('&nbsp'."\r\n");
 			    }
-			    // Конец проверки на вывод конкретного этапа
+			    print('</td>'."\r\n");
 
-                           // Для вывода "с этапами" 
-			    if ($ResultViewMode == 'WithLevels')
-                            {
-/*
-			      print('<td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_penalty'].'</td>
-				      <td width = "50" style = "'.$thstyle.'">'.$Row['teamlevel_comment'].'</td>
-				      <td width = "100" style = "'.$thstyle.'">'."\r\n");
-			      InvertTeamLevelPoints($Row['level_pointnames'], $Row['teamlevel_points']); 
-  */
-                               print('<td>'."\r\n");
-                               print('<table border = "0" cellpadding = "0" style = "font-size: 100%">'."\r\n");
-
-                               // Запрашиваем все этапы 
-			      $sql = "select level_id, level_starttype, 
-                                           TIME_FORMAT(level_begtime, '%H:%i') as level_begtime,
-                                           level_order, level_pointnames
-                                    from  Levels l
-				          inner join Distances d 
-					  on l.distance_id = d.distance_id
-                                    where  l.level_hide = 0 and d.distance_hide = 0 and l.distance_id = ".$Row['distance_id']."
-                                    order by l.level_order ";
-			      //  echo 'sql '.$sql;
-			      $LevelResult = MySqlQuery($sql);
-  
-			      while ($LevelRow = mysql_fetch_assoc($LevelResult))
-			      {
-                                 // Запрашиваем результаты для этого этапа
-				  $sql = "select TIME_FORMAT(SEC_TO_TIME(tl.teamlevel_penalty*60), '%H:%i') as teamlevel_penalty, 
-                                                tl.teamlevel_progress,
-                                                TIME_FORMAT(tl.teamlevel_duration, '%H:%i') as teamlevel_duration,
-                                                TIME_FORMAT(tl.teamlevel_endtime, '%H:%i') as teamlevel_endtime,
-                                                TIME_FORMAT(tl.teamlevel_begtime, '%H:%i') as teamlevel_begtime, 
-                                                tl.teamlevel_points
-					  from  TeamLevels tl
-                                    where tl.teamlevel_hide = 0 
-                                          and tl.teamlevel_progress > 0
-                                          and tl.level_id = ".$LevelRow['level_id']."
-                                          and tl.team_id = ".$Row['team_id']."
-					  and COALESCE(tl.error_id, 0) = 0  ";
-					  
-				    //  echo 'sql '.$sql;
-				    $TeamLevelResult = MySqlQuery($sql);
-				    while ($TeamLevelRow = mysql_fetch_assoc($TeamLevelResult))
-				    {
-					print('<tr><td width = "120" align = "left">&nbsp;'."\r\n");
-
-                                               // формируем результирующую строку
-                                       if ($LevelRow['level_starttype'] == 1) {
-
-                                         print($TeamLevelRow['teamlevel_begtime']."\r\n"); 
-
-                                       } elseif  ($LevelRow['level_starttype'] == 2) {
-
-                                          print($LevelRow['level_begtime']."\r\n"); 
-                                   	} else {
-                                          print(''."\r\n"); 
-					}
-
-                                       print(' - '.$TeamLevelRow['teamlevel_endtime']."\r\n"); 
-
-                                       if ($LevelRow['level_starttype'] == 3) {
-
-                                      //   print(' ('.$TeamLevelRow['teamlevel_enddate'].')'."\r\n"); 
-
-                                       }
-
-                                       print('</td>'."\r\n");
-
-                                       if ($TeamLevelRow['teamlevel_progress'] > 1) {
-					  print('<td width = "100">'."\r\n");
-					  print($TeamLevelRow['teamlevel_duration'].' ('.$TeamLevelRow['teamlevel_penalty'].')'."\r\n");
-					  print('</td>'."\r\n");
-
-					  print('<td width = "50">'."\r\n");
-                                         print(GetTeamLevelPlace($Row['team_id'], $LevelRow['level_id'])."\r\n");
-					  print('</td>'."\r\n");
-
-
-                                       } else {
-
-
-					  print('<td width = "100">'."\r\n");
-					  print('&nbsp;'."\r\n");
-					  print('</td>'."\r\n");
-
-					  print('<td width = "50">'."\r\n");
-                                         print('&nbsp;'."\r\n");
-					  print('</td>'."\r\n");
-
-                                       }
-
-					  print('<td width = "230">'."\r\n");
-                                         InvertTeamLevelPoints($LevelRow['level_pointnames'], $TeamLevelRow['teamlevel_points']); 
-					  print('</td>'."\r\n");
-
-
-				    }
-				    mysql_free_result($TeamLevelResult);
-				    // Конец запроса данных команды по этапу
-			       }
-			       mysql_free_result($LevelResult);
-			       // Конец запроса этапов
-
-                              print('</tr></table>'."\r\n");
-
-                           }
-                           // Конец проверки на формат вывода (с этапами)
-             		   print('</td>'."\r\n");
-    
-			} else {
-  			  print('<td width = "150" style = "'.$thstyle.'">'.GetTeamComment($Row['team_id']).'</td>'."\r\n");
 			}
 			// Конец проверки на вывод с сотрировкой по месту
 			print('</tr>'."\r\n");

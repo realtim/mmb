@@ -980,7 +980,8 @@ send_mime_mail('Автор письма',
 				      from   Teams t
  				      where  t.team_hide = 0 
     					     and COALESCE(t.team_outofrange, 0) = 0
-					     and COALESCE(t.team_result,0) > 0
+					     and COALESCE(t.team_result, 0) > 0
+					     and COALESCE(t.team_progressdetail, 0) = 0
 					     and t.team_id = ".$teamid;
 
 	    //    echo $sql;
@@ -1003,6 +1004,7 @@ send_mime_mail('Автор письма',
 					            and t.distance_id = ".$DistanceId."
 					            and COALESCE(t.team_outofrange, 0) = 0
 						    and COALESCE(t.team_result,0) > 0
+						    and COALESCE(t.team_progressdetail, 0) = 0
 	                                            and TIME_TO_SEC(COALESCE(t.team_result,0)) < ".$TeamResult;
 	   //     echo $sql_place;
 
@@ -1344,10 +1346,19 @@ send_mime_mail('Автор письма',
 			 from Teams t
 		 	      inner join Distances d
 			      on t.distance_id = d.distance_id
+			      inner join 
+			      (
+			       select lp.distance_id, MAX(lp.levelpoint_order) as maxorder
+			       from LevelPoints lp
+			       group by lp.distance_id
+			      ) lpmax
+			      on t.team_progress = lpmax.maxorder
+			         and t.distance_id = lpmax.distance_id
 			 where d.distance_hide = 0 
 			       and t.team_hide = 0 
 		               and  COALESCE(t.team_outofrange, 0) = 0
 		               and  COALESCE(t.team_result, 0) > 0
+			       and COALESCE(t.team_progressdetail, 0) = 0
                          group by t.distance_id
                         ) a
                         on a.distance_id = t.distance_id
@@ -1366,6 +1377,8 @@ send_mime_mail('Автор письма',
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
 		       and  COALESCE(t.team_result, 0) > 0
+		       and COALESCE(t.team_progressdetail, 0) = 0
+
                        ".$RaidWhereString ."
                 ";
 		 
@@ -1892,7 +1905,6 @@ send_mime_mail('Автор письма',
 	// Для каждой точки с отсечкой времени (исключая точки с типом Старт) 
 	//считается длительность нахождения на дистанции команды
 	//  относительно предыдущей точки с отсечкой времени.
-
 	 if (empty($teamid) and empty($raidid)) {     	 
 	    return;
 	 }
@@ -1934,18 +1946,17 @@ send_mime_mail('Автор письма',
 	      
 	      
 	 if (!empty($teamid)) {     	 
-	   $sql = $sql." and tlp1.team_id = ".$teamid;
-	 }
+	   $sql = $sql."and tlp1.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql."and d1.raid_id = ".$raidid;
+	 }				 
 
-	 if (!empty($reaidid)) {     	 
-	   $sql = $sql." and d1.reid_id = ".$raidid;
-	 }
 
     	   $sql = $sql."	      		     
  		     group by tlp1.teamlevelpoint_id	    
 		    ) b
 		    on tlp.teamlevelpoint_id = b.teamlevelpoint_id   
-		 set  teamlevelpoint_duration2 =  b.teamlevelpoint_duration
+		 set tlp.teamlevelpoint_duration =  b.teamlevelpoint_duration
 	      ";
 	 
     //  echo $sql;
@@ -1957,79 +1968,292 @@ send_mime_mail('Автор письма',
 
           
 
-   // функция пересчитывает штрафы  команды в точке
-     function RecalcTeamLevelPointsPenalty($raidid, $teamid)
+     // функция пересчитывает штрафы  команды в точке для КП, входящих в амнистию
+     function RecalcTeamLevelPointsPenaltyWithDiscount($raidid, $teamid)
      {
 
-	/*
-	Для каждой точки с отсечкой времени (исключая точки с типом Старт и точки, входящие в амнистию) считается штраф за невзятые КП относительно предыдущей точки с отсечкой времени и не входящей в амнистию. Штраф суммируется по всем промежуточным (по порядковому номеру) невзятым КП, которые не входят в амнистию. Если текущая точка указана, как итоговая для какого-то интервала амнистии, то прибавляется штраф за этот интервал.
-	Итоговая точка интервала амнистии может иметь тип: Обязательное КП, Смена карт, Финиш.
-	*/
+          /*
+	  Для всех невзятых КП, которые входят в амнистию, суммируем штрафы в точку, которая является итоговой для заданного интервала
+	  */
+
+	 if (empty($teamid) and empty($raidid)) {     	 
+	    return;
+	 }
+
+         
+	 $sql = " update  TeamLevelPoints tlp
+		   inner join 
+	          	(select   SUM(lp.levelpoint_penalty) - MAX(lpd.levelpointdiscount_value) as penalty,
+				  fulltlp.team_id,   lpd.levelpoint_id
+			 from   (select  lp.levelpoint_id,
+					 t.team_id 
+				 from LevelPoints lp
+				      join Teams t
+				      inner join Distances d
+				      on lp.distance_id = d.distance_id
+				         and t.distance_id = lp.distance_id
+				 where 
+		";			 
+
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." t.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." d.raid_id = ".$raidid;
+	 }				 
+
+	  $sql = $sql."				 
+				) fulltlp    
+				inner join LevelPoints lp
+				on  fulltlp.levelpoint_id = lp.levelpoint_id
+			        left outer join TeamLevelPoints tlp
+				on fulltlp.levelpoint_id = tlp.levelpoint_id
+			            and fulltlp.team_id = tlp.team_id
+			        inner join LevelPointDiscounts lpd
+				on lp.levelpoint_order >= lpd.levelpointdiscount_start 
+			           and lp.levelpoint_order <= lpd.levelpointdiscount_finish  
+			           and lpd.distance_id = lp.distance_id
+			where tlp.teamlevelpoint_id is NULL
+			group by fulltlp.team_id, lpd.levelpoint_id
+			having SUM(lp.levelpoint_penalty) >  MAX(lpd.levelpointdiscount_value)
+			) a
+		  on tlp.levelpoint_id = a.levelpoint_id   
+		     and tlp.team_id = a.team_id
+ 		  set  teamlevelpoint_penalty = COALESCE(tlp.teamlevelpoint_penalty, 0) + COALESCE(a.penalty, 0)
+		";
+          //echo $sql;
+	 
+	  $rs = MySqlQuery($sql);
+
+     }
+     // Конец функции расчета штрафа для КП, входящих в амнистию		
+                 
+		
+     // функция пересчитывает штрафы  команды в точке для КП, не входящих в амнистию
+     function RecalcTeamLevelPointsPenaltyWithoutDiscount($raidid, $teamid)
+     {
+
+          /*
+	  Находим максимальную взятую точку на данный момент у команды, из числа тех, что не входят в амнистию.
+	  Эту точку считаем "итоговой" и штраф за все невзятые КП, не входящие в амнистию пишем в неё
+	  */
+
 
 
 	 if (empty($teamid) and empty($raidid)) {     	 
 	    return;
 	 }
 
-	// Не знаю, как лучше - можно по порядку точек, а можно по времени прохождения
-	// по времени проще
-	// 			 on lp1.levelpoint_order > a.levelpoint_order	
 
- 
-	$sql = " update  TeamLevelPoints tlp
-                   inner join 
-	           (select  tlp1.teamlevelpoint_id, 
-		            timediff(tlp1.teamlevelpoint_datetime, MAX(a.teamlevelpoint_datetime)) as teamlevelpoint_duration
-		    from TeamLevelPoints tlp1 
-			 inner join Teams t1
-			 on tlp1.team_id = t1.team_id
-			 inner join Distances d1
-			 on t1.distance_id = d1.distance_id
-			 inner join LevelPoints lp1 
-			 on tlp1.levelpoint_id = lp1.levelpoint_id
-			 left outer join
-			 (select tlp2.team_id, 
-                                 lp2.levelpoint_order,	
-                                 COALESCE(tlp2.teamlevelpoint_datetime, lp2.levelpoint_mindatetime) as teamlevelpoint_datetime			         
-			  from  TeamLevelPoints tlp2 
-				 inner join Teams t2
-				 on tlp2.team_id = t2.team_id
-				 inner join Distances d2
-				 on t2.distance_id = d2.distance_id
-				 inner join LevelPoints lp2 
-				 on tlp2.levelpoint_id = lp2.levelpoint_id
-		         ) a
-			 on tlp1.teamlevelpoint_datetime > a.teamlevelpoint_datetime	
-			    and tlp1.team_id = a.team_id
-			    and  a.teamlevelpoint_datetime > 0
-	  	     where   tlp1.teamlevelpoint_datetime > 0
-		             and  lp1.pointtype_id <> 1 
-	      ";
-	      
-	      
+         
+	 $sql = " update  TeamLevelPoints tlp
+		   inner join 
+	          	(select   SUM(lp.levelpoint_penalty) as penalty,
+				  fulltlp.team_id,   lp3.levelpoint_id
+			 from   (select  lp.levelpoint_id,
+					 t.team_id 
+				 from LevelPoints lp
+				      join Teams t
+				      inner join Distances d
+				      on lp.distance_id = d.distance_id
+				         and t.distance_id = lp.distance_id
+				 where 
+		";			 
+
 	 if (!empty($teamid)) {     	 
-	   $sql = $sql." and tlp1.team_id = ".$teamid;
-	 }
-
-	 if (!empty($reaidid)) {     	 
-	   $sql = $sql." and d1.reid_id = ".$raidid;
-	 }
-
-    	   $sql = $sql."	      		     
- 		     group by tlp1.teamlevelpoint_id	    
-		    ) b
-		    on tlp.teamlevelpoint_id = b.teamlevelpoint_id   
-		 set  teamlevelpoint_duration2 =  b.teamlevelpoint_duration
-	      ";
+	   $sql = $sql." t.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." d.raid_id = ".$raidid;
+	 }				 
+				 
+	  $sql = $sql."				 
+				) fulltlp    
+				inner join LevelPoints lp
+				on  fulltlp.levelpoint_id = lp.levelpoint_id
+			        left outer join TeamLevelPoints tlp
+				on fulltlp.levelpoint_id = tlp.levelpoint_id
+			            and fulltlp.team_id = tlp.team_id
+			        left outer join LevelPointDiscounts lpd
+				on lp.levelpoint_order >= lpd.levelpointdiscount_start 
+			           and lp.levelpoint_order <= lpd.levelpointdiscount_finish  
+			           and lpd.distance_id = lp.distance_id
+				inner join 
+				(select   tlp.team_id, lp.distance_id,
+				          MAX(lp.levelpoint_order) as levelpoint_order
+				 from TeamLevelPoints tlp
+				      inner join LevelPoints lp
+				      on tlp.levelpoint_id = lp.levelpoint_id
+				      left outer join LevelPointDiscounts lpd
+				      on lp.levelpoint_order >= lpd.levelpointdiscount_start 
+					 and lp.levelpoint_order <= lpd.levelpointdiscount_finish  
+			                 and lpd.distance_id = lp.distance_id
+				 where lpd.levelpointdiscount_id is NULL
+				 group by tlp.team_id      
+				) b
+                                on fulltlp.team_id = b.team_id
+                                inner join LevelPoints lp3
+				on b.levelpoint_order = lp3.levelpoint_order
+				    and b.distance_id = lp3.distance_id
+			where tlp.teamlevelpoint_id is NULL
+			      and lpd.levelpointdiscount_id is NULL
+			group by fulltlp.team_id, lpd.levelpoint_id
+			) a
+		  on tlp.levelpoint_id = a.levelpoint_id   
+		     and tlp.team_id = a.team_id
+ 		  set  teamlevelpoint_penalty =  COALESCE(tlp.teamlevelpoint_penalty, 0) + COALESCE(a.penalty, 0)
+		";
+       //    echo $sql;
 	 
-    //  echo $sql;
-      
-       	 $rs = MySqlQuery($sql);
+	  $rs = MySqlQuery($sql);
 	
      }
-     // конец функции пересчёта штрафов прохождения команды до точки 
-
-               
+     // Конец функции расчета штрафа для КП без амнистий		
      
+     
+     // функция пересчитывает результат команды по данным в точках
+     function RecalcTeamResultFromTeamLevelPoints($raidid, $teamid)
+     {
+
+
+	 if (empty($teamid) and empty($raidid)) {     	 
+	    return;
+	 }
+
+        // Обнудяем данные расчета 
+	$sql = " update  TeamLevelPoints tlp
+		         join Teams t
+			 on tlp.team_id = t.team_id
+  		         inner join Distances d
+			 on t.distance_id = d.distance_id
+		  set  teamlevelpoint_penalty = NULL,  teamlevelpoint_duration = NULL			 
+ 		  where 
+		";			 
+
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." t.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+	   $sql = $sql." d.raid_id = ".$raidid;
+	 }				 
+				 
+	 $rs = MySqlQuery($sql);		
+
+	
+	RecalcTeamLevelPointsDuration($raidid, $teamid);
+        RecalcTeamLevelPointsPenaltyWithDiscount($raidid, $teamid);
+        RecalcTeamLevelPointsPenaltyWithoutDiscount($raidid, $teamid);
+
+          // Переводим суммарные штрафы в секунды и суммируем с временем, затем обратно во время 
+	 $sql = " update  Teams t
+		   inner join 
+	          	(select tlp.team_id, SEC_TO_TIME(SUM(COALESCE(tlp.teamlevelpoint_penalty, 0))*60 + SUM(TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_duration, 0)))) as result,
+			        MAX(lp.levelpoint_order) as progress,
+				MAX(t.distance_id) as distance_id
+			 from TeamLevelPoints tlp
+			      inner join Teams t
+			      on tlp.team_id = t.team_id
+			      inner join Distances d
+			      on t.distance_id = d.distance_id
+			      inner join LevelPoints lp
+			      on tlp.levelpoint_id = lp.levelpoint_id
+			 where  
+		";			 
+
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." t.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql."  d.raid_id = ".$raidid;
+	 }				 
+				 
+	  $sql = $sql."				 
+                         group by tlp.team_id
+			) a
+		  on t.team_id = a.team_id
+		  inner join 
+			(select  lp.distance_id,
+			         MAX(lp.levelpoint_order) as maxlporder
+			 from LevelPoints lp
+			 group by lp.distance_id 
+			) b
+		  on a.distance_id = b.distance_id
+  	      set  team_result =  CASE WHEN b.maxlporder = COALESCE(a.progress, 0) THEN COALESCE(a.result, 0) ELSE NULL END, team_progress = COALESCE(a.progress, 0)
+	   ";
+       //    echo $sql;
+	 
+	  $rs = MySqlQuery($sql);
+	
+	
+	// Устанавливаем превышение КВ
+	 $sql = " update  Teams t
+                  inner join
+                      (select t.team_id
+		       from TeamLevelPoints tlp
+ 		            inner join LevelPoints lp
+		            on tlp.levelpoint_id = lp.levelpoint_id
+			    inner join Teams t
+			    on t.team_id = tlp.team_id
+			    inner join Distances d
+			    on t.distance_id = d.distance_id
+                       where  t.team_progress = lp.levelpoint_order
+		              and tlp.teamlevelpoint_datetime > lp.levelpoint_maxdatetime 
+		";			 
+
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." and t.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." and d.raid_id = ".$raidid;
+	 }				 
+				 
+	  $sql = $sql."				 
+
+                      ) a
+		  on t.team_id = a.team_id    
+		  set  t.team_progressdetail = 1
+		  ";
+
+//   echo $sql;
+	 $rs = MySqlQuery($sql);
+
+
+
+	// Устанавливаем невзятие обязательных КП
+	// Можно ставить team_progressdetail = 2 для таких случаев 
+	
+/*
+	 $sql = " update  Teams t
+                  inner join
+                      (select t.team_id
+		       from TeamLevelPoints tlp
+ 		            inner join LevelPoints lp
+		            on tlp.levelpoint_id = lp.levelpoint_id
+			    inner join Teams t
+			    on t.team_id = tlp.team_id
+			    inner join Distances d
+			    on t.distance_id = d.distance_id
+                       where  t.team_progress = lp.levelpoint_order
+		              and tlp.teamlevelpoint_datetime > lp.levelpoint_maxdatetime 
+		";			 
+
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." and t.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." and d.raid_id = ".$raidid;
+	 }				 
+				 
+	  $sql = $sql."				 
+
+                      ) a
+		  on t.team_id = a.team_id    
+		  set  t.team_progressdetail = 1
+		  ";
+
+//   echo $sql;
+	 $rs = MySqlQuery($sql);
+
+*/
+
+
+     }
+     // Конец функции расчета штрафа для КП без амнистий		
+
+
 
 ?>

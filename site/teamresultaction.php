@@ -262,8 +262,8 @@ elseif ($action == 'AddTlp')
 	 }
 */
 
-         // Пересчитываем результаты
-        RecalcTeamLevelPointsDuration(0, $pTeamId);
+         RecalcTeamResultFromTeamLevelPoints(0,  $pTeamId);
+
 
 	$view = $_POST['view'];
 	if (empty($view)) $view = "ViewTeamData";
@@ -362,11 +362,9 @@ elseif ($action == 'ChangeTlp')
 			
 	 MySqlQuery($sql);
     
-    
-        // Пересчитываем результаты
-        RecalcTeamLevelPointsDuration(0, $pTeamId);
-	//RecalcTeamLevelPointsDuration(25, 0);
 
+         RecalcTeamResultFromTeamLevelPoints(0,  $pTeamId);
+//         RecalcTeamResultFromTeamLevelPoints(25, 0);
     
     /*   
 	 $statustext = CheckLevelPoints($DistanceId);
@@ -405,8 +403,8 @@ elseif ($action == 'HideTlp')
 			
 	 MySqlQuery($sql);
 
-        // Пересчитываем результаты
-        RecalcTeamLevelPointsDuration(0, $pTeamId);
+
+         RecalcTeamResultFromTeamLevelPoints(0,  $pTeamId);
 
 
 /*
