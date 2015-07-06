@@ -153,6 +153,8 @@ elseif ($action == 'RecalcRaidResults')
 
 	if (!$Administrator && !$Moderator) return;
 
+	RecalcTeamResultFromTeamLevelPoints($RaidId, 0);
+/*
 	$sql = 'select team_id
 		from Teams t
 			inner join Distances d on t.distance_id = d.distance_id
@@ -174,6 +176,7 @@ elseif ($action == 'RecalcRaidResults')
 	}
 	mysql_free_result($Result);
 
+*/
 	$statustext = 'Результаты марш-броска пересчитаны';
 	$view = "ViewAdminDataPage";
 }
@@ -279,19 +282,6 @@ elseif ($action == 'RecalcRaidRank')
 	$Result =  RecalcTeamUsersRank($RaidId); 
 
 	$statustext = 'Рейтинг участников марш-броска пересчитан';
-	$view = "ViewAdminDataPage";
-}
-// =============== Пересчет рейтинга по всем ММБ ===================
-elseif ($action == 'RecalcAllRaidsRank')
-{
-	
-	if (!$Administrator) return;
-
-	
-	$Result = 0;
-	$Result =  RecalcTeamUsersRank(0); 
-
-	$statustext = 'Рейтинг участников всех марш-бросков пересчитан';
 	$view = "ViewAdminDataPage";
 }
 // =============== Никаких действий не требуется ==============================

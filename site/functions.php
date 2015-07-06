@@ -1276,6 +1276,8 @@ send_mime_mail('Автор письма',
      function GetTeamComment($teamid)
      {
        
+       
+       /*
 	// Получаем информацию об этапах, которые могла проходить команда
 	$sql = "select tl.teamlevel_comment	        
 		from TeamLevels tl
@@ -1292,6 +1294,24 @@ send_mime_mail('Автор письма',
 		$Comment = trim($Comment.' '.trim($Row['teamlevel_comment']));
          }
 	// Конец цикла по этапам
+	*/
+
+
+	// Получаем информацию оточках, которые прошла команда
+	$sql = "select tlp.teamlevelpoint_comment	        
+		from TeamLevelPoints tlp
+		where tlp.team_id = ".$teamid;
+
+	$rs = MySqlQuery($sql);
+
+	// ================ Цикл обработки данных по этапам
+	$Comment = "";
+	while ($Row = mysql_fetch_assoc($rs))
+	{
+		$Comment = trim($Comment.' '.trim($Row['teamlevelpoint_comment']));
+         }
+	// Конец цикла по этапам
+
 	mysql_free_result($rs);
 	if ($Comment == '') {
 	 $Comment = "&nbsp;";
