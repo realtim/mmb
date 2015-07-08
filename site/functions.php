@@ -1864,6 +1864,7 @@ send_mime_mail('Автор письма',
 				 on tlp2.levelpoint_id = lp2.levelpoint_id
 		         ) a
 			 on tlp1.teamlevelpoint_datetime > a.teamlevelpoint_datetime	
+			    and lp1.levelpoint_order > a.levelpoint_order
 			    and tlp1.team_id = a.team_id
 			    and  a.teamlevelpoint_datetime > 0
 	  	     where   tlp1.teamlevelpoint_datetime > 0
