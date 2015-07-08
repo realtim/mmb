@@ -52,7 +52,7 @@ if ($viewmode == 'Add')
                 $LevelPointMaxDate = $_POST['MaxDate'];
                 $LevelPointMaxTime = $_POST['MaxTime'];
 		$ScanPointId = $_POST['ScanPointId'];
-		$LevelId = $_POST['LevelId'];
+		//$LevelId = $_POST['LevelId'];
 
 	}
 	else
@@ -77,7 +77,7 @@ if ($viewmode == 'Add')
                 $LevelPointMaxTime = '';
 
                 $ScanPointId = 0;
-	        $LevelId = 0;
+	      //  $LevelId = 0;
 	    
 	}
 
@@ -116,7 +116,7 @@ else
 		       DATE_FORMAT(lp.levelpoint_maxdatetime, '%Y') as levelpoint_smaxyear,
 		       DATE_FORMAT(lp.levelpoint_maxdatetime, '%d%m') as levelpoint_smaxdate,
 		       DATE_FORMAT(lp.levelpoint_maxdatetime, '%H%i') as levelpoint_smaxtime,
-		       lp.scanpoint_id, lp.level_id 
+		       lp.scanpoint_id
 		from LevelPoints lp
 		     inner join PointTypes pt
 		     on lp.pointtype_id = pt.pointtype_id
@@ -140,7 +140,7 @@ else
                 $LevelPointMaxDate = $_POST['MaxDate'];
                 $LevelPointMaxTime = $_POST['MaxTime'];
 		$ScanPointId = $_POST['ScanPointId'];
-		$LevelId = $_POST['LevelId'];
+	//	$LevelId = $_POST['LevelId'];
 
 
 	}
@@ -158,7 +158,7 @@ else
                 $LevelPointMaxDate = $Row['levelpoint_smaxdate'];
                 $LevelPointMaxTime = $Row['levelpoint_smaxtime'];
 		$ScanPointId = $Row['scanpoint_id'];
-                $LevelId = $Row['level_id'];
+            //    $LevelId = $Row['level_id'];
 
 
 	}	
