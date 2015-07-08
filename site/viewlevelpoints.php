@@ -285,7 +285,7 @@ if ($AllowEdit == 1)
      // 19.06.2015 Добавил level_id чтобы проставить ввести точки по старым ММБ,
        // потом можно и нужно убрать
 
-
+/*
 	print('<tr><td class="input">'."\n");
 
 
@@ -305,6 +305,7 @@ if ($AllowEdit == 1)
 	print('</select>'."\n");
 
 	print('</td></tr>'."\n\n");
+*/
 	print('<tr><td class="input">'."\n");
 
 
@@ -421,6 +422,10 @@ if ($AllowViewResults == 1)
 	// Список точек
      // 19.06.2015 Добавил level_id чтобы проставить ввести точки по старым ММБ,
        // потом можно и нужно убрать
+// 		     left outer join Levels l
+//		     on lp.level_id = l.level_id
+//
+//		       COALESCE(l.level_name, 'Не указан') as level_name
 
 
 	$sql = "select lp.levelpoint_id, pt.pointtype_id, pt.pointtype_name,  
@@ -430,8 +435,7 @@ if ($AllowViewResults == 1)
 		       DATE_FORMAT(COALESCE(lp.levelpoint_maxdatetime, '0000-00-00 00:00:00'), '%m-%d %H:%i') as levelpoint_maxdatetime,
 		       COALESCE(lpd.levelpointdiscount_value, 0) as levelpoint_discount,
 		       COALESCE(sp.scanpoint_name, 'Не указана') as scanpoint_name,
-		       COALESCE(sp.scanpoint_id, 0)  as scanpoint_id,
-		       COALESCE(l.level_name, 'Не указан') as level_name
+		       COALESCE(sp.scanpoint_id, 0)  as scanpoint_id
 		from LevelPoints lp
 		     inner join PointTypes pt
 		     on lp.pointtype_id = pt.pointtype_id
@@ -442,8 +446,6 @@ if ($AllowViewResults == 1)
 			and lpd.levelpointdiscount_finish >= lp.levelpoint_order
 		     left outer join ScanPoints sp
 		     on lp.scanpoint_id = sp.scanpoint_id
-		     left outer join Levels l
-		     on lp.level_id = l.level_id
 		where lp.levelpoint_hide = 0 and lp.distance_id = ".$DistanceId."
 		order by levelpoint_order";
 	
@@ -456,9 +458,10 @@ if ($AllowViewResults == 1)
 
 		print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
 
+//                         <td width = "100" style = "'.$thstyle.'">Этап</td>
+
 		print('<tr class = "gray">
 		         <td width = "50" style = "'.$thstyle.'">N п/п</td>
-                         <td width = "100" style = "'.$thstyle.'">Этап</td>
                          <td width = "100" style = "'.$thstyle.'">Скан-точка</td>
 		         <td width = "150" style = "'.$thstyle.'">Тип</td>
 		         <td width = "200" style = "'.$thstyle.'">Название</td>
@@ -481,9 +484,10 @@ if ($AllowViewResults == 1)
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
+//                            <td align = "left" style = "'.$tdstyle.'">'.$Row['level_name'].'</td>
+
                      print('<tr>'."\r\n");
 		     print('<td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_order'].'</td>
-                            <td align = "left" style = "'.$tdstyle.'">'.$Row['level_name'].'</td>
                             <td align = "left" style = "'.$tdstyle.'">'.$Row['scanpoint_name'].'</td>
 		            <td align = "left" style = "'.$tdstyle.'">'.$Row['pointtype_name'].'</td>
 		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_name'].'</td>

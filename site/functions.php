@@ -1567,126 +1567,6 @@ send_mime_mail('Автор письма',
 
      
      
-     // Генерация точек КП в TeamLevelPoint по строчке teamlevelpoin_points
-     // для данной $teamlevelpointid
-     
-     function GenerateTeamLevelPointsFromString($teamlevelpointid)
-     {
-
-
-	$sql = " select tlp.teamlevelpoint_points, tlp.levelpoint_id, tlp.team_id
-	         from TeamLevelPoints tlp
-	         where tlp.teamlevelpoint_id = ".$teamlevelpointid;
-
-
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	$LevelPointsString = trim($Row['teamlevelpoint_points']);
-	$LevelPointId = $Row['levelpoint_id'];
-	$TeamId = $Row['team_id'];
-	mysql_free_result($Result);
-	
-	
-	if ( $LevelPointsString == '' or empty($LevelPointId)) {
-
-	 return;
-
-	}
-
-        $LevelPointsArr = explode(',', $LevelPointsString);
-
-        // Теперь получаем список точек дистанции на основании текущей точки
-        
-	$sql = " select lp1.levelpoint_id, lp1.levelpoint_order 
-	         from LevelPoints lp1
-		       inner join LevelPoints lp2
-		       on lp1.level_id = lp2.level_id
-	         where lp2.levelpoint_id = ".$LevelPointId."
-		       and lp1.pointtype_id in (3,5)
-		 order  by lp1.levelpoint_order ASC";
-
-      //  echo $sql;
-	$Result = MySqlQuery($sql);
-	$i=0;
-	
-	// ================ Цикл обработки контрольных точек этапа
-	while ($Row = mysql_fetch_assoc($Result))
-	{
-		$i++;
-		$NowLevelPointOrder = $Row['levelpoint_order'];
-		$NowLevelPointId = $Row['levelpoint_id'];
-		
-		$sqltlp = " select tlp.teamlevelpoint_id
-			 from TeamLevelPoints tlp
-			 where tlp.team_id = ".$TeamId." and tlp.levelpoint_id = ".$NowLevelPointId;
-
-
-		$ResultTlp = MySqlQuery($sqltlp);
-		$RowTlp = mysql_fetch_assoc($ResultTlp);
-		$TlpExists = $RowTlp['teamlevelpoint_id'];
-		mysql_free_result($ResultTlp);
-		
-		
-		// Вставляем КП в список, если стоит 1
-		if ((int)$LevelPointsArr[$i-1] == 1 and empty($TlpExists)) {
-	
-			$sqltlp = " insert into TeamLevelPoints(device_id, levelpoint_id, team_id)
-			         values(1, ".$NowLevelPointId.", ".$TeamId.")";
-
-
-			$ResultTlp = MySqlQuery($sqltlp);
-				
-		}
-		
-         }
-	// Конец цикла по контрольным точкам этапа
-
-	mysql_free_result($Result);
-		    
-       return;
-     }
-     //Конец генерации точек по строке 
-     
-     
-     // Генерация доп. точек для ММБ по существующим
-     function GenerateAdditionLevelPointsForRaid($raidid)
-     {
-
-
-	$Sql = "select teamlevelpoint_id 
-	        from TeamLevelPoints tlp
-		     inner join LevelPoints lp
-		     on lp.levelpoint_id = tlp.levelpoint_id
-		     inner join Distances d
-		     on lp.distance_id = d.distance_id
-	        where d.raid_id = ".$raidid."
-                     and TRIM(COALESCE(tlp.teamlevelpoint_points, '')) <> ''
-                     and TRIM(COALESCE(tlp.teamlevelpoint_points, '')) <> 'NULL'
-	       ";
-
-//     LIMIT 0,300";
-	  
-	       
-	$Result2 = MySqlQuery($Sql);  
-
-        while ($Row2 = mysql_fetch_assoc($Result2))
-        {
-                   
-          set_time_limit(10);
-    	  $TeamLevelPointId2 = $Row2['teamlevelpoint_id'];
-	 // print($TeamLevelPointId."\r\n");
-	  	  
-	  GenerateTeamLevelPointsFromString($TeamLevelPointId2);
-        }
-        mysql_free_result($Result2);
-   
-     set_time_limit(30);
-
-     return;
-     }
-     //Конец генерации точек для ММБ 
-     
-
 
 
 
@@ -1723,11 +1603,13 @@ send_mime_mail('Автор письма',
 	mysql_free_result($Result);
 	
 	
-	if ( $LevelPointsString == '' or empty($LevelId)) {
-
-	 return;
-
+	if (empty($LevelId)) {
+	  print('Нет данных об этапе '.$teamlevelid."\r\n");
+ 	  return;
 	}
+//
+  //      echo $teamlevelid.' , '.$LevelPointsString."\r\n";
+
 
         $LevelPointsArr = explode(',', $LevelPointsString);
 
@@ -1748,7 +1630,8 @@ send_mime_mail('Автор письма',
 	mysql_free_result($Result);
 
 
-       if ($StartLevelPointId) {
+    //   echo 'sr '.$StartLevelPointId; 
+       if ($StartLevelPointId and $StartTime > 0) {
 
                 $StartTlpExists = 0;
 
@@ -1762,6 +1645,8 @@ send_mime_mail('Автор письма',
 		mysql_free_result($ResultTlp);
 	
 	
+	       //  echo $sqltlp;	
+	
 		// Пишем старт
 		if (!$StartTlpExists) {
 	
@@ -1769,13 +1654,15 @@ send_mime_mail('Автор письма',
 			                                        teamlevelpoint_datetime)
 			         values(1, ".$StartLevelPointId.", ".$TeamId.", '".$StartTime."')";
 
-                      //  echo $sqltlp;		      inner join TeamLevelPoints tlp2 
+                     //   echo $sqltlp;		    
 //		      on tlp.levelpoint_id = lp.levelpoint_id
 
 
 			$ResultTlp = MySqlQuery($sqltlp);
 				
-		}
+		} else {
+		   print('Уже есть точка старта '.$FinishLevelPointId.' '.$TeamId."\r\n");
+		} 
 	}
 	// Конец проверки на существование точки старта
 
@@ -1797,7 +1684,7 @@ send_mime_mail('Автор письма',
 	mysql_free_result($Result);
 
 
-       if ($FinishLevelPointId) {
+       if ($FinishLevelPointId and $FinishTime > 0) {
 	
 		$FinishTlpExists = 0;
 	
@@ -1822,9 +1709,25 @@ send_mime_mail('Автор письма',
 
 			$ResultTlp = MySqlQuery($sqltlp);
 				
-		}
+		} else {
+		   print('Уже есть точка финиша '.$FinishLevelPointId.' '.$TeamId."\r\n");
+		}   
 	}
 	// Конец проверки на существование точки финиша
+
+
+
+
+	if ( $LevelPointsString == '') {
+	   print('Нет данных о точках '.$teamlevelid."\r\n");
+ 	   return;
+	}
+//
+  //      echo $teamlevelid.' , '.$LevelPointsString."\r\n";
+
+
+        $LevelPointsArr = explode(',', $LevelPointsString);
+
 
 
 
@@ -1860,7 +1763,8 @@ send_mime_mail('Автор письма',
 		
 		
 		// Вставляем КП в список, если стоит 1
-		if ((int)$LevelPointsArr[$i-1] == 1 and empty($TlpExists)) {
+		if ((int)$LevelPointsArr[$i-1] == 1) {
+		   if (empty($TlpExists)) {
 	
 			$sqltlp = " insert into TeamLevelPoints(device_id, levelpoint_id, team_id)
 			         values(1, ".$NowLevelPointId.", ".$TeamId.")";
@@ -1868,8 +1772,10 @@ send_mime_mail('Автор письма',
 
 			$ResultTlp = MySqlQuery($sqltlp);
 				
+		    } else {
+		       print('Уже есть точка '.$NowLevelPointId.' '.$TeamId."\r\n");
+		    }
 		}
-		
          }
 	// Конец цикла по контрольным точкам этапа
 

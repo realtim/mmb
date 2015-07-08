@@ -1194,7 +1194,7 @@ elseif ($action == 'AddLevelPoint')
                 $pLevelPointMaxTime = $_POST['MaxTime'];
 
 		$pScanPointId = $_POST['ScanPointId'];
-		$pLevelId = $_POST['LevelId'];
+	//	$pLevelId = $_POST['LevelId'];
 
          // тут по-хорошему нужны проверки
 
@@ -1248,9 +1248,9 @@ elseif ($action == 'AddLevelPoint')
 	     
 		$sql = "insert into LevelPoints (distance_id, levelpoint_name, pointtype_id, 
 			levelpoint_penalty, levelpoint_order, levelpoint_hide, 
-			levelpoint_mindatetime, levelpoint_maxdatetime, scanpoint_id, level_id)
+			levelpoint_mindatetime, levelpoint_maxdatetime, scanpoint_id)
 			values (".$pDistanceId.", '".$pPointName."', ".$pPointTypeId.",
-			        ".$pPointPenalty." , ".($LastOrder + 1).", 0, ".$MinYDTs.", ".$MaxYDTs.", ".$pScanPointId.", ".$pLevelId.")";
+			        ".$pPointPenalty." , ".($LastOrder + 1).", 0, ".$MinYDTs.", ".$MaxYDTs.", ".$pScanPointId.")";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$LevelPointId = MySqlQuery($sql);
 		
@@ -1331,7 +1331,7 @@ elseif ($action == 'LevelPointChange')
                 $pLevelPointMaxTime = $_POST['MaxTime'];
 
 		$pScanPointId = $_POST['ScanPointId'];
-		$pLevelId = $_POST['LevelId'];
+	//	$pLevelId = $_POST['LevelId'];
 
         // тут надо поставить проверки
       // год всегда пишем текущий. если надо - можно добавить поле для года
@@ -1365,9 +1365,9 @@ elseif ($action == 'LevelPointChange')
            }
 
 
+//	                                ,level_id = '".$pLevelId."'
 		
         $sql = "update LevelPoints  set pointtype_id = ".$pPointTypeId." 
-	                                ,level_id = '".$pLevelId."'
 	                                ,scanpoint_id = '".$pScanPointId."'
 	                                ,levelpoint_name = '".$pPointName."'
 	                                ,levelpoint_penalty = ".$pPointPenalty."

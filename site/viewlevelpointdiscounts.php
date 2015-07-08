@@ -237,7 +237,7 @@ if ($AllowEdit == 1)
 
 	print('</td></tr>'."\n\n");
 	print('<tr><td class="input">'."\n");
-	print('Дистанция: </span>'."\n");
+	print('Точка зачёта амнистии: </span>'."\n");
 	// Показываем выпадающий список точек
 	// ограничыиваем пока Сменой карт и Финишем
 	print('<select name="LevelPointId" class="leftmargin" tabindex="'.(++$TabIndex).'"  ">'."\n");
