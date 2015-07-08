@@ -175,7 +175,7 @@ elseif ($action == 'AddTlp')
 
 
 	//$view = "ViewLevelPoints";
-	$viewmode = "AddTlp";
+	//$viewmode = "AddTlp";
 
 
 	// Общая проверка возможности редактирования
@@ -201,8 +201,9 @@ elseif ($action == 'AddTlp')
 	{
 		$statustext = 'Не определён ключ команды или ключ точки для результата.';
 		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "EditTlp";
+		$viewsubmode = "ReturnAfterErrorTlp";
+		$viewmode = "AddTlp";
+		//$viewmode = "EditTlp";
 		return;
 	}
 
@@ -228,7 +229,8 @@ elseif ($action == 'AddTlp')
 	   {
 			$statustext = 'Результаты по точке уже есть.';
 			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			$viewsubmode = "ReturnAfterErrorTlp";
+			$viewmode = "AddTlp";
 			return;
            }
 
@@ -250,7 +252,8 @@ elseif ($action == 'AddTlp')
 		{
 			$statustext = 'Ошибка записи нового результата для точки.';
 			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			$viewsubmode = "ReturnAfterErrorTlp";
+			$viewmode = "AddTlp";
 			return;
 		}
 	
@@ -265,8 +268,8 @@ elseif ($action == 'AddTlp')
          RecalcTeamResultFromTeamLevelPoints(0,  $pTeamId);
 
 
-	$view = $_POST['view'];
-	if (empty($view)) $view = "ViewTeamData";
+	//$view = $_POST['view'];
+	//if (empty($view)) $view = "ViewTeamData";
 
 
 
@@ -298,7 +301,7 @@ elseif ($action == 'ChangeTlp')
 	{
 		$statustext = 'Не определён ключ результата для точки.';
 		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
+		$viewsubmode = "ReturnAfterErrorTlp";
 		$viewmode = "EditTlp";
 		return;
 	}
@@ -320,7 +323,7 @@ elseif ($action == 'ChangeTlp')
 	{
 		$statustext = 'Не определён ключ команды или ключ точки для результата.';
 		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
+		$viewsubmode = "ReturnAfterErrorTlp";
 		$viewmode = "EditTlp";
 		return;
 	}
@@ -343,7 +346,7 @@ elseif ($action == 'ChangeTlp')
 	   {
 			$statustext = 'Результаты по точке уже есть.';
 			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			$viewsubmode = "ReturnAfterErrorTlp";
 			return;
            }
 
@@ -392,7 +395,7 @@ elseif ($action == 'HideTlp')
 	{
 		$statustext = 'Не определён ключ результата для точки.';
 		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
+		$viewsubmode = "ReturnAfterErrorTlp";
 		$viewmode = "Edit";
 		return;
 	}

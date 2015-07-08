@@ -44,7 +44,7 @@ if ($viewmode == 'AddTlp' or $viewmode == '')
 {
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
-	if ($viewsubmode == "ReturnAfterError")
+	if ($viewsubmode == "ReturnAfterErrorTlp")
 	{
 		ReverseClearArrays();
 
@@ -113,12 +113,15 @@ else
 		     inner join LevelPoints lp
 		     on lp.levelpoint_id = tlp.levelpoint_id
 		where tlp.teamlevelpoint_id = ".$pTeamLevelPointId;
+
+        
+
 	$Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
 	mysql_free_result($Result);
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
-	if ($viewsubmode == "ReturnAfterError")
+	if ($viewsubmode == "ReturnAfterErrorTlp")
 	{
 		ReverseClearArrays();
 		$LevelPointId = $_POST['LevelPointId'];
@@ -333,6 +336,9 @@ $sql = "select tlp.teamlevelpoint_id, lp.levelpoint_id, lp.levelpoint_name,
 
 //$sql = $sql." and COALESCE(lp.levelpoint_endtime, now()) <= now() ";
 $sql = $sql." order by lp.levelpoint_order ASC ";
+
+//echo  $sql;
+
 $Result = MySqlQuery($sql);
 
 
