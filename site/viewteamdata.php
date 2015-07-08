@@ -383,7 +383,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	{
   
 		print('Неявка в: <select name="UserNotInPoint'.$Row['teamuser_id'].'" style="width: 100px; margin-right: 15px;" title="Точка, в которую не явился участник" onChange="javascript:if (confirm(\'Вы уверены, что хотите отметить неявку участника: '.$Row['user_name'].'? \')) { TeamUserNotInPoint('.$Row['teamuser_id'].', this.value); }" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
-		$sqllevelpoints = "select levelpoint_id, levelpoint_name from LevelPoints lp inner join Levels l on lp.level_id= l.level_id  where lp.pointtype_id <> 5 and l.level_hide = 0 and l.distance_id = ".$DistanceId." order by levelpoint_order";
+		$sqllevelpoints = "select levelpoint_id, levelpoint_name from LevelPoints lp where lp.distance_id = ".$DistanceId." order by levelpoint_order";
 		$ResultLevelPoints = MySqlQuery($sqllevelpoints);
 		$userlevelpointselected = ($Row['levelpoint_id'] == 0 ? ' selected' : '');
 		print('<option value="0"'.$userlevelpointselected.'>-</option>'."\n");
