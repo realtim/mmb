@@ -389,6 +389,18 @@ elseif ($action == 'HideTlp')
 	}
 
         $pTeamLevelPointId = $_POST['TeamLevelPointId'];
+        $pTeamId = $_POST['TeamId'];
+
+	
+	if ($pTeamId <= 0)
+	{
+		$statustext = 'Не определён ключ команды.';
+		$alert = 1;
+		$viewsubmode = "ReturnAfterErrorTlp";
+		$viewmode = "EditTlp";
+		return;
+	}
+
 
 
 	if ($pTeamLevelPointId <= 0)
@@ -396,7 +408,7 @@ elseif ($action == 'HideTlp')
 		$statustext = 'Не определён ключ результата для точки.';
 		$alert = 1;
 		$viewsubmode = "ReturnAfterErrorTlp";
-		$viewmode = "Edit";
+		$viewmode = "EditTlp";
 		return;
 	}
 	

@@ -38,6 +38,7 @@ else
 }
 
 
+//echo 'biewmode '.$viewmode; 
 
 // ================ Форма для добавления новой  точки ===================================
 if ($viewmode == 'AddTlp' or $viewmode == '')
@@ -64,7 +65,7 @@ if ($viewmode == 'AddTlp' or $viewmode == '')
                 // дистанция уже должна быть инициализирована в raidactions!
                 if (empty($DistanceId)) {return;}
                 if (empty($TeamId)) {return;}
-		
+			
 	        $LevelPointId = 0;
                 $TlpComment = '';
                 $TlpYear = '';
@@ -153,10 +154,24 @@ else
 
 }
 
+// В форме правки выводится только день и время, год считаем по дате регистарции ММБ и не выводим
 
-if (empty($TlpYear) or $TlpYear = '0000') {
-   $TlpYear = date('Y');
-//   echo $TlpYear;
+if (empty($TlpYear) or (int)$TlpYear == 0) {
+
+		$RaidYear = 0;		
+		$sql = "select YEAR(r.raid_registrationenddate) as raidyear
+			from Raids r
+		             inner join Distances d
+			     on d.raid_id = r.raid_id
+			where d.distance_id = ".$DistanceId;
+
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+		$RaidYear = $Row['raidyear'];
+		mysql_free_result($Result);
+
+                $TlpYear = $RaidYear;
+
 }
 
 // ================ Конец инициализации переменных для добавляемой/редактируемой точки =================
