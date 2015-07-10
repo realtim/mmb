@@ -1839,7 +1839,7 @@ send_mime_mail('Автор письма',
 	// по времени проще
 	// 			 on lp1.levelpoint_order > a.levelpoint_order	
 
- 
+ /*
 	$sql = " update  TeamLevelPoints tlp
                    inner join 
 	           (select  tlp1.teamlevelpoint_id, 
@@ -1885,7 +1885,58 @@ send_mime_mail('Автор письма',
 		    on tlp.teamlevelpoint_id = b.teamlevelpoint_id   
 		 set tlp.teamlevelpoint_duration =  b.teamlevelpoint_duration
 	      ";
-	 
+	
+	*/
+	
+	$sql = " update  
+			(select tlp1.teamlevelpoint_id,  tlp1.teamlevelpoint_datetime,  lp1.distance_id, tlp1.team_id,
+				MAX(a.levelpoint_order) as maxorder
+			 from TeamLevelPoints tlp1
+			      inner join LevelPoints lp1
+			      on tlp1.levelpoint_id = lp1.levelpoint_id
+			      inner join Distances d1
+			      on lp1.distance_id = d1.distance_id
+			      left outer join
+			      (select lp2.levelpoint_order, tlp2.team_id
+			       from  TeamLevelPoints tlp2
+			             inner join LevelPoints lp2
+			             on tlp2.levelpoint_id = lp2.levelpoint_id
+			             inner join Distances d2
+			             on lp2.distance_id = d2.distance_id
+			       where tlp2.teamlevelpoint_datetime > 0
+		";			 
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." and tlp2.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." and d2.raid_id = ".$raidid;
+	 }				 
+
+	  $sql = $sql."				 
+			      ) a
+	 		      on tlp1.team_id = a.team_id 
+			         and lp1.levelpoint_order > a.levelpoint_order
+			 where tlp1.teamlevelpoint_datetime > 0
+			       and  lp1.pointtype_id <> 1
+		";			 
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." and tlp1.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." and d1.raid_id = ".$raidid;
+	 }				 
+
+	  $sql = $sql."				 
+			 group by tlp1.teamlevelpoint_id
+			 ) b  
+ 			inner join LevelPoints lp3
+			on  lp3.levelpoint_order = b.maxorder
+			    and lp3.distance_id = b.distance_id
+			inner join TeamLevelPoints tlp3
+			on lp3.levelpoint_id = tlp3.levelpoint_id
+			   and tlp3.team_id = b.team_id  
+			inner join TeamLevelPoints tlp4
+			on tlp4.teamlevelpoint_id = b.teamlevelpoint_id
+		  set  tlp4.teamlevelpoint_duration =   timediff(b.teamlevelpoint_datetime, tlp3.teamlevelpoint_datetime)
+		";
     //  echo $sql;
       
        	 $rs = MySqlQuery($sql);
@@ -2051,7 +2102,9 @@ send_mime_mail('Автор письма',
 			 on tlp.team_id = t.team_id
   		         inner join Distances d
 			 on t.distance_id = d.distance_id
-		  set  teamlevelpoint_penalty = NULL,  teamlevelpoint_duration = NULL			 
+		  set  teamlevelpoint_penalty = NULL,  
+		       teamlevelpoint_duration = NULL,
+		       t.team_progressdetail = NULL			 
  		  where 
 		";			 
 
