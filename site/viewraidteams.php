@@ -490,7 +490,8 @@ if (!isset($MyPHPScript)) return;
 			       d.distance_name, d.distance_id,
                                TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 			       COALESCE(t.team_outofrange, 0) as  team_outofrange,
-			       COALESCE(lp.levelpoint_name, '') as levelpoint_name
+			       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
+			       COALESCE(t.team_comment, '') as team_comment
 			  from  Teams t
 				inner join  Distances d 
 				on t.distance_id = d.distance_id
@@ -510,6 +511,40 @@ if (!isset($MyPHPScript)) return;
 		} elseif ($OrderType == 'Errors') {
 		
                        // Не знаю, как будет реализовано
+	
+		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
+		               t.team_mapscount, t.team_progress, 
+		               COALESCE(t.team_progressdetail, 0) as team_progressdetail,
+			       d.distance_name, d.distance_id,
+                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
+			       COALESCE(t.team_outofrange, 0) as  team_outofrange,
+			       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
+			       COALESCE(t.team_comment, '') as team_comment
+			  from  Teams t
+				inner join 
+				( 
+				  select tlp.team_id
+				  from TeamLevelPoints tlp
+				  where error_id is not null
+				  group by tlp.team_id
+				) err
+				on t.team_id = err.team_id
+				inner join  Distances d 
+				on t.distance_id = d.distance_id
+				left outer join LevelPoints lp
+				on lp.distance_id = t.distance_id
+				   and lp.levelpoint_order = t.team_progress
+			  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
+
+		      if (!empty($_REQUEST['DistanceId']))
+		      {
+			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
+		      }
+
+		      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_progressdetail asc, team_result asc, team_num asc ";
+		    
+	
+	
 		
 		}
 
@@ -557,6 +592,23 @@ if (!isset($MyPHPScript)) return;
 
 
 		} elseif ($OrderType == 'Errors') {
+	
+	
+	                $ColumnWidth = 0;
+	                if ($ResultViewMode == 'WithLevels') {
+	                    $ColumnWidth = 175;
+	                } else {
+	                    $ColumnWidth = 350;
+	                }
+
+			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Точка финиша</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Комментарий</td>'."\r\n");  
+
 		
 		}
 	
@@ -603,7 +655,7 @@ if (!isset($MyPHPScript)) return;
 					     on tu.teamuser_id = tld.teamuser_id
 		                             left outer join LevelPoints lp
 					     on tld.levelpoint_id = lp.levelpoint_id
-					where tu.teamuser_hide = 0 and team_id = ".$Row['team_id']; 
+					where tu.teamuser_hide = 0 and tu.team_id = ".$Row['team_id']; 
 				//echo 'sql '.$sql;
 				$UserResult = MySqlQuery($sql);
 
@@ -676,6 +728,7 @@ if (!isset($MyPHPScript)) return;
 	                    } else {
 				print('&nbsp'."\r\n");
 			    }
+			    print($Row['team_comment']);
 			    print('</td>'."\r\n");
 
 			}

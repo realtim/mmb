@@ -2104,7 +2104,8 @@ send_mime_mail('Автор письма',
 			 on t.distance_id = d.distance_id
 		  set  teamlevelpoint_penalty = NULL,  
 		       teamlevelpoint_duration = NULL,
-		       t.team_progressdetail = NULL			 
+		       t.team_progressdetail = NULL,
+		       t.team_comment = NULL			 
  		  where 
 		";			 
 
@@ -2190,6 +2191,37 @@ send_mime_mail('Автор письма',
 		  ";
 
 //   echo $sql;
+	 $rs = MySqlQuery($sql);
+
+
+
+
+	// Обновляем комментарий у команды 
+	 $sql = " update  Teams t
+                  inner join
+                      (select tlp.team_id, group_concat(COALESCE(teamlevelpoint_comment, '')) as team_comment
+		       from TeamLevelPoints tlp
+			    inner join Teams t
+			    on t.team_id = tlp.team_id
+			    inner join Distances d
+			    on t.distance_id = d.distance_id
+                       where  COALESCE(tlp.teamlevelpoint_comment, '') <> ''
+		";			 
+
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." and t.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." and d.raid_id = ".$raidid;
+	 }				 
+				 
+	  $sql = $sql."				 
+                       group by tlp.team_id
+                      ) a
+		  on t.team_id = a.team_id    
+		  set  t.team_comment = a.team_comment
+		  ";
+
+         //   echo $sql;
 	 $rs = MySqlQuery($sql);
 
 

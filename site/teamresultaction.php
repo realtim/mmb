@@ -194,6 +194,7 @@ elseif ($action == 'AddTlp')
                 $pTlpDate = $_POST['TlpDate'];
                 $pTlpTime = $_POST['TlpTime'];
                 $pTlpComment = $_POST['TlpComment'];
+		$pErrorId = $_POST['ErrorId'];
 
 
          // тут по-хорошему нужны проверки
@@ -239,9 +240,9 @@ elseif ($action == 'AddTlp')
 	     
 		$sql = "insert into TeamLevelPoints (team_id, levelpoint_id, 
                         device_id,
-			teamlevelpoint_datetime, teamlevelpoint_comment)
+			teamlevelpoint_datetime, teamlevelpoint_comment, error_id)
 			values (".$pTeamId.", ".$pLevelPointId.", 1, 
-			        ".$TlpYDTs.", '".$pTlpComment."')";
+			        ".$TlpYDTs.", '".$pTlpComment."', ".$pErrorId.")";
 
 
                //  echo $sql;
@@ -315,6 +316,8 @@ elseif ($action == 'ChangeTlp')
                 $pTlpDate = $_POST['TlpDate'];
                 $pTlpTime = $_POST['TlpTime'];
                 $pTlpComment = $_POST['TlpComment'];
+		$pErrorId = $_POST['ErrorId'];
+
 
 		$TlpYDTs = "'".$pTlpYear."-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
          
@@ -357,6 +360,7 @@ elseif ($action == 'ChangeTlp')
 		
         $sql = "update TeamLevelPoints  set levelpoint_id = ".$pLevelPointId." 
 	                                ,team_id = ".$pTeamId."
+	                                ,error_id = ".$pErrorId."
 	                                ,teamlevelpoint_comment = '".$pTlpComment."'
 	                                ,teamlevelpoint_datetime = ".$TlpYDTs."
 	        where teamlevelpoint_id = ".$pTeamLevelPointId;        

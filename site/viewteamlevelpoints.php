@@ -55,6 +55,7 @@ if ($viewmode == 'AddTlp' or $viewmode == '')
                 $TlpDate = $_POST['TlpDate'];
                 $TlpTime = $_POST['TlpTime'];
 		$PointName = '';
+		$ErrorId = $_POST['ErrorId'];
 
 
 	}
@@ -72,6 +73,8 @@ if ($viewmode == 'AddTlp' or $viewmode == '')
                 $TlpDate = '';
                 $TlpTime = '';
 		$PointName = '';
+		$ErrorId = 0;
+
 	    
 	}
 
@@ -106,6 +109,7 @@ else
 		       tlp.teamlevelpoint_duration, 
 		       tlp.teamlevelpoint_penalty as tlp_penalty, 
 		       tlp.teamlevelpoint_datetime, 
+		       COALESCE(tlp.error_id, 0) as error_id,
 		       DATE_FORMAT(tlp.teamlevelpoint_datetime, '%Y') as tlp_syear,
 		       DATE_FORMAT(tlp.teamlevelpoint_datetime, '%d%m') as tlp_sdate,
 		       DATE_FORMAT(tlp.teamlevelpoint_datetime, '%H%i%s') as tlp_stime,
@@ -131,6 +135,7 @@ else
                 $TlpDate = $_POST['TlpDate'];
                 $TlpTime = $_POST['TlpTime'];
 		$PointName = '';
+		$ErrorId = $_POST['ErrorId'];
 
 	}
 	else
@@ -144,6 +149,7 @@ else
                 $TlpDate = $Row['tlp_sdate'];
                 $TlpTime = $Row['tlp_stime'];
 		$PointName = $Row['lp_name'];
+		$ErrorId = $Row['error_id'];
 
 
 	}	
@@ -286,6 +292,20 @@ if ($AllowEditResult == 1)
 	print('<input type="Text" maxlength="6" name="TlpTime" size="6" value="'.$TlpTime.'" tabindex="'.(++$TabIndex).'"'.' onclick="this.select();" title="ччммсс - часы минуты секунды без разделителя">'."\n");
 	print('</td></tr>'."\r\n");
 	print('<tr><td class="input">'."\n");
+	print('Ошибка '."\n");
+	print('<select name="ErrorId" class="leftmargin" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
+	$sql = "select error_id, error_name from Errors order by error_id ";
+	$Result = MySqlQuery($sql);
+
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+		$errorselected = ($Row['error_id'] == $ErrorId ? 'selected' : '');
+		print('<option value="'.$Row['error_id'].'" '.$errorselected.' >'.$Row['error_name']."</option>\n");
+	}
+	mysql_free_result($Result);
+	print('</select>'."\n");
+	print('</td></tr>'."\r\n");
+	print('<tr><td class="input">'."\n");
         print(' Комментарий <input type="text" name="TlpComment" size="20" value="'.$TlpComment.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$TlpComment.'\') {this.value=\'\';}"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$TlpComment.'\';}"').'
@@ -322,6 +342,7 @@ print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-siz
 print('<tr class = "gray">
                          <td width = "100" style = "'.$thstyle.'">Точка</td>
                          <td width = "100" style = "'.$thstyle.'">Время</td>
+                         <td width = "100" style = "'.$thstyle.'">Ошибка</td>
 		         <td width = "150" style = "'.$thstyle.'">Комментарий</td>
 		         <td width = "200" style = "'.$thstyle.'">Результат (время)</td>
 		         <td width = "150" style = "'.$thstyle.'">Штраф (минуты)</td>
@@ -342,11 +363,15 @@ print('<tr class = "gray">
 $sql = "select tlp.teamlevelpoint_id, lp.levelpoint_id, lp.levelpoint_name, 
 	DATE_FORMAT(tlp.teamlevelpoint_datetime,    '%d.%m %H:%i') as tlp_datetime,
 	tlp.teamlevelpoint_comment,
+	tlp.error_id,
+	COALESCE(err.error_name, '') as error_name,
 	tlp.teamlevelpoint_duration,
 	tlp.teamlevelpoint_penalty
 	from TeamLevelPoints tlp
   	     inner join LevelPoints lp on tlp.levelpoint_id = lp.levelpoint_id 
   	     inner join Distances d on d.distance_id = lp.distance_id 
+	     left outer join Errors err
+	     on tlp.error_id = err.error_id 
 	where tlp.team_id = ".$TeamId;
 
 //$sql = $sql." and COALESCE(lp.levelpoint_endtime, now()) <= now() ";
@@ -366,6 +391,7 @@ while ($Row = mysql_fetch_assoc($Result))
        print('<tr>'."\r\n");
        print('<td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_name'].'</td>
               <td align = "left" style = "'.$tdstyle.'">'.$Row['tlp_datetime'].'</td>
+              <td align = "left" style = "'.$tdstyle.'">'.$Row['error_name'].'</td>
               <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_comment'].'</td>
               <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_duration'].'</td>
 	      <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_penalty'].'</td>
