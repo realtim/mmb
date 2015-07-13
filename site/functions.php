@@ -2229,38 +2229,65 @@ send_mime_mail('Автор письма',
 	// Устанавливаем невзятие обязательных КП
 	// Можно ставить team_progressdetail = 2 для таких случаев 
 	
-/*
+	 // Высчитываем число обязательных точек
+	 if (!empty($teamid)) {     	 
+
+		 $sql = "   select count(*) as result
+			    from LevelPoints lp
+				   inner join Teams t
+				   on lp.distance_id = t.distance_id
+			    where  t.team_id = ".$teamid."
+                                    and lp.pointtype_id = 3 ";;
+
+	 } elseif (!empty($raidid)) {     	 
+
+		 $sql = "   select count(*) as result
+			    from LevelPoints lp
+				   inner join Distances d
+				   on lp.distance_id = d.distance_id
+			    where  d.raid_id = ".$raidid."
+                                    and lp.pointtype_id = 3 ";
+	 }				 
+				 
+	 $Result = MySqlQuery($sql);
+	 $Row = mysql_fetch_assoc($Result);
+	 $ObligatoryCount = $Row['result'];
+	 mysql_free_result($Result);
+					 
+
+
 	 $sql = " update  Teams t
                   inner join
-                      (select t.team_id
+                      (select t.team_id, count(lp.levelpoint_id) as obligatorypointcount
 		       from TeamLevelPoints tlp
- 		            inner join LevelPoints lp
+ 		            left outer join LevelPoints lp
 		            on tlp.levelpoint_id = lp.levelpoint_id
+			       and lp.pointtype_id = 3 
 			    inner join Teams t
 			    on t.team_id = tlp.team_id
 			    inner join Distances d
 			    on t.distance_id = d.distance_id
-                       where  t.team_progress = lp.levelpoint_order
-		              and tlp.teamlevelpoint_datetime > lp.levelpoint_maxdatetime 
+                       where  
 		";			 
 
 	 if (!empty($teamid)) {     	 
-	   $sql = $sql." and t.team_id = ".$teamid;
+	   $sql = $sql."  t.team_id = ".$teamid;
 	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." and d.raid_id = ".$raidid;
+ 	   $sql = $sql."  d.raid_id = ".$raidid;
 	 }				 
 				 
 	  $sql = $sql."				 
-
+                       group by t.team_id
+		       having  count(lp.levelpoint_id) < ".$ObligatoryCount." 
                       ) a
 		  on t.team_id = a.team_id    
-		  set  t.team_progressdetail = 1
+		  set  t.team_progressdetail = 2
 		  ";
 
-//   echo $sql;
+	// echo $sql;
 	 $rs = MySqlQuery($sql);
 
-*/
+
 
 
      }
