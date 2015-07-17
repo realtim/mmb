@@ -108,6 +108,7 @@ else
 	               tlp.teamlevelpoint_comment as tlp_comment,
 		       tlp.teamlevelpoint_duration, 
 		       tlp.teamlevelpoint_penalty as tlp_penalty, 
+		       tlp.teamlevelpoint_result as tlp_result, 
 		       tlp.teamlevelpoint_datetime, 
 		       COALESCE(tlp.error_id, 0) as error_id,
 		       DATE_FORMAT(tlp.teamlevelpoint_datetime, '%Y') as tlp_syear,
@@ -344,8 +345,9 @@ print('<tr class = "gray">
                          <td width = "100" style = "'.$thstyle.'">Время</td>
                          <td width = "100" style = "'.$thstyle.'">Ошибка</td>
 		         <td width = "150" style = "'.$thstyle.'">Комментарий</td>
-		         <td width = "200" style = "'.$thstyle.'">Результат (время)</td>
+		         <td width = "150" style = "'.$thstyle.'">Время</td>
 		         <td width = "150" style = "'.$thstyle.'">Штраф (минуты)</td>
+		         <td width = "150" style = "'.$thstyle.'">Результат</td>
 		         '."\r\n");
 
 		if ($AllowEdit == 1)
@@ -366,7 +368,8 @@ $sql = "select tlp.teamlevelpoint_id, lp.levelpoint_id, lp.levelpoint_name,
 	tlp.error_id,
 	COALESCE(err.error_name, '') as error_name,
 	tlp.teamlevelpoint_duration,
-	tlp.teamlevelpoint_penalty
+	tlp.teamlevelpoint_penalty,
+	tlp.teamlevelpoint_result
 	from TeamLevelPoints tlp
   	     inner join LevelPoints lp on tlp.levelpoint_id = lp.levelpoint_id 
   	     inner join Distances d on d.distance_id = lp.distance_id 
@@ -395,6 +398,7 @@ while ($Row = mysql_fetch_assoc($Result))
               <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_comment'].'</td>
               <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_duration'].'</td>
 	      <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_penalty'].'</td>
+	      <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_result'].'</td>
 	    ');
 
   	if ($AllowEdit == 1)

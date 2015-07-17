@@ -1354,7 +1354,7 @@ send_mime_mail('Автор письма',
   
 	$sql = "
 		update TeamUsers tu
-			inner join Teams t
+ 			inner join Teams t
 			on tu.team_id = t.team_id	
 		        inner join Users u
 		        on tu.user_id = u.user_id
@@ -1390,10 +1390,12 @@ send_mime_mail('Автор письма',
 			 group by d.raid_id
                         ) b
                         on d.raid_id = b.raid_id
+			left outer join TeamLevelDismiss tld
+			on tu.teamuser_id = tld.teamuser_id
 		 SET teamuser_rank  =  (a.firstresult_in_sec + 0.00)/(TIME_TO_SEC(COALESCE(t.team_result, 0)) + 0.00)*(CASE WHEN b.maxlength > 0 THEN  d.distance_length/(b.maxlength + 0.00) ELSE 1.00 END) 
 		 where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
-		       and tu.levelpoint_id is NULL
+		       and tld.levelpoint_id is NULL
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
 		       and  COALESCE(t.team_result, 0) > 0
@@ -2022,7 +2024,85 @@ send_mime_mail('Автор письма',
 	 }
 
 
-         
+
+
+/*
+правильный вариант с штрафом в следующей точке со временем
+*/
+
+	 $sql = " update TeamLevelPoints tlp0
+			 inner join LevelPoints lp0
+			 on tlp0.levelpoint_id = lp0.levelpoint_id
+			 inner join 
+			(
+			select c.team_id, c.up, SUM(COALESCE(lp.levelpoint_penalty, 0)) as penalty
+			from
+				(select a.team_id, a.levelpoint_order as up, MAX(b.levelpoint_order) as down
+				from
+					(select t1.team_id, lp1.levelpoint_order
+					from TeamLevelPoints tlp1
+					     inner join LevelPoints lp1
+					     on tlp1.levelpoint_id = lp1.levelpoint_id
+					     inner join Teams t1
+					     on t1.team_id = tlp1.team_id
+					     inner join Distances d1
+					     on t1.distance_id = d1.distance_id
+					where ";			 
+
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." t1.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." d1.raid_id = ".$raidid;
+	 }				 
+				 
+	  $sql = $sql."				 
+					) a
+					inner join 
+					(select t2.team_id, lp2.levelpoint_order
+					from TeamLevelPoints tlp2
+					     inner join LevelPoints lp2
+					     on tlp2.levelpoint_id = lp2.levelpoint_id
+					     inner join Teams t2
+					     on t2.team_id = tlp2.team_id
+					     inner join Distances d2
+					     on t2.distance_id = d2.distance_id
+					where ";
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." t2.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." d2.raid_id = ".$raidid;
+	 }				 
+				 
+	  $sql = $sql."				 
+					) b
+				on a.team_id = b.team_id
+				   and a.levelpoint_order > b.levelpoint_order
+				group by a.team_id, a.levelpoint_order
+				having  a.levelpoint_order > MAX(b.levelpoint_order) + 1
+				) c
+				inner join Teams t
+				on c.team_id = t.team_id
+				inner join LevelPoints lp
+				on t.distance_id = lp.distance_id
+				   and lp.levelpoint_order < c.up
+				   and  lp.levelpoint_order > c.down
+				left outer join LevelPointDiscounts lpd
+				on t.distance_id = lpd.distance_id 
+				   and lp.levelpoint_order <= lpd.levelpointdiscount_finish
+				   and  lp.levelpoint_order >= lpd.levelpointdiscount_start
+				where lpd.levelpointdiscount_id is null
+				group by c.team_id, c.up
+			) d
+			on tlp0.team_id = d.team_id
+			   and lp0.levelpoint_order = d.up
+		set tlp0.teamlevelpoint_penalty = d.penalty ";
+
+
+/*
+старый вариант с штрафом в конечной точке
+*/
+
+/*         
 	 $sql = " update  TeamLevelPoints tlp
 		   inner join 
 	          	(select   SUM(lp.levelpoint_penalty) as penalty,
@@ -2079,6 +2159,8 @@ send_mime_mail('Автор письма',
 		     and tlp.team_id = a.team_id
  		  set  teamlevelpoint_penalty =  COALESCE(tlp.teamlevelpoint_penalty, 0) + COALESCE(a.penalty, 0)
 		";
+
+*/
        //    echo $sql;
 	 
 	  $rs = MySqlQuery($sql);
@@ -2086,6 +2168,76 @@ send_mime_mail('Автор письма',
      }
      // Конец функции расчета штрафа для КП без амнистий		
      
+     
+        // функция пересчитывает результат команды в точке 
+     function RecalcTeamLevelPointsResult($raidid, $teamid)
+     {
+
+	 if (empty($teamid) and empty($raidid)) {     	 
+	    return;
+	 }
+
+
+	 $sql = " update TeamLevelPoints tlp0
+			 inner join LevelPoints lp0
+			 on tlp0.levelpoint_id = lp0.levelpoint_id
+			 inner join 
+				(select a.team_id, a.levelpoint_order as up, 
+					SEC_TO_TIME(SUM(COALESCE(b.teamlevelpoint_penalty, 0))*60 + SUM(TIME_TO_SEC(COALESCE(b.teamlevelpoint_duration, 0)))) as result
+				from
+					(select t1.team_id, lp1.levelpoint_order
+					from TeamLevelPoints tlp1
+					     inner join LevelPoints lp1
+					     on tlp1.levelpoint_id = lp1.levelpoint_id
+					     inner join Teams t1
+					     on t1.team_id = tlp1.team_id
+					     inner join Distances d1
+					     on t1.distance_id = d1.distance_id
+					where  lp1.pointtype_id <> 1 and ";			 
+
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." t1.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." d1.raid_id = ".$raidid;
+	 }				 
+				 
+	  $sql = $sql."				 
+					) a
+					inner join 
+					(select t2.team_id, lp2.levelpoint_order,
+					        tlp2.teamlevelpoint_duration,
+						tlp2.teamlevelpoint_penalty  
+					from TeamLevelPoints tlp2
+					     inner join LevelPoints lp2
+					     on tlp2.levelpoint_id = lp2.levelpoint_id
+					     inner join Teams t2
+					     on t2.team_id = tlp2.team_id
+					     inner join Distances d2
+					     on t2.distance_id = d2.distance_id
+					where ";
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." t2.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql." d2.raid_id = ".$raidid;
+	 }				 
+				 
+	  $sql = $sql."				 
+					) b
+				on a.team_id = b.team_id
+				   and a.levelpoint_order >= b.levelpoint_order
+				group by a.team_id, a.levelpoint_order
+				) c
+			on tlp0.team_id = c.team_id
+			   and lp0.levelpoint_order = c.up
+		set tlp0.teamlevelpoint_result = c.result ";
+
+        //   echo $sql;
+	 
+	  $rs = MySqlQuery($sql);
+	
+     }
+     // Конец функции расчета результата в точке		
+ 
      
      // функция пересчитывает результат команды по данным в точках
      function RecalcTeamResultFromTeamLevelPoints($raidid, $teamid)
@@ -2121,7 +2273,53 @@ send_mime_mail('Автор письма',
 	RecalcTeamLevelPointsDuration($raidid, $teamid);
         RecalcTeamLevelPointsPenaltyWithDiscount($raidid, $teamid);
         RecalcTeamLevelPointsPenaltyWithoutDiscount($raidid, $teamid);
+        RecalcTeamLevelPointsResult($raidid, $teamid);
 
+
+    // Результат команды - это результат в максимальной точке 
+    // Перевод в секунды нужен для корректной работы MAX
+	 $sql = " update  Teams t
+		   inner join 
+	          	(select tlp.team_id, 
+			        MAX(COALESCE(lp.levelpoint_order, 0)) as progress,
+				MAX(t.distance_id) as distance_id,
+			        MAX(TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_result, 0))) as secresult
+			 from TeamLevelPoints tlp
+			      inner join Teams t
+			      on tlp.team_id = t.team_id
+			      inner join Distances d
+			      on t.distance_id = d.distance_id
+			      inner join LevelPoints lp
+			      on tlp.levelpoint_id = lp.levelpoint_id
+			 where  
+		";			 
+
+	 if (!empty($teamid)) {     	 
+	   $sql = $sql." t.team_id = ".$teamid;
+	 } elseif (!empty($raidid)) {     	 
+ 	   $sql = $sql."  d.raid_id = ".$raidid;
+	 }				 
+				 
+	  $sql = $sql."				 
+                         group by tlp.team_id
+			) a
+		  on t.team_id = a.team_id
+		  inner join 
+			(select  lp.distance_id,
+			         MAX(lp.levelpoint_order) as maxlporder
+			 from LevelPoints lp
+			 group by lp.distance_id 
+			) b
+		  on a.distance_id = b.distance_id
+  	          set  team_result =  CASE WHEN b.maxlporder = COALESCE(a.progress, 0) THEN SEC_TO_TIME(COALESCE(a.secresult, 0)) ELSE NULL END, team_progress = COALESCE(a.progress, 0)
+	   ";
+
+
+/*
+Старый вариант с расчетом результата только у финишировавших команд
+*/
+
+/*
           // Переводим суммарные штрафы в секунды и суммируем с временем, затем обратно во время 
 	 $sql = " update  Teams t
 		   inner join 
@@ -2157,6 +2355,8 @@ send_mime_mail('Автор письма',
 		  on a.distance_id = b.distance_id
   	      set  team_result =  CASE WHEN b.maxlporder = COALESCE(a.progress, 0) THEN COALESCE(a.result, 0) ELSE NULL END, team_progress = COALESCE(a.progress, 0)
 	   ";
+
+*/
        //    echo $sql;
 	 
 	  $rs = MySqlQuery($sql);

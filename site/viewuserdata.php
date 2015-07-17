@@ -415,15 +415,17 @@ if (!isset($MyPHPScript)) return;
 			       r.raid_id, lp.levelpoint_name,
 			       lp.levelpoint_id, COALESCE(tu.teamuser_rank, 0.00000) as teamuser_rank  
 		        from  TeamUsers tu
-			     inner join  Teams t
-			     on tu.team_id = t.team_id
-			     inner join  Distances d
-			     on t.distance_id = d.distance_id
-			     inner join  Raids r
-			     on d.raid_id = r.raid_id
-			     left outer join LevelPoints  lp
-			     on tu.levelpoint_id = lp.levelpoint_id
-			where tu.teamuser_hide = 0 and user_id = ".$pUserId."
+			      inner join  Teams t
+			      on tu.team_id = t.team_id
+			      inner join  Distances d
+			      on t.distance_id = d.distance_id
+			      inner join  Raids r
+			      on d.raid_id = r.raid_id
+			      left outer join TeamLevelDismiss  tld
+			      on tu.teamuser_id = tld.teamuser_id
+			      left outer join LevelPoints  lp
+			      on tld.levelpoint_id = lp.levelpoint_id
+			where tu.teamuser_hide = 0 and tu.user_id = ".$pUserId."
 			order by r.raid_id desc "; 
                 //echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);

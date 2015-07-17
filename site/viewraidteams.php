@@ -51,8 +51,16 @@ if (!isset($MyPHPScript)) return;
 	  document.RaidTeamsForm.submit();
         } 
 
-	// Фильтр по этапу
-	function LevelIdChange()
+	// Фильтр по точке
+	function LevelPointIdChange()
+	{ 
+          document.RaidTeamsForm.action.value = "ViewRaidTeams";          
+	  document.RaidTeamsForm.submit();
+         } 
+
+
+	// Фильтр по GPS
+	function GPSChange()
 	{ 
           document.RaidTeamsForm.action.value = "ViewRaidTeams";          
 	  document.RaidTeamsForm.submit();
@@ -272,6 +280,60 @@ if (!isset($MyPHPScript)) return;
 		print('</select>'."\r\n");  
 		mysql_free_result($Result);		
 
+/*
+============================= точки ===============================
+*/
+
+	        $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name
+                        from  LevelPoints lp 
+			      inner join Distances d
+			      on lp.distance_id = d.distance_id
+			where raid_id = ".$RaidId;
+		
+		if ($_REQUEST['DistanceId'] <> 0) {
+		$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
+		}
+			
+                $sql = $sql." order by lp.levelpoint_order "; 
+		//echo 'sql '.$sql;
+		$Result = MySqlQuery($sql);
+                
+		print('<select name="LevelPointId" style = "margin-left: 10px; margin-right: 5px;" 
+                               onchange = "LevelPointIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
+                $levelpointselected =  (0 == $_REQUEST['LevelPointId'] ? 'selected' : '');
+		  print('<option value = "0" '.$levelpointselected.' >точку (КП)'."\r\n");
+		if (!isset($_REQUEST['LevelPointId'])) $_REQUEST['LevelPointId'] = "";
+	        while ($Row = mysql_fetch_assoc($Result))
+		{
+		  $levelpointselected = ($Row['levelpoint_id'] == $_REQUEST['LevelPointId']  ? 'selected' : '');
+		  print('<option value = "'.$Row['levelpoint_id'].'" '.$levelpointselected.' >'.$Row['distance_name'].' '.$Row['levelpoint_name']."\r\n");
+		}
+		print('</select>'."\r\n");  
+		mysql_free_result($Result);		
+
+/*
+======================  GPS  ====================
+*/
+		
+		if (!isset($_REQUEST['GPSFilter'])) {
+		  $_REQUEST['GPSFilter'] = 0;
+		}
+		
+		print('<select name="GPSFilter" style = "margin-left: 10px; margin-right: 5px;" 
+                               onchange = "GPSChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
+                $gpsfilterselected =  (0 == $_REQUEST['GPSFilter'] ? 'selected' : '');
+		  print('<option value = "0" '.$gpsfilterselected.' >не фильтровать по GPS'."\r\n");
+                $gpsfilterselected =  (1 == $_REQUEST['GPSFilter'] ? 'selected' : '');
+		  print('<option value = "1" '.$gpsfilterselected.' >без GPS'."\r\n");
+		print('</select>'."\r\n");  
+
+
+/*
+=====================================
+
+*/
+
+
 //		if (!isset($_REQUEST['LevelId'])) $_REQUEST['LevelId'] = "";
 	
 	        // Режим отображения результатов
@@ -369,7 +431,7 @@ if (!isset($MyPHPScript)) return;
 		    mysql_free_result($Result);
 
 		    print('</table>'."\r\n");
-		    
+	/*	    
 
                 // Показываем этапы
 		if ($CanViewLevels and  $OrderType == 'Place')  
@@ -415,12 +477,8 @@ if (!isset($MyPHPScript)) return;
                     {
 			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId'];
                     }
-                 /*
-		    if (!empty($_REQUEST['LevelId']))
-                    {
-			$sql = $sql." and l.level_id = ".$_REQUEST['LevelId'];
-                    }
-                   */ $sql = $sql." order by d.distance_name, lp.levelpoint_order ";
+
+                    $sql = $sql." order by d.distance_name, lp.levelpoint_order ";
 
 	            // echo $sql;
 
@@ -456,6 +514,8 @@ if (!isset($MyPHPScript)) return;
 		    mysql_free_result($Result);
 		    print('</table>'."\r\n");
 		}
+*/
+
 
 		// ============ Вывод списка команд ===========================
 
@@ -478,35 +538,76 @@ if (!isset($MyPHPScript)) return;
 		   {
                      $sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
 		   }
+		   if (!empty($_REQUEST['GPSFilter']))
+		   {
+                     $sql = $sql." and t.team_usegps = 0 "; 
+		   }
+
+
 		   $sql = $sql." order by team_num desc"; 
                     
 
                 } elseif ($OrderType == 'Place') {
                   // Сортировка по месту требует более хитрого запроса
 
-		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
-		               t.team_mapscount, t.team_progress, 
-		               COALESCE(t.team_progressdetail, 0) as team_progressdetail,
-			       d.distance_name, d.distance_id,
-                               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
-			       COALESCE(t.team_outofrange, 0) as  team_outofrange,
-			       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
-			       COALESCE(t.team_comment, '') as team_comment
-			  from  Teams t
-				inner join  Distances d 
-				on t.distance_id = d.distance_id
-				left outer join LevelPoints lp
-				on lp.distance_id = t.distance_id
-				   and lp.levelpoint_order = t.team_progress
-			  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
+			if (!empty($_REQUEST['LevelPointId']))
+		        {
+               
+			    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
+			               t.team_mapscount, lp.levelpoint_order as team_progress, 
+			               COALESCE(t.team_progressdetail, 0) as team_progressdetail,
+				       d.distance_name, d.distance_id,
+		                       TIME_FORMAT(tlp.teamlevelpoint_result, '%H:%i') as team_sresult,
+				       COALESCE(t.team_outofrange, 0) as  team_outofrange,
+				       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
+				       COALESCE(t.team_comment, '') as team_comment
+				  from  Teams t
+					inner join  Distances d 
+					on t.distance_id = d.distance_id
+					inner join  TeamLevelPoints tlp 
+					on t.team_id = tlp.team_id
+       					inner join LevelPoints lp
+					on tlp.levelpoint_id = lp.levelpoint_id
+				  where t.team_hide = 0 and tlp.levelpoint_id = ".$_REQUEST['LevelPointId'];
 
-		      if (!empty($_REQUEST['DistanceId']))
-		      {
-			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
-		      }
+			     if (!empty($_REQUEST['GPSFilter']))
+			     {
+	                       $sql = $sql." and t.team_usegps = 0 "; 
+			     }
 
-		      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_progressdetail asc, team_result asc, team_num asc ";
-		    
+			      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_progressdetail asc, team_result asc, team_num asc ";
+
+			} else {
+			
+			    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
+			               t.team_mapscount, t.team_progress, 
+			               COALESCE(t.team_progressdetail, 0) as team_progressdetail,
+				       d.distance_name, d.distance_id,
+		                       TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
+				       COALESCE(t.team_outofrange, 0) as  team_outofrange,
+				       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
+				       COALESCE(t.team_comment, '') as team_comment
+				  from  Teams t
+					inner join  Distances d 
+					on t.distance_id = d.distance_id
+					left outer join LevelPoints lp
+					on lp.distance_id = t.distance_id
+					   and lp.levelpoint_order = t.team_progress
+				  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
+
+			      if (!empty($_REQUEST['DistanceId']))
+			      {
+				$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
+			      }
+			      if (!empty($_REQUEST['GPSFilter']))
+			      {
+	                        $sql = $sql." and t.team_usegps = 0 "; 
+			      }
+
+			      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_progressdetail asc, team_result asc, team_num asc ";
+			
+			
+			}	    
 		
 		} elseif ($OrderType == 'Errors') {
 		
