@@ -137,12 +137,12 @@ if (!isset($MyPHPScript)) return;
                } else {
 	         $TableWidth = 550;
 	       }
-		print('<table border = "1" width = "'.$TableWidth.'" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
+		print('<table border="1" width="'.$TableWidth.'" cellpadding="0" cellspacing="0" style="font-size: 80%">'."\r\n");
 
 		print('<tr class = "gray">
- 	                 <td width = "100" style = "'.$thstyle.'">N строки</td>
- 	                 <td width = "350" style = "'.$thstyle.'">Пользователь</td>
-		         <td width = "100" align = "center" style = "'.$thstyle.'">Рейтинг</td>'."\r\n");
+ 	                 <td width="100" style="'.$thstyle.'">N строки</td>
+ 	                 <td width="350" style="'.$thstyle.'">Пользователь</td>
+		         <td width="100" align="center" style="'.$thstyle.'">Рейтинг</td>'."\r\n");
 
                if ($ShowAllRaids) 
 	       {
@@ -150,7 +150,7 @@ if (!isset($MyPHPScript)) return;
 	     // Показываем  список ММБ
 		while ($RowRaids = mysql_fetch_assoc($ResultRaids))
 		{
-                         print('<td width = "100"  style = "'.$thstyle.'">'.$RowRaids['raid_name'].' '.$RowRaids['distance_name'].'</td>'."\r\n");
+                         print('<td width="100" style="'.$thstyle.'">'.$RowRaids['raid_name'].' '.$RowRaids['distance_name'].'</td>'."\r\n");
 		}
 		mysql_free_result($ResultRaids);
                }
@@ -169,9 +169,9 @@ if (!isset($MyPHPScript)) return;
                      $LineNum++;
 
                      print('<tr>'."\r\n");
-		     print('<td align = "left" style = "'.$tdstyle.'">'.$LineNum.'</td>'."\r\n");
-		     print('<td align = "left" style = "'.$tdstyle.'"><a href = "javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a></td>'."\r\n");
-		     print('<td align = "center" style = "'.$tdstyle.'">'.$Row['userrank'].'</td>'."\r\n");
+		     print('<td align="left" style="'.$tdstyle.'">'.$LineNum.'</td>'."\r\n");
+		     print('<td align="left" style="'.$tdstyle.'"><a href="?UserId='.$Row['user_id'].'">'.$Row['user_name'].'</a></td>'."\r\n");
+		     print('<td align="center" style="'.$tdstyle.'">'.$Row['userrank'].'</td>'."\r\n");
 
                if ($ShowAllRaids) 
 	       {
@@ -208,7 +208,7 @@ if (!isset($MyPHPScript)) return;
 			//	if ($TeamPlace > 0 and $LevelPointId > 0) $TeamUserOff = ", не явка в точку <b>".$RowRaids['levelpoint_name']."</b>";
 
 
-			   $TeamString = '<a href = "javascript:ViewTeamInfo('.$RowRaids['team_id'].');">'.$RowRaids['team_name'].'</a></br>'.$RowRaids['teamuser_rank'].$TeamPlaceResult.$TeamUserOff;
+			   $TeamString = '<a href="?TeamId='.$RowRaids['team_id'].'">'.$RowRaids['team_name'].'</a></br>'.$RowRaids['teamuser_rank'].$TeamPlaceResult.$TeamUserOff;
 			 } else {
 				$TeamString = '&nbsp;';
 			 }	

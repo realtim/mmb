@@ -1,6 +1,5 @@
 <?php
 
-
         // Общие настройки
 	include("settings.php");
 	// Библиотека функций
@@ -29,35 +28,24 @@
 	$statustext = ""; //"Сегодня: ".date("d.m.Y")."  &nbsp; Время: ".date("H:i:s");
 
 	// Инициализируем права доступа пользователя
-	if (isset($_POST['sessionid'])) $SessionId = $_POST['sessionid']; else $SessionId = "";
+	$SessionId = mmb_validate($_POST, 'sessionid', '');
 	$OldSessionId = $SessionId;
-	if (isset($_REQUEST['RaidId'])) $RaidId = (int)$_REQUEST['RaidId']; else $RaidId = "0";
-	if (isset($_REQUEST['TeamId'])) $TeamId = (int)$_REQUEST['TeamId']; else $TeamId = "0";
+	$RaidId = (int) mmb_validate($_REQUEST, 'RaidId', 0);
+	$TeamId = (int) mmb_validateInt($_REQUEST, 'TeamId', 0);
+
 
          // 27/12/2013 Заменил на сортировку по ключу
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
         if (empty($RaidId))
-	{ 
-
+	{
   	     GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
+  	     $orderBy = $Administrator ? 'raid_id' : 'raid_registrationenddate';
+  	     $sql = "select raid_id
+		       from Raids
+		       order by $orderBy desc
+		       LIMIT 0,1 ";
 
-             if ($Administrator)
-	     {
-	       $sql = "select raid_id
-		       from Raids
-		       order by raid_id desc
-		       LIMIT 0,1 ";
-	     
-	     } else {
-	     
-	       $sql = "select raid_id
-		       from Raids
-	 	       order by raid_registrationenddate desc
-		       LIMIT 0,1 ";
-	     
-	     }
-	     
  	     $Result = MySqlQuery($sql);
 	     $Row = mysql_fetch_assoc($Result);
 	     $RaidId = $Row['raid_id'];
@@ -65,17 +53,27 @@
         }
 	// Конец определения ММБ
 
-
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
 	// Инициализуем переменные сессии, если они отсутствуют
 	if (!isset($view)) $view = "";
 	if (!isset($viewsubmode)) $viewsubmode = "";
-	if (!isset($_REQUEST['action'])) $_REQUEST['action'] = "";
+
+	if (!isset($_REQUEST['action']))
+	{
+		if (mmb_validateInt($_GET, 'UserId', '') !== false)
+			$_REQUEST['action'] = "UserInfo";
+		else if (mmb_validateInt($_GET, 'TeamId', '') !== false)
+			$_REQUEST['action'] = "TeamInfo";
+		else if (isset($_GET['rating']))
+			$_REQUEST['action'] = "ViewRankPage";
+		else
+			$_REQUEST['action'] = "";
+	}
 	$action = $_REQUEST['action'];
 
         //Не знаю, относится ли дистанция к переменным сессии, но инициализацию делаем
-	if (isset($_REQUEST['DistanceId'])) $DistanceId = (int)$_REQUEST['DistanceId']; else $DistanceId = "0";
+	$DistanceId = mmb_validateInt($_REQUEST, 'DistanceId', 0);
 
 	if ($action == "") 
 	{

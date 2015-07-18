@@ -408,8 +408,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 // ============ Информация о команде по номеру ================================
 elseif ($action == 'FindTeam')
 {
-	if (isset($_REQUEST['TeamNum'])) $TeamNum = $_REQUEST['TeamNum']; else $TeamNum = "";
-	if (($TeamNum == '') || ($TeamNum == 'Номер команды'))
+	$TeamNum = mmb_validateInt($_REQUEST, 'TeamNum', '');
+	if ($TeamNum === false)
 	{
 		$statustext = 'Не указан номер команды';
 		$view = "";

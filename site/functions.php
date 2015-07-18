@@ -2494,5 +2494,16 @@ send_mime_mail('Автор письма',
      // Конец функции расчета штрафа для КП без амнистий		
 
 
+	function mmb_validate($var, $key, $default = "")
+	{
+		return isset($var[$key]) ? $var[$key] : $default;
+	}
+
+	// returns value on success, false otherwise
+	function mmb_validateInt($var, $key, $default = 0)
+	{
+		$val = mmb_validate($var, $key, $default);
+		return is_numeric($val) ? $val : false;
+	}
 
 ?>
