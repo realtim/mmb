@@ -77,7 +77,7 @@ if (!isset($MyPHPScript)) return;
                  
 		$sql = "select tul.teamunionlog_id, t.team_id, t.team_num,
 		               t.team_name, tul.teamunionlog_dt, 
-			       t.team_result, t.team_progress
+			       t.team_result
 		        from  TeamUnionLogs tul
 			      inner join Teams t
 			      on t.team_id = tul.team_id

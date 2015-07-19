@@ -364,7 +364,10 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	// Конец разных вариантов действий при создании и редактировании команды
 
 	// Обновляем результат команды (реально нужно только при изменения этапа невыхода команды)
-	if ($UserId > 0 and $TeamId > 0) RecalcTeamResult($TeamId);
+//	if ($UserId > 0 and $TeamId > 0) RecalcTeamResult($TeamId);
+
+// Если пересчитывать, то так
+//RecalcTeamResultFromTeamLevelPoints(0, $TeamId)
 
 	// Отправляем письмо всем участникам команды об изменениях
 	// Кроме того, кто вносил изменения, если $SendEmailToAllTeamUsers <> 1
@@ -812,7 +815,7 @@ elseif ($action == 'JsonExport')
 
 	// Teams: team_id, distance_id, team_name, team_num // *
 	$Sql = "select team_id, t.distance_id, team_name, team_num, team_usegps, team_greenpeace,
-		level_id, team_progress, team_result, team_registerdt, team_outofrange 
+		level_id, team_result, team_registerdt, team_outofrange 
 		from Teams t 
 		     inner join Distances d on t.distance_id = d.distance_id 
 		where t.team_hide = 0 and d.distance_hide = 0  and d.raid_id = ".$RaidId;
@@ -1210,7 +1213,8 @@ elseif ($action == 'JsonExport')
 
     
     $sql = "select  MAX(TIME_TO_SEC(COALESCE(t.team_result, 0))) - MIN(TIME_TO_SEC(COALESCE(t.team_result, 0))) as deltaresult,
-                    MAX(COALESCE(t.team_progress, 0)) - MIN(COALESCE(t.team_progress, 0)) as deltaprogress,
+                    MAX(COALESCE(t.team_maxlevelpointorderdone, 0)) - MIN(COALESCE(t.team_maxlevelpointorderdone, 0)) as deltaprogress,
+                    MAX(COALESCE(t.team_minlevelpointorderwitherror, 0)) - MIN(COALESCE(t.team_minlevelpointorderwitherror, 0)) as deltaerror,
 		    MAX(t.distance_id) as maxdistanceid, 
 		    MIN(t.distance_id) as mindistanceid,
 		    SUM(t.team_mapscount) as mapscount, 
@@ -1238,6 +1242,17 @@ elseif ($action == 'JsonExport')
 
        return;
     }
+
+
+	// Проверяем, что прогресс и ошибки одинаковые
+	if ($Row['deltaprogress'] > 0 or $Row['deltaerror'] > 0)
+	{
+		$statustext = 'Различаются финишные точки или точки с ошибкой';				     
+		$view = "ViewAdminUnionPage";
+		$viewmode = "";
+		$viewsubmode = "ReturnAfterError";
+		return;
+	}
     
     
     if ($Row['maxdistanceid'] <> $Row['mindistanceid'])
@@ -1266,17 +1281,17 @@ elseif ($action == 'JsonExport')
     $pDistanceId = $Row['maxdistanceid'];
     $pTeamMapsCount  = $Row['mapscount'];
         // Проверяем одинкаовое число взятых КП
-	$sql = "select  tl.level_id
+	$sql = "select  tlp.teamlevelpoint_id
 		        from  TeamUnionLogs tul
 			      inner join Teams t
 			      on t.team_id = tul.team_id
-	                      inner join TeamLevels tl
-			      on t.team_id = tl.team_id 
+	              inner join TeamLevelPoints tlp
+			      on t.team_id = tlp.team_id 
 			where tul.teamunionlog_hide = 0 
                               and tul.union_status = 1
 			      and tl.teamlevel_hide = 0
-                group by tl.level_id
-		having MAX(COALESCE(teamlevel_points, '')) <> MIN(COALESCE(teamlevel_points,''))		      
+           group by tlp.teamlevelpoint_id
+			having count(*) <> 2
 	       "; 
     
 	$Result = MySqlQuery($sql);
@@ -1389,25 +1404,24 @@ elseif ($action == 'JsonExport')
 		MySqlQuery($sql);
 
 
-		$sql = " insert into TeamLevels (level_id, team_id, teamlevel_points,
-						 teamlevel_begtime, teamlevel_endtime,
-						 teamlevel_progress, teamlevel_hide 
+		$sql = " insert into TeamLevelPoints (levelpoint_id, team_id, 
+						 teamlevelpoint_datetime, teamlevelpoint_duration,
+						 teamlevelpoint_penalty, teamlevelpoint_comment
 						)
-		         select  tl.level_id, ".$TeamId.",
-		                MAX(teamlevel_points) as teamlevel_points,
-		                MIN(teamlevel_begtime) as teamlevel_begtime,
-		                MAX(teamlevel_endtime) as teamlevel_endtime,
-		                MAX(teamlevel_progress) as teamlevel_progress,
+		         select  tlp.levelpoint_id, ".$TeamId.",
+		                MAX(teamlevelpoint_datetime),
+		                MIN(teamlevelpoint_duration),
+		                MAX(teamlevelpoint_penalty),
+		                GROUP_CONCAT(teamlevel_comment),
 				0 as  teamlevel_hide 
  		         from  TeamUnionLogs tul
 			       inner join Teams t
 			       on t.team_id = tul.team_id
-	                       inner join TeamLevels tl
-			       on t.team_id = tl.team_id 
+                   inner join TeamLevelPoints tlp
+			       on t.team_id = tlp.team_id 
 			 where tul.teamunionlog_hide = 0 
                                and tul.union_status = 1
-			       and tl.teamlevel_hide = 0
-	                 group by tl.level_id
+              group by tlp.levelpoint_id
 		       "; 
   
 		MySqlQuery($sql);
@@ -1471,14 +1485,8 @@ elseif ($action == 'JsonExport')
 		 
 		MySqlQuery($sql);
 
+		RecalcTeamResultFromTeamLevelPoints(0, $TeamId);
 
-	// Пересчет врмени нахождения команды на этапах
-	RecalcTeamLevelDuration($TeamId);
-	// Пересчет штрафов 
-	RecalcTeamLevelPenalty($TeamId);
-	// Обновляем результат команды
-	RecalcTeamResult($TeamId);
- 
 
                 $statustext = 'Команды объединены';				     
 
@@ -1634,12 +1642,9 @@ elseif ($action == 'JsonExport')
  	while ($Row = mysql_fetch_assoc($Result))
 	{
 	
-		// Пересчет врмени нахождения команды на этапах
-		RecalcTeamLevelDuration($Row['team_id']);
-		// Пересчет штрафов 
-		RecalcTeamLevelPenalty($Row['team_id']);
-		// Обновляем результат команды
-		RecalcTeamResult($Row['team_id']);
+
+		RecalcTeamResultFromTeamLevelPoints(0, $Row['team_id']);
+
  
 	}
 	
