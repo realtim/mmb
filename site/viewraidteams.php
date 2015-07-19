@@ -522,7 +522,7 @@ if (!isset($MyPHPScript)) return;
 	
 		// Выводим список команд
 		if  ($OrderType == 'Num')
-                {
+		{
 
                   // Сортировка по номеру (в обратном порядке)
 		  $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
@@ -538,24 +538,23 @@ if (!isset($MyPHPScript)) return;
 		   {
                      $sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
 		   }
-		   if (!empty($_REQUEST['GPSFilter']))
-		   {
-                     $sql = $sql." and t.team_usegps = 0 "; 
-		   }
+			if (!empty($_REQUEST['GPSFilter']))
+			{
+				$sql = $sql." and t.team_usegps = 0 "; 
+			}
+
+			$sql = $sql." order by team_num desc"; 
 
 
-		   $sql = $sql." order by team_num desc"; 
-                    
-
-                } elseif ($OrderType == 'Place') {
-                  // Сортировка по месту требует более хитрого запроса
+		} elseif ($OrderType == 'Place') {
+			// Сортировка по месту требует более хитрого запроса
 
 			if (!empty($_REQUEST['LevelPointId']))
-		        {
-               
+			{
+
 			    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
 			               t.team_mapscount, lp.levelpoint_order as team_progress, 
-			               COALESCE(t.team_progressdetail, 0) as team_progressdetail,
+			               CASE WHEN COALESCE(t.team_minlevelpointorderwitherror, 0) > lp.levelpoint_order THEN 0 ELSE COALESCE(t.team_minlevelpointorderwitherror, 0) END as team_error,
 				       d.distance_name, d.distance_id,
 		                       TIME_FORMAT(tlp.teamlevelpoint_result, '%H:%i') as team_sresult,
 				       COALESCE(t.team_outofrange, 0) as  team_outofrange,
@@ -575,13 +574,13 @@ if (!isset($MyPHPScript)) return;
 	                       $sql = $sql." and t.team_usegps = 0 "; 
 			     }
 
-			      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_progressdetail asc, team_result asc, team_num asc ";
+			      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_error asc, team_result asc, team_num asc ";
 
 			} else {
 			
 			    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
-			               t.team_mapscount, t.team_progress, 
-			               COALESCE(t.team_progressdetail, 0) as team_progressdetail,
+			               t.team_mapscount, t.team_maxlevelpointorderdone as team_progress, 
+			               COALESCE(t.team_minlevelpointorderwitherror, 0) as team_error,
 				       d.distance_name, d.distance_id,
 		                       TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 				       COALESCE(t.team_outofrange, 0) as  team_outofrange,
@@ -592,7 +591,7 @@ if (!isset($MyPHPScript)) return;
 					on t.distance_id = d.distance_id
 					left outer join LevelPoints lp
 					on lp.distance_id = t.distance_id
-					   and lp.levelpoint_order = t.team_progress
+					   and lp.levelpoint_order = t.team_maxlevelpointorderdone
 				  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
 
 			      if (!empty($_REQUEST['DistanceId']))
@@ -604,7 +603,7 @@ if (!isset($MyPHPScript)) return;
 	                        $sql = $sql." and t.team_usegps = 0 "; 
 			      }
 
-			      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_progressdetail asc, team_result asc, team_num asc ";
+			      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_error asc, team_result asc, team_num asc ";
 			
 			
 			}	    
@@ -614,8 +613,8 @@ if (!isset($MyPHPScript)) return;
                        // Не знаю, как будет реализовано
 	
 		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
-		               t.team_mapscount, t.team_progress, 
-		               COALESCE(t.team_progressdetail, 0) as team_progressdetail,
+		               t.team_mapscount, t.team_maxlevelpointorderdone as team_progress, 
+		               COALESCE(t.team_minlevelpointorderwitherror, 0) as team_error,
 			       d.distance_name, d.distance_id,
                                TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 			       COALESCE(t.team_outofrange, 0) as  team_outofrange,
@@ -804,7 +803,7 @@ if (!isset($MyPHPScript)) return;
 				$PredDistanceId = $Row['distance_id'];
                             }
 			    
-                            if ($Row['team_sresult'] == '00:00' or $Row['team_sresult'] == '' or $Row['team_outofrange'] == 1 or $Row['team_progressdetail'] > 0)
+                            if ($Row['team_sresult'] == '00:00' or $Row['team_sresult'] == '' or $Row['team_outofrange'] == 1 or $Row['team_error'] > 0)
                             {
                                print('&nbsp;');
                             } elseif($Row['team_sresult'] <>  $PredResult) {
@@ -822,13 +821,6 @@ if (!isset($MyPHPScript)) return;
                               // Формируем комментарий
 			    //print('<td  style = "'.$tdstyle.'">'.GetTeamComment($Row['team_id']).'</td>'."\r\n");
 			    print('<td>'."\r\n");
-			    if ($Row['team_progressdetail'] == 1) {
-		                print('Выход за КВ'."\r\n");
-			    } elseif ($Row['team_progressdetail'] == 2) { 
-		                print('Не взято обязательное КП'."\r\n");
-	                    } else {
-				print('&nbsp'."\r\n");
-			    }
 			    print($Row['team_comment']);
 			    print('</td>'."\r\n");
 
