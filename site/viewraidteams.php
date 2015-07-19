@@ -573,7 +573,7 @@ if (!isset($MyPHPScript)) return;
 	                       $sql = $sql." and t.team_usegps = 0 "; 
 			     }
 
-			      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_error asc, team_result asc, team_num asc ";
+			      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_error asc, tlp.teamlevelpoint_result asc, team_num asc ";
 
 			} else {
 			
