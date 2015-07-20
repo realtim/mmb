@@ -1733,9 +1733,13 @@ send_mime_mail('Автор письма',
 
           
 
-     // функция пересчитывает штрафы  команды в точке для КП, входящих в амнистию
-     function RecalcTeamLevelPointsPenaltyWithDiscount($raidid, $teamid)
-     {
+	// функция пересчитывает штрафы  команды в точке для КП, входящих в амнистию
+	function RecalcTeamLevelPointsPenaltyWithDiscount($raidid, $teamid)
+	{
+
+
+	// Важно!  функция прибавляет текущее расчитанное значение к уже имеющемуся в точке,
+	//  поэтому в там, где функция вызывается нужно не забыть обнулить штраф!
 
           /*
 	  Для всех невзятых КП, которые входят в амнистию, суммируем штрафы в точку, которая является итоговой для заданного интервала
@@ -1793,25 +1797,22 @@ send_mime_mail('Автор письма',
      // Конец функции расчета штрафа для КП, входящих в амнистию		
                  
 		
-     // функция пересчитывает штрафы  команды в точке для КП, не входящих в амнистию
-     function RecalcTeamLevelPointsPenaltyWithoutDiscount($raidid, $teamid)
-     {
+	// функция пересчитывает штрафы  команды в точке для КП, не входящих в амнистию
+	function RecalcTeamLevelPointsPenaltyWithoutDiscount($raidid, $teamid)
+	{
 
-          /*
-	  Находим максимальную взятую точку на данный момент у команды, из числа тех, что не входят в амнистию.
-	  Эту точку считаем "итоговой" и штраф за все невзятые КП, не входящие в амнистию пишем в неё
-	  */
-
-
-
-	 if (empty($teamid) and empty($raidid)) {     	 
-	    return;
-	 }
+	// Важно!  функция прибавляет текущее расчитанное значение к уже имеющемуся в точке,
+	//  поэтому в там, где функция вызывается нужно не забыть обнулить штраф!
+	
+	if (empty($teamid) and empty($raidid))
+	{     	 
+		return;
+	}
 
 
-/*
-правильный вариант с штрафом в следующей точке со временем
-*/
+	/*
+	правильный вариант с штрафом в следующей точке со временем
+	*/
 
 	 $sql = " update TeamLevelPoints tlp0
 			 inner join LevelPoints lp0
@@ -1878,7 +1879,7 @@ send_mime_mail('Автор письма',
 			) d
 			on tlp0.team_id = d.team_id
 			   and lp0.levelpoint_order = d.up
-		set tlp0.teamlevelpoint_penalty = d.penalty ";
+		set tlp0.teamlevelpoint_penalty = COALESCE(tlp0.teamlevelpoint_penalty, 0) + COALESCE(d.penalty, 0)";
 
 
        //    echo $sql;
@@ -1997,8 +1998,6 @@ send_mime_mail('Автор письма',
 
 
 	// Устанавливаем невзятие обязательных КП
-	// Можно ставить team_progressdetail = 2 для таких случаев 
-	
 	 // Высчитываем число обязательных точек
 	 if (!empty($teamid)) {     	 
 
@@ -2023,7 +2022,8 @@ send_mime_mail('Автор письма',
 	 $Row = mysql_fetch_assoc($Result);
 	 $ObligatoryCount = $Row['result'];
 	 mysql_free_result($Result);
-					 
+
+						 
 
 	// По количеству можно повесить только на последнюю точку, а првильнее - на следующую по порядку
 	
@@ -2151,7 +2151,8 @@ send_mime_mail('Автор письма',
 	}
 
 	RecalcTeamUsersRank($raidid);
-	RecalcErrors($raidid, $teamid);
+	// Убрал расчёт ошибок
+	//RecalcErrors($raidid, $teamid);
 
 
     // Результат команды - это результат в максимальной точке 
