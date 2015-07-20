@@ -124,7 +124,6 @@ if (!isset($MyPHPScript)) return;
 		$Row = mysql_fetch_assoc($Result);
 		$UserName = $Row['user_name'];
                 print('<form  name = "UserLoginForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
-                print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
                 print('<input type = "hidden" name = "action" value = "">'."\r\n"); 
                 print('<input type = "hidden" name = "UserId" value = "">'."\r\n"); 
 		print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
@@ -312,11 +311,7 @@ if (!isset($MyPHPScript)) return;
 	// выводим окно для поиска команды 
 	print('<form  name = "FindTeamForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "return ValidateFindTeamForm();">'."\r\n");
 
-	if ($UserId > 0)
-	{
-                print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
-	}                
-	print('<input type = "hidden" name = "action" value = "FindTeam">'."\r\n"); 
+	print('<input type = "hidden" name = "action" value = "FindTeam">'."\r\n");
 	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
         // Эта переменная нужна только тогда, когда из спсика марш-бросков выбирают дистанцию
 	print('<input type = "hidden" name = "DistanceId" value = "0">'."\r\n");
@@ -428,10 +423,6 @@ if (!isset($MyPHPScript)) return;
 	print('</form>'."\r\n");
 	// Поиск участника
 	print('<form  name = "FindUserForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "return ValidateFindUserForm();">'."\r\n");
-	if ($UserId > 0)
-	{
-                print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
-	}                
 	print('<input type = "hidden" name = "action" value = "FindUser">'."\r\n"); 
 	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
 	print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
@@ -455,7 +446,6 @@ if (!isset($MyPHPScript)) return;
         if ($Administrator || $Moderator)
 	{
 	  print('<form  name = "AdminServiceForm"  action = "'.$MyPHPScript.'" method = "post" onsubmit = "return true;">'."\r\n");
-	  print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
 	  print('<input type = "hidden" name = "action" value = "">'."\r\n"); 
 	  print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
 	  print('<input type = "hidden" name = "RaidId" value = "0">'."\r\n");

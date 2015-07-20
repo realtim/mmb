@@ -47,8 +47,7 @@ if (!isset($MyPHPScript)) return;
                 print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");
 	        print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-		
+
 	        if ($Administrator)
 		{
 

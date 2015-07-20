@@ -73,9 +73,7 @@ if (!isset($MyPHPScript)) return;
 	        print('<input type = "hidden" name = "TeamUnionLogId" value = "0">'."\n");
 	        print('<input type = "hidden" name = "TeamId" value = "0">'."\n");
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-		
-		
+
                  
 		$sql = "select tul.teamunionlog_id, t.team_id, t.team_num,
 		               t.team_name, tul.teamunionlog_dt, 

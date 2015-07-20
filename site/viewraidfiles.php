@@ -217,7 +217,6 @@ if ($AllowEdit == 1)
 
 	// Выводим начало формы с файлом
 	print('<form name="RaidFileForm" action="'.$MyPHPScript.'" method="post" enctype="multipart/form-data" onSubmit="'.$OnSubmitFunction.'">'."\n");
-	print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 	print('<input type="hidden" name="action" value="">'."\n");
 	print('<input type="hidden" name="view" value="ViewRaidFiles">'."\n");
 	print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");

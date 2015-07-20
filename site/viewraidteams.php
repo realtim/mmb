@@ -192,7 +192,6 @@ if (!isset($MyPHPScript)) return;
 
 ?>	
          <form  name = "RaidTeamsForm"  action = "<? echo $MyPHPScript; ?>" method = "post">
-	 <input type = "hidden" name = "sessionid" value = "<? echo $SessionId; ?>">
          <input type = "hidden" name = "action" value = "ViewRaidTeams">
          <input type = "hidden" name = "TeamId" value = "0">
          <input type = "hidden" name = "UserId" value = "0">

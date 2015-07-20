@@ -252,7 +252,6 @@ if ($AllowEditResult == 1)
 
 	// Выводим начало формы с точкой
 	print('<form name="TlpForm" action="'.$MyPHPScript.'" method="post"  onSubmit="'.$OnSubmitResultFunction.'">'."\n");
-	print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 	print('<input type="hidden" name="action" value="">'."\n");
 	print('<input type="hidden" name="view" value="">'."\n");
 	print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");

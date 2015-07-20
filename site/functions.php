@@ -4,6 +4,22 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+class CMmb
+{
+	const SessionTimeout = 20; // minutes
+	const CookieName = "mmb_session";
+
+	public static function setSessionCookie($sessionId)
+	{
+		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout);
+	}
+
+	public static function clearSessionCookie()
+	{
+		setcookie(CMmb::CookieName, "", time() - 24 * 3600);    // a day ago
+	}
+};
+
 
  function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "") {
  // Можно передавать соединение по ссылке &$ConnectionId  MySqlQuery($SqlString,&$ConnectionId, $SessionId,$NonSecure);
@@ -87,11 +103,14 @@ if (!isset($MyPHPScript)) return;
 	      $Result = MySqlQuery("insert into  Sessions (session_id, user_id, session_starttime, session_updatetime, session_status)
 	                            values ('".$SessionId ."',".$UserId.", now(), now(), 0)");
 
-              // Записываем время послденей авторизации
+              // Записываем время последней авторизации
 	      $Result = MySqlQuery("update Users set user_lastauthorizationdt = now()
 	                            where user_id = ".$UserId);
+
+	      CMmb::setSessionCookie($SessionId);
       }  else {
           $SessionId = '';
+	  CMmb::clearSessionCookie();
       }   
 
       return $SessionId;
@@ -119,15 +138,13 @@ if (!isset($MyPHPScript)) return;
 
   // Получаем данные сессии
   function GetSession($SessionId) {
-
-
       if (empty($SessionId))
       {
         return 0;
       } 
 
       // Закрываем все сессии, которые неактивны 20 минут
-      CloseInactiveSessions(20);
+      CloseInactiveSessions(CMmb::SessionTimeout);
 
       // Очищаем таблицу
       ClearSessions();
@@ -148,7 +165,10 @@ if (!isset($MyPHPScript)) return;
       {
        $Result = MySqlQuery("update  Sessions set session_updatetime = now()
 			    where session_status = 0 and session_id = '".$SessionId ."'");
+	      CMmb::setSessionCookie($SessionId);
       }
+      else
+	      CMmb::clearSessionCookie();
       
       return $UserId;
 
@@ -168,6 +188,7 @@ if (!isset($MyPHPScript)) return;
         // м.б. потом ещё нужно будет закрывать открытые соединения с БД
        $Result = MySqlQuery("update  Sessions set session_updatetime = now(), session_status = ".$CloseStatus."
 			    where session_status = 0 and session_id = '".$SessionId ."'");
+	  CMmb::clearSessionCookie();
 
       return;
    }

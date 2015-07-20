@@ -211,7 +211,6 @@ else
 <?php
 // Выводим начало формы с ММБ
 print('<form name="RaidDataForm" action="'.$MyPHPScript.'" method="post" enctype="multipart/form-data" onSubmit="'.$OnSubmitFunction.'">'."\n");
-print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 print('<input type="hidden" name="action" value="">'."\n");
 print('<input type="hidden" name="view" value="ViewRaidData">'."\n");
 print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
@@ -396,7 +395,6 @@ if ($viewmode != 'Add')
 
 
 		print('<form name="DistanceDataForm'.$RowDistance['distance_id'].'" action="'.$MyPHPScript.'" method="post">'."\n");
-		print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 		print('<input type="hidden" name="action" value="DistanceChangeData">'."\n");
 		print('<input type="hidden" name="view" value="ViewRaidData">'."\n");
 		print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");

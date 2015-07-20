@@ -176,7 +176,6 @@ $TabIndex = 0;
 
 
 	print('<form name="DistancesForm" action="'.$MyPHPScript.'" method="post" >'."\n");
-	print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 	print('<input type="hidden" name="action" value="ViewLevelPointDiscountsPage">'."\n");
 	print('<input type="hidden" name="view" value="ViewLevelPointDiscounts">'."\n");
 	print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
@@ -206,7 +205,6 @@ if ($AllowEdit == 1)
 
 	// Выводим начало формы с интервалом
 	print('<form name="LevelPointDiscountForm" action="'.$MyPHPScript.'" method="post"  onSubmit="'.$OnSubmitFunction.'">'."\n");
-	print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 	print('<input type="hidden" name="action" value="">'."\n");
 	print('<input type="hidden" name="view" value="ViewLevelPointDiscounts">'."\n");
 	print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");

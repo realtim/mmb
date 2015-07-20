@@ -217,7 +217,6 @@ else $AllowViewResults = 0;
 <?php
 // Выводим начало формы с командой
 print('<form name="TeamDataForm" action="'.$MyPHPScript.'#'.$TeamNum.'" method="post" onSubmit="'.$OnSubmitFunction.'">'."\n");
-print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 print('<input type="hidden" name="action" value="">'."\n");
 print('<input type="hidden" name="view" value="ViewRaidTeams">'."\n");
 //print('<input type="hidden" name="view" value="'.(($viewmode == "Add") ? 'ViewRaidTeams' : 'ViewTeamData').'">'."\n");

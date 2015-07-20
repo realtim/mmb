@@ -498,8 +498,7 @@ if (!isset($MyPHPScript)) return;
      // Действие вызывается из письма переходом по ссылке
 	   $view = "";
 
-	   if (isset($_REQUEST['changepasswordsessionid'])) $changepasswordsessionid = $_REQUEST['changepasswordsessionid'];
-	   else $changepasswordsessionid = "";
+	   $changepasswordsessionid = mmb_validate($_REQUEST, 'changepasswordsessionid', '');
 	   if (empty($changepasswordsessionid))
 	   {
               $action = "";

@@ -29,16 +29,10 @@ if (!isset($MyPHPScript)) return;
 
 <?php
 
-		
-                
-	
-                
            	print('<form  name = "ModeratorsForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
                 print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");
 	        print('<input type = "hidden" name = "RaidModeratorId" value = "0">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-		
 		
                  
 		$sql = "select u.user_id, u.user_name, rm.raidmoderator_id 

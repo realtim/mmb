@@ -63,8 +63,7 @@ if (!isset($MyPHPScript)) return;
                 print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "UserUnionLogId" value = "0">'."\n");
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-		
+
 		
 
 	        print('</form>'."\r\n");

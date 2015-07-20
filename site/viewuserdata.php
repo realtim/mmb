@@ -270,7 +270,6 @@ if (!isset($MyPHPScript)) return;
          // выводим форму с данными пользователя
 	 
 	 print('<form  name = "UserDataForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "'.$OnSubmitFunction.'">'."\r\n");
-         print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n");
          print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\r\n");
          print('<input type = "hidden" name = "action" value = "">'."\r\n");
 
@@ -406,8 +405,7 @@ if (!isset($MyPHPScript)) return;
           print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	  print('<input type = "hidden" name = "RaidId" value = "0">'."\n");
 	  print('<input type = "hidden" name = "TeamId" value = "0">'."\n");
- 	  print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-	  
+
 		
                  
 		$sql = "select tu.teamuser_id, t.team_name, t.team_id, 
@@ -461,8 +459,7 @@ if (!isset($MyPHPScript)) return;
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
 		print('<input type = "hidden" name = "DeviceId" value = "0">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-	  
+
 		
                  
 		$sql = "select d.device_id, d.device_name
@@ -503,8 +500,7 @@ if (!isset($MyPHPScript)) return;
 		print('<form  name = "UserSendMessageForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-	  
+
 
                 $TabIndex = 1;
 	        $DisabledText = '';
@@ -528,8 +524,7 @@ if (!isset($MyPHPScript)) return;
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
 		print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\n");
 		print('<input type = "hidden" name = "UserLinkId" value = "0">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-	  
+
 		
                  
 		$sql = "select ul.userlink_id, ul.userlink_name, lt.linktype_name,

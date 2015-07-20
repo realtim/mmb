@@ -28,7 +28,7 @@
 	$statustext = ""; //"Сегодня: ".date("d.m.Y")."  &nbsp; Время: ".date("H:i:s");
 
 	// Инициализируем права доступа пользователя
-	$SessionId = mmb_validate($_POST, 'sessionid', '');
+	$SessionId = mmb_validate($_COOKIE, CMmb::CookieName, '');
 	$OldSessionId = $SessionId;
 	$RaidId = (int) mmb_validate($_REQUEST, 'RaidId', 0);
 	$TeamId = (int) mmb_validateInt($_REQUEST, 'TeamId', 0);
@@ -113,9 +113,7 @@
     // 15,01,2012 Сбрасываем действие в самом конце, а не здесь 
     //$action = "";
 
-?>
-
-<html>
+?><html>
  <head>
   <title>ММБ</title>
   <link rel="Stylesheet" type="text/css"  href="styles/mmb.css" />
@@ -187,7 +185,7 @@
                         <form name = "StartPageForm" action = "<? echo $MyPHPScript; ?>" method = "post">
 				<input type = "hidden" name = "action" value = "StartPage">
 				<input type = "hidden" name = "view" value = "MainPage">
-				<input type = "hidden" name = "sessionid" value = "<? echo $SessionId; ?>">
+				<!-- <input type = "hidden" name = "sessionid" value = "<? /*echo $SessionId; */?>"> -->
 				<input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
 				<div align="center"><a href="javascript:document.StartPageForm.submit();"><img name = "mmblogo" style="margin-bottom: 15px; border: none" width="160" height="140" alt="ММБ" src="<? echo GetMmbLogo($RaidId); ?>"></a></div>
                        </form> 
