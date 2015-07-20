@@ -112,9 +112,12 @@ if (!isset($MyPHPScript)) return;
                           onclick = "javascript: FindRaidErrors();"
                           tabindex = "104"></td></tr>'."\r\n");
 
+/*
+Теперь рейтинг считается вместе с результатами
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RecalcRaidRankButton" value="Пересчитать рейтинг"
                           onclick = "javascript: RecalcRaidRank();"
                           tabindex = "105"></td></tr>'."\r\n");
+*/
 
 /*
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:270px;" name="RecalcAllRaidsResultsButton" value="Пересчитать рейтинг по всем ММБ"
