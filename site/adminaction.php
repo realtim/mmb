@@ -191,8 +191,7 @@ elseif ($action == 'FindRaidErrors')
 	}
 	if (!$Administrator && !$Moderator) return;
 
-
-    RecalcErrors($RaidId, 0);
+	RecalcErrors($RaidId, 0);
 
 /*
 	$n_Errors = 0;
@@ -238,7 +237,7 @@ elseif ($action == 'FindRaidErrors')
 
 	//vhj;
 
-	$view = "ViewAdminPage";
+	$view = "ViewAdminDataPage";
 }
 // =============== Показываем страницу модераторов ===================
 if ($action == "ViewAdminModeratorsPage")  {

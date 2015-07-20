@@ -101,12 +101,13 @@ if (!($Administrator)) return;
                           onclick = "javascript: FindRaidErrors();"
                           tabindex = "104"></td></tr>'."\r\n");
 
-
+/*
+Теперь рейтинг считается вместе с результатами
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RecalcRaidRankButton" value="Пересчитать рейтинг"
                           onclick = "javascript: RecalcRaidRank();"
                           tabindex = "106"></td></tr>'."\r\n");
 
-
+*/
 
        //  показываем кнопку "Очистить таблицы" 
 	  // print('<input type="button" style = "width:185px; margin-top:10px;" name="ClearTablesButton" value="Очистить таблицы"
