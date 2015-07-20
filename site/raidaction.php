@@ -1207,7 +1207,6 @@ elseif ($action == 'AddLevelPoint')
 		mysql_free_result($Result);
 
 		$LastOrder = (int)$Row['lastorder'];
-		$NowYear = (int)$Row['nowyear'];
 
 	   if  (empty($pPointName) or trim($pPointName) == 'Название КП')
 	   {
@@ -1219,11 +1218,23 @@ elseif ($action == 'AddLevelPoint')
 
                 // год всегда пишем текущий. если надо - можно добавить поле для года
 
-	        $MinYDTs = "'".$NowYear."-".substr(trim($pLevelPointMinDate), -2)."-".substr(trim($pLevelPointMinDate), 0, 2)." ".substr(trim($pLevelPointMinTime), 0, 2).":".substr(trim($pLevelPointMinTime), -2).":00'";
+	        $MinYDTs = "'".$pLevelPointMinYear."-".substr(trim($pLevelPointMinDate), -2)."-".substr(trim($pLevelPointMinDate), 0, 2)." ".substr(trim($pLevelPointMinTime), 0, 2).":".substr(trim($pLevelPointMinTime), -2).":00'";
 		$MinYDT = strtotime(substr(trim($MinYDTs), 1, -1));
-	        $MaxYDTs = "'".$NowYear."-".substr(trim($pLevelPointMaxDate), -2)."-".substr(trim($pLevelPointMaxDate), 0, 2)." ".substr(trim($pLevelPointMaxTime), 0, 2).":".substr(trim($pLevelPointMaxTime), -2).":00'";
+	        $MaxYDTs = "'".$pLevelPointMaxYear."-".substr(trim($pLevelPointMaxDate), -2)."-".substr(trim($pLevelPointMaxDate), 0, 2)." ".substr(trim($pLevelPointMaxTime), 0, 2).":".substr(trim($pLevelPointMaxTime), -2).":00'";
 		$MaxYDT = strtotime(substr(trim($MaxYDTs), 1, -1));
-	
+
+		// Если день и время пустые, то и год пустой считаем
+		if ((int)$pLevelPointMinDate == 0 and (int)$pLevelPointMinTime == 0)
+		{
+			$MinYDTs = "'0000-00-00 00:00:00'";
+		}
+
+		// Если день и время пустые, то и год пустой считаем
+		if ((int)$pLevelPointMaxDate == 0 and (int)$pLevelPointMaxTime == 0)
+		{
+			$MaxYDTs = "'0000-00-00 00:00:00'";
+		}
+
 
 		 $sql = " select count(*) as countresult 
 		          from LevelPoints
@@ -1337,11 +1348,22 @@ elseif ($action == 'LevelPointChange')
       // год всегда пишем текущий. если надо - можно добавить поле для года
 
 	
-		$MinYDTs = "'".$NowYear."-".substr(trim($pLevelPointMinDate), -2)."-".substr(trim($pLevelPointMinDate), 0, 2)." ".substr(trim($pLevelPointMinTime), 0, 2).":".substr(trim($pLevelPointMinTime), -2).":00'";
+		$MinYDTs = "'".$pLevelPointMinYear."-".substr(trim($pLevelPointMinDate), -2)."-".substr(trim($pLevelPointMinDate), 0, 2)." ".substr(trim($pLevelPointMinTime), 0, 2).":".substr(trim($pLevelPointMinTime), -2).":00'";
 		$MinYDT = strtotime(substr(trim($MinYDTs), 1, -1));
-	        $MaxYDTs = "'".$NowYear."-".substr(trim($pLevelPointMaxDate), -2)."-".substr(trim($pLevelPointMaxDate), 0, 2)." ".substr(trim($pLevelPointMaxTime), 0, 2).":".substr(trim($pLevelPointMaxTime), -2).":00'";
+	        $MaxYDTs = "'".$pLevelPointMaxYear."-".substr(trim($pLevelPointMaxDate), -2)."-".substr(trim($pLevelPointMaxDate), 0, 2)." ".substr(trim($pLevelPointMaxTime), 0, 2).":".substr(trim($pLevelPointMaxTime), -2).":00'";
 		$MaxYDT = strtotime(substr(trim($MaxYDTs), 1, -1));
 	
+		// Если день и время пустые, то и год пустой считаем
+		if ((int)$pLevelPointMinDate == 0 and (int)$pLevelPointMinTime == 0)
+		{
+			$MinYDTs = "'0000-00-00 00:00:00'";
+		}
+
+		// Если день и время пустые, то и год пустой считаем
+		if ((int)$pLevelPointMaxDate == 0 and (int)$pLevelPointMaxTime == 0)
+		{
+			$MaxYDTs = "'0000-00-00 00:00:00'";
+		}
 
 
 		 $sql = " select count(*) as countresult 

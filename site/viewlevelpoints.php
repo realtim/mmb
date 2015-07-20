@@ -171,6 +171,38 @@ else
 // ================ Конец инициализации переменных для добавляемой/редактируемой точки =================
 
 
+// В форме правки выводится только день и время, год считаем по дате регистарции ММБ и не выводим
+
+if (empty($LevelPointMinYear) or (int)$LevelPointMinYear == 0 or 
+	empty($LevelPointMaxYear) or (int)$LevelPointMaxYear == 0) {
+
+		$RaidYear = 0;		
+		$sql = "select YEAR(r.raid_registrationenddate) as raidyear
+			from Raids r
+		             inner join Distances d
+			     on d.raid_id = r.raid_id
+			where d.distance_id = ".$DistanceId;
+
+		$Result = MySqlQuery($sql);
+		$Row = mysql_fetch_assoc($Result);
+		$RaidYear = $Row['raidyear'];
+		mysql_free_result($Result);
+
+		if (empty($LevelPointMinYear) or (int)$LevelPointMinYear == 0)
+		{ 
+			$LevelPointMinYear = $RaidYear;
+		}
+		if (empty($LevelPointMaxYear) or (int)$LevelPointMaxYear == 0)
+		{ 
+			$LevelPointMaxYear = $RaidYear;
+		}
+
+
+}
+
+
+
+
 // Выводим javascrpit
 ?>
 
