@@ -185,7 +185,6 @@
                         <form name = "StartPageForm" action = "<? echo $MyPHPScript; ?>" method = "post">
 				<input type = "hidden" name = "action" value = "StartPage">
 				<input type = "hidden" name = "view" value = "MainPage">
-				<!-- <input type = "hidden" name = "sessionid" value = "<? /*echo $SessionId; */?>"> -->
 				<input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
 				<div align="center"><a href="javascript:document.StartPageForm.submit();"><img name = "mmblogo" style="margin-bottom: 15px; border: none" width="160" height="140" alt="ММБ" src="<? echo GetMmbLogo($RaidId); ?>"></a></div>
                        </form> 
