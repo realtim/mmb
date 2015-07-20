@@ -212,7 +212,15 @@ elseif ($action == 'AddTlp')
 	
                 // год всегда пишем текущий. если надо - можно добавить поле для года
 
-	        $TlpYDTs = "'".$pTlpYear."-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
+		$TlpYDTs = "'".$pTlpYear."-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
+
+		// Если день и время пустые, то и год пустой считаем
+		if ((int)$pTlpDate == 0 and (int)$pTlpTime == 0)
+		{
+			$TlpYDTs = "'0000-00-00 00:00:00'";
+		}
+
+
                 
 		//echo 	$TlpYDTs;
 
@@ -272,8 +280,6 @@ elseif ($action == 'AddTlp')
 	//$view = $_POST['view'];
 	//if (empty($view)) $view = "ViewTeamData";
 
-
-
  }
  elseif ($action == "TlpInfo")  
  {
@@ -320,7 +326,13 @@ elseif ($action == 'ChangeTlp')
 
 
 		$TlpYDTs = "'".$pTlpYear."-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
-         
+
+		// Если день и время пустые, то и год пустой считаем
+		if ((int)$pTlpDate == 0 and (int)$pTlpTime == 0)
+		{
+			$TlpYDTs = "'0000-00-00 00:00:00'";
+		}
+
 	
 	if ($pTeamId <= 0 or $pLevelPointId <= 0)
 	{
