@@ -191,6 +191,10 @@ elseif ($action == 'FindRaidErrors')
 	}
 	if (!$Administrator && !$Moderator) return;
 
+
+    RecalcErrors($RaidId, 0);
+
+/*
 	$n_Errors = 0;
 	$n_Warnings = 0;
 
@@ -228,8 +232,12 @@ elseif ($action == 'FindRaidErrors')
 		mysql_free_result($Result);
 	}
 	mysql_free_result($DResult);
+*/
 
-	$statustext = 'Найдено '.$n_Errors.' ошибок и '.$n_Warnings.' предупреждений';
+	//$statustext = 'Найдено '.$n_Errors.' ошибок и '.$n_Warnings.' предупреждений';
+
+	//vhj;
+
 	$view = "ViewAdminPage";
 }
 // =============== Показываем страницу модераторов ===================
