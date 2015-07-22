@@ -815,7 +815,9 @@ elseif ($action == 'JsonExport')
 
 	// Teams: team_id, distance_id, team_name, team_num // *
 	$Sql = "select team_id, t.distance_id, team_name, team_num, team_usegps, team_greenpeace,
-		level_id, team_result, team_registerdt, team_outofrange 
+			team_result, team_registerdt, team_outofrange,
+			team_maxlevelpointorderdone, 
+			team_minlevelpointorderwitherror 
 		from Teams t 
 		     inner join Distances d on t.distance_id = d.distance_id 
 		where t.team_hide = 0 and d.distance_hide = 0  and d.raid_id = ".$RaidId;
@@ -840,7 +842,7 @@ elseif ($action == 'JsonExport')
 	mysql_free_result($Result);
 
 	// TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
-	$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.levelpoint_id, tu.teamuser_rank 
+	$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.teamuser_rank 
 	        from TeamUsers tu 
 		     inner join Teams t on tu.team_id = t.team_id 
 		     inner join Distances d on t.distance_id = d.distance_id 
@@ -854,66 +856,30 @@ elseif ($action == 'JsonExport')
 	// Определяем, можно ли показывать пользователю информацию об этапах дистанции
 	$LevelDataVisible = CanViewResults($Administrator, $Moderator, $RaidStage);
 
-        if ($LevelDataVisible)
-        {
-	// Levels: level_id, distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
-	$Sql = "select level_id, l.distance_id, level_name, level_order, level_starttype, 
-	               level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime,
-		       level_minendtime, level_endtime, level_discountpoints, level_discount
-	        from Levels l 
-		     inner join Distances d on l.distance_id = d.distance_id 
-	        where  l.level_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+	if ($LevelDataVisible)
+	{
+	
+	// LevelPoints: levelpoint_id, distance_id, levelpoint_name, levelpoint_order, pointtype_id, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
+	$Sql = "select lp.levelpoint_id, lp.distance_id, lp.levelpoint_name, lp.levelpoint_order, lp.pointtype_id, 
+				lp.levelpoint_penalty, lp.levelpoint_mindatetime, lp.levelpoint_maxdatetime,
+				lp.scanpoint_id
+			from LevelPoints lp 
+					inner join Distances d on lp.distance_id = d.distance_id 
+			where  l.level_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
 	mysql_free_result($Result);
 
 
-
-
-	// TeamLevels: 
-	$Sql = "select teamlevel_id, tl.team_id, tl.level_id, 
-			teamlevel_begtime, teamlevel_endtime,
-		       teamlevel_points, teamlevel_comment,
-		       teamlevel_progress, teamlevel_penalty,
-			error_id, teamlevel_duration 
-		from TeamLevels tl 
-		     inner join Teams t on tl.team_id = t.team_id 
-		     inner join Distances d on t.distance_id = d.distance_id 
-		where t.team_hide = 0 and tl.teamlevel_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
-
-	$Result = MySqlQuery($Sql);
-
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevels"][] = $Row; }
-	mysql_free_result($Result);
-
-        // 04/07/2014 Добавляю точки и результаты в точках
-
-
-
-	$Sql = "select lp.levelpoint_id, lp.distance_id, lp.levelpoint_name, lp.levelpoint_order, lp.pointtype_id, 
-	               pt.pointtype_id,
-	               lp.levelpoint_penalty, lp.levelpoint_mindatetime,
-		       lp.levelpoint_maxdatetime
-	        from LevelPoints lp 
-		     inner join Distances d on lp.distance_id = d.distance_id 
-		     inner join PointTypes pt on lp.pointtype_id = pt.pointtype_id 
-	        where  lp.levelpoint_name = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
-
-	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row; }
-	mysql_free_result($Result);
-
-
-
 	// TeamLevelPoints: 
-	$Sql = "select tlp.teamlevelpoint_id, tlp.team_id, tlp.levelpoint_id, 
-		       tlp.teamlevelpoint_datetime, 
-		       tlp.teamlevelpoint_points, tlp.teamlevelpoint_comment,
-		       tlp.teamlevelpoint_penalty,
-		       tlp.teamlevelpoint_duration 
+	$Sql = "select teamlevelpoint_id, tlp.team_id, tlp.levelpoint_id, 
+			teamlevelpoint_datetime, teamlevel_comment,
+			teamlevelpoint_penalty,
+			error_id, teamlevelpoint_duration,
+			teamlevelpoint_result 
 		from TeamLevelPoints tlp 
-		     inner join Teams t on tlp.team_id = t.team_id 
+		     inner join Teams t on tl.team_id = t.team_id 
 		     inner join Distances d on t.distance_id = d.distance_id 
 		where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
 
@@ -923,10 +889,23 @@ elseif ($action == 'JsonExport')
 	mysql_free_result($Result);
 
 
-        }
-        // Конец проверки, что можно экспортировать данные по этапам
+	// TeamLevelDismiss: 
+	$Sql = "select teamleveldismiss_id, tld.levelpoint_id, 
+			teamleveldismiss_date, teamuser_id
+		from TeamLevelDismiss tld 
+		     inner join LevelPoints lp on tld.levelpoint_id = lp.levelpoint_id 
+		     inner join Distances d on lp.distance_id = d.distance_id 
+		where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+
+	$Result = MySqlQuery($Sql);
+
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelDismiss"][] = $Row; }
+	mysql_free_result($Result);
+
+
+	}
+	// Конец проверки, что можно экспортировать данные по этапам
 	
-     
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
 	header("Content-Type: application/octet-stream");
 	header("Content-Disposition: attachment; filename=\"mmbdata.json\"");
@@ -1281,16 +1260,15 @@ elseif ($action == 'JsonExport')
     $pDistanceId = $Row['maxdistanceid'];
     $pTeamMapsCount  = $Row['mapscount'];
         // Проверяем одинкаовое число взятых КП
-	$sql = "select  tlp.teamlevelpoint_id
+	$sql = "select  tlp.levelpoint_id
 		        from  TeamUnionLogs tul
 			      inner join Teams t
 			      on t.team_id = tul.team_id
 	              inner join TeamLevelPoints tlp
 			      on t.team_id = tlp.team_id 
 			where tul.teamunionlog_hide = 0 
-                              and tul.union_status = 1
-			      and tl.teamlevel_hide = 0
-           group by tlp.teamlevelpoint_id
+                  and tul.union_status = 1
+           group by tlp.levelpoint_id
 			having count(*) <> 2
 	       "; 
     
@@ -1406,14 +1384,15 @@ elseif ($action == 'JsonExport')
 
 		$sql = " insert into TeamLevelPoints (levelpoint_id, team_id, 
 						 teamlevelpoint_datetime, teamlevelpoint_duration,
-						 teamlevelpoint_penalty, teamlevelpoint_comment
+						 teamlevelpoint_penalty, teamlevelpoint_comment,
+						 teamlevelpoint_result
 						)
 		         select  tlp.levelpoint_id, ".$TeamId.",
 		                MAX(teamlevelpoint_datetime),
 		                MIN(teamlevelpoint_duration),
 		                MAX(teamlevelpoint_penalty),
-		                GROUP_CONCAT(teamlevel_comment),
-				0 as  teamlevel_hide 
+		                MAX(teamlevelpoint_comment),
+		                MAX(teamlevelpoint_result)
  		         from  TeamUnionLogs tul
 			       inner join Teams t
 			       on t.team_id = tul.team_id

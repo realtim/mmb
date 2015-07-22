@@ -613,7 +613,7 @@ if (!isset($MyPHPScript)) return;
                        // Не знаю, как будет реализовано
 	
 		    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
-		               t.team_mapscount, t.team_maxlevelpointorderdone as team_progress, 
+		               t.team_mapscount, COALESCE(t.team_maxlevelpointorderdone, 0) as team_progress, 
 		               COALESCE(t.team_minlevelpointorderwitherror, 0) as team_error,
 			       d.distance_name, d.distance_id,
                                TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
@@ -633,7 +633,7 @@ if (!isset($MyPHPScript)) return;
 				on t.distance_id = d.distance_id
 				left outer join LevelPoints lp
 				on lp.distance_id = t.distance_id
-				   and lp.levelpoint_order = t.team_progress
+				   and lp.levelpoint_order = t.team_maxlevelpointorderdone
 			  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
 
 		      if (!empty($_REQUEST['DistanceId']))
@@ -641,7 +641,7 @@ if (!isset($MyPHPScript)) return;
 			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
 		      }
 
-		      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_progressdetail asc, team_result asc, team_num asc ";
+		      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_error asc, team_result asc, team_num asc ";
 		    
 	
 	
@@ -675,13 +675,7 @@ if (!isset($MyPHPScript)) return;
 		} elseif ($OrderType == 'Place') {
 		
 
-	                $ColumnWidth = 0;
-	                if ($ResultViewMode == 'WithLevels') {
-	                    $ColumnWidth = 175;
-	                } else {
-	                    $ColumnWidth = 350;
-	                }
-
+            $ColumnWidth = 350;
 			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
@@ -694,13 +688,7 @@ if (!isset($MyPHPScript)) return;
 		} elseif ($OrderType == 'Errors') {
 	
 	
-	                $ColumnWidth = 0;
-	                if ($ResultViewMode == 'WithLevels') {
-	                    $ColumnWidth = 175;
-	                } else {
-	                    $ColumnWidth = 350;
-	                }
-
+            $ColumnWidth = 350;
 			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
@@ -742,8 +730,6 @@ if (!isset($MyPHPScript)) return;
 			        </td><td style = "'.$tdstyle.'">'."\r\n");
 
                         // Формируем колонку Участники			
-			if ($OrderType <> 'Errors')
-			{
 				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
 					       u.user_id, 
 					       tld.levelpoint_id, lp.levelpoint_name,
@@ -779,7 +765,6 @@ if (!isset($MyPHPScript)) return;
 				  print('</div>'."\r\n");
 				}  
 			        mysql_free_result($UserResult);
-			} 
 			// Конец формирования колонкуи Участники
 			print('</td>'."\r\n");
 
@@ -823,6 +808,18 @@ if (!isset($MyPHPScript)) return;
 			    print('<td>'."\r\n");
 			    print($Row['team_comment']);
 			    print('</td>'."\r\n");
+
+			}  elseif ($OrderType == 'Errors') {
+
+			    print('<td>'.$Row['levelpoint_name'].'</td>'."\r\n");
+			    print('<td>'.$Row['team_sresult'].'</td>'."\r\n");
+
+				print('<td>'.'&nbsp;'.'</td>'."\r\n");	
+
+					print('<td>'."\r\n");
+					print($Row['team_comment']);
+					print('</td>'."\r\n");
+			
 
 			}
 			// Конец проверки на вывод с сотрировкой по месту
