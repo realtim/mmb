@@ -67,6 +67,8 @@
 			$_REQUEST['action'] = "TeamInfo";
 		else if (isset($_GET['rating']))
 			$_REQUEST['action'] = "ViewRankPage";
+		else if (isset($_GET['badges']))
+			$_REQUEST['action'] = "ViewAllBadgesPage";
 		else
 			$_REQUEST['action'] = "";
 	}

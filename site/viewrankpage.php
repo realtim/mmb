@@ -42,13 +42,8 @@ if (!isset($MyPHPScript)) return;
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");
 	        print('<input type = "hidden" name = "TeamId" value = "0">'."\n");
 
-		if (!isset($_POST['ShowAllRaids'])) {
-		  $ShowAllRaids = '';
-		} else {
-		  $ShowAllRaids = $_POST['ShowAllRaids'];
-		}
-		
-		
+		$ShowAllRaids = mmb_validate($_POST, 'ShowAllRaids', '');
+
 		$DisabledText = '';
 		
 	        print('Отображать все марш-броски (долгая загрузка) <input type="checkbox"  autocomplete = "off" name="ShowAllRaids" '.(($ShowAllRaids == 'on') ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'

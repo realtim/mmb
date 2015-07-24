@@ -283,13 +283,6 @@ if (!isset($MyPHPScript)) return;
 	}
 
 
-	function ViewRankPage()
-	{ 
-		document.FindTeamForm.action.value = "ViewRankPage";
-		document.FindTeamForm.submit();
-	}
-
-
 	function ViewRaidsUsersLinksPage()
 	{ 
 		document.FindTeamForm.action.value = "ViewUsersLinksPage";
@@ -313,7 +306,7 @@ if (!isset($MyPHPScript)) return;
 
 	print('<input type = "hidden" name = "action" value = "FindTeam">'."\r\n");
 	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
-        // Эта переменная нужна только тогда, когда из спсика марш-бросков выбирают дистанцию
+        // Эта переменная нужна только тогда, когда из спиcка марш-бросков выбирают дистанцию
 	print('<input type = "hidden" name = "DistanceId" value = "0">'."\r\n");
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 	print('<tr><td class = "input">ММБ'."\r\n"); 
@@ -408,10 +401,10 @@ if (!isset($MyPHPScript)) return;
         print('<tr><td><a href = "javascript:ViewRaidsUsersLinksPage();" title = "Список впечатлений для выбранного выше ММБ">Впечатления</a></td></tr>'."\r\n"); 
 
         // Все значки
-        print('<tr><td><a href = "javascript:ViewAllRaidsBadgesPage();" title = "Значки для всех ММБ">Все значки</a></td></tr>'."\r\n"); 
+        print('<tr><td><a href = "?badges" title = "Значки для всех ММБ">Все значки</a></td></tr>'."\r\n");
 
 
-        print('<tr><td><a href = "javascript:ViewRankPage();" title = "Страница рейтинга пользователей">Рейтинг</a></td></tr>'."\r\n"); 
+        print('<tr><td><a href="?rating" title = "Страница рейтинга пользователей">Рейтинг</a></td></tr>'."\r\n");
         
 	//print('<tr><td class = "input">Поиск:</td></tr>'."\r\n"); 
 	print('<tr><td style = "padding-top: 15px;"><input  type="text" name="TeamNum" style = "width: 125px;" value="Номер команды" tabindex = "206"  title = "Будет выведена карточка команды с указанным номером для выбранного выше ММБ"

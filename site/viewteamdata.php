@@ -397,7 +397,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	}
 
 	// ФИО и год рождения участника
-	print('<a href="javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a> '.$Row['user_birthyear']."\n");
+	print('<a href="?UserId='.$Row['user_id'].'">'.$Row['user_name'].'</a> '.$Row['user_birthyear']."\n");
  
         // Отметка невыходна на старт в предыдущем ММБ                          
         if ($Row['teamuser_notstartraidid'] > 0) {

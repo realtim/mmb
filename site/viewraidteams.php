@@ -746,7 +746,7 @@ if (!isset($MyPHPScript)) return;
 
 				while ($UserRow = mysql_fetch_assoc($UserResult))
 				{
-				  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
+				  print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
  
 		                  // Отметка невыходна на старт в предыдущем ММБ                          
 		                  if ($UserRow['teamuser_notstartraidid'] > 0) {
