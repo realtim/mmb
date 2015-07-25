@@ -18,6 +18,40 @@ class CMmb
 	{
 		setcookie(CMmb::CookieName, "", time() - 24 * 3600, '/');    // a day ago
 	}
+
+
+	public static function setMessage($message)
+	{
+		global $statustext, $alert;
+		$statustext = $message;
+		$alert = 0;
+	}
+
+	public static function setErrorMessage($errMessage)
+	{
+		global $statustext, $alert;
+		$statustext = $errMessage;
+		$alert = 1;
+	}
+
+	public static function setError($errMessage, $newView, $viewSubMode)
+	{
+		global $statustext, $view, $viewsubmode, $alert;
+		$statustext = $errMessage;
+
+		$view = $newView;
+		$viewsubmode = $viewSubMode;
+
+		$alert = 1;
+	}
+
+	public static function setResult($message, $newView, $newViewMode = "")
+	{
+		global $statustext, $view, $viewmode;
+		$statustext = $message;
+		$view = $newView;
+		$viewmode = $newViewMode;
+	}
 };
 
 

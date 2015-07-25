@@ -7,6 +7,20 @@ if (!isset($MyPHPScript)) return;
 // Для всех обработок, кроме ViewRaidTeams,
 // требуем, чтобы пользователь вошёл в систему
 
+
+function setViewError($message)
+{
+	CMmb::setError($message, 'ViewTeamData', 'ReturnAfterError');
+}
+
+function setUnionError($message)
+{
+	global $viewmode;       // пока так
+	$viewmode = "";
+
+	CMmb::setError($message, 'ViewAdminUnionPage', 'ReturnAfterError');
+}
+
 // ============ Обработка возможности регистрации команды =====================
 if ($action == "RegisterNewTeam")
 {
@@ -14,16 +28,14 @@ if ($action == "RegisterNewTeam")
 	$viewmode = "Add";
 	if ($RaidId <= 0)
 	{
-		$statustext = "Не указан ММБ (выберите из списка).";
-		$alert = 0;
+		CMmb::setMessage('Не указан ММБ (выберите из списка).');
 		return;
 	}
 
 	// Проверка возможности создать команду
 	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
-		$statustext = "Регистрация на марш-бросок закрыта";
-		$alert = 0;
+		CMmb::setMessage('Регистрация на марш-бросок закрыта');
 		return;
 	}
 
@@ -39,8 +51,7 @@ if ($action == "RegisterNewTeam")
 	$TeamNum = $row['team_num'];
 	if ($TeamNum > 0)
 	{
-		$statustext = "Уже есть команда c Вашим участием (N ".$row['team_num'].")";
-		$alert = 0;
+		CMmb::setMessage('Уже есть команда c Вашим участием (N '.$row['team_num'].')');
 		return;
 	}
 }
@@ -73,62 +84,41 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 
 	if (($action <> "AddTeam") && ($TeamId <= 0))
 	{
-		$statustext = "Не найден идентификатор команды.";
-		$alert = 1;
-		$view = "ViewTeamData";
-		$viewsubmode = "ReturnAfterError";
+		setViewError("Не найден идентификатор команды.");
 		return;
 	}
 	if (empty($pDistanceId))
 	{
-		$statustext = "Не указана дистанция.";
-		$alert = 1;
-		$view = "ViewTeamData";
-		$viewsubmode = "ReturnAfterError";
+		setViewError("Не указана дистанция.");
 		return;
 	}
 	if ($RaidId <= 0)
 	{
-		$statustext = "Не указан ММБ.";
-		$alert = 1;
-		$view = "ViewTeamData";
-		$viewsubmode = "ReturnAfterError";
+		setViewError("Не указан ММБ.");
 		return;
 	}
 	if (trim($pTeamName) == '' or trim($pTeamName) == 'Название команды')
 	{
-		$statustext = "Не указано название.";
-		$alert = 1;
-		$view = "ViewTeamData";
-		$viewsubmode = "ReturnAfterError";
+		setViewError("Не указано название.");
 		return;
 	}
         // 20/05/2014 Добавил проверку на  угловые скобки
 	if (strchr($pTeamName, '>') or strchr($pTeamName, '<'))
 	{
-		$statustext = "Название не должно содержать уголвых скобок.";
-		$alert = 1;
-		$view = "ViewTeamData";
-		$viewsubmode = "ReturnAfterError";
+		setViewError("Название не должно содержать уголвых скобок.");
 		return;
 	}
 
 	if (($pTeamMapsCount <= 0) || ($pTeamMapsCount > 15))
 	{
-		$statustext = "Не указано число карт или недопустимое число карт.";
-		$alert = 1;
-		$view = "ViewTeamData";
-		$viewsubmode = "ReturnAfterError";
+		setViewError("Не указано число карт или недопустимое число карт.");
 		return;
 	}
 
 
 	if (($action == "AddTeam") && ($pTeamConfirmation == 0))
 	{
-		$statustext = "Подтвердите, что прочитали и согласны с правилами участия в ММБ.";
-		$alert = 1;
-		$view = "ViewTeamData";
-		$viewsubmode = "ReturnAfterError";
+		setViewError("Подтвердите, что прочитали и согласны с правилами участия в ММБ.");
 		return;
 	}
 
@@ -144,10 +134,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	mysql_free_result($rs);
 	if ($Row['resultcount'] > 0)
 	{
-		$statustext = "Уже есть команда с таким названием.";
-		$alert = 1;
-		$view = "ViewTeamData";
-		$viewsubmode = "ReturnAfterError";
+		setViewError("Уже есть команда с таким названием.");
 		return;
 	}
 	// Проверяем номер команды: если новая - 0 и такого номера не должно быть
@@ -161,10 +148,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	mysql_free_result($rs);
 	if ($Row['resultcount'] > 0)
 	{
-		$statustext = "Уже есть команда с таким номером.";
-		$alert = 1;
-		$view = "ViewTeamData";
-		$viewsubmode = "ReturnAfterError";
+		setViewError("Уже есть команда с таким номером.");
 		return;
 	}
 
@@ -173,10 +157,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 
 	if ($OldMmb and $pTeamNum <= 0)
 	{
-		$statustext = "Для ММБ до 2012 года нужно указывать номер команды.";
-		$alert = 1;
-		$view = "ViewTeamData";
-		$viewsubmode = "ReturnAfterError";
+		setViewError("Для ММБ до 2012 года нужно указывать номер команды.");
 		return;
 	}
 
@@ -193,20 +174,14 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$UserProhibitAdd = $Row['user_prohibitadd'];
 		if (empty($NewUserId))
 		{
-			$statustext = 'Пользователь с таким email не найден.';
-			$alert = 1;
-			$view = "ViewTeamData";
-			$viewsubmode = "ReturnAfterError";
+			setViewError('Пользователь с таким email не найден.');
 			return;
 		}
 		// Проверка на запрет включения в команду
 		if ($UserProhibitAdd and $NewUserId <> $UserId and !$Moderator)
 		{
 			$NewUserId = 0;
-			$statustext = 'Пользователь запретил добавлять себя в команду другим пользователям.';
-			$alert = 1;
-			$view = "ViewTeamData";
-			$viewsubmode = "ReturnAfterError";
+			setViewError('Пользователь запретил добавлять себя в команду другим пользователям.');
 			return;
 		}
 		// Проверка на наличие пользователя в другой команде
@@ -221,10 +196,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		if ($Row['result'] > 0)
 		{
 			$NewUserId = 0;
-			$statustext = 'Пользователь с таким email уже включен в другую команду';
-			$alert = 1;
-			$view = "ViewTeamData";
-			$viewsubmode = "ReturnAfterError";
+			setViewError('Пользователь с таким email уже включен в другую команду');
 			return;
 		}
 
@@ -233,10 +205,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		{
 	  
 			$NewUserId = 0;
-			$statustext = 'Добавление новых участников закрыто';
-			$alert = 1;
-			$view = "ViewTeamData";
-			$viewsubmode = "ReturnAfterError";
+			setViewError('Добавление новых участников закрыто');
 			return;
 		}
 	}
@@ -246,10 +215,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		if ($action == "AddTeam")
 		{
 			$NewUserId = 0;
-			$statustext = "Для новой команды должен быть указан email участника.";
-			$alert = 1;
-			$view = "ViewTeamData";
-			$viewsubmode = "ReturnAfterError";
+			setViewError('Для новой команды должен быть указан email участника.');
 			return;
 		}
 		$NewUserId = 0;
@@ -259,15 +225,13 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	// Общая проверка возможности редактирования
 	if (($viewmode == "Add") && !CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
-		$statustext = "Регистрация на марш-бросок закрыта";
-		$alert = 0;
+		CMmb::setMessage('Регистрация на марш-бросок закрыта');
 		return;
 	}
 
 	if (($viewmode <> "Add") && !CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)) 
 	{
-		$statustext = "Изменения в команде запрещены";
-		$alert = 0;
+		CMmb::setMessage('Изменения в команде запрещены');
 		return;
 	}
 	
@@ -304,10 +268,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 		if ($TeamId <= 0)
 		{
-			$statustext = 'Ошибка записи новой команды.';
-			$alert = 1;
-			$view = "ViewTeamData";
-			$viewsubmode = "ReturnAfterError";
+			setViewError('Ошибка записи новой команды.');
 			return;
 		}
 
@@ -414,8 +375,7 @@ elseif ($action == 'FindTeam')
 	$TeamNum = mmb_validateInt($_REQUEST, 'TeamNum', '');
 	if ($TeamNum === false)
 	{
-		$statustext = 'Не указан номер команды';
-		$view = "";
+		CMmb::setResult('Не указан номер команды', '', $viewmode);      // не меняем $viewmode
 		return;
 	}
 	$sql = "select team_id from Teams t
@@ -429,8 +389,7 @@ elseif ($action == 'FindTeam')
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 	if ($TeamId <= 0)
 	{
-		$statustext = 'Команда с номером '.(int)$TeamNum.' не найдена';
-		$view = "";
+		CMmb::setResult('Команда с номером '.(int)$TeamNum.' не найдена', '', $viewmode); // не меняем $viewmode
 		return;
 	}
 	$view = "ViewTeamData";
@@ -442,8 +401,7 @@ elseif ($action == 'TeamInfo' or $action == 'TlpInfo'  or $action == 'AddTlp' or
 {
 	if ($TeamId <= 0)
 	{
-		$statustext = 'Id команды не указан';
-		$alert = 1;
+		CMmb::setErrorMessage('Id команды не указан');
 		return;
 	}
 	$view = "ViewTeamData";
@@ -456,34 +414,29 @@ elseif ($action == 'HideTeamUser')
 	$HideTeamUserId = $_POST['HideTeamUserId'];
 	if ($HideTeamUserId <= 0)
 	{
-		$statustext = 'Участник не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Участник не найден');
 		return;
 	}
 	if ($TeamId <= 0)
 	{
-		$statustext = 'Команда не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Команда не найдена');
 		return;
 	}
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Марш-бросок не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Марш-бросок не найден');
 		return;
 	}
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Сессия не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Сессия не найдена');
 		return;
 	}
 
 	// Проверка возможности редактировать команду
 	if (!CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
-		$statustext = "Изменения в команде запрещены";
-		$alert = 1;
+		CMmb::setErrorMessage('Изменения в команде запрещены');
 		return;
 	}
 
@@ -582,42 +535,36 @@ elseif ($action == 'TeamUserNotInPoint')
 	$HideTeamUserId = $_POST['HideTeamUserId'];
 	if ($HideTeamUserId <= 0)
 	{
-		$statustext = 'Участник не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Участник не найден');
 		return;
 	}
 	// Здесь может быть 0 точка - значит, что участник везде явился
 	$LevelPointId = $_POST['UserNotInLevelPointId'];
 	if ($LevelPointId < 0)
 	{
-		$statustext = 'Точка не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Точка не найдена');
 		return;
 	}
 	if ($TeamId <= 0)
 	{
-		$statustext = 'Команда не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Команда не найдена');
 		return;
 	}
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Не найден ММБ.';
-		$alert = 1;
+		CMmb::setErrorMessage('Не найден ММБ.');
 		return;
 	}
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Не найдена сессия.';
-		$alert = 1;
+		CMmb::setErrorMessage('Не найдена сессия.');
 		return;
 	}
 
 	// Проверка возможности редактировать результаты
 	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
-		$statustext = 'Изменение результатов команды запрещено';
-		$alert = 1;
+		CMmb::setErrorMessage('Изменение результатов команды запрещено');
 		return;
 	}
 
@@ -701,28 +648,24 @@ elseif ($action == 'HideTeam')
 {
 	if ($TeamId <= 0)
 	{
-		$statustext = 'Команда не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Команда не найдена');
 		return;
 	}
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Марш-бросок не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Марш-бросок не найден');
 		return;
 	}
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Сессия не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Сессия не найдена');
 		return;
 	}
 
 	// Проверка возможности удалить команду
 	if (!CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
-		$statustext = "Удаление команды запрещено";
-		$alert = 1;
+		CMmb::setErrorMessage('Удаление команды запрещено');
 		return;
 	}
 
@@ -784,8 +727,7 @@ elseif ($action == 'JsonExport')
 
 	if (empty($RaidId))
 	{
-		$statustext = "Не выбран марш-бросок";
-		$alert = 0;
+		CMmb::setMessage('Не выбран марш-бросок');
 		return;
 
 	}
@@ -923,14 +865,12 @@ elseif ($action == 'JsonExport')
 
 	if ($TeamId <= 0)
 	{
-		$statustext = 'Команда не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Команда не найдена');
 		return;
 	}
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Сессия не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Сессия не найдена');
 		return;
 	}
 
@@ -938,9 +878,7 @@ elseif ($action == 'JsonExport')
         // Права на редактирование
         if (!$Administrator and !$Moderator)
         {
-		$statustext = 'Нет прав на объединение';
-		$alert = 1;
-		return;
+		CMmb::setErrorMessage('Нет прав на объединение');
 	      return;
 	} 
 
@@ -958,12 +896,7 @@ elseif ($action == 'JsonExport')
 
 	if ($RowsCount > 0)
 	{
-	        $statustext = 'Команды уже объединена';				     
-
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		$viewsubmode = "ReturnAfterError";
-
+		setUnionError('Команды уже объединена');
 	       return;
 	}
 
@@ -983,12 +916,7 @@ elseif ($action == 'JsonExport')
 
 	if ($RowsCount <= 0)
 	{
-	        $statustext = 'Команда скрыта или вне зачета';				     
-
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		$viewsubmode = "ReturnAfterError";
-
+		setUnionError('Команда скрыта или вне зачета');
 	       return;
 	}
 
@@ -1041,10 +969,6 @@ elseif ($action == 'JsonExport')
 
              if ($TeamAdd)
 	     {
-
-                 $statustext = 'Команда добавлена в объединение';				     
-
-
 	         $Sql = "select user_name from  Users where user_id = ".$UserId;
 		 $Result = MySqlQuery($Sql);  
 		 $Row = mysql_fetch_assoc($Result);
@@ -1066,30 +990,24 @@ elseif ($action == 'JsonExport')
 */			    
                   // Отправляем письмо
 		//  SendMail(trim($pUserEmail), $Msg, $pUserName);
-		  $view = "ViewAdminUnionPage";
-	      	  $viewmode = "";
 
+		     CMmb::setResult('Команда добавлена в объединение', "ViewAdminUnionPage");
 
              } else {
-	     
-	        $statustext = 'Команда уже включена в объединение!';				     
-		   $view = "ViewTeamData";
-		   $viewmode = "";
-
-
+	             CMmb::setResult('Команда уже включена в объединение!', "ViewTeamData");
 	     }
 
 
-   } elseif ($action == "HideTeamInUnion")  {
+   }
+
+elseif ($action == "HideTeamInUnion")  {
     // Действие вызывается нажатием кнопки "Удалить" на странице со списокм команд в объединении
     
 
 	// Права 
         if (!$Administrator and !$Moderator)
         {
-		$statustext = 'Нет прав на объединение';
-		$alert = 1;
-		return;
+		CMmb::setErrorMessage('Нет прав на объединение');
 	      return;
 	} 
 
@@ -1101,14 +1019,9 @@ elseif ($action == 'JsonExport')
 	     {
 	      return;
 	     }
-	   
-	   
 	          $Sql = "update TeamUnionLogs set teamunionlog_hide = 1, union_status = 0  where teamunionlog_id = ".$TeamUnionLogId;
 		  MySqlQuery($Sql);  
 		  
-
-                  $statustext = 'Команда удалена из объединения';				     
-
 	         $Sql = "select user_name from  Users where user_id = ".$UserId;
 		 $Result = MySqlQuery($Sql);  
 		 $Row = mysql_fetch_assoc($Result);
@@ -1131,20 +1044,16 @@ elseif ($action == 'JsonExport')
 		//  SendMail(trim($pUserEmail), $Msg, $pUserName);
 
                // Остаемся на той же странице
-
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-
-} elseif ($action == "ClearUnionTeams")  {
+		CMmb::setResult('Команда удалена из объединения', 'ViewAdminUnionPage');
+}
+elseif ($action == "ClearUnionTeams")  {
     // Действие вызывается нажатием кнопки "Очистить объединение" на странице со списокм команд в объединении
 
 
 	// Права 
         if (!$Administrator and !$Moderator)
         {
-		$statustext = 'Нет прав на объединение';
-		$alert = 1;
-		return;
+		CMmb::setErrorMessage('Нет прав на объединение');
 	      return;
 	} 
 
@@ -1158,24 +1067,17 @@ elseif ($action == 'JsonExport')
                 
 		//echo 'sql '.$sql;
 		
-		$Result = MySqlQuery($sql);
-
-                $statustext = 'Объединение очищено';				     
-
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-
-
-} elseif ($action == "UnionTeams")  {
+	$Result = MySqlQuery($sql);
+	CMmb::setResult('Объединение очищено', 'ViewAdminUnionPage');
+}
+elseif ($action == "UnionTeams")  {
     // Действие вызывается нажатием кнопки "Объединить" 
     
     
          // Права 
         if (!$Administrator and !$Moderator)
         {
-		$statustext = 'Нет прав на объединение';
-		$alert = 1;
-		return;
+		CMmb::setErrorMessage('Нет прав на объединение');
 	      return;
 	} 
     
@@ -1183,10 +1085,7 @@ elseif ($action == 'JsonExport')
 
 	if (trim($pTeamName) == '' or trim($pTeamName)  == 'Название объединённой команды')
 	{
-		$statustext = "Не указано название.";
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		$viewsubmode = "ReturnAfterError";
+		setUnionError('Не указано название.');
 		return;
 	}
 
@@ -1213,12 +1112,7 @@ elseif ($action == 'JsonExport')
     // Проверяем, что результат отличается не больше чем на 15 минут
     if ($Row['deltaresult'] > 15*60)
     {
-        $statustext = 'Результат команд отличается больше чем на 15 минут';				     
-
-	$view = "ViewAdminUnionPage";
-	$viewmode = "";
-	$viewsubmode = "ReturnAfterError";
-
+        setUnionError('Результат команд отличается больше чем на 15 минут');
        return;
     }
 
@@ -1226,33 +1120,20 @@ elseif ($action == 'JsonExport')
 	// Проверяем, что прогресс и ошибки одинаковые
 	if ($Row['deltaprogress'] > 0 or $Row['deltaerror'] > 0)
 	{
-		$statustext = 'Различаются финишные точки или точки с ошибкой';				     
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		$viewsubmode = "ReturnAfterError";
+		setUnionError('Различаются финишные точки или точки с ошибкой');
 		return;
 	}
     
     
     if ($Row['maxdistanceid'] <> $Row['mindistanceid'])
     {
-        $statustext = 'Разные дистанции у объединяемых команд';				     
-
-	$view = "ViewAdminUnionPage";
-	$viewmode = "";
-	$viewsubmode = "ReturnAfterError";
-
+        setUnionError('Разные дистанции у объединяемых команд');
        return;
     }
 
     if ($Row['teamcount'] < 2)
     {
-        $statustext = 'Объединить можно две команды или больше';				     
-
-	$view = "ViewAdminUnionPage";
-	$viewmode = "";
-	$viewsubmode = "ReturnAfterError";
-
+	    setUnionError('Объединить можно две команды или больше');
        return;
     }
     
@@ -1277,12 +1158,7 @@ elseif ($action == 'JsonExport')
 
 	if ($RowsCount > 0)
 	{
-	        $statustext = 'Различается список взятых КП';				     
-
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		$viewsubmode = "ReturnAfterError";
-
+		setUnionError('Различается список взятых КП');
 	       return;
 	}
 
@@ -1290,21 +1166,14 @@ elseif ($action == 'JsonExport')
 
 	if ($RaidId <= 0)
 	{
-		$statustext = "Не указан ММБ.";
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		$viewsubmode = "ReturnAfterError";
-
+		setUnionError('Не указан ММБ.');
 		return;
 	}
 		
 
 	if ($pDistanceId <= 0)
 	{
-		$statustext = "Не указана дистанция.";
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		$viewsubmode = "ReturnAfterError";
+		setUnionError('Не указана дистанция.');
 		return;
 	}
 
@@ -1359,9 +1228,7 @@ elseif ($action == 'JsonExport')
 
 		if ($TeamId <= 0)
 		{
-			$statustext = 'Ошибка записи новой команды.';
-			$view = "ViewAdminUnionPage";
-			$viewmode = "";
+			CMmb::setResult('Ошибка записи новой команды.', "ViewAdminUnionPage");
 			return;
 
 		}
@@ -1466,23 +1333,16 @@ elseif ($action == 'JsonExport')
 
 		RecalcTeamResultFromTeamLevelPoints(0, $TeamId);
 
-
-                $statustext = 'Команды объединены';				     
-
-		$view = "ViewRaidTeams";
-		$viewmode = "";
-
-
-} elseif ($action == "CancelUnionTeams")  {
+		CMmb::setResult('Команды объединены', "ViewRaidTeams");
+}
+elseif ($action == "CancelUnionTeams")  {
     // Действие вызывается нажатием кнопки "Объединить" 
     
     
          // Права 
         if (!$Administrator and !$Moderator)
         {
-		$statustext = 'Нет прав на отмену объединения';
-		$alert = 1;
-		return;
+		CMmb::setErrorMessage('Нет прав на отмену объединения');
 	      return;
 	} 
     
@@ -1492,20 +1352,13 @@ elseif ($action == 'JsonExport')
 
 	if ($RaidId <= 0)
 	{
-		$statustext = "Не указан ММБ.";
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		$viewsubmode = "ReturnAfterError";
-
+		setUnionError('Не указан ММБ.');
 		return;
 	}
 		
 	if ($pParentTeamId <= 0)
 	{
-		$statustext = "Не указана команда.";
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		$viewsubmode = "ReturnAfterError";
+		setUnionError('Не указана команда.');
 		return;
 	}
 
@@ -1524,12 +1377,7 @@ elseif ($action == 'JsonExport')
 
 	if ($RowsCount <= 0)
 	{
-	        $statustext = 'Команды нет в объединении';				     
-
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
-		$viewsubmode = "ReturnAfterError";
-
+		setUnionError('Команды нет в объединении');
 	       return;
 	}
 
@@ -1620,20 +1468,12 @@ elseif ($action == 'JsonExport')
 	 
  	while ($Row = mysql_fetch_assoc($Result))
 	{
-	
-
 		RecalcTeamResultFromTeamLevelPoints(0, $Row['team_id']);
-
- 
 	}
 	
 	mysql_free_result($Result);
-	
-        $statustext = 'Объединение отменено';				     
-	$view = "ViewRaidTeams";
-	$viewmode = "";
 
-
+	CMmb::setResult('Объединение отменено', 'ViewRaidTeams');
 }
 // ============ Никаких действий не требуется =================================
 else
