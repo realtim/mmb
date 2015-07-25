@@ -6,7 +6,7 @@ if (!isset($MyPHPScript)) return;
 
 ?>
 <script language = "JavaScript">
-
+	/*
         // Посмотреть профиль пользователя
 	function ViewUserInfo(userid)
 	{ 
@@ -23,7 +23,7 @@ if (!isset($MyPHPScript)) return;
 	  document.RaidTeamsForm.TeamId.value = teamid;
 	  document.RaidTeamsForm.action.value = "TeamInfo";
 	  document.RaidTeamsForm.submit();
-	}
+	}*/
 
 
         // Смена сортировки
@@ -721,10 +721,10 @@ if (!isset($MyPHPScript)) return;
 
 			$TeamsCount--;
 
- 			print('<tr class = "'.$TrClass.'">
-			       <td style = "'.$tdstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
-			       <td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
-			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_greenpeace'] == 1 ? ', <a title = "Нет сломанным унитазам!" href = "#comment">ну!</a>' : '').
+ 			print('<tr class="'.$TrClass.'">
+			       <td style="'.$tdstyle.'"><a name="'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
+			       <td style="'.$tdstyle.'"><a href="?TeamId='.$Row['team_id'].'&RaidId=' . $RaidId .'">'.
+			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_greenpeace'] == 1 ? ', <a title="Нет сломанным унитазам!" href="#comment">ну!</a>' : '').
 				  ($Row['team_outofrange'] == 1 ? ', Вне зачета!' : '').')
 			        </td><td style = "'.$tdstyle.'">'."\r\n");
 
@@ -746,7 +746,7 @@ if (!isset($MyPHPScript)) return;
 
 				while ($UserRow = mysql_fetch_assoc($UserResult))
 				{
-				  print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
+				  print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'&RaidId=' . $RaidId . '">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
  
 		                  // Отметка невыходна на старт в предыдущем ММБ                          
 		                  if ($UserRow['teamuser_notstartraidid'] > 0) {

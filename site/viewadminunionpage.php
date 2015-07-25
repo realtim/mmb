@@ -10,12 +10,12 @@ if (!isset($MyPHPScript)) return;
         
 	
 	// Посмотреть профиль команды
-	function ViewTeamInfo(teamid)
+	/*function ViewTeamInfo(teamid)
 	{ 
 	  document.UnionTeamsForm.TeamId.value = teamid;
 	  document.UnionTeamsForm.action.value = "TeamInfo";
 	  document.UnionTeamsForm.submit();
-	}
+	}*/
 	
 	function HideTeamInUnion(teamunionlogid,teamid)
 	{ 
@@ -101,9 +101,9 @@ if (!isset($MyPHPScript)) return;
 			while ($Row = mysql_fetch_assoc($Result))
 			{
 			  
-			  print('<div align = "left" style = "margin-top: 5px;">'."\r\n");
-			  print(' '.$Row['team_num'].' <a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.$Row['team_name'].'</a>  '.$Row['team_result'].' '."\r\n");
-                          print('<input type="button" style = "margin-left: 15px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите исключить команду из текущего объединения? \')) { HideTeamInUnion('.$Row['teamunionlog_id'].','.$Row['team_id'].'); }"  name="TeamHideButton" value="Скрыть" tabindex = "'.++$TabIndex.'">'."\r\n");
+			  print('<div align="left" style="margin-top: 5px;">'."\r\n");
+			  print(' '.$Row['team_num'].' <a href="?TeamId='.$Row['team_id'].'">'.$Row['team_name'].'</a>  '.$Row['team_result'].' '."\r\n");
+                          print('<input type="button" style="margin-left: 15px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите исключить команду из текущего объединения? \')) { HideTeamInUnion('.$Row['teamunionlog_id'].','.$Row['team_id'].'); }"  name="TeamHideButton" value="Скрыть" tabindex = "'.++$TabIndex.'">'."\r\n");
 	                  print('</div>'."\r\n");
 	  	  			
 			  $sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id

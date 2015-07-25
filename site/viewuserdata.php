@@ -185,13 +185,13 @@ if (!isset($MyPHPScript)) return;
 	// 
 
 	// Функция просмотра данных о команде
-	function ViewTeamInfo(teamid, raidid)
+	/*function ViewTeamInfo(teamid, raidid)
 	{ 
 		document.UserTeamsForm.TeamId.value = teamid;
 		document.UserTeamsForm.RaidId.value = raidid;
 		document.UserTeamsForm.action.value = "TeamInfo";
 		document.UserTeamsForm.submit();
-	}
+	}*/
 
 
 	// Функция создания модератора
@@ -444,7 +444,7 @@ if (!isset($MyPHPScript)) return;
 			if ($TeamPlace > 0 and $LevelPointId > 0) $TeamUserOff = ", не явка в точку <b>".$Row['levelpoint_name']."</b>";
 
 
-		  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].','.$Row['raid_id'].');"  title = "Переход к карточке команды">'.$Row['team_name'].'</a> 
+		  print('<div align="left" style="padding-top: 5px;"><a href="?TeamId='.$Row['team_id'].'&RaidId='.$Row['raid_id'].'"  title = "Переход к карточке команды">'.$Row['team_name'].'</a>
 		         N '.$Row['team_num'].$TeamPlaceResult.$TeamUserOff.' ('.$Row['teamuser_rank'].'), дистанция: '.$Row['distance_name'].', ммб: '.$Row['raid_name'].'</div>'."\r\n");
 		}
 

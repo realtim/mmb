@@ -4,11 +4,8 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
-?>
+/*
 <script language = "JavaScript">
-
-        
-
 
 	// Посмотреть профиль пользователя
 	function ViewUserInfo(userid)
@@ -18,8 +15,6 @@ if (!isset($MyPHPScript)) return;
 		document.RankUsersForm.submit();
 	}
 	
-	
-	
 	// Посмотреть команду
 	function ViewTeamInfo(teamid)
 	{
@@ -27,12 +22,8 @@ if (!isset($MyPHPScript)) return;
 		document.RankUsersForm.action.value = "TeamInfo";
 		document.RankUsersForm.submit();
 	}
-
-
-
 </script>
-
-<?php
+*/
 
 
                $TabIndex = 0;
