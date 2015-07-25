@@ -45,6 +45,12 @@ class CMmb
 		$alert = 1;
 	}
 
+	public static function setErrorSm($errMessage, $viewSubMode = 'ReturnAfterError')
+	{
+		global $view;
+		self::setError($errMessage, $view, $viewSubMode);       // don't change view
+	}
+
 	public static function setResult($message, $newView, $newViewMode = "")
 	{
 		global $statustext, $view, $viewmode;

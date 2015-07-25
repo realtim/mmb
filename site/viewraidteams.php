@@ -183,8 +183,7 @@ if (!isset($MyPHPScript)) return;
         // Проверяем, что передали  идентификатор ММБ
         if ($RaidId <= 0)
 	{
-		    $statustext = 'Не указан ММБ';
-	  	    $alert = 0;
+		    CMmb::setMessage('Не указан ММБ');
 		    return;
 	
 	}

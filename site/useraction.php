@@ -9,10 +9,8 @@ if (!isset($MyPHPScript)) return;
    // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении, 
         //но и при правке, если не былди заполнены поля при добавлении
 	 $UserCityPlaceHolder = 'Город';
-       
-   
-   
-   if ($action == "") 
+
+   if ($action == "")
    {
      // Действие не указано
        $view = "MainPage";
@@ -24,14 +22,11 @@ if (!isset($MyPHPScript)) return;
         // первичная проверка данных 
 	if ($_POST['Login'] == "") 
 	{
-           $statustext = "Не указан e-mail.";
-           $alert = 1; 
+           CMmb::setErrorMessage('Не указан e-mail.');
            return;
 
         } elseif ($_POST['Password']== "") {
-
-           $statustext = "Не указан пароль.";
-           $alert = 1; 
+           CMmb::setErrorMessage('Не указан пароль.');
            return;
         } 
          // конец первичной проверки входных данных
@@ -46,12 +41,11 @@ if (!isset($MyPHPScript)) return;
 		
 	if ($UserId <= 0) 
 	{
-		$statustext = "Неверный email или пароль.";
 		  //.$login." не найден!";
 		$password = "";
 		mysql_close();
-		$alert = 1; 
-		return;  
+		CMmb::setErrorMessage('Неверный email или пароль.');
+		return;
 	} 
 		//Конец проверки пользователя и пароля
 
@@ -113,35 +107,27 @@ if (!isset($MyPHPScript)) return;
  
            if (trim($pUserEmail) == '')
 	   {
-		$statustext = "Не указан e-mail.";
-	        $alert = 1;
-                $viewsubmode = "ReturnAfterError"; 
-		return; 
+		CMmb::setErrorSm('Не указан e-mail.');
+		return;
 	   }
 
            if (trim($pUserName) == '')
 	   {
-		$statustext = "Не указано ФИО.";
-	        $alert = 1; 
-                $viewsubmode = "ReturnAfterError"; 
+		CMmb::setErrorSm('Не указано ФИО.');
 		return; 
 	   }
 
            if ($pUserBirthYear < 1930 or $pUserBirthYear > date("Y"))
 	   {
-		$statustext = "Год не указан или указан некорректный.";
-	        $alert = 1; 
-                $viewsubmode = "ReturnAfterError"; 
+		CMmb::setErrorSm('Год не указан или указан некорректный.');
 		return; 
 	   }
 
 
 	   if ((trim($pUserNewPassword) <> '' or trim($pUserConfirmNewPassword) <> '') and trim($pUserNewPassword) <> trim($pUserConfirmNewPassword))
 	   {
-		$statustext = "Не совпадает новый пароль и его подтверждение.";
-	        $alert = 1;
-                $viewsubmode = "ReturnAfterError"; 
-		return; 
+		CMmb::setErrorSm('Не совпадает новый пароль и его подтверждение.');
+		return;
 	   }
 
 
@@ -153,9 +139,7 @@ if (!isset($MyPHPScript)) return;
            mysql_free_result($rs);
 	   if ($Row['resultcount'] > 0)
 	   {
-   		$statustext = "Уже есть пользователь с таким email.";
-	        $alert = 1; 
-                $viewsubmode = "ReturnAfterError"; 
+   		CMmb::setErrorSm('Уже есть пользователь с таким email.');
                 return; 
 	   }
 
@@ -172,9 +156,7 @@ if (!isset($MyPHPScript)) return;
            mysql_free_result($rs);
 	   if ($Row['resultcount'] > 0)
 	   {
-   		$statustext = "Уже есть пользователь с таким именем и годом рождения.";
-	        $alert = 1; 
-                $viewsubmode = "ReturnAfterError"; 
+   		CMmb::setErrorSm('Уже есть пользователь с таким именем и годом рождения.');
                 return; 
 	   }
 
@@ -214,10 +196,8 @@ if (!isset($MyPHPScript)) return;
 		   $view = "MainPage";
 	           return; 
                } else {
-		  $statustext = "Уже есть пользователь с таким email.";
-		  $alert = 1; 
-		  $viewsubmode = "ReturnAfterError"; 
-		  return; 
+		  CMmb::setErrorSm('Уже есть пользователь с таким email.');
+		  return;
                }
 	   }
 
@@ -257,9 +237,7 @@ if (!isset($MyPHPScript)) return;
 //                 $UserId = mysql_insert_id($Connection);
 		 if ($newUserId <= 0)
 		 {
-                       $statustext = 'Ошибка записи нового пользователя.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError"; 
+                       CMmb::setErrorSm('Ошибка записи нового пользователя.');
 			return;
 		 } else {
 
@@ -446,8 +424,7 @@ if (!isset($MyPHPScript)) return;
            //echo $pUserEmail;
            if (trim($pUserEmail) == '' or trim($pUserEmail) == 'E-mail') 
 	   {
-	              $statustext = 'Не указан e-mail.';
-		      $alert = 1;
+	              CMmb::setErrorMessage('Не указан e-mail.');
 		      return;
 	   }
 
@@ -464,8 +441,7 @@ if (!isset($MyPHPScript)) return;
  	
 	   if ($pUserId <= 0)
 	   {
-	              $statustext = 'Пользователь с  e-mail '.$pUserEmail.' не найден ';
-		      $alert = 1;
+	              CMmb::setErrorMessage('Пользователь с  e-mail '.$pUserEmail.' не найден ');
 		      return;
 	   }
 
@@ -671,10 +647,6 @@ if (!isset($MyPHPScript)) return;
 
              if ($ModeratorAdd)
 	     {
-
-                 $statustext = 'Добавлен модератор';				     
-
-
 	         $Sql = "select user_name from  Users where user_id = ".$UserId;
 		 $Result = MySqlQuery($Sql);  
 		 $Row = mysql_fetch_assoc($Result);
@@ -704,17 +676,10 @@ if (!isset($MyPHPScript)) return;
 			    
                   // Отправляем письмо
 		  SendMail(trim($pUserEmail), $Msg, $pUserName);
-		  $view = "ViewAdminModeratorsPage";
-	      	  $viewmode = "";
 
-
+		  CMmb::setResult('Добавлен модератор', 'ViewAdminModeratorsPage');
              } else {
-	     
-	        $statustext = 'Пользователь уже имеет статус модератора!';				     
-		   $view = "ViewUserData";
-		   $viewmode = "";
-
-
+	        CMmb::setResult('Пользователь уже имеет статус модератора!', 'ViewUserData');
 	     }
 
 
@@ -730,13 +695,9 @@ if (!isset($MyPHPScript)) return;
 	      return;
 	     }
 	   
-	   
 	          $Sql = "update RaidModerators set raidmoderator_hide = 1 where raidmoderator_id = ".$RaidModeratorId;
 		  MySqlQuery($Sql);  
 		  
-
-                  $statustext = 'Удален модератор';				     
-
 	         $Sql = "select user_name from  Users where user_id = ".$UserId;
 		 $Result = MySqlQuery($Sql);  
 		 $Row = mysql_fetch_assoc($Result);
@@ -767,9 +728,7 @@ if (!isset($MyPHPScript)) return;
 
                // Остаемся на той же странице
 
-		$view = "ViewAdminModeratorsPage";
-		$viewmode = "";
- 
+		 CMmb::setResult('Удален модератор', 'ViewAdminModeratorsPage');
    }
    // ============ Обратимое удаление пользователя ====================================
    elseif ($action == 'HideUser')
@@ -779,31 +738,27 @@ if (!isset($MyPHPScript)) return;
 
 	if ($pUserId <= 0)
 	{
-		$statustext = 'Пользователь не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Пользователь не найден');
 		return;
 	}
 
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Сессия не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Сессия не найдена');
 		return;
 	}
 
 	// Проверка возможности удалить пользоваиеля
 	if (!$Administrator)
 	{
-		$statustext = "Удаление пользователя запрещено";
-		$alert = 1;
+		CMmb::setErrorMessage('Удаление пользователя запрещено');
 		return;
 	}
 
 /*
 	if ($pUserId == $UserId)
 	{
-		$statustext = 'Нельзя удалить самого себя';
-		$alert = 1;
+		CMmb::setErrorMessage('Нельзя удалить самого себя');
 		return;
 	}
 */
@@ -822,8 +777,7 @@ if (!isset($MyPHPScript)) return;
 
 	if ($RowsCount > 0)
 	{
-	        $statustext = 'Пользователь уже является участником по крайней мере одной команды';				     
-		$alert = 1;
+		CMmb::setErrorMessage('Пользователь уже является участником по крайней мере одной команды');
 		return;
 	}
 
@@ -850,8 +804,7 @@ if (!isset($MyPHPScript)) return;
 	       return;
 	     }
 
-        $statustext = 'Пользователь '.$pUserName.' ключ '.$pUserId.' удален ';				     
-	$view = "ViewRaidTeams";
+        CMmb::setResult("Пользователь $pUserName ключ $pUserId удален ", 'ViewRaidTeams', $viewmode);
    }
    // ============ Добавление устройства ====================================
    elseif ($action == 'AddDevice')
@@ -862,15 +815,13 @@ if (!isset($MyPHPScript)) return;
 
 	if ($pUserId <= 0)
 	{
-		$statustext = 'Пользователь не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Пользователь не найден');
 		return;
 	}
 
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Сессия не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Сессия не найдена');
 		return;
 	}
 
@@ -906,11 +857,8 @@ if (!isset($MyPHPScript)) return;
 
 	if (empty($pNewDeviceName) or $pNewDeviceName == 'Название нового устройства')
 	{
-		$statustext = 'Не указано название устройства';
-		$alert = 1;    
-		   $view = "ViewUserData";
-		   $viewmode = "";
-
+		$alert = 1;
+		CMmb::setResult('Не указано название устройства', 'ViewUserData');
 		return;
 	}
 
@@ -922,22 +870,14 @@ if (!isset($MyPHPScript)) return;
            mysql_free_result($rs);
 	   if ($Row['resultcount'] > 0)
 	   {
-   		$statustext = "Уже есть устройство с таким именем.";
-	        $alert = 1; 
-                $viewsubmode = "ReturnAfterError"; 
+   		CMmb::setErrorSm('Уже есть устройство с таким именем.');
                 return; 
 	   }
-	   
-    		 $Sql = "insert into Devices (device_name, user_id) values ('".$pNewDeviceName."', ".$pUserId.")";
-		 MySqlQuery($Sql);  
 
-	   
-	           $statustext = 'Добавлено устройство';				     
-		   $view = "ViewUserData";
-		   $viewmode = "";
+	   $Sql = "insert into Devices (device_name, user_id) values ('".$pNewDeviceName."', ".$pUserId.")";
+	   MySqlQuery($Sql);
 
-
-
+	   CMmb::setResult('Добавлено устройство', 'ViewUserData');
    }
    // ============ Получение конфигурации ====================================
    elseif ($action == 'GetDeviceId')
@@ -949,15 +889,13 @@ if (!isset($MyPHPScript)) return;
 
 	if ($pUserId <= 0)
 	{
-		$statustext = 'Пользователь не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Пользователь не найден');
 		return;
 	}
 
 	if ($pDeviceId <= 0)
 	{
-		$statustext = 'Устройство не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Устройство не найден');
 		return;
 	}
 
@@ -965,8 +903,7 @@ if (!isset($MyPHPScript)) return;
 
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Сессия не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Сессия не найдена');
 		return;
 	}
 
@@ -1002,9 +939,7 @@ if (!isset($MyPHPScript)) return;
            mysql_free_result($rs);
 	   if ($Row['resultcount'] <> 1)
 	   {
-   		$statustext = "Нет устройства.";
-	        $alert = 1; 
-                $viewsubmode = "ReturnAfterError"; 
+   		CMmb::setErrorSm('Нет устройства.');
                 return; 
 	   }
 	   
@@ -1041,9 +976,7 @@ if (!isset($MyPHPScript)) return;
 
 	     if (empty($pText) or trim($pText) == 'Текст сообщения')
 	     {
-   		$statustext = "Укажите тексто сообщения.";
-	        $alert = 1; 
-                $viewsubmode = ""; 
+		CMmb::setError('Укажите текст сообщения.', $view, '');
                 return; 
 	     }
 
@@ -1060,12 +993,10 @@ if (!isset($MyPHPScript)) return;
 		$rs = MySqlQuery($sql);  
                 $row = mysql_fetch_assoc($rs);
                 mysql_free_result($rs);
-     		$UserEmail = $row['user_email'];  
-		$UserName = $row['user_name']; 
+     		$UserEmail = $row['user_email'];
+		$UserName = $row['user_name'];
 
-  	
-		$statustext = 'Сообщение выслано.';
-                $view = "";
+		CMmb::setResult('Сообщение выслано.', '', $viewmode); // не меняем $viewmode
 
 	        $Sql = "select user_name from  Users where user_id = ".$UserId;
 		$Result = MySqlQuery($Sql);  
@@ -1085,7 +1016,7 @@ if (!isset($MyPHPScript)) return;
 
 		}
 //		$Msg =  $Msg.$pText;
-		$Msg =  $Msg."\r\n"."Для ответа необходимо автооризоваться и открыть карточку пользователя  ".$SendMessageUserName."\r\n";
+		$Msg =  $Msg."\r\n"."Для ответа необходимо авторизоваться и открыть карточку пользователя  ".$SendMessageUserName."\r\n";
 		$Msg =  $Msg.$MyHttpLink.$MyLocation."?action=UserInfo&UserId=".$UserId."\r\n";
 		
 			    
@@ -1101,14 +1032,12 @@ if (!isset($MyPHPScript)) return;
 
 	if ($UserId <= 0)
 	{
-		$statustext = 'Пользователь не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Пользователь не найден');
 		return;
 	}
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Сессия не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Сессия не найдена');
 		return;
 	}
 
@@ -1116,8 +1045,7 @@ if (!isset($MyPHPScript)) return;
        
 
         if ($UserId == $pUserId) {
-		$statustext = 'Нельзя объединить с самим собой';
-		$alert = 1;
+		CMmb::setErrorMessage('Нельзя объединить с самим собой');
 		return;
 	}
 
@@ -1135,10 +1063,7 @@ if (!isset($MyPHPScript)) return;
 
 	if ($RowsCount > 0)
 	{
-	        $statustext = 'Пользователь уже есть в объединении';				     
-
-		$view = "ViewUserUnionPage";
-		$viewmode = "";
+		CMmb::setResult('Пользователь уже есть в объединении', 'ViewUserUnionPage', '');
 		$viewsubmode = "ReturnAfterError";
 
 	       return;
@@ -1159,10 +1084,7 @@ if (!isset($MyPHPScript)) return;
 
 	if ($RowsCount <= 0)
 	{
-	        $statustext = 'Пользователь скрыт';				     
-
-		$view = "ViewAdminUnionPage";
-		$viewmode = "";
+		CMmb::setResult('Пользователь скрыт', 'ViewAdminUnionPage');
 		$viewsubmode = "ReturnAfterError";
 
 	       return;
@@ -1221,9 +1143,7 @@ if (!isset($MyPHPScript)) return;
 
        if (!CanRejectUserUnion($Administrator, $UserUnionLogId, $UserId)) {  
 
-		$statustext = 'Нет прав на отклонение запроса';
-		$alert = 1;
-		return;
+		CMmb::setErrorMessage('Нет прав на отклонение запроса');
 	      return;
        }
        
@@ -1244,10 +1164,8 @@ if (!isset($MyPHPScript)) return;
 
        if (!CanApproveUserUnion($Administrator, $UserUnionLogId, $UserId)) {  
 
-		$statustext = 'Нет прав на подтверждение запроса';
-		$alert = 1;
+		CMmb::setErrorMessage('Нет прав на подтверждение запроса');
 		return;
-	      return;
        }
 
 
@@ -1297,9 +1215,7 @@ if (!isset($MyPHPScript)) return;
 
        if (!CanRollBackUserUnion($Administrator, $UserUnionLogId, $UserId)) {  
 
-		$statustext = 'Нет прав на откат объединения';
-		$alert = 1;
-		return;
+		CMmb::setErrorMessage('Нет прав на откат объединения');
 	      return;
        }
 
@@ -1382,15 +1298,13 @@ if (!isset($MyPHPScript)) return;
 
 	if ($pUserId <= 0)
 	{
-		$statustext = 'Пользователь не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Пользователь не найден');
 		return;
 	}
 
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Сессия не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Сессия не найдена');
 		return;
 	}
 
@@ -1420,8 +1334,7 @@ if (!isset($MyPHPScript)) return;
 
 	if ($pLinkRaidId <= 0)
 	{
-		$statustext = 'ММБ не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('ММБ не найден');
 		return;
 	}
 
@@ -1429,22 +1342,16 @@ if (!isset($MyPHPScript)) return;
 
 	if (empty($pLinkUrl) or $pLinkUrl == 'Адрес ссылки на впечатление')
 	{
-		$statustext = 'Не указан адрес ссылки';
-		$alert = 1;    
-		   $view = "ViewUserData";
-		   $viewmode = "";
-
+		$alert = 1;
+		CMmb::setResult('Не указан адрес ссылки', 'ViewUserData');
 		return;
 	}
 
 
 	if (empty($pLinkTypeId))
 	{
-		$statustext = 'Не указан тип ссылки';
-		$alert = 1;    
-		   $view = "ViewUserData";
-		   $viewmode = "";
-
+		$alert = 1;
+		CMmb::setResult('Не указан тип ссылки', 'ViewUserData');
 		return;
 	}
 
@@ -1467,9 +1374,7 @@ if (!isset($MyPHPScript)) return;
            mysql_free_result($rs);
 	   if ($Row['resultcount'] > 0)
 	   {
-   		$statustext = "Уже есть впечатление  с такми адресом.";
-	        $alert = 1; 
-                $viewsubmode = "ReturnAfterError"; 
+   		CMmb::setErrorSm('Уже есть впечатление  с такми адресом.');
                 return; 
 	   }
 	   
@@ -1485,9 +1390,7 @@ if (!isset($MyPHPScript)) return;
            mysql_free_result($rs);
 	   if ($Row['resultcount'] >= 3)
 	   {
-   		$statustext = "Уже есть 3 впечатления на этот ММБ.";
-	        $alert = 1; 
-                $viewsubmode = "ReturnAfterError"; 
+   		CMmb::setErrorSm('Уже есть 3 впечатления на этот ММБ.');
                 return; 
 	   }
 
@@ -1498,11 +1401,7 @@ if (!isset($MyPHPScript)) return;
               //    echo $sql;
 		 MySqlQuery($Sql);  
 
-	   
-	           $statustext = 'Добавлено новое впечатление';				     
-		   $view = "ViewUserData";
-		   $viewmode = "";
-
+		 CMmb::setResult('Добавлено новое впечатление', 'ViewUserData', "");
  }
 
    // ============ Удаление впечатления ====================================
@@ -1514,15 +1413,13 @@ if (!isset($MyPHPScript)) return;
 
 	if ($pUserId <= 0)
 	{
-		$statustext = 'Пользователь не найден';
-		$alert = 1;
+		CMmb::setErrorMessage('Пользователь не найден');
 		return;
 	}
 
 	if ($SessionId <= 0)
 	{
-		$statustext = 'Сессия не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Сессия не найдена');
 		return;
 	}
 
@@ -1546,8 +1443,7 @@ if (!isset($MyPHPScript)) return;
 
 	if ($pUserLinkId <= 0)
 	{
-		$statustext = 'Ссылка не найдена';
-		$alert = 1;
+		CMmb::setErrorMessage('Ссылка не найдена');
 		return;
 	}
 
@@ -1557,14 +1453,9 @@ if (!isset($MyPHPScript)) return;
     		 $Sql = "update  UserLinks set userlink_hide = 1 where userlink_id = ".$pUserLinkId;
 
               //    echo $sql;
-		 MySqlQuery($Sql);  
+		 MySqlQuery($Sql);
 
-	   
-	           $statustext = 'Впечатление удалено';				     
-		   $view = "ViewUserData";
-		   $viewmode = "";
-
-
+		 CMmb::setResult('Впечатление удалено', "ViewUserData", "");
    }  else {
    // если никаких действий не требуется
 
