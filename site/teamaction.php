@@ -375,7 +375,7 @@ elseif ($action == 'FindTeam')
 	$TeamNum = mmb_validateInt($_REQUEST, 'TeamNum', '');
 	if ($TeamNum === false)
 	{
-		CMmb::setResult('Не указан номер команды', '', $viewmode);      // не меняем $viewmode
+		CMmb::setShortResult('Не указан номер команды', '');
 		return;
 	}
 	$sql = "select team_id from Teams t
@@ -389,7 +389,7 @@ elseif ($action == 'FindTeam')
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 	if ($TeamId <= 0)
 	{
-		CMmb::setResult('Команда с номером '.(int)$TeamNum.' не найдена', '', $viewmode); // не меняем $viewmode
+		CMmb::setResult('Команда с номером '.(int)$TeamNum.' не найдена', '');
 		return;
 	}
 	$view = "ViewTeamData";

@@ -804,7 +804,7 @@ if (!isset($MyPHPScript)) return;
 	       return;
 	     }
 
-        CMmb::setResult("Пользователь $pUserName ключ $pUserId удален ", 'ViewRaidTeams', $viewmode);
+        CMmb::setShortResult("Пользователь $pUserName ключ $pUserId удален ", 'ViewRaidTeams');
    }
    // ============ Добавление устройства ====================================
    elseif ($action == 'AddDevice')
@@ -990,41 +990,32 @@ if (!isset($MyPHPScript)) return;
 	   
 	   
 		$sql = "select user_email, user_name, user_birthyear from  Users where user_id = ".$pUserId;
-		$rs = MySqlQuery($sql);  
-                $row = mysql_fetch_assoc($rs);
-                mysql_free_result($rs);
-     		$UserEmail = $row['user_email'];
+		$row = MySqlSingleRow($sql);
+                $UserEmail = $row['user_email'];
 		$UserName = $row['user_name'];
 
-		CMmb::setResult('Сообщение выслано.', '', $viewmode); // не меняем $viewmode
+		CMmb::setShortResult('Сообщение выслано.', '');
 
 	        $Sql = "select user_name from  Users where user_id = ".$UserId;
-		$Result = MySqlQuery($Sql);  
-		$Row = mysql_fetch_assoc($Result);
-		$SendMessageUserName = $Row['user_name'];
-		mysql_free_result($Result);
+		$SendMessageUserName = MySqlSingleValue($sql, 'user_name');
 
                 $pTextArr = explode('\r\n', $pText); 
 
-		$Msg = "Уважаемый пользователь ".$UserName."!\r\n";
-		$Msg =  $Msg."Через сайт ММБ пользователь ".$SendMessageUserName." отправил Вам следующее сообщение:\r\n\r\n";
+		$Msg = "Уважаемый пользователь $UserName!\r\n"
+			."Через сайт ММБ пользователь $SendMessageUserName отправил Вам следующее сообщение:\r\n\r\n";
 
                 foreach ($pTextArr as $NowString) {
- 
-                 
-		   $Msg =  $Msg.$NowString."\r\n";
-
+		   $Msg .= $NowString."\r\n";
 		}
-//		$Msg =  $Msg.$pText;
-		$Msg =  $Msg."\r\n"."Для ответа необходимо авторизоваться и открыть карточку пользователя  ".$SendMessageUserName."\r\n";
-		$Msg =  $Msg.$MyHttpLink.$MyLocation."?action=UserInfo&UserId=".$UserId."\r\n";
+
+//		$Msg .=  $pText;
+		$Msg .=  "\r\nДля ответа необходимо авторизоваться и открыть карточку пользователя $SendMessageUserName\r\n"
+			  .$MyHttpLink.$MyLocation."?action=UserInfo&UserId=$UserId\r\n";
 		
 			    
                 // Отправляем письмо
 		SendMail(trim($UserEmail), $Msg, $UserName);
-
-	   
-   }     
+   }
    // ============ Добавить пользхователя в объединение ====================================
    
    elseif ($action == "AddUserInUnion")  {

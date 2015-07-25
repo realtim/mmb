@@ -47,8 +47,16 @@ class CMmb
 
 	public static function setErrorSm($errMessage, $viewSubMode = 'ReturnAfterError')
 	{
-		global $view;
-		self::setError($errMessage, $view, $viewSubMode);       // don't change view
+		global $viewsubmode;
+		$viewsubmode = $viewSubMode;
+		self::setErrorMessage($errMessage);
+	}
+
+	public static function setShortResult($message, $newView)
+	{
+		global $statustext, $view;
+		$statustext = $message;
+		$view = $newView;
 	}
 
 	public static function setResult($message, $newView, $newViewMode = "")
@@ -134,6 +142,21 @@ class CMmb
  
  }
 
+function MySqlSingleRow($query)
+{
+	$result = MySqlQuery($query);
+	$row = mysql_fetch_assoc($result);
+	mysql_free_result($result);
+	return $row;
+}
+
+function MySqlSingleValue($query, $key)
+{
+	$result = MySqlQuery($query);
+	$row = mysql_fetch_assoc($result);
+	mysql_free_result($result);
+	return $row[$key];
+}
 
   function StartSession($UserId) {
 
@@ -927,8 +950,6 @@ send_mime_mail('Автор письма',
         // Данные берём из settings
 	include("settings.php");
     
-         $LogoLink = "";      
-
 	if (empty($raidid))
 	{
 	$sql = "select raid_logolink
@@ -965,26 +986,12 @@ send_mime_mail('Автор письма',
 	
 	}
 
-        $Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	$LogoLink = $Row['raid_logolink'];
-	mysql_free_result($Result);
-
-
-	 
-       	$ResultFile = MySqlQuery($sqlFile);  
-	$RowFile = mysql_fetch_assoc($ResultFile);
-        mysql_free_result($ResultFile);
-        $LogoFile =  trim($RowFile['raidfile_name']);
+        $LogoFile = trim(MySqlSingleValue($sqlFile, 'raidfile_name'));
 
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
-	{
-          $LogoLink = $MyStoreHttpLink.$LogoFile;
-        }
-        //  Конец получения ссылки на информацию о старте
+	        return $MyStoreHttpLink.$LogoFile;
 
-        return($LogoLink);
-
+        return MySqlSingleValue($sql, 'raid_logolink');
       }
       // Конец получения логотипа
 
