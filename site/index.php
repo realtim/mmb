@@ -153,10 +153,10 @@
  mysql_free_result($Result);
  ?>
 
- <script language="JavaScript">'
+ <script language="JavaScript">
  function ChangeLogo(raidid)
  {
- 	var links = {<?implode(",\r\n", $mmbLogos); ?>};
+ 	var links = {<? echo implode(",\r\n", $mmbLogos); ?>};
 
         document.mmblogo.src = links[raidid] || '';
  }
