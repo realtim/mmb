@@ -148,7 +148,7 @@
         //  Конец получения ссылки на информацию о старте
 
         //print('LogoImgArr['.$Row['raid_id'].'] = new Image();'."\r\n");
-	 $mmbLogos[] = "{$Row['raid_id']} : '$link''";
+	 $mmbLogos[] = "{$Row['raid_id']} : '$link'";
  }
  mysql_free_result($Result);
  ?>
