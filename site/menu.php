@@ -166,12 +166,12 @@ if (!isset($MyPHPScript)) return;
 		document.FindTeamForm.submit();
 	}
 
-
+/*
 	function RaidTeams()
 	{ 
 		document.FindTeamForm.action.value = "ViewRaidTeams";
 		document.FindTeamForm.submit();
-	}
+	}*/
 
 /*
     Перенёс функции в отдельную страницу    
@@ -336,7 +336,7 @@ if (!isset($MyPHPScript)) return;
 	{
 		print('<tr><td><a href = "javascript:NewTeam();" title = "Переход к форме регистрации новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n"); 
 	}
-	print('<tr><td><a href = "javascript:RaidTeams();" title = "Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n"); 
+	print('<tr><td><a href="?RaidId='.$RaidId.'" title="Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n");
         // Впечатываем ссылку на администрирование
 
         // Ввод/ПРавка марш-броска
@@ -371,7 +371,7 @@ if (!isset($MyPHPScript)) return;
 
 
         // Файлы
-        print('<tr><td><a href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Материалы</a></td></tr>'."\r\n"); 
+        print('<tr><td><a href="?files&RaidId='.$RaidId.'" title="Список файлов для выбранного выше ММБ">Материалы</a></td></tr>'."\r\n");
     
 
 
@@ -398,7 +398,7 @@ if (!isset($MyPHPScript)) return;
 
 
         // Впечатления
-        print('<tr><td><a href = "javascript:ViewRaidsUsersLinksPage();" title = "Список впечатлений для выбранного выше ММБ">Впечатления</a></td></tr>'."\r\n"); 
+        print('<tr><td><a href="?links&RaidId='.$RaidId.'" title="Список впечатлений для выбранного выше ММБ">Впечатления</a></td></tr>'."\r\n");
 
         // Все значки
         print('<tr><td><a href = "?badges" title = "Значки для всех ММБ">Все значки</a></td></tr>'."\r\n");

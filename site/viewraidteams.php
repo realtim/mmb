@@ -383,9 +383,9 @@ if (!isset($MyPHPScript)) return;
 */
 		print('</div>'."\r\n");
             	
-		print('<div align = "left" style = "margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
-		print('<a  style = "font-size:80%; margin-right: 15px;"  href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Файлы</a>'."\r\n");
-		print('<a  style = "font-size:80%; margin-right: 15px;" href = "javascript: JsonExport();">Json</a> '."\r\n");
+		print('<div align="left" style="margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
+		print('<a style="font-size:80%; margin-right: 15px;" href="?files&RaidId='.$RaidId.'" title="Список файлов для выбранного выше ММБ">Файлы</a>'."\r\n");
+		print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
 		print('</div>'."\r\n");
 
 

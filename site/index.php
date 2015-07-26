@@ -69,6 +69,12 @@
 			$_REQUEST['action'] = "ViewRankPage";
 		else if (isset($_GET['badges']))
 			$_REQUEST['action'] = "ViewAllBadgesPage";
+		else if (isset($_GET['files']))
+			$_REQUEST['action'] = "ViewRaidFilesPage";
+		else if (isset($_GET['links']))
+			$_REQUEST['action'] = "ViewUsersLinksPage";
+		else if (mmb_validateInt($_GET, 'RaidId', '') !== false)        // должно идти предпоследним
+			$_REQUEST['action'] = "ViewRaidTeams";
 		else
 			$_REQUEST['action'] = "";
 	}
@@ -156,8 +162,8 @@
  <script language="JavaScript">
  function ChangeLogo(raidid)
  {
-
-	var links = {<? echo implode(",\r\n", $mmbLogos); ?>};
+	var links = {
+<? echo implode(",\r\n", $mmbLogos); ?>};
 
 	if (console)
 		console.log("change logo called");
