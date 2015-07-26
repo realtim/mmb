@@ -123,20 +123,16 @@
 
  </head>
 
+
 <?
- 
- print('<script language="JavaScript">'."\n");
- print("\r\n");
- print('LogoImgArr=new Array();'."\n");
- print("\r\n");
- 
- $Sql = "select raid_logolink, raid_id from Raids"; 
+ $mmbLogos = array();
+ $Sql = "select raid_logolink, raid_id from Raids";
  $Result = MySqlQuery($Sql);
  while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
  { 
 
         $nextRaidId =  $Row['raid_id'];
-	$RaidLogoLink = $Row['raid_logolink'];
+	$link = $Row['raid_logolink'];
         // 08.12.2013 Ищем ссылку на логотип  
         $sqlFile = "select raidfile_name
 	     from RaidFiles
@@ -144,33 +140,30 @@
                    and filetype_id = 2 
 	     order by raidfile_id desc";
 	 
-       	$ResultFile = MySqlQuery($sqlFile);  
-	$RowFile = mysql_fetch_assoc($ResultFile);
-        mysql_free_result($ResultFile);
-        $LogoFile =  trim($RowFile['raidfile_name']);
+        $LogoFile = trim(MySqlSingleValue($sqlFile, 'raidfile_name'));
 
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
-	{
-          $RaidLogoLink = $MyStoreHttpLink.$LogoFile;
-        }
+                $link = $MyStoreHttpLink.$LogoFile;
+
         //  Конец получения ссылки на информацию о старте
 
-   print('LogoImgArr['.$Row['raid_id'].'] = new Image();'."\r\n");
-   print('LogoImgArr['.$Row['raid_id'].'].src = "'.$RaidLogoLink.'";'."\r\n");
+        //print('LogoImgArr['.$Row['raid_id'].'] = new Image();'."\r\n");
+	 $mmbLogos[] = "{$Row['raid_id']} : '$link''";
  }
  mysql_free_result($Result);
+ ?>
 
- print("\r\n");
- print('function ChangeLogo(raidid) '."\r\n");
- print('{document.mmblogo.src=LogoImgArr[raidid].src;}'."\r\n");
- print("\r\n");
- print('</script>'."\n");
-?>	
+ <script language="JavaScript">'
+ function ChangeLogo(raidid)
+ {
+ 	var links = {<?implode(",\r\n", $mmbLogos); ?>};
+
+        document.mmblogo.src = links[raidid] || '';
+ }
+</script>
 
 
  <body>
- 
-
 	<table  width = "100%"  border = "0" cellpadding = "0" cellspacing = "0" valign = "top" align = "left"  >
 	<tr>
 <!--

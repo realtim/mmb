@@ -158,6 +158,12 @@ function MySqlSingleValue($query, $key)
 	return $row[$key];
 }
 
+function getUserName($userId)
+{
+	$sql = "select user_name from  Users where user_id = $userId";
+	return MySqlSingleValue($sql, 'user_name');
+}
+
   function StartSession($UserId) {
 
       if ($UserId > 0) 
