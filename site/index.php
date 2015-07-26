@@ -148,7 +148,7 @@
         //  Конец получения ссылки на информацию о старте
 
         //print('LogoImgArr['.$Row['raid_id'].'] = new Image();'."\r\n");
-	 $mmbLogos[] = "{$Row['raid_id']} : '$link'";
+	 $mmbLogos[] = "                {$Row['raid_id']}: '$link'";
  }
  mysql_free_result($Result);
  ?>
@@ -156,9 +156,12 @@
  <script language="JavaScript">
  function ChangeLogo(raidid)
  {
- 	var links = {<? echo implode(",\r\n", $mmbLogos); ?>};
 
-        document.mmblogo.src = links[raidid] || '';
+	var links = {<? echo implode(",\r\n", $mmbLogos); ?>};
+
+	if (console)
+		console.log("change logo called");
+	document.mmblogo.src = links[raidid] || '';
  }
 </script>
 
