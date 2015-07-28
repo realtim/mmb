@@ -146,7 +146,7 @@
                    and filetype_id = 2 
 	     order by raidfile_id desc";
 	 
-        $LogoFile = trim(MySqlSingleValue($sqlFile, 'raidfile_name'));
+        $LogoFile = trim(CSql::singleValue($sqlFile, 'raidfile_name'));
 
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
                 $link = $MyStoreHttpLink.$LogoFile;

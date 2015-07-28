@@ -170,16 +170,16 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 		  $DistanceLink = '?RaidId='.$nextRaidId;
 		}
 	
-	        print('<a href="'.$DistanceLink.'">'.$DistanceName.'</a>: '.$DistanceCounters.' '.$DistanceData."\r\n");
+	        print('<a href="'.$DistanceLink.'">'."$DistanceName.</a>: $DistanceCounters $DistanceData\r\n");
 	
 	}
 	mysql_free_result($resultDistance);
-        print('</td>'."\r\n");
-	print('</tr>'."\r\n");
+        print("</td>\r\n");
+	print("</tr>\r\n");
 
 }
 mysql_free_result($resultRaids);
-print('</table>'."\r\n");
+print("</table>\r\n");
 //print('</body></html>'."\r\n");
 
 print('<hr>'."\r\n");

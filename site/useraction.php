@@ -31,7 +31,8 @@ if (!isset($MyPHPScript)) return;
         } 
          // конец первичной проверки входных данных
 
-        $Sql = "select user_id, user_name from  Users where trim(user_email) = trim('".$_POST['Login']."') and user_password = '".md5(trim($_POST['Password']))."'";
+        $Sql = "select user_id, user_name from  Users
+                where trim(user_email) = trim('".$_POST['Login']."') and user_password = '".md5(trim($_POST['Password']))."'";
 		
 	//echo $Sql;
 		
@@ -78,15 +79,11 @@ if (!isset($MyPHPScript)) return;
            $pUserName = $_POST['UserName'];
            $pUserCity = $_POST['UserCity'];
            $pUserBirthYear = $_POST['UserBirthYear'];
-           if (!isset($_POST['UserProhibitAdd'])) $_POST['UserProhibitAdd'] = "";
-           $pUserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
+           $pUserProhibitAdd = (mmb_validate($_POST, 'UserProhibitAdd', '') == 'on' ? 1 : 0);
            $pUserId = $_POST['UserId']; 
 
-           if (!isset($_POST['UserNewPassword'])) $_POST['UserNewPassword'] = "";
-           if (!isset($_POST['UserConfirmNewPassword'])) $_POST['UserConfirmNewPassword'] = "";
-
-           $pUserNewPassword = $_POST['UserNewPassword']; 
-           $pUserConfirmNewPassword = $_POST['UserConfirmNewPassword']; 
+           $pUserNewPassword = mmb_validate($_POST, 'UserNewPassword', '');
+           $pUserConfirmNewPassword = mmb_validate($_POST, 'UserConfirmNewPassword', '');
          
 	   if ($pUserCity == $UserCityPlaceHolder) { $pUserCity = ''; }  
 
@@ -134,10 +131,7 @@ if (!isset($MyPHPScript)) return;
            // Прверяем, что нет активной учетной записи с таким e-mail
            $sql = "select count(*) as resultcount from  Users where COALESCE(user_password, '') <> '' and trim(user_email) = '".$pUserEmail."' and user_id <> ".$pUserId;
       //     echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-           mysql_free_result($rs);
-	   if ($Row['resultcount'] > 0)
+	   if (CSql::singleValue($sql, 'resultcount') > 0)
 	   {
    		CMmb::setErrorSm('Уже есть пользователь с таким email.');
                 return; 
@@ -151,10 +145,7 @@ if (!isset($MyPHPScript)) return;
 			  and user_id <> ".$pUserId." 
 			  and userunionlog_id is null ";
            //echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-           mysql_free_result($rs);
-	   if ($Row['resultcount'] > 0)
+	   if (CSql::singleValue($sql, 'resultcount') > 0)
 	   {
    		CMmb::setErrorSm('Уже есть пользователь с таким именем и годом рождения.');
                 return; 
@@ -164,9 +155,7 @@ if (!isset($MyPHPScript)) return;
 	    // Если есть неактивная учетная запись - высылаем на почту ссылку с активацией
            $sql = "select user_id from  Users where COALESCE(user_password, '') = '' and trim(user_email) = '".$pUserEmail."' and user_id <> ".$pUserId;
            //echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-           mysql_free_result($rs);
+	   $Row = CSql::singleRow($sql);
 	   if ($Row['user_id'] > 0)
 	   {
                if ($action == 'AddUser')
@@ -181,7 +170,7 @@ if (!isset($MyPHPScript)) return;
 		   // Решил не писать здесь имя - м.б. и в адресе не надо
 		   $Msg = "Здравствуйте!\r\n\r\n";
 		   $Msg =  $Msg."Кто-то (возможно, это были Вы) пытается зарегистрировать учетную запись на сайте ММБ, связанную с этим адресом e-mail.".".\r\n";
-		   $Msg =  $Msg."Запись помечена, как неактивная, поэтому повтороно высылается ссылка для активации:".".\r\n";
+		   $Msg =  $Msg."Запись помечена, как неактивная, поэтому повторно высылается ссылка для активации:".".\r\n";
 		   $Msg =  $Msg."Для активации пользователя и получения пароля необходимо перейти по ссылке:".".\r\n";
 		   $Msg =  $Msg.$MyHttpLink.$MyPHPScript.'?action=sendpasswordafterrequest&changepasswordsessionid='.$ChangePasswordSessionId."\r\n\r\n";
 		   $Msg =  $Msg."Учетные записи без активации могут быть удалены.".".\r\n";
@@ -314,15 +303,9 @@ if (!isset($MyPHPScript)) return;
 		  }
 
 
-
 		 // Формируем сообщение
+		 $ChangeDataUserName = CSql::userName($UserId);
 
-	         $Sql = "select user_name from  Users where user_id = ".$UserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $ChangeDataUserName = $Row['user_name'];
-		 mysql_free_result($Result);
-		    
                  $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
 		 $Msg =  $Msg."В Вашей учетной записи произошли изменения - их можно увидеть в карточке пользователя."."\r\n";
 		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
@@ -376,10 +359,8 @@ if (!isset($MyPHPScript)) return;
 	     {
 	   
 		$sql = "select user_email, user_name, user_birthyear from  Users where user_id = ".$pUserId;
-		$rs = MySqlQuery($sql);  
-                $row = mysql_fetch_assoc($rs);
-                mysql_free_result($rs);
-     		$UserEmail = $row['user_email'];  
+		$row = CSql::singleRow($sql);
+     		$UserEmail = $row['user_email'];
 		$UserName = $row['user_name']; 
 
   		$NewPassword = GeneratePassword(6);
@@ -397,11 +378,7 @@ if (!isset($MyPHPScript)) return;
 		$statustext = 'Пароль '.$NewPassword.' выслан.';
                 $view = "";
 
-	        $Sql = "select user_name from  Users where user_id = ".$UserId;
-		$Result = MySqlQuery($Sql);  
-		$Row = mysql_fetch_assoc($Result);
-		$ChangeDataUserName = $Row['user_name'];
-		mysql_free_result($Result);
+		$ChangeDataUserName = CSql::userName($UserId);
 
 		$Msg = "Уважаемый пользователь ".$UserName."!\r\n\r\n";
 		$Msg =  $Msg."У Вашей учетной записи изменён пароль: ".$NewPassword."\r\n";
@@ -434,11 +411,7 @@ if (!isset($MyPHPScript)) return;
                    where user_hide = 0 and user_email = '".$pUserEmail."'";
 
          //  echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-	   mysql_free_result($rs); 
-	   $pUserId = $Row['user_id'];
- 	
+	   $pUserId = CSql::singleRow($sql, 'user_id');
 	   if ($pUserId <= 0)
 	   {
 	              CMmb::setErrorMessage('Пользователь с  e-mail '.$pUserEmail.' не найден ');
@@ -484,9 +457,7 @@ if (!isset($MyPHPScript)) return;
 
            $sql = "select user_id, user_email, user_name from  Users where user_sessionfornewpassword = trim('".$changepasswordsessionid."')";
          //  echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-	   mysql_free_result($rs); 
+	   $Row = CSql::singleRow($sql);
  	   $UserId = $Row['user_id'];
  	   $UserEmail = $Row['user_email'];
  	   $UserName = $Row['user_name'];
@@ -545,7 +516,7 @@ if (!isset($MyPHPScript)) return;
    } elseif ($action == "FindUser")  {
     // Действие вызывается поиском участника
 
-		if (isset($_POST['FindString'])) $FindString = $_POST['FindString']; else $FindString = "";
+                $FindString = mmb_validate($_POST, 'FindString', '');
                 if (trim($FindString) == '' or trim($FindString) == 'Часть ФИО')
                 {
                   $statustext = 'Не указан критерий поиска.';				     
@@ -571,15 +542,10 @@ if (!isset($MyPHPScript)) return;
                 
 		//echo 'sql '.$sql;
 		
-		$Result = MySqlQuery($sql);
-	        $Row = mysql_fetch_assoc($Result);
-		$RowCount = $Row['FindUsersCount'];
-	        mysql_free_result($Result);
-		
-		if ($RowCount > 0)
+		if (CSql::singleValue($sql, 'FindUsersCount') > 0)
 		{
 		   $view = "ViewUsers";
-		
+
 		} else {
 
                     $statustext = 'Не найдено пользователей, чьи ФИО содержат '.trim($FindString);				     
@@ -611,10 +577,8 @@ if (!isset($MyPHPScript)) return;
 			              and user_id = ".$pUserId."
 			        LIMIT 0,1 "  ;
 				
-			 $Result = MySqlQuery($Sql);  
-			 $Row = mysql_fetch_assoc($Result);
-	                 mysql_free_result($Result);
-			 $RaidModeratorId =  $Row['raidmoderator_id'];	
+			 $Row = CSql::singleRow($Sql);
+			 $RaidModeratorId =  $Row['raidmoderator_id'];
 			 $RaidModeratorHide =  $Row['raidmoderator_hide'];	
 	         
 		 $ModeratorAdd = 0;
@@ -647,11 +611,7 @@ if (!isset($MyPHPScript)) return;
 
              if ($ModeratorAdd)
 	     {
-	         $Sql = "select user_name from  Users where user_id = ".$UserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $ChangeDataUserName = $Row['user_name'];
-		 mysql_free_result($Result);
+		 $ChangeDataUserName = CSql::userName($UserId);
 
 	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
 		 $Result = MySqlQuery($Sql);  
@@ -698,11 +658,7 @@ if (!isset($MyPHPScript)) return;
 	          $Sql = "update RaidModerators set raidmoderator_hide = 1 where raidmoderator_id = ".$RaidModeratorId;
 		  MySqlQuery($Sql);  
 		  
-	         $Sql = "select user_name from  Users where user_id = ".$UserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $ChangeDataUserName = $Row['user_name'];
-		 mysql_free_result($Result);
+		 $ChangeDataUserName = CSql::userName($UserId);
 
 	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
 		 $Result = MySqlQuery($Sql);  
@@ -770,12 +726,9 @@ if (!isset($MyPHPScript)) return;
 		 on tu.team_id = t.team_id     
 		 where tu.teamuser_hide = 0 
 		       and t.team_hide = 0
-                       and tu.user_id = ".$pUserId; 
+                       and tu.user_id = $pUserId";
  
-	$Result = MySqlQuery($sql);
-        $RowsCount = mysql_num_rows($Result);
-
-	if ($RowsCount > 0)
+	if (CSql::rowCount($sql) > 0)
 	{
 		CMmb::setErrorMessage('Пользователь уже является участником по крайней мере одной команды');
 		return;
@@ -990,14 +943,13 @@ if (!isset($MyPHPScript)) return;
 	   
 	   
 		$sql = "select user_email, user_name, user_birthyear from  Users where user_id = ".$pUserId;
-		$row = MySqlSingleRow($sql);
+		$row = CSql::singleRow($sql);
                 $UserEmail = $row['user_email'];
 		$UserName = $row['user_name'];
 
 		CMmb::setShortResult('Сообщение выслано.', '');
 
-	        $Sql = "select user_name from  Users where user_id = ".$UserId;
-		$SendMessageUserName = MySqlSingleValue($sql, 'user_name');
+		$SendMessageUserName = CSql::userName($UserId);
 
                 $pTextArr = explode('\r\n', $pText); 
 
@@ -1033,7 +985,6 @@ if (!isset($MyPHPScript)) return;
 	}
 
         $pUserId = $_POST['UserId']; 
-       
 
         if ($UserId == $pUserId) {
 		CMmb::setErrorMessage('Нельзя объединить с самим собой');
@@ -1046,13 +997,9 @@ if (!isset($MyPHPScript)) return;
 	         from UserUnionLogs 
 		 where union_status <> 0
 		       and union_status <> 3
-		       and user_id = ".$UserId; 
+		       and user_id = $UserId";
 
- 
-	$Result = MySqlQuery($sql);
-        $RowsCount = mysql_num_rows($Result);
-
-	if ($RowsCount > 0)
+	if (CSql::rowCount($sql) > 0)
 	{
 		CMmb::setResult('Пользователь уже есть в объединении', 'ViewUserUnionPage', '');
 		$viewsubmode = "ReturnAfterError";
@@ -1068,12 +1015,7 @@ if (!isset($MyPHPScript)) return;
 		 where user_hide = 0 
 		       and user_id = ".$pUserId; 
 
-
- 
-	$Result = MySqlQuery($sql);
-        $RowsCount = mysql_num_rows($Result);
-
-	if ($RowsCount <= 0)
+	if (CSql::rowCount($sql) <= 0)
 	{
 		CMmb::setResult('Пользователь скрыт', 'ViewAdminUnionPage');
 		$viewsubmode = "ReturnAfterError";
@@ -1089,32 +1031,21 @@ if (!isset($MyPHPScript)) return;
 			 
         if ($UnionRequestId)
         {
-
-                 $statustext = 'Создан запрос на объединение пользователей';				     
-
 	         $Sql = "select user_name, user_email, user_importattempt  from  Users where user_id = ".$pUserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
+		 $Row = CSql::singleRow($Sql);
 		 $pUserName = $Row['user_name'];
 		 $pUserEmail = $Row['user_email'];
 		 $Import = $Row['user_importattempt'];
-		 mysql_free_result($Result);
 
                  // Проверяем, что пользовтельский email не является автогенерированным
                  if (substr(trim($pUserEmail), -7) <> '@mmb.ru' && !empty($pUserName))
 		 {
+			$pRequestUserName = CSql::userName($UserId);
 
-			$Sql = "select user_name from  Users where user_id = ".$UserId;
-			$Result = MySqlQuery($Sql);  
-			$Row = mysql_fetch_assoc($Result);
-			$pRequestUserName = $Row['user_name'];
-			mysql_free_result($Result);
-
-
-			$Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
-			$Msg =  $Msg."Сделан запрос на объединения Вас с пользователем ".$pRequestUserName."\r\n";
-			$Msg =  $Msg."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил объединение, а Ваша учетная запись скрыта"."\r\n";
-			$Msg =  $Msg."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на старницу 'Связь пользователей' и отклонить запрос."."\r\n\r\n";
+			$Msg = "Уважаемый пользователь $pUserName!\r\n\r\n"
+			      ."Сделан запрос на объединения Вас с пользователем $pRequestUserName\r\n"
+			      ."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил объединение, а Ваша учетная запись скрыта"."\r\n"
+			      ."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на старницу 'Связь пользователей' и отклонить запрос."."\r\n\r\n";
 		 	   
 			// Отправляем письмо
 			SendMail(trim($pUserEmail), $Msg, $pUserName);
@@ -1122,10 +1053,9 @@ if (!isset($MyPHPScript)) return;
 		// Конец проверки, что пользователь не импортирован
 
            }
-	   // Конец проверки на успешное добавление запроса
-	   $view = "ViewUserUnionPage";
-	   $viewmode = "";
 
+	   // Конец проверки на успешное добавление запроса
+	   CMmb::setResult('Создан запрос на объединение пользователей', 'ViewUserUnionPage', '');
 
   } elseif ($action == "RejectUnion")  {
 	// Действие вызывается нажатием кнопки "Отклонить" 
@@ -1183,8 +1113,8 @@ if (!isset($MyPHPScript)) return;
 	MySqlQuery($sql);
 	
        // Меняем ссылку в комнадах 
-        $sql = " update TeamUsers set user_id = ". $pUserId.", userunionlog_id = ".$UserUnionLogId." 
-		 where user_id = ". $pUserParentId;
+        $sql = " update TeamUsers set user_id = $pUserId, userunionlog_id = $UserUnionLogId
+		 where user_id = $pUserParentId";
 	
 	MySqlQuery($sql);
          
@@ -1202,53 +1132,33 @@ if (!isset($MyPHPScript)) return;
   } elseif ($action == "RollBackUnion")  {
 
 
-       $UserUnionLogId = $_POST['UserUnionLogId']; 
+	$UserUnionLogId = $_POST['UserUnionLogId'];
 
-       if (!CanRollBackUserUnion($Administrator, $UserUnionLogId, $UserId)) {  
+	if (!CanRollBackUserUnion($Administrator, $UserUnionLogId, $UserId)) {
 
 		CMmb::setErrorMessage('Нет прав на откат объединения');
 	      return;
-       }
+	}
 
 
-	         $Sql = "select user_id, user_parentid  from  UserUnionLogs where userunionlog_id = ".$UserUnionLogId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $pUserId = $Row['user_id'];
-		 $pUserParentId = $Row['user_parentid'];
-		 mysql_free_result($Result);
+	$Sql = "select user_id, user_parentid  from  UserUnionLogs where userunionlog_id = ".$UserUnionLogId;
+	$Row = CSql::singleRow($Sql);
+	$pUserId = $Row['user_id'];
+	$pUserParentId = $Row['user_parentid'];
 
 
-           // Проверяем что новый пользователь не успел переименоваться в старого
-	   $sql = "select user_name
-	           from  Users 
-		   where  user_id = ".$pUserId;
-           //echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-           $UserName = $Row['user_name'];
-	   mysql_free_result($rs);
+	// Проверяем что новый пользователь не успел переименоваться в старого
+	$UserName = CSql::userName($pUserId);
+	$ParentUserName = CSql::userName($pUserParentId);
 
-           // Проверяем что новый пользователь не успел переименоваться в старого
-	   $sql = "select user_name
-	           from  Users 
-		   where  user_id = ".$pUserParentId;
-           //echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-           $ParentUserName = $Row['user_name'];
-	   mysql_free_result($rs);
-
-           // если успел - нового переименовываем
-           if (trim($UserName) == trim($ParentUserName)) {
-	   
-	        $sql = " update Users set user_name =  '".trim($UserName).'_'.$UserUnionLogId."'
-			 where user_id = ".$pUserId;
-	
-	//echo $sql;	       
+	// если успел - нового переименовываем
+	if (trim($UserName) == trim($ParentUserName)) {
+	        $sql = " update Users set user_name =  '".trim($UserName)."_$UserUnionLogId'
+			 where user_id = $pUserId";
+	//echo $sql;
 		MySqlQuery($sql);
 	   
-	   }
+	}
 
        // Перебрасываем ссылки, ставим признак скрытия пользователя
 
@@ -1257,20 +1167,20 @@ if (!isset($MyPHPScript)) return;
        // Ключ журнала нужен исключительно для возможности потом переименовать пользователя - сделан уникальный ключ, который не допускаетодинаковое ФИО и год, но теперь я туда добавил ещё поле userunionlog_id
        // Тонкость в том, что при отмене объеддинения наод проверять, что польщзователь не свопадает, иначе будет ошибка ключа
         $sql = " update Users set user_hide = 0, userunionlog_id = NULL 
-		 where userunionlog_id = ".$UserUnionLogId;
+		 where userunionlog_id = $UserUnionLogId";
 		       
 	MySqlQuery($sql);
 	
        // Меняем ссылку в комнадах 
-        $sql = " update TeamUsers set user_id = ". $pUserParentId.", userunionlog_id = NULL 
-		 where userunionlog_id = ".$UserUnionLogId;
+        $sql = " update TeamUsers set user_id = $pUserParentId, userunionlog_id = NULL
+		 where userunionlog_id = $UserUnionLogId";
 	
 	MySqlQuery($sql);
          
 
        // Меняем статус в журнале 
        $sql = " update UserUnionLogs set union_status = 3 
-			 where userunionlog_id = ".$UserUnionLogId;
+			 where userunionlog_id = $UserUnionLogId";
 		       
 
 	MySqlQuery($sql);
@@ -1357,15 +1267,13 @@ if (!isset($MyPHPScript)) return;
 	           from  UserLinks 
 	           where trim(userlink_url) = '".trim($pLinkUrl)."'
 		         and userlink_hide = 0
-
 		   ";
+
       //     echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-           mysql_free_result($rs);
-	   if ($Row['resultcount'] > 0)
+
+	   if (CSql::singleValue($sql, 'resultcount') > 0)
 	   {
-   		CMmb::setErrorSm('Уже есть впечатление  с такми адресом.');
+   		CMmb::setErrorSm('Уже есть впечатление  с таким адресом.');
                 return; 
 	   }
 	   
@@ -1376,10 +1284,8 @@ if (!isset($MyPHPScript)) return;
 		     and userlink_hide = 0
 		     and user_id = ".$pUserId;
            //echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-           mysql_free_result($rs);
-	   if ($Row['resultcount'] >= 3)
+
+	   if (CSql::singleValue($sql, 'resultcount') >= 3)
 	   {
    		CMmb::setErrorSm('Уже есть 3 впечатления на этот ММБ.');
                 return; 

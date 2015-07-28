@@ -142,26 +142,37 @@ class CMmb
  
  }
 
-function MySqlSingleRow($query)
-{
-	$result = MySqlQuery($query);
-	$row = mysql_fetch_assoc($result);
-	mysql_free_result($result);
-	return $row;
-}
 
-function MySqlSingleValue($query, $key)
-{
-	$result = MySqlQuery($query);
-	$row = mysql_fetch_assoc($result);
-	mysql_free_result($result);
-	return $row[$key];
-}
+class CSql {
+	public static function singleRow($query)
+	{
+		$result = MySqlQuery($query);
+		$row = mysql_fetch_assoc($result);
+		mysql_free_result($result);
+		return $row;
+	}
 
-function getUserName($userId)
-{
-	$sql = "select user_name from  Users where user_id = $userId";
-	return MySqlSingleValue($sql, 'user_name');
+	public static function singleValue($query, $key)
+	{
+		$result = MySqlQuery($query);
+		$row = mysql_fetch_assoc($result);
+		mysql_free_result($result);
+		return $row[$key];
+	}
+
+	public static function rowCount($query)
+	{
+		$result = MySqlQuery($query);
+		$rn = mysql_num_rows($result);
+		mysql_free_result($result);
+		return $rn;
+	}
+
+	public static function userName($userId)
+	{
+		$sql = "select user_name from Users where user_id = $userId";
+		return self::singleValue($sql, 'user_name');
+	}
 }
 
   function StartSession($UserId) {
@@ -992,12 +1003,12 @@ send_mime_mail('Автор письма',
 	
 	}
 
-        $LogoFile = trim(MySqlSingleValue($sqlFile, 'raidfile_name'));
+        $LogoFile = trim(CSql::singleValue($sqlFile, 'raidfile_name'));
 
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
 	        return $MyStoreHttpLink.$LogoFile;
 
-        return MySqlSingleValue($sql, 'raid_logolink');
+        return CSql::singleValue($sql, 'raid_logolink');
       }
       // Конец получения логотипа
 
