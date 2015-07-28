@@ -169,7 +169,6 @@ if ($AllowEdit == 1)
 
 	// Выводим начало формы с точкой
 	print('<form name="ScanPointForm" action="'.$MyPHPScript.'" method="post"  onSubmit="'.$OnSubmitFunction.'">'."\n");
-	print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 	print('<input type="hidden" name="action" value="">'."\n");
 	print('<input type="hidden" name="view" value="ViewLevelPoints">'."\n");
 	print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");

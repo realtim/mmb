@@ -124,7 +124,6 @@ if (!isset($MyPHPScript)) return;
 		$Row = mysql_fetch_assoc($Result);
 		$UserName = $Row['user_name'];
                 print('<form  name = "UserLoginForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
-                print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
                 print('<input type = "hidden" name = "action" value = "">'."\r\n"); 
                 print('<input type = "hidden" name = "UserId" value = "">'."\r\n"); 
 		print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
@@ -167,12 +166,12 @@ if (!isset($MyPHPScript)) return;
 		document.FindTeamForm.submit();
 	}
 
-
+/*
 	function RaidTeams()
 	{ 
 		document.FindTeamForm.action.value = "ViewRaidTeams";
 		document.FindTeamForm.submit();
-	}
+	}*/
 
 /*
     Перенёс функции в отдельную страницу    
@@ -284,13 +283,6 @@ if (!isset($MyPHPScript)) return;
 	}
 
 
-	function ViewRankPage()
-	{ 
-		document.FindTeamForm.action.value = "ViewRankPage";
-		document.FindTeamForm.submit();
-	}
-
-
 	function ViewRaidsUsersLinksPage()
 	{ 
 		document.FindTeamForm.action.value = "ViewUsersLinksPage";
@@ -312,13 +304,9 @@ if (!isset($MyPHPScript)) return;
 	// выводим окно для поиска команды 
 	print('<form  name = "FindTeamForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "return ValidateFindTeamForm();">'."\r\n");
 
-	if ($UserId > 0)
-	{
-                print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
-	}                
-	print('<input type = "hidden" name = "action" value = "FindTeam">'."\r\n"); 
+	print('<input type = "hidden" name = "action" value = "FindTeam">'."\r\n");
 	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
-        // Эта переменная нужна только тогда, когда из спсика марш-бросков выбирают дистанцию
+        // Эта переменная нужна только тогда, когда из спиcка марш-бросков выбирают дистанцию
 	print('<input type = "hidden" name = "DistanceId" value = "0">'."\r\n");
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 	print('<tr><td class = "input">ММБ'."\r\n"); 
@@ -348,7 +336,7 @@ if (!isset($MyPHPScript)) return;
 	{
 		print('<tr><td><a href = "javascript:NewTeam();" title = "Переход к форме регистрации новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n"); 
 	}
-	print('<tr><td><a href = "javascript:RaidTeams();" title = "Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n"); 
+	print('<tr><td><a href="?RaidId='.$RaidId.'" title="Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n");
         // Впечатываем ссылку на администрирование
 
         // Ввод/ПРавка марш-броска
@@ -383,7 +371,7 @@ if (!isset($MyPHPScript)) return;
 
 
         // Файлы
-        print('<tr><td><a href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Материалы</a></td></tr>'."\r\n"); 
+        print('<tr><td><a href="?files&RaidId='.$RaidId.'" title="Список файлов для выбранного выше ММБ">Материалы</a></td></tr>'."\r\n");
     
 
 
@@ -410,13 +398,13 @@ if (!isset($MyPHPScript)) return;
 
 
         // Впечатления
-        print('<tr><td><a href = "javascript:ViewRaidsUsersLinksPage();" title = "Список впечатлений для выбранного выше ММБ">Впечатления</a></td></tr>'."\r\n"); 
+        print('<tr><td><a href="?links&RaidId='.$RaidId.'" title="Список впечатлений для выбранного выше ММБ">Впечатления</a></td></tr>'."\r\n");
 
         // Все значки
-        print('<tr><td><a href = "javascript:ViewAllRaidsBadgesPage();" title = "Значки для всех ММБ">Все значки</a></td></tr>'."\r\n"); 
+        print('<tr><td><a href = "?badges" title = "Значки для всех ММБ">Все значки</a></td></tr>'."\r\n");
 
 
-        print('<tr><td><a href = "javascript:ViewRankPage();" title = "Страница рейтинга пользователей">Рейтинг</a></td></tr>'."\r\n"); 
+        print('<tr><td><a href="?rating" title = "Страница рейтинга пользователей">Рейтинг</a></td></tr>'."\r\n");
         
 	//print('<tr><td class = "input">Поиск:</td></tr>'."\r\n"); 
 	print('<tr><td style = "padding-top: 15px;"><input  type="text" name="TeamNum" style = "width: 125px;" value="Номер команды" tabindex = "206"  title = "Будет выведена карточка команды с указанным номером для выбранного выше ММБ"
@@ -428,10 +416,6 @@ if (!isset($MyPHPScript)) return;
 	print('</form>'."\r\n");
 	// Поиск участника
 	print('<form  name = "FindUserForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "return ValidateFindUserForm();">'."\r\n");
-	if ($UserId > 0)
-	{
-                print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
-	}                
 	print('<input type = "hidden" name = "action" value = "FindUser">'."\r\n"); 
 	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
 	print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
@@ -455,7 +439,6 @@ if (!isset($MyPHPScript)) return;
         if ($Administrator || $Moderator)
 	{
 	  print('<form  name = "AdminServiceForm"  action = "'.$MyPHPScript.'" method = "post" onsubmit = "return true;">'."\r\n");
-	  print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n"); 
 	  print('<input type = "hidden" name = "action" value = "">'."\r\n"); 
 	  print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
 	  print('<input type = "hidden" name = "RaidId" value = "0">'."\r\n");

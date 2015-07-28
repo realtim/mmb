@@ -12,8 +12,7 @@ if ($viewmode == 'Add')
 {
 	if (($RaidId <= 0) || ($UserId <= 0))
 	{
-		$statustext = 'Для регистрации новой команды обязателен идентификатор пользователя и ММБ';
-		$alert = 1;
+		CMmb::setErrorMessage('Для регистрации новой команды обязателен идентификатор пользователя и ММБ');
 		return;
 	}
 
@@ -217,7 +216,6 @@ else $AllowViewResults = 0;
 <?php
 // Выводим начало формы с командой
 print('<form name="TeamDataForm" action="'.$MyPHPScript.'#'.$TeamNum.'" method="post" onSubmit="'.$OnSubmitFunction.'">'."\n");
-print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 print('<input type="hidden" name="action" value="">'."\n");
 print('<input type="hidden" name="view" value="ViewRaidTeams">'."\n");
 //print('<input type="hidden" name="view" value="'.(($viewmode == "Add") ? 'ViewRaidTeams' : 'ViewTeamData').'">'."\n");
@@ -398,7 +396,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	}
 
 	// ФИО и год рождения участника
-	print('<a href="javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a> '.$Row['user_birthyear']."\n");
+	print('<a href="?UserId='.$Row['user_id'].'">'.$Row['user_name'].'</a> '.$Row['user_birthyear']."\n");
  
         // Отметка невыходна на старт в предыдущем ММБ                          
         if ($Row['teamuser_notstartraidid'] > 0) {

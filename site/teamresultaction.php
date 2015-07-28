@@ -6,6 +6,21 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+
+function teamAddError($error)
+{
+	global $view, $viewmode;
+	CMmb::setError($error, $view, 'ReturnAfterErrorTlp');
+	$viewmode = "AddTlp";
+}
+
+function teamEditError($error)
+{
+	global $view, $viewmode;
+	CMmb::setError($error, $view, 'ReturnAfterErrorTlp');
+	$viewmode = "EditTlp";
+}
+
 //echo 'action '.$action;
 
 // =============== Изменение/добавление результатов команды ===================
@@ -181,8 +196,7 @@ elseif ($action == 'AddTlp')
 	// Общая проверка возможности редактирования
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на ввод  результата для точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на ввод  результата для точки');
 		return;
 	}
 
@@ -200,10 +214,7 @@ elseif ($action == 'AddTlp')
          // тут по-хорошему нужны проверки
 	if ($pTeamId <= 0 or $pLevelPointId <= 0)
 	{
-		$statustext = 'Не определён ключ команды или ключ точки для результата.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterErrorTlp";
-		$viewmode = "AddTlp";
+		teamAddError('Не определён ключ команды или ключ точки для результата.');
 		//$viewmode = "EditTlp";
 		return;
 	}
@@ -236,10 +247,7 @@ elseif ($action == 'AddTlp')
 
 	   if  ($AlreadyExists > 0)
 	   {
-			$statustext = 'Результаты по точке уже есть.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterErrorTlp";
-			$viewmode = "AddTlp";
+			teamAddError('Результаты по точке уже есть.');
 			return;
            }
 
@@ -259,10 +267,7 @@ elseif ($action == 'AddTlp')
 		
 		if ($TeamLevelPointId <= 0)
 		{
-			$statustext = 'Ошибка записи нового результата для точки.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterErrorTlp";
-			$viewmode = "AddTlp";
+			teamAddError('Ошибка записи нового результата для точки.');
 			return;
 		}
 	
@@ -294,8 +299,7 @@ elseif ($action == 'ChangeTlp')
 {
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку результата для точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку результата для точки');
 		return;
 	}
 
@@ -306,10 +310,7 @@ elseif ($action == 'ChangeTlp')
 
 	if ($pTeamLevelPointId <= 0)
 	{
-		$statustext = 'Не определён ключ результата для точки.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterErrorTlp";
-		$viewmode = "EditTlp";
+		teamEditError('Не определён ключ результата для точки.');
 		return;
 	}
 
@@ -336,10 +337,7 @@ elseif ($action == 'ChangeTlp')
 	
 	if ($pTeamId <= 0 or $pLevelPointId <= 0)
 	{
-		$statustext = 'Не определён ключ команды или ключ точки для результата.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterErrorTlp";
-		$viewmode = "EditTlp";
+		teamEditError('Не определён ключ команды или ключ точки для результата.');
 		return;
 	}
 
@@ -359,9 +357,7 @@ elseif ($action == 'ChangeTlp')
 
 	   if  ($AlreadyExists > 0)
 	   {
-			$statustext = 'Результаты по точке уже есть.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterErrorTlp";
+			CMmb::setErrorSm('Результаты по точке уже есть.', 'ReturnAfterErrorTlp');
 			return;
            }
 
@@ -399,8 +395,7 @@ elseif ($action == 'HideTlp')
 {
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку результата для точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку результата для точки');
 		return;
 	}
 
@@ -410,10 +405,7 @@ elseif ($action == 'HideTlp')
 	
 	if ($pTeamId <= 0)
 	{
-		$statustext = 'Не определён ключ команды.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterErrorTlp";
-		$viewmode = "EditTlp";
+		teamEditError('Не определён ключ команды.');
 		return;
 	}
 
@@ -421,10 +413,7 @@ elseif ($action == 'HideTlp')
 
 	if ($pTeamLevelPointId <= 0)
 	{
-		$statustext = 'Не определён ключ результата для точки.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterErrorTlp";
-		$viewmode = "EditTlp";
+		teamEditError('Не определён ключ результата для точки.');
 		return;
 	}
 	

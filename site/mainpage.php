@@ -99,7 +99,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 
  
 	//class = "yellow"
-        print('<td><a href = "javascript:document.FindTeamForm.RaidId.value='.$nextRaidId.';RaidTeams();">'.$RaidName.'</a></td>'."\r\n");
+        print('<td><a href = "?RaidId='.$nextRaidId.'">'.$RaidName.'</a></td>'."\r\n");
 
 	print('<td><a href = "'.$RaidRulesLink.'" target = "_blank">'.$RaidPeriod.'</td>'."\r\n");
         
@@ -167,10 +167,10 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	        if (trim($DistanceLink) == '')
 		{
 		  //$DistanceLink = '?action=ViewRaidTeams&RaidId='.$nextRaidId;
-		  $DistanceLink = 'javascript:document.FindTeamForm.RaidId.value='.$nextRaidId.';RaidTeams()';
+		  $DistanceLink = '?RaidId='.$nextRaidId;
 		}
 	
-	        print('<a href = "'.$DistanceLink.'">'.$DistanceName.'</a>: '.$DistanceCounters.' '.$DistanceData."\r\n");
+	        print('<a href="'.$DistanceLink.'">'.$DistanceName.'</a>: '.$DistanceCounters.' '.$DistanceData."\r\n");
 	
 	}
 	mysql_free_result($resultDistance);

@@ -185,13 +185,13 @@ if (!isset($MyPHPScript)) return;
 	// 
 
 	// Функция просмотра данных о команде
-	function ViewTeamInfo(teamid, raidid)
+	/*function ViewTeamInfo(teamid, raidid)
 	{ 
 		document.UserTeamsForm.TeamId.value = teamid;
 		document.UserTeamsForm.RaidId.value = raidid;
 		document.UserTeamsForm.action.value = "TeamInfo";
 		document.UserTeamsForm.submit();
-	}
+	}*/
 
 
 	// Функция создания модератора
@@ -270,7 +270,6 @@ if (!isset($MyPHPScript)) return;
          // выводим форму с данными пользователя
 	 
 	 print('<form  name = "UserDataForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "'.$OnSubmitFunction.'">'."\r\n");
-         print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\r\n");
          print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\r\n");
          print('<input type = "hidden" name = "action" value = "">'."\r\n");
 
@@ -406,8 +405,7 @@ if (!isset($MyPHPScript)) return;
           print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	  print('<input type = "hidden" name = "RaidId" value = "0">'."\n");
 	  print('<input type = "hidden" name = "TeamId" value = "0">'."\n");
- 	  print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-	  
+
 		
                  
 		$sql = "select tu.teamuser_id, t.team_name, t.team_id, 
@@ -446,7 +444,7 @@ if (!isset($MyPHPScript)) return;
 			if ($TeamPlace > 0 and $LevelPointId > 0) $TeamUserOff = ", не явка в точку <b>".$Row['levelpoint_name']."</b>";
 
 
-		  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].','.$Row['raid_id'].');"  title = "Переход к карточке команды">'.$Row['team_name'].'</a> 
+		  print('<div align="left" style="padding-top: 5px;"><a href="?TeamId='.$Row['team_id'].'&RaidId='.$Row['raid_id'].'"  title = "Переход к карточке команды">'.$Row['team_name'].'</a>
 		         N '.$Row['team_num'].$TeamPlaceResult.$TeamUserOff.' ('.$Row['teamuser_rank'].'), дистанция: '.$Row['distance_name'].', ммб: '.$Row['raid_name'].'</div>'."\r\n");
 		}
 
@@ -461,8 +459,7 @@ if (!isset($MyPHPScript)) return;
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
 		print('<input type = "hidden" name = "DeviceId" value = "0">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-	  
+
 		
                  
 		$sql = "select d.device_id, d.device_name
@@ -503,8 +500,7 @@ if (!isset($MyPHPScript)) return;
 		print('<form  name = "UserSendMessageForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-	  
+
 
                 $TabIndex = 1;
 	        $DisabledText = '';
@@ -528,8 +524,7 @@ if (!isset($MyPHPScript)) return;
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
 		print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\n");
 		print('<input type = "hidden" name = "UserLinkId" value = "0">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-	  
+
 		
                  
 		$sql = "select ul.userlink_id, ul.userlink_name, lt.linktype_name,

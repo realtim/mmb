@@ -4,6 +4,70 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+class CMmb
+{
+	const SessionTimeout = 20; // minutes
+	const CookieName = "mmb_session";
+
+	public static function setSessionCookie($sessionId)
+	{
+		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/');
+	}
+
+	public static function clearSessionCookie()
+	{
+		setcookie(CMmb::CookieName, "", time() - 24 * 3600, '/');    // a day ago
+	}
+
+
+	public static function setMessage($message)
+	{
+		global $statustext, $alert;
+		$statustext = $message;
+		$alert = 0;
+	}
+
+	public static function setErrorMessage($errMessage)
+	{
+		global $statustext, $alert;
+		$statustext = $errMessage;
+		$alert = 1;
+	}
+
+	public static function setError($errMessage, $newView, $viewSubMode)
+	{
+		global $statustext, $view, $viewsubmode, $alert;
+		$statustext = $errMessage;
+
+		$view = $newView;
+		$viewsubmode = $viewSubMode;
+
+		$alert = 1;
+	}
+
+	public static function setErrorSm($errMessage, $viewSubMode = 'ReturnAfterError')
+	{
+		global $viewsubmode;
+		$viewsubmode = $viewSubMode;
+		self::setErrorMessage($errMessage);
+	}
+
+	public static function setShortResult($message, $newView)
+	{
+		global $statustext, $view;
+		$statustext = $message;
+		$view = $newView;
+	}
+
+	public static function setResult($message, $newView, $newViewMode = "")
+	{
+		global $statustext, $view, $viewmode;
+		$statustext = $message;
+		$view = $newView;
+		$viewmode = $newViewMode;
+	}
+};
+
 
  function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "") {
  // Можно передавать соединение по ссылке &$ConnectionId  MySqlQuery($SqlString,&$ConnectionId, $SessionId,$NonSecure);
@@ -78,6 +142,27 @@ if (!isset($MyPHPScript)) return;
  
  }
 
+function MySqlSingleRow($query)
+{
+	$result = MySqlQuery($query);
+	$row = mysql_fetch_assoc($result);
+	mysql_free_result($result);
+	return $row;
+}
+
+function MySqlSingleValue($query, $key)
+{
+	$result = MySqlQuery($query);
+	$row = mysql_fetch_assoc($result);
+	mysql_free_result($result);
+	return $row[$key];
+}
+
+function getUserName($userId)
+{
+	$sql = "select user_name from  Users where user_id = $userId";
+	return MySqlSingleValue($sql, 'user_name');
+}
 
   function StartSession($UserId) {
 
@@ -87,11 +172,14 @@ if (!isset($MyPHPScript)) return;
 	      $Result = MySqlQuery("insert into  Sessions (session_id, user_id, session_starttime, session_updatetime, session_status)
 	                            values ('".$SessionId ."',".$UserId.", now(), now(), 0)");
 
-              // Записываем время послденей авторизации
+              // Записываем время последней авторизации
 	      $Result = MySqlQuery("update Users set user_lastauthorizationdt = now()
 	                            where user_id = ".$UserId);
+
+	      CMmb::setSessionCookie($SessionId);
       }  else {
           $SessionId = '';
+	  CMmb::clearSessionCookie();
       }   
 
       return $SessionId;
@@ -119,15 +207,13 @@ if (!isset($MyPHPScript)) return;
 
   // Получаем данные сессии
   function GetSession($SessionId) {
-
-
       if (empty($SessionId))
       {
         return 0;
       } 
 
       // Закрываем все сессии, которые неактивны 20 минут
-      CloseInactiveSessions(20);
+      CloseInactiveSessions(CMmb::SessionTimeout);
 
       // Очищаем таблицу
       ClearSessions();
@@ -148,7 +234,10 @@ if (!isset($MyPHPScript)) return;
       {
        $Result = MySqlQuery("update  Sessions set session_updatetime = now()
 			    where session_status = 0 and session_id = '".$SessionId ."'");
+	      CMmb::setSessionCookie($SessionId);
       }
+      else
+	      CMmb::clearSessionCookie();
       
       return $UserId;
 
@@ -168,6 +257,7 @@ if (!isset($MyPHPScript)) return;
         // м.б. потом ещё нужно будет закрывать открытые соединения с БД
        $Result = MySqlQuery("update  Sessions set session_updatetime = now(), session_status = ".$CloseStatus."
 			    where session_status = 0 and session_id = '".$SessionId ."'");
+	  CMmb::clearSessionCookie();
 
       return;
    }
@@ -866,8 +956,6 @@ send_mime_mail('Автор письма',
         // Данные берём из settings
 	include("settings.php");
     
-         $LogoLink = "";      
-
 	if (empty($raidid))
 	{
 	$sql = "select raid_logolink
@@ -904,26 +992,12 @@ send_mime_mail('Автор письма',
 	
 	}
 
-        $Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	$LogoLink = $Row['raid_logolink'];
-	mysql_free_result($Result);
-
-
-	 
-       	$ResultFile = MySqlQuery($sqlFile);  
-	$RowFile = mysql_fetch_assoc($ResultFile);
-        mysql_free_result($ResultFile);
-        $LogoFile =  trim($RowFile['raidfile_name']);
+        $LogoFile = trim(MySqlSingleValue($sqlFile, 'raidfile_name'));
 
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
-	{
-          $LogoLink = $MyStoreHttpLink.$LogoFile;
-        }
-        //  Конец получения ссылки на информацию о старте
+	        return $MyStoreHttpLink.$LogoFile;
 
-        return($LogoLink);
-
+        return MySqlSingleValue($sql, 'raid_logolink');
       }
       // Конец получения логотипа
 
@@ -2279,5 +2353,16 @@ send_mime_mail('Автор письма',
      // Конец функции расчета штрафа для КП без амнистий		
 
 
+	function mmb_validate($var, $key, $default = "")
+	{
+		return isset($var[$key]) ? $var[$key] : $default;
+	}
+
+	// returns value on success, false otherwise
+	function mmb_validateInt($var, $key, $default = 0)
+	{
+		$val = mmb_validate($var, $key, $default);
+		return is_numeric($val) ? $val : false;
+	}
 
 ?>

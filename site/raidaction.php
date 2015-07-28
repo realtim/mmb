@@ -4,6 +4,13 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+function raidError($message)
+{
+	global $viewmode;
+	$viewmode = "Edit";
+	CMmb::setErrorSm('Не определён ключ скан-точки.');
+}
+
 // ============ Обработка возможности создания нового марш-броска команды =====================
 if ($action == "RegisterNewRaid")
 {
@@ -13,8 +20,7 @@ if ($action == "RegisterNewRaid")
 	// Проверка возможности создать сарш бросок
 	if (!$Administrator)
 	{
-		$statustext = "Нет прав на создание марш-броска.";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на создание марш-броска.');
 		return;
 	}
 
@@ -25,8 +31,7 @@ elseif ($action == 'RaidInfo')
 {
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Id ММБ не указан';
-		$alert = 1;
+		CMmb::setErrorMessage('Id ММБ не указан');
 		return;
 	}
 	$view = "ViewRaidData";
@@ -40,8 +45,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	// Общая проверка возможности редактирования
 	if (!$Administrator)
 	{
-		$statustext = "Нет прав на ввод или правку марш-броска";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на ввод или правку марш-броска');
 		return;
 	}
 
@@ -70,9 +74,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	{
            if  (substr(trim($_FILES['logofile']['type']), 0, 6) != 'image/') 
 	   {
-			$statustext = 'Недопустимый тип файла.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Недопустимый тип файла.');
 			return;
 	   }
             
@@ -83,9 +85,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		// Успешно загрузили файл
 		$pRaidLogoLink = $MyStoreHttpLink . basename($_FILES['logofile']['name']);
 	   } else {
-			$statustext = 'Ошибка загрузки файла с эмблемой ММБ.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Ошибка загрузки файла с эмблемой ММБ.');
 			return;
            }
            // Конец проверки на успешность загрузки
@@ -95,9 +95,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	// Проверка на пустое название 
 	if  (empty($pRaidName)) 
 	{
-			$statustext = 'Пустое название ММБ.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Пустое название ММБ.');
 			return;
 	}
         // Конец проверки на пустое название 
@@ -105,9 +103,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 	// Проверка на число дистанций
 	if  ($pRaidDistancesCount <= 0) 
 	{
-			$statustext = 'Число дистанций длолжно быть положительным.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Число дистанций должно быть положительным.');
 			return;
 	}
         // Конец проверки на число дистанций
@@ -121,9 +117,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 
            if  (substr(trim($_FILES['rulesfile']['type']), 0, 9) != 'text/html') 
 	   {
-			$statustext = 'Недопустимый тип файла.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Недопустимый тип файла.');
 			return;
 	   }
             
@@ -134,9 +128,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		// Успешно загрузили файл
 		$pRaidRulesLink = $MyStoreHttpLink . basename($_FILES['rulesfile']['name']);
 	   } else {
-			$statustext = 'Ошибка загрузки файла с положением ММБ.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Ошибка загрузки файла с положением ММБ.');
 			return;
            }
            // Конец проверки на успешность загрузки
@@ -163,9 +155,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		mysql_free_result($rs);
 		if ($Row['resultcount'] > 0)
 		{
-			$statustext = "Уже есть ММБ с таким названием.";
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Уже есть ММБ с таким названием.');
 			return;
 		}
                 // Конец проверки на  повтор имени
@@ -248,9 +238,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 
 		if ($RaidId <= 0)
 		{
-			$statustext = 'Ошибка записи нового ММБ.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Ошибка записи нового ММБ.');
 			return;
 		} else {
 		
@@ -302,9 +290,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		$NowDistancesCounter = $Row['resultcount'];
 		if ($NowDistancesCounter > $pRaidDistancesCount)
 		{
-			$statustext = "Дистанций не может быть меньше, чем уже создано.";
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Дистанций не может быть меньше, чем уже создано.');
 			return;
 
                 } else {
@@ -384,8 +370,7 @@ elseif ($action == 'DistanceChangeData')
 	// Общая проверка возможности редактирования
 	if (!$Administrator)
 	{
-		$statustext = "Нет прав на ввод или правку дистанций";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на ввод или правку дистанций');
 		return;
 	}
         $pDistanceId = (int)$_POST['DistanceId'];
@@ -393,9 +378,7 @@ elseif ($action == 'DistanceChangeData')
 	// Проверка на ключ дистанции
 	if  ($pDistanceId <= 0) 
 	{
-			$statustext = 'Не найден ключ дистанции.';
-			$alert = 1;
-		//	$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Не найден ключ дистанции.', '' /*'ReturnAfterError' */);
 			return;
 	}
         // Конец проверки на пустое название 
@@ -406,9 +389,7 @@ elseif ($action == 'DistanceChangeData')
 	// Проверка на пустое название 
 	if (empty($pDistanceName)) 
 	{
-			$statustext = 'Пустое название дистанции.';
-			$alert = 1;
-		//	$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Пустое название дистанции.', '' /*'ReturnAfterError' */);
 			return;
 	}
         // Конец проверки на пустое название 
@@ -430,8 +411,7 @@ elseif ($action == 'HideDistance')
 
 	if (!$Administrator)
 	{
-		$statustext = "Нет прав на удаление дистанции";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на удаление дистанции');
 		return;
 	}
 
@@ -440,9 +420,7 @@ elseif ($action == 'HideDistance')
 
 	if ($pDistanceId <= 0)
 	{
-		$statustext = 'Не определён ключ дистанции.';
-		$alert = 1;
-//		$viewsubmode = "ReturnAfterError";
+		CMmb::setErrorSm('Не определён ключ дистанции.', '' /*'ReturnAfterError' */);
 		return;
 	}
 	
@@ -461,9 +439,7 @@ elseif ($action == 'HideDistance')
 		$NowLevelPointsCounter = $Row['resultcount'];
 		if ($NowLevelPointsCounter > 0)
 		{
-			$statustext = "Уже есть точки на эту дистанцию.";
-			$alert = 1;
-//			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Уже есть точки на эту дистанцию.', '' /*"ReturnAfterError"*/);
 			return;
                 }
 
@@ -478,9 +454,7 @@ elseif ($action == 'HideDistance')
 		$NowTeamsCounter = $Row['resultcount'];
 		if ($NowTeamsCounter > 0)
 		{
-			$statustext = "Уже есть команды на эту дистанцию.";
-			$alert = 1;
-//			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Уже есть команды на эту дистанцию.', '' /*'ReturnAfterError'*/);
 			return;
                 }
 	 
@@ -503,8 +477,7 @@ elseif ($action == 'ViewRaidFilesPage')
 {
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Id ММБ не указан';
-		$alert = 1;
+		CMmb::setErrorMessage('Id ММБ не указан');
 		return;
 	}
 	$view = "ViewRaidFiles";
@@ -521,8 +494,7 @@ elseif ($action == 'AddRaidFile')
 	// Общая проверка возможности редактирования
 	if (!$Administrator and !$Moderator)
 	{
-		$statustext = "Нет прав на загрузку файла";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на загрузку файла');
 		return;
 	}
 
@@ -541,9 +513,7 @@ elseif ($action == 'AddRaidFile')
          Тут можно вставить проверки по типу звгружаемого файла
            if  (substr(trim($_FILES['raidfile']['type']), 0, 6) != 'image/') 
 	   {
-			$statustext = 'Недопустимый тип файла.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Недопустимый тип файла.');
 			return;
 	   }
        */     
@@ -573,9 +543,7 @@ elseif ($action == 'AddRaidFile')
 		// Успешно загрузили файл
 		$pRaidFileLink = $MyStoreHttpLink . $pRaidFileName;
 	   } else {
-			$statustext = 'Ошибка загрузки файла.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Ошибка загрузки файла.');
 			return;
            }
            // Конец проверки на успешность загрузки
@@ -597,9 +565,7 @@ elseif ($action == 'AddRaidFile')
 	
 	   if ($RaidFileId <= 0)
 	   {
-			$statustext = 'Ошибка записи нового файла.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Ошибка записи нового файла.');
 			return;
 	   }
 
@@ -622,8 +588,7 @@ elseif ($action == 'RaidFileChange')
 {
 	if (!$Administrator and !$Moderator)
 	{
-		$statustext = "Нет прав на правку файла";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку файла');
 		return;
 	}
 
@@ -632,9 +597,7 @@ elseif ($action == 'RaidFileChange')
 
 	if ($pRaidFileId <= 0)
 	{
-		$statustext = 'Не определён ключ файла.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
+		CMmb::setErrorSm('Не определён ключ файла.');
 		return;
 	}
 	
@@ -660,8 +623,7 @@ elseif ($action == 'HideFile')
 {
 	if (!$Administrator and !$Moderator)
 	{
-		$statustext = "Нет прав на правку файла";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку файла');
 		return;
 	}
 
@@ -670,9 +632,7 @@ elseif ($action == 'HideFile')
 
 	if ($pRaidFileId <= 0)
 	{
-		$statustext = 'Не определён ключ файла.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
+		CMmb::setErrorSm('Не определён ключ файла.');
 		return;
 	}
 	
@@ -711,8 +671,7 @@ elseif ($action == 'ViewScanPointsPage')
 {
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Id ММБ не указан';
-		$alert = 1;
+		CMmb::setErrorMessage('Id ММБ не указан');
 		return;
 	}
 	
@@ -732,8 +691,7 @@ elseif ($action == 'AddScanPoint')
 	// Общая проверка возможности редактирования
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на ввод скан-точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на ввод скан-точки');
 		return;
 	}
 
@@ -753,9 +711,7 @@ elseif ($action == 'AddScanPoint')
 
 	   if  (empty($pScanPointName) or trim($pScanPointName) == 'Название точки сканирования')
 	   {
-			$statustext = 'Не указано название скан-точки.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Не указано название скан-точки.');
 			return;
            }
 
@@ -772,9 +728,7 @@ elseif ($action == 'AddScanPoint')
 
 	   if  ($AlreadyExists > 0)
 	   {
-			$statustext = 'Повтор названия скан-точки.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Повтор названия скан-точки.');
 			return;
            }
 
@@ -792,9 +746,7 @@ elseif ($action == 'AddScanPoint')
 		
 		if ($ScanPointId <= 0)
 		{
-			$statustext = 'Ошибка записи новой скан-точки.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Ошибка записи новой скан-точки.');
 			return;
 		}
 	
@@ -819,8 +771,7 @@ elseif ($action == 'ScanPointChange')
 {
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку скан-точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку скан-точки');
 		return;
 	}
 
@@ -834,10 +785,7 @@ elseif ($action == 'ScanPointChange')
 
 	if ($pScanPointId <= 0)
 	{
-		$statustext = 'Не определён ключ скан-точки.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Не определён ключ скан-точки.');
 		return;
 	}
 
@@ -857,10 +805,7 @@ elseif ($action == 'ScanPointChange')
 
 	   if  ($AlreadyExists > 0)
 	   {
-			$statustext = 'Повтор названия.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
-			$viewmode = "Edit";
+			raidError('Повтор названия.');
 			return;
            }
 
@@ -886,8 +831,7 @@ elseif ($action == 'HideScanPoint')
 {
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку скан-точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку скан-точки');
 		return;
 	}
 
@@ -900,10 +844,7 @@ elseif ($action == 'HideScanPoint')
 
 	if ($pScanPointId <= 0)
 	{
-		$statustext = 'Не определён ключ скан-точки.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Не определён ключ скан-точки.');
 		return;
 	}
 	
@@ -921,10 +862,7 @@ elseif ($action == 'HideScanPoint')
 	
 	if ($LevelPointCount > 0)
 	{
-		$statustext = 'Есть точки дистанции, которые ссылаются на эту скан-точку.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Есть точки дистанции, которые ссылаются на эту скан-точку.');
 		return;
 	}
 	
@@ -976,8 +914,7 @@ elseif ($action == 'ScanPointOrderDown')
 
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку скан-точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку скан-точки');
 		return;
 	}
 
@@ -986,10 +923,7 @@ elseif ($action == 'ScanPointOrderDown')
 
 	if ($pScanPointId <= 0)
 	{
-		$statustext = 'Не определён ключ скан-точки.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Не определён ключ скан-точки.');
 		return;
 	}
 	
@@ -1021,10 +955,7 @@ elseif ($action == 'ScanPointOrderDown')
 
         if ($MaxScanPointId == 0)
 	{
-		$statustext = 'Нельзя уменьшить порядковый номер.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Нельзя уменьшить порядковый номер.');
 		return;
 	
 	}
@@ -1060,8 +991,7 @@ elseif ($action == 'ScanPointOrderUp')
 
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку скан-точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку скан-точки');
 		return;
 	}
 
@@ -1070,10 +1000,7 @@ elseif ($action == 'ScanPointOrderUp')
 
 	if ($pScanPointId <= 0)
 	{
-		$statustext = 'Не определён ключ скан-точки.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Не определён ключ скан-точки.');
 		return;
 	}
 	
@@ -1108,10 +1035,7 @@ elseif ($action == 'ScanPointOrderUp')
 
         if ($MinScanPointId == 0)
 	{
-		$statustext = 'Нельзя увеличить порядковый номер.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Нельзя увеличить порядковый номер.');
 		return;
 	
 	}
@@ -1140,8 +1064,7 @@ elseif ($action == 'ViewLevelPointsPage')
 {
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Id ММБ не указан';
-		$alert = 1;
+		CMmb::setErrorMessage('Id ММБ не указан');
 		return;
 	}
 	
@@ -1176,8 +1099,7 @@ elseif ($action == 'AddLevelPoint')
 	// Общая проверка возможности редактирования
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на ввод точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на ввод точки');
 		return;
 	}
 
@@ -1210,9 +1132,7 @@ elseif ($action == 'AddLevelPoint')
 
 	   if  (empty($pPointName) or trim($pPointName) == 'Название КП')
 	   {
-			$statustext = 'Не указано название точки.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Не указано название точки.');
 			return;
            }
 
@@ -1248,9 +1168,7 @@ elseif ($action == 'AddLevelPoint')
 
 	   if  ($AlreadyExists > 0)
 	   {
-			$statustext = 'Повтор названия.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Повтор названия.');
 			return;
            }
 
@@ -1267,9 +1185,7 @@ elseif ($action == 'AddLevelPoint')
 		
 		if ($LevelPointId <= 0)
 		{
-			$statustext = 'Ошибка записи новой точки.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Ошибка записи новой точки.');
 			return;
 		}
 	
@@ -1294,8 +1210,7 @@ elseif ($action == 'LevelPointChange')
 {
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку точки');
 		return;
 	}
 
@@ -1308,10 +1223,7 @@ elseif ($action == 'LevelPointChange')
 
 	if ($pLevelPointId <= 0)
 	{
-		$statustext = 'Не определён ключ точки.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Не определён ключ точки.');
 		return;
 	}
 
@@ -1379,10 +1291,7 @@ elseif ($action == 'LevelPointChange')
 
 	   if  ($AlreadyExists > 0)
 	   {
-			$statustext = 'Повтор названия.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
-			$viewmode = "Edit";
+			raidError('Повтор названия.');
 			return;
            }
 
@@ -1414,8 +1323,7 @@ elseif ($action == 'HideLevelPoint')
 {
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку точки');
 		return;
 	}
 
@@ -1424,10 +1332,7 @@ elseif ($action == 'HideLevelPoint')
 
 	if ($pLevelPointId <= 0)
 	{
-		$statustext = 'Не определён ключ точки.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Не определён ключ точки.');
 		return;
 	}
 	
@@ -1482,8 +1387,7 @@ elseif ($action == 'LevelPointOrderDown')
 
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку точки');
 		return;
 	}
 
@@ -1492,10 +1396,7 @@ elseif ($action == 'LevelPointOrderDown')
 
 	if ($pLevelPointId <= 0)
 	{
-		$statustext = 'Не определён ключ точки.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Не определён ключ точки.');
 		return;
 	}
 	
@@ -1528,10 +1429,7 @@ elseif ($action == 'LevelPointOrderDown')
 
         if ($MaxLevelPointId == 0)
 	{
-		$statustext = 'Нельзя уменьшить порядковый номер.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Нельзя уменьшить порядковый номер.');
 		return;
 	
 	}
@@ -1567,8 +1465,7 @@ elseif ($action == 'LevelPointOrderUp')
 
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку точки";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку точки');
 		return;
 	}
 
@@ -1577,10 +1474,7 @@ elseif ($action == 'LevelPointOrderUp')
 
 	if ($pLevelPointId <= 0)
 	{
-		$statustext = 'Не определён ключ точки.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Не определён ключ точки.');
 		return;
 	}
 	
@@ -1614,10 +1508,7 @@ elseif ($action == 'LevelPointOrderUp')
 
         if ($MinLevelPointId == 0)
 	{
-		$statustext = 'Нельзя увеличить порядковый номер.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Нельзя увеличить порядковый номер.');
 		return;
 	
 	}
@@ -1646,8 +1537,7 @@ elseif ($action == 'ViewLevelPointDiscountsPage')
 {
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Id ММБ не указан';
-		$alert = 1;
+		CMmb::setErrorMessage('Id ММБ не указан');
 		return;
 	}
 	
@@ -1679,8 +1569,7 @@ elseif ($action == 'AddLevelPointDiscount')
 	// Общая проверка возможности редактирования
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на ввод интервала";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на ввод интервала');
 		return;
 	}
 
@@ -1695,17 +1584,13 @@ elseif ($action == 'AddLevelPointDiscount')
          // тут по-хорошему нужны проверки
 		if  (empty($pLevelPointId))
 		   {
-			$statustext = 'Не указана точка зачёта амнистии';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Не указана точка зачёта амнистии');
 			return;
 	           }
       
 	   if  (empty($pDiscountValue) or ($pDiscountFinish < $pDiscountStart) or empty($pDiscountStart) or empty($pDiscountFinish))
 	   {
-			$statustext = 'Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.');
 			return;
            }
 
@@ -1721,9 +1606,7 @@ elseif ($action == 'AddLevelPointDiscount')
 
 	   if  ($AlreadyExists > 0)
 	   {
-			$statustext = 'Интервал пересекается с существующим.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Интервал пересекается с существующим.');
 			return;
            }
 
@@ -1743,9 +1626,7 @@ elseif ($action == 'AddLevelPointDiscount')
 
 	   if  ($ForbiddenPointExists > 0)
 	   {
-			$statustext = 'Интервал содержит запрещённые для амнистии точки.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Интервал содержит запрещённые для амнистии точки.');
 			return;
            }
 
@@ -1761,9 +1642,7 @@ elseif ($action == 'AddLevelPointDiscount')
 		
 		if ($LevelPointDiscountId <= 0)
 		{
-			$statustext = 'Ошибка записи новой точки.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Ошибка записи новой точки.');
 			return;
 		}
 	
@@ -1781,8 +1660,7 @@ elseif ($action == 'LevelPointDiscountChange')
 {
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку интервала";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку интервала');
 		return;
 	}
 
@@ -1794,10 +1672,7 @@ elseif ($action == 'LevelPointDiscountChange')
 
 	if ($pLevelPointDiscountId <= 0)
 	{
-		$statustext = 'Не определён ключ интервала.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Не определён ключ интервала.');
 		return;
 	}
 
@@ -1814,19 +1689,14 @@ elseif ($action == 'LevelPointDiscountChange')
          // тут по-хорошему нужны проверки
 		if  (empty($pLevelPointId))
 		   {
-			$statustext = 'Не указана точка зачёта амнистии';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
+			CMmb::setErrorSm('Не указана точка зачёта амнистии');
 			return;
 	           }
      
      
 	   if  (empty($pDiscountValue) or ($pDiscountFinish < $pDiscountStart) or empty($pDiscountStart) or empty($pDiscountFinish))
 	   {
-			$statustext = 'Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
-			$viewmode = "Edit";
+			raidError('Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.');
 			return;
            }
 
@@ -1843,10 +1713,7 @@ elseif ($action == 'LevelPointDiscountChange')
 
 	   if  ($AlreadyExists > 0)
 	   {
-			$statustext = 'Интервал пересекается с существующим.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
-			$viewmode = "Edit";
+			raidError('Интервал пересекается с существующим.');
 			return;
            }
 
@@ -1866,10 +1733,7 @@ elseif ($action == 'LevelPointDiscountChange')
 
 	   if  ($ForbiddenPointExists > 0)
 	   {
-			$statustext = 'Интервал содержит запрещённые для амнистии точки.';
-			$alert = 1;
-			$viewsubmode = "ReturnAfterError";
-			$viewmode = "Edit";
+			raidError('Интервал содержит запрещённые для амнистии точки.');
 			return;
            }
 
@@ -1894,8 +1758,7 @@ elseif ($action == 'HideLevelPointDiscount')
 {
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку интервала";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку интервала');
 		return;
 	}
 
@@ -1904,10 +1767,7 @@ elseif ($action == 'HideLevelPointDiscount')
 
 	if ($pLevelPointDiscountId <= 0)
 	{
-		$statustext = 'Не определён ключ интервала.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
-		$viewmode = "Edit";
+		raidError('Не определён ключ интервала.');
 		return;
 	}
 	
@@ -1929,8 +1789,7 @@ elseif ($action == 'RecalculateLevels')
 {
 	if (!$Administrator && !$Moderator)
 	{
-		$statustext = "Нет прав на правку";
-		$alert = 0;
+		CMmb::setMessage('Нет прав на правку');
 		return;
 	}
 
@@ -1941,9 +1800,7 @@ elseif ($action == 'RecalculateLevels')
 
          if ($pDistanceId <= 0)
 	 {
-		$statustext = 'Не определена дистанция.';
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
+		CMmb::setErrorSm('Не определена дистанция.');
 		return;
 	 }
 	 
@@ -1952,9 +1809,7 @@ elseif ($action == 'RecalculateLevels')
 	 $statustext = CheckLevelPoints($pDistanceId);
 	 if (!empty($error))
 	 {
-		$statustext = 'Нельзя создавать этапы: '.$statustext;
-		$alert = 1;
-		$viewsubmode = "ReturnAfterError";
+		CMmb::setErrorSm('Нельзя создавать этапы: '.$statustext);
 		return;
 	 }
 
@@ -2115,8 +1970,7 @@ elseif ($action == 'ViewUsersLinksPage')
 {
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Id ММБ не указан';
-		$alert = 1;
+		CMmb::setErrorMessage('Id ММБ не указан');
 		return;
 	}
 	

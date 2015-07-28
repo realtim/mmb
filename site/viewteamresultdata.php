@@ -115,7 +115,6 @@ print('<br /><div><b><big>Результаты:</big></b></div>'."\n");
 
 // Форма показа/редактироания результатов
 print('<form name="TeamResultDataForm" action="'.$MyPHPScript.'" method="post" onSubmit="'.$OnSubmitResultFunction.'">'."\n");
-print('<input type="hidden" name="sessionid" value="'.$SessionId.'">'."\n");
 print('<input type="hidden" name="action" value="">'."\n");
 print('<input type="hidden" name="view" value="'.(($viewmode == "Add") ? 'ViewRaidTeams' : 'ViewTeamData').'">'."\n");
 print('<input type="hidden" name="TeamId" value="'.$TeamId.'">'."\n");

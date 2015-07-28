@@ -1,6 +1,5 @@
 <?php
 
-
         // Общие настройки
 	include("settings.php");
 	// Библиотека функций
@@ -29,35 +28,24 @@
 	$statustext = ""; //"Сегодня: ".date("d.m.Y")."  &nbsp; Время: ".date("H:i:s");
 
 	// Инициализируем права доступа пользователя
-	if (isset($_POST['sessionid'])) $SessionId = $_POST['sessionid']; else $SessionId = "";
+	$SessionId = mmb_validate($_COOKIE, CMmb::CookieName, '');
 	$OldSessionId = $SessionId;
-	if (isset($_REQUEST['RaidId'])) $RaidId = (int)$_REQUEST['RaidId']; else $RaidId = "0";
-	if (isset($_REQUEST['TeamId'])) $TeamId = (int)$_REQUEST['TeamId']; else $TeamId = "0";
+	$RaidId = (int) mmb_validate($_REQUEST, 'RaidId', 0);
+	$TeamId = (int) mmb_validateInt($_REQUEST, 'TeamId', 0);
+
 
          // 27/12/2013 Заменил на сортировку по ключу
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
         if (empty($RaidId))
-	{ 
-
+	{
   	     GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
+  	     $orderBy = $Administrator ? 'raid_id' : 'raid_registrationenddate';
+  	     $sql = "select raid_id
+		       from Raids
+		       order by $orderBy desc
+		       LIMIT 0,1 ";
 
-             if ($Administrator)
-	     {
-	       $sql = "select raid_id
-		       from Raids
-		       order by raid_id desc
-		       LIMIT 0,1 ";
-	     
-	     } else {
-	     
-	       $sql = "select raid_id
-		       from Raids
-	 	       order by raid_registrationenddate desc
-		       LIMIT 0,1 ";
-	     
-	     }
-	     
  	     $Result = MySqlQuery($sql);
 	     $Row = mysql_fetch_assoc($Result);
 	     $RaidId = $Row['raid_id'];
@@ -65,17 +53,35 @@
         }
 	// Конец определения ММБ
 
-
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
 	// Инициализуем переменные сессии, если они отсутствуют
 	if (!isset($view)) $view = "";
 	if (!isset($viewsubmode)) $viewsubmode = "";
-	if (!isset($_REQUEST['action'])) $_REQUEST['action'] = "";
+
+	if (!isset($_REQUEST['action']))
+	{
+		if (mmb_validateInt($_GET, 'UserId', '') !== false)
+			$_REQUEST['action'] = "UserInfo";
+		else if (mmb_validateInt($_GET, 'TeamId', '') !== false)
+			$_REQUEST['action'] = "TeamInfo";
+		else if (isset($_GET['rating']))
+			$_REQUEST['action'] = "ViewRankPage";
+		else if (isset($_GET['badges']))
+			$_REQUEST['action'] = "ViewAllBadgesPage";
+		else if (isset($_GET['files']))
+			$_REQUEST['action'] = "ViewRaidFilesPage";
+		else if (isset($_GET['links']))
+			$_REQUEST['action'] = "ViewUsersLinksPage";
+		else if (mmb_validateInt($_GET, 'RaidId', '') !== false)        // должно идти предпоследним
+			$_REQUEST['action'] = "ViewRaidTeams";
+		else
+			$_REQUEST['action'] = "";
+	}
 	$action = $_REQUEST['action'];
 
         //Не знаю, относится ли дистанция к переменным сессии, но инициализацию делаем
-	if (isset($_REQUEST['DistanceId'])) $DistanceId = (int)$_REQUEST['DistanceId']; else $DistanceId = "0";
+	$DistanceId = mmb_validateInt($_REQUEST, 'DistanceId', 0);
 
 	if ($action == "") 
 	{
@@ -115,9 +121,7 @@
     // 15,01,2012 Сбрасываем действие в самом конце, а не здесь 
     //$action = "";
 
-?>
-
-<html>
+?><html>
  <head>
   <title>ММБ</title>
   <link rel="Stylesheet" type="text/css"  href="styles/mmb.css" />
@@ -125,20 +129,16 @@
 
  </head>
 
+
 <?
- 
- print('<script language="JavaScript">'."\n");
- print("\r\n");
- print('LogoImgArr=new Array();'."\n");
- print("\r\n");
- 
- $Sql = "select raid_logolink, raid_id from Raids"; 
+ $mmbLogos = array();
+ $Sql = "select raid_logolink, raid_id from Raids";
  $Result = MySqlQuery($Sql);
  while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
  { 
 
         $nextRaidId =  $Row['raid_id'];
-	$RaidLogoLink = $Row['raid_logolink'];
+	$link = $Row['raid_logolink'];
         // 08.12.2013 Ищем ссылку на логотип  
         $sqlFile = "select raidfile_name
 	     from RaidFiles
@@ -146,33 +146,33 @@
                    and filetype_id = 2 
 	     order by raidfile_id desc";
 	 
-       	$ResultFile = MySqlQuery($sqlFile);  
-	$RowFile = mysql_fetch_assoc($ResultFile);
-        mysql_free_result($ResultFile);
-        $LogoFile =  trim($RowFile['raidfile_name']);
+        $LogoFile = trim(MySqlSingleValue($sqlFile, 'raidfile_name'));
 
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
-	{
-          $RaidLogoLink = $MyStoreHttpLink.$LogoFile;
-        }
+                $link = $MyStoreHttpLink.$LogoFile;
+
         //  Конец получения ссылки на информацию о старте
 
-   print('LogoImgArr['.$Row['raid_id'].'] = new Image();'."\r\n");
-   print('LogoImgArr['.$Row['raid_id'].'].src = "'.$RaidLogoLink.'";'."\r\n");
+        //print('LogoImgArr['.$Row['raid_id'].'] = new Image();'."\r\n");
+	 $mmbLogos[] = "                {$Row['raid_id']}: '$link'";
  }
  mysql_free_result($Result);
+ ?>
 
- print("\r\n");
- print('function ChangeLogo(raidid) '."\r\n");
- print('{document.mmblogo.src=LogoImgArr[raidid].src;}'."\r\n");
- print("\r\n");
- print('</script>'."\n");
-?>	
+ <script language="JavaScript">
+ function ChangeLogo(raidid)
+ {
+	var links = {
+<? echo implode(",\r\n", $mmbLogos); ?>};
+
+	if (console)
+		console.log("change logo called");
+	document.mmblogo.src = links[raidid] || '';
+ }
+</script>
 
 
  <body>
- 
-
 	<table  width = "100%"  border = "0" cellpadding = "0" cellspacing = "0" valign = "top" align = "left"  >
 	<tr>
 <!--
@@ -189,7 +189,6 @@
                         <form name = "StartPageForm" action = "<? echo $MyPHPScript; ?>" method = "post">
 				<input type = "hidden" name = "action" value = "StartPage">
 				<input type = "hidden" name = "view" value = "MainPage">
-				<input type = "hidden" name = "sessionid" value = "<? echo $SessionId; ?>">
 				<input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
 				<div align="center"><a href="javascript:document.StartPageForm.submit();"><img name = "mmblogo" style="margin-bottom: 15px; border: none" width="160" height="140" alt="ММБ" src="<? echo GetMmbLogo($RaidId); ?>"></a></div>
                        </form> 

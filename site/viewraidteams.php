@@ -6,7 +6,7 @@ if (!isset($MyPHPScript)) return;
 
 ?>
 <script language = "JavaScript">
-
+	/*
         // Посмотреть профиль пользователя
 	function ViewUserInfo(userid)
 	{ 
@@ -23,7 +23,7 @@ if (!isset($MyPHPScript)) return;
 	  document.RaidTeamsForm.TeamId.value = teamid;
 	  document.RaidTeamsForm.action.value = "TeamInfo";
 	  document.RaidTeamsForm.submit();
-	}
+	}*/
 
 
         // Смена сортировки
@@ -183,8 +183,7 @@ if (!isset($MyPHPScript)) return;
         // Проверяем, что передали  идентификатор ММБ
         if ($RaidId <= 0)
 	{
-		    $statustext = 'Не указан ММБ';
-	  	    $alert = 0;
+		    CMmb::setMessage('Не указан ММБ');
 		    return;
 	
 	}
@@ -192,7 +191,6 @@ if (!isset($MyPHPScript)) return;
 
 ?>	
          <form  name = "RaidTeamsForm"  action = "<? echo $MyPHPScript; ?>" method = "post">
-	 <input type = "hidden" name = "sessionid" value = "<? echo $SessionId; ?>">
          <input type = "hidden" name = "action" value = "ViewRaidTeams">
          <input type = "hidden" name = "TeamId" value = "0">
          <input type = "hidden" name = "UserId" value = "0">
@@ -385,9 +383,9 @@ if (!isset($MyPHPScript)) return;
 */
 		print('</div>'."\r\n");
             	
-		print('<div align = "left" style = "margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
-		print('<a  style = "font-size:80%; margin-right: 15px;"  href = "javascript:ViewRaidFiles();" title = "Список файлов для выбранного выше ММБ">Файлы</a>'."\r\n");
-		print('<a  style = "font-size:80%; margin-right: 15px;" href = "javascript: JsonExport();">Json</a> '."\r\n");
+		print('<div align="left" style="margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
+		print('<a style="font-size:80%; margin-right: 15px;" href="?files&RaidId='.$RaidId.'" title="Список файлов для выбранного выше ММБ">Файлы</a>'."\r\n");
+		print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
 		print('</div>'."\r\n");
 
 
@@ -722,10 +720,10 @@ if (!isset($MyPHPScript)) return;
 
 			$TeamsCount--;
 
- 			print('<tr class = "'.$TrClass.'">
-			       <td style = "'.$tdstyle.'"><a name = "'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
-			       <td style = "'.$tdstyle.'"><a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
-			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_greenpeace'] == 1 ? ', <a title = "Нет сломанным унитазам!" href = "#comment">ну!</a>' : '').
+ 			print('<tr class="'.$TrClass.'">
+			       <td style="'.$tdstyle.'"><a name="'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
+			       <td style="'.$tdstyle.'"><a href="?TeamId='.$Row['team_id'].'&RaidId=' . $RaidId .'">'.
+			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_greenpeace'] == 1 ? ', <a title="Нет сломанным унитазам!" href="#comment">ну!</a>' : '').
 				  ($Row['team_outofrange'] == 1 ? ', Вне зачета!' : '').')
 			        </td><td style = "'.$tdstyle.'">'."\r\n");
 
@@ -747,7 +745,7 @@ if (!isset($MyPHPScript)) return;
 
 				while ($UserRow = mysql_fetch_assoc($UserResult))
 				{
-				  print('<div class= "input"><a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
+				  print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'&RaidId=' . $RaidId . '">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
  
 		                  // Отметка невыходна на старт в предыдущем ММБ                          
 		                  if ($UserRow['teamuser_notstartraidid'] > 0) {

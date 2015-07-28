@@ -47,8 +47,7 @@ if (!isset($MyPHPScript)) return;
                 print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "UserId" value = "0">'."\n");
 	        print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\n");
-		print('<input type = "hidden" name = "sessionid" value = "'.$SessionId.'">'."\n");
-		
+
 	        if ($Administrator)
 		{
 
@@ -86,7 +85,7 @@ if (!isset($MyPHPScript)) return;
 		
 			while ($Row = mysql_fetch_assoc($Result))
 			{
-			  print('<div align = "left" style = "padding-top: 5px;"><a href = "javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a> '.$Row['user_city']."\r\n");
+			  print('<div align="left" style="padding-top: 5px;"><a href="?UserId='.$Row['user_id'].'">'.$Row['user_name'].'</a> '.$Row['user_city']."\r\n");
 			  if ($Administrator)
 			  {
 				  print(' '.$Row['import'].' '.$Row['noactive'].' '.$Row['hide'].' '.$Row['noshow']."\r\n");
