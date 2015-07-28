@@ -84,5 +84,21 @@ div.FormText  {font-family: Courier New, Monospace; font-size: 80%; font-weight:
 
 div.comment {font-family: Times New Roman, Serif; font-size: 75%; color: #000088;}
 
+table.std {
+    border-collapse: separate;
+    border-spacing: 1px;
+    border: 1px outset #808080;
+    font-size: 80%
+}
+
+table.std td {
+    padding: 5px 0px 2px 5px;
+    border: 1px inset #808080;
+}
+
+table.std tr.head td {
+    padding:  5px 0px 0px 5px;
+}
+
 
 
