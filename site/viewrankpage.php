@@ -167,12 +167,13 @@ if (!isset($MyPHPScript)) return;
 		        from Raids r 
 			     inner join Distances d on r.raid_id = d.raid_id and d.distance_hide = 0
 			     left outer join (select t.distance_id, t.team_name, t.team_id, t.team_outofrange,
-		                                     lp.levelpoint_name, tu.teamuser_rank,
-						     lp.levelpoint_id 
-			                      from Teams t 
-			                           inner join TeamUsers tu  on t.team_id = tu.team_id and tu.teamuser_hide = 0 and tu.user_id = ".$Row['user_id']."
-			                           left outer join LevelPoints lp on tu.levelpoint_id = lp.levelpoint_id
-					      where   t.team_hide = 0) a
+		                    	         lp.levelpoint_name, tu.teamuser_rank,
+									     lp.levelpoint_id
+				                   from Teams t
+			                           inner join TeamUsers tu  on t.team_id = tu.team_id and tu.teamuser_hide = 0 and tu.user_id = {$Row['user_id']}
+			                           left outer join TeamLevelDismiss tld  on tu.teamuser_id = tld.teamuser_id
+			                           left outer join LevelPoints lp  on tld.levelpoint_id = lp.levelpoint_id
+							  	   where   t.team_hide = 0) a
                              on d.distance_id = a.distance_id					       	   
 		        order by r.raid_id  desc,  d.distance_id desc";
 		$ResultRaids = MySqlQuery($sqlRaids);
