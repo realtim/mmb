@@ -120,13 +120,13 @@ if (!isset($MyPHPScript)) return;
 		print('</form>'."\r\n");
 	} else {
 		$UserName = CSql::userName($UserId);
-                print('<form  name = "UserLoginForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
-                print('<input type = "hidden" name = "action" value = "">'."\r\n"); 
-                print('<input type = "hidden" name = "UserId" value = "">'."\r\n"); 
-		print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
-		print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
-		print('<tr><td><a href = "javascript:ViewUserInfo('.$UserId.');"  title = "Переход к Вашей карточке пользователя">'.$UserName.'</a></tr>'."\r\n"); 
-		print('<tr><td><a href = "javascript:UserLogout();" style = "font-size: 80%;">Выход</a></td></tr>'."\r\n"); 
+                print('<form  name="UserLoginForm"  action="'.$MyPHPScript.'" method="post">'."\r\n");
+                print('<input type="hidden" name="action" value="">'."\r\n");
+                print('<input type="hidden" name="UserId" value="">'."\r\n");
+		print('<input type="hidden" name="view" value="'.$view.'">'."\r\n");
+		print('<table  class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
+		print('<tr><td><a href="?UserId='.$UserId.'" title="Переход к Вашей карточке пользователя">'.$UserName.'</a></tr>'."\r\n");
+		print('<tr><td><a href="javascript:UserLogout();" style="font-size: 80%;">Выход</a></td></tr>'."\r\n");
 		print('</table>'."\r\n");
 		print('</form>'."\n");
 	}
@@ -136,7 +136,7 @@ if (!isset($MyPHPScript)) return;
 ?>
 
 
-<script language = "JavaScript">
+<script language="JavaScript">
 
 
 	        // Функция проверки правильности заполнения формы

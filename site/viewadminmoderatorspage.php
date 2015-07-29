@@ -40,7 +40,7 @@ if (!isset($MyPHPScript)) return;
 			      inner join RaidModerators rm
 			      on u.user_id = rm.user_id  
 			where rm.raidmoderator_hide = 0
-			      and rm.raid_id = ".$RaidId." 
+			      and rm.raid_id = $RaidId
 			order by user_name "; 
                 
 		//echo 'sql '.$sql;
@@ -55,16 +55,16 @@ if (!isset($MyPHPScript)) return;
 		
 			while ($Row = mysql_fetch_assoc($Result))
 			{
-			  print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
-			  print('<a href = "javascript:ViewUserInfo('.$Row['user_id'].');">'.$Row['user_name'].'</a>'."\r\n");
-		          print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите снять статус модератора с текущего марш-броска? \')) { HideModerator('.$Row['raidmoderator_id'].','.$Row['user_id'].'); }"  name="ModeratorHideButton" value="Скрыть" tabindex = "10">'."\r\n");
+			  print('<div align="left" style="padding-top: 5px;">'."\r\n");
+			  print('<a href="?UserId='.$Row['user_id'].'">'.$Row['user_name'].'</a>'."\r\n");
+		          print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите снять статус модератора с текущего марш-броска? \')) { HideModerator('.$Row['raidmoderator_id'].','.$Row['user_id'].'); }"  name="ModeratorHideButton" value="Скрыть" tabindex="10">'."\r\n");
 	                  print('</div>'."\r\n");
 	  	  
 			}
 
 		} else {
 
-			  print('<div class= "input" align = "left">Не найдено</div>'."\r\n");
+			  print('<div class="input" align="left">Не найдено</div>'."\r\n");
 		}
 	        print('</form>'."\r\n");
                 mysql_free_result($Result);
