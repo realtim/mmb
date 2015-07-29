@@ -86,7 +86,7 @@ div.comment {font-family: Times New Roman, Serif; font-size: 75%; color: #000088
 
 table.std {
     border-collapse: separate;
-    border-spacing: 1px;
+    border-spacing: 0px;
     border: 1px outset #808080;
     font-size: 80%
 }
