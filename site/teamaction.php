@@ -125,10 +125,10 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 
 	// Проверяем, нет ли уже команды с таким названием
 	$sql = "select count(*) as resultcount
-		from Teams t
-			inner join Distances d
-			on t.distance_id = d.distance_id
-		where d.raid_id = ".$RaidId." and trim(team_name) = '".$pTeamName."' and team_hide = 0 and team_id <> ".$TeamId;
+			from Teams t
+				inner join Distances d
+				on t.distance_id = d.distance_id
+			where d.raid_id = $RaidId and trim(team_name) = $pTeamName and team_hide = 0 and team_id <> $TeamId";
 	$rs = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($rs);
 	mysql_free_result($rs);
@@ -139,10 +139,10 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	}
 	// Проверяем номер команды: если новая - 0 и такого номера не должно быть
 	$sql = "select count(*) as resultcount
-		from Teams t
-			inner join Distances d
-			on t.distance_id = d.distance_id
-		where d.raid_id = '.$RaidId.' and team_num = '.$pTeamNum.' and team_hide = 0 and team_id <> ".$TeamId;
+			from Teams t
+				inner join Distances d
+				on t.distance_id = d.distance_id
+			where d.raid_id = $RaidId and team_num = $pTeamNum and team_hide = 0 and team_id <> $TeamId";
 	$rs = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($rs);
 	mysql_free_result($rs);
