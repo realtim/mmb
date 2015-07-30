@@ -173,6 +173,12 @@ class CSql {
 		$sql = "select user_name from Users where user_id = $userId";
 		return self::singleValue($sql, 'user_name');
 	}
+
+	public static function fullUser($userId)
+	{
+		$sql = "select * from Users where user_id = $userId";
+		return self::singleRow($sql);
+	}
 }
 
   function StartSession($UserId) {

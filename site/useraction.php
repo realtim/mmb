@@ -255,38 +255,30 @@ if (!isset($MyPHPScript)) return;
               // Правка текущего пользователя
 	   
              // Если вызвали с таким действием, должны быть определны оба пользователя
-             if ($pUserId <= 0 or $UserId <= 0)
-	     {
-	      return;
-	     }
-	   
-	     $AllowEdit = 0;
-	     // Права на редактирование
-             if (($pUserId == $UserId) || $Administrator)
-	     {
-		  $AllowEdit = 1;
-	     } else {
+		if ($pUserId <= 0 or $UserId <= 0)
+		{
+			return;
+		}
 
-	       $AllowEdit = 0;
-               // выходим
-	       return;
-	     }
+		// Права на редактирование
+		$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
+		if ($AllowEdit == 0) {
+			return;               // выходим
+		}
 
-             if ($AllowEdit == 1)
-	     {
 
                   // 03/07/2014  Добавляем признак анонимности (скрывать ФИО)
 
-	         $sql = "update  Users set   user_email = trim('".$pUserEmail."'),
-		                             user_name = trim('".$pUserName."'),
-		                             user_city = trim('".$pUserCity."'),
-		                             user_prohibitadd = ".$pUserProhibitAdd.",
-		                             user_noshow = ".$pUserNoShow.",
-					     user_birthyear = ".$pUserBirthYear."
-	                 where user_id = ".$pUserId;
-                 
-          		// echo $sql;
-		 $rs = MySqlQuery($sql);  
+		$sql = "update  Users set   user_email = trim('".$pUserEmail."'),
+		                     user_name = trim('".$pUserName."'),
+		                     user_city = trim('".$pUserCity."'),
+		                     user_prohibitadd = ".$pUserProhibitAdd.",
+		                     user_noshow = ".$pUserNoShow.",
+				     user_birthyear = ".$pUserBirthYear."
+		        where user_id = ".$pUserId;
+
+		// echo $sql;
+		$rs = MySqlQuery($sql);
 
                   // Обновление пароля джелаем только, когда просят
 		  if (trim($pUserNewPassword) <> '' and trim($pUserConfirmNewPassword) <> '' and trim($pUserNewPassword) == trim($pUserConfirmNewPassword))
@@ -298,8 +290,6 @@ if (!isset($MyPHPScript)) return;
 		      $rs = MySqlQuery($sql);  
 
                      $statustext = 'Сохранён новый пароль.';
-
-
 		  }
 
 
@@ -315,7 +305,6 @@ if (!isset($MyPHPScript)) return;
                   // Отправляем письмо
 		  SendMail(trim($pUserEmail), $Msg, $pUserName);
 
-             } 
 
 	     // Конец сохранений изменений текущего пользователя            
 	      	   
@@ -342,22 +331,13 @@ if (!isset($MyPHPScript)) return;
 	     {
 	      return;
 	     }
-	   
-	     $AllowEdit = 0;
-	     // Права на редактирование
-             if (($pUserId == $UserId) || $Administrator)
-	     {
-		  $AllowEdit = 1;
-	     } else {
 
-	       $AllowEdit = 0;
-               // выходим
-	       return;
-	     }
+	   // Права на редактирование
+	   $AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
+	   if ($AllowEdit == 0) {
+		   return;               // выходим
+	   }
 
-             if ($AllowEdit == 1)
-	     {
-	   
 		$sql = "select user_email, user_name, user_birthyear from  Users where user_id = ".$pUserId;
 		$row = CSql::singleRow($sql);
      		$UserEmail = $row['user_email'];
@@ -388,8 +368,6 @@ if (!isset($MyPHPScript)) return;
                 // Отправляем письмо
 		SendMail(trim($UserEmail), $Msg, $UserName);
 
-            }
-             // Конец проверки на возможность отправки пароля
 
    } elseif ($action == "RestorePasswordRequest")  {
    // Действие вызывается ссылкой "Забыли пароль"
@@ -613,25 +591,17 @@ if (!isset($MyPHPScript)) return;
 	     {
 		 $ChangeDataUserName = CSql::userName($UserId);
 
-	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
+		 $Row = CSql::fullUser($pUserId);
 		 $pUserName = $Row['user_name'];
 		 $pUserEmail = $Row['user_email'];
-		 mysql_free_result($Result);
 
 
-	         $Sql = "select raid_name from  Raids where raid_id = ".$RaidId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $RaidName = $Row['raid_name'];
-		 mysql_free_result($Result);
+	         $Sql = "select raid_name from  Raids where raid_id = $RaidId";
+		 $RaidName = CSql::singleValue($Sql, 'raid_name');
 
-
-
-                 $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
-		 $Msg =  $Msg."Вы получили статус модератора марш-броска ".$RaidName."\r\n";
-		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
+                 $Msg =  "Уважаемый пользователь $pUserName!\r\n\r\n";
+		 $Msg .= "Вы получили статус модератора марш-броска $RaidName\r\n";
+		 $Msg .= "Автор изменений: $ChangeDataUserName.\r\n\r\n";
 		 	   
 			    
                   // Отправляем письмо
@@ -659,24 +629,17 @@ if (!isset($MyPHPScript)) return;
 		  MySqlQuery($Sql);  
 		  
 		 $ChangeDataUserName = CSql::userName($UserId);
-
-	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
+		 $Row = CSql::fullUser($pUserId);
 		 $pUserName = $Row['user_name'];
 		 $pUserEmail = $Row['user_email'];
-		 mysql_free_result($Result);
 
 	         $Sql = "select raid_name from  Raids where raid_id = ".$RaidId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $RaidName = $Row['raid_name'];
-		 mysql_free_result($Result);
+	         $RaidName = CSql::singleValue($Sql, 'raid_name');
 
-		    
-                 $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
-		 $Msg =  $Msg."Вы потеряли статус модератора марш-броска ".$RaidName."\r\n";
-		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
+
+                 $Msg =  "Уважаемый пользователь $pUserName!\r\n\r\n";
+		 $Msg .= "Вы потеряли статус модератора марш-броска $RaidName.\r\n";
+		 $Msg .= "Автор изменений: $ChangeDataUserName.\r\n\r\n";
 		 	   
 			    
                  // Отправляем письмо
@@ -734,28 +697,16 @@ if (!isset($MyPHPScript)) return;
 		return;
 	}
 
-	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $pUserName = $Row['user_name'];
-		 $pUserEmail = $Row['user_email'];
-		 mysql_free_result($Result);
+	$pUserName = CSql::userName($pUserId);
 
-
-
-	$sql = "update Users set user_hide = 1 where user_id = ".$pUserId;
+	$sql = "update Users set user_hide = 1 where user_id = $pUserId";
 	$rs = MySqlQuery($sql);
-	     $AllowEdit = 0;
-	     // Права на редактирование
-             if (($pUserId == $UserId) || $Administrator)
-	     {
-		  $AllowEdit = 1;
-	     } else {
 
-	       $AllowEdit = 0;
-               // выходим
-	       return;
-	     }
+	// Права на редактирование
+	$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
+	if ($AllowEdit == 0) {
+	   return;               // выходим
+	}
 
         CMmb::setShortResult("Пользователь $pUserName ключ $pUserId удален ", 'ViewRaidTeams');
    }
@@ -779,34 +730,17 @@ if (!isset($MyPHPScript)) return;
 	}
 
 
-	     $AllowEdit = 0;
-	     // Права на редактирование
-             if (($pUserId == $UserId) || $Administrator)
-	     {
-		  $AllowEdit = 1;
-	     } else {
-	     $AllowEdit = 0;
-	     // Права на редактирование
-             if (($pUserId == $UserId) || $Administrator)
-	     {
-		  $AllowEdit = 1;
-	     } else {
+	// Права на редактирование
+	$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
+	if ($AllowEdit == 0) {
+	        return;               // выходим
+	}
 
-	       $AllowEdit = 0;
-               // выходим
-	       return;
-	     }
+	$pNewDeviceName = trim($_POST['NewDeviceName']);
 
-	       $AllowEdit = 0;
-               // выходим
-	       return;
-	     }
-
-		$pNewDeviceName = trim($_POST['NewDeviceName']); 
-		
-		if (!isset($pNewDeviceName)) {
-		  $pNewDeviceName  = '';
-		}
+	if (!isset($pNewDeviceName)) {
+	        $pNewDeviceName  = '';
+	}
 
 	if (empty($pNewDeviceName) or $pNewDeviceName == 'Название нового устройства')
 	{
@@ -860,37 +794,16 @@ if (!isset($MyPHPScript)) return;
 		return;
 	}
 
-
-	     $AllowEdit = 0;
-	     // Права на редактирование
-             if (($pUserId == $UserId) || $Administrator)
-	     {
-		  $AllowEdit = 1;
-	     } else {
-	     $AllowEdit = 0;
-	     // Права на редактирование
-             if (($pUserId == $UserId) || $Administrator || $Moderator)
-	     {
-		  $AllowEdit = 1;
-	     } else {
-
-	       $AllowEdit = 0;
-               // выходим
-	       return;
-	     }
-
-	       $AllowEdit = 0;
-               // выходим
-	       return;
-	     }
+	// Права на редактирование
+	$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
+	if ($AllowEdit == 0) {
+	        return;               // выходим
+	}
 
 	// Прверяем, что есть устройство для пользователя
            $sql = "select count(*) as resultcount from  Devices where user_id  = ".$pUserId." and device_id = ".$pDeviceId;
       //     echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-           mysql_free_result($rs);
-	   if ($Row['resultcount'] <> 1)
+	   if (CSql::singleValue($sql, 'resultcount') <> 1)
 	   {
    		CMmb::setErrorSm('Нет устройства.');
                 return; 
@@ -1031,8 +944,7 @@ if (!isset($MyPHPScript)) return;
 			 
         if ($UnionRequestId)
         {
-	         $Sql = "select user_name, user_email, user_importattempt  from  Users where user_id = ".$pUserId;
-		 $Row = CSql::singleRow($Sql);
+		 $Row = CSql::fullUser($pUserId);
 		 $pUserName = $Row['user_name'];
 		 $pUserEmail = $Row['user_email'];
 		 $Import = $Row['user_importattempt'];
@@ -1090,12 +1002,10 @@ if (!isset($MyPHPScript)) return;
        }
 
 
-	         $Sql = "select user_id, user_parentid  from  UserUnionLogs where userunionlog_id = ".$UserUnionLogId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $pUserId = $Row['user_id'];
-		 $pUserParentId = $Row['user_parentid'];
-		 mysql_free_result($Result);
+	$Sql = "select user_id, user_parentid  from  UserUnionLogs where userunionlog_id = $UserUnionLogId";
+	$Row = CSql::singleRow($Sql);
+	$pUserId = $Row['user_id'];
+	$pUserParentId = $Row['user_parentid'];
 
 //echo $Sql;
        // Перебрасываем ссылки, ставим признак скрытия пользователя
@@ -1104,8 +1014,8 @@ if (!isset($MyPHPScript)) return;
        // Скрываем старого пользователя
        // Ключ журнала нужен исключительно для возможности потом переименовать пользователя - сделан уникальный ключ, который не допускаетодинаковое ФИО и год, но теперь я туда добавил ещё поле userunionlog_id
        // Тонкость в том, что при отмене объеддинения наод проверять, что польщзователь не свопадает, иначе будет ошибка ключа
-        $sql = " update Users set user_hide = 1, userunionlog_id = ".$UserUnionLogId."  
-		 where user_id = ".$pUserParentId;
+        $sql = " update Users set user_hide = 1, userunionlog_id = $UserUnionLogId
+		 where user_id = $pUserParentId";
 
 
 //echo $sql;
@@ -1121,7 +1031,7 @@ if (!isset($MyPHPScript)) return;
 
        // Меняем статус в журнале 
        $sql = " update UserUnionLogs set union_status = 2 
-			 where userunionlog_id = ".$UserUnionLogId;
+			 where userunionlog_id = $UserUnionLogId";
 		       
 
 	MySqlQuery($sql);
@@ -1209,22 +1119,16 @@ if (!isset($MyPHPScript)) return;
 		return;
 	}
 
-	     $AllowEdit = 0;
-	     // Права на редактирование
-             if (($pUserId == $UserId) || $Administrator)
-	     {
-		  $AllowEdit = 1;
-	     } else {
+	// Права на редактирование
+	$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
+	if ($AllowEdit == 0) {
+		return;               // выходим
+	}
 
-	       $AllowEdit = 0;
-               // выходим
-	       return;
-	     }
-
-		$pLinkName = trim($_POST['NewLinkName']); 
-		$pLinkUrl = trim($_POST['NewLinkUrl']); 
-		$pLinkTypeId = $_POST['LinkTypeId']; 
-        	$pLinkRaidId = $_POST['LinkRaidId']; 
+	$pLinkName = trim($_POST['NewLinkName']);
+	$pLinkUrl = trim($_POST['NewLinkUrl']);
+	$pLinkTypeId = $_POST['LinkTypeId'];
+        $pLinkRaidId = $_POST['LinkRaidId'];
 
 
         if (!isset($pLinkRaidId)) {$pLinkRaidId = 0;}
@@ -1268,9 +1172,7 @@ if (!isset($MyPHPScript)) return;
 	           where trim(userlink_url) = '".trim($pLinkUrl)."'
 		         and userlink_hide = 0
 		   ";
-
       //     echo $sql;
-
 	   if (CSql::singleValue($sql, 'resultcount') > 0)
 	   {
    		CMmb::setErrorSm('Уже есть впечатление  с таким адресом.');
@@ -1280,9 +1182,9 @@ if (!isset($MyPHPScript)) return;
 	// Прверяем, что не более трёх ссылок на ММБ 
            $sql = "select count(*) as resultcount 
 	           from  UserLinks 
-		   where raid_id = ".$pLinkRaidId." 
+		   where raid_id = $pLinkRaidId
 		     and userlink_hide = 0
-		     and user_id = ".$pUserId;
+		     and user_id = $pUserId";
            //echo $sql;
 
 	   if (CSql::singleValue($sql, 'resultcount') >= 3)
@@ -1293,7 +1195,7 @@ if (!isset($MyPHPScript)) return;
 
 
     		 $Sql = "insert into UserLinks (userlink_name, userlink_url, linktype_id, userlink_hide, raid_id, user_id) 
-		         values ('".$pLinkName."', '".$pLinkUrl."', ".$pLinkTypeId.", 0, ".$pLinkRaidId.", ".$pUserId.")";
+		         values ('$pLinkName', '$pLinkUrl', $pLinkTypeId, 0, $pLinkRaidId, $pUserId)";
 
               //    echo $sql;
 		 MySqlQuery($Sql);  
@@ -1320,23 +1222,14 @@ if (!isset($MyPHPScript)) return;
 		return;
 	}
 
-	     $AllowEdit = 0;
-	     // Права на редактирование
-             if (($pUserId == $UserId) || $Administrator)
-	     {
-		  $AllowEdit = 1;
-	     } else {
+	// Права на редактирование
+	$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
+	if ($AllowEdit == 0) {
+	        return;               // выходим
+	}
 
-	       $AllowEdit = 0;
-               // выходим
-	       return;
-	     }
-
-		$pUserLinkId = trim($_POST['UserLinkId']); 
-
-
+	$pUserLinkId = trim($_POST['UserLinkId']);
         if (!isset($pUserLinkId)) {$pUserLinkId = 0;}
-
 
 	if ($pUserLinkId <= 0)
 	{
@@ -1344,15 +1237,13 @@ if (!isset($MyPHPScript)) return;
 		return;
 	}
 
+	$Sql = "update  UserLinks set userlink_hide = 1 where userlink_id = $pUserLinkId";
 
+	//    echo $sql;
+	MySqlQuery($Sql);
 
+	CMmb::setResult('Впечатление удалено', "ViewUserData", "");
 
-    		 $Sql = "update  UserLinks set userlink_hide = 1 where userlink_id = ".$pUserLinkId;
-
-              //    echo $sql;
-		 MySqlQuery($Sql);
-
-		 CMmb::setResult('Впечатление удалено', "ViewUserData", "");
    }  else {
    // если никаких действий не требуется
 
