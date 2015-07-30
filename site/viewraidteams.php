@@ -198,26 +198,25 @@ if (!isset($MyPHPScript)) return;
 
 <?
 
-                $TabIndex = 0;
+        $TabIndex = 0;
 		$DisabledText = '';
 
-                //Определяем локальные переменные-флаги показа результатов и этапов 
-                $CanViewResults = CanViewResults($Administrator, $Moderator, $RaidStage);
-                $CanViewLevels = CanViewLevels($Administrator, $Moderator, $RaidStage);
+        //Определяем локальные переменные-флаги показа результатов и этапов
+        $CanViewResults = CanViewResults($Administrator, $Moderator, $RaidStage);
+        $CanViewLevels = CanViewLevels($Administrator, $Moderator, $RaidStage);
 
 
-                // Разбираемся с сортировкой
-                if (isset($_REQUEST['OrderType'])) $OrderType = $_REQUEST['OrderType']; else $OrderType = "";
+        // Разбираемся с сортировкой
+        if (isset($_REQUEST['OrderType'])) $OrderType = $_REQUEST['OrderType']; else $OrderType = "";
 		if (($OrderType == 'Errors') && !$Administrator && !$Moderator) $OrderType = "";
 		$OrderString = '';
 
 
 
 		  $sql = "select raid_registrationenddate,  raid_closedate,
-				 COALESCE(r.raid_noshowresult, 0) as raid_noshowresult
-			  from  Raids r
-			  where r.raid_id = ".$RaidId."
-                          "; 
+						 COALESCE(r.raid_noshowresult, 0) as raid_noshowresult
+				  from  Raids r
+			  	  where r.raid_id = $RaidId";
             
 		  $Result = MySqlQuery($sql);
 		  $Row = mysql_fetch_assoc($Result);
@@ -226,25 +225,25 @@ if (!isset($MyPHPScript)) return;
                 $RaidCloseDt = $Row['raid_closedate'];
                 $RaidNoShowResult = $Row['raid_noshowresult'];
    
-                 // 03/05/2014 Исправил порядок сортировки - раньше независисмо от устновленного  $OrderType могло сбрасываться 
-                // если порядок не задан смотрим на соотношение временени публикации и текущего
-                if  (empty($OrderType))
-		{
+          // 03/05/2014 Исправил порядок сортировки - раньше независисмо от устновленного  $OrderType могло сбрасываться
+          // если порядок не задан смотрим на соотношение временени публикации и текущего
+          if  (empty($OrderType))
+		  {
 		   if ($CanViewResults)
-                   {
+           {
   	            $OrderType = "Place";
 		   } else {
-	           $OrderType = "Num";
-                   }
-		}
-		// Конец разбора сортировки по умолчанию
+	         $OrderType = "Num";
+           }
+		  }
+	  	  // Конец разбора сортировки по умолчанию
 		   
                 
-            	print('<div align = "left" style = "font-size: 80%;">'."\r\n");
-		print('Сортировать по '."\r\n");
-		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;" 
+          print('<div align = "left" style = "font-size: 80%;">'."\r\n");
+		  print('Сортировать по '."\r\n");
+		  print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;"
                                onchange = "OrderTypeChange();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
-	        print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >убыванию номера'."\r\n");
+	      print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >убыванию номера'."\r\n");
 
                 //Сортировку по месту показыаем только после окончания ММБ, если не стоит флаг "Не показывать результаты"
 		// Администраторам и модераторам флаг не мешает
@@ -261,16 +260,20 @@ if (!isset($MyPHPScript)) return;
 		print('Фильтровать: '."\r\n"); 
 
 	        $sql = "select distance_id, distance_name
-                        from  Distances where distance_hide = 0 and raid_id = ".$RaidId." order by distance_name"; 
+                    from  Distances
+                    where distance_hide = 0 and raid_id = $RaidId
+                    order by distance_name";
 		//echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
                 
 		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px;" 
                                onchange = "DistanceIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-                $distanceselected =  (0 == $_REQUEST['DistanceId'] ? 'selected' : '');
-		  print('<option value = "0" '.$distanceselected.' >дистанцию'."\r\n");
+        $distanceselected =  (0 == $_REQUEST['DistanceId'] ? 'selected' : '');
+	    print('<option value = "0" '.$distanceselected.' >дистанцию'."\r\n");
+
 		if (!isset($_REQUEST['DistanceId'])) $_REQUEST['DistanceId'] = "";
-	        while ($Row = mysql_fetch_assoc($Result))
+
+	    while ($Row = mysql_fetch_assoc($Result))
 		{
 		  $distanceselected = ($Row['distance_id'] == $_REQUEST['DistanceId']  ? 'selected' : '');
 		  print('<option value = "'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."\r\n");
@@ -282,29 +285,48 @@ if (!isset($MyPHPScript)) return;
 ============================= точки ===============================
 */
 
-	        $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name
-                        from  LevelPoints lp 
-			      inner join Distances d
-			      on lp.distance_id = d.distance_id
-			where raid_id = ".$RaidId;
-		
-		if ($_REQUEST['DistanceId'] <> 0) {
-		$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
+        $DistanceCondition = "1=1";
+
+		if ($_REQUEST['DistanceId'] <> 0)
+		{
+		     $DistanceCondition = "d.distance_id = {$_REQUEST['DistanceId']}";
 		}
-			
-                $sql = $sql." order by lp.levelpoint_order "; 
+
+
+
+        $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name
+                from  LevelPoints lp
+                      inner join
+				      (
+				       select tlp.levelpoint_id
+				       from TeamLevelPoints tlp
+				            inner join Teams t
+				            on tlp.team_id = t.team_id
+				      		inner join Distances d
+				      		on t.distance_id = d.distance_id
+					   where raid_id = $RaidId and $DistanceCondition
+					         and  TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_duration, 0)) <> 0
+					   group by tlp.levelpoint_id
+					  ) a
+					  on lp.levelpoint_id = a.levelpoint_id
+ 		      	 	  inner join Distances d
+				      on lp.distance_id = d.distance_id
+				order by lp.levelpoint_order ";
+
 		//echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
                 
 		print('<select name="LevelPointId" style = "margin-left: 10px; margin-right: 5px;" 
                                onchange = "LevelPointIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-                $levelpointselected =  (0 == $_REQUEST['LevelPointId'] ? 'selected' : '');
-		  print('<option value = "0" '.$levelpointselected.' >точку (КП)'."\r\n");
+        $levelpointselected =  (0 == $_REQUEST['LevelPointId'] ? 'selected' : '');
+ 	    print("<option value = '0' $levelpointselected>точку (КП)\r\n");
+
 		if (!isset($_REQUEST['LevelPointId'])) $_REQUEST['LevelPointId'] = "";
-	        while ($Row = mysql_fetch_assoc($Result))
+
+        while ($Row = mysql_fetch_assoc($Result))
 		{
 		  $levelpointselected = ($Row['levelpoint_id'] == $_REQUEST['LevelPointId']  ? 'selected' : '');
-		  print('<option value = "'.$Row['levelpoint_id'].'" '.$levelpointselected.' >'.$Row['distance_name'].' '.$Row['levelpoint_name']."\r\n");
+		  print("<option value = '{$Row['levelpoint_id']}' $levelpointselected>{$Row['distance_name']} {$Row['levelpoint_name']} \r\n");
 		}
 		print('</select>'."\r\n");  
 		mysql_free_result($Result);		
