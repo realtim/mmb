@@ -739,7 +739,7 @@ elseif ($action == 'JsonExport')
 	// Raids: raid_id, raid_name, raid_registrationenddate
 	$Sql = "select raid_id, raid_name 
 	        from Raids 
-		where raid_id = ".$RaidId;
+			where raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Raids"][] = $Row; }
@@ -747,8 +747,8 @@ elseif ($action == 'JsonExport')
 
 	// Distances: distance_id, raid_id, distance_name
 	$Sql = "select distance_id, raid_id, distance_name 
-		from Distances
-		where distance_hide = 0 and raid_id = ".$RaidId;
+			from Distances
+			where distance_hide = 0 and raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
@@ -757,12 +757,12 @@ elseif ($action == 'JsonExport')
 
 	// Teams: team_id, distance_id, team_name, team_num // *
 	$Sql = "select team_id, t.distance_id, team_name, team_num, team_usegps, team_greenpeace,
-			team_result, team_registerdt, team_outofrange,
-			team_maxlevelpointorderdone, 
-			team_minlevelpointorderwitherror 
-		from Teams t 
-		     inner join Distances d on t.distance_id = d.distance_id 
-		where t.team_hide = 0 and d.distance_hide = 0  and d.raid_id = ".$RaidId;
+					team_result, team_registerdt, team_outofrange,
+					team_maxlevelpointorderdone,
+					team_minlevelpointorderwitherror
+			from Teams t
+			     inner join Distances d on t.distance_id = d.distance_id
+			where t.team_hide = 0 and d.distance_hide = 0  and d.raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
@@ -770,13 +770,13 @@ elseif ($action == 'JsonExport')
 
 	// Users: user_id, user_name, user_birthyear // *
 	// Добавил олграничение - только по текущему ММБ
-	$Sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name,
+	$Sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '{$Anonimus}' ELSE u.user_name END as user_name,
 	               u.user_birthyear, u.user_city 
 	        from Users u
-		     inner join TeamUsers tu on u.user_id = tu.user_id
-		     inner join Teams t on tu.team_id = t.team_id 
-		     inner join Distances d on t.distance_id = d.distance_id 
-		where u.user_hide = 0 and t.team_hide = 0 and tu.teamuser_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+			     inner join TeamUsers tu on u.user_id = tu.user_id
+		    	 inner join Teams t on tu.team_id = t.team_id
+		      	 inner join Distances d on t.distance_id = d.distance_id
+			where u.user_hide = 0 and t.team_hide = 0 and tu.teamuser_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 
 
 	$Result = MySqlQuery($Sql);
@@ -786,9 +786,9 @@ elseif ($action == 'JsonExport')
 	// TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
 	$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.teamuser_rank 
 	        from TeamUsers tu 
-		     inner join Teams t on tu.team_id = t.team_id 
-		     inner join Distances d on t.distance_id = d.distance_id 
-		where t.team_hide = 0 and tu.teamuser_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+		     	inner join Teams t on tu.team_id = t.team_id
+		     	inner join Distances d on t.distance_id = d.distance_id
+			where t.team_hide = 0 and tu.teamuser_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
@@ -803,11 +803,11 @@ elseif ($action == 'JsonExport')
 	
 	// LevelPoints: levelpoint_id, distance_id, levelpoint_name, levelpoint_order, pointtype_id, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
 	$Sql = "select lp.levelpoint_id, lp.distance_id, lp.levelpoint_name, lp.levelpoint_order, lp.pointtype_id, 
-				lp.levelpoint_penalty, lp.levelpoint_mindatetime, lp.levelpoint_maxdatetime,
-				lp.scanpoint_id
+					lp.levelpoint_penalty, lp.levelpoint_mindatetime, lp.levelpoint_maxdatetime,
+					lp.scanpoint_id
 			from LevelPoints lp 
 					inner join Distances d on lp.distance_id = d.distance_id 
-			where  d.distance_hide = 0 and d.raid_id = ".$RaidId;
+			where  d.distance_hide = 0 and d.raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
@@ -816,14 +816,14 @@ elseif ($action == 'JsonExport')
 
 	// TeamLevelPoints: 
 	$Sql = "select teamlevelpoint_id, tlp.team_id, tlp.levelpoint_id, 
-			teamlevelpoint_datetime, teamlevel_comment,
-			teamlevelpoint_penalty,
-			error_id, teamlevelpoint_duration,
-			teamlevelpoint_result 
-		from TeamLevelPoints tlp 
-		     inner join Teams t on tl.team_id = t.team_id 
-		     inner join Distances d on t.distance_id = d.distance_id 
-		where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+					teamlevelpoint_datetime, teamlevelpoint_comment,
+					teamlevelpoint_penalty,
+					error_id, teamlevelpoint_duration,
+					teamlevelpoint_result
+			from TeamLevelPoints tlp
+		    	 inner join Teams t on tlp.team_id = t.team_id
+			     inner join Distances d on t.distance_id = d.distance_id
+			where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
 
@@ -833,11 +833,11 @@ elseif ($action == 'JsonExport')
 
 	// TeamLevelDismiss: 
 	$Sql = "select teamleveldismiss_id, tld.levelpoint_id, 
-			teamleveldismiss_date, teamuser_id
-		from TeamLevelDismiss tld 
-		     inner join LevelPoints lp on tld.levelpoint_id = lp.levelpoint_id 
-		     inner join Distances d on lp.distance_id = d.distance_id 
-		where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+					teamleveldismiss_date, teamuser_id
+			from TeamLevelDismiss tld
+			     inner join LevelPoints lp on tld.levelpoint_id = lp.levelpoint_id
+			     inner join Distances d on lp.distance_id = d.distance_id
+			where  d.distance_hide = 0 and d.raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
 
