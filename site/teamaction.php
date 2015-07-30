@@ -807,7 +807,7 @@ elseif ($action == 'JsonExport')
 				lp.scanpoint_id
 			from LevelPoints lp 
 					inner join Distances d on lp.distance_id = d.distance_id 
-			where  l.level_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+			where  d.distance_hide = 0 and d.raid_id = ".$RaidId;
 
 	$Result = MySqlQuery($Sql);
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }

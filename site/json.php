@@ -98,11 +98,14 @@ $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
 mysql_free_result($Result);
 
+/*
 // Levels: level_id, distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
 $Sql = "select level_id, l.distance_id, level_name, level_order, level_starttype, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime from Levels l inner join Distances d on l.distance_id = d.distance_id where l.level_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
 mysql_free_result($Result);
+*/
+
 
 // 18/02/2014 добавил 'экспорт scanpoints
 // ScanPoints: 
