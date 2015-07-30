@@ -1,6 +1,12 @@
 <?php
 // +++++++++++ Обработчик действий, связанных с пользователем +++++++++++++++++
 
+function UACanEdit($pUserId)
+{
+	global $UserId, $Administrator;
+	return  (($pUserId == $UserId) || $Administrator) ? (1) : (0);
+}
+
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
@@ -36,8 +42,7 @@ if (!isset($MyPHPScript)) return;
 		
 	//echo $Sql;
 		
-	$Result = MySqlQuery($Sql);  
-	$Row = mysql_fetch_assoc($Result);
+	$Row = CSql::singleRow($Sql);
 	$UserId = $Row['user_id'];
 		
 	if ($UserId <= 0) 
@@ -129,7 +134,7 @@ if (!isset($MyPHPScript)) return;
 
 
            // Прверяем, что нет активной учетной записи с таким e-mail
-           $sql = "select count(*) as resultcount from  Users where COALESCE(user_password, '') <> '' and trim(user_email) = '".$pUserEmail."' and user_id <> ".$pUserId;
+           $sql = "select count(*) as resultcount from  Users where COALESCE(user_password, '') <> '' and trim(user_email) = '$pUserEmail' and user_id <> $pUserId";
       //     echo $sql;
 	   if (CSql::singleValue($sql, 'resultcount') > 0)
 	   {
@@ -140,9 +145,9 @@ if (!isset($MyPHPScript)) return;
 
 	   $sql = "select count(*) as resultcount
 	           from  Users 
-		   where  trim(user_name) = '".$pUserName."' 
-		          and user_birthyear = ".$pUserBirthYear." 
-			  and user_id <> ".$pUserId." 
+		   where  trim(user_name) = '$pUserName'
+		          and user_birthyear = $pUserBirthYear
+			  and user_id <> $pUserId
 			  and userunionlog_id is null ";
            //echo $sql;
 	   if (CSql::singleValue($sql, 'resultcount') > 0)
@@ -153,7 +158,7 @@ if (!isset($MyPHPScript)) return;
 
 
 	    // Если есть неактивная учетная запись - высылаем на почту ссылку с активацией
-           $sql = "select user_id from  Users where COALESCE(user_password, '') = '' and trim(user_email) = '".$pUserEmail."' and user_id <> ".$pUserId;
+           $sql = "select user_id from  Users where COALESCE(user_password, '') = '' and trim(user_email) = '$pUserEmail' and user_id <> $pUserId";
            //echo $sql;
 	   $Row = CSql::singleRow($sql);
 	   if ($Row['user_id'] > 0)
@@ -162,18 +167,18 @@ if (!isset($MyPHPScript)) return;
                {
 
 		 $ChangePasswordSessionId = uniqid();
-                 $sql = "update  Users set   user_sessionfornewpassword = '".$ChangePasswordSessionId."', user_sendnewpasswordrequestdt = now()
+                 $sql = "update  Users set   user_sessionfornewpassword = '$ChangePasswordSessionId', user_sendnewpasswordrequestdt = now()
 		         where user_id = ".$Row['user_id'];         
 //                 echo $sql;  
 		 MySqlQuery($sql);
 
 		   // Решил не писать здесь имя - м.б. и в адресе не надо
 		   $Msg = "Здравствуйте!\r\n\r\n";
-		   $Msg =  $Msg."Кто-то (возможно, это были Вы) пытается зарегистрировать учетную запись на сайте ММБ, связанную с этим адресом e-mail.".".\r\n";
-		   $Msg =  $Msg."Запись помечена, как неактивная, поэтому повторно высылается ссылка для активации:".".\r\n";
-		   $Msg =  $Msg."Для активации пользователя и получения пароля необходимо перейти по ссылке:".".\r\n";
-		   $Msg =  $Msg.$MyHttpLink.$MyPHPScript.'?action=sendpasswordafterrequest&changepasswordsessionid='.$ChangePasswordSessionId."\r\n\r\n";
-		   $Msg =  $Msg."Учетные записи без активации могут быть удалены.".".\r\n";
+		   $Msg =  $Msg."Кто-то (возможно, это были Вы) пытается зарегистрировать учетную запись на сайте ММБ, связанную с этим адресом e-mail.\r\n";
+		   $Msg =  $Msg."Запись помечена, как неактивная, поэтому повторно высылается ссылка для активации:\r\n";
+		   $Msg =  $Msg."Для активации пользователя и получения пароля необходимо перейти по ссылке:\r\n";
+		   $Msg =  $Msg.$MyHttpLink.$MyPHPScript."?action=sendpasswordafterrequest&changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+		   $Msg =  $Msg."Учетные записи без активации могут быть удалены.\r\n";
 		   //$Msg =  $Msg."P.S. Если Вас зарегистрировали без Вашего желания - просто проигнорируйте письмо - приносим извинения за доставленные неудобства."."\r\n";
 			    
                    // Отправляем письмо
@@ -215,9 +220,9 @@ if (!isset($MyPHPScript)) return;
 		 $sql = "insert into  Users (user_email, user_name, user_birthyear, user_password, user_registerdt,
 		                             user_sessionfornewpassword, user_sendnewpasswordrequestdt, 
 					     user_prohibitadd, user_city, user_noshow)
-		                     values ('".$pUserEmail."', '".$pUserName."', ".$pUserBirthYear.", '', now(),
-				             '".$ChangePasswordSessionId."', now(), 
-					      ".$pUserProhibitAdd.", '".$pUserCity."', ".$pUserNoShow.")";
+		                     values ('$pUserEmail', '$pUserName', $pUserBirthYear, '', now(),
+				             '$ChangePasswordSessionId', now(),
+					      $pUserProhibitAdd, '$pUserCity', $pUserNoShow)";
 //                 echo $sql;  
                  // При insert должен вернуться послений id - это реализовано в  MySqlQuery
 		 $newUserId = MySqlQuery($sql);
@@ -232,11 +237,11 @@ if (!isset($MyPHPScript)) return;
 
                    // Решил не писать здесь имя - м.б. и в адресе не надо
 		   $Msg = "Здравствуйте!\r\n\r\n";
-		   $Msg =  $Msg."Кто-то (возможно, это были Вы) зарегистрировал учетную запись на сайте ММБ, связанную с этим адресом e-mail.".".\r\n";
-		   $Msg =  $Msg."Для активации пользователя и получения пароля необходимо перейти по ссылке:".".\r\n";
-		   $Msg =  $Msg.$MyHttpLink.$MyPHPScript.'?action=sendpasswordafterrequest&changepasswordsessionid='.$ChangePasswordSessionId."\r\n\r\n";
-		   $Msg =  $Msg."Учетные записи без активации могут быть удалены.".".\r\n";
-		   $Msg =  $Msg."P.S. Если Вас зарегистрировали без Вашего желания - просто проигнорируйте письмо - приносим извинения за доставленные неудобства."."\r\n";
+		   $Msg =  $Msg."Кто-то (возможно, это были Вы) зарегистрировал учетную запись на сайте ММБ, связанную с этим адресом e-mail.\r\n";
+		   $Msg =  $Msg."Для активации пользователя и получения пароля необходимо перейти по ссылке:\r\n";
+		   $Msg =  $Msg.$MyHttpLink.$MyPHPScript."?action=sendpasswordafterrequest&changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+		   $Msg =  $Msg."Учетные записи без активации могут быть удалены.\r\n";
+		   $Msg =  $Msg."P.S. Если Вас зарегистрировали без Вашего желания - просто проигнорируйте письмо - приносим извинения за доставленные неудобства.\r\n";
 			    
                    // Отправляем письмо
 		   SendMail(trim($pUserEmail), $Msg, $pUserName);
@@ -261,21 +266,19 @@ if (!isset($MyPHPScript)) return;
 		}
 
 		// Права на редактирование
-		$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
-		if ($AllowEdit == 0) {
-			return;               // выходим
-		}
+		if (!UACanEdit($pUserId))
+			return;              // выходим
 
 
                   // 03/07/2014  Добавляем признак анонимности (скрывать ФИО)
 
-		$sql = "update  Users set   user_email = trim('".$pUserEmail."'),
-		                     user_name = trim('".$pUserName."'),
-		                     user_city = trim('".$pUserCity."'),
-		                     user_prohibitadd = ".$pUserProhibitAdd.",
-		                     user_noshow = ".$pUserNoShow.",
-				     user_birthyear = ".$pUserBirthYear."
-		        where user_id = ".$pUserId;
+		$sql = "update  Users set   user_email = trim('$pUserEmail'),
+		                     user_name = trim('$pUserName'),
+		                     user_city = trim('$pUserCity'),
+		                     user_prohibitadd = $pUserProhibitAdd,
+		                     user_noshow = $pUserNoShow,
+				     user_birthyear = $pUserBirthYear
+		        where user_id = $pUserId";
 
 		// echo $sql;
 		$rs = MySqlQuery($sql);
@@ -284,7 +287,7 @@ if (!isset($MyPHPScript)) return;
 		  if (trim($pUserNewPassword) <> '' and trim($pUserConfirmNewPassword) <> '' and trim($pUserNewPassword) == trim($pUserConfirmNewPassword))
 		  {
 		      $sql = "update  Users set user_password = md5('".trim($pUserNewPassword)."')
-	                      where user_id = ".$pUserId;
+	                      where user_id = $pUserId";
                  
           		// echo $sql;
 		      $rs = MySqlQuery($sql);  
@@ -296,10 +299,10 @@ if (!isset($MyPHPScript)) return;
 		 // Формируем сообщение
 		 $ChangeDataUserName = CSql::userName($UserId);
 
-                 $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
-		 $Msg =  $Msg."В Вашей учетной записи произошли изменения - их можно увидеть в карточке пользователя."."\r\n";
-		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
-		 $Msg =  $Msg."P.S. Изменения можете вносить Вы, а также администратор сайта ММБ.";
+                 $Msg =  "Уважаемый пользователь $pUserName!\r\n\r\n";
+		 $Msg .= "В Вашей учетной записи произошли изменения - их можно увидеть в карточке пользователя.\r\n";
+		 $Msg .= "Автор изменений: $ChangeDataUserName\r\n\r\n";
+		 $Msg .= "P.S. Изменения можете вносить Вы, а также администратор сайта ММБ.";
 			   
 			    
                   // Отправляем письмо
@@ -320,53 +323,50 @@ if (!isset($MyPHPScript)) return;
    } elseif ($action == "SendEmailWithNewPassword")  {
     // Действие вызывается ссылкой из формы просмотра данных пользователя
   
-  	     $view = "ViewUserData";
+	$view = "ViewUserData";
 
-             $pUserId = $_POST['UserId'];
+	$pUserId = $_POST['UserId'];
 
-        //     echo 'pUserId '.$pUserId.'now  '.$NowUserId;
-	
-             // Если вызвали с таким действием, должны быть определны оба пользователя
-             if ($pUserId <= 0 or $UserId <= 0)
-	     {
-	      return;
-	     }
+	//     echo 'pUserId '.$pUserId.'now  '.$NowUserId;
 
-	   // Права на редактирование
-	   $AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
-	   if ($AllowEdit == 0) {
-		   return;               // выходим
-	   }
+	// Если вызвали с таким действием, должны быть определны оба пользователя
+	if ($pUserId <= 0 or $UserId <= 0)
+	{
+		return;
+	}
 
-		$sql = "select user_email, user_name, user_birthyear from  Users where user_id = ".$pUserId;
-		$row = CSql::singleRow($sql);
-     		$UserEmail = $row['user_email'];
-		$UserName = $row['user_name']; 
+	// Права на редактирование
+	if (!UACanEdit($pUserId))
+		return;              // выходим
 
-  		$NewPassword = GeneratePassword(6);
-		
-		// пишем в базу пароль и время отправки письма с паролем
-		//  обнуляем сессию для восстановления и её время
-		$sql = "update   Users  set user_password = '".md5($NewPassword)."',
-		                             user_sendnewpassworddt = now(),
-					     user_sessionfornewpassword = null,
-					     user_sendnewpasswordrequestdt = null
-		         where user_id = ".$pUserId;
-              //   echo $sql;
-	        $rs = MySqlQuery($sql);  
+	$row = CSql::fullUser($pUserId);
+        $UserEmail = $row['user_email'];
+	$UserName = $row['user_name'];
 
-		$statustext = 'Пароль '.$NewPassword.' выслан.';
-                $view = "";
+        $NewPassword = GeneratePassword(6);
 
-		$ChangeDataUserName = CSql::userName($UserId);
+	// пишем в базу пароль и время отправки письма с паролем
+	//  обнуляем сессию для восстановления и её время
+	$sql = "update   Users  set user_password = '".md5($NewPassword)."',
+	                             user_sendnewpassworddt = now(),
+				     user_sessionfornewpassword = null,
+				     user_sendnewpasswordrequestdt = null
+	         where user_id = $pUserId";
+        //   echo $sql;
+        $rs = MySqlQuery($sql);
 
-		$Msg = "Уважаемый пользователь ".$UserName."!\r\n\r\n";
-		$Msg =  $Msg."У Вашей учетной записи изменён пароль: ".$NewPassword."\r\n";
-		$Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
-		$Msg =  $Msg."P.S. Изменения можете вносить Вы, а также администратор сайта ММБ.";
-			    
-                // Отправляем письмо
-		SendMail(trim($UserEmail), $Msg, $UserName);
+	$statustext = "Пароль $NewPassword выслан.";
+        $view = "";
+
+	$ChangeDataUserName = CSql::userName($UserId);
+
+	$Msg =  "Уважаемый пользователь $UserName!\r\n\r\n";
+	$Msg .= "У Вашей учетной записи изменён пароль: $NewPassword\r\n";
+	$Msg .= "Автор изменений: $ChangeDataUserName.\r\n\r\n";
+	$Msg .= "P.S. Изменения можете вносить Вы, а также администратор сайта ММБ.";
+
+        // Отправляем письмо
+	SendMail(trim($UserEmail), $Msg, $UserName);
 
 
    } elseif ($action == "RestorePasswordRequest")  {
@@ -386,13 +386,13 @@ if (!isset($MyPHPScript)) return;
 
            $sql = "select user_id 
                    from  Users 
-                   where user_hide = 0 and user_email = '".$pUserEmail."'";
+                   where user_hide = 0 and user_email = '$pUserEmail'";
 
          //  echo $sql;
 	   $pUserId = CSql::singleRow($sql, 'user_id');
 	   if ($pUserId <= 0)
 	   {
-	              CMmb::setErrorMessage('Пользователь с  e-mail '.$pUserEmail.' не найден ');
+	              CMmb::setErrorMessage("Пользователь с  e-mail $pUserEmail не найден");
 		      return;
 	   }
 
@@ -400,17 +400,17 @@ if (!isset($MyPHPScript)) return;
 	   $ChangePasswordSessionId = uniqid();
 	   
            // пишем в базу сессию для восстановления пароля
-           $sql = "update   Users  set user_sessionfornewpassword = '".$ChangePasswordSessionId."',
+           $sql = "update   Users  set user_sessionfornewpassword = '$ChangePasswordSessionId',
 	                               user_sendnewpasswordrequestdt = now()
 	           where user_id = '".$pUserId."'";
            //echo $sql;
 	   $rs = MySqlQuery($sql);  
 
 	   $Msg = "Здравствуйте!\r\n\r\n";
-	   $Msg =  $Msg."Кто-то (возможно, это были Вы) запросил восстановление пароля на сайте ММБ для этого адреса e-mail."."\r\n";
-	   $Msg =  $Msg."Для получения нового пароля необходимо перейти по ссылке:"."\r\n";
-	   $Msg =  $Msg.$MyHttpLink.$MyPHPScript.'?action=sendpasswordafterrequest&changepasswordsessionid='.$ChangePasswordSessionId."\r\n\r\n";
-	   $Msg =  $Msg."P.S. Если Вы не запрашивали восстановление пароля - просто проигнорируйте письмо - приносим извинения за доставленные неудобства."."\r\n";
+	   $Msg =  $Msg."Кто-то (возможно, это были Вы) запросил восстановление пароля на сайте ММБ для этого адреса e-mail.\r\n";
+	   $Msg =  $Msg."Для получения нового пароля необходимо перейти по ссылке:\r\n";
+	   $Msg =  $Msg.$MyHttpLink.$MyPHPScript."?action=sendpasswordafterrequest&changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+	   $Msg =  $Msg."P.S. Если Вы не запрашивали восстановление пароля - просто проигнорируйте письмо - приносим извинения за доставленные неудобства.\r\n";
 
 	   //echo $Message;				     
            // Чтобы вежливо написать "кому", нужен доп. запрос с получением имени по enail
@@ -460,9 +460,9 @@ if (!isset($MyPHPScript)) return;
 
 		$statustext = 'Пароль '.$NewPassword.' выслан.';
 
-		$Msg = "Уважаемый пользователь ".$UserName."!\r\n\r\n";
-		$Msg =  $Msg."Согласно подтверждённому запросу с Вашего адреса e-mail,"."\r\n";
-		$Msg =  $Msg."для Вашей учетной записи на сайте ММБ создан пароль: ".$NewPassword."\r\n";
+		$Msg =  "Уважаемый пользователь $UserName!\r\n\r\n";
+		$Msg .= "Согласно подтверждённому запросу с Вашего адреса e-mail,\r\n";
+		$Msg .= "для Вашей учетной записи на сайте ММБ создан пароль: $NewPassword\r\n";
 			    
                 // Отправляем письмо
 		SendMail(trim($UserEmail), $Msg, $UserName);
@@ -516,7 +516,7 @@ if (!isset($MyPHPScript)) return;
 			where ltrim(COALESCE(u.user_password, '')) <> '' 
                               and u.user_hide = 0 
 			      and COALESCE(u.user_noshow, 0) = 0
-                              and user_name like '%".$sqlFindString."%'";
+                              and user_name like '%$sqlFindString%'";
                 
 		//echo 'sql '.$sql;
 		
@@ -551,8 +551,8 @@ if (!isset($MyPHPScript)) return;
 
 			$Sql = "select raidmoderator_id,  raidmoderator_hide
  		                from RaidModerators 
-			        where raid_id = ".$RaidId."
-			              and user_id = ".$pUserId."
+			        where raid_id = $RaidId
+			              and user_id = $pUserId
 			        LIMIT 0,1 "  ;
 				
 			 $Row = CSql::singleRow($Sql);
@@ -563,7 +563,7 @@ if (!isset($MyPHPScript)) return;
 		 
 		 if (empty($RaidModeratorId))
 		 {
-			 $Sql = "insert into RaidModerators (raid_id, user_id, raidmoderator_hide) values (".$RaidId.", ".$pUserId.", 0)";
+			 $Sql = "insert into RaidModerators (raid_id, user_id, raidmoderator_hide) values ($RaidId, $pUserId, 0)";
 			 MySqlQuery($Sql);  
 			 $ModeratorAdd = 1;
 
@@ -703,10 +703,8 @@ if (!isset($MyPHPScript)) return;
 	$rs = MySqlQuery($sql);
 
 	// Права на редактирование
-	$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
-	if ($AllowEdit == 0) {
-	   return;               // выходим
-	}
+	if (!UACanEdit($pUserId))
+		return;              // выходим
 
         CMmb::setShortResult("Пользователь $pUserName ключ $pUserId удален ", 'ViewRaidTeams');
    }
@@ -729,12 +727,9 @@ if (!isset($MyPHPScript)) return;
 		return;
 	}
 
-
 	// Права на редактирование
-	$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
-	if ($AllowEdit == 0) {
-	        return;               // выходим
-	}
+	if (!UACanEdit($pUserId))
+		return;              // выходим
 
 	$pNewDeviceName = trim($_POST['NewDeviceName']);
 
@@ -795,22 +790,20 @@ if (!isset($MyPHPScript)) return;
 	}
 
 	// Права на редактирование
-	$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
-	if ($AllowEdit == 0) {
-	        return;               // выходим
-	}
+	if (!UACanEdit($pUserId))
+		return;              // выходим
 
 	// Прверяем, что есть устройство для пользователя
-           $sql = "select count(*) as resultcount from  Devices where user_id  = ".$pUserId." and device_id = ".$pDeviceId;
-      //     echo $sql;
-	   if (CSql::singleValue($sql, 'resultcount') <> 1)
-	   {
-   		CMmb::setErrorSm('Нет устройства.');
-                return; 
-	   }
-	   
-		// Сбор данных для конфигурации
-	  $data = array();
+	$sql = "select count(*) as resultcount from  Devices where user_id  = ".$pUserId." and device_id = ".$pDeviceId;
+	//     echo $sql;
+	if (CSql::singleValue($sql, 'resultcount') <> 1)
+	{
+		CMmb::setErrorSm('Нет устройства.');
+		return;
+	}
+
+	// Сбор данных для конфигурации
+	$data = array();
 
 	// Raids: raid_id, raid_name, raid_registrationenddate
 	$Sql = "select d.device_id, d.device_name, d.user_id, u.user_name, u.user_password from Devices d inner join Users u on d.user_id = u.user_id  where d.device_id = ".$pDeviceId;
@@ -854,9 +847,7 @@ if (!isset($MyPHPScript)) return;
 	      return;
 	     }
 	   
-	   
-		$sql = "select user_email, user_name, user_birthyear from  Users where user_id = ".$pUserId;
-		$row = CSql::singleRow($sql);
+		$row = CSql::fullUser($pUserId);
                 $UserEmail = $row['user_email'];
 		$UserName = $row['user_name'];
 
@@ -1120,10 +1111,8 @@ if (!isset($MyPHPScript)) return;
 	}
 
 	// Права на редактирование
-	$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
-	if ($AllowEdit == 0) {
-		return;               // выходим
-	}
+	if (!UACanEdit($pUserId))
+		return;              // выходим
 
 	$pLinkName = trim($_POST['NewLinkName']);
 	$pLinkUrl = trim($_POST['NewLinkUrl']);
@@ -1223,10 +1212,8 @@ if (!isset($MyPHPScript)) return;
 	}
 
 	// Права на редактирование
-	$AllowEdit = (($pUserId == $UserId) || $Administrator) ? 1 : 0;
-	if ($AllowEdit == 0) {
-	        return;               // выходим
-	}
+	if (!UACanEdit($pUserId))
+		return;              // выходим
 
 	$pUserLinkId = trim($_POST['UserLinkId']);
         if (!isset($pUserLinkId)) {$pUserLinkId = 0;}
