@@ -232,50 +232,54 @@ if (!isset($MyPHPScript)) return;
 		// Конец разбора сортировки по умолчанию
 		   
 // region часть над таблицей
-            	print('<div align = "left" style = "font-size: 80%;">'."\r\n");
-		print('Сортировать по '."\r\n");
-		print('<select name="OrderType" style="margin-left: 10px; margin-right: 20px;"
-                               onchange="OrderTypeChange();"  tabindex="'.(++$TabIndex).'" '."$DisabledText>\r\n");
-	        print('<option value="Num" '.($OrderType == 'Num' ? 'selected' :'').">убыванию номера</option>\r\n");
+            	print('<div align="left" style="font-size: 80%;">'."\r\n");
 
-                //Сортировку по месту показыаем только после окончания ММБ, если не стоит флаг "Не показывать результаты"
-		// Администраторам и модераторам флаг не мешает
-		if ($CanViewResults)
-		{
-	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'')." >возрастанию места</option>\r\n");
-		}
-		if ($Administrator || $Moderator)
-		{
-	            print('<option value = "Errors" '.($OrderType == 'Errors' ? 'selected' :'')." >наличию ошибок</option>\r\n");
-		}
-	        print('</select>'."\r\n");  
+            	if ($CanViewResults || $Administrator || $Moderator)    // будет больше 1 пункта
+            	{
+			print('Сортировать по '."\r\n");
+			print('<select name="OrderType" style="margin-left: 10px; margin-right: 20px;"
+	                               onchange="OrderTypeChange();"  tabindex="'.(++$TabIndex).'" '."$DisabledText>\r\n");
+		        print('<option value="Num" '.($OrderType == 'Num' ? 'selected' :'').">убыванию номера</option>\r\n");
+
+	                //Сортировку по месту показыаем только после окончания ММБ, если не стоит флаг "Не показывать результаты"
+			// Администраторам и модераторам флаг не мешает
+			if ($CanViewResults)
+		            print('<option value="Place" '.($OrderType == 'Place' ? 'selected' :'').">возрастанию места</option>\r\n");
+
+			if ($Administrator || $Moderator)
+		            print('<option value="Errors" '.($OrderType == 'Errors' ? 'selected' :'').">наличию ошибок</option>\r\n");
+
+		        print('</select>'."\r\n");
+	        }
 
 		print('Фильтровать: '."\r\n"); 
+
+
+		$distanceId = mmb_validate($_REQUEST, 'DistanceId', '');
+		$DistanceCondition = empty($distanceId) ? 'true' : "d.distance_id = $distanceId";
+                $GpsFilter = (mmb_validateInt($_REQUEST, 'GPSFilter', 0)) == 1 ? 1 : 0;
+                $GpsCondition = $GpsFilter ? "t.team_usegps = 0" : "true";
 
 	        $sql = "select distance_id, distance_name
                         from  Distances where distance_hide = 0 and raid_id = $RaidId order by distance_name";
 		//echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
-
-		$display = mysql_num_rows($Result) > 1 ? '' : 'display: none;';
-                
-		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px; '. $display . '"
-                               onchange="DistanceIdChange();"  tabindex="'.(++$TabIndex).'">'."\r\n");
-                $distanceselected =  (0 == $_REQUEST['DistanceId'] ? 'selected' : '');
-		  print('<option value="0" '.$distanceselected.">дистанцию</option>\r\n");
-		if (!isset($_REQUEST['DistanceId'])) $_REQUEST['DistanceId'] = "";
-	        while ($Row = mysql_fetch_assoc($Result))
+		if (mysql_num_rows($Result) > 1)
 		{
-		  $distanceselected = ($Row['distance_id'] == $_REQUEST['DistanceId']  ? 'selected' : '');
-		  print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\r\n");
+			print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px;"
+	                               onchange="DistanceIdChange();"  tabindex="'.(++$TabIndex).'">'."\r\n");
+
+	                $selected  =  (0 == $distanceId) ? ' selected' : '';
+			print("<option value=\"0\" $selected>дистанцию</option>\r\n");
+
+		        while ($Row = mysql_fetch_assoc($Result))
+			{
+			  $selected = ($Row['distance_id'] == $distanceId) ? ' selected' : '';
+			  print("<option value=\"{$Row['distance_id']}\" $selected>{$Row['distance_name']}</option>\r\n");
+			}
+			print("</select>\r\n");
 		}
-		print('</select>'."\r\n");  
 		mysql_free_result($Result);
-
-
-                $DistanceCondition = empty($_REQUEST['DistanceId']) ? 'true' : "d.distance_id = ".$_REQUEST['DistanceId'];
-                $GpsFilter = (mmb_validateInt($_REQUEST, 'GPSFilter', 0)) == 1 ? 1 : 0;
-                $GpsCondition = $GpsFilter ? "t.team_usegps = 0" : "true";
 
 /*
 ============================= точки ===============================
