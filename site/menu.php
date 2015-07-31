@@ -119,17 +119,14 @@ if (!isset($MyPHPScript)) return;
 		print('</table>'."\r\n");
 		print('</form>'."\r\n");
 	} else {
-
-                $Result = MySqlQuery('select user_name from  Users where user_id = '.$UserId);
-		$Row = mysql_fetch_assoc($Result);
-		$UserName = $Row['user_name'];
-                print('<form  name = "UserLoginForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
-                print('<input type = "hidden" name = "action" value = "">'."\r\n"); 
-                print('<input type = "hidden" name = "UserId" value = "">'."\r\n"); 
-		print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
-		print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
-		print('<tr><td><a href = "javascript:ViewUserInfo('.$UserId.');"  title = "Переход к Вашей карточке пользователя">'.$UserName.'</a></tr>'."\r\n"); 
-		print('<tr><td><a href = "javascript:UserLogout();" style = "font-size: 80%;">Выход</a></td></tr>'."\r\n"); 
+		$UserName = CSql::userName($UserId);
+                print('<form  name="UserLoginForm"  action="'.$MyPHPScript.'" method="post">'."\r\n");
+                print('<input type="hidden" name="action" value="">'."\r\n");
+                print('<input type="hidden" name="UserId" value="">'."\r\n");
+		print('<input type="hidden" name="view" value="'.$view.'">'."\r\n");
+		print('<table  class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
+		print('<tr><td><a href="?UserId='.$UserId.'" title="Переход к Вашей карточке пользователя">'.$UserName.'</a></tr>'."\r\n");
+		print('<tr><td><a href="javascript:UserLogout();" style="font-size: 80%;">Выход</a></td></tr>'."\r\n");
 		print('</table>'."\r\n");
 		print('</form>'."\n");
 	}
@@ -139,7 +136,7 @@ if (!isset($MyPHPScript)) return;
 ?>
 
 
-<script language = "JavaScript">
+<script language="JavaScript">
 
 
 	        // Функция проверки правильности заполнения формы
@@ -302,39 +299,36 @@ if (!isset($MyPHPScript)) return;
 <?php
 	
 	// выводим окно для поиска команды 
-	print('<form  name = "FindTeamForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "return ValidateFindTeamForm();">'."\r\n");
+	print('<form name="FindTeamForm"  action="'.$MyPHPScript.'" method="post" onSubmit="return ValidateFindTeamForm();">'."\r\n");
 
-	print('<input type = "hidden" name = "action" value = "FindTeam">'."\r\n");
-	print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
+	print('<input type="hidden" name="action" value="FindTeam">'."\r\n");
+	print('<input type="hidden" name="view" value="'.$view.'">'."\r\n");
         // Эта переменная нужна только тогда, когда из спиcка марш-бросков выбирают дистанцию
-	print('<input type = "hidden" name = "DistanceId" value = "0">'."\r\n");
-	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
-	print('<tr><td class = "input">ММБ'."\r\n"); 
-	print('<select name="RaidId"  style = "width: 141px; margin-left: 5px;" tabindex = "201"  title = "Список марш-бросков" onClick = "ChangeLogo(this.value);">'."\r\n"); 
+	print('<input type="hidden" name="DistanceId" value="0">'."\r\n");
+	print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
+	print('<tr><td class="input">ММБ'."\r\n");
+	print('<select name="RaidId"  style="width: 141px; margin-left: 5px;" tabindex="201"  title="Список марш-бросков" onClick="/* ChangeLogo(this.value); */" onchange="ChangeLogo(this.value); ChangeRaid();">'."\r\n");
 
-                $sql = " select raid_id, raid_name from Raids ";
-
-		if (!$Administrator)
-		{
-	                $sql.=  " where raid_registrationenddate is not null ";
-		}
-		$sql.=  " order by raid_id desc ";
+		$notAdmin = $Administrator ? "true" : "raid_registrationenddate is not null";
+                $sql = "select raid_id, raid_name from Raids
+                            where $notAdmin
+                            order by raid_id desc ";
 		
                 $Result = MySqlQuery($sql);
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-		  print('<option value = "'.$Row['raid_id'].'"  '.(($Row['raid_id'] == $RaidId) ? 'selected' : '').' onclick = "javascript: ChangeRaid();">'.$Row['raid_name']."\r\n");
+		  print('<option value="'.$Row['raid_id'].'"  '.(($Row['raid_id'] == $RaidId) ? 'selected' : '').' onclick="/* javascript: ChangeRaid(); */">'.$Row['raid_name']."</option>\r\n");
 		}
 
                 mysql_free_result($Result);
-	print('</select>'."\r\n");  
-	print('</td></tr>'."\r\n");
+	print("</select>\r\n");
+	print("</td></tr>\r\n");
  
         // 19/06/2015 Пользователь должен быть авторизован и иметь права
 	if ($UserId && CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
-		print('<tr><td><a href = "javascript:NewTeam();" title = "Переход к форме регистрации новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n"); 
+		print('<tr><td><a href="javascript:NewTeam();" title="Переход к форме регистрации новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n");
 	}
 	print('<tr><td><a href="?RaidId='.$RaidId.'" title="Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n");
         // Впечатываем ссылку на администрирование
@@ -342,9 +336,9 @@ if (!isset($MyPHPScript)) return;
         // Ввод/ПРавка марш-броска
 	if ($Administrator)
         { 
-	    print('<tr><td><a href = "javascript:NewRaid();" title = "Создание марш-броска">Новый марш-бросок</a></td></tr>'."\r\n"); 
-	    print('<tr><td><a href = "javascript:ViewRaidInfo();" title = "Параметры марш-броска">Марш-бросок</a></td></tr>'."\r\n"); 
-	    print('<tr><td><a href = "javascript:ViewAdminModeratorsPage();" title = "Страница администрирования модераторов">Модераторы</a></td></tr>'."\r\n"); 
+	    print('<tr><td><a href="javascript:NewRaid();" title="Создание марш-броска">Новый марш-бросок</a></td></tr>'."\r\n");
+	    print('<tr><td><a href="javascript:ViewRaidInfo();" title="Параметры марш-броска">Марш-бросок</a></td></tr>'."\r\n");
+	    print('<tr><td><a href="javascript:ViewAdminModeratorsPage();" title="Страница администрирования модераторов">Модераторы</a></td></tr>'."\r\n");
         }
 
 

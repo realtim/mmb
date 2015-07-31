@@ -27,12 +27,12 @@ if (!isset($MyPHPScript)) return;
 
 
 	// Посмотреть профиль пользователя
-	function ViewUserInfo(userid)
+	/*function ViewUserInfo(userid)
 	{
 		document.UnionTeamsForm.UserId.value = userid;
 		document.UnionTeamsForm.action.value = "UserInfo";
 		document.UnionTeamsForm.submit();
-	}
+	}*/
 	
 	
 	function ValidateUnionTeamsForm()
@@ -116,7 +116,7 @@ if (!isset($MyPHPScript)) return;
 			  while ($TeamUsersRow = mysql_fetch_assoc($TeamUsersResult))
 			  {
 				print('<div style="margin-top: 5px; margin-left: 15px;">'."\n");
-				print('<a href="javascript:ViewUserInfo('.$TeamUsersRow['user_id'].');">'.$TeamUsersRow['user_name'].'</a> '.$TeamUsersRow['user_birthyear']."\n");
+				print('<a href="?UserId='.$TeamUsersRow['user_id'].'">'.$TeamUsersRow['user_name'].'</a> '.$TeamUsersRow['user_birthyear']."\n");
 				print('</div>'."\n");
 			  }
 				mysql_free_result($TeamUsersResult);
@@ -253,7 +253,7 @@ if (!isset($MyPHPScript)) return;
 		     
 		     if ($Row['unionstatus'] <> 'Отмена объединения') 
 		     {
-			print('<a href = "javascript:ViewTeamInfo('.$Row['team_id'].');">'.
+			print('<a href="?TeamId='.$Row['team_id'].'">'.
 		     	       $Row['team_name'].'</a> '."\r\n");
                      } else {
 			print('<b>'.$Row['team_name'].'</b>'."\r\n");
@@ -335,13 +335,13 @@ if (!isset($MyPHPScript)) return;
 		      while ($UserRow = mysql_fetch_assoc($UserResult))
 		      {
 			$UserCount++;
-			  print('<div>'.$UserRow['unionlog_dt'].'  '.$UserRow['oldteam_name'].'  '.
-			                $UserRow['oldteam_num'].'  '. "\r\n"); 
+			  print("<div>{$UserRow['unionlog_dt']}  {$UserRow['oldteam_name']}  ".
+			               $UserRow['oldteam_num']."  \r\n");
 			  
 			  if ($Row['unionstatus'] <> 'Отмена объединения') 
 			  {
-			        print('<a href = "javascript:ViewUserInfo('.$UserRow['user_id'].');">'.
-			                 $UserRow['user_name'].'</a> '.$UserRow['user_birthyear']."\r\n");
+			        print('<a href="?UserId='.$UserRow['user_id'].'">'.
+			                 "{$UserRow['user_name']}</a> {$UserRow['user_birthyear']}\r\n");
 			  }
 			  print('</div>'."\r\n");
 		      }  

@@ -44,14 +44,11 @@ if ($action == "RegisterNewTeam")
 		from TeamUsers tu
 			inner join Teams t on tu.team_id = t.team_id
 			inner join Distances d on t.distance_id = d.distance_id
-		where d.raid_id = '.$RaidId.' and tu.teamuser_hide = 0 and tu.user_id = ".$UserId;
-	$rs = MySqlQuery($sql);
-	$row = mysql_fetch_assoc($rs);
-	mysql_free_result($rs);
-	$TeamNum = $row['team_num'];
+		where d.raid_id = '.$RaidId.' and tu.teamuser_hide = 0 and tu.user_id = $UserId";
+	$TeamNum = CSql::singleValue($sql, 'team_num');
 	if ($TeamNum > 0)
 	{
-		CMmb::setMessage('Уже есть команда c Вашим участием (N '.$row['team_num'].')');
+		CMmb::setMessage("Уже есть команда c Вашим участием (N $TeamNum)");
 		return;
 	}
 }
@@ -129,30 +126,23 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 				inner join Distances d
 				on t.distance_id = d.distance_id
 			where d.raid_id = $RaidId and trim(team_name) = $pTeamName and team_hide = 0 and team_id <> $TeamId";
-	$rs = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($rs);
-	mysql_free_result($rs);
-	if ($Row['resultcount'] > 0)
+	if (CSql::singleValue($sql, 'resultcount') > 0)
 	{
 		setViewError("Уже есть команда с таким названием.");
 		return;
 	}
+
 	// Проверяем номер команды: если новая - 0 и такого номера не должно быть
 	$sql = "select count(*) as resultcount
 			from Teams t
 				inner join Distances d
 				on t.distance_id = d.distance_id
 			where d.raid_id = $RaidId and team_num = $pTeamNum and team_hide = 0 and team_id <> $TeamId";
-	$rs = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($rs);
-	mysql_free_result($rs);
-	if ($Row['resultcount'] > 0)
+	if (CSql::singleValue($sql, 'resultcount') > 0)
 	{
 		setViewError("Уже есть команда с таким номером.");
 		return;
 	}
-
-
 
 
 	if ($OldMmb and $pTeamNum <= 0)
@@ -162,14 +152,11 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	}
 
 
-
 	// Проверяем email нового участника команды
 	if (!empty($pNewTeamUserEmail) and trim($pNewTeamUserEmail) <> 'Email нового участника')
 	{
-		$sql = "select user_id, user_prohibitadd from Users where ltrim(COALESCE(user_password, '')) <> '' and user_hide = 0 and trim(user_email) = trim('".$pNewTeamUserEmail."')";
-		$rs = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($rs);
-		mysql_free_result($rs);
+		$sql = "select user_id, user_prohibitadd from Users where ltrim(COALESCE(user_password, '')) <> '' and user_hide = 0 and trim(user_email) = trim('$pNewTeamUserEmail')";
+		$Row = CSql::singleRow($sql);
 		$NewUserId = $Row['user_id'];
 		$UserProhibitAdd = $Row['user_prohibitadd'];
 		if (empty($NewUserId))
@@ -189,11 +176,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			from TeamUsers tu
 				inner join Teams t on tu.team_id = t.team_id
 				inner join Distances d on t.distance_id = d.distance_id
-			where teamuser_hide = 0 and d.raid_id = ".$RaidId." and user_id = ".$NewUserId;
-		$rs = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($rs);
-		mysql_free_result($rs);
-		if ($Row['result'] > 0)
+			where teamuser_hide = 0 and d.raid_id = $RaidId and user_id = $NewUserId";
+		if (CSql::singleValue($sql, 'result') > 0)
 		{
 			$NewUserId = 0;
 			setViewError('Пользователь с таким email уже включен в другую команду');
@@ -257,11 +241,11 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			$sql = $sql."(select COALESCE(MAX(t.team_num), 0) + 1
 				from Teams t
 					inner join Distances d on t.distance_id = d.distance_id
-				where d.raid_id = ".$RaidId.")";
+				where d.raid_id = $RaidId)";
 		}
 		// Все остальное
-		$sql = $sql.", '".$pTeamName."',".$pTeamUseGPS.",".$pTeamMapsCount.", ".$pDistanceId.",NOW(), "
-			.$pTeamGreenPeace.",".$TeamOutOfRange.")";
+		$sql .= ", '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(),
+			$pTeamGreenPeace, $TeamOutOfRange)";
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);
 		// Поменялся TeamId, заново определяем права доступа
@@ -272,7 +256,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			return;
 		}
 
-		$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid) values (".$TeamId.", ".$NewUserId.", ".$NotStartPreviousRaidId.")";
+		$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid) values ($TeamId, $NewUserId, $NotStartPreviousRaidId)";
 		MySqlQuery($sql);
 		$TeamActionTextForEmail = "создана команда";
 		$SendEmailToAllTeamUsers = 1;
@@ -285,12 +269,12 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$TeamActionTextForEmail = "изменение данных команды";
 		$SendEmailToAllTeamUsers = 0;
 
-		$sql = "update Teams set team_name = trim('".$pTeamName."'),
-					distance_id = ".$pDistanceId.",
-					team_usegps = ".$pTeamUseGPS.",
-					team_greenpeace = ".$pTeamGreenPeace.",
-					team_mapscount = ".$pTeamMapsCount."
-			where team_id = ".$TeamId;
+		$sql = "update Teams set team_name = trim('$pTeamName'),
+					distance_id = $pDistanceId,
+					team_usegps = $pTeamUseGPS,
+					team_greenpeace = $pTeamGreenPeace,
+					team_mapscount = $pTeamMapsCount
+			where team_id = $TeamId";
 
 		$rs = MySqlQuery($sql);
 		
@@ -298,8 +282,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
                 // Провыерка, на правку поля "Вне зачета"
                 if (CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 		{
-			$sql = "update Teams set team_outofrange = ".$pTeamOutOfRange."
-				where team_id = ".$TeamId;
+			$sql = "update Teams set team_outofrange = $pTeamOutOfRange
+				where team_id = $TeamId";
 
 			$rs = MySqlQuery($sql);
                        
@@ -312,14 +296,9 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		// Если добавляли участника
 		if ($NewUserId > 0)
 		{
-			$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid) values (".$TeamId.", ".$NewUserId.", ".$NotStartPreviousRaidId.")";
+			$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid) values ($TeamId, $NewUserId, $NotStartPreviousRaidId)";
 			MySqlQuery($sql);
-			$sql = "select user_name from Users where user_id = ".$NewUserId;
-			$Result = MySqlQuery($sql);
-			$Row = mysql_fetch_assoc($Result);
-			mysql_free_result($Result);
-			$NewUserName = $Row['user_name'];
-			$TeamActionTextForEmail = "добавлен участник ".$NewUserName;
+			$TeamActionTextForEmail = "добавлен участник ". CSql::userName($NewUserId);
 		}
 	}
 	// Конец разных вариантов действий при создании и редактировании команды
@@ -334,11 +313,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	// Кроме того, кто вносил изменения, если $SendEmailToAllTeamUsers <> 1
 	if ($UserId > 0 and $TeamId > 0)
 	{
-		$sql = "select user_name from Users where user_id = ".$UserId;
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		mysql_free_result($Result);
-		$ChangeDataUserName = $Row['user_name'];
+		$ChangeDataUserName = CSql::userName($UserId);
 		$sql = "select u.user_email, u.user_name, t.team_num, d.distance_name, r.raid_name
 			from Users u
 				inner join TeamUsers tu on tu.user_id = u.user_id
@@ -346,8 +321,9 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 				inner join Distances d on t.distance_id = d.distance_id
 				inner join Raids r on d.raid_id = r.raid_id
 			where tu.teamuser_hide = 0 and tu.team_id = ".$TeamId;
-		if ($SendEmailToAllTeamUsers <> 1) $sql = $sql." and u.user_id <> ".$UserId;
-		$sql = $sql." order by tu.teamuser_id asc";
+		if ($SendEmailToAllTeamUsers <> 1)
+			$sql .= " and u.user_id <> $UserId";
+		$sql .= " order by tu.teamuser_id asc";
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
 		{
@@ -380,11 +356,9 @@ elseif ($action == 'FindTeam')
 	}
 	$sql = "select team_id from Teams t
 			inner join Distances d on t.distance_id = d.distance_id
-		where d.raid_id = ".$RaidId." and t.team_hide = 0 and t.team_num = ".(int)$TeamNum;
-	$rs = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($rs);
-	mysql_free_result($rs);
-	$TeamId = $Row['team_id'];
+		where d.raid_id = $RaidId and t.team_hide = 0 and t.team_num = ".(int)$TeamNum;
+
+	$TeamId = CSql::singleValue($sql, 'team_id');
 	// Поменялся TeamId, заново определяем права доступа
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 	if ($TeamId <= 0)
@@ -441,31 +415,21 @@ elseif ($action == 'HideTeamUser')
 	}
 
 	// Смотрим, был ли это последний участник или нет
-	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = ".$TeamId;
+	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId";
+	$TeamUserCount = CSql::singleValue($sql, 'result');
+
+	// 07.2015 Заменил на физическое удаление
+	$sql = "delete from TeamUsers where teamuser_id = $HideTeamUserId";
+	//$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
 	$rs = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($rs);
-	mysql_free_result($rs);
-	$TeamUserCount = $Row['result'];
-	if ($TeamUserCount > 1)
-	// Кто-то ещё остается
+
+	if ($TeamUserCount > 1)         // Кто-то ещё остается
 	{
-
-                // 07.2015 Заменил на физическое удаление
-		$sql = "delete from TeamUsers where teamuser_id = ".$HideTeamUserId;
-
-		//$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
-		$rs = MySqlQuery($sql);
 		$view = "ViewTeamData";
 	}
-	else
-	// Это был последний участник
+	else                            // Это был последний участник
 	{
-
-		$sql = "delete from TeamUsers where teamuser_id = ".$HideTeamUserId;
-
-//		$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
-		$rs = MySqlQuery($sql);
-		$sql = "update Teams set team_hide = 1 where team_id = ".$TeamId;
+		$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 		$rs = MySqlQuery($sql);
 		$view = "";
 	}
@@ -474,16 +438,10 @@ elseif ($action == 'HideTeamUser')
 	// Кроме того, кто удалял
 	if ($UserId > 0 and $TeamId > 0)
 	{
-		$sql = "select user_name from Users where user_id = ".$UserId;
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		$ChangeDataUserName = $Row['user_name'];
-		mysql_free_result($Result);
+		$ChangeDataUserName = CSql::userName($UserId);
 		$sql = "select user_name from Users u inner join TeamUsers tu on tu.user_id = u.user_id where tu.teamuser_id = ".$HideTeamUserId;
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		$DelUserName = $Row['user_name'];
-		mysql_free_result($Result);
+		$DelUserName = CSql::singleValue($sql, 'user_name');
+
 		$sql = "select u.user_email, u.user_name, t.team_num, d.distance_name, r.raid_name
 			from Users u
 				inner join TeamUsers tu on tu.user_id = u.user_id
@@ -494,8 +452,7 @@ elseif ($action == 'HideTeamUser')
 			order by tu.teamuser_id asc";
 		$Result = MySqlQuery($sql);
 
-		if ($TeamUserCount > 1)
-		// В команде еще осталось как минимум 2 участника
+		if ($TeamUserCount > 1)         // В команде еще осталось как минимум 2 участника
 		{
 			while ($Row = mysql_fetch_assoc($Result))
 			{
@@ -519,10 +476,7 @@ elseif ($action == 'HideTeamUser')
 	}
 	// Конец отправки писем об удалении
 
-	$view = $_POST['view'];
-	if (empty($view)) $view = "ViewTeamData";
-
-
+	$view = mmb_validate($_POST, 'view', 'ViewTeamData');
 }
 
 // ============ Смена этапа схода участника команды ===========================
@@ -570,21 +524,18 @@ elseif ($action == 'TeamUserNotInPoint')
 
         // Смотрим, есть ли точка сход в TeamLevelDismiss
 	
-	$sql = "select teamleveldismiss_id from TeamLevelDismiss where teamuser_id = ".$HideTeamUserId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
-	$DismissId = $Row['teamleveldismiss_id'];
+	$sql = "select teamleveldismiss_id from TeamLevelDismiss where teamuser_id = $HideTeamUserId";
+	$DismissId = CSql::singleValue($sql, 'teamleveldismiss_id');
 	
 	if ($LevelPointId) {
 		if ($DismissId) {
 		// Точка уже есть и пользователь сошёл - обновляем точку
-			$sql = "update TeamLevelDismiss set levelpoint_id = ".$LevelPointId." where teamleveldismiss_id = ".$DismissId;
+			$sql = "update TeamLevelDismiss set levelpoint_id = $LevelPointId where teamleveldismiss_id = $DismissId";
 			$rs = MySqlQuery($sql);
 		} else {
 		// Точки нет, а пользователь сошёл - создаём точку
 			$sql = "insert into TeamLevelDismiss (teamuser_id, levelpoint_id, device_id) 
-			        values (".$HideTeamUserId.", ".$LevelPointId.", 1) ";
+			        values ($HideTeamUserId, $LevelPointId, 1) ";
 			$rs = MySqlQuery($sql);
 		}
 	} else {
@@ -594,9 +545,7 @@ elseif ($action == 'TeamUserNotInPoint')
 			$rs = MySqlQuery($sql);
 		} else {
 		// ТОчка нет и пользователь не сошёл - ничего не делаем
-			$view = $_POST['view'];
-			if (empty($view)) $view = "ViewTeamData";
-
+			$view = mmb_validate($_POST, 'view', 'ViewTeamData');
 		   return;
 		}
 	}
@@ -609,11 +558,7 @@ elseif ($action == 'TeamUserNotInPoint')
 */
 	// Письмо об изменениях	всем, кроме автора изменений
 	// !!! Сход относится к результатам на дистанции и об их изменений письма слать не надо
-	$sql = "select user_name from Users where user_id = ".$UserId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
-	$ChangeDataUserName = $Row['user_name'];
+	$ChangeDataUserName = CSql::userName($UserId);
 	$sql = "select u.user_email, u.user_name, t.team_num, d.distance_name, r.raid_name
 		from Users u
 			inner join TeamUsers tu on tu.user_id = u.user_id
@@ -672,11 +617,7 @@ elseif ($action == 'HideTeam')
 	// Уведомление всем. в т.ч тому, кто удалял
 	if (($UserId > 0) && ($TeamId > 0))
 	{
-		$Sql = "select user_name from Users where user_id = ".$UserId;
-		$Result = MySqlQuery($Sql);
-		$Row = mysql_fetch_assoc($Result);
-		$ChangeDataUserName = $Row['user_name'];
-		mysql_free_result($Result);
+		$ChangeDataUserName = CSql::userName($UserId);
 	}
 
 	$sql = "select u.user_email, u.user_name, t.team_num, d.distance_name, r.raid_name
@@ -716,7 +657,7 @@ elseif ($action == "ViewRaidTeams")
 {
 	$view = "ViewRaidTeams";
 }
-// =============== Получение JSON экмпорта для жедающих анализировтаь протокол ===================
+// =============== Получение JSON экмпорта для желающих анализировтаь протокол ===================
 // Сначала поместил в административный, но там нет доступа, кроме администратора
 elseif ($action == 'JsonExport')
 {
@@ -769,8 +710,8 @@ elseif ($action == 'JsonExport')
 	mysql_free_result($Result);
 
 	// Users: user_id, user_name, user_birthyear // *
-	// Добавил олграничение - только по текущему ММБ
-	$Sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '{$Anonimus}' ELSE u.user_name END as user_name,
+	// Добавил ограничение - только по текущему ММБ
+	$Sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name,
 	               u.user_birthyear, u.user_city 
 	        from Users u
 			     inner join TeamUsers tu on u.user_id = tu.user_id
@@ -889,12 +830,7 @@ elseif ($action == 'JsonExport')
                                and union_status = 2
 			       and team_id = ".$TeamId; 
 
-
- 
-	$Result = MySqlQuery($sql);
-        $RowsCount = mysql_num_rows($Result);
-
-	if ($RowsCount > 0)
+	if (CSql::rowCount($sql) > 0)
 	{
 		setUnionError('Команды уже объединена');
 	       return;
@@ -909,44 +845,35 @@ elseif ($action == 'JsonExport')
                                and COALESCE(team_outofrange, 0) = 0
 			       and team_id = ".$TeamId; 
 
-
- 
-	$Result = MySqlQuery($sql);
-        $RowsCount = mysql_num_rows($Result);
-
-	if ($RowsCount <= 0)
+	if (CSql::rowCount($sql) <= 0)
 	{
 		setUnionError('Команда скрыта или вне зачета');
-	       return;
+		return;
 	}
 
 
+		$Sql = "select teamunionlog_id,  teamunionlog_hide
+                        from TeamUnionLogs
+		        where team_id = $TeamId
+			      and union_status = 1
+		        LIMIT 0,1 "  ;
 
-
-			$Sql = "select teamunionlog_id,  teamunionlog_hide
- 		                from TeamUnionLogs 
-			        where team_id = ".$TeamId."
-				      and union_status = 1 
-			        LIMIT 0,1 "  ;
-				
-			 $Result = MySqlQuery($Sql);  
-			 $Row = mysql_fetch_assoc($Result);
-	                 mysql_free_result($Result);
-			 $TeamUnionLogId =  $Row['teamunionlog_id'];	
-			 $TeamUnionLogHide =  $Row['teamunionlog_hide'];	
+		$Row = CSql::singleRow($Sql);
+		$TeamUnionLogId =  $Row['teamunionlog_id'];
+		$TeamUnionLogHide =  $Row['teamunionlog_hide'];
 	         
-		 $TeamAdd = 0;
+		$TeamAdd = 0;
 		 
-		 if (empty($TeamUnionLogId))
-		 {
-			 $Sql = "insert into TeamUnionLogs (user_id, teamunionlog_dt, 
+		if (empty($TeamUnionLogId))
+		{
+			$Sql = "insert into TeamUnionLogs (user_id, teamunionlog_dt,
 			         teamunionlog_hide, team_id, team_parentid, union_status)
 				  values (".$UserId.", now(), 0, ".$TeamId.", null, 1)";
-			 MySqlQuery($Sql);  
-			 
-			 $TeamAdd = 1;
+			MySqlQuery($Sql);
 
-		 } else {	 
+			$TeamAdd = 1;
+
+		} else {
 			 
 			 if ($TeamUnionLogHide == 0)
 			 {
@@ -963,17 +890,13 @@ elseif ($action == 'JsonExport')
 			 }
                          // Конец проверки существующей записи
 		 
-		 } 
+		}
                  // Конец разбора ситуации с добавлением колманды в объединение		 
                  
 
              if ($TeamAdd)
 	     {
-	         $Sql = "select user_name from  Users where user_id = ".$UserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $ChangeDataUserName = $Row['user_name'];
-		 mysql_free_result($Result);
+		 $ChangeDataUserName = CSql::userName($UserId);
 
 /*
 	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
@@ -1021,12 +944,9 @@ elseif ($action == "HideTeamInUnion")  {
 	     }
 	          $Sql = "update TeamUnionLogs set teamunionlog_hide = 1, union_status = 0  where teamunionlog_id = ".$TeamUnionLogId;
 		  MySqlQuery($Sql);  
-		  
-	         $Sql = "select user_name from  Users where user_id = ".$UserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $ChangeDataUserName = $Row['user_name'];
-		 mysql_free_result($Result);
+
+		 $ChangeDataUserName = CSql::userName($UserId);
+
 /*
 	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
 		 $Result = MySqlQuery($Sql);  
@@ -1105,10 +1025,8 @@ elseif ($action == "UnionTeams")  {
                 
 		//echo 'sql '.$sql;
 		
-    $Result = MySqlQuery($sql);
-    $Row = mysql_fetch_assoc($Result);
-    mysql_free_result($Result);
-    
+    $Row = CSql::singleRow($sql);
+
     // Проверяем, что результат отличается не больше чем на 15 минут
     if ($Row['deltaresult'] > 15*60)
     {
@@ -1153,10 +1071,7 @@ elseif ($action == "UnionTeams")  {
 			having count(*) <> 2
 	       "; 
     
-	$Result = MySqlQuery($sql);
-        $RowsCount = mysql_num_rows($Result);
-
-	if ($RowsCount > 0)
+	if (CSql::rowCount($sql) > 0)
 	{
 		setUnionError('Различается список взятых КП');
 	       return;
@@ -1197,9 +1112,9 @@ elseif ($action == "UnionTeams")  {
 
 	// Приступаем, собственно к объединению:
 	// Создаём новую команду и ставим ей признак скрытая
-	// GPS по приницпу или grenpeace по принципу И число карт - суммируем
+	// GPS по принципу ИЛИ, greenpeace по принципу И, число карт - суммируем
 	// Добавляем всех участников
-	// группируем результаты по этапам и для старта берём MIN время, для финища - максимальное
+	// группируем результаты по этапам и для старта берём MIN время, для финиша - максимальное
         // Проставляем новую команду в поле parent_id 
 	// Открываем новую команду
 	// Скрываем старые команды
@@ -1368,21 +1283,13 @@ elseif ($action == "CancelUnionTeams")  {
 	         from TeamUnionLogs 
 			 where teamunionlog_hide = 0 
                                and union_status = 2
-			       and team_parentid = ".$pParentTeamId; 
+			       and team_parentid = $pParentTeamId";
 
-
- 
-	$Result = MySqlQuery($sql);
-        $RowsCount = mysql_num_rows($Result);
-
-	if ($RowsCount <= 0)
+	if (CSql::rowCount($sql) <= 0)
 	{
 		setUnionError('Команды нет в объединении');
 	       return;
 	}
-
-
-
 
 
 	// Приступаем, собственно к отмене:

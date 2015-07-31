@@ -43,18 +43,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
  
  
         // 08.12.2013 Ищем ссылку на положение в загруженных файлах 
-        $sqlFile = "select raidfile_name
-	     from RaidFiles
-	     where raid_id = ".$nextRaidId."        
-                   and filetype_id = 1 
-		   and raidfile_hide = 0
-	     order by raidfile_id desc";
-	 
-       	$ResultFile = MySqlQuery($sqlFile);  
-	$RowFile = mysql_fetch_assoc($ResultFile);
-        mysql_free_result($ResultFile);
-        $RulesFile =  trim($RowFile['raidfile_name']);
-
+        $RulesFile = CSql::raidFileName($nextRaidId, 1, true);
         if ($RulesFile <> '' && file_exists($MyStoreFileLink.$RulesFile))
 	{
           $RaidRulesLink = $MyStoreHttpLink.$RulesFile;
@@ -62,18 +51,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
         //  Конец получения ссылки на положение
  
         // 08.12.2013 Ищем ссылку на информацию о старте  
-        $sqlFile = "select raidfile_name
-	     from RaidFiles
-	     where raid_id = ".$nextRaidId."        
-                   and filetype_id = 10 
-		   and raidfile_hide = 0
-	     order by raidfile_id desc";
-	 
-       	$ResultFile = MySqlQuery($sqlFile);  
-	$RowFile = mysql_fetch_assoc($ResultFile);
-        mysql_free_result($ResultFile);
-        $StartInfoFile =  trim($RowFile['raidfile_name']);
-
+        $StartInfoFile =  CSql::raidFileName($nextRaidId, 10, true);
         if ($StartInfoFile <> '' && file_exists($MyStoreFileLink.$StartInfoFile))
 	{
           $RaidStartLink = $MyStoreHttpLink.$StartInfoFile;
@@ -170,16 +148,16 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 		  $DistanceLink = '?RaidId='.$nextRaidId;
 		}
 	
-	        print('<a href="'.$DistanceLink.'">'.$DistanceName.'</a>: '.$DistanceCounters.' '.$DistanceData."\r\n");
+	        print('<a href="'.$DistanceLink.'">'."$DistanceName.</a>: $DistanceCounters $DistanceData\r\n");
 	
 	}
 	mysql_free_result($resultDistance);
-        print('</td>'."\r\n");
-	print('</tr>'."\r\n");
+        print("</td>\r\n");
+	print("</tr>\r\n");
 
 }
 mysql_free_result($resultRaids);
-print('</table>'."\r\n");
+print("</table>\r\n");
 //print('</body></html>'."\r\n");
 
 print('<hr>'."\r\n");

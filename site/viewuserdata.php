@@ -472,7 +472,7 @@ if (!isset($MyPHPScript)) return;
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 		  print('<div align = "left" style = "padding-top: 5px;">'.$Row['device_name'].' <a href = "javascript:GetDeviceId('.$Row['device_id'].');" 
-		          title = "Получить файл конфмгурации">Конфигурация</a></div>'."\r\n");
+		          title = "Получить файл конфигурации">Конфигурация</a></div>'."\r\n");
 		}
 
                 mysql_free_result($Result);

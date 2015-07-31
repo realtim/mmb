@@ -142,26 +142,58 @@ class CMmb
  
  }
 
-function MySqlSingleRow($query)
-{
-	$result = MySqlQuery($query);
-	$row = mysql_fetch_assoc($result);
-	mysql_free_result($result);
-	return $row;
-}
 
-function MySqlSingleValue($query, $key)
-{
-	$result = MySqlQuery($query);
-	$row = mysql_fetch_assoc($result);
-	mysql_free_result($result);
-	return $row[$key];
-}
+class CSql {
+	public static function singleRow($query)
+	{
+		$result = MySqlQuery($query);
+		$row = mysql_fetch_assoc($result);
+		mysql_free_result($result);
+		return $row;
+	}
 
-function getUserName($userId)
-{
-	$sql = "select user_name from  Users where user_id = $userId";
-	return MySqlSingleValue($sql, 'user_name');
+	public static function singleValue($query, $key)
+	{
+		$result = MySqlQuery($query);
+		$row = mysql_fetch_assoc($result);
+		mysql_free_result($result);
+		return $row[$key];
+	}
+
+	public static function rowCount($query)
+	{
+		$result = MySqlQuery($query);
+		$rn = mysql_num_rows($result);
+		mysql_free_result($result);
+		return $rn;
+	}
+
+	public static function userName($userId)
+	{
+		$sql = "select user_name from Users where user_id = $userId";
+		return self::singleValue($sql, 'user_name');
+	}
+
+	public static function fullUser($userId)
+	{
+		$sql = "select * from Users where user_id = $userId";
+		return self::singleRow($sql);
+	}
+
+	// types:
+	// 1 - ссылка на положение
+	// 2 - ссылка на логотип
+	// 10 - информация о старте
+	public static function raidFileName($raidId, $fileType, $justVisible = false)
+	{
+		$condition = $justVisible ? "raidfile_hide = 0" : "true";
+		$sql = "select raidfile_name
+	                        from RaidFiles
+	                        where raid_id = $raidId and filetype_id = $fileType and $condition
+	     			order by raidfile_id desc";
+
+		return trim(self::singleValue($sql, 'raidfile_name'));
+	}
 }
 
   function StartSession($UserId) {
@@ -193,7 +225,7 @@ function getUserName($userId)
   
         // м.б. потом ещё нужно будет закрывать открытые соединения с БД
        $Result = MySqlQuery("update  Sessions set session_status = 1 
-			    where session_status = 0 and session_updatetime < date_add(now(), interval -".$TimeOutInMinutes." MINUTE)");
+			    where session_status = 0 and session_updatetime < date_add(now(), interval - $TimeOutInMinutes MINUTE)");
       return;
   }
 
@@ -218,22 +250,18 @@ function getUserName($userId)
       // Очищаем таблицу
       ClearSessions();
   //   echo $SessionId;
-      $Result = MySqlQuery("select user_id, connection_id, session_updatetime, session_starttime
+      $sql = "select user_id, connection_id, session_updatetime, session_starttime
                             from   Sessions 
-			    where session_id = '".$SessionId ."'");
-
-      $Row = mysql_fetch_assoc($Result);
-      mysql_free_result($Result); 
-
+			    where session_id = '$SessionId'";
       // Тут нужна проверка на превышение времени, на отсутствие сессии и т.п.
       
-      $UserId = $Row['user_id'];
+      $UserId = CSql::singleValue($sql, 'user_id');
 
       // Обновляем время сессии, если всё ок
       if ($UserId > 0)
       {
-       $Result = MySqlQuery("update  Sessions set session_updatetime = now()
-			    where session_status = 0 and session_id = '".$SessionId ."'");
+	      $Result = MySqlQuery("update  Sessions set session_updatetime = now()
+			    where session_status = 0 and session_id = '$SessionId'");
 	      CMmb::setSessionCookie($SessionId);
       }
       else
@@ -369,10 +397,8 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	// Контролируем, что маршбросок существует в базе
 	if ($RaidId > 0)
 	{
-		$sql = "select raid_id from Raids where raid_id = ".$RaidId;
-		$Result = MySqlQuery($sql);
-		if (mysql_num_rows($Result) == 0) $RaidId = 0;
-		mysql_free_result($Result);
+		$sql = "select raid_id from Raids where raid_id = $RaidId";
+		if (CSql::rowCount($sql) == 0) $RaidId = 0;
 	}
 
 	// Если неизвестен маршбросок
@@ -384,7 +410,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	{
 		$sql = "select CASE WHEN count(*) > 0 THEN 1 ELSE 0 END as user_moderator
 			from RaidModerators
-			where raidmoderator_hide = 0 and raid_id = ".$RaidId." and user_id = ".$UserId;
+			where raidmoderator_hide = 0 and raid_id = $RaidId and user_id = $UserId";
 		$Result = MySqlQuery($sql);
 		$Row = mysql_fetch_assoc($Result);
 		$Moderator = $Row['user_moderator'];
@@ -396,11 +422,10 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 			THEN 1
 			ELSE 0
 		END as oldmmb
-		from Raids where raid_id = ".$RaidId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	$OldMmb = $Row['oldmmb'];
-	mysql_free_result($Result);
+		from Raids where raid_id = $RaidId";
+
+	$OldMmb = CSql::singleValue($sql, 'oldmmb');
+
 
          // 21/11/2013  Добавил RaidStage (финиш закрыт, но нельзя показывать результаты и сместил 6 на 7)
          // 30.10.2013 Для трёхдневного ММБ  изменил INTERVAL 12 на INTERVAL 24  
@@ -637,11 +662,8 @@ function CanRequestUserUnion($Administrator, $UserId, $ParentUserId)
 	if ($UserId == $ParentUserId) return(0);
 
         // Тут добавить проверку наличия записей в журнале объединения
-	   $Sql = "select count(*) as result from  UserUnionLogs where union_status <> 0 and  union_status <> 3 and user_id = ".$UserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $InUnion = $Row['result'];
-		 mysql_free_result($Result);
+	$Sql = "select count(*) as result from  UserUnionLogs where union_status <> 0 and  union_status <> 3 and user_id = $UserId";
+	$InUnion = CSql::singleValue($Sql, 'result');
 
          // Если есть в запросе, то нельзя
 	if ($InUnion) return(0);
@@ -655,7 +677,7 @@ function CanRequestUserUnion($Administrator, $UserId, $ParentUserId)
 }
 // Конец проверки возможности объединиться с пользователем
 
-
+// region join users
 // 06,06,2014
 // ----------------------------------------------------------------------------
 // Проверка возможности подтвердить запрос на объединение
@@ -664,21 +686,13 @@ function CanApproveUserUnion($Administrator, $UserRequestId, $UserId)
 {
 
 	if (!$UserRequestId) return(0);
-	
-	// Проверить статус запроса
-         $Sql = "select user_id, user_parentid, union_status from  UserUnionLogs where userunionlog_id = ".$UserRequestId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $NewUserId = $Row['user_id'];
-		 $ParentUserId = $Row['user_parentid'];
-		 $UnionStatus = $Row['union_status'];
-		 mysql_free_result($Result);
 
-		
-          // Подтвердить можно только созданный запрос 
-          if ($UnionStatus <> 1) {return(0);}
-	
-	
+	// Проверить статус запроса
+	$Sql = "select user_id, user_parentid, union_status from  UserUnionLogs where userunionlog_id = $UserRequestId";
+
+	// Подтвердить можно только созданный запрос
+	if (CSql::singleValue($Sql, 'union_status') <> 1) {return(0);}
+
 
          // Если выше проверки не сработали, то  Администратору можно 
 	if ($Administrator) return(1);
@@ -694,23 +708,12 @@ function CanApproveUserUnion($Administrator, $UserRequestId, $UserId)
 // Проверка возможности откатить объединение
 function CanRollBackUserUnion($Administrator, $UserRequestId, $UserId)
 {
-
 	if (!$UserRequestId) return(0);
-
 	// Проверить статус запроса
 
-	         $Sql = "select user_id, user_parentid, union_status from  UserUnionLogs where userunionlog_id = ".$UserRequestId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $NewUserId = $Row['user_id'];
-		 $ParentUserId = $Row['user_parentid'];
-		 $UnionStatus = $Row['union_status'];
-		 mysql_free_result($Result);
-
-		
-          // Откатить можно только подтвержденный (уже объединённый) запрос 
-          if ($UnionStatus <> 2) {return(0);}
-
+	$Sql = "select user_id, user_parentid, union_status from  UserUnionLogs where userunionlog_id = $UserRequestId";
+	// Откатить можно только подтвержденный (уже объединённый) запрос
+	if (CSql::singleValue($Sql, 'union_status') <> 2) {return(0);}
 
 
          // Если выше проверки не сработали, то  Администратору можно 
@@ -727,22 +730,17 @@ function CanRollBackUserUnion($Administrator, $UserRequestId, $UserId)
 // Проверка возможности отклонить объединение
 function CanRejectUserUnion($Administrator, $UserRequestId, $UserId)
 {
-
 	// Проверить статус запроса
-
-
-	         $Sql = "select user_id, user_parentid, union_status from  UserUnionLogs where userunionlog_id = ".$UserRequestId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
-		 $NewUserId = $Row['user_id'];
-		 $ParentUserId = $Row['user_parentid'];
-		 $UnionStatus = $Row['union_status'];
-		 mysql_free_result($Result);
+	$Sql = "select user_id, user_parentid, union_status from  UserUnionLogs where userunionlog_id = $UserRequestId";
+	$Row = CSql::singleRow($Sql);
+	$NewUserId = $Row['user_id'];
+	$ParentUserId = $Row['user_parentid'];
+	$UnionStatus = $Row['union_status'];
 
 	//	echo $Sql;
 	//	echo 'stat '.$UnionStatus;
           // Отклолнить можно только созданный запрос
-          if ($UnionStatus <> 1) {return(0);}
+        if ($UnionStatus <> 1) {return(0);}
          	 
 	// Все пользователя должны быть определеные
 	if (!$UserId || !$ParentUserId || !$NewUserId) return(0);
@@ -760,7 +758,7 @@ function CanRejectUserUnion($Administrator, $UserRequestId, $UserId)
         return(0);
 }
 // Конец проверки возможности отклонить объединение
-
+// endregion
 
 
 // ----------------------------------------------------------------------------
@@ -992,12 +990,12 @@ send_mime_mail('Автор письма',
 	
 	}
 
-        $LogoFile = trim(MySqlSingleValue($sqlFile, 'raidfile_name'));
+        $LogoFile = trim(CSql::singleValue($sqlFile, 'raidfile_name'));
 
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
 	        return $MyStoreHttpLink.$LogoFile;
 
-        return MySqlSingleValue($sql, 'raid_logolink');
+        return CSql::singleValue($sql, 'raid_logolink');
       }
       // Конец получения логотипа
 
@@ -1024,7 +1022,7 @@ send_mime_mail('Автор письма',
 			 MAX(b.levelpoint_order),
 			 (select  pointtype_id
 			  from LevelPoints
-			  where  distance_id = ".$distanceid."
+			  where  distance_id = $distanceid
 			         and  levelpoint_hide = 0
 				 and  levelpoint_order =  MAX(b.levelpoint_order)
 			  LIMIT 0,1
@@ -1033,14 +1031,14 @@ send_mime_mail('Автор письма',
 			(
 			 select  levelpoint_id, levelpoint_name, levelpoint_order, pointtype_id
 			 from LevelPoints lp
-			 where distance_id = ".$distanceid."
+			 where distance_id = $distanceid
 			       and  levelpoint_hide = 0
 			) a
 			left outer join
 			(
 			 select  levelpoint_id, levelpoint_name, levelpoint_order, pointtype_id
 			 from LevelPoints lp
-			 where distance_id = ".$distanceid."
+			 where distance_id = $distanceid
 			       and  levelpoint_hide = 0
 			       and  pointtype_id in (1,2,4)
 			) b
@@ -1058,11 +1056,9 @@ send_mime_mail('Автор письма',
 
      //  echo $sql;		
 
-        $Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
+	$Row = CSql::singleRow($sql);
 	$LevelPointId = $Row['levelpoint_id'];
 	$LevelPointName = $Row['levelpoint_name'];
-	mysql_free_result($Result);
 
         if (!empty($LevelPointId))
 	{
@@ -1075,21 +1071,19 @@ send_mime_mail('Автор письма',
 		      on lp.levelpoint_order >= lpd.levelpointdiscount_start
 		         and lp.levelpoint_order <= lpd.levelpointdiscount_finish
 	         where lp.levelpoint_hide = 0  
-		       and lp.distance_id = ".$distanceid."
-		       and lpd.distance_id = ".$distanceid."
+		       and lp.distance_id = $distanceid
+		       and lpd.distance_id = $distanceid
 	               and lp.pointtype_id in (1,2,4) 
 		       and lpd.levelpointdiscount_hide = 0";
 				 
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
+	$Row = CSql::singleRow($sql);
 	$LevelPointId = $Row['levelpointdiscount_id'];
 	$LevelPointDiscountStart = $Row['levelpointdiscount_start'];
 	$LevelPointDiscountFinish = $Row['levelpointdiscount_finish'];
-	mysql_free_result($Result);
 
         if (!empty($LevelPointId))
 	{
-	  $CheckString .= "Некорректность в интервале ".$LevelPointDiscountStart." - ".$LevelPointDiscountFinish;
+	  $CheckString .= "Некорректность в интервале $LevelPointDiscountStart - $LevelPointDiscountFinish";
 	}
 
 
@@ -1184,9 +1178,8 @@ send_mime_mail('Автор письма',
 			inner join Distances d
 		        on t.distance_id = d.distance_id
 		 SET teamuser_rank = NULL 
-		 where 1= 1 ".$RaidWhereString ."
-                ";
-		 
+		 where 1= 1 $RaidWhereString ";
+
 		 $rs = MySqlQuery($sql);
 
   
@@ -1239,7 +1232,7 @@ send_mime_mail('Автор письма',
 		       and  COALESCE(t.team_result, 0) > 0
 		       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
 
-                       ".$RaidWhereString ."
+                       $RaidWhereString
                 ";
 		 
 		 $rs = MySqlQuery($sql);
@@ -1262,18 +1255,15 @@ send_mime_mail('Автор письма',
 		       on t.team_id = tu.team_id
 		       inner join Distances d
 		       on t.distance_id = d.distance_id
-	         where d.raid_id < ".$raidid."
-		       and tu.user_id = ".$userid."
+	         where d.raid_id < $raidid
+		       and tu.user_id = $userid
 		       and t.team_hide = 0
 		       and tu.teamuser_hide = 0 
 		 order  by d.raid_id DESC
 		 LIMIT 0,1";
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	$PredRaidId = $Row['raid_id'];
-	mysql_free_result($Result);
-	
-       return($PredRaidId);
+	$PredRaidId = CSql::singleValue($sql, 'raid_id');
+
+        return ($PredRaidId);
      }
      //Конец получения предыдущго ММБ
 
@@ -1293,19 +1283,15 @@ send_mime_mail('Автор письма',
 			       on t.team_id = tu.team_id
 			       inner join Distances d
 			       on t.distance_id = d.distance_id
-		         where d.raid_id = ".$PredRaidId."
-			       and tu.user_id = ".$userid."
+		         where d.raid_id = $PredRaidId
+			       and tu.user_id = $userid
 			       and COALESCE(t.team_maxlevelpointorderdone, 0) = 0 
 			       and t.team_hide = 0
 			       and tu.teamuser_hide = 0 ";
 
 	      // echo $sql;
 				 
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		$NotStart = $Row['result'];
-		mysql_free_result($Result);
-
+		$NotStart = CSql::singleValue($sql, 'result');
 	}
 	 // Конец проверки, что участник не явился
 
@@ -1329,31 +1315,23 @@ send_mime_mail('Автор письма',
 		       on t.distance_id = d.distance_id
 		       inner join Raids r
 		       on d.raid_id = r.raid_id
-	         where t.team_id = ".$teamid."
+	         where t.team_id = $teamid
 		       and t.team_hide = 0
 		 LIMIT 0,1";
 
+	$TeamMapPayment = CSql::singleValue($sql, 'mappayment');
 
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	$TeamMapPayment = $Row['mappayment'];
-	mysql_free_result($Result);
-  
   
 	$TeamNotStartPayment = 0;
 	$sql = " select SUM(r.raid_nostartprice) as notstartpayment
 	         from  TeamUsers tu
 		       inner join Raids r
 		       on tu.teamuser_notstartraidid = r.raid_id
-	         where tu.team_id = ".$teamid."
+	         where tu.team_id = $teamid
 	        ";
 
+	$TeamNotStartPayment = CSql::singleValue($sql, 'notstartpayment');
 
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	$TeamNotStartPayment = $Row['notstartpayment'];
-	mysql_free_result($Result);
-  
 
    /*
 	$sql = " select d.raid_id, tu.user_id
@@ -1444,7 +1422,7 @@ send_mime_mail('Автор письма',
 	
 	
 	if (empty($LevelId)) {
-	  print('Нет данных об этапе '.$teamlevelid."\r\n");
+	  print("Нет данных об этапе $teamlevelid\r\n");
  	  return;
 	}
 //
@@ -1477,7 +1455,7 @@ send_mime_mail('Автор письма',
 
 		$sqltlp = " select tlp.teamlevelpoint_id
 		    from TeamLevelPoints tlp
-		    where tlp.team_id = ".$TeamId." and tlp.levelpoint_id = ".$StartLevelPointId;
+		    where tlp.team_id = $TeamId and tlp.levelpoint_id = $StartLevelPointId";
 
 		$ResultTlp = MySqlQuery($sqltlp);
 		$RowTlp = mysql_fetch_assoc($ResultTlp);
@@ -1492,7 +1470,7 @@ send_mime_mail('Автор письма',
 	
 			$sqltlp = " insert into TeamLevelPoints(device_id, levelpoint_id, team_id, 
 			                                        teamlevelpoint_datetime)
-			         values(1, ".$StartLevelPointId.", ".$TeamId.", '".$StartTime."')";
+			         values(1, $StartLevelPointId, $TeamId, '$StartTime')";
 
                      //   echo $sqltlp;		    
 //		      on tlp.levelpoint_id = lp.levelpoint_id
@@ -2058,7 +2036,7 @@ send_mime_mail('Автор письма',
 			    from LevelPoints lp
 				   inner join Teams t
 				   on lp.distance_id = t.distance_id
-			    where  t.team_id = ".$teamid."
+			    where  t.team_id = $teamid
                                     and lp.pointtype_id = 3 ";
 
 	 } elseif (!empty($raidid)) {     	 
@@ -2067,7 +2045,7 @@ send_mime_mail('Автор письма',
 			    from LevelPoints lp
 				   inner join Distances d
 				   on lp.distance_id = d.distance_id
-			    where  d.raid_id = ".$raidid."
+			    where  d.raid_id = $raidid
                                     and lp.pointtype_id = 3 ";
 	 }				 
 				 
