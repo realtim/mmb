@@ -207,76 +207,75 @@ if (!isset($MyPHPScript)) return;
 
 
                 // Разбираемся с сортировкой
-                if (isset($_REQUEST['OrderType'])) $OrderType = $_REQUEST['OrderType']; else $OrderType = "";
-		if (($OrderType == 'Errors') && !$Administrator && !$Moderator) $OrderType = "";
-		$OrderString = '';
+
+                $OrderType = mmb_validate($_REQUEST, 'OrderType', '');
+		if (($OrderType == 'Errors') && !$Administrator && !$Moderator) $OrderType = '';
 
 
-
-		  $sql = "select raid_registrationenddate,  raid_closedate,
+		$sql = "select raid_registrationenddate,  raid_closedate,
 				 COALESCE(r.raid_noshowresult, 0) as raid_noshowresult
 			  from  Raids r
-			  where r.raid_id = ".$RaidId."
+			  where r.raid_id = $RaidId
                           "; 
             
-		  $Result = MySqlQuery($sql);
-		  $Row = mysql_fetch_assoc($Result);
-		  mysql_free_result($Result);
+		$Row = CSql::singleRow($sql);
                 $RaidRegisterEndDt = $Row['raid_registrationenddate'];
                 $RaidCloseDt = $Row['raid_closedate'];
                 $RaidNoShowResult = $Row['raid_noshowresult'];
    
                  // 03/05/2014 Исправил порядок сортировки - раньше независисмо от устновленного  $OrderType могло сбрасываться 
                 // если порядок не задан смотрим на соотношение временени публикации и текущего
-                if  (empty($OrderType))
+                if (empty($OrderType))
 		{
-		   if ($CanViewResults)
-                   {
-  	            $OrderType = "Place";
-		   } else {
-	           $OrderType = "Num";
-                   }
+  	            $OrderType = $CanViewResults ? "Place" : "Num";
 		}
 		// Конец разбора сортировки по умолчанию
 		   
-                
+// region часть над таблицей
             	print('<div align = "left" style = "font-size: 80%;">'."\r\n");
 		print('Сортировать по '."\r\n");
-		print('<select name="OrderType" style = "margin-left: 10px; margin-right: 20px;" 
-                               onchange = "OrderTypeChange();"  tabindex = "'.(++$TabIndex).'" '.$DisabledText.'>'."\r\n"); 
-	        print('<option value = "Num" '.($OrderType == 'Num' ? 'selected' :'').' >убыванию номера'."\r\n");
+		print('<select name="OrderType" style="margin-left: 10px; margin-right: 20px;"
+                               onchange="OrderTypeChange();"  tabindex="'.(++$TabIndex).'" '."$DisabledText>\r\n");
+	        print('<option value="Num" '.($OrderType == 'Num' ? 'selected' :'').">убыванию номера</option>\r\n");
 
                 //Сортировку по месту показыаем только после окончания ММБ, если не стоит флаг "Не показывать результаты"
 		// Администраторам и модераторам флаг не мешает
 		if ($CanViewResults)
 		{
-	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'').' >возрастанию места'."\r\n");
+	            print('<option value = "Place" '.($OrderType == 'Place' ? 'selected' :'')." >возрастанию места</option>\r\n");
 		}
 		if ($Administrator || $Moderator)
 		{
-	            print('<option value = "Errors" '.($OrderType == 'Errors' ? 'selected' :'').' >наличию ошибок'."\r\n");
+	            print('<option value = "Errors" '.($OrderType == 'Errors' ? 'selected' :'')." >наличию ошибок</option>\r\n");
 		}
 	        print('</select>'."\r\n");  
 
 		print('Фильтровать: '."\r\n"); 
 
 	        $sql = "select distance_id, distance_name
-                        from  Distances where distance_hide = 0 and raid_id = ".$RaidId." order by distance_name"; 
+                        from  Distances where distance_hide = 0 and raid_id = $RaidId order by distance_name";
 		//echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
+
+		$display = mysql_num_rows($Result) > 1 ? '' : 'display: none;';
                 
-		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px;" 
-                               onchange = "DistanceIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
+		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px; '. $display . '"
+                               onchange="DistanceIdChange();"  tabindex="'.(++$TabIndex).'">'."\r\n");
                 $distanceselected =  (0 == $_REQUEST['DistanceId'] ? 'selected' : '');
-		  print('<option value = "0" '.$distanceselected.' >дистанцию'."\r\n");
+		  print('<option value="0" '.$distanceselected.">дистанцию</option>\r\n");
 		if (!isset($_REQUEST['DistanceId'])) $_REQUEST['DistanceId'] = "";
 	        while ($Row = mysql_fetch_assoc($Result))
 		{
 		  $distanceselected = ($Row['distance_id'] == $_REQUEST['DistanceId']  ? 'selected' : '');
-		  print('<option value = "'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."\r\n");
+		  print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\r\n");
 		}
 		print('</select>'."\r\n");  
-		mysql_free_result($Result);		
+		mysql_free_result($Result);
+
+
+                $DistanceCondition = empty($_REQUEST['DistanceId']) ? 'true' : "d.distance_id = ".$_REQUEST['DistanceId'];
+                $GpsFilter = (mmb_validateInt($_REQUEST, 'GPSFilter', 0)) == 1 ? 1 : 0;
+                $GpsCondition = $GpsFilter ? "t.team_usegps = 0" : "true";
 
 /*
 ============================= точки ===============================
@@ -286,25 +285,22 @@ if (!isset($MyPHPScript)) return;
                         from  LevelPoints lp 
 			      inner join Distances d
 			      on lp.distance_id = d.distance_id
-			where raid_id = ".$RaidId;
-		
-		if ($_REQUEST['DistanceId'] <> 0) {
-		$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
-		}
-			
-                $sql = $sql." order by lp.levelpoint_order "; 
+			where raid_id = $RaidId
+				and $DistanceCondition
+			order by lp.levelpoint_order ";
+
 		//echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
                 
 		print('<select name="LevelPointId" style = "margin-left: 10px; margin-right: 5px;" 
                                onchange = "LevelPointIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
                 $levelpointselected =  (0 == $_REQUEST['LevelPointId'] ? 'selected' : '');
-		  print('<option value = "0" '.$levelpointselected.' >точку (КП)'."\r\n");
+		  print('<option value = "0" '.$levelpointselected." >точку (КП)</option>\r\n");
 		if (!isset($_REQUEST['LevelPointId'])) $_REQUEST['LevelPointId'] = "";
 	        while ($Row = mysql_fetch_assoc($Result))
 		{
 		  $levelpointselected = ($Row['levelpoint_id'] == $_REQUEST['LevelPointId']  ? 'selected' : '');
-		  print('<option value = "'.$Row['levelpoint_id'].'" '.$levelpointselected.' >'.$Row['distance_name'].' '.$Row['levelpoint_name']."\r\n");
+		  print('<option value = "'.$Row['levelpoint_id'].'" '.$levelpointselected.' >'.$Row['distance_name'].' '.$Row['levelpoint_name']."</option>\r\n");
 		}
 		print('</select>'."\r\n");  
 		mysql_free_result($Result);		
@@ -312,19 +308,11 @@ if (!isset($MyPHPScript)) return;
 /*
 ======================  GPS  ====================
 */
-		
-		if (!isset($_REQUEST['GPSFilter'])) {
-		  $_REQUEST['GPSFilter'] = 0;
-		}
-		
-		print('<select name="GPSFilter" style = "margin-left: 10px; margin-right: 5px;" 
+		print('<select name="GPSFilter" style = "margin-left: 10px; margin-right: 5px;"
                                onchange = "GPSChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-                $gpsfilterselected =  (0 == $_REQUEST['GPSFilter'] ? 'selected' : '');
-		  print('<option value = "0" '.$gpsfilterselected.' >не фильтровать по GPS'."\r\n");
-                $gpsfilterselected =  (1 == $_REQUEST['GPSFilter'] ? 'selected' : '');
-		  print('<option value = "1" '.$gpsfilterselected.' >без GPS'."\r\n");
+		  print('<option value="0" '. ($GpsFilter == 0 ? 'selected' : '') ." >не фильтровать по GPS</option>\r\n");
+		  print('<option value="1" '. ($GpsFilter == 1 ? 'selected' : '') ." >без GPS</option>\r\n");
 		print('</select>'."\r\n");  
-
 
 /*
 =====================================
@@ -335,9 +323,8 @@ if (!isset($MyPHPScript)) return;
 //		if (!isset($_REQUEST['LevelId'])) $_REQUEST['LevelId'] = "";
 	
 	        // Режим отображения результатов
-                if (isset($_REQUEST['ResultViewMode'])) $ResultViewMode = $_REQUEST['ResultViewMode']; else $ResultViewMode = "";
-	
-	
+                $ResultViewMode = mmb_validate($_REQUEST, 'ResultViewMode', '');
+
 		// Определяем, можно ли показывать пользователю информацию об этапах дистанции
 /*
  	 	if ($CanViewLevels)
@@ -389,6 +376,12 @@ if (!isset($MyPHPScript)) return;
 		print('</div>'."\r\n");
 
 
+
+// endregion
+
+
+	print("\r\n</form>\r\n");
+
                 // Информация о дистанции(ях)
 
 
@@ -403,25 +396,22 @@ if (!isset($MyPHPScript)) return;
 		    // теперь цикл обработки данных по этапам
 		    while ($Row = mysql_fetch_assoc($Result))
 		    {
-                	print('<tr><td width = "100">'.$Row['distance_name'].'</td>
-			           <td width = "300">'.$Row['distance_data'].'</td>'."\r\n");
+                	print('<tr><td width="100">'.$Row['distance_name'].'</td>
+			           <td width="300">'.$Row['distance_data']."</td>\r\n");
 
                         // Если идёт регистрацию время окончания выделяем жирным
                         if ($RaidStage == 1)
 			{ 
-			    print('<td style = "font-weight: bold;">Регистрация до: '.$RaidRegisterEndDt.'</td>'."\r\n");
-
+			    print("<td style=\"font-weight: bold;\">Регистрация до: $RaidRegisterEndDt</td>\r\n");
 			} else {
-
-			    print('<td>Регистрация до: '.$RaidRegisterEndDt.'</td>'."\r\n");
-		
+			    print("<td>Регистрация до: $RaidRegisterEndDt</td>\r\n");
 			}
 				   
 			if (!empty($RaidCloseDt))
 			{	   
-			  print('<td>Протокол закрыт: '.$RaidCloseDt.'</td>'."\r\n");
+			  print("<td>Протокол закрыт: $RaidCloseDt</td>\r\n");
 			}  
-			print('</tr>'."\r\n");
+			print("</tr>\r\n");
 
 		    }
 		    
@@ -530,25 +520,18 @@ if (!isset($MyPHPScript)) return;
 		        from  Teams t
 			     inner join  Distances d 
 			     on t.distance_id = d.distance_id
-			where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
-
-		   if (!empty($_REQUEST['DistanceId']))
-		   {
-                     $sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
-		   }
-			if (!empty($_REQUEST['GPSFilter']))
-			{
-				$sql = $sql." and t.team_usegps = 0 "; 
-			}
-
-			$sql = $sql." order by team_num desc"; 
+			where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
+				and $DistanceCondition and $GpsCondition
+			order by team_num desc";
 
 
-		} elseif ($OrderType == 'Place') {
+		}
+		elseif ($OrderType == 'Place') {
 			// Сортировка по месту требует более хитрого запроса
 
 			if (!empty($_REQUEST['LevelPointId']))
 			{
+			    $LevelCondition = "tlp.levelpoint_id = ".$_REQUEST['LevelPointId'];
 
 			    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
 			               t.team_mapscount, lp.levelpoint_order as team_progress, 
@@ -565,14 +548,9 @@ if (!isset($MyPHPScript)) return;
 					on t.team_id = tlp.team_id
        					inner join LevelPoints lp
 					on tlp.levelpoint_id = lp.levelpoint_id
-				  where t.team_hide = 0 and tlp.levelpoint_id = ".$_REQUEST['LevelPointId'];
-
-			     if (!empty($_REQUEST['GPSFilter']))
-			     {
-	                       $sql = $sql." and t.team_usegps = 0 "; 
-			     }
-
-			      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_error asc, tlp.teamlevelpoint_result asc, team_num asc ";
+				  where t.team_hide = 0
+				  	and $LevelCondition and $GpsCondition
+				  order by distance_name, team_outofrange, team_progress desc, team_error asc, tlp.teamlevelpoint_result asc, team_num asc ";
 
 			} else {
 			
@@ -590,23 +568,15 @@ if (!isset($MyPHPScript)) return;
 					left outer join LevelPoints lp
 					on lp.distance_id = t.distance_id
 					   and lp.levelpoint_order = t.team_maxlevelpointorderdone
-				  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
+				  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
+				  	and $DistanceCondition and $GpsCondition
 
-			      if (!empty($_REQUEST['DistanceId']))
-			      {
-				$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
-			      }
-			      if (!empty($_REQUEST['GPSFilter']))
-			      {
-	                        $sql = $sql." and t.team_usegps = 0 "; 
-			      }
+			          order by distance_name, team_outofrange, team_progress desc, team_error asc, team_result asc, team_num asc ";
 
-			      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_error asc, team_result asc, team_num asc ";
-			
-			
 			}	    
 		
-		} elseif ($OrderType == 'Errors') {
+		}
+		elseif ($OrderType == 'Errors') {
 		
                        // Не знаю, как будет реализовано
 	
@@ -632,18 +602,11 @@ if (!isset($MyPHPScript)) return;
 				left outer join LevelPoints lp
 				on lp.distance_id = t.distance_id
 				   and lp.levelpoint_order = t.team_maxlevelpointorderdone
-			  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = ".$RaidId;
+			  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
+			  	and $DistanceCondition
 
-		      if (!empty($_REQUEST['DistanceId']))
-		      {
-			$sql = $sql." and d.distance_id = ".$_REQUEST['DistanceId']; 
-		      }
-
-		      $sql = $sql." order by distance_name, team_outofrange, team_progress desc, team_error asc, team_result asc, team_num asc ";
+		          order by distance_name, team_outofrange, team_progress desc, team_error asc, team_result asc, team_num asc ";
 		    
-	
-	
-		
 		}
 
           	//echo 'sql '.$sql;
@@ -763,7 +726,7 @@ if (!isset($MyPHPScript)) return;
 				  print('</div>'."\r\n");
 				}  
 			        mysql_free_result($UserResult);
-			// Конец формирования колонкуи Участники
+			// Конец формирования колонки Участники
 			print('</td>'."\r\n");
 
 
@@ -821,21 +784,20 @@ if (!isset($MyPHPScript)) return;
 
 			}
 			// Конец проверки на вывод с сотрировкой по месту
-			print('</tr>'."\r\n");
+			print("</tr>\r\n");
 		}
 		mysql_free_result($Result);
-		print('</table>'."\r\n");
-	
-		print('<br/>'."\r\n");
-		print('<div id = "comment" align = "justify" style = "font-size: 80%;">Примечания: 1) Команды, взявшие на себя повышенные экологические обязательства,отмечаются знаком <b>ну!</b>
-		        <br/>2) Участники, которые не вышли на старт, 
-		         и при этом не удалили свою заявку до окончания регистрации, при следующей заявке отмечаются знаком <b>(?!)</b> 
-			 <br/></div>'."\r\n");
-
-
+		print("</table>\r\n");
 ?>
-</form>
-</br>
+	
+<br/>
+<div id="comment" align="justify" style="font-size: 80%;">
+	Примечания: 1) Команды, взявшие на себя повышенные экологические обязательства,отмечаются знаком <b>ну!</b><br/>
+	2) Участники, которые не вышли на старт, и при этом не удалили свою заявку до окончания регистрации, при следующей заявке отмечаются знаком <b>(?!)</b><br/>
+</div>
+
+
+<br/>
 
 
 
