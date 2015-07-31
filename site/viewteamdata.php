@@ -437,18 +437,8 @@ print('<tr><td class="input" style="padding-top: 20px;">'."\n");
 
 
       // 21.03.2014 Ищем ссылку на положение в загруженных файлах 
-        $sqlFile = "select raidfile_name
-	     from RaidFiles
-	     where raid_id = ".$RaidId."        
-                   and filetype_id = 1 
-	     order by raidfile_id desc";
-	 
-       	$ResultFile = MySqlQuery($sqlFile);  
-	$RowFile = mysql_fetch_assoc($ResultFile);
-        mysql_free_result($ResultFile);
-        $RulesFile =  trim($RowFile['raidfile_name']);
+        $RulesFile = CSql::raidFileName($RaidId, 1, false);
         $RaidRulesLink = '';
-
         if ($RulesFile <> '' && file_exists($MyStoreFileLink.$RulesFile))
 	{
           $RaidRulesLink = $MyStoreHttpLink.$RulesFile;

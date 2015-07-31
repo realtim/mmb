@@ -179,6 +179,21 @@ class CSql {
 		$sql = "select * from Users where user_id = $userId";
 		return self::singleRow($sql);
 	}
+
+	// types:
+	// 1 - ссылка на положение
+	// 2 - ссылка на логотип
+	// 10 - информация о старте
+	public static function raidFileName($raidId, $fileType, $justVisible = false)
+	{
+		$condition = $justVisible ? "raidfile_hide = 0" : "true";
+		$sql = "select raidfile_name
+	                        from RaidFiles
+	                        where raid_id = $raidId and filetype_id = $fileType and $condition
+	     			order by raidfile_id desc";
+
+		return trim(self::singleValue($sql, 'raidfile_name'));
+	}
 }
 
   function StartSession($UserId) {

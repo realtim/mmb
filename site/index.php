@@ -136,18 +136,9 @@
  $Result = MySqlQuery($Sql);
  while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
  { 
-
-        $nextRaidId =  $Row['raid_id'];
 	$link = $Row['raid_logolink'];
         // 08.12.2013 Ищем ссылку на логотип  
-        $sqlFile = "select raidfile_name
-	     from RaidFiles
-	     where raid_id = ".$nextRaidId."        
-                   and filetype_id = 2 
-	     order by raidfile_id desc";
-	 
-        $LogoFile = trim(CSql::singleValue($sqlFile, 'raidfile_name'));
-
+        $LogoFile = CSql::raidFileName($Row['raid_id'], 2, false);
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
                 $link = $MyStoreHttpLink.$LogoFile;
 
