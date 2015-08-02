@@ -66,6 +66,13 @@ class CMmb
 		$view = $newView;
 		$viewmode = $newViewMode;
 	}
+
+	public static function setViews($newView, $newViewMode)
+	{
+		global $view, $viewmode;
+		$view = $newView;
+		$viewmode = $newViewMode;
+	}
 };
 
 

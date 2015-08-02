@@ -89,10 +89,8 @@ else
 		from RaidFiles rf
 		     inner join FileTypes ft
 		     on rf.filetype_id = ft.filetype_id
-		where rf.raidfile_id = ".$pRaidFileId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
+		where rf.raidfile_id = $pRaidFileId";
+	$Row = CSql::singleRow($sql);
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterError")
@@ -295,17 +293,15 @@ if ($AllowEdit == 1)
 	print('&nbsp; <input type="button" style="margin-left: 30px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить файл: '.trim($RaidFileName).'? \')) {HideFile();}" name="HideFileButton" value="Удалить файл" tabindex="'.(++$TabIndex).'">'."\n");
 	}
 
-	print('</td></tr>'."\n\n");
-	print('</table>'."\n");
-	print('</form>'."\r\n");
-
-
+	print("</td></tr>\r\n");
+	print("</table>\n");
+	print("</form>\r\n");
 }
 
 
 
 
-print('</br>'."\n");
+print("<br/>\n");
 
 	// Список уже загруженных файлов
 	
@@ -314,50 +310,40 @@ print('</br>'."\n");
 		from RaidFiles rf
 		     inner join FileTypes ft
 		     on rf.filetype_id = ft.filetype_id
-		where rf.raid_id = ".$RaidId."
+		where rf.raid_id = $RaidId
 		      and rf.raidfile_hide = 0 
-		order by raidfile_id DESC    ";
+		order by raidfile_id DESC";
 	$Result = MySqlQuery($sql);
 	
-	
-	
-	$tdstyle = 'padding: 5px 0px 2px 5px;';		
-        $thstyle = 'padding: 5px 0px 0px 5px;';		
 
+	print("<table class=\"std\">\r\n");
 
-		print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
+	print('<tr class="gray">
+	         <td width="500">Файл</td>
+	         <td width="100">Тип</td>
+	         <td width="300">Описание</td>'."\r\n");
 
-		print('<tr class = "gray">
-		         <td width = "500" style = "'.$thstyle.'">Файл</td>
-		         <td width = "100" style = "'.$thstyle.'">Тип</td>
-		         <td width = "300" style = "'.$thstyle.'">Описание</td>'."\r\n");
+	if ($AllowEdit == 1)
+	       print("<td width=\"100\">&nbsp;</td>\r\n");
 
-		if ($AllowEdit == 1)
-		{
-		       print('<td width = "100" style = "'.$thstyle.'">&nbsp;</td>'."\r\n");
+	print("</tr>\r\n");
 
-		}
-		
-		print('</tr>'."\r\n");
-		
-	        // Сканируем команды
-		while ($Row = mysql_fetch_assoc($Result))
-		{
-	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
-                     print('<tr>'."\r\n");
-		     print('<td align = "left" style = "'.$tdstyle.'"><a target = "_blank" href = "'. trim($MyStoreHttpLink).trim($Row['raidfile_name']).'">'.$Row['raidfile_name'].'</a></td><td align = "left" style = "'.$tdstyle.'">'.$Row['filetype_name'].'</td><td align = "left" style = "'.$tdstyle.'">'.($Row['raidfile_comment'] == '' ? '&nbsp;' : $Row['raidfile_comment']).'</td>');
+        // Сканируем команды
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+        //   print('<tr class = "'.$TrClass.'">'."\r\n");
+             print("<tr>\r\n");
+	     print('<td><a target="_blank" href="'. trim($MyStoreHttpLink).trim($Row['raidfile_name']).'">'.$Row['raidfile_name'].'</a></td><td align="left">'.$Row['filetype_name'].'</td><td>'.($Row['raidfile_comment'] == '' ? '&nbsp;' : $Row['raidfile_comment']).'</td>');
 
-  		     if ($AllowEdit == 1)
-		     {
-			     print('<td align = "left" style = "'.$tdstyle.'">');
-			     print('&nbsp; <input type="button" onClick="javascript: EditFile('.$Row['raidfile_id'].');" name="EditFileButton" value="Править" tabindex="'.(++$TabIndex).'">'."\n");
-			     print('</td>'."\r\n");
-		     }		      
-                                
-		}	
+             if ($AllowEdit == 1)
+	     {
+		     print('<td>');
+		     print('&nbsp; <input type="button" onClick="javascript: EditFile('.$Row['raidfile_id'].');" name="EditFileButton" value="Править" tabindex="'.(++$TabIndex).'">'."\n");
+		     print("</td>\r\n");
+	     }
+             print("</tr>\r\n");
+	}
 
-		mysql_free_result($Result);
-		print('</table>'."\r\n");
-		
-
+	mysql_free_result($Result);
+	print("</table>\r\n");
 ?>

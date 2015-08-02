@@ -917,7 +917,7 @@ if (!isset($MyPHPScript)) return;
 	$sql = " select user_id 
 	         from Users 
 		 where user_hide = 0 
-		       and user_id = ".$pUserId; 
+		       and user_id = $pUserId";
 
 	if (CSql::rowCount($sql) <= 0)
 	{
