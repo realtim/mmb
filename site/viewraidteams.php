@@ -579,13 +579,31 @@ if (!isset($MyPHPScript)) return;
 		                       TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 				       COALESCE(t.team_outofrange, 0) as  team_outofrange,
 				       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
-				       COALESCE(t.team_comment, '') as team_comment
+				       COALESCE(t.team_comment, '') as team_comment,
+				       COALESCE(notlp.notlevelpoint_name, '') as notlevelpoint_name
 				  from  Teams t
-					inner join  Distances d 
+					inner join  Distances d
 					on t.distance_id = d.distance_id
 					left outer join LevelPoints lp
 					on lp.distance_id = t.distance_id
 					   and lp.levelpoint_order = t.team_maxlevelpointorderdone
+					left outer join
+					(
+						select t.team_id, GROUP_CONCAT(lp.levelpoint_name, ' ') as notlevelpoint_name
+						from  Teams t
+								inner join  Distances d
+								on t.distance_id = d.distance_id
+								join LevelPoints lp
+ 								on t.distance_id = lp.distance_id
+									and  COALESCE(t.team_maxlevelpointorderdone, 0) >= lp.levelpoint_order
+								left outer join TeamLevelPoints tlp
+								on lp.levelpoint_id = tlp.levelpoint_id
+									and t.team_id = tlp.team_id
+					 	where 	tlp.levelpoint_id is NULL
+								and d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
+						group by t.team_id
+					) as notlp
+					on t.team_id = notlp.team_id
 				  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
 				  	and $DistanceCondition and $GpsCondition
 
@@ -660,8 +678,9 @@ if (!isset($MyPHPScript)) return;
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Точка финиша</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Комментарий</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Не пройдены точки</td>'."\r\n");
 
 
 		} elseif ($OrderType == 'Errors') {
@@ -787,6 +806,7 @@ if (!isset($MyPHPScript)) return;
 			    print('<td>'."\r\n");
 			    print($Row['team_comment']);
 			    print('</td>'."\r\n");
+			    print("<td>{$Row['notlevelpoint_name']}</td>\r\n");
 
 			}  elseif ($OrderType == 'Errors') {
 
