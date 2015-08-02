@@ -589,7 +589,7 @@ if (!isset($MyPHPScript)) return;
 					   and lp.levelpoint_order = t.team_maxlevelpointorderdone
 					left outer join
 					(
-						select t.team_id, GROUP_CONCAT(lp.levelpoint_name, ' ') as notlevelpoint_name
+						select t.team_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as notlevelpoint_name
 						from  Teams t
 								inner join  Distances d
 								on t.distance_id = d.distance_id
