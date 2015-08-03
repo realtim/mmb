@@ -30,15 +30,6 @@ if ($action == "ChangeTeamResult")
 	$viewmode = "";
 	if ($TeamId <= 0) return;
 
-	$sql = "select r.raid_registrationenddate
-		from Raids r
-			inner join Distances d on r.raid_id = d.raid_id
-			inner join Teams t on d.distance_id = t.distance_id
-		where t.team_id = $TeamId";
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
-
 	// Проверка возможности редактировать результаты
 	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
