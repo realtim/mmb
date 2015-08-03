@@ -117,61 +117,50 @@ else
 }
 // ================ Конец инициализации переменных для загружаемого/загруженного файла =================
 
+	$RaidFilePrefix = '';
+	$allRaidFiles = array();
+	$sql = "select rf.raidfile_id, rf.raidfile_name, r.raid_fileprefix,
+		                      REPLACE(rf.raidfile_name, r.raid_fileprefix, '') as raidfile_shortname
+				from RaidFiles rf
+				     inner join Raids r
+				     on    rf.raid_id = r.raid_id
+				where rf.raid_id = $RaidId
+				      and rf.raidfile_hide = 0
+				order by raidfile_id DESC";
+	$Result = MySqlQuery($sql);
+
+	// Сканируем команды
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+		$allRaidFiles[] = "'".trim($Row['raidfile_shortname'])."'";
+		$RaidFilePrefix = $Row['raid_fileprefix'];
+	}
+	mysql_free_result($Result);
 
 // Выводим javascrpit
 ?>
 
 <script language="JavaScript" type="text/javascript">
 
-
         // проверяем, что нет файла с таким имененм
-	function FileExists(filename) {
-
+	function FileExists(filename)
+	{
 	   // перечень существующих файлов по таблице
-	   var files = [<?php
-	   
-	       $sql = "select rf.raidfile_id, rf.raidfile_name, 
-	                      REPLACE(rf.raidfile_name, r.raid_fileprefix, '') as raidfile_shortname
-			from RaidFiles rf
-			     inner join Raids r
-			     on    rf.raid_id = r.raid_id
-			where rf.raid_id = ".$RaidId."
-			      and rf.raidfile_hide = 0 
-			order by raidfile_id DESC    ";
-		$Result = MySqlQuery($sql);
-
-	       // Сканируем команды
-		while ($Row = mysql_fetch_assoc($Result))
-		{
-		     print('"'.trim($Row['raidfile_shortname']).'",');
-		}	
-		mysql_free_result($Result);
-	   ?>];
-
+	   var files = [<?php print(implode(', ', $allRaidFiles)); ?>];
 	   var i = 0;
-	   var file_exist = false;
    
-	   while (!file_exist && i<files.length) {
-	      if (files[i]==filename) {
-	         file_exist=true;
-	      }
+	   while (i < files.length) {
+	      if (files[i] == filename)
+	        return !confirm("Файл '" + filename + "' существует. Перезаписать?");
               i++;
 	   }
-  
-	  
-	   // если файл найден, запрашиваем подтверждение на перезапись
-	   if (file_exist) {
-	      return !confirm("Файл '" + filename + "' существует. Перезаписать?" );
-	   } else {
-	      return false;
-	   }
-	  
+
+	   return false;
 	}
 
 	// Функция проверки правильности заполнения формы
 	function ValidateRaidFileForm(filename)
 	{
-		
 	        if (FileExists(filename))
 		{
 		  return false;
@@ -232,9 +221,9 @@ if ($AllowEdit == 1)
 	// ============ загрузка файла
 		print('<tr><td class = "input">Новый файл для загрузки: <input name="raidfile" type="file" /></td></tr>'."\r\n");
 	} else {
-		print('<tr><td class = "input"><b>'.$RaidFileName.'</b></td></tr>'."\r\n");
-
-	}	
+		print("<tr><td class=\"input\"><b>$RaidFileName</b></td></tr>\r\n");
+		print('<input type="hidden" name="raidfile" value="'. substr($RaidFileName, strlen($RaidFilePrefix)) .'"/>');
+	}
 
 
 	print('<tr><td class="input">'."\n");
@@ -314,11 +303,11 @@ print("<br/>\n");
 		      and rf.raidfile_hide = 0 
 		order by raidfile_id DESC";
 	$Result = MySqlQuery($sql);
-	
+
 
 	print("<table class=\"std\">\r\n");
 
-	print('<tr class="gray">
+	print('<tr class="gray head">
 	         <td width="500">Файл</td>
 	         <td width="100">Тип</td>
 	         <td width="300">Описание</td>'."\r\n");
