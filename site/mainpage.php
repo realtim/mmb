@@ -20,11 +20,11 @@ print('<p align = "left" style = "text-align: justify;">Московский М�
 //print(''."\r\n");
 
 print('<table cellpadding = "10" border = "0" width = "100%">'."\r\n");
-print('<tr class = "gray">'."\r\n");
+print('<tr class="gray">'."\r\n");
 print('<td>Марш-бросок</td>'."\r\n");
-print('<td colspan = "2">Время и место</td>'."\r\n");
+print('<td colspan="2">Время и место</td>'."\r\n");
 print('<td>Результаты и карты, параметры дистанции (<a href = "#help">?</a>)</td>'."\r\n");
-print('</tr>'."\r\n");
+print("</tr>\r\n");
 
 // Вытаскиваем информацию о марш-бросках
 $resultRaids = MySqlQuery('SELECT * FROM Raids r WHERE raid_registrationenddate is not null ORDER BY raid_id  DESC');
@@ -91,7 +91,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	print("<td>\r\n");
 	 
 	// Вытаскиваем информацию о дистанциях
-	$resultDistance = MySqlQuery('SELECT d.*,
+	$resultDistance = MySqlQuery("SELECT d.*,
 					(
 					 select count(team_id) 
 					 from  Teams t 
@@ -121,7 +121,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 					            and tu.teamuser_hide = 0
 					) as teamuserscount
 			            FROM  Distances d 
-				    WHERE d.distance_hide = 0 and raid_id = $nextRaidId  ORDER BY distance_name ASC');
+				    WHERE d.distance_hide = 0 and raid_id = $nextRaidId  ORDER BY distance_name ASC");
 	
         $DistancesCount = 0;
          
