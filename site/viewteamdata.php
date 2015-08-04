@@ -303,8 +303,7 @@ else
 
 // ============ Название команды
 print('<tr><td class="input"><input type="text" name="TeamName" size="50" value="'.$TeamName.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$TeamName.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$TeamName.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($TeamName))
 	.' title="Название команды"></td></tr>'."\n\n");
 
 print('<tr><td class="input">'."\n");
@@ -418,12 +417,12 @@ if (($AllowEdit == 1) && CanCreateTeam($Administrator, $Moderator, $OldMmb, $Rai
 	else
 	{
 		print('<input type="text" name="NewTeamUserEmail" size="50" value="Email нового участника" tabindex="'.(++$TabIndex)
-		.'" onclick="javascript: if (trimBoth(this.value) == \'Email нового участника\') {this.value=\'\';}" onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\'Email нового участника\';}" title="Укажите e-mail пользователя, которого Вы хотите добавить в команду. Пользователь может запретить добавлять себя в команду в настройках своей учетной записи.">'."\n");
+		. CMmbUI::placeholder('Email нового участника') . 'title="Укажите e-mail пользователя, которого Вы хотите добавить в команду. Пользователь может запретить добавлять себя в команду в настройках своей учетной записи.">'."\n");
 	}
-	print('</td></tr>'."\n");
+	print("</td></tr>\n");
 }
 
-// 20/02/2014 Пользоватлеьское соглашение
+// 20/02/2014 Пользовательское соглашение
 if (($viewmode == "Add") && ($AllowEdit == 1) )
 {
 
@@ -441,7 +440,7 @@ print('<tr><td class="input" style="padding-top: 20px;">'."\n");
         }
         //  Конец получения ссылки на положение
 
-       print('<b>Условия участия (выдержка из <a href = "'.$RaidRulesLink.'" target = "_blank">положения</a>): </b><br/>'."\n");
+       print('<b>Условия участия (выдержка из <a href="'.$RaidRulesLink.'" target = "_blank">положения</a>): </b><br/>'."\n");
 //print('<div style="padding-top: 10px;">&nbsp;</div>'."\n");
 
    // Ищем последнее пользовательское соглашение
