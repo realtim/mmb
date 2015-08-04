@@ -2301,4 +2301,12 @@ send_mime_mail('Автор письма',
 		return is_numeric($val) ? $val : false;
 	}
 
+class CMmbUI
+{
+	public static function placeholder($defaultValue)
+	{
+		return " onclick=\"javascript: _onClick(this, '$defaultValue');\" onblur=\"javascript: _onBlur(this, '$defaultValue');\" ";
+	}
+}
+
 ?>

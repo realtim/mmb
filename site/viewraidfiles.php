@@ -241,10 +241,9 @@ if ($AllowEdit == 1)
 	mysql_free_result($Result);
 	print('</select>'."\n");
 
-        print('<tr><td class = "input"><input type="text" name="RaidFileComment" size="50" value="'.$RaidFileComment.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$RaidFileComment.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidFileComment.'\';}"').'
-                title = "Описание файла"></td></tr>'."\r\n");
+	$placeHolder = $viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidFileComment);
+        print('<tr><td class = "input"><input type="text" name="RaidFileComment" size="50" value="'.$RaidFileComment.'" tabindex = "'.(++$TabIndex).'" '
+	        . " $DisabledText $placeHolder title = \"Описание файла\"></td></tr>\r\n");
 
 /*
 	print(' <span style="margin-left: 30px;"> &nbsp; Точка дистанции</span>'."\n");

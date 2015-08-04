@@ -51,19 +51,18 @@ if (!isset($MyPHPScript)) return;
 	}
 
 	// Функция отмены текущего объединения
-	function CancelUnionTeams(parentteamid)
+	function TryCancelTeamUnion(parentteamid)
 	{
+		if (!confirm('Вы уверены, что хотите отменить объединение?'))
+			return false;
+
 		document.UnionTeamsForm.action.value = "CancelUnionTeams";
 		document.UnionTeamsForm.TeamId.value = parentteamid;
 		document.UnionTeamsForm.submit();
 	}
-
-
-
 </script>
 
 <?php
-
 
                $TabIndex = 0;
 	       
@@ -90,40 +89,37 @@ if (!isset($MyPHPScript)) return;
 		$Result = MySqlQuery($sql);
 
                 $RowsCount = mysql_num_rows($Result);
-	
-		
 		if ($RowsCount > 0)
 		{
-
 	 	       print('<div style = "margin-top: 5px;" align = "left">Текущее объединение</div>'."\r\n");
-	               print('</br>'."\r\n");
+	               print("</br>\r\n");
 		
 			while ($Row = mysql_fetch_assoc($Result))
 			{
 			  
 			  print('<div align="left" style="margin-top: 5px;">'."\r\n");
-			  print(' '.$Row['team_num'].' <a href="?TeamId='.$Row['team_id'].'">'.$Row['team_name'].'</a>  '.$Row['team_result'].' '."\r\n");
+			  print(' '.$Row['team_num'].' <a href="?TeamId='.$Row['team_id'].'">'.$Row['team_name']."</a>  {$Row['team_result']} \r\n");
                           print('<input type="button" style="margin-left: 15px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите исключить команду из текущего объединения? \')) { HideTeamInUnion('.$Row['teamunionlog_id'].','.$Row['team_id'].'); }"  name="TeamHideButton" value="Скрыть" tabindex = "'.++$TabIndex.'">'."\r\n");
 	                  print('</div>'."\r\n");
 	  	  			
-			  $sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id
+			  $sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id
 				  from TeamUsers tu
 					inner join Users u
 					on tu.user_id = u.user_id
-				   where tu.teamuser_hide = 0 and team_id = ".$Row['team_id'];
+				   where tu.teamuser_hide = 0 and team_id = {$Row['team_id']}";
 			  $TeamUsersResult = MySqlQuery($sql);
 
 			  while ($TeamUsersRow = mysql_fetch_assoc($TeamUsersResult))
 			  {
 				print('<div style="margin-top: 5px; margin-left: 15px;">'."\n");
-				print('<a href="?UserId='.$TeamUsersRow['user_id'].'">'.$TeamUsersRow['user_name'].'</a> '.$TeamUsersRow['user_birthyear']."\n");
+				print('<a href="?UserId='.$TeamUsersRow['user_id'].'">'.$TeamUsersRow['user_name']."</a> {$TeamUsersRow['user_birthyear']}\n");
 				print('</div>'."\n");
 			  }
 				mysql_free_result($TeamUsersResult);
 
 			}
 
-                        print('</br>'."\r\n");
+                        print("</br>\r\n");
 			
 			if ($viewsubmode == "ReturnAfterError")
 			{
@@ -135,28 +131,27 @@ if (!isset($MyPHPScript)) return;
 			$UnionButtonText = 'Объединить';
 			
 			print('<input type="text" name="TeamName" size="50" value="'.$TeamName.'" tabindex="'.(++$TabIndex)
-				.'" onclick="javascript: if (trimBoth(this.value) == \''.$TeamName.'\') {this.value=\'\';}"'
-				.' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$TeamName.'\';}" title="Название объединённой команды">'."\n\n");
+				. CMmbUI::placeholder($TeamName) . ' title="Название объединённой команды">'."\n\n");
 
-                        print('</br>'."\r\n");
+                        print("</br>\r\n");
 
 			print('<div style="margin-top: 5px;">'."\n");
 				print('<input type="button" onClick="javascript: if (ValidateUnionTeamsForm()) submit();" name="UnionButton" value="'.$UnionButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
 				print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите убрать все команды из текущего объединения? \')) {ClearUnionTeams();}" name="CancelButton" value="Очистить объединение" tabindex="'.(++$TabIndex).'">'."\n");
-			print('</div>'."\n");
+			print("</div>\n");
 
 
 		} else {
 
 			  print('<div class= "input" align = "left">Нет команд в текущем объединении</div>'."\r\n");
 		}
-	        print('</form>'."\r\n");
+	        print("</form>\r\n");
                 mysql_free_result($Result);
 
 
-               print('</br>'."\r\n");
- 	       print('<div style = "margin-top: 15px;" align = "left">История объединений</div>'."\r\n");
-               print('</br>'."\r\n");
+               print("<br/>\r\n");
+ 	       print('<div style="margin-top: 15px;" align = "left">История объединений</div>'."\r\n");
+               print("<br/>\r\n");
 
 
 
@@ -216,47 +211,37 @@ if (!isset($MyPHPScript)) return;
 			 // COALESCE((select count(*) from  TeamUnionLogs where team_parentid = tul.team_parentid), 0) as teamcount
 
 
+		print("<table class=\"std\">\r\n");
 
-
-		$tdstyle = 'padding: 5px 0px 2px 5px;';		
-              //  $tdstyle = '';		
-                $thstyle = 'padding: 5px 0px 0px 5px;';		
-               // $thstyle = '';		
-
-                $ColumnWidth = 350;
-
-
-		print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
-
-		print('<tr class = "gray">
- 	                 <td width = "150" style = "'.$thstyle.'">Дистанция</td>
- 	                 <td width = "200" style = "'.$thstyle.'">Статус</td>
-		         <td width = "300" style = "'.$thstyle.'">Номер и название команды</td>
-			 <td width = "400" style = "'.$thstyle.'">Участники и команды до объединения</td>
+		print('<tr class="head gray">
+ 	                 <td width="150">Дистанция</td>
+ 	                 <td width="200">Статус</td>
+		         <td width="300">Номер и название команды</td>
+			 <td width="400">Участники и команды до объединения</td>
 			 </tr>'."\r\n");
 		
 	        // Сканируем команды
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
-                     print('<tr>'."\r\n");
-		     print('<td align = "left" style = "'.$tdstyle.'">'.$Row['raid_name'].' '.$Row['distance_name'].'</td>'."\r\n");
-                     print('<td align = "center" style = "'.$tdstyle.'">'.$Row['unionstatus']."\r\n");
+                     print("<tr>\r\n");
+		     print("<td>{$Row['raid_name']} {$Row['distance_name']}</td>\r\n");
+                     print('<td align="center">'.$Row['unionstatus']."\r\n");
                                 
 	  	     // Вставляем кнопку отмены объединения
 		     if ($Row['unionstatus'] == 'Объединены') 
 		     {
-			   print('<br/><input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите отменить объединение? \')) {CancelUnionTeams('.$Row['team_id'].');}" name="CancelUnionButton" value="Отменить объединение" tabindex="'.(++$TabIndex).'">'."\n");
+			   print('<br/><input type="button" onClick="javascript: TryCancelTeamUnion('.$Row['team_id'].');" name="CancelUnionButton" value="Отменить объединение" tabindex="'.(++$TabIndex).'">'."\n");
 		     }
-                     print('</td>'."\r\n");
-		     print('<td style = "'.$tdstyle.'">'.$Row['team_num']."\r\n");
+                     print("</td>\r\n");
+		     print("<td>{$Row['team_num']}\r\n");
 		     
 		     if ($Row['unionstatus'] <> 'Отмена объединения') 
 		     {
 			print('<a href="?TeamId='.$Row['team_id'].'">'.
-		     	       $Row['team_name'].'</a> '."\r\n");
+		     	       $Row['team_name']."</a> \r\n");
                      } else {
-			print('<b>'.$Row['team_name'].'</b>'."\r\n");
+			print("<b>{$Row['team_name']}</b>\r\n");
 		     }	
 
                      // Для успрешно объединённых колманд есть подробное время в участниках
@@ -265,15 +250,15 @@ if (!isset($MyPHPScript)) return;
 			   print($Row['log_dt']."\n");
 		     }
 
-		     print('</td>'."\r\n");
+		     print("</td>\r\n");
 
-		     print('<td style = "'.$tdstyle.'">'."\r\n");
+		     print("<td>\r\n");
 
                      if ($Row['unionstatus'] == 'Объединены') 
 		     {
                         // Команда объединена
 			$sql = "select         tu.teamuser_id, 
-			                       CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name,
+			                       CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name,
 					       u.user_birthyear,	
 					       u.user_id, 
 					       t.team_name as oldteam_name,
@@ -290,8 +275,8 @@ if (!isset($MyPHPScript)) return;
 					      on t.team_id = tul.team_id
 					         and  t.team_parentid = tul.team_parentid
 					where tu.teamuser_hide = 0 
-					      and tu.team_id = ".$Row['team_id']."
-					      and t.team_parentid = ".$Row['team_id']."
+					      and tu.team_id = {$Row['team_id']}
+					      and t.team_parentid = {$Row['team_id']}
 					      order by unionlog_dt";
 
 		     } elseif ($Row['unionstatus'] == 'Отмена объединения')  {
@@ -306,15 +291,14 @@ if (!isset($MyPHPScript)) return;
 				        from  Teams t
 					      inner join TeamUnionLogs tul
 					      on t.team_id = tul.team_id
-					where tul.team_parentid = ".$Row['team_id']."
+					where tul.team_parentid = {$Row['team_id']}
 					      order by unionlog_dt";
 
-			
 		     } else {
 
                         // Команда не объединена
 			 
-				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear,	
+				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, u.user_birthyear,
 					       u.user_id, 
 					       '' as oldteam_name,
 					       '' as oldteam_num,
@@ -322,10 +306,8 @@ if (!isset($MyPHPScript)) return;
 				        from  TeamUsers tu
 					      inner join  Users u
 					      on tu.user_id = u.user_id
-					where tu.teamuser_hide = 0 and team_id = ".$Row['team_id'];
-			 
-			 
-		      }			
+					where tu.teamuser_hide = 0 and team_id = {$Row['team_id']}";
+		      }
 			
 			//echo 'sql '.$sql;
 		      $UserResult = MySqlQuery($sql);
@@ -334,7 +316,7 @@ if (!isset($MyPHPScript)) return;
                       // Сканируем состав
 		      while ($UserRow = mysql_fetch_assoc($UserResult))
 		      {
-			$UserCount++;
+			  $UserCount++;
 			  print("<div>{$UserRow['unionlog_dt']}  {$UserRow['oldteam_name']}  ".
 			               $UserRow['oldteam_num']."  \r\n");
 			  
@@ -343,28 +325,23 @@ if (!isset($MyPHPScript)) return;
 			        print('<a href="?UserId='.$UserRow['user_id'].'">'.
 			                 "{$UserRow['user_name']}</a> {$UserRow['user_birthyear']}\r\n");
 			  }
-			  print('</div>'."\r\n");
+			  print("</div>\r\n");
 		      }  
 		      mysql_free_result($UserResult);
 	
 	              if ($UserCount == 0)
 		      {
-			print('&nbsp;'."\r\n");
+			print('&nbsp;');
 		      }
-		      print('</td>'."\r\n");
-
-			
-		}	
+		      print("</td>\r\n</tr>\r\n");
+		}
 
 		mysql_free_result($Result);
 		
-		print('</table>'."\r\n");
-		
-  	  
+		print("</table>\r\n");
 ?>
 		
-
-		</br>
+		<br/>
 
 
 
