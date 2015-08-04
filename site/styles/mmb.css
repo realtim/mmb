@@ -88,7 +88,7 @@ table.std {
     border-collapse: separate;
     border-spacing: 0px;
     border: 1px outset #808080;
-    font-size: 80%
+    font-size: 80%;
 }
 
 table.std td {
@@ -98,6 +98,15 @@ table.std td {
 
 table.std tr.head td {
     padding:  5px 0px 0px 5px;
+}
+
+table.control {
+    border-collapse: collapse;
+    font-size: 80%;
+}
+
+table.control td {
+    padding: 2px;
 }
 
 

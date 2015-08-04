@@ -83,7 +83,7 @@ else
 		from Teams t
 			inner join Distances d on t.distance_id = d.distance_id
 			inner join Raids r on d.raid_id = r.raid_id
-		where t.team_id = ".$TeamId;
+		where t.team_id = $TeamId";
 	$Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
 	mysql_free_result($Result);
@@ -291,18 +291,14 @@ print('</td></tr>'."\n\n");
 // ============ Дата регистрации команды
 if ($viewmode <> "Add")
 {
-	if ($TeamLate == 1) $RegisterDtFontColor = '#BB0000';
-	else $RegisterDtFontColor = '#000000';
+	$RegisterDtFontColor = ($TeamLate == 1) ? '#BB0000' : '#000000';
 	print('<tr><td class="input">Зарегистрирована: <span style="color: '.$RegisterDtFontColor.';">'.$TeamRegisterDt.'</span></td></tr>'."\n\n");
 }
 else
 {
-	$sql = "select r.raid_registrationenddate from Raids r where r.raid_id = ".$RaidId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	$RaidRegistrationEndDate = $Row['raid_registrationenddate'];
-	mysql_free_result($Result);
-	print('<tr><td class="input">Время окончания регистрации: '.$RaidRegistrationEndDate.'</td></tr>'."\n\n");
+	$sql = "select r.raid_registrationenddate from Raids r where r.raid_id = $RaidId";
+	$RaidRegistrationEndDate = CSql::singleValue($sql, 'raid_registrationenddate');
+	print('<tr><td class="input">Время окончания регистрации: '.$RaidRegistrationEndDate."</td></tr>\n\n");
 }
 
 // ============ Название команды
