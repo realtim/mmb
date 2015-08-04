@@ -42,12 +42,12 @@ if (!isset($MyPHPScript)) return;
 		document.UserLoginForm.submit();
 	}
 
-	function ViewUserInfo(userid)
+	/*function ViewUserInfo(userid)
 	{ 
 		document.UserLoginForm.action.value = "UserInfo";
 		document.UserLoginForm.UserId.value = userid;
 		document.UserLoginForm.submit();
-	}
+	}*/
 
         // Одинаковые действия при  регистрации поьзователя и обновленииданных.
 	// Не уверен, что правильно так
@@ -95,6 +95,18 @@ if (!isset($MyPHPScript)) return;
 	function trimSpaces(str) {
 	  return str.replace(/\s{2,}/g, ' ');
 	}
+
+        function _onClick(ctrl, val)
+        {
+	        if (trimBoth(ctrl.value) == val)
+		        ctrl.value = '';
+        }
+
+        function _onBlur(ctrl, val)
+        {
+	        if (trimBoth(ctrl.value) == '')
+		        ctrl.value = val;
+        }
 	
 
 </script>

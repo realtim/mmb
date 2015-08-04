@@ -174,12 +174,12 @@ else $AllowViewResults = 0;
 	}
 
 	// Посмотреть профиль пользователя
-	function ViewUserInfo(userid)
+	/*function ViewUserInfo(userid)
 	{
 		document.TeamDataForm.UserId.value = userid;
 		document.TeamDataForm.action.value = 'UserInfo';
 		document.TeamDataForm.submit();
-	}
+	}*/
 
          // 25.11.2013 Для совместимости оставил 
 	// Указать этап схода пользователя

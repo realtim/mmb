@@ -9,12 +9,12 @@ if (!isset($MyPHPScript)) return;
 
         
 	// Функция просмотра данных о команде
-	function ViewUserInfo(userid)
+	/*function ViewUserInfo(userid)
 	{ 
 		document.UsersForm.UserId.value = userid;
 		document.UsersForm.action.value = "UserInfo";
 		document.UsersForm.submit();
-	}
+	}*/
 	
 
 	

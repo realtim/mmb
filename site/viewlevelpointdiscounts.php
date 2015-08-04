@@ -164,18 +164,7 @@ else
 		document.LevelPointDiscountForm.submit();
 	}
 
-	function _onClick(ctrl, val)
-	{
-		if (trimBoth(ctrl.value) == val)
-			ctrl.value = '';
-	}
-
-	function _onBlur(ctrl, val)
-	{
-		if (trimBoth(ctrl.value) == '')
-			ctrl.value = val;
-	}
-	// 
+	//
 </script>
 
 

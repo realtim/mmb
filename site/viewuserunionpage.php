@@ -11,12 +11,12 @@ if (!isset($MyPHPScript)) return;
 
 
 	// Посмотреть профиль пользователя
-	function ViewUserInfo(userid)
+	/*function ViewUserInfo(userid)
 	{
 		document.UnionUsersForm.UserId.value = userid;
 		document.UnionUsersForm.action.value = "UserInfo";
 		document.UnionUsersForm.submit();
-	}
+	}*/
 	
 	
 	
