@@ -279,8 +279,8 @@ $TabIndex = 0;
 	print('<tr><td class="input">'."\n");
 	print('Дистанция: </span>'."\n");
 	// Показываем выпадающий список файлов
-	print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"  onClick="javascript: submit();">'."\n");
-	$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = ".$RaidId." order by distance_id ";
+	print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"  onchange="javascript: submit();">'."\n");
+	$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = $RaidId order by distance_id ";
 	$Result = MySqlQuery($sql);
 	while ($Row = mysql_fetch_assoc($Result))
 	{
@@ -422,12 +422,12 @@ if ($AllowEdit == 1)
 	print('&nbsp; <input type="button" style="margin-left: 30px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить точку: '.trim($PointName).'? \')) {HideLevelPoint();}" name="HideLevelPointButton" value="Удалить точку" tabindex="'.(++$TabIndex).'">'."\n");
 	}
 
-	print('</td></tr>'."\n\n");
+	print("</td></tr>\r\n");
 	print('<tr><td>После добавления, дистанцию у точки изменить нельзя - только удалив и добавив точку заново.
-	               <br/> Амнистия редактируется в отдельном окне (ссылка в меню).   </td></tr>'."\n\n");
+	               <br/> Амнистия редактируется в <a href="?amnesty&RaidId='.$RaidId.'">отдельном окне</a> (ссылка в меню).</td></tr>'."\r\n");
 
-	print('</table>'."\n");
-	print('</form>'."\r\n");
+	print("</table>\r\n");
+	print("</form>\r\n");
 
 
 }

@@ -243,7 +243,7 @@ if ($AllowEdit == 1)
         print(' по <input type="text" name="DiscountFinish" size="5" value="'.$DiscountFinish.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
                  '.($viewmode <> 'Add' ? '' : 'onclick="_onClick(this, \''.$DiscountFinish.'\');"').'
                  '.($viewmode <> 'Add' ? '' : 'onblur="_onBlur(this, \''.$DiscountFinish.'\');"').'
-                title="Порядковый номер первого КП в амнистии">'."\r\n");
+                title="Порядковый номер последнего КП в амнистии">'."\r\n");
 
 	print('</td></tr>'."\n\n");
 	print('<tr><td class="input">'."\n");

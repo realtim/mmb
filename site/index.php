@@ -69,6 +69,8 @@
 			$_REQUEST['action'] = "ViewRankPage";
 		else if (isset($_GET['badges']))
 			$_REQUEST['action'] = "ViewAllBadgesPage";
+		else if (isset($_GET['amnesty']))
+			$_REQUEST['action'] = "ViewLevelPointDiscountsPage";
 		else if (isset($_GET['files']))
 			$_REQUEST['action'] = "ViewRaidFilesPage";
 		else if (isset($_GET['links']))
