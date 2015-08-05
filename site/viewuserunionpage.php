@@ -88,11 +88,11 @@ if (!isset($MyPHPScript)) return;
 	
 		print("<table class=\"std\">\r\n");
 		print('<tr class="head gray">
- 	                 <td width"150">Пользователь</td>
-		         <td width"300">Объединение с</td>
- 	                 <td width"200">Статус</td>
- 	                 <td width"150">Создана</td>
-			 <td width"400">Возможные действия</td>
+ 	                 <td width="150">Пользователь</td>
+		         <td width="300">Объединение с</td>
+ 	                 <td width="200">Статус</td>
+ 	                 <td width="150">Создана</td>
+			 <td width="400">Возможные действия</td>
 			 </tr>'."\r\n");
 		
 	        // Сканируем команды
