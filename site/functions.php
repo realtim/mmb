@@ -2301,11 +2301,17 @@ send_mime_mail('Автор письма',
 		return is_numeric($val) ? $val : false;
 	}
 
+	function mmb_isOn($var, $key)
+	{
+		return (mmb_validate($var, $key, '') == 'on') ? 1 : 0;
+	}
+
 class CMmbUI
 {
-	public static function placeholder($defaultValue)       // а заэскейпить строку от апострофов?
+	public static function placeholder($defaultValue)
 	{
-		return " onclick=\"javascript: _onClick(this, '$defaultValue');\" onblur=\"javascript: _onBlur(this, '$defaultValue');\" ";
+		$defVal = str_replace('"', '&quot;', str_replace("'", "\\'", $defaultValue)); // эскейпимся от апострофов и двойных кавычек
+		return " onclick=\"javascript: _onClick(this, '$defVal');\" onblur=\"javascript: _onBlur(this, '$defVal');\" ";
 	}
 }
 
