@@ -220,19 +220,16 @@ if ($AllowEdit == 1)
 	print('<tr><td class="input">'."\n");
 	
         print(' Амнистия (минуты) <input type="text" name="DiscountValue" size="5" value="'.$DiscountValue.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick="_onClick(this, \''.$DiscountValue.'\');"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur="_onBlur(this, \''.$DiscountValue.'\');"').'
-                title="Величина амнистии на интервале КП в минутах">'."\r\n");
+                 '.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($DiscountValue))
+                .'title="Величина амнистии на интервале КП в минутах">'."\r\n");
 
         print(' на порядковые номера точек (КП) с <input type="text" name="DiscountStart" size="5" value="'.$DiscountStart.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick="_onClick(this, \''.$DiscountStart.'\');"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur="_onBlur(this, \''.$DiscountStart.'\');"').'
-                title="Порядковый номер первого КП в амнистии">'."\r\n");
+                 '.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($DiscountStart))
+                .'title="Порядковый номер первого КП в амнистии">'."\r\n");
 
         print(' по <input type="text" name="DiscountFinish" size="5" value="'.$DiscountFinish.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick="_onClick(this, \''.$DiscountFinish.'\');"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur="_onBlur(this, \''.$DiscountFinish.'\');"').'
-                title="Порядковый номер последнего КП в амнистии">'."\r\n");
+                 '.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($DiscountFinish))
+                .'title="Порядковый номер последнего КП в амнистии">'."\r\n");
 
 	print('</td></tr>'."\n\n");
 	print('<tr><td class="input">'."\n");

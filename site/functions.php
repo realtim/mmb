@@ -2303,7 +2303,7 @@ send_mime_mail('Автор письма',
 
 class CMmbUI
 {
-	public static function placeholder($defaultValue)
+	public static function placeholder($defaultValue)       // а заэскейпить строку от апострофов?
 	{
 		return " onclick=\"javascript: _onClick(this, '$defaultValue');\" onblur=\"javascript: _onBlur(this, '$defaultValue');\" ";
 	}
