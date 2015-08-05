@@ -27,7 +27,7 @@ print("<br/>\n");
 	while ($Row = mysql_fetch_assoc($Result))
 	{
              print("<tr>\r\n");
-	     print('<td align="left">');
+	     print('<td>');
 	     print('&nbsp;<img src="'.trim($MyStoreHttpLink).trim($Row['raidfile_name']).'" height="512" width="512">'."\n");
 	     print("</td>\r\n");
              print("</tr>\r\n");

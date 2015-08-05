@@ -65,18 +65,18 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pDistanceId = (int)$_POST['DistanceId'];
 	$pTeamNum = (int) $_POST['TeamNum'];
 	$pTeamName = $_POST['TeamName'];
-	$pTeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
+	$pTeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
         // Используем только при правке (м.б. нужна доп. проверка на права
-	$pTeamOutOfRange = (isset($_POST['TeamOutOfRange']) && ($_POST['TeamOutOfRange'] == 'on')) ? 1 : 0;
+	$pTeamOutOfRange = mmb_isOn($_POST, 'TeamOutOfRange');
 	$pTeamMapsCount = (int)$_POST['TeamMapsCount'];
-	$pTeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
+	$pTeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
 	if (!isset($_POST['NewTeamUserEmail'])) $_POST['NewTeamUserEmail'] = "";
 	$pNewTeamUserEmail = $_POST['NewTeamUserEmail'];
 	if (!isset($_POST['TeamNotOnLevelId'])) $_POST['TeamNotOnLevelId'] = "";
 	$pTeamNotOnLevelId = (int)$_POST['TeamNotOnLevelId'];
 	if (!isset($_POST['TeamNotInLevelPointId'])) $_POST['TeamNotInLevelPointId'] = "";
 	$pTeamNotOnLevelId = (int)$_POST['TeamNotInLevelPointId'];
-	$pTeamConfirmation = (isset($_POST['Confirmation']) && ($_POST['Confirmation'] == 'on')) ? 1 : 0;
+	$pTeamConfirmation = mmb_isOn($_POST, 'Confirmation');
 
 
 	if (($action <> "AddTeam") && ($TeamId <= 0))

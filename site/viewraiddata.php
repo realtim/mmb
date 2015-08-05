@@ -28,17 +28,14 @@ if ($viewmode == 'Add')
 	//	$RaidStartLink = $_POST['RaidStartLink'];
 		$RaidFinishPointName = $_POST['RaidFinishPointName'];
 		$RaidCloseDate = $_POST['RaidCloseDate'];
-		$ClearRaidCloseDate = (isset($_POST['ClearRaidCloseDate']) && ($_POST['ClearRaidCloseDate'] == 'on')) ? 1 : 0;
+		$ClearRaidCloseDate = mmb_isOn($_POST, 'ClearRaidCloseDate');
 	//	$RaidZnLink = $_POST['RaidZnLink'];
 		$RaidDistancesCount = (int)$_POST['RaidDistancesCount'];
-                $RaidNoShowResult = (isset($_POST['RaidNoShowResult']) && ($_POST['RaidNoShowResult'] == 'on')) ? 1 : 0;
+                $RaidNoShowResult = mmb_isOn($_POST, 'RaidNoShowResult');
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
 	        $RaidMapPrice = (int)$_POST['RaidMapPrice'];
 	        $RaidNoStartPrice = (int)$_POST['NoStartPrice'];
-        
-                
-
 	}
 	else
 	// Пробуем создать команду первый раз
@@ -62,8 +59,6 @@ if ($viewmode == 'Add')
                 $RaidFilePrefix = '';
 		$RaidMapPrice = 0;
 		$RaidNoStartPrice = 0;
-        
-
 	}
 
 	// Определяем следующее действие
@@ -95,9 +90,7 @@ else
 		       (select count(*) from Distances where distance_hide = 0 and raid_id = $RaidId) as raid_distancescount
 		from Raids r
 		where r.raid_id = $RaidId";
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
+	$Row = CSql::singleRow($sql);
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterError")
@@ -113,11 +106,11 @@ else
 	//	$RaidStartLink = $_POST['RaidStartLink'];
 		$RaidFinishPointName = $_POST['RaidFinishPointName'];
 		$RaidCloseDate = $_POST['RaidCloseDate'];
-		$ClearRaidCloseDate = $_POST['ClearRaidCloseDate'];
+		$ClearRaidCloseDate = $_POST['ClearRaidCloseDate'];     // а ничего, что он всюду сравнивается с on? !!!
 	//	$RaidZnLink = $_POST['RaidZnLink'];
-                //В отличие от остальлных полей это - вычисляемое и после ошибки не возвращается  
+                //В отличие от остальных полей это - вычисляемое и после ошибки не возвращается
 		$RaidDistancesCount = (int)$Row['raid_distancescount'];
-		$RaidNoShowResult = $_POST['RaidNoShowResult'];
+		$RaidNoShowResult = $_POST['RaidNoShowResult'];         // а ничего, что он всюду сравнивается с on? !!!
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
                 $RaidMapPrice = (int)$_POST['RaidMapPrice'];

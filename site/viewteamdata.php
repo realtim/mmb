@@ -20,11 +20,8 @@ if ($viewmode == 'Add')
 	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)) return;
 
 
-	$Sql = "select user_email from Users where user_id = ".$UserId;
-	$Result = MySqlQuery($Sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
-	$UserEmail = $Row['user_email'];
+	$Sql = "select user_email from Users where user_id = $UserId";
+	$UserEmail = CSql::singleValue($Sql, 'user_email');
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterError")
@@ -33,10 +30,10 @@ if ($viewmode == 'Add')
 		$TeamNum = (int) $_POST['TeamNum'];
 		$TeamName = str_replace( '"', '&quot;', $_POST['TeamName']);
 		$DistanceId = $_POST['DistanceId'];
-		$TeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
+		$TeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
 		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
 		$TeamRegisterDt = 0;
-		$TeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
+		$TeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
 	}
 	else
 	// Пробуем создать команду первый раз
@@ -99,9 +96,9 @@ else
 		$TeamNum = (int) $_POST['TeamNum'];
 		$TeamName = str_replace( '"', '&quot;', $_POST['TeamName']);
 		$DistanceId = $_POST['DistanceId'];
-		$TeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
+		$TeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
 		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
-		$TeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
+		$TeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
 	}
 	else
 	{
@@ -255,7 +252,7 @@ else
 if ($OldMmb == 1)
 // Для старых ММБ выводим ссылки на старые статические результаты
 {
-	$sql = "select distance_resultlink, distance_name from Distances where raid_id = ".$RaidId;
+	$sql = "select distance_resultlink, distance_name from Distances where raid_id = $RaidId";
 	$Result = MySqlQuery($sql);
 	while ($Row = mysql_fetch_assoc($Result))
 	{
@@ -342,7 +339,7 @@ print('<tr><td class="input">'."\n");
 print('<a href="http://community.livejournal.com/_mmb_/2010/09/24/" target="_blank">Нет сломанным унитазам!</a> - прочитали и поддерживаем <input type="checkbox" name="TeamGreenPeace" value="on"'.(($TeamGreenPeace >= 1) ? ' checked="checked"' : '')
 	.' tabindex="'.(++$TabIndex).'"'.$DisabledText.' title="Отметьте, если команда берёт повышенные экологические обязательства"/>'."\n");
 
-print('</td></tr>'."\n\n");
+print("</td></tr>\r\n");
 
 // ============ Участники
 print('<tr><td class="input">'."\n");
@@ -351,7 +348,7 @@ print('<tr><td class="input">'."\n");
 $sql = "select tu.teamuser_id, 
                tu.teamuser_notstartraidid, 
 	       r.raid_nostartprice,
-               CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id, COALESCE(tld.levelpoint_id, 0) as levelpoint_id
+               CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, u.user_birthyear, u.user_id, COALESCE(tld.levelpoint_id, 0) as levelpoint_id
 	from TeamUsers tu
 		inner join Users u
 		on tu.user_id = u.user_id
@@ -359,7 +356,7 @@ $sql = "select tu.teamuser_id,
 		on tu.teamuser_id = tld.teamuser_id
                 left outer join Raids r
 		on tu.teamuser_notstartraidid = r.raid_id
-	where tu.teamuser_hide = 0 and team_id = ".$TeamId;
+	where tu.teamuser_hide = 0 and team_id = $TeamId";
 $Result = MySqlQuery($sql);
 
 while ($Row = mysql_fetch_assoc($Result))
@@ -391,17 +388,17 @@ while ($Row = mysql_fetch_assoc($Result))
 	}
 
 	// ФИО и год рождения участника
-	print('<a href="?UserId='.$Row['user_id'].'">'.$Row['user_name'].'</a> '.$Row['user_birthyear']."\n");
+	print('<a href="?UserId='.$Row['user_id'].'">'.$Row['user_name']."</a> {$Row['user_birthyear']}\n");
  
         // Отметка невыходна на старт в предыдущем ММБ                          
         if ($Row['teamuser_notstartraidid'] > 0) {
 	    print(' <a title = "Участник был заявлен, но не вышел на старт в прошлый раз" href = "#comment">(?!)</a> ');
         } 
 
-	print('</div>'."\n");
+	print("</div>\n");
 }
 mysql_free_result($Result);
-print('</td></tr>'."\n");
+print("</td></tr>\n");
 // Закончили вывод списка участников
 
 // ============ Новый участник
@@ -440,21 +437,18 @@ print('<tr><td class="input" style="padding-top: 20px;">'."\n");
         }
         //  Конец получения ссылки на положение
 
-       print('<b>Условия участия (выдержка из <a href="'.$RaidRulesLink.'" target = "_blank">положения</a>): </b><br/>'."\n");
+       print('<b>Условия участия (выдержка из <a href="'.$RaidRulesLink.'" target="_blank">положения</a>): </b><br/>'."\n");
 //print('<div style="padding-top: 10px;">&nbsp;</div>'."\n");
 
-   // Ищем последнее пользовательское соглашение
-       $sql = "select rf.raidfile_id, rf.raidfile_name
+// Ищем последнее пользовательское соглашение
+        $sql = "select rf.raidfile_id, rf.raidfile_name
 		from RaidFiles rf
 		where rf.raidfile_hide = 0 
 		      and rf.filetype_id = 8
 		order by rf.raid_id DESC, rf.raidfile_id DESC 
 		LIMIT 0,1    ";
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
 
-        $ConfirmFile = trim($MyStoreHttpLink).trim($Row['raidfile_name']);
+        $ConfirmFile = trim($MyStoreHttpLink).trim(CSql::singleValue($sql, 'raidfile_name'));
 	
 	$Fp = fopen($ConfirmFile, "r");
 	$i = 0;

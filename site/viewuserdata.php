@@ -25,11 +25,10 @@ if (!isset($MyPHPScript)) return;
 	      $UserEmail = $_POST['UserEmail'];
 	      $UserName = str_replace( '"', '&quot;', $_POST['UserName']);
 	      $UserBirthYear = (int)$_POST['UserBirthYear'];
-	      if (!isset($_POST['UserProhibitAdd'])) $_POST['UserProhibitAdd'] = "";
-	      $UserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
+	      $UserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
 	      $UserCity = str_replace( '"', '&quot;', $_POST['UserCity']);
               // 03/07/2014  Добавляем анонмиов
-	      $UserNoShow = ($_POST['UserNoShow'] == 'on' ? 1 : 0);
+	      $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');
 
              } else {
 
@@ -81,9 +80,9 @@ if (!isset($MyPHPScript)) return;
 		  $UserEmail = $_POST['UserEmail'];
 		  $UserName = str_replace( '"', '&quot;', $_POST['UserName']);
 		  $UserBirthYear = (int)$_POST['UserBirthYear'];
-		  $UserProhibitAdd = ($_POST['UserProhibitAdd'] == 'on' ? 1 : 0);
+		  $UserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
 		  $UserCity = str_replace( '"', '&quot;', $_POST['UserCity']);
-		  $UserNoShow = ($_POST['UserNoShow'] == 'on' ? 1 : 0);
+		  $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');;
 
                 } else {
 

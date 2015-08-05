@@ -84,7 +84,7 @@ if (!isset($MyPHPScript)) return;
            $pUserName = $_POST['UserName'];
            $pUserCity = $_POST['UserCity'];
            $pUserBirthYear = $_POST['UserBirthYear'];
-           $pUserProhibitAdd = (mmb_validate($_POST, 'UserProhibitAdd', '') == 'on' ? 1 : 0);
+           $pUserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
            $pUserId = $_POST['UserId']; 
 
            $pUserNewPassword = mmb_validate($_POST, 'UserNewPassword', '');
@@ -93,8 +93,7 @@ if (!isset($MyPHPScript)) return;
 	   if ($pUserCity == $UserCityPlaceHolder) { $pUserCity = ''; }  
 
            // 03/07/2014  Скрываем ФИО	 
-           if (!isset($_POST['UserNoShow'])) $_POST['UserNoShow'] = "";
-           $pUserNoShow = ($_POST['UserNoShow'] == 'on' ? 1 : 0);
+           $pUserNoShow = mmb_isOn($_POST, 'UserNoShow');
 
 
    
