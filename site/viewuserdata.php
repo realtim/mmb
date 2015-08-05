@@ -68,11 +68,9 @@ if (!isset($MyPHPScript)) return;
 		     return;
 		}
            
-		$sql = "select user_email, CASE WHEN COALESCE(u.user_noshow, 0) = 1 and user_id <> ".$UserId." THEN '".$Anonimus."' ELSE u.user_name END as user_name,
-		         user_birthyear, user_prohibitadd, user_city, user_noshow from  Users u where user_id = ".$pUserId;
-		$rs = MySqlQuery($sql);  
-                $row = mysql_fetch_assoc($rs);
-                mysql_free_result($rs);
+		$sql = "select user_email, CASE WHEN COALESCE(u.user_noshow, 0) = 1 and user_id <> $UserId THEN '$Anonimus' ELSE u.user_name END as user_name,
+		         user_birthyear, user_prohibitadd, user_city, user_noshow from  Users u where user_id = $pUserId";
+                $row = CSql::singleRow($sql);
 
 	        // Если вернулись после ошибки переменные не нужно инициализировать
 	        if ($viewsubmode == "ReturnAfterError") 
@@ -284,27 +282,23 @@ if (!isset($MyPHPScript)) return;
          // Если не разрешена правка - не показываем адрес почты
          if ($AllowEdit == 1) 
 	 {
-	  print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserEmail" size="50" value="'.$UserEmail.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserEmail.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserEmail.'\';}"').'
-	         title = "E-mail - Используется для идентификации пользователя"></td></tr>'."\r\n");
+	  print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserEmail" size="50" value="'.$UserEmail.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+		.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($UserEmail))
+		.' title = "E-mail - Используется для идентификации пользователя"></td></tr>'."\r\n");
          }
 
-         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserName" size="50" value="'.$UserName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserName.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserName.'\';}"').'
-                title = "ФИО - Так будет выглядеть информация о пользователе в протоколах и на сайте"></td></tr>'."\r\n");
+         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserName" size="50" value="'.$UserName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+		.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($UserName))
+	        .' title = "ФИО - Так будет выглядеть информация о пользователе в протоколах и на сайте"></td></tr>'."\r\n");
 
-         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserBirthYear.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserBirthYear.'\';}"').'
-	        title = "Год рождения"></td></tr>'."\r\n");
+         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "'.(++$TabIndex).'" '.$DisabledText.' '
+		.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($UserBirthYear))
+	        .' title = "Год рождения"></td></tr>'."\r\n");
 
          // Пустой $UserCity  выше  заменяется на подсказку
-         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserCity" size="50" value="'.$UserCity.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($UserCity <> $UserCityPlaceHolder ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$UserCityPlaceHolder.'\') {this.value=\'\';}"').'
-                 '.($UserCity <> $UserCityPlaceHolder ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$UserCityPlaceHolder.'\';}"').'
-                title = "Город"></td></tr>'."\r\n");
+         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserCity" size="50" value="'.$UserCity.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+	        .($UserCity <> $UserCityPlaceHolder ? '' : CMmbUI::placeholder($UserCityPlaceHolder))
+	        .' title = "Город"></td></tr>'."\r\n");
 
 
 //                 '.( $UserCity <> $UserCityPlaceHolder ? '' : 'onclick = "javascript: this.value=\'\';" onblur = "javascript: this.value=\''.$UserCityPlaceHolder.'\';"').'
@@ -423,7 +417,7 @@ if (!isset($MyPHPScript)) return;
 			      on tu.teamuser_id = tld.teamuser_id
 			      left outer join LevelPoints  lp
 			      on tld.levelpoint_id = lp.levelpoint_id
-			where tu.teamuser_hide = 0 and tu.user_id = ".$pUserId."
+			where tu.teamuser_hide = 0 and tu.user_id = $pUserId
 			order by r.raid_id desc "; 
                 //echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
@@ -464,7 +458,7 @@ if (!isset($MyPHPScript)) return;
                  
 		$sql = "select d.device_id, d.device_name
 		        from  Devices d
-			where d.user_id = ".$pUserId."
+			where d.user_id = $pUserId
 			order by device_id desc "; 
                 //echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
@@ -480,10 +474,8 @@ if (!isset($MyPHPScript)) return;
                 $TabIndex = 1;
 	        $DisabledText = '';
                 $NewDeviceName = 'Название нового устройства';
-		print('<div align = "left" style = "padding-top: 5px;"><input type="text" name="NewDeviceName" size="50" value="'.$NewDeviceName.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
-                onclick = "javascript: if (trimBoth(this.value) == \''.$NewDeviceName.'\') {this.value=\'\';}" 
-                onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$NewDeviceName.'\';}"
-	        title = "Название нового устройства">'."\r\n");
+		print('<div align = "left" style = "padding-top: 5px;"><input type="text" name="NewDeviceName" size="50" value="'.$NewDeviceName.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+                . CMmbUI::placeholder($NewDeviceName) . ' title = "Название нового устройства">'."\r\n");
     	        print('<input type="button" onClick = "javascript: AddDevice();"  name="AddDeviceButton" value="Добавить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                    
 	        print('</div></form>'."\r\n");
@@ -532,7 +524,7 @@ if (!isset($MyPHPScript)) return;
 		        from  UserLinks ul
 			      inner join LinkTypes lt  on ul.linktype_id = lt.linktype_id
 			      inner join Raids r on ul.raid_id = r.raid_id 
-			where ul.userlink_hide = 0 and ul.user_id = ".$pUserId."
+			where ul.userlink_hide = 0 and ul.user_id = $pUserId
 			order by userlink_id  "; 
                 //echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
@@ -543,7 +535,7 @@ if (!isset($MyPHPScript)) return;
                   $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : $Row['userlink_name'];
 		  print('<div align = "left" style = "padding-top: 5px;">'.$Row['raid_name'].' '.$Row['linktype_name'].' <a href = "'.$Row['userlink_url'].'" 
 		          title = "'.$Row['userlink_name'].'">'.$Label.'</a>'."\r\n");
-			      	        print('<input type="button" style = "margin-left: 20px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите удалить впечатление ? \')) {DelLink('.$Row['userlink_id'].');}"  name="DelLinkButton" value="Удалить" tabindex = "'.(++$TabIndex).'">'."\r\n");
+                  print('<input type="button" style = "margin-left: 20px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите удалить впечатление ? \')) {DelLink('.$Row['userlink_id'].');}"  name="DelLinkButton" value="Удалить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                   print('</div>'."\r\n");
 			  
 		}
@@ -580,22 +572,18 @@ if (!isset($MyPHPScript)) return;
 		}
 		mysql_free_result($Result);
 		print('</select>'."\n");
- 
-		print('<input type="text" name="NewLinkName" size="30" value="'.$NewLinkName.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
-                onclick = "javascript: if (trimBoth(this.value) == \''.$NewLinkName.'\') {this.value=\'\';}" 
-                onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$NewLinkName.'\';}"
-	        title = "Название нового впечатления">'."\r\n");
-	        print('</div>'."\r\n");
+
+		print('<input type="text" name="NewLinkName" size="30" value="'.$NewLinkName.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+		. CMmbUI::placeholder($NewLinkName) . ' title = "Название нового впечатления">'."\r\n");
+	        print("</div>\r\n");
 
 		print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
 
-		print('<input type="text" name="NewLinkUrl" size="50" value="'.$NewLinkUrl.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
-                onclick = "javascript: if (trimBoth(this.value) == \''.$NewLinkUrl.'\') {this.value=\'\';}" 
-                onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$NewLinkUrl.'\';}"
-	        title = "Адрес ссылки на впечатление">'."\r\n");
+		print('<input type="text" name="NewLinkUrl" size="50" value="'.$NewLinkUrl.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+		. CMmbUI::placeholder($NewLinkUrl) . ' title = "Адрес ссылки на впечатление">'."\r\n");
     	        print('<input type="button" onClick = "javascript: AddLink();"  name="AddLinkButton" value="Добавить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                    
-	        print('</div></form>'."\r\n");
+	        print("</div></form>\r\n");
 
 	   }
 	   // Конец блока ссылок на впечатления

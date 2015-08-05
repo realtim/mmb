@@ -368,24 +368,22 @@ if ($AllowEdit == 1)
 	mysql_free_result($Result);
 	print('</select>'."\n");
 
-	print('</td></tr>'."\n\n");
-	print('<tr><td class="input">'."\n");
+	print("</td></tr>\r\n");
+	print("<tr><td class=\"input\">\n");
 
 
-        print('<input type="text" name="PointName" size="20" value="'.$PointName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$PointName.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$PointName.'\';}"').'
-                title = "Название КП">'."\r\n");
+        print('<input type="text" name="PointName" size="20" value="'.$PointName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+                 . ($viewmode <> 'Add' ? '' : CMmbUI::placeholder($PointName))
+	         .' title = "Название КП">'."\r\n");
 
-        print(' Штраф: <input type="text" name="PointPenalty" size="5" value="'.$PointPenalty.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$PointPenalty.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$PointPenalty.'\';}"').'
-                title = "Штраф за невзятие КП в минутах">'."\r\n");
+        print(' Штраф: <input type="text" name="PointPenalty" size="5" value="'.$PointPenalty.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+                 .($viewmode <> 'Add' ? '' : CMmbUI::placeholder($PointPenalty))
+                 .' title = "Штраф за невзятие КП в минутах">'."\r\n");
 
 
-	print('</td></tr>'."\n\n");
+	print("</td></tr>\r\n");
 
-	print('<tr><td>'."\n\n");
+	print("<tr><td>\r\n");
           
 	print('Дата (ддмм) и время (ччмм) ограничений для прохождения точки: <br/>  снизу'."\n\n");
 
