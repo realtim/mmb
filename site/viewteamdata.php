@@ -413,8 +413,8 @@ if (($AllowEdit == 1) && CanCreateTeam($Administrator, $Moderator, $OldMmb, $Rai
 	}
 	else
 	{
-		print('<input type="text" name="NewTeamUserEmail" size="50" value="Email нового участника" tabindex="'.(++$TabIndex)
-		. CMmbUI::placeholder('Email нового участника') . 'title="Укажите e-mail пользователя, которого Вы хотите добавить в команду. Пользователь может запретить добавлять себя в команду в настройках своей учетной записи.">'."\n");
+		print('<input type="text" name="NewTeamUserEmail" size="50" value="Email нового участника" tabindex="'.(++$TabIndex) .'"'
+			. CMmbUI::placeholder('Email нового участника') . 'title="Укажите e-mail пользователя, которого Вы хотите добавить в команду. Пользователь может запретить добавлять себя в команду в настройках своей учетной записи.">'."\n");
 	}
 	print("</td></tr>\n");
 }

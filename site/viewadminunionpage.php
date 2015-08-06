@@ -130,7 +130,7 @@ if (!isset($MyPHPScript)) return;
 			}	
 			$UnionButtonText = 'Объединить';
 			
-			print('<input type="text" name="TeamName" size="50" value="'.$TeamName.'" tabindex="'.(++$TabIndex)
+			print('<input type="text" name="TeamName" size="50" value="'.$TeamName.'" tabindex="'.(++$TabIndex). '" '
 				. CMmbUI::placeholder($TeamName) . ' title="Название объединённой команды">'."\n\n");
 
                         print("</br>\r\n");
