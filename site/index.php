@@ -46,10 +46,7 @@
 		       order by $orderBy desc
 		       LIMIT 0,1 ";
 
- 	     $Result = MySqlQuery($sql);
-	     $Row = mysql_fetch_assoc($Result);
-	     $RaidId = $Row['raid_id'];
-	     mysql_free_result($Result);
+	     $RaidId = CSql::singleValue($sql, 'raid_id');
         }
 	// Конец определения ММБ
 

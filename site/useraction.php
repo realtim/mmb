@@ -744,18 +744,15 @@ if (!isset($MyPHPScript)) return;
 	}
 
 	// Прверяем, что нет устройства с таким именем
-           $sql = "select count(*) as resultcount from  Devices where trim(device_name) = '".$pNewDeviceName."'";
+           $sql = "select count(*) as resultcount from  Devices where trim(device_name) = '$pNewDeviceName'";
       //     echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-           mysql_free_result($rs);
-	   if ($Row['resultcount'] > 0)
+	   if (CSql::singleValue($sql, 'resultcount') > 0)
 	   {
    		CMmb::setErrorSm('Уже есть устройство с таким именем.');
                 return; 
 	   }
 
-	   $Sql = "insert into Devices (device_name, user_id) values ('".$pNewDeviceName."', ".$pUserId.")";
+	   $Sql = "insert into Devices (device_name, user_id) values ('$pNewDeviceName', $pUserId)";
 	   MySqlQuery($Sql);
 
 	   CMmb::setResult('Добавлено устройство', 'ViewUserData');

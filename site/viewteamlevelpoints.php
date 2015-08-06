@@ -255,9 +255,9 @@ if ($AllowEditResult == 1)
 	}
 	mysql_free_result($Result);
 	print('</select>'."\n");
-	print('</td></tr>'."\r\n");
-	print('<tr><td>'."\r\n");
-	print('Дата (ддмм) и время (ччммсс) прохождания точки: '."\r\n");
+	print("</td></tr>\r\n");
+	print("<tr><td>\r\n");
+	print("Дата (ддмм) и время (ччммсс) прохождения точки: \r\n");
         // Можно отключить правку написав  $DateReadOnly = 'readonly'
         $DateReadOnly = '';
 

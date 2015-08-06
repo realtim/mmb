@@ -38,7 +38,7 @@ else
   $RaidId = $_GET['RaidId'];
 
   // Аутентификация и авторизация -- проверка прав на получение дампа (администратор)
-  $Sql = "select user_id, user_admin from Users where user_hide = 0 and trim(user_email) = trim('".$_GET['Login']."') and user_password = '".md5(trim($_GET['Password']))."'";
+  $Sql = "select user_id, user_admin from Users where user_hide = 0 and trim(user_email) = trim('{$_GET['Login']}') and user_password = '".md5(trim($_GET['Password']))."'";
   $Result = MySqlQuery($Sql);  
   $Row = mysql_fetch_assoc($Result);
 
@@ -63,9 +63,8 @@ else
 
 if (empty($RaidId))
 {
-    $statustext = 'Не указан ММБ';				     
-    $view = "";
-    return;
+	CMmb::setShortResult('Не указан ММБ', '');
+	return;
 
  
 /*
