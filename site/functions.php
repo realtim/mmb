@@ -66,6 +66,13 @@ class CMmb
 		$view = $newView;
 		$viewmode = $newViewMode;
 	}
+
+	public static function setViews($newView, $newViewMode)
+	{
+		global $view, $viewmode;
+		$view = $newView;
+		$viewmode = $newViewMode;
+	}
 };
 
 
@@ -789,11 +796,11 @@ send_mime_mail('Автор письма',
                         ) 
     {
       $to = mime_header_encode($name_to, $data_charset, $send_charset)
-		  . ' <' . $email_to . '>';
+		  . " <$email_to>";
       $subject = mime_header_encode($subject, $data_charset, $send_charset);
 
       $from =  mime_header_encode($name_from, $data_charset, $send_charset)
-                     .' <' . $email_from . '>';
+                     ." <$email_from>";
  
       if($data_charset != $send_charset) 
       {
@@ -808,15 +815,15 @@ send_mime_mail('Автор письма',
       return mail($to, $subject, $body, $headers, "-f".$email_from);
      }
 
-     function mime_header_encode($str, $data_charset, $send_charset) 
-     {
+    function mime_header_encode($str, $data_charset, $send_charset)
+    {
       if($data_charset != $send_charset) 
       {
 	$str = iconv($data_charset, $send_charset, $str);
       }
       return '=?' . $send_charset . '?B?' . base64_encode($str) . '?=';
-     }
-     // конец функций для отправки письма
+    }
+    // конец функций для отправки письма
 
 
 
@@ -829,46 +836,35 @@ send_mime_mail('Автор письма',
 		$sql = "select TIME_TO_SEC(COALESCE(t.team_result,0)) as result_in_sec, t.distance_id 
 				from Teams t
 				where  t.team_hide = 0 
-						and COALESCE(t.team_outofrange, 0) = 0
-						and COALESCE(t.team_result, 0) > 0
-						and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
-						and t.team_id = ".$teamid;
+					and COALESCE(t.team_outofrange, 0) = 0
+					and COALESCE(t.team_result, 0) > 0
+					and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
+					and t.team_id = $teamid";
 
-	    //    echo $sql;
+		//    echo $sql;
 
-		$Result  = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		mysql_free_result($Result);
+		$Row = CSql::singleRow($sql);
 
 		$TeamResult =  $Row['result_in_sec'];
 		$DistanceId =  $Row['distance_id'];
 
-		$TeamPlace = 0;
-		if ($TeamResult > 0 and  $DistanceId > 0) 
-		{
+		if ($TeamResult <= 0 || $DistanceId <= 0)
+			return 0;
 		// Смотрим сколько команд имеют результат лучше и прибавляем 1
 		// Нельзя ставить <=, т.к. на одном месте может быть несколько команд
-			$sql_place = "select count(*) + 1 as result_place
-							from Teams  t 
-							where t.team_hide = 0 
-									and t.distance_id = ".$DistanceId."
-									and COALESCE(t.team_outofrange, 0) = 0
-									and COALESCE(t.team_result,0) > 0
-									and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
-									and TIME_TO_SEC(COALESCE(t.team_result,0)) < ".$TeamResult;
+		$sql_place = "select count(*) + 1 as result_place
+					from Teams  t
+					where t.team_hide = 0
+						and t.distance_id = $DistanceId
+						and COALESCE(t.team_outofrange, 0) = 0
+						and COALESCE(t.team_result,0) > 0
+						and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
+						and TIME_TO_SEC(COALESCE(t.team_result,0)) < $TeamResult";
 
-			// echo $sql_place;
-
-			$Result_place  = MySqlQuery($sql_place);
-			$Row_place = mysql_fetch_assoc($Result_place);
-			mysql_free_result($Result_place);
-			$TeamPlace = (int)$Row_place['result_place'];
-		
-		}
-
-		return ($TeamPlace);
+		// echo $sql_place;
+		return CSql::singleValue($sql_place, 'result_place');
 	}
-     // конец функции расчета места команды в общем зачете
+    // конец функции расчета места команды в общем зачете
 
 
         // функция экранирует спец.символы
@@ -948,9 +944,8 @@ send_mime_mail('Автор письма',
         // Конец очистик специальных массивов от возможных инъекций
 
      // функция получает ссылку на  логотип
-     function GetMmbLogo($raidid)
-     {
-    
+    function GetMmbLogo($raidid)
+    {
         // Данные берём из settings
 	include("settings.php");
     
@@ -977,17 +972,16 @@ send_mime_mail('Автор письма',
 
 	$sql = "select raid_logolink
 	        from Raids 
-		where  raid_id = ".$raidid."
+		where  raid_id = $raidid
 		LIMIT 0,1 ";
 	
 	    // 08.12.2013 Ищем ссылку на логотип  
         $sqlFile = "select rf.raidfile_name
 	     from RaidFiles rf
-	     where rf.raid_id = ".$raidid." and rf.filetype_id = 2 
+	     where rf.raid_id = $raidid and rf.filetype_id = 2
 	     order by rf.raidfile_id desc
 	     LIMIT 0,1";
 
-	
 	}
 
         $LogoFile = trim(CSql::singleValue($sqlFile, 'raidfile_name'));
@@ -996,14 +990,14 @@ send_mime_mail('Автор письма',
 	        return $MyStoreHttpLink.$LogoFile;
 
         return CSql::singleValue($sql, 'raid_logolink');
-      }
+    }
       // Конец получения логотипа
 
 
      // 26/12/2013 
      // Проверка корректности внесённых точек
-     function CheckLevelPoints($distanceid)
-     {
+    function CheckLevelPoints($distanceid)
+    {
      
        $CheckString = "";
        // Важно, что в "правой" таблице берутся только точки с типом 1,2,4 (старт,финиш, смена карт)
@@ -1054,7 +1048,7 @@ send_mime_mail('Автор письма',
 		     (c.pointtype_id  not in (1) and c.predpointtype_id  = 2) 
 	       order by 1";
 
-     //  echo $sql;		
+       //  echo $sql;
 
 	$Row = CSql::singleRow($sql);
 	$LevelPointId = $Row['levelpoint_id'];
@@ -1062,7 +1056,7 @@ send_mime_mail('Автор письма',
 
         if (!empty($LevelPointId))
 	{
-	  $CheckString = "Некорректность в точке ".$LevelPointName;
+	  $CheckString = "Некорректность в точке $LevelPointName";
 	}
 	
 	$sql = " select lpd.levelpointdiscount_id, lpd.levelpointdiscount_start, lpd.levelpointdiscount_finish 
@@ -1089,18 +1083,18 @@ send_mime_mail('Автор письма',
 
     
        return($CheckString);
-     }
+    }
      //Конец проверки корректности точек
      
      // 17/02/2014 
      // Проверка корректности внесённых точек сканирования
-     function CheckScanPoints($raidid)
-     {
+    function CheckScanPoints($raidid)
+    {
      
        $CheckString = "";
     
        return($CheckString);
-     }
+    }
      //Конец проверки корректности точек сканирования
      
      
@@ -1132,7 +1126,7 @@ send_mime_mail('Автор письма',
 	// Получаем информацию оточках, которые прошла команда
 	$sql = "select tlp.teamlevelpoint_comment	        
 		from TeamLevelPoints tlp
-		where tlp.team_id = ".$teamid;
+		where tlp.team_id = $teamid";
 
 	$rs = MySqlQuery($sql);
 
@@ -1157,17 +1151,10 @@ send_mime_mail('Автор письма',
         // функция получения вклада в рейтинг
      function RecalcTeamUsersRank($raidid)
      {
-       
-       
-       // 03/07/2014 ДОбавил условие, чтобы не считать рейтинг для сошедших
+        // 03/07/2014 ДОбавил условие, чтобы не считать рейтинг для сошедших
               
-       if ($raidid > 0)
-       {
-         $RaidWhereString = " and d.raid_id = ".$raidid." ";
-       } else {
-         $RaidWhereString = " ";
-       }
-  
+        $RaidWhereString = $raidid > 0 ? " and d.raid_id = $raidid " : ' ';
+
         // Обнуляем рейтинг  
   	$sql = "
 		update TeamUsers tu
@@ -1296,11 +1283,7 @@ send_mime_mail('Автор письма',
 	 // Конец проверки, что участник не явился
 
         // Если явился сбрасываем ММБ
-	if ($NotStart == 0) {
-	 $PredRaidId = 0;
-	} 
-		    
-       return($PredRaidId);
+	return $NotStart == 0 ? 0 : $PredRaidId;
      }
      //Конец статуса неявки на старт в прошлй раз
 
@@ -1402,7 +1385,7 @@ send_mime_mail('Автор письма',
 			tl.teamlevel_comment, tl.teamlevel_penalty, 
 			tl.teamlevel_duration
 	         from TeamLevels tl
-	         where tl.teamlevel_id = ".$teamlevelid;
+	         where tl.teamlevel_id = $teamlevelid";
 
 
        // echo $sql;
@@ -1413,7 +1396,7 @@ send_mime_mail('Автор письма',
 	$LevelId = $Row['level_id'];
 	$TeamId = $Row['team_id'];
 	$StartTime = $Row['teamlevel_begtime'];
-        // Дальше идёт информация дл я записи в точку "финиш" 
+        // Дальше идёт информация для записи в точку "финиш"
 	$FinishTime = $Row['teamlevel_endtime'];
 	$Comment = $Row['teamlevel_comment'];
 	$Penalty = $Row['teamlevel_penalty'];
@@ -1436,20 +1419,16 @@ send_mime_mail('Автор письма',
         // Получаем старт этапа
 	$sql = " select lp1.levelpoint_id
 	         from LevelPoints lp1
-	         where lp1.level_id = ".$LevelId."
+	         where lp1.level_id = $LevelId
 		       and lp1.pointtype_id in (1,4)
 		 order by  lp1.levelpoint_order ASC     
 		 LIMIT 0,1";
 
-      //  echo $sql;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	$StartLevelPointId = $Row['levelpoint_id'];
-	mysql_free_result($Result);
+        //  echo $sql;
+	$StartLevelPointId = CSql::singleValue($sql, 'levelpoint_id');
 
-
-    //   echo 'sr '.$StartLevelPointId; 
-       if ($StartLevelPointId and $StartTime > 0) {
+        //   echo 'sr '.$StartLevelPointId;
+        if ($StartLevelPointId and $StartTime > 0) {
 
                 $StartTlpExists = 0;
 
@@ -1457,13 +1436,8 @@ send_mime_mail('Автор письма',
 		    from TeamLevelPoints tlp
 		    where tlp.team_id = $TeamId and tlp.levelpoint_id = $StartLevelPointId";
 
-		$ResultTlp = MySqlQuery($sqltlp);
-		$RowTlp = mysql_fetch_assoc($ResultTlp);
-		$StartTlpExists = $RowTlp['teamlevelpoint_id'];
-		mysql_free_result($ResultTlp);
-	
-	
-	       //  echo $sqltlp;	
+		$StartTlpExists = CSql::singleValue($sqltlp, 'teamlevelpoint_id');
+	       //  echo $sqltlp;
 	
 		// Пишем старт
 		if (!$StartTlpExists) {
@@ -1479,7 +1453,7 @@ send_mime_mail('Автор письма',
 			$ResultTlp = MySqlQuery($sqltlp);
 				
 		} else {
-		   print('Уже есть точка старта '.$FinishLevelPointId.' '.$TeamId."\r\n");
+		   print("Уже есть точка старта $FinishLevelPointId $TeamId\r\n");
 		} 
 	}
 	// Конец проверки на существование точки старта
@@ -1490,31 +1464,23 @@ send_mime_mail('Автор письма',
         // Получаем финиш этапа
 	$sql = " select lp1.levelpoint_id
 	         from LevelPoints lp1
-	         where lp1.level_id = ".$LevelId."
+	         where lp1.level_id = $LevelId
 		       and lp1.pointtype_id in (2,4)
 		 order by  lp1.levelpoint_order ASC     
 		 LIMIT 0,1";
 
-      //  echo $sql;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	$FinishLevelPointId = $Row['levelpoint_id'];
-	mysql_free_result($Result);
+        //  echo $sql;
+	$FinishLevelPointId = CSql::singleValue($sql, 'levelpoint_id');
 
-
-       if ($FinishLevelPointId and $FinishTime > 0) {
+        if ($FinishLevelPointId and $FinishTime > 0) {
 	
 		$FinishTlpExists = 0;
 	
 		$sqltlp = " select tlp.teamlevelpoint_id
 			    from TeamLevelPoints tlp
-			    where tlp.team_id = ".$TeamId." and tlp.levelpoint_id = ".$FinishLevelPointId;
+			    where tlp.team_id = $TeamId and tlp.levelpoint_id = $FinishLevelPointId";
 
-
-		$ResultTlp = MySqlQuery($sqltlp);
-		$RowTlp = mysql_fetch_assoc($ResultTlp);
-		$FinishTlpExists = $RowTlp['teamlevelpoint_id'];
-		mysql_free_result($ResultTlp);
+		$FinishTlpExists = CSql::singleValue($sqltlp, 'teamlevelpoint_id');
 
 		// Пишем финиш
 		if (!$FinishTlpExists) {
@@ -1522,13 +1488,13 @@ send_mime_mail('Автор письма',
 			$sqltlp = " insert into TeamLevelPoints(device_id, levelpoint_id, team_id,
 			                                        teamlevelpoint_datetime, teamlevelpoint_comment,
 								teamlevelpoint_duration, teamlevelpoint_penalty)
-			         values(1, ".$FinishLevelPointId.", ".$TeamId.", '".$FinishTime."', '".trim($Comment)."', '".$Duration."', ".$Penalty.")";
+			         values(1, $FinishLevelPointId, $TeamId, '$FinishTime', '".trim($Comment)."', '$Duration', $Penalty)";
                      //   echo $sqltlp;
 
 			$ResultTlp = MySqlQuery($sqltlp);
 				
 		} else {
-		   print('Уже есть точка финиша '.$FinishLevelPointId.' '.$TeamId."\r\n");
+		   print("Уже есть точка финиша $FinishLevelPointId $TeamId\r\n");
 		}   
 	}
 	// Конец проверки на существование точки финиша
@@ -1537,7 +1503,7 @@ send_mime_mail('Автор письма',
 
 
 	if ( $LevelPointsString == '') {
-	   print('Нет данных о точках '.$teamlevelid."\r\n");
+	   print("Нет данных о точках $teamlevelid\r\n");
  	   return;
 	}
 //
@@ -1554,7 +1520,7 @@ send_mime_mail('Автор письма',
 	         from LevelPoints lp1
 		       inner join Levels l2
 		       on lp1.level_id = l2.level_id
-	         where l2.level_id = ".$LevelId."
+	         where l2.level_id = $LevelId
 		       and lp1.pointtype_id in (3,5)
 		 order  by lp1.levelpoint_order ASC";
 
@@ -1571,27 +1537,21 @@ send_mime_mail('Автор письма',
 		
 		$sqltlp = " select tlp.teamlevelpoint_id
 			 from TeamLevelPoints tlp
-			 where tlp.team_id = ".$TeamId." and tlp.levelpoint_id = ".$NowLevelPointId;
+			 where tlp.team_id = $TeamId and tlp.levelpoint_id = $NowLevelPointId";
 
+		$TlpExists = CSql::singleValue($sqltlp, 'teamlevelpoint_id');
 
-		$ResultTlp = MySqlQuery($sqltlp);
-		$RowTlp = mysql_fetch_assoc($ResultTlp);
-		$TlpExists = $RowTlp['teamlevelpoint_id'];
-		mysql_free_result($ResultTlp);
-		
-		
 		// Вставляем КП в список, если стоит 1
 		if ((int)$LevelPointsArr[$i-1] == 1) {
 		   if (empty($TlpExists)) {
 	
 			$sqltlp = " insert into TeamLevelPoints(device_id, levelpoint_id, team_id)
-			         values(1, ".$NowLevelPointId.", ".$TeamId.")";
-
+			         values(1, $NowLevelPointId, $TeamId)";
 
 			$ResultTlp = MySqlQuery($sqltlp);
 				
 		    } else {
-		       print('Уже есть точка '.$NowLevelPointId.' '.$TeamId."\r\n");
+		       print("Уже есть точка $NowLevelPointId $TeamId\r\n");
 		    }
 		}
          }
@@ -1609,15 +1569,13 @@ send_mime_mail('Автор письма',
  // Генерация точек для ММБ по этапам
      function GenerateLevelPointsForRaidFromLevels($raidid)
      {
-
-
-	$Sql = "select tl.teamlevel_id 
+	$Sql = "select tl.teamlevel_id
 	        from TeamLevels tl
 		     inner join Levels l
 		     on tl.level_id = l.level_id
 		     inner join Distances d
 		     on l.distance_id = d.distance_id
-	        where d.raid_id = ".$raidid."
+	        where d.raid_id = $raidid
                      and COALESCE(tl.teamlevel_progress, 0) > 0
 	       ";
 
@@ -1634,9 +1592,9 @@ send_mime_mail('Автор письма',
         }
         mysql_free_result($Result2);
    
-     set_time_limit(30);
+        set_time_limit(30);
 
-     return;
+        return;
      }
      //Конец генерации точек для ММБ 
    
@@ -2342,5 +2300,19 @@ send_mime_mail('Автор письма',
 		$val = mmb_validate($var, $key, $default);
 		return is_numeric($val) ? $val : false;
 	}
+
+	function mmb_isOn($var, $key)
+	{
+		return (mmb_validate($var, $key, '') == 'on') ? 1 : 0;
+	}
+
+class CMmbUI
+{
+	public static function placeholder($defaultValue)
+	{
+		$defVal = str_replace('"', '&quot;', str_replace("'", "\\'", $defaultValue)); // эскейпимся от апострофов и двойных кавычек
+		return " onclick=\"javascript: _onClick(this, '$defVal');\" onblur=\"javascript: _onBlur(this, '$defVal');\" ";
+	}
+}
 
 ?>

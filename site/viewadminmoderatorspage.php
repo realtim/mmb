@@ -9,12 +9,12 @@ if (!isset($MyPHPScript)) return;
 
         
 	// Функция просмотра данных о команде
-	function ViewUserInfo(userid)
+	/*function ViewUserInfo(userid)
 	{ 
 		document.ModeratorsForm.UserId.value = userid;
 		document.ModeratorsForm.action.value = "UserInfo";
 		document.ModeratorsForm.submit();
-	}
+	}*/
 	
 	function HideModerator(raidmoderatorid,userid)
 	{ 

@@ -46,10 +46,7 @@
 		       order by $orderBy desc
 		       LIMIT 0,1 ";
 
- 	     $Result = MySqlQuery($sql);
-	     $Row = mysql_fetch_assoc($Result);
-	     $RaidId = $Row['raid_id'];
-	     mysql_free_result($Result);
+	     $RaidId = CSql::singleValue($sql, 'raid_id');
         }
 	// Конец определения ММБ
 
@@ -69,6 +66,8 @@
 			$_REQUEST['action'] = "ViewRankPage";
 		else if (isset($_GET['badges']))
 			$_REQUEST['action'] = "ViewAllBadgesPage";
+		else if (isset($_GET['amnesty']))
+			$_REQUEST['action'] = "ViewLevelPointDiscountsPage";
 		else if (isset($_GET['files']))
 			$_REQUEST['action'] = "ViewRaidFilesPage";
 		else if (isset($_GET['links']))

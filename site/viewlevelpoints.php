@@ -279,8 +279,8 @@ $TabIndex = 0;
 	print('<tr><td class="input">'."\n");
 	print('Дистанция: </span>'."\n");
 	// Показываем выпадающий список файлов
-	print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"  onClick="javascript: submit();">'."\n");
-	$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = ".$RaidId." order by distance_id ";
+	print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"  onchange="javascript: submit();">'."\n");
+	$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = $RaidId order by distance_id ";
 	$Result = MySqlQuery($sql);
 	while ($Row = mysql_fetch_assoc($Result))
 	{
@@ -308,7 +308,7 @@ if ($AllowEdit == 1)
 	//print('<input type="hidden" name="UserId" value="0">'."\n\n");
 	//print('<input type="hidden" name="LevelPointId" value="'.$LevelPointId.'">'."\n");
 	print('<input type="hidden" name="LevelPointId" value="'.$pLevelPointId.'">'."\n\n");
-	print('<table style="font-size: 80%;" border="0" cellpadding="2" cellspacing="0">'."\n\n");
+	print("<table class=\"control\">\r\n");
 
 	$DisabledText = '';
 
@@ -368,24 +368,22 @@ if ($AllowEdit == 1)
 	mysql_free_result($Result);
 	print('</select>'."\n");
 
-	print('</td></tr>'."\n\n");
-	print('<tr><td class="input">'."\n");
+	print("</td></tr>\r\n");
+	print("<tr><td class=\"input\">\n");
 
 
-        print('<input type="text" name="PointName" size="20" value="'.$PointName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$PointName.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$PointName.'\';}"').'
-                title = "Название КП">'."\r\n");
+        print('<input type="text" name="PointName" size="20" value="'.$PointName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+                 . ($viewmode <> 'Add' ? '' : CMmbUI::placeholder($PointName))
+	         .' title = "Название КП">'."\r\n");
 
-        print(' Штраф: <input type="text" name="PointPenalty" size="5" value="'.$PointPenalty.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$PointPenalty.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$PointPenalty.'\';}"').'
-                title = "Штраф за невзятие КП в минутах">'."\r\n");
+        print(' Штраф: <input type="text" name="PointPenalty" size="5" value="'.$PointPenalty.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+                 .($viewmode <> 'Add' ? '' : CMmbUI::placeholder($PointPenalty))
+                 .' title = "Штраф за невзятие КП в минутах">'."\r\n");
 
 
-	print('</td></tr>'."\n\n");
+	print("</td></tr>\r\n");
 
-	print('<tr><td>'."\n\n");
+	print("<tr><td>\r\n");
           
 	print('Дата (ддмм) и время (ччмм) ограничений для прохождения точки: <br/>  снизу'."\n\n");
 
@@ -422,20 +420,16 @@ if ($AllowEdit == 1)
 	print('&nbsp; <input type="button" style="margin-left: 30px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить точку: '.trim($PointName).'? \')) {HideLevelPoint();}" name="HideLevelPointButton" value="Удалить точку" tabindex="'.(++$TabIndex).'">'."\n");
 	}
 
-	print('</td></tr>'."\n\n");
+	print("</td></tr>\r\n");
 	print('<tr><td>После добавления, дистанцию у точки изменить нельзя - только удалив и добавив точку заново.
-	               <br/> Амнистия редактируется в отедльном окне (ссылка в меню).   </td></tr>'."\n\n");
+	               <br/> Амнистия редактируется в <a href="?amnesty&RaidId='.$RaidId.'">отдельном окне</a>.</td></tr>'."\r\n");
 
-	print('</table>'."\n");
-	print('</form>'."\r\n");
-
+	print("</table>\r\n");
+	print("</form>\r\n");
 
 }
 
-
-
-
-print('</br>'."\n");
+print("<br/>\n");
 
 
 
@@ -486,29 +480,28 @@ if ($AllowViewResults == 1)
         $thstyle = 'padding: 5px 0px 0px 5px;';		
 
 
-		print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
+		print("<table class=\"std\">\r\n");
 
 //                         <td width = "100" style = "'.$thstyle.'">Этап</td>
 
-		print('<tr class = "gray">
-		         <td width = "50" style = "'.$thstyle.'">N п/п</td>
-                         <td width = "100" style = "'.$thstyle.'">Скан-точка</td>
-		         <td width = "150" style = "'.$thstyle.'">Тип</td>
-		         <td width = "200" style = "'.$thstyle.'">Название</td>
-		         <td width = "150" style = "'.$thstyle.'">Штраф (минуты)</td>
-		         <td width = "100" style = "'.$thstyle.'">с</td>
-		         <td width = "100" style = "'.$thstyle.'">по</td>
-		         <td width = "100" style = "'.$thstyle.'">Амнистия</td>
+		print('<tr class="head gray">
+		         <td width="50">N п/п</td>
+                         <td width="100">Скан-точка</td>
+		         <td width="150">Тип</td>
+		         <td width="200">Название</td>
+		         <td width="150">Штраф (минуты)</td>
+		         <td width="100">с</td>
+		         <td width="100">по</td>
+		         <td width="100">Амнистия</td>
 		         '."\r\n");
 
 		if ($AllowEdit == 1)
 		{
-		       print('<td width = "100" style = "'.$thstyle.'">&nbsp;</td>'."\r\n");
-
+		       print('<td width="100">&nbsp;</td>'."\r\n");
 		}
 		
 	
-		print('</tr>'."\r\n");
+		print("</tr>\r\n");
 		
 	        // Сканируем команды
 		while ($Row = mysql_fetch_assoc($Result))
@@ -516,31 +509,31 @@ if ($AllowViewResults == 1)
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
 //                            <td align = "left" style = "'.$tdstyle.'">'.$Row['level_name'].'</td>
 
-                     print('<tr>'."\r\n");
-		     print('<td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_order'].'</td>
-                            <td align = "left" style = "'.$tdstyle.'">'.$Row['scanpoint_name'].'</td>
-		            <td align = "left" style = "'.$tdstyle.'">'.$Row['pointtype_name'].'</td>
-		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_name'].'</td>
-		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_penalty'].'</td>
-		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_mindatetime'].'</td>
-		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_maxdatetime'].'</td>
-		            <td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_discount'].'</td>
-		            ');
+                     print("<tr>\r\n");
+		     print("<td>{$Row['levelpoint_order']}</td>
+                            <td>{$Row['scanpoint_name']}</td>
+		            <td>{$Row['pointtype_name']}</td>
+		            <td>{$Row['levelpoint_name']}</td>
+		            <td>{$Row['levelpoint_penalty']}</td>
+		            <td>{$Row['levelpoint_mindatetime']}</td>
+		            <td>{$Row['levelpoint_maxdatetime']}</td>
+		            <td>{$Row['levelpoint_discount']}</td>
+		            ");
 
   		     if ($AllowEdit == 1)
 		     {
-			     print('<td align = "left" style = "'.$tdstyle.'">');
+			     print('<td>');
 			     print('&nbsp; <input type="button" onClick="javascript: EditLevelPoint('.$Row['levelpoint_id'].');" name="EditLevelPointButton" value="Править" tabindex="'.(++$TabIndex).'">'."\n");
 			     print('</td>'."\r\n");
-		     }		      
-                                
+		     }
+		     print("</tr>\r\n");
 		}	
 
 		mysql_free_result($Result);
-		print('</table>'."\r\n");
+		print("</table>\r\n");
 	
 
-               print('</br>'."\n");
+               print("</br>\n");
   
    }
    // Конец проверки прав на просмотр точек

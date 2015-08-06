@@ -30,15 +30,6 @@ if ($action == "ChangeTeamResult")
 	$viewmode = "";
 	if ($TeamId <= 0) return;
 
-	$sql = "select r.raid_registrationenddate
-		from Raids r
-			inner join Distances d on r.raid_id = d.raid_id
-			inner join Teams t on d.distance_id = t.distance_id
-		where t.team_id = ".$TeamId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
-
 	// Проверка возможности редактировать результаты
 	if (!CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
@@ -56,7 +47,7 @@ if ($action == "ChangeTeamResult")
 			inner join Distances d on t.distance_id = d.distance_id
 			inner join Levels l on d.distance_id = l.distance_id
 			left outer join TeamLevels tl on l.level_id = tl.level_id and t.team_id = tl.team_id and tl.teamlevel_hide = 0
-		where l.level_hide = 0  and t.team_id = ".$TeamId;
+		where l.level_hide = 0  and t.team_id = $TeamId";
 	$rs = MySqlQuery($sql);
 
 	// ================ Цикл обработки данных по этапам
@@ -116,7 +107,7 @@ if ($action == "ChangeTeamResult")
 		{
 			$EndYDTs = "NULL";
 			if ($TeamLevelProgress > 1)
-				$statustext = $statustext."</br> финиша '".$Row['level_name']."'";
+				$statustext = $statustext."<br/> финиша '".$Row['level_name']."'";
 		}
 
 		// Ставим флаг "Дошла до конца этапа", если у нас есть корректное время финиша команды
@@ -146,18 +137,18 @@ if ($action == "ChangeTeamResult")
 		if ($TeamLevelId > 0)
 		{
 			$sql = "update TeamLevels set
-					teamlevel_begtime = ".$BegYDTs.",
-					teamlevel_endtime = ".$EndYDTs.",
-					teamlevel_points = '".$TeamLevelPoints."',
-					teamlevel_progress = '".$TeamLevelProgress."',
-					teamlevel_comment = ".$Comment.",
+					teamlevel_begtime = $BegYDTs,
+					teamlevel_endtime = $EndYDTs,
+					teamlevel_points = '$TeamLevelPoints',
+					teamlevel_progress = '$TeamLevelProgress',
+					teamlevel_comment = $Comment,
 					error_id = NULL
-				where teamlevel_id = ".$TeamLevelId."";
+				where teamlevel_id = $TeamLevelId";
 		}
 		else
 		{
 			$sql = "insert into TeamLevels (team_id, level_id, teamlevel_begtime, teamlevel_endtime, teamlevel_points, teamlevel_comment, teamlevel_progress)
-					values (".$TeamId.", ".$Row['level_id'].", ".$BegYDTs.", ".$EndYDTs.", '".$TeamLevelPoints."', ".$Comment.", ".$TeamLevelProgress.")";
+					values ($TeamId, {$Row['level_id']}, $BegYDTs, $EndYDTs, '$TeamLevelPoints', $Comment, $TeamLevelProgress)";
 		}
 		MySqlQuery($sql);
 	}
@@ -223,7 +214,7 @@ elseif ($action == 'AddTlp')
 	
                 // год всегда пишем текущий. если надо - можно добавить поле для года
 
-		$TlpYDTs = "'".$pTlpYear."-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
+		$TlpYDTs = "'$pTlpYear-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
 
 		// Если день и время пустые, то и год пустой считаем
 		if ((int)$pTlpDate == 0 and (int)$pTlpTime == 0)
@@ -237,15 +228,10 @@ elseif ($action == 'AddTlp')
 
 		 $sql = " select count(*) as countresult 
 		          from TeamLevelPoints
-		          where team_id = ".$pTeamId."
-			        and levelpoint_id = ".$pLevelPointId; 
-                
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-	        $AlreadyExists = (int)$Row['countresult'];
-		mysql_free_result($Result);
+		          where team_id = $pTeamId
+			        and levelpoint_id = $pLevelPointId";
 
-	   if  ($AlreadyExists > 0)
+	   if  (((int) CSql::singleValue($sql, 'countresult')) > 0)
 	   {
 			teamAddError('Результаты по точке уже есть.');
 			return;
@@ -257,8 +243,8 @@ elseif ($action == 'AddTlp')
 		$sql = "insert into TeamLevelPoints (team_id, levelpoint_id, 
                         device_id,
 			teamlevelpoint_datetime, teamlevelpoint_comment, error_id)
-			values (".$pTeamId.", ".$pLevelPointId.", 1, 
-			        ".$TlpYDTs.", '".$pTlpComment."', ".$pErrorId.")";
+			values ($pTeamId, $pLevelPointId, 1,
+			        $TlpYDTs, '$pTlpComment', $pErrorId)";
 
 
                //  echo $sql;
@@ -326,7 +312,7 @@ elseif ($action == 'ChangeTlp')
 		$pErrorId = $_POST['ErrorId'];
 
 
-		$TlpYDTs = "'".$pTlpYear."-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
+		$TlpYDTs = "'$pTlpYear-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
 
 		// Если день и время пустые, то и год пустой считаем
 		if ((int)$pTlpDate == 0 and (int)$pTlpTime == 0)
@@ -346,16 +332,11 @@ elseif ($action == 'ChangeTlp')
 	
 		 $sql = " select count(*) as countresult 
 		          from TeamLevelPoints
-		          where team_id = ".$pTeamId."
-			        and levelpoint_id = ".$pLevelPointId." 
-				and teamlevelpoint_id <> ".$pTeamLevelPointId;
+		          where team_id = $pTeamId
+			        and levelpoint_id = $pLevelPointId
+				and teamlevelpoint_id <> $pTeamLevelPointId";
                 
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-	        $AlreadyExists = (int)$Row['countresult'];
-		mysql_free_result($Result);
-
-	   if  ($AlreadyExists > 0)
+	   if  (CSql::singleValue($sql, 'countresult') > 0)
 	   {
 			CMmb::setErrorSm('Результаты по точке уже есть.', 'ReturnAfterErrorTlp');
 			return;
@@ -366,12 +347,12 @@ elseif ($action == 'ChangeTlp')
 	
 
 		
-        $sql = "update TeamLevelPoints  set levelpoint_id = ".$pLevelPointId." 
-	                                ,team_id = ".$pTeamId."
-	                                ,error_id = ".$pErrorId."
-	                                ,teamlevelpoint_comment = '".$pTlpComment."'
-	                                ,teamlevelpoint_datetime = ".$TlpYDTs."
-	        where teamlevelpoint_id = ".$pTeamLevelPointId;        
+        $sql = "update TeamLevelPoints  set levelpoint_id = $pLevelPointId
+	                                ,team_id = $pTeamId
+	                                ,error_id = $pErrorId
+	                                ,teamlevelpoint_comment = '$pTlpComment'
+	                                ,teamlevelpoint_datetime = $TlpYDTs
+	        where teamlevelpoint_id = $pTeamLevelPointId";
 			
 	//echo $sql;
 			
@@ -418,7 +399,7 @@ elseif ($action == 'HideTlp')
 	}
 	
 
-        $sql = "delete from TeamLevelPoints where teamlevelpoint_id = ".$pTeamLevelPointId;        
+        $sql = "delete from TeamLevelPoints where teamlevelpoint_id = $pTeamLevelPointId";
        
 			
 	 MySqlQuery($sql);

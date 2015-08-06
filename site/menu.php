@@ -42,12 +42,12 @@ if (!isset($MyPHPScript)) return;
 		document.UserLoginForm.submit();
 	}
 
-	function ViewUserInfo(userid)
+	/*function ViewUserInfo(userid)
 	{ 
 		document.UserLoginForm.action.value = "UserInfo";
 		document.UserLoginForm.UserId.value = userid;
 		document.UserLoginForm.submit();
-	}
+	}*/
 
         // Одинаковые действия при  регистрации поьзователя и обновленииданных.
 	// Не уверен, что правильно так
@@ -95,6 +95,18 @@ if (!isset($MyPHPScript)) return;
 	function trimSpaces(str) {
 	  return str.replace(/\s{2,}/g, ' ');
 	}
+
+        function _onClick(ctrl, val)
+        {
+	        if (trimBoth(ctrl.value) == val)
+		        ctrl.value = '';
+        }
+
+        function _onBlur(ctrl, val)
+        {
+	        if (trimBoth(ctrl.value) == '')
+		        ctrl.value = val;
+        }
 	
 
 </script>
@@ -108,10 +120,8 @@ if (!isset($MyPHPScript)) return;
 		print('<input type = "hidden" name = "view" value = "'.$view.'">'."\r\n");
 		print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 		print('<tr><td class = "input"><input type="text" name="Login"
-                       style="width: 185px;" value="E-mail" tabindex = "101"
-                       onclick = "javascript: if (trimBoth(this.value) == \'E-mail\') {this.value=\'\';}"
-		       onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\'E-mail\';}"
-                       ></td></tr>'."\r\n"); 
+                       style="width: 185px;" value="E-mail" tabindex = "101" ' . CMmbUI::placeholder('E-mail')
+			."></td></tr>\r\n");
 		print('<tr><td class = "input"><input type="password" name="Password"  style = "width:101px;" size="10" value="" tabindex = "102">
                             <input type="submit" name="RegisterButton" value="Вход" tabindex = "103"  style = "margin-left: 25px; width: 55px;"></td></tr>'."\r\n"); 
 		print('<tr><td><a href = "javascript:RestorePassword();"  title = "Будет выслан запрос о сменен пароля на указанный выше e-mail">Забыли пароль?</a></td></tr>'."\r\n"); 
@@ -401,10 +411,8 @@ if (!isset($MyPHPScript)) return;
         print('<tr><td><a href="?rating" title = "Страница рейтинга пользователей">Рейтинг</a></td></tr>'."\r\n");
         
 	//print('<tr><td class = "input">Поиск:</td></tr>'."\r\n"); 
-	print('<tr><td style = "padding-top: 15px;"><input  type="text" name="TeamNum" style = "width: 125px;" value="Номер команды" tabindex = "206"  title = "Будет выведена карточка команды с указанным номером для выбранного выше ММБ"
-                       onclick = "javascript: if (trimBoth(this.value) == \'Номер команды\') {this.value=\'\';}"
-		       onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\'Номер команды\';}"
-                 > 
+	print('<tr><td style = "padding-top: 15px;"><input  type="text" name="TeamNum" style = "width: 125px;" value="Номер команды" tabindex = "206"  title = "Будет выведена карточка команды с указанным номером для выбранного выше ММБ"'.
+			CMmbUI::placeholder('Номер команды') . '>
 	       <input type="submit"  name="FindButton" value="Найти"   style = "width: 55px; margin-left: 5px;" tabindex = "207"></td></tr>'."\r\n"); 
 	print('</table>'."\r\n");
 	print('</form>'."\r\n");
@@ -417,10 +425,8 @@ if (!isset($MyPHPScript)) return;
 	print('<table  class = "menu" border = "0" cellpadding = "0" cellspacing = "0">'."\r\n");
 	//print('<tr><td class = "input">Поиск пользователя</td></tr>'."\r\n"); 
 	print('<tr><td class = "input"><input  type="text" name="FindString" style = "width:125px;" value="Часть ФИО" tabindex = "301" 
-	       title = "Будет выведен список пользователей, чьи ФИО содержат указанный текст. Для вывода всех наберите: все-все (можно и все-все-все)."
-                       onclick = "javascript: if (trimBoth(this.value) == \'Часть ФИО\') {this.value=\'\';}"
-		       onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\'Часть ФИО\';}"
-		>
+	       title = "Будет выведен список пользователей, чьи ФИО содержат указанный текст. Для вывода всех наберите: все-все (можно и все-все-все)."'
+			.CMmbUI::placeholder('Часть ФИО') . '>
 	       <input type="submit"  name="FindButton" value="Найти" style = "width: 55px; margin-left: 5px;"  tabindex = "302"></td></tr>'."\r\n"); 
 	print('</table>'."\r\n");
 	print('</form>'."\r\n");

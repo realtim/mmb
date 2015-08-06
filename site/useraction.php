@@ -84,7 +84,7 @@ if (!isset($MyPHPScript)) return;
            $pUserName = $_POST['UserName'];
            $pUserCity = $_POST['UserCity'];
            $pUserBirthYear = $_POST['UserBirthYear'];
-           $pUserProhibitAdd = (mmb_validate($_POST, 'UserProhibitAdd', '') == 'on' ? 1 : 0);
+           $pUserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
            $pUserId = $_POST['UserId']; 
 
            $pUserNewPassword = mmb_validate($_POST, 'UserNewPassword', '');
@@ -93,8 +93,7 @@ if (!isset($MyPHPScript)) return;
 	   if ($pUserCity == $UserCityPlaceHolder) { $pUserCity = ''; }  
 
            // 03/07/2014  Скрываем ФИО	 
-           if (!isset($_POST['UserNoShow'])) $_POST['UserNoShow'] = "";
-           $pUserNoShow = ($_POST['UserNoShow'] == 'on' ? 1 : 0);
+           $pUserNoShow = mmb_isOn($_POST, 'UserNoShow');
 
 
    
@@ -745,18 +744,15 @@ if (!isset($MyPHPScript)) return;
 	}
 
 	// Прверяем, что нет устройства с таким именем
-           $sql = "select count(*) as resultcount from  Devices where trim(device_name) = '".$pNewDeviceName."'";
+           $sql = "select count(*) as resultcount from  Devices where trim(device_name) = '$pNewDeviceName'";
       //     echo $sql;
-	   $rs = MySqlQuery($sql);  
-	   $Row = mysql_fetch_assoc($rs);
-           mysql_free_result($rs);
-	   if ($Row['resultcount'] > 0)
+	   if (CSql::singleValue($sql, 'resultcount') > 0)
 	   {
    		CMmb::setErrorSm('Уже есть устройство с таким именем.');
                 return; 
 	   }
 
-	   $Sql = "insert into Devices (device_name, user_id) values ('".$pNewDeviceName."', ".$pUserId.")";
+	   $Sql = "insert into Devices (device_name, user_id) values ('$pNewDeviceName', $pUserId)";
 	   MySqlQuery($Sql);
 
 	   CMmb::setResult('Добавлено устройство', 'ViewUserData');
@@ -917,7 +913,7 @@ if (!isset($MyPHPScript)) return;
 	$sql = " select user_id 
 	         from Users 
 		 where user_hide = 0 
-		       and user_id = ".$pUserId; 
+		       and user_id = $pUserId";
 
 	if (CSql::rowCount($sql) <= 0)
 	{

@@ -28,17 +28,14 @@ if ($viewmode == 'Add')
 	//	$RaidStartLink = $_POST['RaidStartLink'];
 		$RaidFinishPointName = $_POST['RaidFinishPointName'];
 		$RaidCloseDate = $_POST['RaidCloseDate'];
-		$ClearRaidCloseDate = (isset($_POST['ClearRaidCloseDate']) && ($_POST['ClearRaidCloseDate'] == 'on')) ? 1 : 0;
+		$ClearRaidCloseDate = mmb_isOn($_POST, 'ClearRaidCloseDate');
 	//	$RaidZnLink = $_POST['RaidZnLink'];
 		$RaidDistancesCount = (int)$_POST['RaidDistancesCount'];
-                $RaidNoShowResult = (isset($_POST['RaidNoShowResult']) && ($_POST['RaidNoShowResult'] == 'on')) ? 1 : 0;
+                $RaidNoShowResult = mmb_isOn($_POST, 'RaidNoShowResult');
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
 	        $RaidMapPrice = (int)$_POST['RaidMapPrice'];
 	        $RaidNoStartPrice = (int)$_POST['NoStartPrice'];
-        
-                
-
 	}
 	else
 	// Пробуем создать команду первый раз
@@ -62,8 +59,6 @@ if ($viewmode == 'Add')
                 $RaidFilePrefix = '';
 		$RaidMapPrice = 0;
 		$RaidNoStartPrice = 0;
-        
-
 	}
 
 	// Определяем следующее действие
@@ -92,12 +87,10 @@ else
 		       COALESCE(r.raid_mapprice, 8) as raid_mapprice,  COALESCE(r.raid_nostartprice, 8) as raid_nostartprice,  
 		       r.raid_fileprefix,
       	               (CASE WHEN r.raid_closedate is null THEN 1 ELSE 0 END) as raid_clearclosedate,
-		       (select count(*) from Distances where distance_hide = 0 and raid_id = ".$RaidId.") as raid_distancescount
+		       (select count(*) from Distances where distance_hide = 0 and raid_id = $RaidId) as raid_distancescount
 		from Raids r
-		where r.raid_id = ".$RaidId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
+		where r.raid_id = $RaidId";
+	$Row = CSql::singleRow($sql);
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterError")
@@ -113,11 +106,11 @@ else
 	//	$RaidStartLink = $_POST['RaidStartLink'];
 		$RaidFinishPointName = $_POST['RaidFinishPointName'];
 		$RaidCloseDate = $_POST['RaidCloseDate'];
-		$ClearRaidCloseDate = $_POST['ClearRaidCloseDate'];
+		$ClearRaidCloseDate = $_POST['ClearRaidCloseDate'];     // а ничего, что он всюду сравнивается с on? !!!
 	//	$RaidZnLink = $_POST['RaidZnLink'];
-                //В отличие от остальлных полей это - вычисляемое и после ошибки не возвращается  
+                //В отличие от остальных полей это - вычисляемое и после ошибки не возвращается
 		$RaidDistancesCount = (int)$Row['raid_distancescount'];
-		$RaidNoShowResult = $_POST['RaidNoShowResult'];
+		$RaidNoShowResult = $_POST['RaidNoShowResult'];         // а ничего, что он всюду сравнивается с on? !!!
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
                 $RaidMapPrice = (int)$_POST['RaidMapPrice'];
@@ -235,15 +228,13 @@ print('</td></tr>'."\n\n");
 
 // ============ Название ММБ
 print('<tr><td class="input">Название: <input type="text" name="RaidName" size="20" value="'.$RaidName.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidName.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidName.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidName))
 	.' title="Название ММБ"></td></tr>'."\n\n");
 
 /*
 // ============ Эмблема (ссылка и загрузка файла)
 print('<tr><td class="input">Ссылка на эмблему: <input type="text" name="RaidLogoLink" size="50" value="'.$RaidLogoLink.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidLogoLink.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidLogoLink.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidLogoLink))
 	.' title="Ссылка на эмблему ММБ"></td></tr>'."\r\n");
 
 print('<tr><td class = "input">Новый файл эмблемы для загрузки: <input name="logofile" type="file" /></td></tr>'."\r\n");
@@ -251,28 +242,24 @@ print('<tr><td class = "input">Новый файл эмблемы для заг�
 */
 // ============ Период ММБ
 print('<tr><td class="input">Период: <input type="text" name="RaidPeriod" size="30" value="'.$RaidPeriod.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidPeriod.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidPeriod.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidPeriod))
 	.' title="Период ММБ"></td></tr>'."\r\n");
 
 // ============ Префикс файлов прим загрузке 
 print('<tr><td class="input">Префикс файлов: <input type="text" name="RaidFilePrefix" size="30" value="'.$RaidFilePrefix.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidFilePrefix.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidFilePrefix.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidFilePrefix))
 	.' title="Префикс файлов"></td></tr>'."\r\n");
 
 
 // ============ Число Дистанций
 print('<tr><td class="input">Число дистанций <input type="text" name="RaidDistancesCount" size="2" maxlength="1" value="'.$RaidDistancesCount.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidDistancesCount.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidDistancesCount.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidDistancesCount))
 	.' title="Число дистанций"> <i>Должно быть не меньше, чем уже создано.</i></td></tr>'."\r\n");
 
 /*
 // ============ Положение (ссылка и загрузка файла)
 print('<tr><td class="input">Ссылка на положение: <input type="text" name="RaidRulesLink" size="50" value="'.$RaidRulesLink.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidRulesLink.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidRulesLink.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidRulesLink))
 	.' title="Ссылка на положение ММБ"></td></tr>'."\r\n");
 
 print('<tr><td class = "input">Новый файл положения для загрузки: <input name="rulesfile" type="file" /></td></tr>'."\r\n");
@@ -280,8 +267,7 @@ print('<tr><td class = "input">Новый файл положения для з�
 
 // ============ Дата окончания регистрации ММБ
 print('<tr><td class="input">Дата закрытия регистрации (гггг-мм-дд): <input type="text" name="RaidRegistrationEndDate" size="10" value="'.$RaidRegistrationEndDate.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidRegistrationEndDate.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidRegistrationEndDate.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidRegistrationEndDate))
 	.' title="Дата закрытия регистрации ММБ">'."\r\n");
 
 // ============ Очистка даты окончания регистрации ММБ
@@ -294,28 +280,24 @@ print('<tr><td class="input"><br/></td></tr>'."\r\n");
 
 // ============ Запрет на редактирование команд участникаи за ... часов до старта 
 print('<tr><td class="input">Запрет правок участниками в часах до старта <input type="text" name="RaidReadOnlyHoursBeforeStart" size="2" maxlength="2" value="'.$RaidReadOnlyHoursBeforeStart.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidReadOnlyHoursBeforeStart.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidReadOnlyHoursBeforeStart.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidReadOnlyHoursBeforeStart))
 	.' title="часов до старта"></td></tr>'."\r\n");
  
 
 
 // ============ Старт ММБ
 print('<tr><td class="input">Название пункта старта: <input type="text" name="RaidStartPointName" size="20" value="'.$RaidStartPointName.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidStartPointName.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidStartPointName.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidStartPointName))
 	.' title="Название пункта старта ММБ"></td></tr>'."\n\n");
 
 // ============ Стоимость одного комлпекта карт
 print('<tr><td class="input">Стоимость одного комплекта карт (руб.) <input type="text" name="RaidMapPrice" size="6" maxlength="6" value="'.$RaidMapPrice.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidMapPrice.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidMapPrice.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidMapPrice))
 	.' title="Стоимость одного комплекта карт (руб.)"></td></tr>'."\r\n");
 
 // ============ Стоимость (штраф) с участника за неявку на старт на этот ММБ
 print('<tr><td class="input">Стоимость неявки (руб.) <input type="text" name="RaidNoStartPrice" size="6" maxlength="6" value="'.$RaidNoStartPrice.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidNoStartPrice.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidNoStartPrice.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidNoStartPrice))
 	.' title="Стоимость неявки (руб.)"></td></tr>'."\r\n");
 
 
@@ -323,8 +305,7 @@ print('<tr><td class="input">Стоимость неявки (руб.) <input ty
 /*
 // ============ Информация о старте  (ссылка)
 print('<tr><td class="input">Ссылка на информацию о старте: <input type="text" name="RaidStartLink" size="36" value="'.$RaidStartLink.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidStartLink.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidStartLink.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidStartLink))
 	.' title="Ссылка на информацию о старте ММБ"></td></tr>'."\r\n");
 */
 print('<tr><td class="input"><br/></td></tr>'."\r\n");
@@ -332,8 +313,7 @@ print('<tr><td class="input"><b>Заполняется после ММБ</b></td
 
 // ============ Финиш ММБ
 print('<tr><td class="input">Название пункта финиша: <input type="text" name="RaidFinishPointName" size="40" value="'.$RaidFinishPointName.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidFinishPointName.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidFinishPointName.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidFinishPointName))
 	.' title="Название пункта финиша ММБ"></td></tr>'."\n\n");
 
 
@@ -343,8 +323,7 @@ print('<tr><td class="input">Не показывать результаты ММ
 
 // ============ Дата закрытия протокола ММБ
 print('<tr><td class="input">Дата закрытия протокола (гггг-мм-дд): <input type="text" name="RaidCloseDate" size="10" value="'.$RaidCloseDate.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidCloseDate.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidCloseDate.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidCloseDate))
 	.' title="Дата закрытия протокола  ММБ">'."\r\n");
 
 // ============ Очистка даты закрытия протокола ММБ
@@ -354,15 +333,14 @@ print('<input type="checkbox" name="ClearRaidCloseDate" '.(($ClearRaidCloseDate 
 /*
 // ============ Значок (ссылка и загрузка файла)
 print('<tr><td class="input">Ссылка на значок: <input type="text" name="RaidZnLink" size="50" value="'.$RaidZnLink.'" tabindex="'.(++$TabIndex)
-	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : ' onclick="javascript: if (trimBoth(this.value) == \''.$RaidZnLink.'\') {this.value=\'\';}"')
-	.($viewmode <> 'Add' ? '' : ' onblur="javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$RaidZnLink.'\';}"')
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidZnLink))
 	.' title="Ссылка на значок ММБ"></td></tr>'."\r\n");
 
 print('<tr><td class = "input">Новый файл значка для загрузки: <input name="znfile" type="file" /></td></tr>'."\r\n");
 */
 
 
-print('<tr><td class="input">'."\n");
+print("<tr><td class=\"input\">\n");
 
 
 // ================ Submit для формы ==========================================
@@ -371,11 +349,11 @@ if ($AllowEdit == 1)
 	print('<tr><td class="input" style="padding-top: 20px;">'."\n");
 	print('<input type="button" onClick="javascript: if (ValidateRaidDataForm()) submit();" name="RegisterButton" value="'.$SaveButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
 	print('<input type="button" onClick="javascript: Cancel();" name="CancelButton" value="Отмена" tabindex="'.(++$TabIndex).'">'."\n");
-	print('</td></tr>'."\n\n");
+	print("</td></tr>\r\n");
 
 }
 
-print('</table></form>'."\n");
+print("</table></form>\n");
 
 
 // Если редактируем, то выводим дистанции и этапы
@@ -388,11 +366,10 @@ if ($viewmode != 'Add')
 
 	$sql = "select d.distance_id, d.distance_name, d.distance_data
 		from Distances d
-		where d.distance_hide = 0 and d.raid_id = ".$RaidId;
+		where d.distance_hide = 0 and d.raid_id = $RaidId";
 	$DistanceResult = MySqlQuery($sql);
 	while ($RowDistance = mysql_fetch_assoc($DistanceResult))
 	{
-
 
 		print('<form name="DistanceDataForm'.$RowDistance['distance_id'].'" action="'.$MyPHPScript.'" method="post">'."\n");
 		print('<input type="hidden" name="action" value="DistanceChangeData">'."\n");
@@ -400,7 +377,6 @@ if ($viewmode != 'Add')
 		print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
 		print('<input type="hidden" name="UserId" value="0">'."\n");
 		print('<input type="hidden" name="DistanceId" value="'.$RowDistance['distance_id'].'">'."\n");
-
 
 
 		print('<table style="font-size: 80%;" border="0" cellpadding="2" cellspacing="0">'."\n\n");
@@ -411,18 +387,13 @@ if ($viewmode != 'Add')
 		print(' параметры: <input type="text" name="DistanceData'.$RowDistance['distance_id'].'" size="50" value="'.$RowDistance['distance_data'].'" tabindex="'.(++$TabIndex).'">'."\r\n");
 		print('<input type="button" onClick="javascript: submit();" name="SaveDistance'.$RowDistance['distance_id'].'" value="Сохранить" tabindex="'.(++$TabIndex).'">'."\r\n");
 		print('&nbsp; <input type="button" style="margin-left: 30px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить дистанцию.: '.trim($RowDistance['distance_name']).'? \')) {  DistanceDataForm'.$RowDistance['distance_id'].'.action.value = \'HideDistance\';submit();}" name="HideFileButton'.$RowDistance['distance_id'].'" value="Удалить" tabindex="'.(++$TabIndex).'">'."\n");
-		print('</td></tr>'."\r\n");
-		print('</table></form>'."\r\n");
+		print("</td></tr>\r\n");
+		print("</table></form>\r\n");
 	}
 	mysql_free_result($DistanceResult);
-	print('<br/>'."\r\n");
+	print("<br/>\r\n");
 	// Закончили вывод дистанций
-	
-	
 }
 // Конец проверки на редактирование ММБ
-
-
-
 
 ?>
