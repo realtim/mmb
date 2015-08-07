@@ -272,8 +272,7 @@ elseif ($action == 'RecalcRaidRank')
 	$Result = 0;
 	$Result =  RecalcTeamUsersRank($RaidId); 
 
-	$statustext = 'Рейтинг участников марш-броска пересчитан';
-	$view = "ViewAdminDataPage";
+	CMmb::setShortResult('Рейтинг участников марш-броска пересчитан', 'ViewAdminDataPage');
 }
 // =============== Никаких действий не требуется ==============================
 else

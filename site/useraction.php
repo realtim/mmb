@@ -63,16 +63,13 @@ if (!isset($MyPHPScript)) return;
 
    } elseif ($action == "UserInfo")  {
     // Действие вызывается ссылкой под имененм пользователя
-   
-	$view = "ViewUserData";
-	$viewmode = "";
 
+	CMmb::setViews('ViewUserData', '');
 
    } elseif ($action == "ViewNewUserForm")  {
     // Действие вызывается ссылкой Новый пользователь
 
-           $view = "ViewUserData";
-	   $viewmode = "Add";	
+           CMmb::setViews('ViewUserData', 'Add');
 
    } elseif ($action == "UserChangeData" or $action == "AddUser")  {
      // Действие вызывается либо при регистрации нового пользователя лиюо при сменен данных старого

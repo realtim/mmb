@@ -24,8 +24,7 @@ function setUnionError($message)
 // ============ Обработка возможности регистрации команды =====================
 if ($action == "RegisterNewTeam")
 {
-	$view = "ViewTeamData";
-	$viewmode = "Add";
+	CMmb::setViews('ViewTeamData', 'Add');
 	if ($RaidId <= 0)
 	{
 		CMmb::setMessage('Не указан ММБ (выберите из списка).');
@@ -56,9 +55,8 @@ if ($action == "RegisterNewTeam")
 // ============ Изменение данных команды или запись новой команды =============
 elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 {
-	if ($action == "AddTeam") $viewmode = "Add"; else $viewmode = "";
 	//$view = "ViewTeamData";
-	$view = $_POST['view'];
+	CMmb::setViews($_POST['view'], $action == "AddTeam" ? 'Add' : '');      // ой, как нехорошо с $_POST!
 
         // echo '111 '.$view;
 	// пока валим всё в одну кучу - проверяем ниже
@@ -378,8 +376,7 @@ elseif ($action == 'TeamInfo' or $action == 'TlpInfo'  or $action == 'AddTlp' or
 		CMmb::setErrorMessage('Id команды не указан');
 		return;
 	}
-	$view = "ViewTeamData";
-	$viewmode = "";
+	CMmb::setViews('ViewTeamData', '');
 }
 
 // ============ Удаление участника команды ====================================

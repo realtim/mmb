@@ -5,8 +5,7 @@ if (isset($MyPHPScript) and $action == 'JSON')
 {
   if (!$Administrator and !$Moderator)
   {
-    $statustext = 'Нет прав на экспорт';				     
-    $view = "";
+    CMmb::setShortResult('Нет прав на экспорт', '');
     return;
    }
   

@@ -24,8 +24,7 @@ if (!isset($MyPHPScript)) return;
 
 		if (trim($FindString) == '' or trim($FindString) == 'Часть ФИО')
                 {
-                  $statustext = 'Не указан критерий поиска.';				     
-                  $view = "";
+                  CMmb::setShortResult('Не указан критерий поиска.', '');
  		  return;
                 }
 
