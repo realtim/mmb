@@ -209,11 +209,11 @@ class CSql {
       {
 	      $SessionId = uniqid();
 	      $Result = MySqlQuery("insert into  Sessions (session_id, user_id, session_starttime, session_updatetime, session_status)
-	                            values ('".$SessionId ."',".$UserId.", now(), now(), 0)");
+	                            values ('$SessionId', $UserId, now(), now(), 0)");
 
               // Записываем время последней авторизации
 	      $Result = MySqlQuery("update Users set user_lastauthorizationdt = now()
-	                            where user_id = ".$UserId);
+	                            where user_id = $UserId");
 
 	      CMmb::setSessionCookie($SessionId);
       }  else {
@@ -290,8 +290,8 @@ class CSql {
       } 
 
         // м.б. потом ещё нужно будет закрывать открытые соединения с БД
-       $Result = MySqlQuery("update  Sessions set session_updatetime = now(), session_status = ".$CloseStatus."
-			    where session_status = 0 and session_id = '".$SessionId ."'");
+       $Result = MySqlQuery("update  Sessions set session_updatetime = now(), session_status = $CloseStatus
+			    where session_status = 0 and session_id = '$SessionId'");
 	  CMmb::clearSessionCookie();
 
       return;
@@ -357,7 +357,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	// Проверяем, не является ли пользователь администратором
 	if ($UserId > 0)
 	{
-		$sql = "select user_admin from Users where user_hide = 0 and user_id = ".$UserId;
+		$sql = "select user_admin from Users where user_hide = 0 and user_id = $UserId";
 		$Result = MySqlQuery($sql);
 		if (!$Result) return;
 		$Row = mysql_fetch_assoc($Result);
@@ -368,7 +368,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	// Контролируем, что команда есть в базе
 	if ($TeamId > 0)
 	{
-		$sql = "select team_id, COALESCE(team_outofrange, 0) as team_outofrange from Teams where team_id = ".$TeamId;
+		$sql = "select team_id, COALESCE(team_outofrange, 0) as team_outofrange from Teams where team_id = $TeamId";
 		$Result = MySqlQuery($sql);
 		$Row = mysql_fetch_assoc($Result);
 		if (mysql_num_rows($Result) == 0) $TeamId = 0;
@@ -381,11 +381,8 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	{
 		$sql = "select CASE WHEN count(*) > 0 THEN 1 ELSE 0 END as userinteam
 				from TeamUsers tu
-			where teamuser_hide = 0 and team_id = ".$TeamId." and user_id = ".$UserId;
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		$TeamUser = $Row['userinteam'];
-		mysql_free_result($Result);
+			where teamuser_hide = 0 and team_id = $TeamId and user_id = $UserId";
+		$TeamUser = CSql::singleValue($sql, 'userinteam');
 	}
 
 	// Если известна команда, то все дальнейшие действия проводим с тем ММБ,
@@ -394,7 +391,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	{
 		$sql = "select raid_id from Distances d
 				inner join Teams t on t.distance_id = d.distance_id
-			where t.team_id = ".$TeamId;
+			where t.team_id = $TeamId";
 		$Result = MySqlQuery($sql);
 		$Row = mysql_fetch_assoc($Result);
 		$RaidId = (int)$Row['raid_id'];
@@ -418,10 +415,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		$sql = "select CASE WHEN count(*) > 0 THEN 1 ELSE 0 END as user_moderator
 			from RaidModerators
 			where raidmoderator_hide = 0 and raid_id = $RaidId and user_id = $UserId";
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		$Moderator = $Row['user_moderator'];
-		mysql_free_result($Result);
+		$Moderator = CSql::singleValue($sql, 'user_moderator');
 	}
 
 	// Определяем, проводился ли марш-бросок до 2012 года
@@ -469,7 +463,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 			ELSE 1
 		END as closed,
 		COALESCE(r.raid_noshowresult, 0) as noshowresult
-		from Raids r where r.raid_id=".$RaidId;
+		from Raids r where r.raid_id=$RaidId";
 	$Result = MySqlQuery($sql);
 	$Row = mysql_fetch_assoc($Result);
 	if ($Row['registration'] == 0) $RaidStage = 0;
@@ -2129,14 +2123,10 @@ send_mime_mail('Автор письма',
 				from Teams t
 					inner join Distances d
 					on t.distance_id = d.distance_id
-				where t.team_id = ".$teamid."
+				where t.team_id = $teamid
 				LIMIT 0,1";
 
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		$raidid = $Row['raid_id'];
-		mysql_free_result($Result);
-	
+		$raidid = CSql::singleValue($sql, 'raid_id');
 	}
 
 	RecalcTeamUsersRank($raidid);
