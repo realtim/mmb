@@ -120,10 +120,8 @@ else
 		from LevelPoints lp
 		     inner join PointTypes pt
 		     on lp.pointtype_id = pt.pointtype_id
-		where lp.levelpoint_id = ".$pLevelPointId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
+		where lp.levelpoint_id = $pLevelPointId";
+	$Row = CSql::singleRow($sql);
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterError")
@@ -181,12 +179,9 @@ if (empty($LevelPointMinYear) or (int)$LevelPointMinYear == 0 or
 			from Raids r
 		             inner join Distances d
 			     on d.raid_id = r.raid_id
-			where d.distance_id = ".$DistanceId;
+			where d.distance_id = $DistanceId";
 
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		$RaidYear = $Row['raidyear'];
-		mysql_free_result($Result);
+		$RaidYear = CSql::singleValue($sql, 'raidyear');
 
 		if (empty($LevelPointMinYear) or (int)$LevelPointMinYear == 0)
 		{ 
@@ -385,7 +380,7 @@ if ($AllowEdit == 1)
 
 	print("<tr><td>\r\n");
           
-	print('Дата (ддмм) и время (ччмм) ограничений для прохождения точки: <br/>  снизу'."\n\n");
+	print("Дата (ддмм) и время (ччмм) ограничений для прохождения точки: <br/>  снизу\r\n");
 
         // Можно отключить правку написав  $MinDateReadOnly = 'readonly'
         $MinDateReadOnly = '';
@@ -470,15 +465,12 @@ if ($AllowViewResults == 1)
 			and lpd.levelpointdiscount_finish >= lp.levelpoint_order
 		     left outer join ScanPoints sp
 		     on lp.scanpoint_id = sp.scanpoint_id
-		where lp.levelpoint_hide = 0 and lp.distance_id = ".$DistanceId."
+		where lp.levelpoint_hide = 0 and lp.distance_id = $DistanceId
 		order by levelpoint_order";
 	
 	
 	$Result = MySqlQuery($sql);
 	
-	$tdstyle = 'padding: 5px 0px 2px 5px;';		
-        $thstyle = 'padding: 5px 0px 0px 5px;';		
-
 
 		print("<table class=\"std\">\r\n");
 

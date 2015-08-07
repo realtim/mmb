@@ -17,7 +17,7 @@ print('Дистанция;Номера карточек<br />'."\n");
 $sql = "select t.team_num, d.distance_name
 	from Teams t
 		inner join Distances d on t.distance_id = d.distance_id
-	where t.team_hide = 0 and d.raid_id = ".$RaidId."
+	where t.team_hide = 0 and d.raid_id = $RaidId
 	order by d.distance_name, team_num asc";
 $Result = MySqlQuery($sql);
 
@@ -50,7 +50,7 @@ $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name,
 	t.team_mapscount, d.distance_name, d.distance_id
 	from Teams t
 		inner join Distances d on t.distance_id = d.distance_id
-	where t.team_hide = 0 and d.raid_id = ".$RaidId."
+	where t.team_hide = 0 and d.raid_id = $RaidId
 	order by d.distance_name, team_num asc";
 $Result = MySqlQuery($sql);
 
@@ -59,7 +59,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, u.user_id
 		from TeamUsers tu
 			inner join Users u on tu.user_id = u.user_id
-		where tu.teamuser_hide = 0 and team_id = ".$Row['team_id']."
+		where tu.teamuser_hide = 0 and team_id = {$Row['team_id']}
 		order by tu.teamuser_id asc";
 	$UserResult = MySqlQuery($sql);
 

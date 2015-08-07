@@ -111,7 +111,7 @@ else
 </script>
 <?php
 
-print('<br /><div><b><big>Результаты:</big></b></div>'."\n");
+print("<br /><div><b><big>Результаты:</big></b></div>\n");
 
 // Форма показа/редактироания результатов
 print('<form name="TeamResultDataForm" action="'.$MyPHPScript.'" method="post" onSubmit="'.$OnSubmitResultFunction.'">'."\n");
@@ -123,16 +123,13 @@ print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
 print('<table border="0" cellpadding="7" style="font-size: 80%">'."\n");
 
 // ============ Общее время команды
-$sql = "select TIME_FORMAT(t.team_result, '%H:%i') as team_result from Teams t where t.team_id = ".$TeamId;
-$Result = MySqlQuery($sql);
-$Row = mysql_fetch_assoc($Result);
-$TeamResult = $Row['team_result'];
-mysql_free_result($Result);
+$sql = "select TIME_FORMAT(t.team_result, '%H:%i') as team_result from Teams t where t.team_id = $TeamId";
+$TeamResult = CSql::singleValue($sql, 'team_result');
 
 $TeamPlace = GetTeamPlace($TeamId);
 $TeamPlaceResult = "";
 if ($TeamResult == "00:00") $TeamResult = "-";
-if ($TeamPlace > 0) $TeamPlaceResult = " Место <b>".$TeamPlace."</b>";
+if ($TeamPlace > 0) $TeamPlaceResult = " Место <b>$TeamPlace</b>";
 
 print('<tr><td colspan="5">'."\n");
 print('Общее время с учетом штрафов и бонусов: <b title="Обновляется после сохранения результатов">'.$TeamResult.'</b>'.$TeamPlaceResult."\n");
@@ -179,10 +176,10 @@ $sql = "select l.level_id, l.level_name, l.level_pointnames, l.level_starttype,
 		inner join Levels l on d.distance_id = l.distance_id
 		left outer join TeamLevels tl
 			on l.level_id = tl.level_id and t.team_id = tl.team_id and tl.teamlevel_hide = 0
-	where l.level_hide = 0 and t.team_id = ".$TeamId;
-// Пока убрал ограничение по выдаче этапов от времени просмотра
-// $sql = $sql." and l.level_begtime <= now() ";
-$sql = $sql." order by l.level_order ";
+	where l.level_hide = 0 and t.team_id = $TeamId
+		-- Пока убрал ограничение по выдаче этапов от времени просмотра
+		-- and l.level_begtime <= now()
+	 order by l.level_order ";
 $Result = MySqlQuery($sql);
 
 

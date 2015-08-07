@@ -81,9 +81,7 @@ else
 			inner join Distances d on t.distance_id = d.distance_id
 			inner join Raids r on d.raid_id = r.raid_id
 		where t.team_id = $TeamId";
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
+	$Row = CSql::singleRow($sql);
 	$TeamRegisterDt = $Row['team_registerdt'];
 	$TeamResult = $Row['team_result'];
 	$TeamLate = (int)$Row['team_late'];
@@ -267,7 +265,7 @@ else
 }
 // Показываем выпадающий список дистанций
 print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
-$sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = ".$RaidId;
+$sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
 $Result = MySqlQuery($sql);
 while ($Row = mysql_fetch_assoc($Result))
 {
@@ -373,7 +371,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	{
   
 		print('Неявка в: <select name="UserNotInPoint'.$Row['teamuser_id'].'" style="width: 100px; margin-right: 15px;" title="Точка, в которую не явился участник" onChange="javascript:if (confirm(\'Вы уверены, что хотите отметить неявку участника: '.$Row['user_name'].'? \')) { TeamUserNotInPoint('.$Row['teamuser_id'].', this.value); }" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
-		$sqllevelpoints = "select levelpoint_id, levelpoint_name from LevelPoints lp where lp.distance_id = ".$DistanceId." order by levelpoint_order";
+		$sqllevelpoints = "select levelpoint_id, levelpoint_name from LevelPoints lp where lp.distance_id = $DistanceId order by levelpoint_order";
 		$ResultLevelPoints = MySqlQuery($sqllevelpoints);
 		$userlevelpointselected = ($Row['levelpoint_id'] == 0 ? ' selected' : '');
 		print('<option value="0"'.$userlevelpointselected.'>-</option>'."\n");

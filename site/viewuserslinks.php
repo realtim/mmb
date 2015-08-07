@@ -26,7 +26,7 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 					      ) a
 			       on ul.user_id = a.user_id and ul.raid_id = a.raid_id
 			where ul.userlink_hide = 0 
-			      and r.raid_id =  ".$RaidId."
+			      and r.raid_id =  $RaidId
 			order by r.raid_id desc, userlink_id  asc"; 
               //  echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
@@ -46,13 +46,9 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 		  print('<div align = "left" style = "margin-left: 35px;padding-top: 5px;">'.$Row['linktype_name'].' '.' <a href = "'.$Row['userlink_url'].'" 
 		          title = "'.$Row['userlink_name'].'">'.$Label.'</a> '.$Row['user_name'].', 
 			  '.(empty($Row['team_name']) ? '' : 'команда '.$Row['team_name'].', N '.$Row['team_num'].', дистанция '.$Row['distance_name'])."\r\n");
-                  print('</div>'."\r\n");
+                  print("</div>\r\n");
 			  
 		}
 
                 mysql_free_result($Result);
-
-
-
-
 ?>

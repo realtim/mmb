@@ -407,7 +407,7 @@ if (!isset($MyPHPScript)) return;
 
 		    $sql = "select  d.distance_name, d.distance_data
   		            from Distances d
-                            where d.distance_hide = 0 and  d.raid_id = ".$RaidId;
+                            where d.distance_hide = 0 and  d.raid_id = $RaidId";
 				
 		    $Result = MySqlQuery($sql);
 
@@ -692,24 +692,21 @@ if (!isset($MyPHPScript)) return;
 		
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-
-			if ($TeamsCount%2 == 0) {
-			  $TrClass = 'yellow';
-			} else {
-			  $TrClass = 'green';
-			} 
+			$TrClass = ($TeamsCount%2 == 0) ? 'yellow': 'green';
 
 			$TeamsCount--;
+
+			$useGps = $Row['team_usegps'] == 1 ? 'gps, ' : '';
+			$teamGP = $Row['team_greenpeace'] == 1 ? ', <a title="Нет сломанным унитазам!" href="#comment">ну!</a>' : '';
+			$outOfRange = $Row['team_outofrange'] == 1 ? ', Вне зачета!' : '';
 
  			print('<tr class="'.$TrClass.'">
 			       <td style="'.$tdstyle.'"><a name="'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
 			       <td style="'.$tdstyle.'"><a href="?TeamId='.$Row['team_id'].'&RaidId=' . $RaidId .'">'.
-			          $Row['team_name'].'</a> ('.($Row['team_usegps'] == 1 ? 'gps, ' : '').$Row['distance_name'].', '.$Row['team_mapscount'].($Row['team_greenpeace'] == 1 ? ', <a title="Нет сломанным унитазам!" href="#comment">ну!</a>' : '').
-				  ($Row['team_outofrange'] == 1 ? ', Вне зачета!' : '').')
-			        </td><td style = "'.$tdstyle.'">'."\r\n");
+			          $Row['team_name']."</a> ($useGps{$Row['distance_name']}, {$Row['team_mapscount']}$teamGP$outOfRange')</td><td style=\"$tdstyle\">\r\n");
 
                         // Формируем колонку Участники			
-				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
+				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
 					       u.user_id, 
 					       tld.levelpoint_id, lp.levelpoint_name,
 					       tu.teamuser_notstartraidid 
@@ -720,7 +717,7 @@ if (!isset($MyPHPScript)) return;
 					     on tu.teamuser_id = tld.teamuser_id
 		                             left outer join LevelPoints lp
 					     on tld.levelpoint_id = lp.levelpoint_id
-					where tu.teamuser_hide = 0 and tu.team_id = ".$Row['team_id']; 
+					where tu.teamuser_hide = 0 and tu.team_id = {$Row['team_id']}";
 				//echo 'sql '.$sql;
 				$UserResult = MySqlQuery($sql);
 
@@ -738,14 +735,14 @@ if (!isset($MyPHPScript)) return;
 		                  {
 					if ($UserRow['levelpoint_name'] <> '')
 					{
-					    print('<i>Не явился(-ась) в: '.$UserRow['levelpoint_name'].'</i>'."\r\n");
+					    print("<i>Не явился(-ась) в: {$UserRow['levelpoint_name']}</i>\r\n");
 					} 
 		                  }
 				  print('</div>'."\r\n");
 				}  
 			        mysql_free_result($UserResult);
 			// Конец формирования колонки Участники
-			print('</td>'."\r\n");
+			print("</td>\r\n");
 
 
                        // Сортировка "по месту"
@@ -753,11 +750,11 @@ if (!isset($MyPHPScript)) return;
 			{
 
 
-			    print('<td>'.$Row['levelpoint_name'].'</td>'."\r\n");
-			    print('<td>'.$Row['team_sresult'].'</td>'."\r\n");
+			    print("<td>{$Row['levelpoint_name']}</td>\r\n");
+			    print("<td>{$Row['team_sresult']}</td>\r\n");
 
                             // Формируем место    
-			    print('<td>'."\r\n");	
+			    print("<td>\r\n");
                             // Сбрасываем при смене дистанции
 			    if ($Row['distance_id'] <> $PredDistanceId)
                             {
@@ -780,26 +777,24 @@ if (!isset($MyPHPScript)) return;
                                print($TeamPlace);
 			        $PredResult = $Row['team_sresult'];
                             }
-			    print('</td>'."\r\n");
+			    print("</td>\r\n");
 
                               // Формируем комментарий
 			    //print('<td  style = "'.$tdstyle.'">'.GetTeamComment($Row['team_id']).'</td>'."\r\n");
-			    print('<td>'."\r\n");
+			    print("<td>\r\n");
 			    print($Row['team_comment']);
-			    print('</td>'."\r\n");
+			    print("</td>\r\n");
 
 			}  elseif ($OrderType == 'Errors') {
 
-			    print('<td>'.$Row['levelpoint_name'].'</td>'."\r\n");
-			    print('<td>'.$Row['team_sresult'].'</td>'."\r\n");
+			    print("<td>{$Row['levelpoint_name']}</td>\r\n");
+			    print("<td>{$Row['team_sresult']}</td>\r\n");
 
-				print('<td>'.'&nbsp;'.'</td>'."\r\n");	
+			    print("<td>&nbsp;</td>\r\n");
 
-					print('<td>'."\r\n");
-					print($Row['team_comment']);
-					print('</td>'."\r\n");
-			
-
+			    print("<td>\r\n");
+			    print($Row['team_comment']);
+			    print("</td>\r\n");
 			}
 			// Конец проверки на вывод с сотрировкой по месту
 			print("</tr>\r\n");

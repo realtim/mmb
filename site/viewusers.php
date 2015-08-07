@@ -51,7 +51,7 @@ if (!isset($MyPHPScript)) return;
 	        if ($Administrator)
 		{
 
-			$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, 
+			$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name,
 			                COALESCE(u.user_city, '') as user_city,
 			                CASE WHEN u.user_email like '%@mmb.ru' THEN 'импорт' ELSE '' END as  import, 
 			                CASE WHEN COALESCE(u.user_password, '') = '' THEN 'не активирован' ELSE '' END as noactive,   
@@ -64,7 +64,7 @@ if (!isset($MyPHPScript)) return;
 
  		} else {
 
-			$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '".$Anonimus."' ELSE u.user_name END as user_name, COALESCE(u.user_city, '') as user_city 
+			$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, COALESCE(u.user_city, '') as user_city
 			        from  Users u
 				where ltrim(COALESCE(u.user_password, '')) <> '' 
 	                              and u.user_hide = 0
@@ -91,14 +91,14 @@ if (!isset($MyPHPScript)) return;
 				  print(' '.$Row['import'].' '.$Row['noactive'].' '.$Row['hide'].' '.$Row['noshow']."\r\n");
 			  }
 
-			  print('</div>'."\r\n");
+			  print("</div>\r\n");
 			}
 
 		} else {
 
-			  print('<div class= "input" align = "left">Не найдено</div>'."\r\n");
+			  print('<div class="input" align="left">Не найдено</div>'."\r\n");
 		}
-	        print('</form>'."\r\n");
+	        print("</form>\r\n");
                 mysql_free_result($Result);
 
 

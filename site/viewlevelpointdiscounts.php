@@ -94,10 +94,8 @@ else
 		       lpd.distance_id,
 		       lpd.levelpoint_id  
 		from LevelPointDiscounts lpd
-		where lpd.levelpointdiscount_id = ".$pLevelPointDiscountId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
+		where lpd.levelpointdiscount_id = $pLevelPointDiscountId";
+	$Row = CSql::singleRow($sql);
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterError")
