@@ -109,5 +109,13 @@ table.control td {
     padding: 2px;
 }
 
+div.team_res {
+    margin-top: 5px;
+}
+
+div.team_res > span {
+    min-width: 15em;
+}
+
 
 

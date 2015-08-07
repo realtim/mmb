@@ -428,21 +428,23 @@ if (!isset($MyPHPScript)) return;
 			$LevelPointId = $Row['levelpoint_id'];
 			$TeamPlaceResult = "";
 			// Есть место команды и нет схода участника
-			if ($TeamPlace > 0 and $LevelPointId == 0) $TeamPlaceResult = ", место <b>".$TeamPlace."</b>";
+			if ($TeamPlace > 0 and $LevelPointId == 0) $TeamPlaceResult = "место <b>$TeamPlace</b>";
 
                
 
 			$TeamUserOff = "";
 			// Есть место команды, но сход участника
-			if ($TeamPlace > 0 and $LevelPointId > 0) $TeamUserOff = ", не явка в точку <b>".$Row['levelpoint_name']."</b>";
+			if ($TeamPlace > 0 and $LevelPointId > 0) $TeamUserOff = "не явка в точку <b>{$Row['levelpoint_name']}</b>";
+
+			$comma = ($TeamPlace > 0 and $LevelPointId >= 0) ? ',' : '';
 
 
-		  print('<div align="left" style="padding-top: 5px;"><a href="?TeamId='.$Row['team_id'].'&RaidId='.$Row['raid_id'].'"  title = "Переход к карточке команды">'.$Row['team_name'].'</a>
-		         N '.$Row['team_num'].$TeamPlaceResult.$TeamUserOff.' ('.$Row['teamuser_rank'].'), дистанция: '.$Row['distance_name'].', ммб: '.$Row['raid_name'].'</div>'."\r\n");
+		  print('<div class="team_res"><span><a href="?TeamId='.$Row['team_id'].'&RaidId='.$Row['raid_id'].'"  title = "Переход к карточке команды">'.$Row['team_name']."</a>
+		         N {$Row['team_num']}$comma</span> $TeamPlaceResult$TeamUserOff ({$Row['teamuser_rank']}), дистанция: {$Row['distance_name']}, ммб: {$Row['raid_name']}</div>\r\n");
 		}
 
                 mysql_free_result($Result);
-	        print('</form>'."\r\n");
+	        print("</form>\r\n");
 
 	  if ($viewmode <> 'Add' and $AllowEdit == 1)
 	  {
