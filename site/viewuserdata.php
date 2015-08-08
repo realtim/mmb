@@ -497,7 +497,7 @@ if (!isset($MyPHPScript)) return;
 
                 $TabIndex = 1;
 	        $DisabledText = '';
-		print('<div align = "left" style = "padding-top: 5px;"><textarea name="MessageText"  rows="4" cols="50" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
+		print('<div class="team_res"><textarea name="MessageText"  rows="4" cols="50" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
 	        title = "Текст сообщения">Текст сообщения</textarea></div>'."\r\n");
     	        print('</br><input type="button" onClick = "javascript: SendMessage();"  name="SendMessageButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                    
@@ -534,7 +534,7 @@ if (!isset($MyPHPScript)) return;
 		{
 
                   $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : $Row['userlink_name'];
-		  print('<div align = "left" style = "padding-top: 5px;">'.$Row['raid_name'].' '.$Row['linktype_name'].' <a href = "'.$Row['userlink_url'].'" 
+		  print('<div class="team_res">'.$Row['raid_name'].' '.$Row['linktype_name'].' <a href = "'.$Row['userlink_url'].'"
 		          title = "'.$Row['userlink_name'].'">'.$Label.'</a>'."\r\n");
                   print('<input type="button" style = "margin-left: 20px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите удалить впечатление ? \')) {DelLink('.$Row['userlink_id'].');}"  name="DelLinkButton" value="Удалить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                   print('</div>'."\r\n");
@@ -551,7 +551,7 @@ if (!isset($MyPHPScript)) return;
 		print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
 
 		// Показываем выпадающий список ММБ
-		print('<select name="LinkRaidId"  tabindex="'.(++$TabIndex).'" ">'."\n");
+		print('<select name="LinkRaidId"  tabindex="'.(++$TabIndex).'">'."\n");
 		$sql = "select raid_id, raid_name from Raids order by raid_id  desc";
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
@@ -563,7 +563,7 @@ if (!isset($MyPHPScript)) return;
 		print('</select>'."\n");
 
 		// Показываем выпадающий список типов ссылок
-		print('<select name="LinkTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'" ">'."\n");
+		print('<select name="LinkTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
 		$sql = "select linktype_id, linktype_name from LinkTypes where linktype_hide = 0  order by linktype_id ";
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))

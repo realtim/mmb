@@ -234,7 +234,7 @@ if ($AllowEdit == 1)
 	print('Точка зачёта амнистии: </span>'."\n");
 	// Показываем выпадающий список точек
 	// ограничыиваем пока Сменой карт и Финишем
-	print('<select name="LevelPointId" class="leftmargin" tabindex="'.(++$TabIndex).'"  ">'."\n");
+	print('<select name="LevelPointId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
 	$sql = "select levelpoint_id, levelpoint_name from LevelPoints where pointtype_id in (2,4) and distance_id = ".$DistanceId." order by levelpoint_order ";
 	$Result = MySqlQuery($sql);
 	while ($Row = mysql_fetch_assoc($Result))
