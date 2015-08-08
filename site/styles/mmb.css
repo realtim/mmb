@@ -109,6 +109,11 @@ table.control td {
     padding: 2px;
 }
 
+div.impress {
+    margin-top: 5px;
+    margin-left: 2.2em;
+}
+
 div.team_res {
     margin-top: 5px;
 }

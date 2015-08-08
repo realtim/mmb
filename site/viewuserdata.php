@@ -466,7 +466,7 @@ if (!isset($MyPHPScript)) return;
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-		  print('<div align = "left" style = "padding-top: 5px;">'.$Row['device_name'].' <a href = "javascript:GetDeviceId('.$Row['device_id'].');" 
+		  print('<div class="team_res">'.$Row['device_name'].' <a href = "javascript:GetDeviceId('.$Row['device_id'].');"
 		          title = "Получить файл конфигурации">Конфигурация</a></div>'."\r\n");
 		}
 
@@ -475,7 +475,7 @@ if (!isset($MyPHPScript)) return;
                 $TabIndex = 1;
 	        $DisabledText = '';
                 $NewDeviceName = 'Название нового устройства';
-		print('<div align = "left" style = "padding-top: 5px;"><input type="text" name="NewDeviceName" size="50" value="'.$NewDeviceName.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+		print('<div class="team_res"><input type="text" name="NewDeviceName" size="50" value="'.$NewDeviceName.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
                 . CMmbUI::placeholder($NewDeviceName) . ' title = "Название нового устройства">'."\r\n");
     	        print('<input type="button" onClick = "javascript: AddDevice();"  name="AddDeviceButton" value="Добавить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                    
