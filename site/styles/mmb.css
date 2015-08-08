@@ -114,7 +114,8 @@ div.team_res {
 }
 
 div.team_res > span {
-    min-width: 15em;
+    min-width: 12em;
+    display: inline-block;
 }
 
 
