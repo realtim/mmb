@@ -162,11 +162,11 @@ if (!isset($MyPHPScript)) return;
                if ($action == 'AddUser')
                {
 
-		 $ChangePasswordSessionId = uniqid();
-                 $sql = "update  Users set   user_sessionfornewpassword = '$ChangePasswordSessionId', user_sendnewpasswordrequestdt = now()
-		         where user_id = ".$Row['user_id'];         
+		   $ChangePasswordSessionId = uniqid();
+                   $sql = "update  Users set   user_sessionfornewpassword = '$ChangePasswordSessionId', user_sendnewpasswordrequestdt = now()
+		         where user_id = {$Row['user_id']}";
 //                 echo $sql;  
-		 MySqlQuery($sql);
+		   MySqlQuery($sql);
 
 		   // Решил не писать здесь имя - м.б. и в адресе не надо
 		   $Msg = "Здравствуйте!\r\n\r\n";
@@ -180,14 +180,12 @@ if (!isset($MyPHPScript)) return;
                    // Отправляем письмо
 		   SendMail(trim($pUserEmail), $Msg, $pUserName);
 
-                   $statustext = 'Повторная ссылка для активации пользователя и получения пароля выслана на указанный адрес. 
-		                  Если письмо не пришло - проверьте спам. Учетные записи без активации могут быть удалены.';				     
-
-		   $view = "MainPage";
-	           return; 
+                   CMmb::setShortResult('Повторная ссылка для активации пользователя и получения пароля выслана на указанный адрес.
+		                  Если письмо не пришло - проверьте спам. Учетные записи без активации могут быть удалены.', 'MainPage');
+	           return;
                } else {
-		  CMmb::setErrorSm('Уже есть пользователь с таким email.');
-		  return;
+		   CMmb::setErrorSm('Уже есть пользователь с таким email.');
+		   return;
                }
 	   }
 
@@ -447,10 +445,8 @@ if (!isset($MyPHPScript)) return;
 					     user_sessionfornewpassword = null,
 					     user_sendnewpasswordrequestdt = null
 		         where user_id = $UserId";
-              //   echo $sql;
+                //   echo $sql;
 	        $rs = MySqlQuery($sql);  
-
-		$statustext = 'Пароль '.$NewPassword.' выслан.';
 
 		$Msg =  "Уважаемый пользователь $UserName!\r\n\r\n";
 		$Msg .= "Согласно подтверждённому запросу с Вашего адреса e-mail,\r\n";
@@ -459,10 +455,10 @@ if (!isset($MyPHPScript)) return;
                 // Отправляем письмо
 		SendMail(trim($UserEmail), $Msg, $UserName);
 
+		CMmb::setShortResult("Пароль $NewPassword выслан.", 'MainPage');
+
                 // и вот тут м.б. стоит активировать сессию, чтобы автоматом войти на сайт
 		$SessionId = StartSession($UserId);
-		$view = "MainPage";
-              
             }
 
             

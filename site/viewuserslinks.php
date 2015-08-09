@@ -45,7 +45,7 @@ if (!isset($viewsubmode)) $viewsubmode = "";
                   $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : $Row['userlink_name'];
 		  $TeamDist = (empty($Row['team_name']) ? '' : ', команда '.$Row['team_name'].', N '.$Row['team_num'].', дистанция '.$Row['distance_name']);
 
-		  print("<div class=\"impress\">{$Row['linktype_name']} <a href=\"{$Row['userlink_url']}\" title=\"{$Row['userlink_name']}\">$Label</a> {$Row['user_name']} $TeamDist \r\n");
+		  print("<div class=\"impress\">{$Row['linktype_name']} <a href=\"{$Row['userlink_url']}\" title=\"{$Row['userlink_name']}\">$Label</a> {$Row['user_name']}$TeamDist \r\n");
                   print("</div>\r\n");
 			  
 		}
