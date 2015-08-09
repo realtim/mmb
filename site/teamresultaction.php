@@ -57,18 +57,17 @@ if ($action == "ChangeTeamResult")
 		// По этому ключу потом определяем, есть ли уже строчка в TeamLevels или её нужно создать
 		$TeamLevelId = $Row['teamlevel_id'];
 
+		$levelPfx = 'Level'.$Row['level_id'];
+
 		// Обрабатываем сход с этапа
-		$Index = 'Level'.$Row['level_id'].'_progress';
-		if (isset($_POST[$Index])) $TeamLevelProgress = (int)$_POST[$Index]; else $TeamLevelProgress = 0;
+		$TeamLevelProgress = mmb_validateInt($_POST, $levelPfx.'_progress', 0);
 
 		// Вычисляем время выхода на этап
-		$Index = 'Level'.$Row['level_id'].'_begyear';
-		if (isset($_POST[$Index])) $BegYear = $_POST[$Index]; else $BegYear = "";
-		$Index = 'Level'.$Row['level_id'].'_begdate';
-		if (isset($_POST[$Index])) $BegDate = $_POST[$Index]; else $BegDate = "";
-		$Index = 'Level'.$Row['level_id'].'_begtime';
-		if (isset($_POST[$Index])) $BegTime = $_POST[$Index]; else $BegTime = "";
-		$BegYDTs = "'".$BegYear."-".substr(trim($BegDate), -2)."-".substr(trim($BegDate), 0, 2)." ".substr(trim($BegTime), 0, 2).":".substr(trim($BegTime), -2).":00'";
+		$BegYear = mmb_validate($_POST, $levelPfx.'_begyear', '');
+		$BegDate = mmb_validate($_POST, $levelPfx.'_begdate', '');
+		$BegTime = mmb_validate($_POST, $levelPfx.'_begtime', '');
+		$BegYDTs = CSql::timeString($BegYear, $BegDate, $BegTime);
+
 		// Конвертируем в даты php для сравнения
 		$BegYDT = strtotime(substr(trim($BegYDTs), 1, -1));
 		$BegMinYDT = strtotime(substr(trim($Row['level_begtime']), 1, -1));
@@ -84,20 +83,18 @@ if ($action == "ChangeTeamResult")
 			if ($BegYDT < $BegMinYDT or $BegYDT > $BegMaxYDT)
 			{
 				if ($TeamLevelProgress > 0)
-					$statustext = $statustext."</br> старта '".$Row['level_name']."'";
-				// Теперь не выходим, а ставим время NULL - вдруг пользовател сохранить хотел КП
+					$statustext = $statustext."</br> старта '{$Row['level_name']}'";
+				// Теперь не выходим, а ставим время NULL - вдруг пользователь сохранить хотел КП
 				$BegYDTs = "NULL";
 			}
 		}
 
 		// Вычисляем время финиша на этапе
-		$Index = 'Level'.$Row['level_id'].'_endyear';
-		$EndYear = $_POST[$Index];
-		$Index = 'Level'.$Row['level_id'].'_enddate';
-		$EndDate = $_POST[$Index];
-		$Index = 'Level'.$Row['level_id'].'_endtime';
-		$EndTime = $_POST[$Index];
-		$EndYDTs = "'".$EndYear."-".substr(trim($EndDate), -2)."-".substr(trim($EndDate), 0, 2)." ".substr(trim($EndTime), 0, 2).":".substr(trim($EndTime), -2).":00'";
+		$EndYear = $_POST[$levelPfx.'_endyear'];
+		$EndDate = $_POST[$levelPfx.'_enddate'];
+		$EndTime = $_POST[$levelPfx.'_endtime'];
+		$EndYDTs = CSql::timeString($EndYear, $EndDate, $EndTime);
+
 		// Конвертируем в даты php для сравнения
 		$EndYDT = strtotime(substr(trim($EndYDTs), 1, -1));
 		$EndMinYDT = strtotime(substr(trim($Row['level_minendtime']), 1, -1));
@@ -107,7 +104,7 @@ if ($action == "ChangeTeamResult")
 		{
 			$EndYDTs = "NULL";
 			if ($TeamLevelProgress > 1)
-				$statustext = $statustext."<br/> финиша '".$Row['level_name']."'";
+				$statustext = $statustext."<br/> финиша '{$Row['level_name']}'";
 		}
 
 		// Ставим флаг "Дошла до конца этапа", если у нас есть корректное время финиша команды
@@ -119,17 +116,14 @@ if ($action == "ChangeTeamResult")
 		//$Penalties = explode(',', $Row['level_pointpenalties']);
 		$TeamLevelPoints = '';
 		$PenaltyTime = 0;
+		$points = array();
 		for ($i = 0; $i < $ArrLen; $i++)
-		{
-			$Index = 'Level'.$Row['level_id'].'_chk'.$i;
-			if (isset($_POST[$Index])) $Point = $_POST[$Index]; else $Point = "";
-			if ($Point == 'on') $TeamLevelPoints = $TeamLevelPoints.',1';	else $TeamLevelPoints = $TeamLevelPoints.',0';
-		}
-		$TeamLevelPoints = substr(trim($TeamLevelPoints), 1);
+			$points[] = mmb_isOn($_POST, $levelPfx.'_chk'.$i);
+
+		$TeamLevelPoints = implode(", ", $points);
 
 		// Обрабатываем комментарии
-		$Index = 'Level'.$Row['level_id'].'_comment';
-		$Comment = $_POST[$Index];
+		$Comment = $_POST[$levelPfx.'_comment'];
 		if ($Comment == "") $Comment = "NULL"; else $Comment = "'" . mysql_real_escape_string($Comment) . "'";
 
 
@@ -178,8 +172,6 @@ if ($action == "ChangeTeamResult")
 // ============ Добавить точку  =============
 elseif ($action == 'AddTlp')
 {
-
-
 	//$view = "ViewLevelPoints";
 	//$viewmode = "AddTlp";
 
@@ -191,15 +183,15 @@ elseif ($action == 'AddTlp')
 		return;
 	}
 
-		$pTeamId = $_POST['TeamId'];
-		$pLevelPointId = $_POST['LevelPointId'];
-                //$pPointName = $_POST['PointName'];
-		
-	        $pTlpYear = $_POST['TlpYear'];
-                $pTlpDate = $_POST['TlpDate'];
-                $pTlpTime = $_POST['TlpTime'];
-                $pTlpComment = $_POST['TlpComment'];
-		$pErrorId = $_POST['ErrorId'];
+	$pTeamId = $_POST['TeamId'];
+	$pLevelPointId = $_POST['LevelPointId'];
+        //$pPointName = $_POST['PointName'];
+
+        $pTlpYear = $_POST['TlpYear'];
+        $pTlpDate = $_POST['TlpDate'];
+        $pTlpTime = $_POST['TlpTime'];
+        $pTlpComment = $_POST['TlpComment'];
+	$pErrorId = $_POST['ErrorId'];
 
 
          // тут по-хорошему нужны проверки
@@ -212,50 +204,50 @@ elseif ($action == 'AddTlp')
 
 
 	
-                // год всегда пишем текущий. если надо - можно добавить поле для года
+        // год всегда пишем текущий. если надо - можно добавить поле для года
 
-		$TlpYDTs = "'$pTlpYear-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
+	$TlpYDTs = CSql::timeString($pTlpYear, $pTlpDate, $pTlpTime, false);
 
-		// Если день и время пустые, то и год пустой считаем
-		if ((int)$pTlpDate == 0 and (int)$pTlpTime == 0)
-		{
-			$TlpYDTs = "'0000-00-00 00:00:00'";
-		}
+	// Если день и время пустые, то и год пустой считаем
+	if ((int)$pTlpDate == 0 and (int)$pTlpTime == 0)
+	{
+		$TlpYDTs = "'0000-00-00 00:00:00'";
+	}
 
 
                 
-		//echo 	$TlpYDTs;
+	//echo 	$TlpYDTs;
 
-		 $sql = " select count(*) as countresult 
-		          from TeamLevelPoints
-		          where team_id = $pTeamId
-			        and levelpoint_id = $pLevelPointId";
+        $sql = " select count(*) as countresult
+	          from TeamLevelPoints
+	          where team_id = $pTeamId
+		        and levelpoint_id = $pLevelPointId";
 
-	   if  (((int) CSql::singleValue($sql, 'countresult')) > 0)
-	   {
-			teamAddError('Результаты по точке уже есть.');
-			return;
-           }
+	if  (((int) CSql::singleValue($sql, 'countresult')) > 0)
+	{
+		teamAddError('Результаты по точке уже есть.');
+		return;
+	}
 
 
-             // потом добавить время макс. и мин.
+        // потом добавить время макс. и мин.
 	     
-		$sql = "insert into TeamLevelPoints (team_id, levelpoint_id, 
-                        device_id,
-			teamlevelpoint_datetime, teamlevelpoint_comment, error_id)
-			values ($pTeamId, $pLevelPointId, 1,
-			        $TlpYDTs, '$pTlpComment', $pErrorId)";
+	$sql = "insert into TeamLevelPoints (team_id, levelpoint_id,
+                device_id,
+		teamlevelpoint_datetime, teamlevelpoint_comment, error_id)
+		values ($pTeamId, $pLevelPointId, 1,
+		        $TlpYDTs, '$pTlpComment', $pErrorId)";
 
 
-               //  echo $sql;
-		// При insert должен вернуться послений id - это реализовано в MySqlQuery
-		$TeamLevelPointId = MySqlQuery($sql);
-		
-		if ($TeamLevelPointId <= 0)
-		{
-			teamAddError('Ошибка записи нового результата для точки.');
-			return;
-		}
+	//  echo $sql;
+	// При insert должен вернуться послений id - это реализовано в MySqlQuery
+	$TeamLevelPointId = MySqlQuery($sql);
+
+	if ($TeamLevelPointId <= 0)
+	{
+		teamAddError('Ошибка записи нового результата для точки.');
+		return;
+	}
 	
 /*
 	 $statustext = CheckLevelPoints($DistanceId);
@@ -302,23 +294,23 @@ elseif ($action == 'ChangeTlp')
 
 
 
-		$pLevelPointId = $_POST['LevelPointId'];
-		$pTeamId = $_POST['TeamId'];
-     
-		$pTlpYear = $_POST['TlpYear'];
-                $pTlpDate = $_POST['TlpDate'];
-                $pTlpTime = $_POST['TlpTime'];
-                $pTlpComment = $_POST['TlpComment'];
-		$pErrorId = $_POST['ErrorId'];
+	$pLevelPointId = $_POST['LevelPointId'];
+	$pTeamId = $_POST['TeamId'];
+
+	$pTlpYear = $_POST['TlpYear'];
+        $pTlpDate = $_POST['TlpDate'];
+        $pTlpTime = $_POST['TlpTime'];
+        $pTlpComment = $_POST['TlpComment'];
+	$pErrorId = $_POST['ErrorId'];
 
 
-		$TlpYDTs = "'$pTlpYear-".substr(trim($pTlpDate), -2)."-".substr(trim($pTlpDate), 0, 2)." ".substr(trim($pTlpTime), 0, 2).":".substr(trim($pTlpTime), 2, 2).":".substr(trim($pTlpTime), -2)."'";
+	$TlpYDTs = CSql::timeString($pTlpYear, $pTlpDate, $pTlpTime, false);
 
-		// Если день и время пустые, то и год пустой считаем
-		if ((int)$pTlpDate == 0 and (int)$pTlpTime == 0)
-		{
-			$TlpYDTs = "'0000-00-00 00:00:00'";
-		}
+	// Если день и время пустые, то и год пустой считаем
+	if ((int)$pTlpDate == 0 and (int)$pTlpTime == 0)
+	{
+		$TlpYDTs = "'0000-00-00 00:00:00'";
+	}
 
 	
 	if ($pTeamId <= 0 or $pLevelPointId <= 0)
@@ -330,17 +322,17 @@ elseif ($action == 'ChangeTlp')
 	
 	
 	
-		 $sql = " select count(*) as countresult 
-		          from TeamLevelPoints
-		          where team_id = $pTeamId
-			        and levelpoint_id = $pLevelPointId
-				and teamlevelpoint_id <> $pTeamLevelPointId";
+	$sql = " select count(*) as countresult
+	          from TeamLevelPoints
+	          where team_id = $pTeamId
+		        and levelpoint_id = $pLevelPointId
+			and teamlevelpoint_id <> $pTeamLevelPointId";
                 
-	   if  (CSql::singleValue($sql, 'countresult') > 0)
-	   {
-			CMmb::setErrorSm('Результаты по точке уже есть.', 'ReturnAfterErrorTlp');
-			return;
-           }
+	if  (CSql::singleValue($sql, 'countresult') > 0)
+	{
+		CMmb::setErrorSm('Результаты по точке уже есть.', 'ReturnAfterErrorTlp');
+		return;
+	}
 
 
 

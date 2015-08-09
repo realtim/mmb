@@ -201,6 +201,18 @@ class CSql {
 
 		return trim(self::singleValue($sql, 'raidfile_name'));
 	}
+
+
+	// date -- строка ddmm
+	// time -- строка hhmmss
+	public static function timeString($year, $date, $time, $noSeconds = true)
+	{
+		$tDate = trim($date);
+		$tTime = trim($time);
+		$seconds = $noSeconds ? '00' : substr($tTime, -2);
+
+		return  "'$year-".substr($tDate, -2)."-".substr($tDate, 0, 2)." ".substr($tTime, 0, 2).":".substr($tTime, 2, 2).":$seconds'";
+	}
 }
 
   function StartSession($UserId) {

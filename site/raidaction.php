@@ -918,9 +918,9 @@ elseif ($action == 'AddLevelPoint')
 
                 // год всегда пишем текущий. если надо - можно добавить поле для года
 
-	$MinYDTs = "'$pLevelPointMinYear-".substr(trim($pLevelPointMinDate), -2)."-".substr(trim($pLevelPointMinDate), 0, 2)." ".substr(trim($pLevelPointMinTime), 0, 2).":".substr(trim($pLevelPointMinTime), -2).":00'";
+	$MinYDTs = CSql::timeString($pLevelPointMinYear, $pLevelPointMinDate, $pLevelPointMinTime);
 	$MinYDT = strtotime(substr(trim($MinYDTs), 1, -1));
-	$MaxYDTs = "'$pLevelPointMaxYear-".substr(trim($pLevelPointMaxDate), -2)."-".substr(trim($pLevelPointMaxDate), 0, 2)." ".substr(trim($pLevelPointMaxTime), 0, 2).":".substr(trim($pLevelPointMaxTime), -2).":00'";
+	$MaxYDTs = CSql::timeString($pLevelPointMaxYear, $pLevelPointMaxDate, $pLevelPointMaxTime);
 	$MaxYDT = strtotime(substr(trim($MaxYDTs), 1, -1));
 
 	// Если день и время пустые, то и год пустой считаем
@@ -1022,9 +1022,9 @@ elseif ($action == 'LevelPointChange')
         // год всегда пишем текущий. если надо - можно добавить поле для года
 
 	
-	$MinYDTs = "'$pLevelPointMinYear-".substr(trim($pLevelPointMinDate), -2)."-".substr(trim($pLevelPointMinDate), 0, 2)." ".substr(trim($pLevelPointMinTime), 0, 2).":".substr(trim($pLevelPointMinTime), -2).":00'";
+	$MinYDTs = CSql::timeString($pLevelPointMinYear, $pLevelPointMinDate, $pLevelPointMinTime);
 	$MinYDT = strtotime(substr(trim($MinYDTs), 1, -1));
-        $MaxYDTs = "'$pLevelPointMaxYear-".substr(trim($pLevelPointMaxDate), -2)."-".substr(trim($pLevelPointMaxDate), 0, 2)." ".substr(trim($pLevelPointMaxTime), 0, 2).":".substr(trim($pLevelPointMaxTime), -2).":00'";
+        $MaxYDTs = CSql::timeString($pLevelPointMaxYear, $pLevelPointMaxDate, $pLevelPointMaxTime);
 	$MaxYDT = strtotime(substr(trim($MaxYDTs), 1, -1));
 
 	// Если день и время пустые, то и год пустой считаем
