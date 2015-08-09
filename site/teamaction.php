@@ -68,12 +68,9 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pTeamOutOfRange = mmb_isOn($_POST, 'TeamOutOfRange');
 	$pTeamMapsCount = (int)$_POST['TeamMapsCount'];
 	$pTeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
-	if (!isset($_POST['NewTeamUserEmail'])) $_POST['NewTeamUserEmail'] = "";
-	$pNewTeamUserEmail = $_POST['NewTeamUserEmail'];
-	if (!isset($_POST['TeamNotOnLevelId'])) $_POST['TeamNotOnLevelId'] = "";
-	$pTeamNotOnLevelId = (int)$_POST['TeamNotOnLevelId'];
-	if (!isset($_POST['TeamNotInLevelPointId'])) $_POST['TeamNotInLevelPointId'] = "";
-	$pTeamNotOnLevelId = (int)$_POST['TeamNotInLevelPointId'];
+	$pNewTeamUserEmail = mmb_validate($_POST, 'NewTeamUserEmail', '');
+	$pTeamNotOnLevelId = (int)mmb_validate($_POST, 'TeamNotOnLevelId', '');         // todo выкинуть ???
+	$pTeamNotOnLevelId = (int)mmb_validate($_POST, 'TeamNotInLevelPointId', '');    // todo выкинуть ???
 	$pTeamConfirmation = mmb_isOn($_POST, 'Confirmation');
 
 
@@ -100,7 +97,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
         // 20/05/2014 Добавил проверку на  угловые скобки
 	if (strchr($pTeamName, '>') or strchr($pTeamName, '<'))
 	{
-		setViewError("Название не должно содержать уголвых скобок.");
+		setViewError("Название не должно содержать угловых скобок.");
 		return;
 	}
 
@@ -312,26 +309,27 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	if ($UserId > 0 and $TeamId > 0)
 	{
 		$ChangeDataUserName = CSql::userName($UserId);
+		$userCond = $SendEmailToAllTeamUsers <> 1 ? "u.user_id <> $UserId" : "true";
 		$sql = "select u.user_email, u.user_name, t.team_num, d.distance_name, r.raid_name
 			from Users u
 				inner join TeamUsers tu on tu.user_id = u.user_id
 				inner join Teams t on tu.team_id = t.team_id
 				inner join Distances d on t.distance_id = d.distance_id
 				inner join Raids r on d.raid_id = r.raid_id
-			where tu.teamuser_hide = 0 and tu.team_id = ".$TeamId;
-		if ($SendEmailToAllTeamUsers <> 1)
-			$sql .= " and u.user_id <> $UserId";
-		$sql .= " order by tu.teamuser_id asc";
+			where tu.teamuser_hide = 0 and tu.team_id = $TeamId
+				and $userCond
+			order by tu.teamuser_id asc";
+
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 			// Формируем сообщение
-			$Msg = "Уважаемый участник ".$Row['user_name']."!\n\n";
-			$Msg = $Msg."Действие: ".$TeamActionTextForEmail.".\n";
-			$Msg = $Msg."Команда N ".$Row['team_num'].", Дистанция: ".$Row['distance_name'].", ММБ: ".trim($Row['raid_name']).".\n";
-			$Msg = $Msg."Автор изменений: ".$ChangeDataUserName.".\n";
-			$Msg = $Msg."Вы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\n";
-			$Msg = $Msg."P.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
+			$Msg =  "Уважаемый участник {$Row['user_name']}!\n\n";
+			$Msg .= "Действие: $TeamActionTextForEmail.\n";
+			$Msg .= "Команда N {$Row['team_num']}, Дистанция: {$Row['distance_name']}, ММБ: ".trim($Row['raid_name']).".\n";
+			$Msg .= "Автор изменений: $ChangeDataUserName.\n";
+			$Msg .= "Вы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\n";
+			$Msg .= "P.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
 			// Отправляем письмо
 			SendMail($Row['user_email'], $Msg, $Row['user_name']);
 		}
@@ -368,7 +366,7 @@ elseif ($action == 'FindTeam')
 }
 
 // ============ Информация о команде по Id ====================================
-// ПРопускаем также события для редактирвоания результата
+// ПРопускаем также события для редактирования результата
 elseif ($action == 'TeamInfo' or $action == 'TlpInfo'  or $action == 'AddTlp' or $action == 'ChangeTlp' or $action == 'HideTlp')
 {
 	if ($TeamId <= 0)

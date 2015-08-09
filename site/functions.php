@@ -404,10 +404,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		$sql = "select raid_id from Distances d
 				inner join Teams t on t.distance_id = d.distance_id
 			where t.team_id = $TeamId";
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		$RaidId = (int)$Row['raid_id'];
-		mysql_free_result($Result);
+		$RaidId = (int)CSql::singleValue($sql, 'raid_id');
 	}
 
 	// Контролируем, что маршбросок существует в базе
@@ -476,8 +473,8 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		END as closed,
 		COALESCE(r.raid_noshowresult, 0) as noshowresult
 		from Raids r where r.raid_id=$RaidId";
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
+	$Row = CSql::singleRow($sql);
+
 	if ($Row['registration'] == 0) $RaidStage = 0;
 	elseif ($Row['registration'] == 1) $RaidStage = 1;
 	else
@@ -495,7 +492,6 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 			else $RaidStage = 7;
 		}
 	}
-	mysql_free_result($Result);
 
 
         // Если команда не определена, а регистрация закончена, то команда вне зачета 	
@@ -947,7 +943,7 @@ send_mime_mail('Автор письма',
 	      }  
 
         }
-        // Конец очистик специальных массивов от возможных инъекций
+        // Конец очистки специальных массивов от возможных инъекций
 
      // функция получает ссылку на  логотип
     function GetMmbLogo($raidid)
@@ -1459,7 +1455,7 @@ send_mime_mail('Автор письма',
 			$ResultTlp = MySqlQuery($sqltlp);
 				
 		} else {
-		   print("Уже есть точка старта $FinishLevelPointId $TeamId\r\n");
+		   print("Уже есть точка старта $StartLevelPointId $TeamId\r\n");
 		} 
 	}
 	// Конец проверки на существование точки старта
