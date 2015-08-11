@@ -2308,9 +2308,10 @@ class CMmbUI
 {
 	public static function toHtml($str)
 	{
-		$search = array("&", "<", ">", "\"", "'");
-		$replace = array("&amp;", "&lt;", "&gt;", "&quot;", "&apos");
-		return str_replace($search, $replace, (string) $str);
+		$search = array("<", ">", "\"", "'");
+		$replace = array("&lt;", "&gt;", "&quot;", "&apos;");
+
+		return str_replace($search, $replace, str_replace("&", "&amp;", (string) $str));
 	}
 
 	public static function placeholder($defaultValue)
