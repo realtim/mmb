@@ -24,8 +24,7 @@ function setUnionError($message)
 // ============ Обработка возможности регистрации команды =====================
 if ($action == "RegisterNewTeam")
 {
-	$view = "ViewTeamData";
-	$viewmode = "Add";
+	CMmb::setViews('ViewTeamData', 'Add');
 	if ($RaidId <= 0)
 	{
 		CMmb::setMessage('Не указан ММБ (выберите из списка).');
@@ -56,27 +55,21 @@ if ($action == "RegisterNewTeam")
 // ============ Изменение данных команды или запись новой команды =============
 elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 {
-	if ($action == "AddTeam") $viewmode = "Add"; else $viewmode = "";
 	//$view = "ViewTeamData";
-	$view = $_POST['view'];
+	CMmb::setViews($_POST['view'], $action == "AddTeam" ? 'Add' : '');      // ой, как нехорошо с $_POST!
 
         // echo '111 '.$view;
 	// пока валим всё в одну кучу - проверяем ниже
 	$pDistanceId = (int)$_POST['DistanceId'];
 	$pTeamNum = (int) $_POST['TeamNum'];
 	$pTeamName = $_POST['TeamName'];
-	$pTeamUseGPS = (isset($_POST['TeamUseGPS']) && ($_POST['TeamUseGPS'] == 'on')) ? 1 : 0;
+	$pTeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
         // Используем только при правке (м.б. нужна доп. проверка на права
-	$pTeamOutOfRange = (isset($_POST['TeamOutOfRange']) && ($_POST['TeamOutOfRange'] == 'on')) ? 1 : 0;
+	$pTeamOutOfRange = mmb_isOn($_POST, 'TeamOutOfRange');
 	$pTeamMapsCount = (int)$_POST['TeamMapsCount'];
-	$pTeamGreenPeace = (isset($_POST['TeamGreenPeace']) && ($_POST['TeamGreenPeace'] == 'on')) ? 1 : 0;
-	if (!isset($_POST['NewTeamUserEmail'])) $_POST['NewTeamUserEmail'] = "";
-	$pNewTeamUserEmail = $_POST['NewTeamUserEmail'];
-	if (!isset($_POST['TeamNotOnLevelId'])) $_POST['TeamNotOnLevelId'] = "";
-	$pTeamNotOnLevelId = (int)$_POST['TeamNotOnLevelId'];
-	if (!isset($_POST['TeamNotInLevelPointId'])) $_POST['TeamNotInLevelPointId'] = "";
-	$pTeamNotOnLevelId = (int)$_POST['TeamNotInLevelPointId'];
-	$pTeamConfirmation = (isset($_POST['Confirmation']) && ($_POST['Confirmation'] == 'on')) ? 1 : 0;
+	$pTeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
+	$pNewTeamUserEmail = mmb_validate($_POST, 'NewTeamUserEmail', '');
+	$pTeamConfirmation = mmb_isOn($_POST, 'Confirmation');
 
 
 	if (($action <> "AddTeam") && ($TeamId <= 0))
@@ -102,7 +95,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
         // 20/05/2014 Добавил проверку на  угловые скобки
 	if (strchr($pTeamName, '>') or strchr($pTeamName, '<'))
 	{
-		setViewError("Название не должно содержать уголвых скобок.");
+		setViewError("Название не должно содержать угловых скобок.");
 		return;
 	}
 
@@ -125,7 +118,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			from Teams t
 				inner join Distances d
 				on t.distance_id = d.distance_id
-			where d.raid_id = $RaidId and trim(team_name) = $pTeamName and team_hide = 0 and team_id <> $TeamId";
+			where d.raid_id = $RaidId and trim(team_name) = '$pTeamName' and team_hide = 0 and team_id <> $TeamId";
 	if (CSql::singleValue($sql, 'resultcount') > 0)
 	{
 		setViewError("Уже есть команда с таким названием.");
@@ -314,26 +307,27 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	if ($UserId > 0 and $TeamId > 0)
 	{
 		$ChangeDataUserName = CSql::userName($UserId);
+		$userCond = $SendEmailToAllTeamUsers <> 1 ? "u.user_id <> $UserId" : "true";
 		$sql = "select u.user_email, u.user_name, t.team_num, d.distance_name, r.raid_name
 			from Users u
 				inner join TeamUsers tu on tu.user_id = u.user_id
 				inner join Teams t on tu.team_id = t.team_id
 				inner join Distances d on t.distance_id = d.distance_id
 				inner join Raids r on d.raid_id = r.raid_id
-			where tu.teamuser_hide = 0 and tu.team_id = ".$TeamId;
-		if ($SendEmailToAllTeamUsers <> 1)
-			$sql .= " and u.user_id <> $UserId";
-		$sql .= " order by tu.teamuser_id asc";
+			where tu.teamuser_hide = 0 and tu.team_id = $TeamId
+				and $userCond
+			order by tu.teamuser_id asc";
+
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 			// Формируем сообщение
-			$Msg = "Уважаемый участник ".$Row['user_name']."!\n\n";
-			$Msg = $Msg."Действие: ".$TeamActionTextForEmail.".\n";
-			$Msg = $Msg."Команда N ".$Row['team_num'].", Дистанция: ".$Row['distance_name'].", ММБ: ".trim($Row['raid_name']).".\n";
-			$Msg = $Msg."Автор изменений: ".$ChangeDataUserName.".\n";
-			$Msg = $Msg."Вы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\n";
-			$Msg = $Msg."P.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
+			$Msg =  "Уважаемый участник {$Row['user_name']}!\n\n";
+			$Msg .= "Действие: $TeamActionTextForEmail.\n";
+			$Msg .= "Команда N {$Row['team_num']}, Дистанция: {$Row['distance_name']}, ММБ: ".trim($Row['raid_name']).".\n";
+			$Msg .= "Автор изменений: $ChangeDataUserName.\n";
+			$Msg .= "Вы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\n";
+			$Msg .= "P.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
 			// Отправляем письмо
 			SendMail($Row['user_email'], $Msg, $Row['user_name']);
 		}
@@ -370,7 +364,7 @@ elseif ($action == 'FindTeam')
 }
 
 // ============ Информация о команде по Id ====================================
-// ПРопускаем также события для редактирвоания результата
+// ПРопускаем также события для редактирования результата
 elseif ($action == 'TeamInfo' or $action == 'TlpInfo'  or $action == 'AddTlp' or $action == 'ChangeTlp' or $action == 'HideTlp')
 {
 	if ($TeamId <= 0)
@@ -378,8 +372,7 @@ elseif ($action == 'TeamInfo' or $action == 'TlpInfo'  or $action == 'AddTlp' or
 		CMmb::setErrorMessage('Id команды не указан');
 		return;
 	}
-	$view = "ViewTeamData";
-	$viewmode = "";
+	CMmb::setViews('ViewTeamData', '');
 }
 
 // ============ Удаление участника команды ====================================
@@ -439,7 +432,7 @@ elseif ($action == 'HideTeamUser')
 	if ($UserId > 0 and $TeamId > 0)
 	{
 		$ChangeDataUserName = CSql::userName($UserId);
-		$sql = "select user_name from Users u inner join TeamUsers tu on tu.user_id = u.user_id where tu.teamuser_id = ".$HideTeamUserId;
+		$sql = "select user_name from Users u inner join TeamUsers tu on tu.user_id = u.user_id where tu.teamuser_id = $HideTeamUserId";
 		$DelUserName = CSql::singleValue($sql, 'user_name');
 
 		$sql = "select u.user_email, u.user_name, t.team_num, d.distance_name, r.raid_name
@@ -448,7 +441,7 @@ elseif ($action == 'HideTeamUser')
 				inner join Teams t on tu.team_id = t.team_id
 				inner join Distances d on t.distance_id = d.distance_id
 				inner join Raids r on d.raid_id = r.raid_id
-			where tu.teamuser_id = ".$HideTeamUserId." or (tu.teamuser_hide = 0 and tu.team_id = ".$TeamId." and u.user_id <> ".$UserId.")
+			where tu.teamuser_id = $HideTeamUserId or (tu.teamuser_hide = 0 and tu.team_id = $TeamId and u.user_id <> $UserId)
 			order by tu.teamuser_id asc";
 		$Result = MySqlQuery($sql);
 
@@ -541,7 +534,7 @@ elseif ($action == 'TeamUserNotInPoint')
 	} else {
 		if ($DismissId) {
 		// Точка есть, а пользователь не сошёл - удаляем точку
-			$sql = "delete from TeamLevelDismiss where teamleveldismiss_id = ".$DismissId;
+			$sql = "delete from TeamLevelDismiss where teamleveldismiss_id = $DismissId";
 			$rs = MySqlQuery($sql);
 		} else {
 		// ТОчка нет и пользователь не сошёл - ничего не делаем
@@ -565,18 +558,18 @@ elseif ($action == 'TeamUserNotInPoint')
 			inner join Teams t on tu.team_id = t.team_id
 			inner join Distances d on t.distance_id = d.distance_id
 			inner join Raids r on d.raid_id = r.raid_id
-		where tu.teamuser_hide = 0 and tu.team_id = ".$TeamId." and u.user_id <> ".$UserId."
+		where tu.teamuser_hide = 0 and tu.team_id = $TeamId and u.user_id <> $UserId
 		order by tu.teamuser_id asc";
 	$Result = MySqlQuery($sql);
 	while ($Row = mysql_fetch_assoc($Result))
 	{
 		// Формируем сообщение
-		$Msg = "Уважаемый участник ".$Row['user_name']."!\n\n";
-		$Msg = $Msg."Действие: изменение данных команды.\n";
-		$Msg = $Msg."Команда N ".$Row['team_num'].", Дистанция: ".$Row['distance_name'].", ММБ: ".trim($Row['raid_name']).".\n";
-		$Msg = $Msg."Автор изменений: ".$ChangeDataUserName.".\n";
-		$Msg = $Msg."Вы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\n";
-		$Msg = $Msg."P.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
+		$Msg =  "Уважаемый участник {$Row['user_name']}!\n\n";
+		$Msg .= "Действие: изменение данных команды.\n";
+		$Msg .= "Команда N {$Row['team_num']}, Дистанция: {$Row['distance_name']}, ММБ: ".trim($Row['raid_name']).".\n";
+		$Msg .= "Автор изменений: $ChangeDataUserName.\n";
+		$Msg .= "Вы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\n";
+		$Msg .= "P.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
 		// Отправляем письмо
 		SendMail($Row['user_email'], $Msg, $Row['user_name']);
 	}
@@ -626,7 +619,7 @@ elseif ($action == 'HideTeam')
 			inner join Teams t on tu.team_id = t.team_id
 			inner join Distances d on t.distance_id = d.distance_id
 			inner join Raids r on d.raid_id = r.raid_id
-		where tu.teamuser_hide = 0 and tu.team_id = ".$TeamId."
+		where tu.teamuser_hide = 0 and tu.team_id = $TeamId
 		order by tu.teamuser_id asc";
 	$Result = MySqlQuery($sql);
 	while ($Row = mysql_fetch_assoc($Result))
@@ -638,9 +631,9 @@ elseif ($action == 'HideTeam')
 	}
 	mysql_free_result($Result);
 
-	$sql = "update TeamUsers set teamuser_hide = 1 where team_id = ".$TeamId;
+	$sql = "update TeamUsers set teamuser_hide = 1 where team_id = $TeamId";
 	$rs = MySqlQuery($sql);
-	$sql = "update Teams set team_hide = 1 where team_id = ".$TeamId;
+	$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 	$rs = MySqlQuery($sql);
 
 	$view = "ViewRaidTeams";
@@ -828,7 +821,7 @@ elseif ($action == 'JsonExport')
 	         from TeamUnionLogs 
 			 where teamunionlog_hide = 0 
                                and union_status = 2
-			       and team_id = ".$TeamId; 
+			       and team_id = $TeamId";
 
 	if (CSql::rowCount($sql) > 0)
 	{
@@ -843,7 +836,7 @@ elseif ($action == 'JsonExport')
 	         from Teams 
 			 where team_hide = 0 
                                and COALESCE(team_outofrange, 0) = 0
-			       and team_id = ".$TeamId; 
+			       and team_id = $TeamId";
 
 	if (CSql::rowCount($sql) <= 0)
 	{
@@ -868,7 +861,7 @@ elseif ($action == 'JsonExport')
 		{
 			$Sql = "insert into TeamUnionLogs (user_id, teamunionlog_dt,
 			         teamunionlog_hide, team_id, team_parentid, union_status)
-				  values (".$UserId.", now(), 0, ".$TeamId.", null, 1)";
+				  values ($UserId, now(), 0, $TeamId, null, 1)";
 			MySqlQuery($Sql);
 
 			$TeamAdd = 1;
@@ -882,7 +875,7 @@ elseif ($action == 'JsonExport')
 			 } else {
 			   
 			  // Есть и команда скрыта -  обновляем
- 		          $Sql = "update TeamUnionLogs set teamunionlog_hide = 0, teamunionlog_dt = now()  where teamunionlog_id = ".$TeamUnionLogId;
+ 		          $Sql = "update TeamUnionLogs set teamunionlog_hide = 0, teamunionlog_dt = now()  where teamunionlog_id = $TeamUnionLogId";
 			  MySqlQuery($Sql);  
 			  
    		          $TeamAdd = 1;
@@ -900,12 +893,10 @@ elseif ($action == 'JsonExport')
 
 /*
 	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
+		 $Row = CSql::fullUser($Sql);
 		 $pUserName = $Row['user_name'];
 		 $pUserEmail = $Row['user_email'];
-		 mysql_free_result($Result);
-		    
+
                  $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
 		 $Msg =  $Msg."Вы получили статус модератора марш-броска ".$RaidName."\r\n";
 		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
@@ -942,19 +933,17 @@ elseif ($action == "HideTeamInUnion")  {
 	     {
 	      return;
 	     }
-	          $Sql = "update TeamUnionLogs set teamunionlog_hide = 1, union_status = 0  where teamunionlog_id = ".$TeamUnionLogId;
+	          $Sql = "update TeamUnionLogs set teamunionlog_hide = 1, union_status = 0  where teamunionlog_id = $TeamUnionLogId";
 		  MySqlQuery($Sql);  
 
 		 $ChangeDataUserName = CSql::userName($UserId);
 
 /*
 	         $Sql = "select user_name, user_email from  Users where user_id = ".$pUserId;
-		 $Result = MySqlQuery($Sql);  
-		 $Row = mysql_fetch_assoc($Result);
+		 $Row = CSql::fullUser($Sql);
 		 $pUserName = $Row['user_name'];
 		 $pUserEmail = $Row['user_email'];
-		 mysql_free_result($Result);
-		    
+
                  $Msg = "Уважаемый пользователь ".$pUserName."!\r\n\r\n";
 		 $Msg =  $Msg."Вы получили статус модератора марш-броска ".$RaidName."\r\n";
 		 $Msg =  $Msg."Автор изменений: ".$ChangeDataUserName.".\r\n\r\n";
@@ -1068,8 +1057,7 @@ elseif ($action == "UnionTeams")  {
 			where tul.teamunionlog_hide = 0 
                   and tul.union_status = 1
            group by tlp.levelpoint_id
-			having count(*) <> 2
-	       "; 
+			having count(*) <> 2 ";
     
 	if (CSql::rowCount($sql) > 0)
 	{
@@ -1101,11 +1089,8 @@ elseif ($action == "UnionTeams")  {
                       and tul.union_status = 1"; 
                 
 		//echo 'sql '.$sql;
-		
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
-   
+	$Row = CSql::singleRow($sql);
+
         $pTeamUseGPS = $Row['team_usegps'];
         $pTeamGreenPeace = $Row['team_greenpeace'];
 	
@@ -1122,16 +1107,15 @@ elseif ($action == "UnionTeams")  {
 
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
 			team_registerdt, team_greenpeace, team_hide)
-			values (";
+			values (
 
-		$sql = $sql."(select COALESCE(MAX(t.team_num), 0) + 1
+			(select COALESCE(MAX(t.team_num), 0) + 1
 				from Teams t
 					inner join Distances d on t.distance_id = d.distance_id
-				where d.raid_id = ".$RaidId.")";
+				where d.raid_id = $RaidId)
 		
-		// Все остальное
-		$sql = $sql.", '".$pTeamName."',".$pTeamUseGPS.",".$pTeamMapsCount.", ".$pDistanceId.",NOW(), "
-			.$pTeamGreenPeace.", 1)";
+			-- Все остальное
+			, '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(), $pTeamGreenPeace, 1)";
 
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);
@@ -1148,7 +1132,7 @@ elseif ($action == "UnionTeams")  {
 
 		}
 		$sql = "insert into TeamUsers (team_id, user_id, teamuser_hide) 
-                        select ".$TeamId." , tu.user_id, 1
+                        select $TeamId , tu.user_id, 1
 		        from  TeamUnionLogs tul
 			      inner join Teams t
 			      on t.team_id = tul.team_id
@@ -1156,8 +1140,7 @@ elseif ($action == "UnionTeams")  {
 			      on tu.team_id = t.team_id
 			where tul.teamunionlog_hide = 0 
 	                      and tul.union_status = 1
-	                      and tu.teamuser_hide = 0
-			"; 
+	                      and tu.teamuser_hide = 0 ";
 			 
 // Правильнее написать ХП, которая делает это
 // т.к. нельзя в одной строке передать несколько запросов		
@@ -1169,7 +1152,7 @@ elseif ($action == "UnionTeams")  {
 						 teamlevelpoint_penalty, teamlevelpoint_comment,
 						 teamlevelpoint_result
 						)
-		         select  tlp.levelpoint_id, ".$TeamId.",
+		         select  tlp.levelpoint_id, $TeamId,
 		                MAX(teamlevelpoint_datetime),
 		                MIN(teamlevelpoint_duration),
 		                MAX(teamlevelpoint_penalty),
@@ -1182,16 +1165,14 @@ elseif ($action == "UnionTeams")  {
 			       on t.team_id = tlp.team_id 
 			 where tul.teamunionlog_hide = 0 
                                and tul.union_status = 1
-              group by tlp.levelpoint_id
-		       "; 
+              group by tlp.levelpoint_id ";
   
 		MySqlQuery($sql);
 
 
-		$sql = " update TeamUnionLogs set team_parentid = ".$TeamId." 
+		$sql = " update TeamUnionLogs set team_parentid = $TeamId
 			 where teamunionlog_hide = 0 
-                               and union_status = 1
-		       "; 
+                               and union_status = 1 ";
 
 		MySqlQuery($sql);
   
@@ -1204,12 +1185,12 @@ elseif ($action == "UnionTeams")  {
 		            from  TeamUnionLogs tul
   			    where tul.teamunionlog_hide = 0 
 	                          and tul.union_status = 1
-			          and tul.team_parentid = ".$TeamId." 
+			          and tul.team_parentid = $TeamId
 			    group by  tul.team_id
 			   )  a
 			  on  t.team_id = a.team_id
 		  set t.team_hide = 1, 
-                      t.team_parentid = ".$TeamId;
+                      t.team_parentid = $TeamId";
 
 		MySqlQuery($sql);
 
@@ -1219,30 +1200,28 @@ elseif ($action == "UnionTeams")  {
 			  (
 			    select  t.team_id
 		            from  Teams t
-  			    where t.team_parentid = ".$TeamId." 
+  			    where t.team_parentid = $TeamId
 			   )  a
 			  on  tu.team_id = a.team_id
-		  set tu.teamuser_hide = 1
-		  "; 
+		  set tu.teamuser_hide = 1 ";
 
 		MySqlQuery($sql);
 
 
 		$sql =  " update Teams set team_hide = 0
-			 where team_id = ".$TeamId;
+			 where team_id = $TeamId";
 		
 		MySqlQuery($sql);
 
 		$sql =  " update TeamUsers set teamuser_hide = 0
-			 where team_id = ".$TeamId;
+			 where team_id = $TeamId";
 		
 		MySqlQuery($sql);
 
 	 
 		$sql = " update TeamUnionLogs set union_status = 2
 			 where union_status = 1
-			       and teamunionlog_hide = 0
-			 "; 
+			       and teamunionlog_hide = 0 ";
 		 
 		MySqlQuery($sql);
 
@@ -1299,7 +1278,7 @@ elseif ($action == "CancelUnionTeams")  {
   
 		$sql = " update Teams t
  		         set t.team_hide = 1 
-                         where t.team_id = ".$pParentTeamId;
+                         where t.team_id = $pParentTeamId";
 
               //  echo $sql;
 
@@ -1308,7 +1287,7 @@ elseif ($action == "CancelUnionTeams")  {
                 // её участнтиков
 		$sql = " update TeamUsers tu
  		         set tu.teamuser_hide = 1 
-                         where tu.team_id = ".$pParentTeamId;
+                         where tu.team_id = $pParentTeamId";
 
 		//echo $sql;		
 
@@ -1319,7 +1298,7 @@ elseif ($action == "CancelUnionTeams")  {
 
 		$sql = " update Teams t
  		         set t.team_hide = 0 
-                         where t.team_parentid = ".$pParentTeamId;
+                         where t.team_parentid = $pParentTeamId";
 
 		//echo $sql;
 
@@ -1332,14 +1311,14 @@ elseif ($action == "CancelUnionTeams")  {
 			  (
 			    select  t.team_id
 		            from  Teams t
-  			    where t.team_parentid = ".$pParentTeamId." 
+  			    where t.team_parentid = $pParentTeamId
 			   )  a
 			  on  tu.team_id = a.team_id
 			  inner join
 			  (
 			    select  tu2.user_id
 		            from  TeamUsers tu2
-  			    where tu2.team_id = ".$pParentTeamId." 
+  			    where tu2.team_id = $pParentTeamId
 			   )  b
 			  on  tu.user_id = b.user_id
 			 set tu.teamuser_hide = 0
@@ -1355,7 +1334,7 @@ elseif ($action == "CancelUnionTeams")  {
 		$sql = " update TeamUnionLogs set union_status = 3
 			 where teamunionlog_hide = 0 
                                and union_status = 2
-			       and team_parentid = ".$pParentTeamId; 
+			       and team_parentid = $pParentTeamId";
 
 		//echo $sql;
 
@@ -1366,7 +1345,7 @@ elseif ($action == "CancelUnionTeams")  {
 	$sql =  " select team_id 
 	          from  Teams
 		  where team_hide = 0
-			and team_parentid = ".$pParentTeamId;
+			and team_parentid = $pParentTeamId";
 
 
 		//echo $sql;

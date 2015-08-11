@@ -46,10 +46,7 @@
 		       order by $orderBy desc
 		       LIMIT 0,1 ";
 
- 	     $Result = MySqlQuery($sql);
-	     $Row = mysql_fetch_assoc($Result);
-	     $RaidId = $Row['raid_id'];
-	     mysql_free_result($Result);
+	     $RaidId = CSql::singleValue($sql, 'raid_id');
         }
 	// Конец определения ММБ
 
@@ -59,26 +56,28 @@
 	if (!isset($view)) $view = "";
 	if (!isset($viewsubmode)) $viewsubmode = "";
 
-	if (!isset($_REQUEST['action']))
-	{
-		if (mmb_validateInt($_GET, 'UserId', '') !== false)
-			$_REQUEST['action'] = "UserInfo";
-		else if (mmb_validateInt($_GET, 'TeamId', '') !== false)
-			$_REQUEST['action'] = "TeamInfo";
-		else if (isset($_GET['rating']))
-			$_REQUEST['action'] = "ViewRankPage";
-		else if (isset($_GET['badges']))
-			$_REQUEST['action'] = "ViewAllBadgesPage";
-		else if (isset($_GET['files']))
-			$_REQUEST['action'] = "ViewRaidFilesPage";
-		else if (isset($_GET['links']))
-			$_REQUEST['action'] = "ViewUsersLinksPage";
-		else if (mmb_validateInt($_GET, 'RaidId', '') !== false)        // должно идти предпоследним
-			$_REQUEST['action'] = "ViewRaidTeams";
-		else
-			$_REQUEST['action'] = "";
-	}
-	$action = $_REQUEST['action'];
+	// если action не задан -- угадываем его по параметрам $_GET
+	if (isset($_REQUEST['action']))
+		$action = $_REQUEST['action'];
+	else if (mmb_validateInt($_GET, 'UserId', '') !== false)
+		$action = "UserInfo";
+	else if (mmb_validateInt($_GET, 'TeamId', '') !== false)
+		$action = "TeamInfo";
+	else if (isset($_GET['rating']))
+		$action = "ViewRankPage";
+	else if (isset($_GET['badges']))
+		$action = "ViewAllBadgesPage";
+	else if (isset($_GET['amnesty']))
+		$action = "ViewLevelPointDiscountsPage";
+	else if (isset($_GET['files']))
+		$action = "ViewRaidFilesPage";
+	else if (isset($_GET['links']))
+		$action = "ViewUsersLinksPage";
+	else if (mmb_validateInt($_GET, 'RaidId', '') !== false)        // должно идти предпоследним
+		$action = "ViewRaidTeams";
+	else
+		$action = "";
+
 
         //Не знаю, относится ли дистанция к переменным сессии, но инициализацию делаем
 	$DistanceId = mmb_validateInt($_REQUEST, 'DistanceId', 0);

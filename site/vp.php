@@ -49,20 +49,19 @@ TD {font-family: sans-serif; font-size:15px; background-color: #C0C0C0;}
                   // сменился ММБ
                   if ($PredRaid <> $Row['raid_name']) {
 		  
-			print('<div align = "left" style = "margin-left: 15px; margin-top: 25px;"><b>'.$Row['raid_name'].'</b></div>'."\r\n");
+			print('<div align="left" style="margin-left: 15px; margin-top: 25px;"><b>'.$Row['raid_name']."</b></div>\r\n");
 		        $PredRaid = $Row['raid_name'];
 		  }
 
-                  $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : $Row['userlink_name'];
-		  print('<div align = "left" style = "margin-left: 35px;padding-top: 5px;">'.$Row['linktype_name'].' '.' <a href = "'.$Row['userlink_url'].'" 
-		          title = "'.$Row['userlink_name'].'">'.$Label.'</a> '.$Row['user_name'].', 
-			  '.(empty($Row['team_name']) ? '' : 'команда '.$Row['team_name'].', N '.$Row['team_num'].', дистанция '.$Row['distance_name'])."\r\n");
-                  print('</div>'."\r\n");
+                  $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : CMmbUI::toHtml($Row['userlink_name']);
+		  print('<div class="impress">'.$Row['linktype_name'].' '.' <a href="'.$Row['userlink_url'].'"
+		          title="'.CMmbUI::toHtml($Row['userlink_name']).'">'.$Label.'</a> '.CMmbUI::toHtml($Row['user_name']).',
+			  '.(empty($Row['team_name']) ? '' : 'команда '.CMmbUI::toHtml($Row['team_name']).', N '.$Row['team_num'].', дистанция '.$Row['distance_name'])."\r\n");
+                  print("</div>\r\n");
 			  
 		}
 
                 mysql_free_result($Result);
-
 
 ?>
 

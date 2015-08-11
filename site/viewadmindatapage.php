@@ -7,8 +7,7 @@ if (!isset($MyPHPScript)) return;
 // Выходим, если не администратор и не модератор
  if (!$Administrator and !$Moderator)
   {
-    $statustext = 'Нет прав на экспорт';				     
-    $view = "";
+    CMmb::setShortResult('Нет прав на экспорт', '');
     return;
    }
          

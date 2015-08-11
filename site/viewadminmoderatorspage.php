@@ -9,12 +9,12 @@ if (!isset($MyPHPScript)) return;
 
         
 	// Функция просмотра данных о команде
-	function ViewUserInfo(userid)
+	/*function ViewUserInfo(userid)
 	{ 
 		document.ModeratorsForm.UserId.value = userid;
 		document.ModeratorsForm.action.value = "UserInfo";
 		document.ModeratorsForm.submit();
-	}
+	}*/
 	
 	function HideModerator(raidmoderatorid,userid)
 	{ 
@@ -55,10 +55,10 @@ if (!isset($MyPHPScript)) return;
 		
 			while ($Row = mysql_fetch_assoc($Result))
 			{
-			  print('<div align="left" style="padding-top: 5px;">'."\r\n");
-			  print('<a href="?UserId='.$Row['user_id'].'">'.$Row['user_name'].'</a>'."\r\n");
+			  print('<div class="team_res">'."\r\n");
+			  print('<a href="?UserId='.$Row['user_id'].'">'.CMmbUI::toHtml($Row['user_name']).'</a>'."\r\n");
 		          print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите снять статус модератора с текущего марш-броска? \')) { HideModerator('.$Row['raidmoderator_id'].','.$Row['user_id'].'); }"  name="ModeratorHideButton" value="Скрыть" tabindex="10">'."\r\n");
-	                  print('</div>'."\r\n");
+	                  print("</div>\r\n");
 	  	  
 			}
 
@@ -66,7 +66,7 @@ if (!isset($MyPHPScript)) return;
 
 			  print('<div class="input" align="left">Не найдено</div>'."\r\n");
 		}
-	        print('</form>'."\r\n");
+	        print("</form>\r\n");
                 mysql_free_result($Result);
 
 
@@ -78,7 +78,7 @@ if (!isset($MyPHPScript)) return;
 -->
 		
 
-		</br>
+		<br/>
 
 
 

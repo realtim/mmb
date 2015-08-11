@@ -1,5 +1,5 @@
 <?php
-// +++++++++++ Загрузка файла/порказ списка файлов ++++++++++++++++++++++++++++
+// +++++++++++ Загрузка файла/показ списка файлов ++++++++++++++++++++++++++++
 
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
@@ -9,7 +9,7 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 
 
 
-               $sql = "select ul.userlink_id, ul.userlink_name, lt.linktype_name,
+                $sql = "select ul.userlink_id, ul.userlink_name, lt.linktype_name,
 		               ul.userlink_url, r.raid_name, r.raid_id,
 			       u.user_name,   a.team_name, a.team_num,
 			       a.distance_name, a.distance_id
@@ -26,13 +26,13 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 					      ) a
 			       on ul.user_id = a.user_id and ul.raid_id = a.raid_id
 			where ul.userlink_hide = 0 
-			      and r.raid_id =  ".$RaidId."
+			      and r.raid_id =  $RaidId
 			order by r.raid_id desc, userlink_id  asc"; 
-              //  echo 'sql '.$sql;
+                //  echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
 
                 $PredRaid = '';
-		
+
 		while ($Row = mysql_fetch_assoc($Result))
 		{
                   // сменился ММБ
@@ -42,17 +42,13 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 		        $PredRaid = $Row['raid_name'];
 		  }
 
-                  $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : $Row['userlink_name'];
-		  print('<div align = "left" style = "margin-left: 35px;padding-top: 5px;">'.$Row['linktype_name'].' '.' <a href = "'.$Row['userlink_url'].'" 
-		          title = "'.$Row['userlink_name'].'">'.$Label.'</a> '.$Row['user_name'].', 
-			  '.(empty($Row['team_name']) ? '' : 'команда '.$Row['team_name'].', N '.$Row['team_num'].', дистанция '.$Row['distance_name'])."\r\n");
-                  print('</div>'."\r\n");
+                  $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : CMmbUI::toHtml($Row['userlink_name']);
+		  $TeamDist = (empty($Row['team_name']) ? '' : ', команда '.CMmbUI::toHtml($Row['team_name']).', N '.$Row['team_num'].', дистанция '.$Row['distance_name']);
+
+		  print("<div class=\"impress\">{$Row['linktype_name']} <a href=\"{$Row['userlink_url']}\" title=\"" . CMmbUI::toHtml($Row['userlink_name']) . "\">$Label</a> ". CMmbUI::toHtml($Row['user_name']). "$TeamDist \r\n");
+                  print("</div>\r\n");
 			  
 		}
 
                 mysql_free_result($Result);
-
-
-
-
 ?>

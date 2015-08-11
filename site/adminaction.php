@@ -8,11 +8,9 @@ if (!isset($MyPHPScript)) return;
 
 // =============== Показываем страницу администрирования ===================
 if ($action == "ViewAdminDataPage")  {
-    // Действие вызывается ссылкой Администрирование
-   
-	$view = "ViewAdminDataPage";
-	$viewmode = "";
+	// Действие вызывается ссылкой Администрирование
 
+	CMmb::setViews('ViewAdminDataPage', '');
 }
 // =============== Печать карточек ===================
 elseif ($action == 'PrintRaidTeams')
@@ -23,9 +21,8 @@ if (!isset($_REQUEST['RaidId'])) $_REQUEST['RaidId'] = "";
 $RaidId = $_REQUEST['RaidId'];
 if (empty($RaidId))
 {
-               $statustext = 'Марш-бросок не найден';
-		$view = "";
-		return;
+	CMmb::setShortResult('Марш-бросок не найден', '');
+	return;
 }
 
 
@@ -33,7 +30,7 @@ if (empty($RaidId))
   $sql = "select t.team_num, d.distance_name
 	  from Teams t
 	       inner join Distances d on t.distance_id = d.distance_id
-	  where d.distance_hide = 0 and t.team_hide = 0 and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = ".$RaidId."
+	  where d.distance_hide = 0 and t.team_hide = 0 and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = $RaidId
 	  order by d.distance_name, team_num asc";
 
   $Result = MySqlQuery($sql);
@@ -47,7 +44,7 @@ if (empty($RaidId))
 		if ($PredDistance <> "")
 		// записываем накопленное
 		{
-			print($CardsArr.'<br />'."\n");
+			print("$CardsArr<br />\n");
 		}
 		$PredDistance = $Row['distance_name'];
 		$CardsArr = $PredDistance.';'.$Row['team_num'];
@@ -70,7 +67,7 @@ if (empty($RaidId))
 	  t.team_mapscount, d.distance_name, d.distance_id
 	  from Teams t
 		inner join Distances d on t.distance_id = d.distance_id
-	  where d.distance_hide = 0 and t.team_hide = 0  and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = ".$RaidId."
+	  where d.distance_hide = 0 and t.team_hide = 0  and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = $RaidId
 	  order by d.distance_name, team_num asc";
 
   $Result = MySqlQuery($sql);
@@ -80,7 +77,7 @@ if (empty($RaidId))
 	$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, u.user_id
 		from TeamUsers tu
 			inner join Users u on tu.user_id = u.user_id
-		where tu.teamuser_hide = 0   and team_id = ".$Row['team_id']."
+		where tu.teamuser_hide = 0   and team_id = {$Row['team_id']}
 		order by tu.teamuser_id asc";
 	$UserResult = MySqlQuery($sql);
 
@@ -103,7 +100,7 @@ if (empty($RaidId))
 
   mysql_free_result($Result);
 
-  print('<br />'."\n");
+  print("<br/>\n");
 
   // Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
   die();
@@ -115,8 +112,7 @@ elseif ($action == 'JSON')
 
  if (!$Administrator and !$Moderator)
   {
-    $statustext = 'Нет прав на экспорт';				     
-    $view = "";
+	  CMmb::setShortResult('Нет прав на экспорт', '');
     return;
    }
 
@@ -146,8 +142,7 @@ elseif ($action == 'RecalcRaidResults')
 {
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Марш-бросок не найден';
-		$view = "";
+		CMmb::setShortResult('Марш-бросок не найден', '');
 		return;
 	}
 
@@ -177,16 +172,14 @@ elseif ($action == 'RecalcRaidResults')
 	mysql_free_result($Result);
 
 */
-	$statustext = 'Результаты марш-броска пересчитаны';
-	$view = "ViewAdminDataPage";
+	CMmb::setShortResult('Результаты марш-броска пересчитаны', 'ViewAdminDataPage');
 }
 // =============== Поиск ошибок и обновление штрафного и общего времени =======
 elseif ($action == 'FindRaidErrors')
 {
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Марш-бросок не найден';
-		$view = "";
+		CMmb::setShortResult('Марш-бросок не найден', '');
 		return;
 	}
 	if (!$Administrator && !$Moderator) return;
@@ -241,44 +234,35 @@ elseif ($action == 'FindRaidErrors')
 }
 // =============== Показываем страницу модераторов ===================
 if ($action == "ViewAdminModeratorsPage")  {
-    // Действие вызывается ссылкой Модераторы
-   
-	$view = "ViewAdminModeratorsPage";
-	$viewmode = "";
+	// Действие вызывается ссылкой Модераторы
 
+	CMmb::setViews('ViewAdminModeratorsPage', '');
 }
 
 // =============== Показываем страницу объединения команд ===================
 if ($action == "ViewAdminUnionPage")  {
-    // Действие вызывается ссылкой Объединение
-   
-	$view = "ViewAdminUnionPage";
-	$viewmode = "";
+	// Действие вызывается ссылкой Объединение
 
+	CMmb::setViews('ViewAdminUnionPage', '');
 }
 // =============== Показываем страницу объединения пользователей ===================
 if ($action == "ViewUserUnionPage")  {
-    // Действие вызывается ссылкой Объединение
-   
-	$view = "ViewUserUnionPage";
-	$viewmode = "";
+        // Действие вызывается ссылкой Объединение
 
+	CMmb::setViews('ViewUserUnionPage', '');
 }
 // =============== Показываем страницу рейтинга пользователей ===================
 if ($action == "ViewRankPage")  {
-    // Действие вызывается ссылкой Объединение
-   
-	$view = "ViewRankPage";
-	$viewmode = "";
+        // Действие вызывается ссылкой Объединение
 
+	CMmb::setViews('ViewRankPage', '');
 }
 // =============== Пересчет рейтинга для ММБ ===================
 elseif ($action == 'RecalcRaidRank')
 {
 	if ($RaidId <= 0)
 	{
-		$statustext = 'Марш-бросок не найден';
-		$view = "";
+		CMmb::setShortResult('Марш-бросок не найден', '');
 		return;
 	}
 
@@ -288,8 +272,7 @@ elseif ($action == 'RecalcRaidRank')
 	$Result = 0;
 	$Result =  RecalcTeamUsersRank($RaidId); 
 
-	$statustext = 'Рейтинг участников марш-броска пересчитан';
-	$view = "ViewAdminDataPage";
+	CMmb::setShortResult('Рейтинг участников марш-броска пересчитан', 'ViewAdminDataPage');
 }
 // =============== Никаких действий не требуется ==============================
 else
@@ -299,7 +282,7 @@ else
 // Сохранение флага ошибки в базе
 function LogError($teamlevel_id, $error)
 {
-	$sql = 'update TeamLevels set error_id = '.$error.' where teamlevel_id = '.$teamlevel_id;
+	$sql = "update TeamLevels set error_id = $error where teamlevel_id = $teamlevel_id";
 	$Result = MySqlQuery($sql);
 	return($error);
 }
@@ -310,7 +293,7 @@ function ValidateTeam($Team, $Levels)
 	// Получаем список записей результатов из TeamLevels
 	foreach ($Levels['level_id'] as $n => $level_id)
 	{
-		$sql = 'select * from TeamLevels where level_id = '.$level_id.' and team_id = '.$Team['team_id'].' and teamlevel_hide = 0';
+		$sql = "select * from TeamLevels where level_id = $level_id and team_id = {$Team['team_id']} and teamlevel_hide = 0";
 		$Result = MySqlQuery($sql);
 		if (mysql_num_rows($Result) > 1) die('Несколько записей на один этап для команды '.$Team['team_id']);
 	        $Row = mysql_fetch_assoc($Result);
@@ -408,8 +391,8 @@ function ValidateTeam($Team, $Levels)
 	// Сверяем итоговые прогресс и результат команды
 	if (!$finished) $team_result = "";
 	else $team_result = sprintf("%d:%02d:00", $team_result / 60, $team_result % 60);
-	if ($team_result <> $Team['team_result']) echo 'Ошибка подсчета итогового времени у команды '.$Team['team_id'].': правильное='.$team_result.", в базе=".$Team['team_result'], "<br>";
-	if ($team_progress <> $Team['team_progress']) echo 'Ошибка подсчета степени продвижения по дистанции у команды '.$Team['team_id'].': правильное='.$team_result.", в базе=".$Team['team_result'], "<br>";
+	if ($team_result <> $Team['team_result']) echo "Ошибка подсчета итогового времени у команды {$Team['team_id']}: правильное=$team_result, в базе={$Team['team_result']}<br/>";
+	if ($team_progress <> $Team['team_progress']) echo "Ошибка подсчета степени продвижения по дистанции у команды {$Team['team_id']}: правильное=$team_result, в базе={$Team['team_result']}<br/>";
 
 	// Ошибок в результатах команды не обнаружено
 	return(0);

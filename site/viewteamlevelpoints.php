@@ -74,8 +74,6 @@ if ($viewmode == 'AddTlp' or $viewmode == '')
                 $TlpTime = '';
 		$PointName = '';
 		$ErrorId = 0;
-
-	    
 	}
 
 	// Определяем следующее действие
@@ -118,13 +116,9 @@ else
 		from TeamLevelPoints tlp
 		     inner join LevelPoints lp
 		     on lp.levelpoint_id = tlp.levelpoint_id
-		where tlp.teamlevelpoint_id = ".$pTeamLevelPointId;
+		where tlp.teamlevelpoint_id = $pTeamLevelPointId";
 
-        
-
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
+	$Row = CSql::singleRow($sql);
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterErrorTlp")
@@ -137,13 +131,9 @@ else
                 $TlpTime = $_POST['TlpTime'];
 		$PointName = '';
 		$ErrorId = $_POST['ErrorId'];
-
 	}
 	else
 	{
-
-
-
 		$LevelPointId = $Row['levelpoint_id'];
                 $TlpComment = $Row['tlp_comment'];
                 $TlpYear = $Row['tlp_syear'];
@@ -151,9 +141,7 @@ else
                 $TlpTime = $Row['tlp_stime'];
 		$PointName = $Row['lp_name'];
 		$ErrorId = $Row['error_id'];
-
-
-	}	
+	}
 
 	$NextActionName = 'ChangeTlp';
 	$OnClickText = '';
@@ -165,20 +153,13 @@ else
 
 if (empty($TlpYear) or (int)$TlpYear == 0) {
 
-		$RaidYear = 0;		
-		$sql = "select YEAR(r.raid_registrationenddate) as raidyear
-			from Raids r
-		             inner join Distances d
-			     on d.raid_id = r.raid_id
-			where d.distance_id = ".$DistanceId;
+	$sql = "select YEAR(r.raid_registrationenddate) as raidyear
+		from Raids r
+	             inner join Distances d
+		     on d.raid_id = r.raid_id
+		where d.distance_id = $DistanceId";
 
-		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		$RaidYear = $Row['raidyear'];
-		mysql_free_result($Result);
-
-                $TlpYear = $RaidYear;
-
+	$TlpYear = CSql::singleValue($sql, 'raidyear');
 }
 
 // ================ Конец инициализации переменных для добавляемой/редактируемой точки =================
@@ -223,32 +204,25 @@ print('<br/>'."\n");
 
 
 // ============ Общее время команды
-$sql = "select TIME_FORMAT(t.team_result, '%H:%i') as team_result from Teams t where t.team_id = ".$TeamId;
-$Result = MySqlQuery($sql);
-$Row = mysql_fetch_assoc($Result);
-$TeamResult = $Row['team_result'];
-mysql_free_result($Result);
+$sql = "select TIME_FORMAT(t.team_result, '%H:%i') as team_result from Teams t where t.team_id = $TeamId";
+$TeamResult = CSql::singleValue($sql, 'team_result');
 
 $TeamPlace = GetTeamPlace($TeamId);
 $TeamPlaceResult = "";
 if ($TeamResult == "00:00") $TeamResult = "-";
-if ($TeamPlace > 0) $TeamPlaceResult = " Место <b>".$TeamPlace."</b>";
+if ($TeamPlace > 0) $TeamPlaceResult = " Место <b>$TeamPlace</b>";
 
 
+print("<b>Результаты.</b> Общее время с учетом штрафов и бонусов: <b title=\"Обновляется после сохранения результатов\">$TeamResult</b>$TeamPlaceResult\n");
 
-$tdstyle = 'padding: 5px 0px 2px 5px;';		
-$thstyle = 'padding: 5px 0px 0px 5px;';		
-
-print('<b>Результаты.</b> Общее время с учетом штрафов и бонусов: <b title="Обновляется после сохранения результатов">'.$TeamResult.'</b>'.$TeamPlaceResult."\n");
-
-print('<br/>'."\n");
+print("<br/>\n");
 
 
 
 if ($AllowEditResult == 1)
 {
 
-        print('<br/>'."\n");
+        print("<br/>\n");
 
 	// Выводим начало формы с точкой
 	print('<form name="TlpForm" action="'.$MyPHPScript.'" method="post"  onSubmit="'.$OnSubmitResultFunction.'">'."\n");
@@ -281,9 +255,9 @@ if ($AllowEditResult == 1)
 	}
 	mysql_free_result($Result);
 	print('</select>'."\n");
-	print('</td></tr>'."\r\n");
-	print('<tr><td>'."\r\n");
-	print('Дата (ддмм) и время (ччммсс) прохождания точки: '."\r\n");
+	print("</td></tr>\r\n");
+	print("<tr><td>\r\n");
+	print("Дата (ддмм) и время (ччммсс) прохождения точки: \r\n");
         // Можно отключить правку написав  $DateReadOnly = 'readonly'
         $DateReadOnly = '';
 
@@ -306,11 +280,10 @@ if ($AllowEditResult == 1)
 	print('</select>'."\n");
 	print('</td></tr>'."\r\n");
 	print('<tr><td class="input">'."\n");
-        print(' Комментарий <input type="text" name="TlpComment" size="20" value="'.$TlpComment.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$TlpComment.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$TlpComment.'\';}"').'
-                title = "Комментарий">'."\r\n");
-	print('</td></tr>'."\n\n");
+        print(' Комментарий <input type="text" name="TlpComment" size="20" value="'.$TlpComment.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+                 .($viewmode <> 'Add' ? '' : CMmbUI::placeholder($TlpComment))
+		 .'title="Комментарий">'."\r\n");
+	print("</td></tr>\r\n");
 
 
 	// ================ Submit для формы ==========================================
@@ -325,38 +298,33 @@ if ($AllowEditResult == 1)
 	print('&nbsp; <input type="button" style="margin-left: 30px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить точку: '.trim($PointName).'? \')) {HideTlp();}" name="HideTlpButton" value="Удалить точку" tabindex="'.(++$TabIndex).'">'."\n");
 	}
 
-	print('</td></tr>'."\n\n");
-	print('</table>'."\n");
-	print('</form>'."\r\n");
-
-
+	print("</td></tr>\r\n");
+	print("</table>\n");
+	print("</form>\r\n");
 }
 
+print("<br/>\n");
 
-print('<br/>'."\n");
-
-
-print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
+print("<table class=\"std\">\r\n");
 
 
-print('<tr class = "gray">
-                         <td width = "100" style = "'.$thstyle.'">Точка</td>
-                         <td width = "100" style = "'.$thstyle.'">Время</td>
-                         <td width = "100" style = "'.$thstyle.'">Ошибка</td>
-		         <td width = "150" style = "'.$thstyle.'">Комментарий</td>
-		         <td width = "150" style = "'.$thstyle.'">Время</td>
-		         <td width = "150" style = "'.$thstyle.'">Штраф (минуты)</td>
-		         <td width = "150" style = "'.$thstyle.'">Результат</td>
+print('<tr class="head gray">
+                         <td width="100">Точка</td>
+                         <td width="100">Время</td>
+                         <td width="100">Ошибка</td>
+		         <td width="150">Комментарий</td>
+		         <td width="150">Время</td>
+		         <td width="150">Штраф (минуты)</td>
+		         <td width="150">Результат</td>
 		         '."\r\n");
 
 		if ($AllowEdit == 1)
 		{
-		       print('<td width = "100" style = "'.$thstyle.'">&nbsp;</td>'."\r\n");
-
+		       print('<td width="100">&nbsp;</td>'."\r\n");
 		}
 		
 	
-		print('</tr>'."\r\n");
+		print("</tr>\r\n");
 
 // Запрашиваем данные о точках. 
 // можно добавить условие на то, что текущее время должно быть больше времени закрытия точки
@@ -374,42 +342,35 @@ $sql = "select tlp.teamlevelpoint_id, lp.levelpoint_id, lp.levelpoint_name,
   	     inner join Distances d on d.distance_id = lp.distance_id 
 	     left outer join Errors err
 	     on tlp.error_id = err.error_id 
-	where tlp.team_id = ".$TeamId;
+	where tlp.team_id = $TeamId";
 
 //$sql = $sql." and COALESCE(lp.levelpoint_endtime, now()) <= now() ";
 $sql = $sql." order by lp.levelpoint_order ASC ";
-
 //echo  $sql;
 
 $Result = MySqlQuery($sql);
-
 
 // ============ Цикл обработки данных по этапам ===============================
 while ($Row = mysql_fetch_assoc($Result))
 {
 
-
-
-       print('<tr>'."\r\n");
-       print('<td align = "left" style = "'.$tdstyle.'">'.$Row['levelpoint_name'].'</td>
-              <td align = "left" style = "'.$tdstyle.'">'.$Row['tlp_datetime'].'</td>
-              <td align = "left" style = "'.$tdstyle.'">'.$Row['error_name'].'</td>
-              <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_comment'].'</td>
-              <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_duration'].'</td>
-	      <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_penalty'].'</td>
-	      <td align = "left" style = "'.$tdstyle.'">'.$Row['teamlevelpoint_result'].'</td>
-	    ');
+	print("<tr>\r\n");
+	print("<td>{$Row['levelpoint_name']}</td>
+              <td>{$Row['tlp_datetime']}</td>
+              <td>{$Row['error_name']}</td>
+              <td>{$Row['teamlevelpoint_comment']}</td>
+              <td>{$Row['teamlevelpoint_duration']}</td>
+	      <td>{$Row['teamlevelpoint_penalty']}</td>
+	      <td>{$Row['teamlevelpoint_result']}</td>");
 
   	if ($AllowEdit == 1)
 	{
-	     print('<td align = "left" style = "'.$tdstyle.'">');
+	     print('<td>');
 	     print('&nbsp; <input type="button" onClick="javascript: EditTlp('.$Row['teamlevelpoint_id'].');" name="EditTlpButton" value="Править" tabindex="'.(++$TabIndex).'">'."\n");
-	     print('</td>'."\r\n");
+	     print("</td>\r\n");
 	}		      
                
-
-	print('</tr>'."\r\n");
-
+	print("</tr>\r\n");
 }
 // ============ Конец цикла обработки данных по этапам ========================
 mysql_free_result($Result);
@@ -417,10 +378,10 @@ mysql_free_result($Result);
 
 // Закрываем таблицу
 //print('<tr><td colspan="5">*Наведите курсор на ячейку с КП, чтобы узнать штраф за его невзятие</td></tr>'."\n");
-print('</table>'."\r\n");
-print('<br/>'."\r\n");
+print("</table>\r\n");
+print("<br/>\r\n");
 
 
 // Закрываем форму
-print('</form>'."\n");
+print("</form>\n");
 ?>

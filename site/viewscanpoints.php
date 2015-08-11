@@ -40,17 +40,12 @@ if ($viewmode == 'Add')
 	if ($viewsubmode == "ReturnAfterError")
 	{
 		ReverseClearArrays();
-
                 $ScanPointName = $_POST['ScanPointName'];
 	}
 	else
 	// Инициализация перемнных для новой точки 
 	{
-
-
-
                 $ScanPointName = 'Название точки сканирования';
-	    
 	}
 
 	// Определяем следующее действие
@@ -66,23 +61,12 @@ if ($viewmode == 'Add')
 else
 // ================ Редактируем/смотрим существующую точкусканирования  =================
 {
-
-
         $pScanPointId = $_POST['ScanPointId'];
 
 	if ($pScanPointId <= 0)
 	{
 		return;
 	}
-
-	$sql = "select sp.scanpoint_id, 
-	               sp.scanpoint_name, 
-		       sp.scanpoint_order
-		from ScanPoints sp
-		where sp.scanpoint_id = ".$pScanPointId;
-	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
-	mysql_free_result($Result);
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterError")
@@ -93,10 +77,14 @@ else
 	}
 	else
 	{
+		$sql = "select sp.scanpoint_id,
+	               sp.scanpoint_name,
+		       sp.scanpoint_order
+		from ScanPoints sp
+		where sp.scanpoint_id = $pScanPointId";
 
-                $ScanPointName = $Row['scanpoint_name'];
-
-	}	
+                $ScanPointName = CSql::singleValue($sql, 'scanpoint_name');
+	}
 
 	$NextActionName = 'ScanPointChange';
 	$OnClickText = '';
@@ -179,9 +167,8 @@ if ($AllowEdit == 1)
 
 	print('<tr><td class="input">'."\n");
         print('<input type="text" name="ScanPointName" size="40" value="'.$ScanPointName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
-                 '.($viewmode <> 'Add' ? '' : 'onclick = "javascript: if (trimBoth(this.value) == \''.$ScanPointName.'\') {this.value=\'\';}"').'
-                 '.($viewmode <> 'Add' ? '' : 'onblur = "javascript: if (trimBoth(this.value) == \'\') {this.value=\''.$ScanPointName.'\';}"').'
-                title = "Название точки сканирования">'."\r\n");
+                 '.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($ScanPointName))
+                 .'title = "Название точки сканирования">'."\r\n");
 	print('</td></tr>'."\n\n");
 
 	// ================ Submit для формы ==========================================
@@ -196,18 +183,14 @@ if ($AllowEdit == 1)
 	print('&nbsp; <input type="button" style="margin-left: 20px;" onClick="javascript: {ScanPointDown();}" name="ScanPointDownButton" value="Опустить скан-точку" tabindex="'.(++$TabIndex).'">'."\n");
 	print('&nbsp; <input type="button" style="margin-left: 30px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить скан-точку: '.trim($ScanPointName).'? \')) {HideScanPoint();}" name="HideLevelPointButton" value="Удалить точку" tabindex="'.(++$TabIndex).'">'."\n");
 	}
-	print('</td></tr>'."\n\n");
-	print('</table>'."\n");
-	print('</form>'."\r\n");
+	print("</td></tr>\r\n");
+	print("</table>\n");
+	print("</form>\r\n");
  
 
 }
 
-
-
-
-print('</br>'."\n");
-
+print("<br/>\n");
 
 
 if ($AllowViewResults == 1)
@@ -218,57 +201,49 @@ if ($AllowViewResults == 1)
 	               sp.scanpoint_name, 
 		       sp.scanpoint_order
 		from ScanPoints sp
-		where sp.scanpoint_hide = 0 and sp.raid_id = ".$RaidId."
+		where sp.scanpoint_hide = 0 and sp.raid_id = $RaidId
 		order by scanpoint_order";
 	
 	
 	$Result = MySqlQuery($sql);
 	
-	$tdstyle = 'padding: 5px 0px 2px 5px;';		
-        $thstyle = 'padding: 5px 0px 0px 5px;';		
 
-
-		print('<table border = "1" cellpadding = "0" cellspacing = "0" style = "font-size: 80%">'."\r\n");  
-
-		print('<tr class = "gray">
-		         <td width = "50" style = "'.$thstyle.'">N п/п</td>
-		         <td width = "200" style = "'.$thstyle.'">Название</td>'."\r\n");
+		print("<table class=\"std\">\r\n");
+		print('<tr class="head gray">
+		         <td width="50">N п/п</td>
+		         <td width="200">Название</td>'."\r\n");
 
 		if ($AllowEdit == 1)
 		{
-		       print('<td width = "100" style = "'.$thstyle.'">&nbsp;</td>'."\r\n");
-
+		       print('<td width="100">&nbsp;</td>'."\r\n");
 		}
 		
-	
-		print('</tr>'."\r\n");
+		print("</tr>\r\n");
 		
 	        // Сканируем команды
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
-                     print('<tr>'."\r\n");
-		     print('<td align = "left" style = "'.$tdstyle.'">'.$Row['scanpoint_order'].'</td>
-		             <td align = "left" style = "'.$tdstyle.'">'.$Row['scanpoint_name'].'</td>');
+                     print("<tr>\r\n");
+		     print("<td>{$Row['scanpoint_order']}</td>
+		             <td>{$Row['scanpoint_name']}</td>");
 
   		     if ($AllowEdit == 1)
 		     {
-			     print('<td align = "left" style = "'.$tdstyle.'">');
+			     print('<td>');
 			     print('&nbsp; <input type="button" onClick="javascript: EditScanPoint('.$Row['scanpoint_id'].');" name="EditScanPointButton" value="Править" tabindex="'.(++$TabIndex).'">'."\n");
-			     print('</td>'."\r\n");
-		     }		      
-                                
-		}	
+			     print("</td>\r\n");
+		     }
+
+		     print("</tr>\r\n");
+		}
 
 		mysql_free_result($Result);
-		print('</table>'."\r\n");
+		print("</table>\r\n");
 	
 
-               print('</br>'."\n");
-  
+               print("<br/>\n");
    }
    // Конец проверки прав на просмотр точек
-
-
 ?>
 
