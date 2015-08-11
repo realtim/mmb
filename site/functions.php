@@ -2306,9 +2306,16 @@ send_mime_mail('Автор письма',
 
 class CMmbUI
 {
+	public static function toHtml($str)
+	{
+		$search = array("&", "<", ">", "\"", "'");
+		$replace = array("&amp;", "&lt;", "&gt;", "&quot;", "&apos");
+		return str_replace($search, $replace, (string) $str);
+	}
+
 	public static function placeholder($defaultValue)
 	{
-		$defVal = str_replace('"', '&quot;', str_replace("'", "\\'", $defaultValue)); // эскейпимся от апострофов и двойных кавычек
+		$defVal = str_replace("&apos", "\\&apos;", self::toHtml($defaultValue)); // эскейпимся от апострофов и двойных кавычек
 		return " onclick=\"javascript: _onClick(this, '$defVal');\" onblur=\"javascript: _onBlur(this, '$defVal');\" ";
 	}
 }

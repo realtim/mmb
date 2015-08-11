@@ -129,7 +129,7 @@ if (!isset($MyPHPScript)) return;
 		print('</table>'."\r\n");
 		print('</form>'."\r\n");
 	} else {
-		$UserName = CSql::userName($UserId);
+		$UserName = CMmbUi::toHtml(CSql::userName($UserId));
                 print('<form  name="UserLoginForm"  action="'.$MyPHPScript.'" method="post">'."\r\n");
                 print('<input type="hidden" name="action" value="">'."\r\n");
                 print('<input type="hidden" name="UserId" value="">'."\r\n");

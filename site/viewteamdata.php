@@ -28,7 +28,7 @@ if ($viewmode == 'Add')
 	{
 		ReverseClearArrays();
 		$TeamNum = (int) $_POST['TeamNum'];
-		$TeamName = str_replace( '"', '&quot;', $_POST['TeamName']);
+		$TeamName = CMmbUi::toHtml($_POST['TeamName']);
 		$DistanceId = $_POST['DistanceId'];
 		$TeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
 		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
@@ -92,7 +92,7 @@ else
 	{
 		ReverseClearArrays();
 		$TeamNum = (int) $_POST['TeamNum'];
-		$TeamName = str_replace( '"', '&quot;', $_POST['TeamName']);
+		$TeamName = $_POST['TeamName'];
 		$DistanceId = $_POST['DistanceId'];
 		$TeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
 		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
@@ -101,12 +101,14 @@ else
 	else
 	{
 		$TeamNum = $Row['team_num'];
-		$TeamName = str_replace( '"', '&quot;', $Row['team_name']);
+		$TeamName = $Row['team_name'];
 		$DistanceId = $Row['distance_id'];
 		$TeamUseGPS = $Row['team_usegps'];
 		$TeamMapsCount = (int)$Row['team_mapscount'];
 		$TeamGreenPeace = $Row['team_greenpeace'];
 	}
+
+	$TeamName = CMmbUi::toHtml($TeamName);
 
 	$NextActionName = 'TeamChangeData';
 	$AllowEdit = 0;

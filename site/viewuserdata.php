@@ -23,10 +23,10 @@ if (!isset($MyPHPScript)) return;
               ReverseClearArrays();
 
 	      $UserEmail = $_POST['UserEmail'];
-	      $UserName = str_replace( '"', '&quot;', $_POST['UserName']);
+	      $UserName = CMmbUI::toHtml($_POST['UserName']);
 	      $UserBirthYear = (int)$_POST['UserBirthYear'];
 	      $UserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
-	      $UserCity = str_replace( '"', '&quot;', $_POST['UserCity']);
+	      $UserCity = CMmbUI::toHtml($_POST['UserCity']);           // а что нам вообще пришло?
               // 03/07/2014  Добавляем анонмиов
 	      $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');
 
@@ -78,22 +78,25 @@ if (!isset($MyPHPScript)) return;
                   ReverseClearArrays();
 
 		  $UserEmail = $_POST['UserEmail'];
-		  $UserName = str_replace( '"', '&quot;', $_POST['UserName']);
+		  $UserName = $_POST['UserName'];
 		  $UserBirthYear = (int)$_POST['UserBirthYear'];
 		  $UserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
-		  $UserCity = str_replace( '"', '&quot;', $_POST['UserCity']);
-		  $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');;
+		  $UserCity = $_POST['UserCity'];
+		  $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');
 
                 } else {
 
 		  $UserEmail = $row['user_email'];  
-		  $UserName = str_replace( '"', '&quot;', $row['user_name']); 
+		  $UserName = $row['user_name'];
 		  $UserBirthYear = (int)$row['user_birthyear'];  
 		  $UserProhibitAdd = $row['user_prohibitadd'];  
-		  $UserCity = str_replace( '"', '&quot;', $row['user_city']); 
+		  $UserCity = $row['user_city'];
 		  $UserNoShow = $row['user_noshow'];  
 
                 }
+
+	         $UserName = CMmbUI::toHtml($UserName);
+	         $UserCity = CMmbUI::toHtml($UserCity);
 
 	        $NextActionName = 'UserChangeData';
 		$AllowEdit = 0;
