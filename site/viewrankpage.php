@@ -123,7 +123,7 @@ if (!isset($MyPHPScript))
 
 		print("<tr>\r\n");
 		print("<td>$LineNum</td>\r\n");
-		print("<td><a href=\"?UserId={$Row['user_id']}\">{$Row['user_name']}</a></td>\r\n");
+		print("<td><a href=\"?UserId={$Row['user_id']}\">" . CMmbUI::toHtml($Row['user_name']). "</a></td>\r\n");
 		print("<td align=\"center\">{$Row['userrank']}</td>\r\n");
 
                 if ($ShowAllRaids)
@@ -161,7 +161,7 @@ if (!isset($MyPHPScript))
 				//	if ($TeamPlace > 0 and $LevelPointId > 0) $TeamUserOff = ", не явка в точку <b>".$RowRaids['levelpoint_name']."</b>";
 
 
-					$TeamString = '<a href="?TeamId='.$RowRaids['team_id'].'">'.$RowRaids['team_name'].'</a></br>'.$RowRaids['teamuser_rank'].$TeamPlaceResult.$TeamUserOff;
+					$TeamString = '<a href="?TeamId='.$RowRaids['team_id'].'">'.CMmbUI::toHtml($RowRaids['team_name']).'</a></br>'.$RowRaids['teamuser_rank'].$TeamPlaceResult.$TeamUserOff;
 				} else {
 					$TeamString = '&nbsp;';
 				}

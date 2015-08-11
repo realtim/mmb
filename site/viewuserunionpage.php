@@ -100,8 +100,8 @@ if (!isset($MyPHPScript)) return;
 		{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
                      print("<tr>\r\n");
-		     print("<td>{$Row['user_name']}</td>\r\n");
-		     print("<td>{$Row['user_parentname']}</td>\r\n");
+		     print("<td>" . CMmbUI::toHtml($Row['user_name']) . "</td>\r\n");
+		     print("<td>" . CMmbUI::toHtml($Row['user_parentname']) . "</td>\r\n");
                      print("<td align=\"center\">{$Row['unionstatus']}</td>\r\n");
 		     print("<td>{$Row['log_dt']}</td>\r\n");
 

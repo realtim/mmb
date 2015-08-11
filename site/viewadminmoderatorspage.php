@@ -56,9 +56,9 @@ if (!isset($MyPHPScript)) return;
 			while ($Row = mysql_fetch_assoc($Result))
 			{
 			  print('<div class="team_res">'."\r\n");
-			  print('<a href="?UserId='.$Row['user_id'].'">'.$Row['user_name'].'</a>'."\r\n");
+			  print('<a href="?UserId='.$Row['user_id'].'">'.CMmbUI::toHtml($Row['user_name']).'</a>'."\r\n");
 		          print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите снять статус модератора с текущего марш-броска? \')) { HideModerator('.$Row['raidmoderator_id'].','.$Row['user_id'].'); }"  name="ModeratorHideButton" value="Скрыть" tabindex="10">'."\r\n");
-	                  print('</div>'."\r\n");
+	                  print("</div>\r\n");
 	  	  
 			}
 

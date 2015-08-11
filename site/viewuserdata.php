@@ -442,7 +442,7 @@ if (!isset($MyPHPScript)) return;
 			$comma = ($TeamPlace > 0 and $LevelPointId >= 0) ? ',' : '';
 
 
-		  print('<div class="team_res"><span><a href="?TeamId='.$Row['team_id'].'&RaidId='.$Row['raid_id'].'"  title = "Переход к карточке команды">'.$Row['team_name']."</a>
+		  print('<div class="team_res"><span><a href="?TeamId='.$Row['team_id'].'&RaidId='.$Row['raid_id'].'"  title = "Переход к карточке команды">'.CMmbUI::toHtml($Row['team_name'])."</a>
 		         N {$Row['team_num']}$comma</span> $TeamPlaceResult$TeamUserOff ({$Row['teamuser_rank']}), дистанция: {$Row['distance_name']}, ммб: {$Row['raid_name']}</div>\r\n");
 		}
 
@@ -469,7 +469,7 @@ if (!isset($MyPHPScript)) return;
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-		  print('<div class="team_res">'.$Row['device_name'].' <a href = "javascript:GetDeviceId('.$Row['device_id'].');"
+		  print('<div class="team_res">'.CMmbUI::toHtml($Row['device_name']).' <a href = "javascript:GetDeviceId('.$Row['device_id'].');"
 		          title = "Получить файл конфигурации">Конфигурация</a></div>'."\r\n");
 		}
 
@@ -536,9 +536,9 @@ if (!isset($MyPHPScript)) return;
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 
-                  $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : $Row['userlink_name'];
+                  $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : CMmbUI::toHtml($Row['userlink_name']);
 		  print('<div class="team_res">'.$Row['raid_name'].' '.$Row['linktype_name'].' <a href = "'.$Row['userlink_url'].'"
-		          title = "'.$Row['userlink_name'].'">'.$Label.'</a>'."\r\n");
+		          title = "'.CMmbUI::toHtml($Row['userlink_name']).'">'.$Label.'</a>'."\r\n");
                   print('<input type="button" style = "margin-left: 20px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите удалить впечатление ? \')) {DelLink('.$Row['userlink_id'].');}"  name="DelLinkButton" value="Удалить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                   print('</div>'."\r\n");
 			  

@@ -82,6 +82,7 @@ else
 			inner join Raids r on d.raid_id = r.raid_id
 		where t.team_id = $TeamId";
 	$Row = CSql::singleRow($sql);
+
 	$TeamRegisterDt = $Row['team_registerdt'];
 	$TeamResult = $Row['team_result'];
 	$TeamLate = (int)$Row['team_late'];
@@ -361,10 +362,11 @@ $Result = MySqlQuery($sql);
 
 while ($Row = mysql_fetch_assoc($Result))
 {
+	$userName = CMmbUI::toHtml($Row['user_name']);
 	print('<div style="margin-top: 5px;">'."\n");
 	if ($AllowEdit)
 	{
-		print('<input type="button" style="margin-right: 15px;" onClick="javascript:if (confirm(\'Вы уверены, что хотите удалить участника: '.$Row['user_name'].'? \')) { HideTeamUser('.$Row['teamuser_id'].'); }" name="HideTeamUserButton" tabindex="'.(++$TabIndex).'" value="Удалить">'."\n");
+		print('<input type="button" style="margin-right: 15px;" onClick="javascript:if (confirm(\'Вы уверены, что хотите удалить участника: '.$userName.'? \')) { HideTeamUser('.$Row['teamuser_id'].'); }" name="HideTeamUserButton" tabindex="'.(++$TabIndex).'" value="Удалить">'."\n");
 	}
 
 	// Показываем только если можно смотреть результаты марш-броска
@@ -372,7 +374,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	if ($AllowViewResults)
 	{
   
-		print('Неявка в: <select name="UserNotInPoint'.$Row['teamuser_id'].'" style="width: 100px; margin-right: 15px;" title="Точка, в которую не явился участник" onChange="javascript:if (confirm(\'Вы уверены, что хотите отметить неявку участника: '.$Row['user_name'].'? \')) { TeamUserNotInPoint('.$Row['teamuser_id'].', this.value); }" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
+		print('Неявка в: <select name="UserNotInPoint'.$Row['teamuser_id'].'" style="width: 100px; margin-right: 15px;" title="Точка, в которую не явился участник" onChange="javascript:if (confirm(\'Вы уверены, что хотите отметить неявку участника: '.$userName.'? \')) { TeamUserNotInPoint('.$Row['teamuser_id'].', this.value); }" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
 		$sqllevelpoints = "select levelpoint_id, levelpoint_name from LevelPoints lp where lp.distance_id = $DistanceId order by levelpoint_order";
 		$ResultLevelPoints = MySqlQuery($sqllevelpoints);
 		$userlevelpointselected = ($Row['levelpoint_id'] == 0 ? ' selected' : '');
@@ -388,7 +390,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	}
 
 	// ФИО и год рождения участника
-	print('<a href="?UserId='.$Row['user_id'].'">'.$Row['user_name']."</a> {$Row['user_birthyear']}\n");
+	print("<a href=\"?UserId={$Row['user_id']}\">$userName</a> {$Row['user_birthyear']}\n");
  
         // Отметка невыходна на старт в предыдущем ММБ                          
         if ($Row['teamuser_notstartraidid'] > 0) {
@@ -468,14 +470,14 @@ print('<tr><td class="input" style="padding-top: 20px;">'."\n");
 
 	
 
-print('</td></tr>'."\n\n");
+print("</td></tr>\r\n");
 
 
 
 print('<tr><td class="input">'."\n");
-print('<a href = "'.$RaidRulesLink.'" target = "_blank">Полный текст положения</a>:<br/>'."\n");
+print("<a href=\"$RaidRulesLink\" target=\"_blank\">Полный текст положения</a>:<br/>\n");
 print('Прочитал и согласен с условиями участия в ММБ <input type="checkbox" name="Confirmation" value="on" tabindex="'.(++$TabIndex).'"'.$DisabledText.' title="Прочитал и согласен с условиями участия в ММБ"/>'."\n");
-print('</td></tr>'."\n\n");
+print("</td></tr>\r\n");
 
 
 }
@@ -505,5 +507,5 @@ if ($AllowEdit == 1)
 
 }
 
-print('</table></form>'."\n");
+print("</table></form>\n");
 ?>

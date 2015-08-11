@@ -98,7 +98,7 @@ if (!isset($MyPHPScript)) return;
 			{
 			  
 			  print('<div align="left" style="margin-top: 5px;">'."\r\n");
-			  print(' '.$Row['team_num'].' <a href="?TeamId='.$Row['team_id'].'">'.$Row['team_name']."</a>  {$Row['team_result']} \r\n");
+			  print(' '.$Row['team_num'].' <a href="?TeamId='.$Row['team_id'].'">'. CMmbUI::toHtml($Row['team_name']) ."</a>  {$Row['team_result']} \r\n");
                           print('<input type="button" style="margin-left: 15px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите исключить команду из текущего объединения? \')) { HideTeamInUnion('.$Row['teamunionlog_id'].','.$Row['team_id'].'); }"  name="TeamHideButton" value="Скрыть" tabindex = "'.++$TabIndex.'">'."\r\n");
 	                  print('</div>'."\r\n");
 	  	  			
@@ -112,7 +112,7 @@ if (!isset($MyPHPScript)) return;
 			  while ($TeamUsersRow = mysql_fetch_assoc($TeamUsersResult))
 			  {
 				print('<div style="margin-top: 5px; margin-left: 15px;">'."\n");
-				print('<a href="?UserId='.$TeamUsersRow['user_id'].'">'.$TeamUsersRow['user_name']."</a> {$TeamUsersRow['user_birthyear']}\n");
+				print('<a href="?UserId='.$TeamUsersRow['user_id'].'">'.CMmbUI::toHtml($TeamUsersRow['user_name'])."</a> {$TeamUsersRow['user_birthyear']}\n");
 				print('</div>'."\n");
 			  }
 				mysql_free_result($TeamUsersResult);
@@ -130,7 +130,7 @@ if (!isset($MyPHPScript)) return;
 			}	
 			$UnionButtonText = 'Объединить';
 			
-			print('<input type="text" name="TeamName" size="50" value="'.$TeamName.'" tabindex="'.(++$TabIndex). '" '
+			print('<input type="text" name="TeamName" size="50" value="'.CMmbUI::toHtml($TeamName).'" tabindex="'.(++$TabIndex). '" '
 				. CMmbUI::placeholder($TeamName) . ' title="Название объединённой команды">'."\n\n");
 
                         print("</br>\r\n");
@@ -239,9 +239,9 @@ if (!isset($MyPHPScript)) return;
 		     if ($Row['unionstatus'] <> 'Отмена объединения') 
 		     {
 			print('<a href="?TeamId='.$Row['team_id'].'">'.
-		     	       $Row['team_name']."</a> \r\n");
+		     	       CMmbUI::toHtml($Row['team_name'])."</a> \r\n");
                      } else {
-			print("<b>{$Row['team_name']}</b>\r\n");
+			print('<b>' . CMmbUI::toHtml($Row['team_name']). "</b>\r\n");
 		     }	
 
                      // Для успрешно объединённых колманд есть подробное время в участниках
@@ -317,13 +317,13 @@ if (!isset($MyPHPScript)) return;
 		      while ($UserRow = mysql_fetch_assoc($UserResult))
 		      {
 			  $UserCount++;
-			  print("<div>{$UserRow['unionlog_dt']}  {$UserRow['oldteam_name']}  ".
+			  print("<div>{$UserRow['unionlog_dt']} " . CMmbUI::toHtml($UserRow['oldteam_name']) . ' ' .
 			               $UserRow['oldteam_num']."  \r\n");
 			  
 			  if ($Row['unionstatus'] <> 'Отмена объединения') 
 			  {
 			        print('<a href="?UserId='.$UserRow['user_id'].'">'.
-			                 "{$UserRow['user_name']}</a> {$UserRow['user_birthyear']}\r\n");
+			                 CMmbUI::toHtml($UserRow['user_name']). "</a> {$UserRow['user_birthyear']}\r\n");
 			  }
 			  print("</div>\r\n");
 		      }  

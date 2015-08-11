@@ -703,7 +703,7 @@ if (!isset($MyPHPScript)) return;
  			print('<tr class="'.$TrClass.'">
 			       <td style="'.$tdstyle.'"><a name="'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
 			       <td style="'.$tdstyle.'"><a href="?TeamId='.$Row['team_id'].'&RaidId=' . $RaidId .'">'.
-			          $Row['team_name']."</a> ($useGps{$Row['distance_name']}, {$Row['team_mapscount']}$teamGP$outOfRange)</td><td style=\"$tdstyle\">\r\n");
+			          CMmbUI::toHtml($Row['team_name'])."</a> ($useGps{$Row['distance_name']}, {$Row['team_mapscount']}$teamGP$outOfRange)</td><td style=\"$tdstyle\">\r\n");
 
                         // Формируем колонку Участники			
 				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
@@ -723,7 +723,7 @@ if (!isset($MyPHPScript)) return;
 
 				while ($UserRow = mysql_fetch_assoc($UserResult))
 				{
-				  print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'&RaidId=' . $RaidId . '">'.$UserRow['user_name'].'</a> '.$UserRow['user_birthyear'].' '.$UserRow['user_city']."\r\n");
+				  print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'&RaidId=' . $RaidId . '">'.CMmbUI::toHtml($UserRow['user_name']).'</a> '.$UserRow['user_birthyear'].' '.CMmbUI::toHtml($UserRow['user_city'])."\r\n");
  
 		                  // Отметка невыходна на старт в предыдущем ММБ                          
 		                  if ($UserRow['teamuser_notstartraidid'] > 0) {
