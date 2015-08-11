@@ -69,8 +69,6 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pTeamMapsCount = (int)$_POST['TeamMapsCount'];
 	$pTeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
 	$pNewTeamUserEmail = mmb_validate($_POST, 'NewTeamUserEmail', '');
-	$pTeamNotOnLevelId = (int)mmb_validate($_POST, 'TeamNotOnLevelId', '');         // todo выкинуть ???
-	$pTeamNotOnLevelId = (int)mmb_validate($_POST, 'TeamNotInLevelPointId', '');    // todo выкинуть ???
 	$pTeamConfirmation = mmb_isOn($_POST, 'Confirmation');
 
 
@@ -120,7 +118,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			from Teams t
 				inner join Distances d
 				on t.distance_id = d.distance_id
-			where d.raid_id = $RaidId and trim(team_name) = $pTeamName and team_hide = 0 and team_id <> $TeamId";
+			where d.raid_id = $RaidId and trim(team_name) = '$pTeamName' and team_hide = 0 and team_id <> $TeamId";
 	if (CSql::singleValue($sql, 'resultcount') > 0)
 	{
 		setViewError("Уже есть команда с таким названием.");
