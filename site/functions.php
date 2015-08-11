@@ -2316,7 +2316,7 @@ class CMmbUI
 
 	public static function placeholder($defaultValue)
 	{
-		$defVal = str_replace("&apos", "\\&apos;", self::toHtml($defaultValue)); // эскейпимся от апострофов и двойных кавычек
+		$defVal = str_replace("&apos;", "\\&apos;", self::toHtml($defaultValue)); // эскейпимся от апострофов в js
 		return " onclick=\"javascript: _onClick(this, '$defVal');\" onblur=\"javascript: _onBlur(this, '$defVal');\" ";
 	}
 }
