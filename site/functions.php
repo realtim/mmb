@@ -2308,6 +2308,7 @@ class CMmbUI
 {
 	public static function toHtml($str)
 	{
+		return $str;
 		$search = array("<", ">", "\"", "'");
 		$replace = array("&lt;", "&gt;", "&quot;", "&apos;");
 
@@ -2316,7 +2317,8 @@ class CMmbUI
 
 	public static function placeholder($defaultValue)
 	{
-		$defVal = str_replace("&apos;", "\\&apos;", self::toHtml($defaultValue)); // эскейпимся от апострофов в js
+		//$defVal = str_replace("&apos;", "\\&apos;", self::toHtml($defaultValue)); // эскейпимся от апострофов в js
+		$defVal = str_replace("\"", "&quot;", str_replace("'", "\\\'", $defaultValue));
 		return " onclick=\"javascript: _onClick(this, '$defVal');\" onblur=\"javascript: _onBlur(this, '$defVal');\" ";
 	}
 }
