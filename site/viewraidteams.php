@@ -579,13 +579,31 @@ if (!isset($MyPHPScript)) return;
 		                       TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 				       COALESCE(t.team_outofrange, 0) as  team_outofrange,
 				       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
-				       COALESCE(t.team_comment, '') as team_comment
+				       COALESCE(t.team_comment, '') as team_comment,
+				       COALESCE(notlp.notlevelpoint_name, '') as notlevelpoint_name
 				  from  Teams t
-					inner join  Distances d 
+					inner join  Distances d
 					on t.distance_id = d.distance_id
 					left outer join LevelPoints lp
 					on lp.distance_id = t.distance_id
 					   and lp.levelpoint_order = t.team_maxlevelpointorderdone
+					left outer join
+					(
+						select t.team_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as notlevelpoint_name
+						from  Teams t
+								inner join  Distances d
+								on t.distance_id = d.distance_id
+								join LevelPoints lp
+ 								on t.distance_id = lp.distance_id
+									and  COALESCE(t.team_maxlevelpointorderdone, 0) >= lp.levelpoint_order
+								left outer join TeamLevelPoints tlp
+								on lp.levelpoint_id = tlp.levelpoint_id
+									and t.team_id = tlp.team_id
+					 	where 	tlp.levelpoint_id is NULL
+								and d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
+						group by t.team_id
+					) as notlp
+					on t.team_id = notlp.team_id
 				  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
 				  	and $DistanceCondition and $GpsCondition
 
@@ -660,8 +678,9 @@ if (!isset($MyPHPScript)) return;
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Точка финиша</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Комментарий</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Не пройдены точки</td>'."\r\n");
 
 
 		} elseif ($OrderType == 'Errors') {
@@ -704,7 +723,6 @@ if (!isset($MyPHPScript)) return;
 			       <td style="'.$tdstyle.'"><a name="'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
 			       <td style="'.$tdstyle.'"><a href="?TeamId='.$Row['team_id'].'&RaidId=' . $RaidId .'">'.
 			          CMmbUI::toHtml($Row['team_name'])."</a> ($useGps{$Row['distance_name']}, {$Row['team_mapscount']}$teamGP$outOfRange)</td><td style=\"$tdstyle\">\r\n");
-print("<!-- {$Row['team_name']} -->"); // test
 
                         // Формируем колонку Участники			
 				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
@@ -785,6 +803,7 @@ print("<!-- {$Row['team_name']} -->"); // test
 			    print("<td>\r\n");
 			    print($Row['team_comment']);
 			    print("</td>\r\n");
+			    print("<td>{$Row['notlevelpoint_name']}</td>\r\n");
 
 			}  elseif ($OrderType == 'Errors') {
 
