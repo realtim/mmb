@@ -699,7 +699,9 @@ if (!isset($MyPHPScript)) return;
 		}
 
           	//echo 'sql '.$sql;
+          	$t1 = microtime(true);
                 $Result = MySqlQuery($sql);
+                $t2 = microtime(true);
 	
 
 
@@ -807,7 +809,7 @@ if (!isset($MyPHPScript)) return;
 		                  {
 					if ($UserRow['levelpoint_name'] <> '')
 					{
-					    print("<i>Не явился(-ась) в: " . normalizeSkipped($UserRow['levelpoint_name']) . "</i>\r\n");
+					    print("<i>Не явился(-ась) в: {$UserRow['levelpoint_name']}</i>\r\n");
 					} 
 		                  }
 				  print('</div>'."\r\n");
@@ -856,7 +858,7 @@ if (!isset($MyPHPScript)) return;
 			    print("<td>\r\n");
 			    print($Row['team_comment']);
 			    print("</td>\r\n");
-			    print("<td>{$Row['notlevelpoint_name']}</td>\r\n");
+			    print('<td>' . normalizeSkipped($Row['notlevelpoint_name']) . "</td>\r\n");
 
 			}  elseif ($OrderType == 'Errors') {
 
@@ -874,6 +876,9 @@ if (!isset($MyPHPScript)) return;
 		}
 		mysql_free_result($Result);
 		print("</table>\r\n");
+		$t3 = microtime(true);
+
+		print("<div>Total time: '" . ($t3-$t1) . "' query: '" . ($t2-$t1) . "' render: '" . ($t3-$t2). '</div>');
 ?>
 	
 <br/>
