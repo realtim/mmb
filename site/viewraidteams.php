@@ -178,6 +178,59 @@ if (!isset($MyPHPScript)) return;
     }
     // Конец функции вывода невзятых КП
 
+    function normalizeSkipped($str)
+    {
+        if (empty($str))
+                return '&nbsp';
+
+        $skipped = explode(',', $str);
+        $len = count($skipped);
+        if ($len < 2)
+                return $str;
+
+	$start = 0;
+	$last = $skipped[0];
+	$ints = array();
+	for ($i = 1; $i < $len; $i++)
+	{
+		if ($skipped[$i] == $last + 1)
+		{
+			$last = $skipped[$i];
+			continue;
+		}
+
+
+
+		if ($i > $start + 1)    // полноценный интервал
+		{
+			$ints[] = "{$skipped[$start]} - $last";
+		}
+		else
+		{
+			$ints[] = $skipped[$start];
+			if ($last != $skipped[$start])
+				$ints[] = $last;
+
+		}
+
+		$start = $i;
+		$last = $skipped[$i];
+	}
+
+	if ($start < $len - 2)
+	{
+		$ints[] = "{$skipped[$start]} - $last";
+	}
+	else
+	{
+		$ints[] = $skipped[$start];
+		if ($start < $len -1)
+			$ints[] = $last;
+	}
+
+	return implode(", ", $ints);
+    }
+
 
 
         // Проверяем, что передали  идентификатор ММБ
@@ -754,7 +807,7 @@ if (!isset($MyPHPScript)) return;
 		                  {
 					if ($UserRow['levelpoint_name'] <> '')
 					{
-					    print("<i>Не явился(-ась) в: {$UserRow['levelpoint_name']}</i>\r\n");
+					    print("<i>Не явился(-ась) в: " . normalizeSkipped($UserRow['levelpoint_name']) . "</i>\r\n");
 					} 
 		                  }
 				  print('</div>'."\r\n");
