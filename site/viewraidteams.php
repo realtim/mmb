@@ -183,6 +183,8 @@ if (!isset($MyPHPScript)) return;
         if (empty($str))
                 return '&nbsp';
 
+	$delim = "&nbsp;&#8209;&nbsp;"; // non-breaking hyphen with non-breaking spaces
+
         $skipped = explode(',', $str);
         $len = count($skipped);
         if ($len < 2)
@@ -201,9 +203,9 @@ if (!isset($MyPHPScript)) return;
 
 
 
-		if ($i > $start + 1)    // полноценный интервал
+		if ($i > $start + 2)    // полноценный интервал
 		{
-			$ints[] = "{$skipped[$start]} - $last";
+			$ints[] = "{$skipped[$start]}$delim$last";
 		}
 		else
 		{
@@ -219,7 +221,7 @@ if (!isset($MyPHPScript)) return;
 
 	if ($start < $len - 2)
 	{
-		$ints[] = "{$skipped[$start]} - $last";
+		$ints[] = "{$skipped[$start]}$delim$last";
 	}
 	else
 	{
@@ -858,7 +860,7 @@ if (!isset($MyPHPScript)) return;
 			    print("<td>\r\n");
 			    print($Row['team_comment']);
 			    print("</td>\r\n");
-			    print('<td>' . normalizeSkipped($Row['notlevelpoint_name']) . "</td>\r\n");
+			    print('<td>' . normalizeSkipped($Row['notlevelpoint_name']) . "<br/><small><small>{$Row['notlevelpoint_name']}</small></small></td>\r\n");
 
 			}  elseif ($OrderType == 'Errors') {
 
