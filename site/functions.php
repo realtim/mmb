@@ -142,7 +142,7 @@ class CMmb
 
 	if ($NewConnection == 1)
 	{
-		mysql_close($ConnectionId);
+		//mysql_close($ConnectionId); // try not closing
 	}
 
 	return $rs;
