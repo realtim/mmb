@@ -80,20 +80,26 @@ if (!isset($MyPHPScript))
 
 */	
 	  	//echo 'sql '.$sql;
+	$sqTime = 0;
+	$t1 = microtime(true);
 	$Result = MySqlQuery($sql);
+	$t2 = microtime(true);
 
 	if ($ShowAllRaids)
 	{
 		$sqlRaids = "select r.raid_id, r.raid_name, d.distance_name, d.distance_id from Raids r
 			        inner join Distances d on r.raid_id = d.raid_id and d.distance_hide = 0
 		                order by r.raid_id  desc, d.distance_id desc ";
+		$t3 = microtime(true);
 		$ResultRaids = MySqlQuery($sqlRaids);
+		$t4 = microtime(true);
 		$RowCount = mysql_num_rows($ResultRaids);
 		$TableWidth =  $RowCount*100 + 550;
 	} else {
 		$TableWidth = 550;
 	}
 
+$t5 = microtime(true);
 	print('<table class="std" width="'.$TableWidth.'" >'."\r\n");
 
 	print('<tr class="gray head">
@@ -143,7 +149,9 @@ if (!isset($MyPHPScript))
 							  	   where   t.team_hide = 0) a
 	                             on d.distance_id = a.distance_id
 			        order by r.raid_id  desc,  d.distance_id desc";
-			$ResultRaids = MySqlQuery($sqlRaids);
+		        $t7 = microtime(true);
+		        $ResultRaids = MySqlQuery($sqlRaids);
+		        $sqTime += $t7 - microtime(true);
 
 			while ($RowRaids = mysql_fetch_assoc($ResultRaids))
 			{
@@ -178,6 +186,11 @@ if (!isset($MyPHPScript))
 	mysql_free_result($Result);
 
 	print("</table>\r\n");
+
+	$t6 = microtime(true);
+
+	$add = $ShowAllRaids ? "второй запрос: '" . ($t4 - $t3) . "' пользователи: '$sqTime', " : '';
+	print("<div><small>Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5 - $sqTime). '</small></div>');
 ?>
 		
 		<br/>

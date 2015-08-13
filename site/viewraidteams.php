@@ -695,6 +695,7 @@ if (!isset($MyPHPScript)) return;
 		}
 
           	//echo 'sql '.$sql;
+          	$userQuery = 0;
           	$t1 = microtime(true);
                 $Result = MySqlQuery($sql);
                 $t2 = microtime(true);
@@ -789,7 +790,10 @@ if (!isset($MyPHPScript)) return;
 					     on tld.levelpoint_id = lp.levelpoint_id
 					where tu.teamuser_hide = 0 and tu.team_id = {$Row['team_id']}";
 				//echo 'sql '.$sql;
+
+				$t4 = microtime(true);
 				$UserResult = MySqlQuery($sql);
+				$userQuery += microtime(true) - $t4;
 
 				while ($UserRow = mysql_fetch_assoc($UserResult))
 				{
@@ -867,14 +871,14 @@ if (!isset($MyPHPScript)) return;
 			    print($Row['team_comment']);
 			    print("</td>\r\n");
 			}
-			// Конец проверки на вывод с сотрировкой по месту
+			// Конец проверки на вывод с сортировкой по месту
 			print("</tr>\r\n");
 		}
 		mysql_free_result($Result);
 		print("</table>\r\n");
 		$t3 = microtime(true);
 
-		print("<div><small>Общее время: '" . ($t3-$t1) . "' запрос: '" . ($t2-$t1) . "' выборка-отрисовка: '" . ($t3-$t2). '</small></div>');
+		print("<div><small>Общее время: '" . ($t3-$t1) . "' запрос: '" . ($t2-$t1) . "' запросы пользователей: '$userQuery' выборка-отрисовка: '" . ($t3-$t2 - $userQuery). '</small></div>');
 ?>
 	
 <br/>
