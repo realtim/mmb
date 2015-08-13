@@ -178,6 +178,7 @@ if (!isset($MyPHPScript)) return;
     }
     // Конец функции вывода невзятых КП
 
+// выделяем в списках пропущенных КП интервалы. Закладываемся, что список точек отсортирован и без повторов.
     function normalizeSkipped($str)
     {
         if (empty($str))
@@ -202,17 +203,13 @@ if (!isset($MyPHPScript)) return;
 		}
 
 
-
-		if ($i > $start + 2)    // полноценный интервал
-		{
+		if ($start < $i - 2)    // полноценный интервал
 			$ints[] = "{$skipped[$start]}$delim$last";
-		}
 		else
 		{
 			$ints[] = $skipped[$start];
-			if ($last != $skipped[$start])
+			if ($start < $i - 1)
 				$ints[] = $last;
-
 		}
 
 		$start = $i;
@@ -220,9 +217,7 @@ if (!isset($MyPHPScript)) return;
 	}
 
 	if ($start < $len - 2)
-	{
 		$ints[] = "{$skipped[$start]}$delim$last";
-	}
 	else
 	{
 		$ints[] = $skipped[$start];
@@ -240,7 +235,6 @@ if (!isset($MyPHPScript)) return;
 	{
 		    CMmb::setMessage('Не указан ММБ');
 		    return;
-	
 	}
 
 
@@ -860,7 +854,7 @@ if (!isset($MyPHPScript)) return;
 			    print("<td>\r\n");
 			    print($Row['team_comment']);
 			    print("</td>\r\n");
-			    print('<td>' . normalizeSkipped($Row['notlevelpoint_name']) . "<br/><small><small>{$Row['notlevelpoint_name']}</small></small></td>\r\n");
+			    print('<td>' . normalizeSkipped($Row['notlevelpoint_name']) . "</td>\r\n"); // <br/><small><small>{$Row['notlevelpoint_name']}</small></small> // для проверки
 
 			}  elseif ($OrderType == 'Errors') {
 
@@ -880,7 +874,7 @@ if (!isset($MyPHPScript)) return;
 		print("</table>\r\n");
 		$t3 = microtime(true);
 
-		print("<div>Total time: '" . ($t3-$t1) . "' query: '" . ($t2-$t1) . "' render: '" . ($t3-$t2). '</div>');
+		print("<div><small>Общее время: '" . ($t3-$t1) . "' запрос: '" . ($t2-$t1) . "' выборка-отрисовка: '" . ($t3-$t2). '</small></div>');
 ?>
 	
 <br/>
