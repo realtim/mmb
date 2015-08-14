@@ -127,10 +127,16 @@ $t5 = microtime(true);
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
 		$LineNum++;
 
-		print("<tr>\r\n");
+		$line = array(
+			"<tr>\r\n",
+			"<td>$LineNum</td>\r\n",
+			"<td><a href=\"?UserId={$Row['user_id']}\">" . CMmbUI::toHtml($Row['user_name']). "</a></td>\r\n",
+			"<td align=\"center\">{$Row['userrank']}</td>\r\n"
+		);
+		/*print("<tr>\r\n");
 		print("<td>$LineNum</td>\r\n");
 		print("<td><a href=\"?UserId={$Row['user_id']}\">" . CMmbUI::toHtml($Row['user_name']). "</a></td>\r\n");
-		print("<td align=\"center\">{$Row['userrank']}</td>\r\n");
+		print("<td align=\"center\">{$Row['userrank']}</td>\r\n");*/
 
                 if ($ShowAllRaids)
 	        {
@@ -154,6 +160,7 @@ $t5 = microtime(true);
 		        $ResultRaids = MySqlQuery($sqlRaids);
 		        $sqTime += microtime(true) - $t7;
 
+
 			while ($RowRaids = mysql_fetch_assoc($ResultRaids))
 			{
 				if (!empty($RowRaids['team_name']))
@@ -175,12 +182,13 @@ $t5 = microtime(true);
 					$TeamString = '&nbsp;';
 				}
 
-                                print("<td>$TeamString</td>\r\n");
+                                //print("<td>$TeamString</td>\r\n");
+				$line[] = "<td>$TeamString</td>\r\n";
 			}
 			mysql_free_result($ResultRaids);
                 }
 
-                print("</tr>\r\n");
+                print(implode('', line)."</tr>\r\n");
 	}
         // Конец цикла по журналу объединений
 
@@ -190,8 +198,8 @@ $t5 = microtime(true);
 
 $t6 = microtime(true);
 
-	$add = $ShowAllRaids ? "второй запрос: '" . ($t4 - $t3) . "'запросы по годам: '$sqTime', " : '';
-	print("<div><small>Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5 - $sqTime). '</small></div>');
+	$add = $ShowAllRaids ? "второй запрос: '" . ($t4 - $t3) . "', запросы по годам: '$sqTime', " : '';
+	print("<div><small>через implode: Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5 - $sqTime). '</small></div>');
 ?>
 		
 		<br/>
