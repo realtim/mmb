@@ -188,7 +188,7 @@ $t5 = microtime(true);
 			mysql_free_result($ResultRaids);
                 }
 
-                print(implode('', line)."</tr>\r\n");
+                print(implode('', $line)."</tr>\r\n");
 	}
         // Конец цикла по журналу объединений
 
