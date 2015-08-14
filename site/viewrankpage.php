@@ -149,9 +149,10 @@ $t5 = microtime(true);
 							  	   where   t.team_hide = 0) a
 	                             on d.distance_id = a.distance_id
 			        order by r.raid_id  desc,  d.distance_id desc";
+
 		        $t7 = microtime(true);
 		        $ResultRaids = MySqlQuery($sqlRaids);
-		        $sqTime += $t7 - microtime(true);
+		        $sqTime += microtime(true) - $t7;
 
 			while ($RowRaids = mysql_fetch_assoc($ResultRaids))
 			{
@@ -187,9 +188,9 @@ $t5 = microtime(true);
 
 	print("</table>\r\n");
 
-	$t6 = microtime(true);
+$t6 = microtime(true);
 
-	$add = $ShowAllRaids ? "второй запрос: '" . ($t4 - $t3) . "' пользователи: '$sqTime', " : '';
+	$add = $ShowAllRaids ? "второй запрос: '" . ($t4 - $t3) . "'запросы по годам: '$sqTime', " : '';
 	print("<div><small>Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5 - $sqTime). '</small></div>');
 ?>
 		
