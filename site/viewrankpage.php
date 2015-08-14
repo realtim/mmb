@@ -81,6 +81,7 @@ if (!isset($MyPHPScript))
 */	
 	  	//echo 'sql '.$sql;
 	$sqTime = 0;
+	$gtp = 0;
 	$t1 = microtime(true);
 	$Result = MySqlQuery($sql);
 	$t2 = microtime(true);
@@ -165,7 +166,10 @@ $t5 = microtime(true);
 			{
 				if (!empty($RowRaids['team_name']))
 				{
+					$t8 = microtime(true);
 	                                $TeamPlace = GetTeamPlace($RowRaids['team_id']);
+					$gtp += microtime(true) - $t8;
+
 					$LevelPointId = $RowRaids['levelpoint_id'];
 
 					// Есть место команды и нет схода участника
@@ -198,7 +202,7 @@ $t5 = microtime(true);
 
 $t6 = microtime(true);
 
-	$add = $ShowAllRaids ? "второй запрос: '" . ($t4 - $t3) . "', запросы по годам: '$sqTime', " : '';
+	$add = $ShowAllRaids ? "запросы по годам: '$sqTime', teamplace: '$gtp'" : '';
 	print("<div><small>через implode: Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5 - $sqTime). '</small></div>');
 ?>
 		
