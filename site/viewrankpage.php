@@ -195,16 +195,10 @@ $t5 = microtime(true);
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
 		$LineNum++;
 
-		$line = array(
-			"<tr>\r\n",
-			"<td>$LineNum</td>\r\n",
-			"<td><a href=\"?UserId={$Row['user_id']}\">" . CMmbUI::toHtml($Row['user_name']). "</a></td>\r\n",
-			"<td align=\"center\">{$Row['userrank']}</td>\r\n"
-		);
-		/*print("<tr>\r\n");
+		print("<tr>\r\n");
 		print("<td>$LineNum</td>\r\n");
 		print("<td><a href=\"?UserId={$Row['user_id']}\">" . CMmbUI::toHtml($Row['user_name']). "</a></td>\r\n");
-		print("<td align=\"center\">{$Row['userrank']}</td>\r\n");*/
+		print("<td align=\"center\">{$Row['userrank']}</td>\r\n");
 
                 if ($ShowAllRaids)
 	        {
@@ -233,10 +227,9 @@ $t5 = microtime(true);
 			{
 				if (!empty($RowRaids['team_name']))
 				{
-					//$t8 = microtime(true);
-	                                //$TeamPlace = GetTeamPlace($RowRaids['team_id']);
 					$TeamPlace = $teamPlaces->GetTeamPlace($RowRaids['team_id']);
-					//$gtp += microtime(true) - $t8;
+					if ($TeamPlace != GetTeamPlace($RowRaids['team_id']))
+						die("</td></tr></table> разошлись места у команды {$RowRaids['team_id']}: new - $TeamPlace, old - ". GetTeamPlace($RowRaids['team_id']));
 
 					$LevelPointId = $RowRaids['levelpoint_id'];
 
@@ -254,13 +247,12 @@ $t5 = microtime(true);
 					$TeamString = '&nbsp;';
 				}
 
-                                //print("<td>$TeamString</td>\r\n");
-				$line[] = "<td>$TeamString</td>\r\n";
+                                print("<td>$TeamString</td>\r\n");
 			}
 			mysql_free_result($ResultRaids);
                 }
 
-                print(implode('', $line)."</tr>\r\n");
+                print("</tr>\r\n");
 	}
         // Конец цикла по журналу объединений
 
@@ -270,7 +262,7 @@ $t5 = microtime(true);
 
 $t6 = microtime(true);
 
-	$add = $ShowAllRaids ? "запросы по годам: '$sqTime', qtp: '$ctp', teamplace: '$gtp', " : '';
+	$add = $ShowAllRaids ? "запросы по годам: '$sqTime', teamPlaces: '$ctp', " : '';
 	print("<div><small>через implode: Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5 - $sqTime). '</small></div>');
 ?>
 		
