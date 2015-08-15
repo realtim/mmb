@@ -249,7 +249,8 @@ if (!isset($MyPHPScript)) return;
 					     on tu.teamuser_id = tld.teamuser_id
 		                             left outer join LevelPoints lp
 					     on tld.levelpoint_id = lp.levelpoint_id
-					where tu.teamuser_hide = 0 and d.raid_id = $raidId and $distanceCond";
+					where tu.teamuser_hide = 0 and d.raid_id = $raidId and $distanceCond
+					order by team_id desc, user_name asc";
 	//echo 'sql '.$sql;
 
 	$UserResult = MySqlQuery($sql);
@@ -274,7 +275,7 @@ if (!isset($MyPHPScript)) return;
 	}
 	mysql_free_result($UserResult);
 
-	return res;
+	return $res;
     }
 
 
