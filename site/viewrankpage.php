@@ -13,12 +13,12 @@ class CTeamPlaces
 	function __construct()
 	{
 		$sql = "select team_id, distance_id, TIME_TO_SEC(COALESCE(t.team_result, 0)) as result
-					from Teams  t
-					where t.team_hide = 0
-						and COALESCE(t.team_outofrange, 0) = 0
-						and COALESCE(t.team_result, 0) > 0
-						and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
-					order by distance_id asc, result asc";
+				from Teams  t
+				where t.team_hide = 0
+					and COALESCE(t.team_outofrange, 0) = 0
+					and COALESCE(t.team_result, 0) > 0
+					and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
+				order by distance_id asc, result asc";
 
 		$result = MySqlQuery($sql);
 
@@ -57,14 +57,7 @@ class CTeamPlaces
 	{
 		return isset($this->teamPlaces[$teamId]) ? $this->teamPlaces[$teamId] : 0;
 	}
-
-	public function GetTeamPlaceOld($teamId)
-	{
-		return GetTeamPlace($teamId);
-	}
 }
-
-
 
 
 	$TabIndex = 0;
@@ -83,7 +76,7 @@ class CTeamPlaces
 	//print('</form>'."\r\n");
 
 	print('<br/><br/>'."\r\n");
-	print('<div style="margin-top: 15px;" align="left">Рейтинг по версии slazav: по всем ММБ суммируется отношение времени лидера к времени участника.
+	print('<div style="margin-top: 15px; max-width: 1500px;" align="left">Рейтинг по версии slazav: по всем ММБ суммируется отношение времени лидера к времени участника.
 	       <br/>Для марш-бросков с несколькими дистанциями это отношение дополнительно умножается на отношение  длины текущей дистанции к максимальной  из длин дистанций.
 	        Рейтинг участника марш-броска не рассчитывается в следующих случаях: 1) команда вне зачёта; 2) команда не финишировала; 3) участник сошёл с дистанции.
 	        Для марш-бросков до 2012 года сход участников не отражён в данных - можно сообщать о неточностях на общий адрес или в сообщество (ЖЖ)
@@ -228,8 +221,6 @@ $t5 = microtime(true);
 				if (!empty($RowRaids['team_name']))
 				{
 					$TeamPlace = $teamPlaces->GetTeamPlace($RowRaids['team_id']);
-					if ($TeamPlace != GetTeamPlace($RowRaids['team_id']))
-						die("</td></tr></table> разошлись места у команды {$RowRaids['team_id']}: new - $TeamPlace, old - ". GetTeamPlace($RowRaids['team_id']));
 
 					$LevelPointId = $RowRaids['levelpoint_id'];
 
