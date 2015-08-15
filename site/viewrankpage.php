@@ -5,6 +5,68 @@
 if (!isset($MyPHPScript))
 	return;
 
+
+class CTeamPlaces
+{
+	protected $teamPlaces;
+
+	public function __constructor()
+	{
+		$sql = "select team_id, distance_id, TIME_TO_SEC(COALESCE(t.team_result, 0)) as result
+					from Teams  t
+					where t.team_hide = 0
+						and COALESCE(t.team_outofrange, 0) = 0
+						and COALESCE(t.team_result, 0) > 0
+						and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
+					order by distance_id asc, result asc";
+
+		$result = MySqlQuery($sql);
+
+		$dist = null;
+		$this->teamPlaces = array();
+		$lastPlace = 0;
+		$lastRes = 0;
+		$skip = 0;
+		while ($row = mysql_fetch_assoc($result))
+		{
+			if ($dist != $row['distance_id'])
+			{
+				$lastPlace = 0;
+				$skip = 1;
+				$lastRes = 0;
+			}
+			$dist = $row['distance_id'];
+
+			if ($lastRes == $row['result'])
+			{
+				$skip ++;
+			}
+			else
+			{
+				$lastPlace += $skip;
+				$skip = 1;
+				$lastRes = $row['result'];
+			}
+
+			$this->teamPlaces[$row['team_id']] = $lastPlace;
+		}
+		mysql_free_result($result);
+	}
+
+	function GetTeamPlace($teamId)
+	{
+		return isset($this->teamPlaces[$teamId]) ? $this->teamPlaces[$teamId] : 0;
+	}
+
+	public function GetTeamPlaceOld($teamId)
+	{
+		return GetTeamPlace($teamId);
+	}
+}
+
+
+
+
 	$TabIndex = 0;
 
 	/*print('<form  name="RankUsersForm"  action="'.$MyPHPScript.'" method="post">'."\r\n");
@@ -96,6 +158,11 @@ if (!isset($MyPHPScript))
 		$t4 = microtime(true);
 		$RowCount = mysql_num_rows($ResultRaids);
 		$TableWidth =  $RowCount*100 + 550;
+
+		$ctp = microtime(true);
+		$teamPlaces = new CTeamPlaces();
+		$ctp = microtime(true) - $ctp;
+
 	} else {
 		$TableWidth = 550;
 	}
@@ -166,9 +233,10 @@ $t5 = microtime(true);
 			{
 				if (!empty($RowRaids['team_name']))
 				{
-					$t8 = microtime(true);
-	                                $TeamPlace = GetTeamPlace($RowRaids['team_id']);
-					$gtp += microtime(true) - $t8;
+					//$t8 = microtime(true);
+	                                //$TeamPlace = GetTeamPlace($RowRaids['team_id']);
+					$TeamPlace = $teamPlaces->GetTeamPlace($RowRaids['team_id']);
+					//$gtp += microtime(true) - $t8;
 
 					$LevelPointId = $RowRaids['levelpoint_id'];
 
@@ -202,7 +270,7 @@ $t5 = microtime(true);
 
 $t6 = microtime(true);
 
-	$add = $ShowAllRaids ? "запросы по годам: '$sqTime', teamplace: '$gtp'" : '';
+	$add = $ShowAllRaids ? "запросы по годам: '$sqTime', qtp: '$ctp', teamplace: '$gtp', " : '';
 	print("<div><small>через implode: Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5 - $sqTime). '</small></div>');
 ?>
 		
