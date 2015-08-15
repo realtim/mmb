@@ -292,8 +292,8 @@ if (!isset($MyPHPScript)) return;
 				inner join TeamLevelPoints tlp
 					on lp.levelpoint_id = tlp.levelpoint_id
 					and t.team_id = tlp.team_id
-		        where 	-- tlp.levelpoint_id is NULL
-					and d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId
+		        where 	/* tlp.levelpoint_id is NULL
+					and */ d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId
 			group by t.team_id, t.distance_id";
 
 	$time = microtime(true);
