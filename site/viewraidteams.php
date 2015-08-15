@@ -182,7 +182,7 @@ if (!isset($MyPHPScript)) return;
     function normalizeSkipped($str)
     {
         if (empty($str))
-                return '&nbsp';
+                return '&nbsp;';
 
 	$delim = "&nbsp;&#8209;&nbsp;"; // non-breaking hyphen with non-breaking spaces
 
@@ -288,12 +288,11 @@ if (!isset($MyPHPScript)) return;
                                   on t.distance_id = lp.distance_id
 					and  COALESCE(t.team_maxlevelpointorderdone, 0) >= lp.levelpoint_order
 
-				-- left outer
-				inner join TeamLevelPoints tlp
+				left outer join TeamLevelPoints tlp
 					on lp.levelpoint_id = tlp.levelpoint_id
 					and t.team_id = tlp.team_id
-		        where 	/* tlp.levelpoint_id is NULL
-					and */ d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId
+		        where 	 tlp.levelpoint_id is NULL
+					and  d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId
 			group by t.team_id, t.distance_id";
 
 	$time = microtime(true);
@@ -304,7 +303,7 @@ if (!isset($MyPHPScript)) return;
 	while ($row = mysql_fetch_assoc($UserResult))
 		$res[$row['team_id']] = $row['notlevelpoint_name'];
 
-	$res['__time__'] = $time;
+	$res['__time__'] = $time;       // хак, чтобы вернуть время, за которое отработал запрос
 
 	return $res;
     }
@@ -711,31 +710,13 @@ if (!isset($MyPHPScript)) return;
 		                       TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 				       COALESCE(t.team_outofrange, 0) as  team_outofrange,
 				       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
-				       COALESCE(t.team_comment, '') as team_comment -- ,
-				      -- COALESCE(notlp.notlevelpoint_name, '') as notlevelpoint_name
+				       COALESCE(t.team_comment, '') as team_comment
 				  from  Teams t
 					inner join  Distances d
 					on t.distance_id = d.distance_id
 					left outer join LevelPoints lp
 					on lp.distance_id = t.distance_id
 					   and lp.levelpoint_order = t.team_maxlevelpointorderdone
-					/*left outer join
-					(
-						select t.team_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as notlevelpoint_name
-						from  Teams t
-								inner join  Distances d
-								on t.distance_id = d.distance_id
-								join LevelPoints lp
- 								on t.distance_id = lp.distance_id
-									and  COALESCE(t.team_maxlevelpointorderdone, 0) >= lp.levelpoint_order
-								left outer join TeamLevelPoints tlp
-								on lp.levelpoint_id = tlp.levelpoint_id
-									and t.team_id = tlp.team_id
-					 	where 	tlp.levelpoint_id is NULL
-								and d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
-						group by t.team_id
-					) as notlp
-					on t.team_id = notlp.team_id */
 				  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
 				  	and $DistanceCondition and $GpsCondition
 
@@ -933,8 +914,6 @@ if (!isset($MyPHPScript)) return;
 			    $skipped = isset($skippedPoints[$Row['team_id']]) ? normalizeSkipped($skippedPoints[$Row['team_id']]) : '&nbsp;';
 			    print("<td>$skipped</td>\r\n");
 
-			    //print('<td>' . normalizeSkipped($Row['notlevelpoint_name']) . "</td>\r\n"); // <br/><small><small>{$Row['notlevelpoint_name']}</small></small> // для проверки
-
 			}  elseif ($OrderType == 'Errors') {
 
 			    print("<td>{$Row['levelpoint_name']}</td>\r\n");
@@ -953,7 +932,12 @@ if (!isset($MyPHPScript)) return;
 		print("</table>\r\n");
 		$t3 = microtime(true);
 
-		print("<div><small>Общее время: '" . ($t3-$t1) . "' подготовка: '" . ($prep - $t1 - @$skpd) . "', запрос: '" . ($t2-$prep) . "' get skipped: {@$skpd}, core: {@$skpd0} выборка-отрисовка: " . ($t3-$t2 - $allUsers). '\'</small></div>');
+		if (empty($skpd))
+			$skpd = 0;
+		if (empty($skpd0))
+			$skpd0 = 0;
+
+		print("<div><small>Общее время: '" . ($t3-$t1) . "' подготовка: '" . ($prep - $t1 - @$skpd) . "', запрос: '" . ($t2-$prep) . "' get skipped: $skpd, core: $skpd0 выборка-отрисовка: " . ($t3-$t2 - $allUsers). '\'</small></div>');
 ?>
 	
 <br/>
