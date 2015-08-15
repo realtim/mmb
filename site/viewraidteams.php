@@ -280,26 +280,48 @@ if (!isset($MyPHPScript)) return;
 
     function GetAllSkippedPoints($raidId)
     {
-        $sql = "select t.team_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as notlevelpoint_name
+        $sql = "select t.team_id, lp.levelpoint_name -- GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as notlevelpoint_name
 			from  Teams t
-					inner join  Distances d
-					on t.distance_id = d.distance_id
-					join LevelPoints lp
-                                        on t.distance_id = lp.distance_id
-						and  COALESCE(t.team_maxlevelpointorderdone, 0) >= lp.levelpoint_order
-					left outer join TeamLevelPoints tlp
-					on lp.levelpoint_id = tlp.levelpoint_id
-						and t.team_id = tlp.team_id
+				inner join  Distances d
+				  on t.distance_id = d.distance_id
+				join LevelPoints lp
+                                  on t.distance_id = lp.distance_id
+					and  COALESCE(t.team_maxlevelpointorderdone, 0) >= lp.levelpoint_order
+				left outer join TeamLevelPoints tlp
+				on lp.levelpoint_id = tlp.levelpoint_id
+					and t.team_id = tlp.team_id
 		        where 	tlp.levelpoint_id is NULL
 					and d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId
-			group by t.team_id";
+			order by t.team_id, lp.levelpoint_name  asc
+			-- group by t.team_id";
+
+	$time = microtime(true);
 	$UserResult = MySqlQuery($sql);
+	$time = microtime(true) - $time;
 
 	$res = array();
-	while ($row = mysql_fetch_assoc($UserResult))
-		$res[$row['team_id']] = $row['notlevelpoint_name'];
+	$last = null;
+	$temp = array();
 
+	while ($row = mysql_fetch_assoc($UserResult))
+	{
+		if ($row['team_id'] != $last && $last != null)
+		{
+			$res[$last] = implode(',', $temp);
+			$temp = array();
+
+		}
+		$temp[] = $row['levelpoint_name'];
+		$last = $row['team_id'];
+
+		//$res[$row['team_id']] = $row['notlevelpoint_name'];
+	}
 	mysql_free_result($UserResult);
+
+	if (count($temp) > 0 && $last != null)
+		$res[$last] = implode(',', $temp);
+
+	$res['__time__'] = $time;
 
 	return $res;
     }
@@ -741,8 +763,7 @@ if (!isset($MyPHPScript)) return;
 	                $skpd = microtime(true);
 			$skippedPoints = GetAllSkippedPoints($RaidId);
 			$skpd = microtime(true) - $skpd;
-
-		
+			$skpd0 = $skippedPoints['__time__'];
 		}
 		elseif ($OrderType == 'Errors') {
 		
@@ -949,7 +970,7 @@ if (!isset($MyPHPScript)) return;
 		print("</table>\r\n");
 		$t3 = microtime(true);
 
-		print("<div><small>Общее время: '" . ($t3-$t1) . "' подготовка: '" . ($prep - $t1 - $skpd) . "', запрос: '" . ($t2-$prep) . "' все пользователи: $allUsers, skipped: $skpd, выборка-отрисовка: " . ($t3-$t2 - $allUsers). '\'</small></div>');
+		print("<div><small>Общее время: '" . ($t3-$t1) . "' подготовка: '" . ($prep - $t1 - $skpd) . "', запрос: '" . ($t2-$prep) . "' все пользователи: $allUsers, skipped: $skpd, core: $skpd0 выборка-отрисовка: " . ($t3-$t2 - $allUsers). '\'</small></div>');
 ?>
 	
 <br/>
