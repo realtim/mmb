@@ -706,7 +706,7 @@ if (!isset($MyPHPScript)) return;
 		                       TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 				       COALESCE(t.team_outofrange, 0) as  team_outofrange,
 				       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
-				       COALESCE(t.team_comment, '') as team_comment --,
+				       COALESCE(t.team_comment, '') as team_comment -- ,
 				      -- COALESCE(notlp.notlevelpoint_name, '') as notlevelpoint_name
 				  from  Teams t
 					inner join  Distances d
