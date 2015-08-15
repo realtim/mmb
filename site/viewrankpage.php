@@ -5,6 +5,61 @@
 if (!isset($MyPHPScript))
 	return;
 
+
+class CTeamPlaces
+{
+	protected $teamPlaces;
+
+	function __construct()
+	{
+		$sql = "select team_id, distance_id, TIME_TO_SEC(COALESCE(t.team_result, 0)) as result
+				from Teams  t
+				where t.team_hide = 0
+					and COALESCE(t.team_outofrange, 0) = 0
+					and COALESCE(t.team_result, 0) > 0
+					and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
+				order by distance_id asc, result asc";
+
+		$result = MySqlQuery($sql);
+
+		$dist = null;
+		$this->teamPlaces = array();
+		$lastPlace = 0;
+		$lastRes = 0;
+		$skip = 0;
+		while ($row = mysql_fetch_assoc($result))
+		{
+			if ($dist != $row['distance_id'])
+			{
+				$lastPlace = 0;
+				$skip = 1;
+				$lastRes = 0;
+			}
+			$dist = $row['distance_id'];
+
+			if ($lastRes == $row['result'])
+			{
+				$skip ++;
+			}
+			else
+			{
+				$lastPlace += $skip;
+				$skip = 1;
+				$lastRes = $row['result'];
+			}
+
+			$this->teamPlaces[$row['team_id']] = $lastPlace;
+		}
+		mysql_free_result($result);
+	}
+
+	function GetTeamPlace($teamId)
+	{
+		return isset($this->teamPlaces[$teamId]) ? $this->teamPlaces[$teamId] : 0;
+	}
+}
+
+
 	$TabIndex = 0;
 
 	/*print('<form  name="RankUsersForm"  action="'.$MyPHPScript.'" method="post">'."\r\n");
@@ -21,7 +76,7 @@ if (!isset($MyPHPScript))
 	//print('</form>'."\r\n");
 
 	print('<br/><br/>'."\r\n");
-	print('<div style="margin-top: 15px;" align="left">Рейтинг по версии slazav: по всем ММБ суммируется отношение времени лидера к времени участника.
+	print('<div style="margin-top: 15px; max-width: 1500px;" align="left">Рейтинг по версии slazav: по всем ММБ суммируется отношение времени лидера к времени участника.
 	       <br/>Для марш-бросков с несколькими дистанциями это отношение дополнительно умножается на отношение  длины текущей дистанции к максимальной  из длин дистанций.
 	        Рейтинг участника марш-броска не рассчитывается в следующих случаях: 1) команда вне зачёта; 2) команда не финишировала; 3) участник сошёл с дистанции.
 	        Для марш-бросков до 2012 года сход участников не отражён в данных - можно сообщать о неточностях на общий адрес или в сообщество (ЖЖ)
@@ -80,20 +135,32 @@ if (!isset($MyPHPScript))
 
 */	
 	  	//echo 'sql '.$sql;
+	$sqTime = 0;
+	$gtp = 0;
+	$t1 = microtime(true);
 	$Result = MySqlQuery($sql);
+	$t2 = microtime(true);
 
 	if ($ShowAllRaids)
 	{
 		$sqlRaids = "select r.raid_id, r.raid_name, d.distance_name, d.distance_id from Raids r
 			        inner join Distances d on r.raid_id = d.raid_id and d.distance_hide = 0
 		                order by r.raid_id  desc, d.distance_id desc ";
+		$t3 = microtime(true);
 		$ResultRaids = MySqlQuery($sqlRaids);
+		$t4 = microtime(true);
 		$RowCount = mysql_num_rows($ResultRaids);
 		$TableWidth =  $RowCount*100 + 550;
+
+		$ctp = microtime(true);
+		$teamPlaces = new CTeamPlaces();
+		$ctp = microtime(true) - $ctp;
+
 	} else {
 		$TableWidth = 550;
 	}
 
+$t5 = microtime(true);
 	print('<table class="std" width="'.$TableWidth.'" >'."\r\n");
 
 	print('<tr class="gray head">
@@ -143,13 +210,18 @@ if (!isset($MyPHPScript))
 							  	   where   t.team_hide = 0) a
 	                             on d.distance_id = a.distance_id
 			        order by r.raid_id  desc,  d.distance_id desc";
-			$ResultRaids = MySqlQuery($sqlRaids);
+
+		        $t7 = microtime(true);
+		        $ResultRaids = MySqlQuery($sqlRaids);
+		        $sqTime += microtime(true) - $t7;
+
 
 			while ($RowRaids = mysql_fetch_assoc($ResultRaids))
 			{
 				if (!empty($RowRaids['team_name']))
 				{
-	                                $TeamPlace = GetTeamPlace($RowRaids['team_id']);
+					$TeamPlace = $teamPlaces->GetTeamPlace($RowRaids['team_id']);
+
 					$LevelPointId = $RowRaids['levelpoint_id'];
 
 					// Есть место команды и нет схода участника
@@ -178,6 +250,11 @@ if (!isset($MyPHPScript))
 	mysql_free_result($Result);
 
 	print("</table>\r\n");
+
+$t6 = microtime(true);
+
+	$add = $ShowAllRaids ? "запросы по годам: '$sqTime', teamPlaces: '$ctp', " : '';
+	print("<div><small>через implode: Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5 - $sqTime). '</small></div>');
 ?>
 		
 		<br/>

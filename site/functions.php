@@ -76,78 +76,78 @@ class CMmb
 };
 
 
- function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "") {
+ function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "")
+ {
  // Можно передавать соединение по ссылке &$ConnectionId  MySqlQuery($SqlString,&$ConnectionId, $SessionId,$NonSecure);
  //
  // вызов  MySqlQuety('...',&$ConnectionId, ...);
 
-   $NewConnection = 0;
-   if (empty($ConnectionId))
-   {
-	$NewConnectionId = 1;
-    
-        // Данные берём из settings
-	include("settings.php");
-	
-    	$ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+	$NewConnection = 0;
+	if (empty($ConnectionId))
+	{
+		$NewConnection = 1;
 
-         // Ошибка соединения
-         if ($ConnectionId <= 0)
-	 {
-	    echo mysql_error();
-            die(); 
-	    return -1; 
-	 }
+		// Данные берём из settings
+		include("settings.php");
+
+		$ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+
+		// Ошибка соединения
+		if ($ConnectionId <= 0)
+		{
+			echo mysql_error();
+			die();
+			return -1;
+		}
 
 //  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
-	 //  устанавливаем временную зону
-//	 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);  
-	 //  устанавливаем кодировку для взаимодействия
-	 mysql_query('set names \'utf8\'', $ConnectionId);  
-         // Выбираем БД ММБ
+		//  устанавливаем временную зону
+//		 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
+		//  устанавливаем кодировку для взаимодействия
+	        mysql_query('set names \'utf8\'', $ConnectionId);
 
-     //    echo $DBName;
-	 
-	 $rs = mysql_select_db($DBName, $ConnectionId);
+                // Выбираем БД ММБ
+//		echo $DBName;
+		$rs = mysql_select_db($DBName, $ConnectionId);
 
-	 if (!$rs)
-	 {
-	    echo mysql_error();
-	    die(); 
-	    return -1; 
-	 }
-	 
-   }
+		if (!$rs)
+		{
+			echo mysql_error();
+			die();
+			return -1;
+		}
+
+	}
  
   // echo $ConnectionId;
    
-   $rs = mysql_query($SqlString, $ConnectionId);  
- 
- 
-   if (!$rs)
-   {
-	    echo mysql_error();
-            die(); 
-	    return -1; 
-   }
-   
-   // Если был insert - возвращаем последний id 
-   if (strpos($SqlString, 'insert') !== false)
-   {
-     $rs = mysql_insert_id($ConnectionId);
-   //  echo ' NewId '.$rs;
-   }
- 
- 
- 
-   if ($NewConnection == 1)
-   {
-	mysql_close($ConnectionId);
-   } 
+	$rs = mysql_query($SqlString, $ConnectionId);
 
-   return $rs;	
+
+	if (!$rs)
+	{
+		echo mysql_error();
+		die();
+		return -1;
+	}
+
+	// Если был insert - возвращаем последний id
+	if (strpos($SqlString, 'insert') !== false)
+	{
+		$rs = mysql_insert_id($ConnectionId);
+	//  echo ' NewId '.$rs;
+	}
+
+
+
+	if ($NewConnection == 1)
+	{
+		//mysql_close($ConnectionId); // try not closing
+	}
+
+	return $rs;
  
- }
+}
 
 
 class CSql {
@@ -2092,11 +2092,13 @@ send_mime_mail('Автор письма',
      {
 
 
-	 if (empty($teamid) and empty($raidid)) {     	 
+	if (empty($teamid) and empty($raidid)) {
 	    return;
-	 }
+	}
 
-        // Обнудяем данные расчета 
+	$teamRaidCondition = (!empty($teamid)) ? " t.team_id = $teamid" : "d.raid_id = $raidid";
+
+         // Обнуляем данные расчета
 	$sql = " update  TeamLevelPoints tlp
 		         join Teams t
 			 on tlp.team_id = t.team_id
@@ -2107,16 +2109,9 @@ send_mime_mail('Автор письма',
 		       t.team_maxlevelpointorderdone = NULL,
 		       t.team_minlevelpointorderwitherror = NULL,
 		       t.team_comment = NULL			 
- 		  where 
-		";			 
-
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." t.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
-	   $sql = $sql." d.raid_id = ".$raidid;
-	 }				 
+ 		  where $teamRaidCondition" ;
 				 
-	 $rs = MySqlQuery($sql);		
+	$rs = MySqlQuery($sql);
 
 	
 	RecalcTeamLevelPointsDuration($raidid, $teamid);
@@ -2142,9 +2137,13 @@ send_mime_mail('Автор письма',
 	//RecalcErrors($raidid, $teamid);
 
 
-    // Результат команды - это результат в максимальной точке 
-    // Перевод в секунды нужен для корректной работы MAX
-	 $sql = " update  Teams t
+	// $raidid мог измениться
+	$teamRaidCondition = (!empty($teamid)) ? "t.team_id = $teamid" : "d.raid_id = $raidid";
+
+
+     // Результат команды - это результат в максимальной точке
+     // Перевод в секунды нужен для корректной работы MAX
+	$sql = " update  Teams t
 		   inner join 
 	          	(select tlp.team_id, 
 			        MAX(COALESCE(lp.levelpoint_order, 0)) as progress,
@@ -2157,16 +2156,9 @@ send_mime_mail('Автор письма',
 			      on t.distance_id = d.distance_id
 			      inner join LevelPoints lp
 			      on tlp.levelpoint_id = lp.levelpoint_id
-			 where  
-		";			 
 
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." t.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql."  d.raid_id = ".$raidid;
-	 }				 
-				 
-	  $sql = $sql."				 
+			 where  $teamRaidCondition
+
                          group by tlp.team_id
 			) a
 		  on t.team_id = a.team_id
@@ -2178,17 +2170,16 @@ send_mime_mail('Автор письма',
 			) b
 		  on a.distance_id = b.distance_id
   	          set  team_result =  CASE WHEN b.maxlporder = COALESCE(a.progress, 0) THEN SEC_TO_TIME(COALESCE(a.secresult, 0)) ELSE NULL END
-				, team_maxlevelpointorderdone = COALESCE(a.progress, 0)
-	   ";
+				, team_maxlevelpointorderdone = COALESCE(a.progress, 0) ";
 
      //     echo $sql;
 	 
-	  $rs = MySqlQuery($sql);
+	$rs = MySqlQuery($sql);
 	
 
-    // 
-    // Находим минимальну. точку с ошибкой
-	 $sql = " update  Teams t
+     //
+     // Находим минимальную точку с ошибкой
+	$sql = " update  Teams t
 		   inner join 
 	          	(select tlp.team_id, 
 			        MIN(COALESCE(lp.levelpoint_order, 0)) as error
@@ -2200,28 +2191,19 @@ send_mime_mail('Автор письма',
 			      inner join LevelPoints lp
 			      on tlp.levelpoint_id = lp.levelpoint_id
 			 where  COALESCE(tlp.error_id, 0) <> 0
-		";			 
-
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." and  t.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." and  d.raid_id = ".$raidid;
-	 }				 
-				 
-	  $sql = $sql."				 
+			        and $teamRaidCondition
                          group by tlp.team_id
 			) a
 		  on t.team_id = a.team_id
-          set  team_minlevelpointorderwitherror = COALESCE(a.error, 0)
-	   ";
+          set  team_minlevelpointorderwitherror = COALESCE(a.error, 0)";
 
-     //     echo $sql;
+	//     echo $sql;
 	 
-	  $rs = MySqlQuery($sql);
+	$rs = MySqlQuery($sql);
 
 
 	// Обновляем комментарий у команды, куда включаем и ошибки  
-	 $sql = " update  Teams t
+	$sql = " update  Teams t
                   inner join
                       (select tlp.team_id 
 						,group_concat(COALESCE(teamlevelpoint_comment, '')) as team_comment
@@ -2233,26 +2215,18 @@ send_mime_mail('Автор письма',
 			    inner join Distances d
 			    on t.distance_id = d.distance_id
                        where  COALESCE(tlp.teamlevelpoint_comment, '') <> ''
-		";			 
+                                and $teamRaidCondition
 
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." and t.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." and d.raid_id = ".$raidid;
-	 }				 
-				 
-	  $sql = $sql."				 
                        group by tlp.team_id
                       ) a
 		  on t.team_id = a.team_id    
-		  set  t.team_comment = a.team_comment
-		  ";
+		  set  t.team_comment = a.team_comment";
 
-         //   echo $sql;
-	 $rs = MySqlQuery($sql);
+        //   echo $sql;
+	$rs = MySqlQuery($sql);
 
 	//Теперь ошибки
-	 $sql = " update  Teams t
+	$sql = " update  Teams t
                   inner join
                       (select tlp.team_id 
 						,group_concat(COALESCE(error_name, '')) as team_error
@@ -2264,25 +2238,15 @@ send_mime_mail('Автор письма',
 			    inner join Distances d
 			    on t.distance_id = d.distance_id
                        where  COALESCE(tlp.error_id, 0) <> 0
-		";			 
+                                and $teamRaidCondition
 
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." and t.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." and d.raid_id = ".$raidid;
-	 }				 
-				 
-	  $sql = $sql."				 
                        group by tlp.team_id
                       ) a
 		  on t.team_id = a.team_id    
-		  set  t.team_comment = CASE WHEN a.team_error <> '' THEN CONCAT('Ошибки: ', a.team_error, '; ',  COALESCE(t.team_comment, ''))  ELSE t.team_comment END
-		  ";
+		  set  t.team_comment = CASE WHEN a.team_error <> '' THEN CONCAT('Ошибки: ', a.team_error, '; ',  COALESCE(t.team_comment, ''))  ELSE t.team_comment END";
 
-         //   echo $sql;
-	 $rs = MySqlQuery($sql);
-
-
+        //   echo $sql;
+	$rs = MySqlQuery($sql);
      }
      // Конец функции расчета штрафа для КП без амнистий		
 

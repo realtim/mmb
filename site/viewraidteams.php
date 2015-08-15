@@ -178,6 +178,106 @@ if (!isset($MyPHPScript)) return;
     }
     // Конец функции вывода невзятых КП
 
+// выделяем в списках пропущенных КП интервалы. Закладываемся, что список точек отсортирован и без повторов.
+    function normalizeSkipped($str)
+    {
+        if (empty($str))
+                return '&nbsp';
+
+	$delim = "&nbsp;&#8209;&nbsp;"; // non-breaking hyphen with non-breaking spaces
+
+        $skipped = explode(',', $str);
+        $len = count($skipped);
+        if ($len < 2)
+                return $str;
+
+	$start = 0;
+	$last = $skipped[0];
+	$ints = array();
+	for ($i = 1; $i < $len; $i++)
+	{
+		if ($skipped[$i] == $last + 1)
+		{
+			$last = $skipped[$i];
+			continue;
+		}
+
+
+		if ($start < $i - 2)    // полноценный интервал
+			$ints[] = "{$skipped[$start]}$delim$last";
+		else
+		{
+			$ints[] = $skipped[$start];
+			if ($start < $i - 1)
+				$ints[] = $last;
+		}
+
+		$start = $i;
+		$last = $skipped[$i];
+	}
+
+	if ($start < $len - 2)
+		$ints[] = "{$skipped[$start]}$delim$last";
+	else
+	{
+		$ints[] = $skipped[$start];
+		if ($start < $len -1)
+			$ints[] = $last;
+	}
+
+	return implode(", ", $ints);
+    }
+
+    function GetAllTeamMembers($raidId, $distanceId = null)
+    {
+	global $Anonimus;
+	$distanceCond = (empty($distanceId) || $distanceId === 0) ? 'true' : "d.distance_id = $distanceId";
+
+	$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
+					       u.user_id,
+					       tld.levelpoint_id, lp.levelpoint_name,
+					       tu.teamuser_notstartraidid,
+					       t.team_id as team_id
+				        from  TeamUsers tu
+				             inner join Teams t
+				             	on t.team_id = tu.team_id
+				             inner join Distances d
+				             	on t.distance_id = d.distance_id
+					     inner join  Users u
+					     on tu.user_id = u.user_id
+		                             left outer join TeamLevelDismiss tld
+					     on tu.teamuser_id = tld.teamuser_id
+		                             left outer join LevelPoints lp
+					     on tld.levelpoint_id = lp.levelpoint_id
+					where tu.teamuser_hide = 0 and d.raid_id = $raidId and $distanceCond
+					order by team_id desc, user_name asc";
+	//echo 'sql '.$sql;
+
+	$UserResult = MySqlQuery($sql);
+
+	$last = null;
+	$res = array();
+	while ($row = mysql_fetch_assoc($UserResult))
+	{
+		$teamId = $row['team_id'];
+		if ($teamId !== $last)
+			$res[$teamId] = array();
+		$last = $teamId;
+
+		$res[$teamId][] = array(
+			'user_id' => $row['user_id'],
+			'user_name' => $row['user_name'],
+			'user_birthyear' => $row['user_birthyear'],
+			'user_city' => $row['user_city'],
+			'levelpoint_id' => $row['levelpoint_id'],
+			'levelpoint_name' => $row['levelpoint_name'],
+			'teamuser_notstartraidid' => $row['teamuser_notstartraidid']);
+	}
+	mysql_free_result($UserResult);
+
+	return $res;
+    }
+
 
 
         // Проверяем, что передали  идентификатор ММБ
@@ -185,7 +285,6 @@ if (!isset($MyPHPScript)) return;
 	{
 		    CMmb::setMessage('Не указан ММБ');
 		    return;
-	
 	}
 
 
@@ -198,8 +297,10 @@ if (!isset($MyPHPScript)) return;
 
 <?
 
-        $TabIndex = 0;
-		$DisabledText = '';
+	$t1 = microtime(true);
+
+	$TabIndex = 0;
+	$DisabledText = '';
 
         //Определяем локальные переменные-флаги показа результатов и этапов
         $CanViewResults = CanViewResults($Administrator, $Moderator, $RaidStage);
@@ -221,13 +322,13 @@ if (!isset($MyPHPScript)) return;
                 $RaidCloseDt = $Row['raid_closedate'];
                 $RaidNoShowResult = $Row['raid_noshowresult'];
    
-          // 03/05/2014 Исправил порядок сортировки - раньше независисмо от устновленного  $OrderType могло сбрасываться
-          // если порядок не задан смотрим на соотношение временени публикации и текущего
-          if (empty($OrderType))
-	  {
+        // 03/05/2014 Исправил порядок сортировки - раньше независимо от установленного  $OrderType могло сбрасываться
+        // если порядок не задан смотрим на соотношение временени публикации и текущего
+        if (empty($OrderType))
+	{
   	      $OrderType = $CanViewResults ? "Place" : "Num";
-	  }
-	  // Конец разбора сортировки по умолчанию
+	}
+	// Конец разбора сортировки по умолчанию
 	   
 // region часть над таблицей
           print('<div align="left" style="font-size: 80%;">'."\r\n");
@@ -646,7 +747,12 @@ if (!isset($MyPHPScript)) return;
 		}
 
           	//echo 'sql '.$sql;
+          	$prep = microtime(true);
                 $Result = MySqlQuery($sql);
+                $t2 = microtime(true);
+
+                $TeamMembers  = GetAllTeamMembers($RaidId, $distanceId);
+                $allUsers = microtime(true) - $t2;
 	
 
 
@@ -724,42 +830,27 @@ if (!isset($MyPHPScript)) return;
 			       <td style="'.$tdstyle.'"><a href="?TeamId='.$Row['team_id'].'&RaidId=' . $RaidId .'">'.
 			          CMmbUI::toHtml($Row['team_name'])."</a> ($useGps{$Row['distance_name']}, {$Row['team_mapscount']}$teamGP$outOfRange)</td><td style=\"$tdstyle\">\r\n");
 
-                        // Формируем колонку Участники			
-				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
-					       u.user_id, 
-					       tld.levelpoint_id, lp.levelpoint_name,
-					       tu.teamuser_notstartraidid 
-				        from  TeamUsers tu
-					     inner join  Users u
-					     on tu.user_id = u.user_id
-		                             left outer join TeamLevelDismiss tld
-					     on tu.teamuser_id = tld.teamuser_id
-		                             left outer join LevelPoints lp
-					     on tld.levelpoint_id = lp.levelpoint_id
-					where tu.teamuser_hide = 0 and tu.team_id = {$Row['team_id']}";
-				//echo 'sql '.$sql;
-				$UserResult = MySqlQuery($sql);
 
-				while ($UserRow = mysql_fetch_assoc($UserResult))
+                        // Формируем колонку Участники			
+			if (!isset($TeamMembers[$Row['team_id']]))
+				die("</td></tr></table> no member records in team '{$Row['team_id']}'");
+
+			foreach($TeamMembers[$Row['team_id']] as $UserRow)
+			{
+				print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'&RaidId=' . $RaidId . '">'.CMmbUI::toHtml($UserRow['user_name']).'</a> '.$UserRow['user_birthyear'].' '.CMmbUI::toHtml($UserRow['user_city'])."\r\n");
+
+				// Отметка невыхода на старт в предыдущем ММБ
+				if ($UserRow['teamuser_notstartraidid'] > 0)
+					print(' <a title="Участник был заявлен, но не вышел на старт в прошлый раз" href="#comment">(?!)</a> ');
+
+				// Неявку участников показываем, если загружены результаты
+				if ($CanViewResults)
 				{
-				  print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'&RaidId=' . $RaidId . '">'.CMmbUI::toHtml($UserRow['user_name']).'</a> '.$UserRow['user_birthyear'].' '.CMmbUI::toHtml($UserRow['user_city'])."\r\n");
- 
-		                  // Отметка невыходна на старт в предыдущем ММБ                          
-		                  if ($UserRow['teamuser_notstartraidid'] > 0) {
-				    print(' <a title = "Участник был заявлен, но не вышел на старт в прошлый раз" href = "#comment">(?!)</a> ');
-				  } 
-        
-		                  // Неявку участников показываем, если загружены результаты
-				  if ($CanViewResults) 
-		                  {
 					if ($UserRow['levelpoint_name'] <> '')
-					{
-					    print("<i>Не явился(-ась) в: {$UserRow['levelpoint_name']}</i>\r\n");
-					} 
-		                  }
-				  print('</div>'."\r\n");
-				}  
-			        mysql_free_result($UserResult);
+						print("<i>Не явился(-ась) в: {$UserRow['levelpoint_name']}</i>\r\n");
+				}
+				print('</div>'."\r\n");
+			}
 			// Конец формирования колонки Участники
 			print("</td>\r\n");
 
@@ -803,7 +894,7 @@ if (!isset($MyPHPScript)) return;
 			    print("<td>\r\n");
 			    print($Row['team_comment']);
 			    print("</td>\r\n");
-			    print("<td>{$Row['notlevelpoint_name']}</td>\r\n");
+			    print('<td>' . normalizeSkipped($Row['notlevelpoint_name']) . "</td>\r\n"); // <br/><small><small>{$Row['notlevelpoint_name']}</small></small> // для проверки
 
 			}  elseif ($OrderType == 'Errors') {
 
@@ -816,11 +907,14 @@ if (!isset($MyPHPScript)) return;
 			    print($Row['team_comment']);
 			    print("</td>\r\n");
 			}
-			// Конец проверки на вывод с сотрировкой по месту
+			// Конец проверки на вывод с сортировкой по месту
 			print("</tr>\r\n");
 		}
 		mysql_free_result($Result);
 		print("</table>\r\n");
+		$t3 = microtime(true);
+
+		print("<div><small>Общее время: '" . ($t3-$t1) . "' подготовка: '" . ($prep - $t1) . "', запрос: '" . ($t2-$prep) . "' все пользователи: $allUsers, выборка-отрисовка: " . ($t3-$t2 - $allUsers). '\'</small></div>');
 ?>
 	
 <br/>
