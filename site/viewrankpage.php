@@ -10,7 +10,7 @@ class CTeamPlaces
 {
 	protected $teamPlaces;
 
-	public function __constructor()
+	function __construct()
 	{
 		$sql = "select team_id, distance_id, TIME_TO_SEC(COALESCE(t.team_result, 0)) as result
 					from Teams  t
