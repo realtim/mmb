@@ -228,6 +228,55 @@ if (!isset($MyPHPScript)) return;
 	return implode(", ", $ints);
     }
 
+    function GetAllTeamMembers($raidId, $distanceId = null)
+    {
+	global $Anonimus;
+	$distanceCond = (empty($distanceId) || $distanceId === 0) ? 'true' : "d.distance_id = $distanceId";
+
+	$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
+					       u.user_id,
+					       tld.levelpoint_id, lp.levelpoint_name,
+					       tu.teamuser_notstartraidid,
+					       t.team_id as team_id
+				        from  TeamUsers tu
+				             inner join Teams t
+				             	on t.team_id = tu.team_id
+				             inner join Distances d
+				             	on t.distance_id = d.distance_id
+					     inner join  Users u
+					     on tu.user_id = u.user_id
+		                             left outer join TeamLevelDismiss tld
+					     on tu.teamuser_id = tld.teamuser_id
+		                             left outer join LevelPoints lp
+					     on tld.levelpoint_id = lp.levelpoint_id
+					where tu.teamuser_hide = 0 and d.raid_id = $raidId and $distanceCond";
+	//echo 'sql '.$sql;
+
+	$UserResult = MySqlQuery($sql);
+
+	$last = null;
+	$res = array();
+	while ($row = mysql_fetch_assoc($UserResult))
+	{
+		$teamId = $row['team_id'];
+		if ($teamId !== $last)
+			$res[$teamId] = array();
+		$last = $teamId;
+
+		$res[$teamId][] = array(
+			'user_id' => $row['user_id'],
+			'user_name' => $row['user_name'],
+			'user_birthyear' => $row['user_birthyear'],
+			'user_city' => $row['user_city'],
+			'levelpoint_id' => $row['levelpoint_id'],
+			'levelpoint_name' => $row['levelpoint_name'],
+			'teamuser_notstartraidid' => $row['teamuser_notstartraidid']);
+	}
+	mysql_free_result($UserResult);
+
+	return res;
+    }
+
 
 
         // Проверяем, что передали  идентификатор ММБ
@@ -247,8 +296,10 @@ if (!isset($MyPHPScript)) return;
 
 <?
 
-        $TabIndex = 0;
-		$DisabledText = '';
+	$t1 = microtime(true);
+
+	$TabIndex = 0;
+	$DisabledText = '';
 
         //Определяем локальные переменные-флаги показа результатов и этапов
         $CanViewResults = CanViewResults($Administrator, $Moderator, $RaidStage);
@@ -270,13 +321,13 @@ if (!isset($MyPHPScript)) return;
                 $RaidCloseDt = $Row['raid_closedate'];
                 $RaidNoShowResult = $Row['raid_noshowresult'];
    
-          // 03/05/2014 Исправил порядок сортировки - раньше независисмо от устновленного  $OrderType могло сбрасываться
-          // если порядок не задан смотрим на соотношение временени публикации и текущего
-          if (empty($OrderType))
-	  {
+        // 03/05/2014 Исправил порядок сортировки - раньше независисмо от устновленного  $OrderType могло сбрасываться
+        // если порядок не задан смотрим на соотношение временени публикации и текущего
+        if (empty($OrderType))
+	{
   	      $OrderType = $CanViewResults ? "Place" : "Num";
-	  }
-	  // Конец разбора сортировки по умолчанию
+	}
+	// Конец разбора сортировки по умолчанию
 	   
 // region часть над таблицей
           print('<div align="left" style="font-size: 80%;">'."\r\n");
@@ -696,9 +747,13 @@ if (!isset($MyPHPScript)) return;
 
           	//echo 'sql '.$sql;
           	$userQuery = 0;
-          	$t1 = microtime(true);
+          	$prep = microtime(true);
                 $Result = MySqlQuery($sql);
                 $t2 = microtime(true);
+
+                $allUsers = microtime(true);
+                $TeamMembers  = GetAllTeamMembers($RaidId, $distanceId);
+                $allUsers = microtime(true) - $allUsers;
 	
 
 
@@ -776,6 +831,7 @@ if (!isset($MyPHPScript)) return;
 			       <td style="'.$tdstyle.'"><a href="?TeamId='.$Row['team_id'].'&RaidId=' . $RaidId .'">'.
 			          CMmbUI::toHtml($Row['team_name'])."</a> ($useGps{$Row['distance_name']}, {$Row['team_mapscount']}$teamGP$outOfRange)</td><td style=\"$tdstyle\">\r\n");
 
+/*
                         // Формируем колонку Участники			
 				$sql = "select tu.teamuser_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name, u.user_birthyear, u.user_city,
 					       u.user_id, 
@@ -796,25 +852,28 @@ if (!isset($MyPHPScript)) return;
 				$userQuery += microtime(true) - $t4;
 
 				while ($UserRow = mysql_fetch_assoc($UserResult))
+				{*/
+
+				if (!isset($TeamMembers[$Row['team_id']]))
+					die("</td></tr></table> no member records in team '{$Row['team_id']}'");
+
+				foreach($TeamMembers[$Row['team_id']] as $UserRow)
 				{
 				  print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'&RaidId=' . $RaidId . '">'.CMmbUI::toHtml($UserRow['user_name']).'</a> '.$UserRow['user_birthyear'].' '.CMmbUI::toHtml($UserRow['user_city'])."\r\n");
  
 		                  // Отметка невыходна на старт в предыдущем ММБ                          
-		                  if ($UserRow['teamuser_notstartraidid'] > 0) {
-				    print(' <a title = "Участник был заявлен, но не вышел на старт в прошлый раз" href = "#comment">(?!)</a> ');
-				  } 
-        
+		                  if ($UserRow['teamuser_notstartraidid'] > 0)
+				    print(' <a title="Участник был заявлен, но не вышел на старт в прошлый раз" href="#comment">(?!)</a> ');
+
 		                  // Неявку участников показываем, если загружены результаты
 				  if ($CanViewResults) 
 		                  {
 					if ($UserRow['levelpoint_name'] <> '')
-					{
 					    print("<i>Не явился(-ась) в: {$UserRow['levelpoint_name']}</i>\r\n");
-					} 
 		                  }
 				  print('</div>'."\r\n");
 				}  
-			        mysql_free_result($UserResult);
+//			        mysql_free_result($UserResult);
 			// Конец формирования колонки Участники
 			print("</td>\r\n");
 
@@ -878,7 +937,7 @@ if (!isset($MyPHPScript)) return;
 		print("</table>\r\n");
 		$t3 = microtime(true);
 
-		print("<div><small>Общее время: '" . ($t3-$t1) . "' запрос: '" . ($t2-$t1) . "' запросы пользователей: '$userQuery' выборка-отрисовка: '" . ($t3-$t2 - $userQuery). '</small></div>');
+		print("<div><small>Общее время: '" . ($t3-$t1) . "' подготовка: '" . ($prep - $t1) . "', запрос: '" . ($t2-$prep) . "' все пользователи: $allUsers, запросы пользователей: '$userQuery' выборка-отрисовка: '" . ($t3-$t2 - $userQuery). '</small></div>');
 ?>
 	
 <br/>
