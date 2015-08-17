@@ -282,7 +282,7 @@ if (!isset($MyPHPScript)) return;
     {
         $sql = "select lp.levelpoint_name, lp.levelpoint_id, lp.levelpoint_order, lp.distance_id
                         from LevelPoints lp
-                        inner join distance d on d.distance_id = lp.distance_id
+                        inner join Distances d on d.distance_id = lp.distance_id
 
                         where d.distance_hide = 0 and d.raid_id = $raidId
                         order by d.distance_id, lp.levelpoint_order asc";
