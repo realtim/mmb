@@ -179,17 +179,16 @@ if (!isset($MyPHPScript)) return;
     // Конец функции вывода невзятых КП
 
 // выделяем в списках пропущенных КП интервалы. Закладываемся, что список точек отсортирован и без повторов.
-    function normalizeSkipped($str)
+    function normalizeSkipped($skipped)
     {
-        if (empty($str))
+        if ($skipped == null)
                 return '&nbsp;';
 
 	$delim = "&nbsp;&#8209;&nbsp;"; // non-breaking hyphen with non-breaking spaces
 
-        $skipped = explode(',', $str);
         $len = count($skipped);
         if ($len < 2)
-                return $str;
+                return implode(", ", $skipped);
 
 	$start = 0;
 	$last = $skipped[0];
@@ -278,7 +277,7 @@ if (!isset($MyPHPScript)) return;
 	return $res;
     }
 
-    function GetDistancePoints($raidId)
+    function GetDistancePoints($raidId, $checkPointId)
     {
         $sql = "select lp.levelpoint_name, lp.levelpoint_id, lp.levelpoint_order, lp.distance_id
                         from LevelPoints lp
@@ -289,6 +288,7 @@ if (!isset($MyPHPScript)) return;
 
         $res = array();
         $dist = null;
+        $skipTail = false;
 
         $sqlRes = MySqlQuery($sql);
         while ($row = mysql_fetch_assoc($sqlRes))
@@ -297,10 +297,15 @@ if (!isset($MyPHPScript)) return;
                 {
                         $dist = $row['distance_id'];
                         $res[$dist] = array();
+                        $skipTail = false;
                 }
+                if ($skipTail)
+                        continue;
 
                 $res[$dist][] = array('order' => $row['levelpoint_order'],
                                       'name' => $row['levelpoint_name']);
+		if ($row['levelpoint_id'] == $checkPointId)
+			$skipTail = true;
         }
 
         mysql_free_result($sqlRes);
@@ -324,10 +329,10 @@ if (!isset($MyPHPScript)) return;
                         break;
         }
 
-        return normalizeSkipped(implode(",", $skippedList));
+        return normalizeSkipped($skippedList);
     }
 
-    function GetAllSkippedPoints($raidId)
+    function GetAllSkippedPoints($raidId, $checkPointId)
     {
         $sql = "select t.team_id, t.distance_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as notlevelpoint_name,
 			COALESCE(t.team_maxlevelpointorderdone, 0) as last_done
@@ -338,12 +343,10 @@ if (!isset($MyPHPScript)) return;
                                   on t.distance_id = lp.distance_id
 					and  COALESCE(t.team_maxlevelpointorderdone, 0) >= lp.levelpoint_order
 
-				-- left outer
 				inner join TeamLevelPoints tlp
 					on lp.levelpoint_id = tlp.levelpoint_id
 					and t.team_id = tlp.team_id
-		        where 	 /* tlp.levelpoint_id is NULL
-					and  */ d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId
+		        where 	 d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId
 			group by t.team_id, t.distance_id";
 
 	$time = microtime(true);
@@ -358,7 +361,7 @@ if (!isset($MyPHPScript)) return;
 
 	mysql_free_result($UserResult);
 
-	$distanceLists = GetDistancePoints($raidId);
+	$distanceLists = GetDistancePoints($raidId, $checkPointId);
 
 	$result = array();
 	foreach($res as $tid => $rec)
@@ -742,9 +745,11 @@ if (!isset($MyPHPScript)) return;
 		elseif ($OrderType == 'Place') {
 			// Сортировка по месту требует более хитрого запроса
 
-			if (!empty($_REQUEST['LevelPointId']))
+			$levelPointId = mmb_validate($_REQUEST, 'LevelPointId', '');
+
+			if (!empty($levelPointId))
 			{
-			    $LevelCondition = "tlp.levelpoint_id = ".$_REQUEST['LevelPointId'];
+			    $LevelCondition = "tlp.levelpoint_id = $levelPointId";
 
 			    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
 			               t.team_mapscount, lp.levelpoint_order as team_progress,
@@ -789,7 +794,7 @@ if (!isset($MyPHPScript)) return;
 			}
 
 	                $skpd = microtime(true);
-			$skippedPoints = GetAllSkippedPoints($RaidId);
+			$skippedPoints = GetAllSkippedPoints($RaidId, $levelPointId);
 			$skpd = microtime(true) - $skpd;
 			$skpd0 = $skippedPoints['__time__'];
 		}
