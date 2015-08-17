@@ -179,17 +179,16 @@ if (!isset($MyPHPScript)) return;
     // Конец функции вывода невзятых КП
 
 // выделяем в списках пропущенных КП интервалы. Закладываемся, что список точек отсортирован и без повторов.
-    function normalizeSkipped($str)
+    function normalizeSkipped($skipped)
     {
-        if (empty($str))
+        if ($skipped == null)
                 return '&nbsp;';
 
 	$delim = "&nbsp;&#8209;&nbsp;"; // non-breaking hyphen with non-breaking spaces
 
-        $skipped = explode(',', $str);
         $len = count($skipped);
         if ($len < 2)
-                return $str;
+                return implode(", ", $skipped);
 
 	$start = 0;
 	$last = $skipped[0];
@@ -278,9 +277,65 @@ if (!isset($MyPHPScript)) return;
 	return $res;
     }
 
-    function GetAllSkippedPoints($raidId)
+    function GetDistancePoints($raidId, $checkPointId)
     {
-        $sql = "select t.team_id, t.distance_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as notlevelpoint_name
+        $sql = "select lp.levelpoint_name, lp.levelpoint_id, lp.levelpoint_order, lp.distance_id
+                        from LevelPoints lp
+                        inner join Distances d on d.distance_id = lp.distance_id
+
+                        where d.distance_hide = 0 and d.raid_id = $raidId
+                        order by d.distance_id, lp.levelpoint_order asc";
+
+        $res = array();
+        $dist = null;
+        $skipTail = false;
+
+        $sqlRes = MySqlQuery($sql);
+        while ($row = mysql_fetch_assoc($sqlRes))
+        {
+                if ($dist != $row['distance_id'])
+                {
+                        $dist = $row['distance_id'];
+                        $res[$dist] = array();
+                        $skipTail = false;
+                }
+                if ($skipTail)
+                        continue;
+
+                $res[$dist][] = array('order' => $row['levelpoint_order'],
+                                      'name' => $row['levelpoint_name']);
+		if ($row['levelpoint_id'] == $checkPointId)
+			$skipTail = true;
+        }
+
+        mysql_free_result($sqlRes);
+
+        return $res;
+    }
+
+    function InvertPointList($full, $visitedNames, $lastPointOrder)
+    {
+        $nameHash = array();
+        foreach(explode(',', $visitedNames) as $skipped)
+                $nameHash[$skipped] = true;
+
+        $skippedList = array();
+        foreach($full as $point)
+        {
+                if (!isset($nameHash[$point['name']]))
+                        $skippedList[] = $point['name'];
+
+                if ($point['order'] == $lastPointOrder)
+                        break;
+        }
+
+        return normalizeSkipped($skippedList);
+    }
+
+    function GetAllSkippedPoints($raidId, $checkPointId)
+    {
+        $sql = "select t.team_id, t.distance_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as notlevelpoint_name,
+			COALESCE(t.team_maxlevelpointorderdone, 0) as last_done
 			from  Teams t
 				inner join  Distances d
 				  on t.distance_id = d.distance_id
@@ -288,11 +343,10 @@ if (!isset($MyPHPScript)) return;
                                   on t.distance_id = lp.distance_id
 					and  COALESCE(t.team_maxlevelpointorderdone, 0) >= lp.levelpoint_order
 
-				left outer join TeamLevelPoints tlp
+				inner join TeamLevelPoints tlp
 					on lp.levelpoint_id = tlp.levelpoint_id
 					and t.team_id = tlp.team_id
-		        where 	 tlp.levelpoint_id is NULL
-					and  d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId
+		        where 	 d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId
 			group by t.team_id, t.distance_id";
 
 	$time = microtime(true);
@@ -301,11 +355,24 @@ if (!isset($MyPHPScript)) return;
 
 	$res = array();
 	while ($row = mysql_fetch_assoc($UserResult))
-		$res[$row['team_id']] = $row['notlevelpoint_name'];
+		$res[$row['team_id']] = array('names' => $row['notlevelpoint_name'],
+		                              'distance' => $row['distance_id'],
+					      'last' => $row['last_done']);
 
-	$res['__time__'] = $time;       // хак, чтобы вернуть время, за которое отработал запрос
+	mysql_free_result($UserResult);
 
-	return $res;
+	$distanceLists = GetDistancePoints($raidId, $checkPointId);
+
+	$result = array();
+	foreach($res as $tid => $rec)
+		if (isset($distanceLists[$rec['distance']]))
+			$result[$tid] = InvertPointList($distanceLists[$rec['distance']], $rec['names'], $rec['last']);
+		else
+			die("</td></tr></table>distance points list doesn't have distance id = '{$rec['distance']}'");
+
+	$result['__time__'] = $time;       // хак, чтобы вернуть время, за которое отработал запрос
+
+	return $result;
     }
 
 
@@ -678,12 +745,14 @@ if (!isset($MyPHPScript)) return;
 		elseif ($OrderType == 'Place') {
 			// Сортировка по месту требует более хитрого запроса
 
-			if (!empty($_REQUEST['LevelPointId']))
+			$levelPointId = mmb_validate($_REQUEST, 'LevelPointId', '');
+
+			if (!empty($levelPointId))
 			{
-			    $LevelCondition = "tlp.levelpoint_id = ".$_REQUEST['LevelPointId'];
+			    $LevelCondition = "tlp.levelpoint_id = $levelPointId";
 
 			    $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,  
-			               t.team_mapscount, lp.levelpoint_order as team_progress, 
+			               t.team_mapscount, lp.levelpoint_order as team_progress,
 			               CASE WHEN COALESCE(t.team_minlevelpointorderwitherror, 0) > lp.levelpoint_order THEN 0 ELSE COALESCE(t.team_minlevelpointorderwitherror, 0) END as team_error,
 				       d.distance_name, d.distance_id,
 		                       TIME_FORMAT(tlp.teamlevelpoint_result, '%H:%i') as team_sresult,
@@ -725,7 +794,7 @@ if (!isset($MyPHPScript)) return;
 			}
 
 	                $skpd = microtime(true);
-			$skippedPoints = GetAllSkippedPoints($RaidId);
+			$skippedPoints = GetAllSkippedPoints($RaidId, $levelPointId);
 			$skpd = microtime(true) - $skpd;
 			$skpd0 = $skippedPoints['__time__'];
 		}
@@ -911,7 +980,7 @@ if (!isset($MyPHPScript)) return;
 			    print($Row['team_comment']);
 			    print("</td>\r\n");
 
-			    $skipped = isset($skippedPoints[$Row['team_id']]) ? normalizeSkipped($skippedPoints[$Row['team_id']]) : '&nbsp;';
+			    $skipped = isset($skippedPoints[$Row['team_id']]) ? $skippedPoints[$Row['team_id']] : '&nbsp;';
 			    print("<td>$skipped</td>\r\n");
 
 			}  elseif ($OrderType == 'Errors') {
@@ -937,7 +1006,7 @@ if (!isset($MyPHPScript)) return;
 		if (empty($skpd0))
 			$skpd0 = 0;
 
-		print("<div><small>Общее время: '" . ($t3-$t1) . "' подготовка: '" . ($prep - $t1 - @$skpd) . "', запрос: '" . ($t2-$prep) . "' get skipped: $skpd, core: $skpd0 выборка-отрисовка: " . ($t3-$t2 - $allUsers). '\'</small></div>');
+		print("<div><small>Общее время: '" . ($t3-$t1) . "' подготовка: '" . ($prep - $t1 - $skpd) . "', запрос: '" . ($t2-$prep) . "' get skipped: $skpd, core: $skpd0 выборка-отрисовка: " . ($t3-$t2 - $allUsers). '\'</small></div>');
 ?>
 	
 <br/>
