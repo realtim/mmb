@@ -2202,6 +2202,33 @@ send_mime_mail('Автор письма',
 	$rs = MySqlQuery($sql);
 
 
+	 // Находим невзятые КП
+	 $sql = " update  Teams t
+		   inner join
+	          	(select t.team_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as skippedlevelpoint
+						from  Teams t
+								inner join  Distances d
+								on t.distance_id = d.distance_id
+								join LevelPoints lp
+ 								on t.distance_id = lp.distance_id
+									and  COALESCE(t.team_maxlevelpointorderdone, 0) >= lp.levelpoint_order
+								left outer join TeamLevelPoints tlp
+								on lp.levelpoint_id = tlp.levelpoint_id
+									and t.team_id = tlp.team_id
+					 	where 	tlp.levelpoint_id is NULL
+								and d.distance_hide = 0 and t.team_hide = 0
+								and $teamRaidCondition
+						group by t.team_id
+				) a
+		  on t.team_id = a.team_id
+          set  team_skippedlevelpoint = COALESCE(a.skippedlevelpoint, '')";
+
+		 //     echo $sql;
+
+		 $rs = MySqlQuery($sql);
+
+
+
 	// Обновляем комментарий у команды, куда включаем и ошибки  
 	$sql = " update  Teams t
                   inner join
