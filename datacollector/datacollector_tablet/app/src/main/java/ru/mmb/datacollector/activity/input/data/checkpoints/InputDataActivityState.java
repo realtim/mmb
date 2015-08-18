@@ -17,11 +17,13 @@ import ru.mmb.datacollector.model.checkpoints.CheckedState;
 import ru.mmb.datacollector.model.history.DataStorage;
 import ru.mmb.datacollector.model.registry.Settings;
 
+import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_CHECKED_DATE;
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_CHECKPOINTS_STATE;
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_EXISTING_RECORD;
 
 public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
     private CheckedState checkedState = new CheckedState();
+    private DateRecord inputDate = new DateRecord();
     private boolean editingExistingRecord = false;
 
     public InputDataActivityState() {
@@ -37,11 +39,39 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         return checkedState.isChecked(checkpoint.getCheckpointOrder());
     }
 
+    public void setInputDate(int year, int month, int day, int hour, int minute)
+    {
+        inputDate = new DateRecord(year, month, day, hour, minute);
+        fireStateChanged();
+    }
+
+    public void setInputDateDatePart(int year, int month, int day)
+    {
+        inputDate.setYear(year);
+        inputDate.setMonth(month);
+        inputDate.setDay(day);
+        fireStateChanged();
+    }
+
+    public void setInputDateTimePart(int hour, int minute)
+    {
+        inputDate.setHour(hour);
+        inputDate.setMinute(minute);
+        // Log.d("input data activity", "set hour: " + hour + " and minute: " + minute);
+        fireStateChanged();
+    }
+
+    public DateRecord getInputDate()
+    {
+        return inputDate;
+    }
+
     @Override
     public void save(Bundle savedInstanceState) {
         super.save(savedInstanceState);
         savedInstanceState.putSerializable(KEY_CURRENT_INPUT_CHECKPOINTS_STATE, checkedState);
-        savedInstanceState.putSerializable(KEY_CURRENT_INPUT_EXISTING_RECORD, new Boolean(editingExistingRecord));
+        savedInstanceState.putSerializable(KEY_CURRENT_INPUT_CHECKED_DATE, inputDate);
+        savedInstanceState.putSerializable(KEY_CURRENT_INPUT_EXISTING_RECORD, editingExistingRecord);
     }
 
     @Override
@@ -50,6 +80,9 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_CHECKPOINTS_STATE))
             checkedState =
                     (CheckedState) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_CHECKPOINTS_STATE);
+        if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_CHECKED_DATE))
+            inputDate =
+                    (DateRecord) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_CHECKED_DATE);
         if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_EXISTING_RECORD))
             editingExistingRecord =
                     (Boolean) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_EXISTING_RECORD);
@@ -71,10 +104,32 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         return levelPoint.isCommonStart();
     }
 
+    public void setInputDate(Date date)
+    {
+        inputDate = new DateRecord(date);
+        fireStateChanged();
+    }
+
+    public void initInputDateFromCommonStart()
+    {
+        inputDate = new DateRecord(getLevelPointForTeam().getLevelPointMinDateTime());
+    }
+
     public String getResultText(Activity context) {
         StringBuilder sb = new StringBuilder();
+        appendDateText(context, sb);
         appendTakenCheckpointsText(context, sb);
         return sb.toString();
+    }
+
+    private void appendDateText(Activity context, StringBuilder sb)
+    {
+        if (getCurrentLevelPointType() == LevelPointType.START)
+            sb.append(context.getResources().getString(R.string.input_data_res_start_time));
+        else
+            sb.append(context.getResources().getString(R.string.input_data_res_finish_time));
+        sb.append(" ");
+        sb.append(inputDate.toPrettyString());
     }
 
     @SuppressWarnings("unused")

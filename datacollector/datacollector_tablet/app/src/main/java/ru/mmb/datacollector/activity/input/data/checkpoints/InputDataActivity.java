@@ -29,6 +29,8 @@ public class InputDataActivity extends Activity implements StateChangeListener {
     private Button btnOk;
     private Button btnWithdraw;
 
+    private DatePanel datePanel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +42,7 @@ public class InputDataActivity extends Activity implements StateChangeListener {
 
         setContentView(R.layout.input_data_checkpoints);
 
+        datePanel = new DatePanel(this, currentState);
         new CheckpointPanel(this, currentState);
 
         panelExistsIndicator = (LinearLayout) findViewById(R.id.inputData_existsIndicatorPanel);
@@ -89,6 +92,13 @@ public class InputDataActivity extends Activity implements StateChangeListener {
     protected void onStop() {
         super.onStop();
         currentState.saveToSharedPreferences(getPreferences(MODE_PRIVATE));
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        datePanel.refreshDateControls();
     }
 
     private boolean isFinish() {
