@@ -9,6 +9,7 @@ import java.util.List;
 
 import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.ScanPoint;
+import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
@@ -34,8 +35,8 @@ public class RawLoggerDataDB {
         RawLoggerData result = null;
         String sql =
                 "select t." + RAWLOGGERDATA_DATE + " from " + TABLE_RAW_LOGGER_DATA + " as t " +
-                " where t." + LOGGER_ID + " = " + loggerId + " and t." + SCANPOINT_ID + " = " +
-                scanpointId + " and t." + TEAM_ID + " = " + teamId;
+                        " where t." + LOGGER_ID + " = " + loggerId + " and t." + SCANPOINT_ID + " = " +
+                        scanpointId + " and t." + TEAM_ID + " = " + teamId;
         Cursor resultCursor = db.rawQuery(sql, null);
 
         if (resultCursor.moveToFirst() == false) {
@@ -53,21 +54,45 @@ public class RawLoggerDataDB {
         return result;
     }
 
+    public RawLoggerData getExistingRecord(ScanPoint scanPoint, Team team) {
+        RawLoggerData result = null;
+        String sql =
+                "select t." + RAWLOGGERDATA_DATE + ", t." + LOGGER_ID + " from " + TABLE_RAW_LOGGER_DATA +
+                        " as t " + " where t." + SCANPOINT_ID + " = " + scanPoint.getScanPointId() +
+                        " and t." + TEAM_ID + " = " + team.getTeamId();
+        Cursor resultCursor = db.rawQuery(sql, null);
+
+        if (resultCursor.moveToFirst() == false) {
+            resultCursor.close();
+            return null;
+        }
+
+        String recordDateTime = resultCursor.getString(0);
+        int loggerId = resultCursor.getInt(1);
+        result = new RawLoggerData(loggerId, scanPoint.getScanPointId(), team.getTeamId(), DateFormat.parse(recordDateTime));
+
+        result.setTeam(team);
+        result.setScanPoint(scanPoint);
+        resultCursor.close();
+
+        return result;
+    }
+
     public String getInsertNewLoggerRecordSql(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
         String sql =
                 "insert into " + TABLE_RAW_LOGGER_DATA + "(" + USER_ID + ", " + DEVICE_ID + ", " +
-                LOGGER_ID + ", " + SCANPOINT_ID + ", " + TEAM_ID + ", " + RAWLOGGERDATA_DATE +
-                ") VALUES" + "(" + Settings.getInstance().getUserId() + ", " +
-                Settings.getInstance().getDeviceId() + ", " + loggerId + ", " + scanpointId + ", " +
-                teamId + ", '" + DateFormat.format(recordDateTime) + "')";
+                        LOGGER_ID + ", " + SCANPOINT_ID + ", " + TEAM_ID + ", " + RAWLOGGERDATA_DATE +
+                        ") VALUES" + "(" + Settings.getInstance().getUserId() + ", " +
+                        Settings.getInstance().getDeviceId() + ", " + loggerId + ", " + scanpointId + ", " +
+                        teamId + ", '" + DateFormat.format(recordDateTime) + "')";
         return sql;
     }
 
     public String getUpdateExistingLoggerRecordSql(int loggerId, int scanpointId, int teamId, Date recordDateTime) {
         String sql =
                 "update " + TABLE_RAW_LOGGER_DATA + " set " + RAWLOGGERDATA_DATE + " = '" +
-                DateFormat.format(recordDateTime) + "' where " + LOGGER_ID + " = " + loggerId +
-                " and " + SCANPOINT_ID + " = " + scanpointId + " and " + TEAM_ID + " = " + teamId;
+                        DateFormat.format(recordDateTime) + "' where " + LOGGER_ID + " = " + loggerId +
+                        " and " + SCANPOINT_ID + " = " + scanpointId + " and " + TEAM_ID + " = " + teamId;
         return sql;
     }
 

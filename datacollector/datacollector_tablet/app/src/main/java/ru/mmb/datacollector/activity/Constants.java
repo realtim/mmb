@@ -14,7 +14,7 @@ public class Constants {
             "current.input.checkpoint.state";
     public static final String KEY_CURRENT_INPUT_CHECKED_DATE =
             "current.input.checked.date";
-    public static final String KEY_CURRENT_INPUT_EXISTING_RECORD = "current.input.existing.record";
+    public static final String KEY_CURRENT_INPUT_LOGGER_DATA_EXISTS = "current.input.logger.data.exists";
     public static final String KEY_CURRENT_INPUT_WITHDRAWN_CHECKED =
             "current.input.withdrawn.checked";
     public static final String KEY_EXPORT_RESULT_MESSAGE = "export.result.message";

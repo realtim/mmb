@@ -8,10 +8,11 @@ import java.util.Date;
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.ActivityStateWithTeamAndScanPoint;
 import ru.mmb.datacollector.activity.LevelPointType;
-import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.db.RawTeamLevelPointsRecord;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.Checkpoint;
 import ru.mmb.datacollector.model.LevelPoint;
+import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.RawTeamLevelPoints;
 import ru.mmb.datacollector.model.checkpoints.CheckedState;
 import ru.mmb.datacollector.model.history.DataStorage;
@@ -19,12 +20,12 @@ import ru.mmb.datacollector.model.registry.Settings;
 
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_CHECKED_DATE;
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_CHECKPOINTS_STATE;
-import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_EXISTING_RECORD;
+import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_LOGGER_DATA_EXISTS;
 
 public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
     private CheckedState checkedState = new CheckedState();
     private DateRecord inputDate = new DateRecord();
-    private boolean editingExistingRecord = false;
+    private boolean loggerDataExists = false;
 
     public InputDataActivityState() {
         super("input.data");
@@ -39,30 +40,26 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         return checkedState.isChecked(checkpoint.getCheckpointOrder());
     }
 
-    public void setInputDate(int year, int month, int day, int hour, int minute)
-    {
+    public void setInputDate(int year, int month, int day, int hour, int minute) {
         inputDate = new DateRecord(year, month, day, hour, minute);
         fireStateChanged();
     }
 
-    public void setInputDateDatePart(int year, int month, int day)
-    {
+    public void setInputDateDatePart(int year, int month, int day) {
         inputDate.setYear(year);
         inputDate.setMonth(month);
         inputDate.setDay(day);
         fireStateChanged();
     }
 
-    public void setInputDateTimePart(int hour, int minute)
-    {
+    public void setInputDateTimePart(int hour, int minute) {
         inputDate.setHour(hour);
         inputDate.setMinute(minute);
         // Log.d("input data activity", "set hour: " + hour + " and minute: " + minute);
         fireStateChanged();
     }
 
-    public DateRecord getInputDate()
-    {
+    public DateRecord getInputDate() {
         return inputDate;
     }
 
@@ -71,7 +68,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         super.save(savedInstanceState);
         savedInstanceState.putSerializable(KEY_CURRENT_INPUT_CHECKPOINTS_STATE, checkedState);
         savedInstanceState.putSerializable(KEY_CURRENT_INPUT_CHECKED_DATE, inputDate);
-        savedInstanceState.putSerializable(KEY_CURRENT_INPUT_EXISTING_RECORD, editingExistingRecord);
+        savedInstanceState.putSerializable(KEY_CURRENT_INPUT_LOGGER_DATA_EXISTS, loggerDataExists);
     }
 
     @Override
@@ -83,9 +80,9 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_CHECKED_DATE))
             inputDate =
                     (DateRecord) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_CHECKED_DATE);
-        if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_EXISTING_RECORD))
-            editingExistingRecord =
-                    (Boolean) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_EXISTING_RECORD);
+        if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_LOGGER_DATA_EXISTS))
+            loggerDataExists =
+                    (Boolean) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_LOGGER_DATA_EXISTS);
     }
 
     public boolean needInputCheckpoints() {
@@ -104,14 +101,12 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         return levelPoint.isCommonStart();
     }
 
-    public void setInputDate(Date date)
-    {
+    public void setInputDate(Date date) {
         inputDate = new DateRecord(date);
         fireStateChanged();
     }
 
-    public void initInputDateFromCommonStart()
-    {
+    public void initInputDateFromCommonStart() {
         inputDate = new DateRecord(getLevelPointForTeam().getLevelPointMinDateTime());
     }
 
@@ -122,8 +117,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         return sb.toString();
     }
 
-    private void appendDateText(Activity context, StringBuilder sb)
-    {
+    private void appendDateText(Activity context, StringBuilder sb) {
         if (getCurrentLevelPointType() == LevelPointType.START)
             sb.append(context.getResources().getString(R.string.input_data_res_start_time));
         else
@@ -161,7 +155,14 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
                     SQLiteDatabaseAdapter.getConnectedInstance().getExistingTeamResultRecord(getCurrentScanPoint(), getCurrentTeam());
             if (previousRecord != null) {
                 checkedState.loadTakenCheckpoints(previousRecord.getCheckedMap());
-                editingExistingRecord = true;
+            }
+            if (!isCommonStart()) {
+                RawLoggerData rawLoggerData =
+                        SQLiteDatabaseAdapter.getConnectedInstance().getExistingLoggerRecord(getCurrentScanPoint(), getCurrentTeam());
+                if (rawLoggerData != null) {
+                    inputDate = new DateRecord(rawLoggerData.getRecordDateTime());
+                    loggerDataExists = true;
+                }
             }
         }
     }
@@ -178,6 +179,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
 
     public void saveInputDataToDB(Date recordDateTime) {
         SQLiteDatabaseAdapter.getConnectedInstance().saveRawTeamLevelPoints(getCurrentScanPoint(), getCurrentTeam(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
+        // TODO save changed RawLoggerData
     }
 
     public void putTeamLevelPointToDataStorage(Date recordDateTime) {
@@ -189,7 +191,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         DataStorage.putRawTeamLevelPoints(rawTeamLevelPoints);
     }
 
-    public boolean isEditingExistingRecord() {
-        return editingExistingRecord;
+    public boolean isLoggerDataExists() {
+        return loggerDataExists;
     }
 }

@@ -67,7 +67,7 @@ public class InputDataActivity extends Activity implements StateChangeListener {
     }
 
     private void refreshExistsIndicator() {
-        if (currentState.isEditingExistingRecord()) {
+        if (currentState.isLoggerDataExists()) {
             //Log.d("input_data_checkpoints", "record exists");
             panelExistsIndicator.setBackgroundResource(R.color.LightSkyBlue);
         } else {
@@ -95,8 +95,7 @@ public class InputDataActivity extends Activity implements StateChangeListener {
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         datePanel.refreshDateControls();
     }
