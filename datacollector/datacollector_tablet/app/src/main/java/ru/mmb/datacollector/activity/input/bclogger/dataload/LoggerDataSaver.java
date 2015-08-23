@@ -79,7 +79,7 @@ public class LoggerDataSaver {
         RawLoggerData existingRecord = SQLiteDatabaseAdapter.getConnectedInstance().getExistingLoggerRecord(loggerId, scanpointId, teamId);
         if (existingRecord != null) {
             if (needUpdateExistingRecord(existingRecord, recordDateTime)) {
-                String sql = SQLiteDatabaseAdapter.getConnectedInstance().getUpdateExistingLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime);
+                String sql = SQLiteDatabaseAdapter.getConnectedInstance().getUpdateExistingLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime, recordDateTime, 0);
                 db.execSQL(sql);
                 recordsToSave++;
                 owner.writeToConsole("existing record updated");
@@ -87,7 +87,7 @@ public class LoggerDataSaver {
                 owner.writeToConsole("existing record NOT updated");
             }
         } else {
-            String sql = SQLiteDatabaseAdapter.getConnectedInstance().getInsertNewLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime);
+            String sql = SQLiteDatabaseAdapter.getConnectedInstance().getInsertNewLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime, recordDateTime, 0);
             db.execSQL(sql);
             recordsToSave++;
             owner.writeToConsole("new record inserted");
