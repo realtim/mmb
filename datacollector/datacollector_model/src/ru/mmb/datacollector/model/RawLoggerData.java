@@ -9,21 +9,35 @@ public class RawLoggerData {
 	private final int scanPointId;
 	private final int teamId;
 	private final Date recordDateTime;
+	private final Date scannedDateTime;
+	private final int changedManual;
 
 	private ScanPoint scanPoint = null;
 	private Team team = null;
 
-	public RawLoggerData(int loggerId, int scanPointId, int teamId, Date recordDateTime) {
-		this(0, 0, loggerId, scanPointId, teamId, recordDateTime);
+	/**
+	 * Create logger RAW data just from scanner.
+	 * 
+	 * @param loggerId
+	 * @param scanPointId
+	 * @param teamId
+	 * @param recordDateTime
+	 */
+	public RawLoggerData(int loggerId, int scanPointId, int teamId, Date recordDateTime, Date scannedDateTime,
+			int changedManual) {
+		this(0, 0, loggerId, scanPointId, teamId, recordDateTime, scannedDateTime, changedManual);
 	}
 
-	public RawLoggerData(int userId, int deviceId, int loggerId, int scanPointId, int teamId, Date recordDateTime) {
+	public RawLoggerData(int userId, int deviceId, int loggerId, int scanPointId, int teamId, Date recordDateTime,
+			Date scannedDateTime, int changedManual) {
 		this.userId = userId;
 		this.deviceId = deviceId;
 		this.loggerId = loggerId;
 		this.scanPointId = scanPointId;
 		this.teamId = teamId;
 		this.recordDateTime = recordDateTime;
+		this.scannedDateTime = scannedDateTime;
+		this.changedManual = changedManual;
 	}
 
 	public ScanPoint getScanPoint() {
@@ -64,5 +78,13 @@ public class RawLoggerData {
 
 	public int getDeviceId() {
 		return deviceId;
+	}
+
+	public Date getScannedDateTime() {
+		return scannedDateTime;
+	}
+
+	public int getChangedManual() {
+		return changedManual;
 	}
 }

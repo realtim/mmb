@@ -454,7 +454,9 @@ if ($AllowViewResults == 1)
 		       DATE_FORMAT(COALESCE(lp.levelpoint_maxdatetime, '0000-00-00 00:00:00'), '%m-%d %H:%i') as levelpoint_maxdatetime,
 		       COALESCE(lpd.levelpointdiscount_value, 0) as levelpoint_discount,
 		       COALESCE(sp.scanpoint_name, 'Не указана') as scanpoint_name,
-		       COALESCE(sp.scanpoint_id, 0)  as scanpoint_id
+		       COALESCE(sp.scanpoint_id, 0)  as scanpoint_id,
+		       tlp1.teamcount,
+		       tlp2.teamusercount
 		from LevelPoints lp
 		     inner join PointTypes pt
 		     on lp.pointtype_id = pt.pointtype_id
@@ -465,6 +467,23 @@ if ($AllowViewResults == 1)
 			and lpd.levelpointdiscount_finish >= lp.levelpoint_order
 		     left outer join ScanPoints sp
 		     on lp.scanpoint_id = sp.scanpoint_id
+		     left outer join
+		     (select tlp.levelpoint_id, count(t.team_id) as teamcount
+		     from TeamLevelPoints tlp
+		          inner join Teams t on t.team_id = tlp.team_id
+		     where t.distance_id = $DistanceId
+		     group by tlp.levelpoint_id
+		     ) tlp1
+		     on lp.levelpoint_id = tlp1.levelpoint_id
+		     left outer join
+		     (select tlp.levelpoint_id, count(tu.teamuser_id) as teamusercount
+		     from TeamLevelPoints tlp
+		          inner join Teams t on t.team_id = tlp.team_id
+		          inner join TeamUsers tu on t.team_id = tu.team_id
+		     where t.distance_id = $DistanceId
+		     group by tlp.levelpoint_id
+		     ) tlp2
+		     on lp.levelpoint_id = tlp2.levelpoint_id
 		where lp.levelpoint_hide = 0 and lp.distance_id = $DistanceId
 		order by levelpoint_order";
 	
@@ -480,7 +499,7 @@ if ($AllowViewResults == 1)
 		         <td width="50">N п/п</td>
                          <td width="100">Скан-точка</td>
 		         <td width="150">Тип</td>
-		         <td width="200">Название</td>
+		         <td width="200">Название (Команд/Участников)</td>
 		         <td width="150">Штраф (минуты)</td>
 		         <td width="100">с</td>
 		         <td width="100">по</td>
@@ -505,7 +524,7 @@ if ($AllowViewResults == 1)
 		     print("<td>{$Row['levelpoint_order']}</td>
                             <td>{$Row['scanpoint_name']}</td>
 		            <td>{$Row['pointtype_name']}</td>
-		            <td>{$Row['levelpoint_name']}</td>
+		            <td>{$Row['levelpoint_name']}({$Row['teamcount']}/{$Row['teamusercount']})</td>
 		            <td>{$Row['levelpoint_penalty']}</td>
 		            <td>{$Row['levelpoint_mindatetime']}</td>
 		            <td>{$Row['levelpoint_maxdatetime']}</td>

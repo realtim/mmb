@@ -26,6 +26,8 @@ public class RawLoggerDataDB {
 	private static final String SCANPOINT_ID = "scanpoint_id";
 	private static final String TEAM_ID = "team_id";
 	private static final String RAWLOGGERDATA_DATE = "rawloggerdata_date";
+	private static final String SCANNED_DATE = "scanned_date";
+	private static final String CHANGED_MANUAL = "changed_manual";
 
 	public static synchronized List<RawLoggerData> loadRawLoggerData(int scanPointId) {
 		List<RawLoggerData> result = new ArrayList<RawLoggerData>();
@@ -35,8 +37,9 @@ public class RawLoggerDataDB {
 			ResultSet rs = null;
 			try {
 				String sql = "select t.`" + USER_ID + "`, t.`" + DEVICE_ID + "`, t.`" + LOGGER_ID + "`, t.`" + TEAM_ID
-						+ "`, t.`" + RAWLOGGERDATA_DATE + "` from `" + TABLE_RAW_LOGGER_DATA + "` as t " + " where t.`"
-						+ SCANPOINT_ID + "` = " + scanPointId;
+						+ "`, t.`" + RAWLOGGERDATA_DATE + "`, t.`" + SCANNED_DATE + "`, t.`" + CHANGED_MANUAL
+						+ "` from `" + TABLE_RAW_LOGGER_DATA + "` as t " + " where t.`" + SCANPOINT_ID + "` = "
+						+ scanPointId;
 				stmt = conn.createStatement();
 				rs = stmt.executeQuery(sql);
 				while (rs.next()) {
@@ -45,9 +48,11 @@ public class RawLoggerDataDB {
 					int loggerId = rs.getInt(3);
 					int teamId = rs.getInt(4);
 					String recordDate = rs.getString(5);
+					String scannedDate = rs.getString(6);
+					int changedManual = rs.getInt(7);
 
 					RawLoggerData rawLoggerData = new RawLoggerData(userId, deviceId, loggerId, scanPointId, teamId,
-							DateFormat.parse(recordDate));
+							DateFormat.parse(recordDate), DateFormat.parse(scannedDate), changedManual);
 					// init reference fields
 					rawLoggerData.setScanPoint(ScanPointsRegistry.getInstance().getScanPointById(scanPointId));
 					rawLoggerData.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));

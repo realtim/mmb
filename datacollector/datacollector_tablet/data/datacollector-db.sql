@@ -54,9 +54,11 @@ teamlevelpoint_points TEXT, teamlevelpoint_comment TEXT, PRIMARY KEY (user_id, l
 CREATE INDEX IDXTLP_accelerator_1 ON TeamLevelPoints (levelpoint_id, team_id);
 CREATE INDEX IDXTLP_update_date ON TeamLevelPoints (teamlevelpoint_date);
 
-
+-- rawloggerdata_date - время последнего изменения
+-- scanned_date - время отметки на контрольной точке
 CREATE TABLE RawLoggerData (user_id INTEGER NOT NULL, device_id INTEGER NOT NULL, logger_id INTEGER NOT NULL, 
-scanpoint_id INTEGER NOT NULL, team_id INTEGER NOT NULL, rawloggerdata_date TEXT NOT NULL,
+scanpoint_id INTEGER NOT NULL, team_id INTEGER NOT NULL, rawloggerdata_date TEXT NOT NULL, scanned_date TEXT NOT NULL,
+changed_manual INTEGER NOT NULL DEFAULT 0,
 PRIMARY KEY (logger_id, scanpoint_id, team_id));
 
 CREATE TABLE RawTeamLevelPoints (user_id INTEGER NOT NULL, device_id INTEGER NOT NULL, scanpoint_id INTEGER NOT NULL, 
@@ -159,6 +161,8 @@ INSERT INTO MetaColumns VALUES(143, 12, 'logger_id', 2, 'INTEGER', 1);
 INSERT INTO MetaColumns VALUES(144, 12, 'scanpoint_id', 3, 'INTEGER', 1);
 INSERT INTO MetaColumns VALUES(145, 12, 'team_id', 4, 'INTEGER', 1);
 INSERT INTO MetaColumns VALUES(146, 12, 'rawloggerdata_date', 5, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(147, 12, 'scanned_date', 6, 'LONG_DATE', 0);
+INSERT INTO MetaColumns VALUES(148, 12, 'changed_manual', 7, 'INTEGER', 0);
 /* rawteamlevelpoints */
 INSERT INTO MetaColumns VALUES(151, 13, 'user_id', 0, 'INTEGER', 1);
 INSERT INTO MetaColumns VALUES(152, 13, 'device_id', 1, 'INTEGER', 0);

@@ -72,6 +72,20 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/global_padding" >
 
+            <DatePicker
+                android:id="@+id/inputData_datePicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:calendarViewShown="false"
+                android:datePickerMode="spinner" />
+
+            <LinearLayout
+                android:id="@+id/inputData_timePanel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/global_padding"
+                android:orientation="horizontal" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

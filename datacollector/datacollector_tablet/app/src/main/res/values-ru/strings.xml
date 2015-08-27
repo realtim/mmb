@@ -96,6 +96,8 @@
     <string name="input_data_ok">ОК</string>
     <string name="input_data_res_missed">Пропущено:</string>
     <string name="input_data_res_taken">Взято:</string>
+    <string name="input_data_res_start_time">Время старта:</string>
+    <string name="input_data_res_finish_time">Время финиша:</string>
     <string name="input_data_withdraw_member">Сход</string>
 
     <string name="input_withdraw_no_team_number">333</string>
