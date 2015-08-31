@@ -64,7 +64,7 @@ class CTeamPlaces
 	{
 		// Показываем  список ММБ
 		$sql = "select t.distance_id, t.team_name, t.team_id, t.team_outofrange,
-		                    	         lp.levelpoint_name, tu.teamuser_rank, tu.user_id
+		                    	         lp.levelpoint_name, tu.teamuser_rank, tu.user_id,
 									     lp.levelpoint_id
 				from Teams t
 				inner join Distances d on d.distance_id = t.distance_id and d.distance_hide = 0
