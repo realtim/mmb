@@ -2132,7 +2132,6 @@ send_mime_mail('Автор письма',
 		$raidid = CSql::singleValue($sql, 'raid_id');
 	}
 
-	RecalcTeamUsersRank($raidid);
 	// Убрал расчёт ошибок
 	//RecalcErrors($raidid, $teamid);
 
@@ -2175,6 +2174,9 @@ send_mime_mail('Автор письма',
      //     echo $sql;
 	 
 	$rs = MySqlQuery($sql);
+
+     // теперь можно посчитать рейтинг
+	RecalcTeamUsersRank($raidid);
 	
 
      //
