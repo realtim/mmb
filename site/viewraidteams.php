@@ -62,48 +62,8 @@
 	// выделяем в списках пропущенных КП интервалы. Закладываемся, что список точек отсортирован и без повторов.
 	function normalizeSkippedString($str)
 	{
-		if (empty($str))
-			return '&nbsp;';
-		$delim = "&nbsp;&#8209;&nbsp;"; // non-breaking hyphen with non-breaking spaces
-		$skipped = explode(',', $str);
-		$len = count($skipped);
-
-		if ($len < 2)
-			return $str;
-
-		$start = 0;
-		$last = $skipped[0];
-		$ints = array();
-		for ($i = 1; $i < $len; $i++)
-		{
-			if ($skipped[$i] == $last + 1)
-			{
-				$last = $skipped[$i];
-				continue;
-			}
-			if ($start < $i - 2)    // полноценный интервал
-				$ints[] = "{$skipped[$start]}$delim$last";
-			else
-			{
-				$ints[] = $skipped[$start];
-				if ($start < $i - 1)
-					$ints[] = $last;
-			}
-			$start = $i;
-			$last = $skipped[$i];
-		}
-		if ($start < $len - 2)
-			$ints[] = "{$skipped[$start]}$delim$last";
-		else
-		{
-			$ints[] = $skipped[$start];
-			if ($start < $len -1)
-				$ints[] = $last;
-		}
-		return implode(", ", $ints);
+		return empty($str) ? '&nbsp;' :  normalizeSkipped(explode(',', $str));
 	}
-
-
 
 	// выделяем в списках пропущенных КП интервалы. Закладываемся, что список точек отсортирован и без повторов.
     function normalizeSkipped($skipped)
@@ -146,7 +106,7 @@
 		else
 		{
 			$ints[] = $skipped[$start];
-			if ($start < $len -1)
+			if ($start < $len - 1)
 				$ints[] = $last;
 		}
 
@@ -487,25 +447,21 @@
         <td width="300">'.$Row['distance_data']."</td>\r\n");
 
         // Если идёт регистрацию время окончания выделяем жирным
-        if ($RaidStage == 1)
-		{
-		    print("<td style=\"font-weight: bold;\">Регистрация до: $RaidRegisterEndDt</td>\r\n");
-		} else {
-		    print("<td>Регистрация до: $RaidRegisterEndDt</td>\r\n");
-		}
-				   
-		if (!empty($RaidCloseDt))
-		{
-		  print("<td>Протокол закрыт: $RaidCloseDt</td>\r\n");
-		}
-		print("</tr>\r\n");
+        $bStyle = $RaidStage == 1 ? 'style="font-weight: bold;"': '';
+        print("<td $bStyle>Регистрация до: $RaidRegisterEndDt</td>\r\n");
+
+	if (!empty($RaidCloseDt))
+	{
+                print("<td>Протокол закрыт: $RaidCloseDt</td>\r\n");
+	}
+	print("</tr>\r\n");
 
     }
 		    
     // конец цикла по дистанциям
     mysql_free_result($Result);
 
-    print('</table>'."\r\n");
+    print("</table>\r\n");
 
 	// ============ Вывод списка команд ===========================
 
@@ -779,7 +735,7 @@
 	if (empty($skpd0))
 			$skpd0 = 0;
 
-		print("<div><small>Общее время: '" . ($t3-$t1) . "' подготовка: '" . ($prep - $t1 - $skpd) . "', запрос: '" . ($t2-$prep) . "' get skipped: $skpd, core: $skpd0 выборка-отрисовка: " . ($t3-$t2 - $allUsers). '\'</small></div>');
+		print("<div style=\"display: none;\"><small>Общее время: '" . ($t3-$t1) . "' подготовка: '" . ($prep - $t1 - $skpd) . "', запрос: '" . ($t2-$prep) . "' get skipped: $skpd, core: $skpd0 выборка-отрисовка: " . ($t3-$t2 - $allUsers). '\'</small></div>');
 
 ?>
 	

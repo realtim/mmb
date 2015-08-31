@@ -9,8 +9,15 @@ if (!isset($MyPHPScript))
 class CTeamPlaces
 {
 	protected $teamPlaces;
+	protected $userDistance;
 
 	function __construct()
+	{
+		$this->retrieveTeamPlaces();
+		$this->retrieveUserDistance();
+	}
+
+	private function retrieveTeamPlaces()
 	{
 		$sql = "select team_id, distance_id, TIME_TO_SEC(COALESCE(t.team_result, 0)) as result
 				from Teams  t
@@ -53,9 +60,51 @@ class CTeamPlaces
 		mysql_free_result($result);
 	}
 
+	private function retrieveUserDistance()
+	{
+		// Показываем  список ММБ
+		$sql = "select t.distance_id, t.team_name, t.team_id, t.team_outofrange,
+		                    	         lp.levelpoint_name, tu.teamuser_rank, tu.user_id,
+									     lp.levelpoint_id
+				from Teams t
+				inner join Distances d on d.distance_id = t.distance_id and d.distance_hide = 0
+				inner join TeamUsers tu  on t.team_id = tu.team_id and tu.teamuser_hide = 0
+				left outer join TeamLevelDismiss tld  on tu.teamuser_id = tld.teamuser_id
+				left outer join LevelPoints lp  on tld.levelpoint_id = lp.levelpoint_id
+				           where   t.team_hide = 0
+
+			        order by tu.user_id asc";
+
+		$result = MySqlQuery($sql);
+		$this->userDistance = array();
+		$last = array();
+		while ($row = mysql_fetch_assoc($result))
+		{
+			$uid = $row['user_id'];
+			if ($last !== $uid)
+				$this->userDistance[$uid] = array();
+			$last = $uid;
+
+			$this->userDistance[$uid][$row['distance_id']] = array(
+				'team_name' => $row['team_name'],
+				'team_id' => $row['team_id'],
+				'team_outofrange' => $row['team_outofrange'],
+				'levelpoint_name' => $row['levelpoint_name'],
+				'teamuser_rank' => $row['teamuser_rank'],
+				'levelpoint_id' => $row['levelpoint_id']);
+		}
+
+		mysql_free_result($result);
+	}
+
 	function GetTeamPlace($teamId)
 	{
 		return isset($this->teamPlaces[$teamId]) ? $this->teamPlaces[$teamId] : 0;
+	}
+
+	function GetUserDistance($userId, $distanceId)
+	{
+		return isset($this->userDistance[$userId]) && isset($this->userDistance[$userId][$distanceId]) ? $this->userDistance[$userId][$distanceId] : null;
 	}
 }
 
@@ -70,7 +119,7 @@ class CTeamPlaces
 
 	$js = "window.location.search = '?rating' + (this.checked ? '=all' : ''); ";
 	print('Отображать все марш-броски (долгая загрузка) <input type="checkbox"  autocomplete="off" name="ShowAllRaids" '.($ShowAllRaids ? 'checked="checked"' : '').' tabindex="'.(++$TabIndex).'"
-		title="Отображать все марш-броски (долгая загрузка)" onchange="'. $js .'" />'."\r\n");
+		title="Отображать все марш-броски" onchange="'. $js .'" />'."\r\n");
 
 
 	//print('</form>'."\r\n");
@@ -171,9 +220,11 @@ $t5 = microtime(true);
 	if ($ShowAllRaids)
 	{
 	        // Показываем  список ММБ
+		$distances = array();
 		while ($RowRaids = mysql_fetch_assoc($ResultRaids))
 		{
-	                 print('<td width="100">'.$RowRaids['raid_name'].' '.$RowRaids['distance_name']."</td>\r\n");
+	                print('<td width="100">'.$RowRaids['raid_name'].' '.$RowRaids['distance_name']."</td>\r\n");
+			$distances[] = $RowRaids['distance_id'];
 		}
 		mysql_free_result($ResultRaids);
 	}
@@ -196,29 +247,10 @@ $t5 = microtime(true);
                 if ($ShowAllRaids)
 	        {
                         // Показываем  список ММБ
-			$sqlRaids = "select r.raid_id, d.distance_id, a.team_name, a.team_id, a.team_outofrange,
-			                     a.levelpoint_name, a.teamuser_rank,  a.levelpoint_id
-			        from Raids r
-				     inner join Distances d on r.raid_id = d.raid_id and d.distance_hide = 0
-				     left outer join (select t.distance_id, t.team_name, t.team_id, t.team_outofrange,
-		                    	         lp.levelpoint_name, tu.teamuser_rank,
-									     lp.levelpoint_id
-				                   from Teams t
-			                           inner join TeamUsers tu  on t.team_id = tu.team_id and tu.teamuser_hide = 0 and tu.user_id = {$Row['user_id']}
-			                           left outer join TeamLevelDismiss tld  on tu.teamuser_id = tld.teamuser_id
-			                           left outer join LevelPoints lp  on tld.levelpoint_id = lp.levelpoint_id
-							  	   where   t.team_hide = 0) a
-	                             on d.distance_id = a.distance_id
-			        order by r.raid_id  desc,  d.distance_id desc";
-
-		        $t7 = microtime(true);
-		        $ResultRaids = MySqlQuery($sqlRaids);
-		        $sqTime += microtime(true) - $t7;
-
-
-			while ($RowRaids = mysql_fetch_assoc($ResultRaids))
+		        foreach($distances as $distanceId)
 			{
-				if (!empty($RowRaids['team_name']))
+				$RowRaids = $teamPlaces->GetUserDistance($Row['user_id'], $distanceId);
+				if ($RowRaids !== null && !empty($RowRaids['team_name']))
 				{
 					$TeamPlace = $teamPlaces->GetTeamPlace($RowRaids['team_id']);
 
@@ -240,7 +272,6 @@ $t5 = microtime(true);
 
                                 print("<td>$TeamString</td>\r\n");
 			}
-			mysql_free_result($ResultRaids);
                 }
 
                 print("</tr>\r\n");
@@ -253,11 +284,8 @@ $t5 = microtime(true);
 
 $t6 = microtime(true);
 
-	$add = $ShowAllRaids ? "запросы по годам: '$sqTime', teamPlaces: '$ctp', " : '';
-	print("<div><small>через implode: Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5 - $sqTime). '</small></div>');
+	$add = $ShowAllRaids ? "запросы teamPlaces: '$ctp', " : '';
+	print("<div style=\"display: none;\"><small>Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5). '</small></div>');
 ?>
 		
 		<br/>
-
-
-
