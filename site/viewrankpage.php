@@ -285,7 +285,7 @@ $t5 = microtime(true);
 $t6 = microtime(true);
 
 	$add = $ShowAllRaids ? "запросы teamPlaces: '$ctp', " : '';
-	print("<!-- <div><small>Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5). '</small></div> -->');
+	print("<div style=\"display: none;\"><small>Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5). '</small></div>');
 ?>
 		
 		<br/>
