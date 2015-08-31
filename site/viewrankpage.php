@@ -73,7 +73,7 @@ class CTeamPlaces
 				left outer join LevelPoints lp  on tld.levelpoint_id = lp.levelpoint_id
 				           where   t.team_hide = 0
 
-			        order by a.user_id asc, d.distance_id desc";
+			        order by tu.user_id asc";
 
 		$result = MySqlQuery($sql);
 		$this->userDistance = array();
