@@ -1613,59 +1613,14 @@ send_mime_mail('Автор письма',
 	    return;
 	 }
 
+	 $teamRaidCondition1 = (!empty($teamid)) ? " tlp1.team_id = $teamid" : "d1.raid_id = $raidid";
+	 $teamRaidCondition2 = (!empty($teamid)) ? " tlp2.team_id = $teamid" : "d2.raid_id = $raidid";
+
 	// Не знаю, как лучше - можно по порядку точек, а можно по времени прохождения
 	// по времени проще
 	// 			 on lp1.levelpoint_order > a.levelpoint_order	
 
- /*
-	$sql = " update  TeamLevelPoints tlp
-                   inner join 
-	           (select  tlp1.teamlevelpoint_id, 
-		            timediff(tlp1.teamlevelpoint_datetime, MAX(a.teamlevelpoint_datetime)) as teamlevelpoint_duration
-		    from TeamLevelPoints tlp1 
-			 inner join Teams t1
-			 on tlp1.team_id = t1.team_id
-			 inner join Distances d1
-			 on t1.distance_id = d1.distance_id
-			 inner join LevelPoints lp1 
-			 on tlp1.levelpoint_id = lp1.levelpoint_id
-			 left outer join
-			 (select tlp2.team_id, 
-                                 lp2.levelpoint_order,	
-                                 COALESCE(tlp2.teamlevelpoint_datetime, lp2.levelpoint_mindatetime) as teamlevelpoint_datetime			         
-			  from  TeamLevelPoints tlp2 
-				 inner join Teams t2
-				 on tlp2.team_id = t2.team_id
-				 inner join Distances d2
-				 on t2.distance_id = d2.distance_id
-				 inner join LevelPoints lp2 
-				 on tlp2.levelpoint_id = lp2.levelpoint_id
-		         ) a
-			 on tlp1.teamlevelpoint_datetime > a.teamlevelpoint_datetime	
-			    and lp1.levelpoint_order > a.levelpoint_order
-			    and tlp1.team_id = a.team_id
-			    and  a.teamlevelpoint_datetime > 0
-	  	     where   tlp1.teamlevelpoint_datetime > 0
-		             and  lp1.pointtype_id <> 1 
-	      ";
-	      
-	      
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql."and tlp1.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql."and d1.raid_id = ".$raidid;
-	 }				 
 
-
-    	   $sql = $sql."	      		     
- 		     group by tlp1.teamlevelpoint_id	    
-		    ) b
-		    on tlp.teamlevelpoint_id = b.teamlevelpoint_id   
-		 set tlp.teamlevelpoint_duration =  b.teamlevelpoint_duration
-	      ";
-	
-	*/
-	
 	$sql = " update  
 			(select tlp1.teamlevelpoint_id,  tlp1.teamlevelpoint_datetime,  lp1.distance_id, tlp1.team_id,
 				MAX(a.levelpoint_order) as maxorder
@@ -1682,27 +1637,13 @@ send_mime_mail('Автор письма',
 			             inner join Distances d2
 			             on lp2.distance_id = d2.distance_id
 			       where tlp2.teamlevelpoint_datetime > 0
-		";			 
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." and tlp2.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." and d2.raid_id = ".$raidid;
-	 }				 
-
-	  $sql = $sql."				 
+		       			 and $teamRaidCondition2
 			      ) a
 	 		      on tlp1.team_id = a.team_id 
 			         and lp1.levelpoint_order > a.levelpoint_order
 			 where tlp1.teamlevelpoint_datetime > 0
 			       and  lp1.pointtype_id <> 1
-		";			 
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." and tlp1.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." and d1.raid_id = ".$raidid;
-	 }				 
-
-	  $sql = $sql."				 
+	       		   and $teamRaidCondition1
 			 group by tlp1.teamlevelpoint_id
 			 ) b  
  			inner join LevelPoints lp3
@@ -1740,6 +1681,8 @@ send_mime_mail('Автор письма',
 	    return;
 	 }
 
+	 $teamRaidCondition = (!empty($teamid)) ? " t.team_id = $teamid" : "d.raid_id = $raidid";
+
          
 	 $sql = " update  TeamLevelPoints tlp
 		   inner join 
@@ -1752,17 +1695,8 @@ send_mime_mail('Автор письма',
 				      inner join Distances d
 				      on lp.distance_id = d.distance_id
 				         and t.distance_id = lp.distance_id
-				 where 
-		";			 
-
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." t.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." d.raid_id = ".$raidid;
-	 }				 
-
-	  $sql = $sql."				 
-				) fulltlp    
+				 where  $teamRaidCondition
+				) fulltlp
 				inner join LevelPoints lp
 				on  fulltlp.levelpoint_id = lp.levelpoint_id
 			        left outer join TeamLevelPoints tlp
@@ -1800,10 +1734,13 @@ send_mime_mail('Автор письма',
 		return;
 	}
 
+	$teamRaidCondition1 = (!empty($teamid)) ? " t1.team_id = $teamid" : "d1.raid_id = $raidid";
+	$teamRaidCondition2 = (!empty($teamid)) ? " t2.team_id = $teamid" : "d2.raid_id = $raidid";
 
-	/*
-	правильный вариант с штрафом в следующей точке со временем
-	*/
+
+		/*
+        правильный вариант с штрафом в следующей точке со временем
+        */
 
 	 $sql = " update TeamLevelPoints tlp0
 			 inner join LevelPoints lp0
@@ -1822,15 +1759,7 @@ send_mime_mail('Автор письма',
 					     on t1.team_id = tlp1.team_id
 					     inner join Distances d1
 					     on t1.distance_id = d1.distance_id
-					where ";			 
-
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." t1.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." d1.raid_id = ".$raidid;
-	 }				 
-				 
-	  $sql = $sql."				 
+					where  $teamRaidCondition1
 					) a
 					inner join 
 					(select t2.team_id, lp2.levelpoint_order
@@ -1841,15 +1770,8 @@ send_mime_mail('Автор письма',
 					     on t2.team_id = tlp2.team_id
 					     inner join Distances d2
 					     on t2.distance_id = d2.distance_id
-					where ";
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." t2.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." d2.raid_id = ".$raidid;
-	 }				 
-				 
-	  $sql = $sql."				 
-					) b
+					where $teamRaidCondition2
+	 				) b
 				on a.team_id = b.team_id
 				   and a.levelpoint_order > b.levelpoint_order
 				group by a.team_id, a.levelpoint_order
@@ -1889,6 +1811,9 @@ send_mime_mail('Автор письма',
 	    return;
 	 }
 
+	 $teamRaidCondition1 = (!empty($teamid)) ? " t1.team_id = $teamid" : "d1.raid_id = $raidid";
+	 $teamRaidCondition2 = (!empty($teamid)) ? " t2.team_id = $teamid" : "d2.raid_id = $raidid";
+
 
 	 $sql = " update TeamLevelPoints tlp0
 			 inner join LevelPoints lp0
@@ -1905,15 +1830,8 @@ send_mime_mail('Автор письма',
 					     on t1.team_id = tlp1.team_id
 					     inner join Distances d1
 					     on t1.distance_id = d1.distance_id
-					where  lp1.pointtype_id <> 1 and ";			 
-
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." t1.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." d1.raid_id = ".$raidid;
-	 }				 
-				 
-	  $sql = $sql."				 
+					where  lp1.pointtype_id <> 1
+							and $teamRaidCondition1
 					) a
 					inner join 
 					(select t2.team_id, lp2.levelpoint_order,
@@ -1926,14 +1844,7 @@ send_mime_mail('Автор письма',
 					     on t2.team_id = tlp2.team_id
 					     inner join Distances d2
 					     on t2.distance_id = d2.distance_id
-					where ";
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql." t2.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql." d2.raid_id = ".$raidid;
-	 }				 
-				 
-	  $sql = $sql."				 
+					where $teamRaidCondition2
 					) b
 				on a.team_id = b.team_id
 				   and a.levelpoint_order >= b.levelpoint_order
@@ -1961,6 +1872,8 @@ send_mime_mail('Автор письма',
 			return;
 		}
 
+		$teamRaidCondition = (!empty($teamid)) ? " t.team_id = $teamid" : "d.raid_id = $raidid";
+
 
 		// Устанавливаем превышение КВ
 		$sql = " update  TeamLevelPoints tlp
@@ -1973,15 +1886,7 @@ send_mime_mail('Автор письма',
 							on t.distance_id = d.distance_id
 				set  tlp.error_id = 4
 				where  tlp.teamlevelpoint_datetime > lp.levelpoint_maxdatetime 
-		";			 
-
-		if (!empty($teamid)) 
-		{ 
-			$sql = $sql." and t.team_id = ".$teamid;
-		} elseif (!empty($raidid)) {     	 
-			$sql = $sql." and d.raid_id = ".$raidid;
-		}				 
-				 
+						and $teamRaidConditio	";
 	//	echo $sql;
 		$rs = MySqlQuery($sql);
 
@@ -2016,70 +1921,7 @@ send_mime_mail('Автор письма',
 
 						 
 
-	// По количеству можно повесить только на последнюю точку, а првильнее - на следующую по порядку
-	
-	// Тут нужно проверить взятие обязатеьных КП и поставить ошибку на следующую точку	
-	//	запрос похож на расчет для кп вне амнистии
-	
-	/*
-	 $sql = " update  Teams t
-                  inner join
 
-					(select a.team_id, a.levelpoint_id, a.levelpoint_order
-					from
-						(select t.team_id, lp.levelpoint_id, lp.levelpoint_order
-						from Teams t
-								inner join Distances d
-								on  t.distance_id = d.distance_id
-								join LevelPoints lp
-						where lp.pointtype_id = 3 
-			";			 
-
-			if (!empty($teamid)) 
-			{     	 
-				$sql = $sql."  t.team_id = ".$teamid;
-			} elseif (!empty($raidid)) {     	 
-				$sql = $sql."  d.raid_id = ".$raidid;
-			}				 
-						
-	  $sql = $sql."				 
-						) a
-						left outer join TeamLevelPoints tlp
-						on tlp.levelpoint_id = a.levelpoint_id
-							and tlp.team_id  = a.team_id
-					where tlp.teamlevelpoint_id is null
-					) b	
-					left outer join TeamLevelPoints tlp2
-						on tlp.levelpoint_id = a.levelpoint_id
-							and tlp.team_id  = a.team_id
-
-		            on tlp.levelpoint_id = lp.levelpoint_id
-			       and lp.pointtype_id = 3 
-			    inner join Teams t
-			    on t.team_id = tlp.team_id
-			    inner join Distances d
-			    on t.distance_id = d.distance_id
-                       where  
-		";			 
-
-	 if (!empty($teamid)) {     	 
-	   $sql = $sql."  t.team_id = ".$teamid;
-	 } elseif (!empty($raidid)) {     	 
- 	   $sql = $sql."  d.raid_id = ".$raidid;
-	 }				 
-				 
-	  $sql = $sql."				 
-                       group by t.team_id
-		       having  count(lp.levelpoint_id) < ".$ObligatoryCount." 
-                      ) a
-		  on t.team_id = a.team_id    
-		  set  t.team_progressdetail = 2
-		  ";
-
-		// echo $sql;
-		$rs = MySqlQuery($sql);
-
-*/
 	
 	}
 	// Конец функции проверки ошибок
