@@ -7,8 +7,6 @@ $tmSt = microtime(true);
 	// Библиотека функций
 	include("functions.php");
 
-$tmBasic = microtime(true);
-
         if (isset($DebugMode) and ($DebugMode == 1))
 	{
 		// Устанавливаем режим отображения ошибок
@@ -40,7 +38,7 @@ $tmBasic = microtime(true);
 
          // 27/12/2013 Заменил на сортировку по ключу
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
-$tmBPrivs = microtime(true);
+$tmPrivSt = microtime(true);
 
         if (empty($RaidId))
 	{
@@ -57,6 +55,7 @@ $tmBPrivs = microtime(true);
 	// Конец определения ММБ
 
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
+$tmPrivEn = microtime(true);
 
 	// Инициализуем переменные сессии, если они отсутствуют
 	if (!isset($view)) $view = "";
@@ -223,7 +222,7 @@ $tmRne = microtime(true);
 			 // закрываем соединение с базой
 			 mysql_close();
 $tmEnd = microtime(true);
-print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", include: ".($tmBasic - $tmSt).", 1 stage: ".($tmBPrivs - $tmBasic)." preAction: ".($tmAction - $tmBPrivs) .", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", pre&post render: ". ($tmEnd - $tmRne + $tmRn - $tmActionEn) ."</div>");
+print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", include: ".($tmPrivSt - $tmSt).", privs: ".($tmPrivEn - $tmPrivSt).", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", post priv & pre&post render: ". ($tmEnd - $tmRne + $tmRn - $tmActionEn + $tmAction - $tmPrivEn) ."</div>");
 			?>
 		   </div>
 		<!--Конец правой колонки -->
