@@ -40,6 +40,8 @@ $tmBasic = microtime(true);
 
          // 27/12/2013 Заменил на сортировку по ключу
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
+$tmBPrivs = microtime(true);
+
         if (empty($RaidId))
 	{
   	     GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
@@ -221,7 +223,7 @@ $tmRne = microtime(true);
 			 // закрываем соединение с базой
 			 mysql_close();
 $tmEnd = microtime(true);
-print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", preAction: ".($tmAction - $tmSt) .", action: ". ($tmActionEn - $tmAction) . ", preRender: ". ($tmRn - $tmActionEn). ", render: " .($tmRne - $tmRn).", after: ". ($tmEnd - $tmRne) ."</div>");
+print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", include: ".($tmBasic - $tmSt).", 1 stage: ".($tmBPrivs - $tmBasic)." preAction: ".($tmAction - $tmBPrivs) .", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", pre&post render: ". ($tmEnd - $tmRne + $tmRn - $tmActionEn) ."</div>");
 			?>
 		   </div>
 		<!--Конец правой колонки -->
