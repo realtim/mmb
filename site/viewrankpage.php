@@ -184,8 +184,7 @@ class CTeamPlaces
 
 */	
 	  	//echo 'sql '.$sql;
-	$sqTime = 0;
-	$gtp = 0;
+
 	$t1 = microtime(true);
 	$Result = MySqlQuery($sql);
 	$t2 = microtime(true);

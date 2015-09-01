@@ -1,9 +1,13 @@
 <?php
 
+$tmSt = microtime(true);
+
         // Общие настройки
 	include("settings.php");
 	// Библиотека функций
 	include("functions.php");
+
+$tmBasic = microtime(true);
 
         if (isset($DebugMode) and ($DebugMode == 1))
 	{
@@ -16,7 +20,7 @@
 	}
 
 
-        // Пробегаем помассивам POST GET REAUEST COOKIE  и чистим возможные sql инъекции и мусор
+        // Пробегаем помассивам POST GET REQUEST COOKIE  и чистим возможные sql инъекции и мусор
         ClearArrays();
 
 	// Устанавливаем часовой пояс по умолчанию
@@ -82,6 +86,7 @@
         //Не знаю, относится ли дистанция к переменным сессии, но инициализацию делаем
 	$DistanceId = mmb_validateInt($_REQUEST, 'DistanceId', 0);
 
+$tmAction = microtime(true);
 	if ($action == "") 
 	{
 	// Действие не указано
@@ -113,9 +118,8 @@
 
 	        // Обработчик событий, связанных с марш-броском
 		include ("raidaction.php");
-
-
 	}
+$tmActionEn = microtime(true);
 
     // 15,01,2012 Сбрасываем действие в самом конце, а не здесь 
     //$action = "";
@@ -204,8 +208,10 @@
                             //print('<table width = "100%"><tr><td>'.$statustext.'</td><td style = "border-top-style: dotted; border-top-width: 2px; border-top-color: #CC0000;">&nbsp;</td></tr></table>'."\n");
                           }
 
+$tmRn = microtime(true);
                          // вставляем основную часть			
-			 include("mainpart.php"); 
+			 include("mainpart.php");
+$tmRne = microtime(true);
 
                          // сбрасываем действие
 			 $action = "";
@@ -214,6 +220,8 @@
 
 			 // закрываем соединение с базой
 			 mysql_close();
+$tmEnd = microtime(true);
+print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", preAction: ".($tmAction - $tmSt) .", action: ". ($tmActionEn - $tmAction) . ", preRender: ". ($tmRn - $tmActionEn). ", render: " .($tmRne - $tmRn).", after: ". ($tmEnd - $tmRne) ."</div>");
 			?>
 		   </div>
 		<!--Конец правой колонки -->
