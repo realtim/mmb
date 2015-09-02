@@ -165,7 +165,7 @@ class CSql {
 
 	public static function closeConnection()
 	{
-		if (self::$connnection !== null)
+		if (self::$connection !== null)
 			mysql_close(self::$connection);
 		self::$connection = null;
 	}
