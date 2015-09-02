@@ -1873,6 +1873,8 @@ send_mime_mail('Автор письма',
 		}
 
 		$teamRaidCondition = (!empty($teamid)) ? " t.team_id = $teamid" : "d.raid_id = $raidid";
+		$teamRaidCondition1 = (!empty($teamid)) ? " t1.team_id = $teamid" : "d1.raid_id = $raidid";
+		$teamRaidCondition2 = (!empty($teamid)) ? " t2.team_id = $teamid" : "d2.raid_id = $raidid";
 
 
 		// Устанавливаем превышение КВ
@@ -1999,11 +2001,12 @@ send_mime_mail('Автор письма',
 			 on tlp.team_id = t.team_id
   		         inner join Distances d
 			 on t.distance_id = d.distance_id
-		  set  teamlevelpoint_penalty = NULL,  
-		       teamlevelpoint_duration = NULL,
+		  set  tlp.teamlevelpoint_penalty = NULL,
+		       tlp.teamlevelpoint_duration = NULL,
 		       t.team_maxlevelpointorderdone = NULL,
 		       t.team_minlevelpointorderwitherror = NULL,
-		       t.team_comment = NULL			 
+		       t.team_comment = NULL,
+		       tlp.error_id = NULL
  		  where $teamRaidCondition" ;
 				 
 	$rs = MySqlQuery($sql);
