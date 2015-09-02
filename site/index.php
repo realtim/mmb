@@ -40,9 +40,15 @@ $tmSt = microtime(true);
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
 $tmPrivSt = microtime(true);
 
+$privLog = '';
+
         if (empty($RaidId))
 	{
   	     GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
+
+$mark1 = microtime(true);
+$privLog .= 'empty raid ' . ($mark1 - $tmPrivSt);
+
 
   	     $orderBy = $Administrator ? 'raid_id' : 'raid_registrationenddate';
   	     $sql = "select raid_id
@@ -51,11 +57,16 @@ $tmPrivSt = microtime(true);
 		       LIMIT 0,1 ";
 
 	     $RaidId = CSql::singleValue($sql, 'raid_id');
+
+$privLog .= ', getraid: ' . (microtime(true) - $mark1);
         }
 	// Конец определения ММБ
 
+$mark1 = microtime(true);
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 $tmPrivEn = microtime(true);
+
+$privLog .= ', end priv: ' . ($tmPrivEn - $mark1);
 
 	// Инициализуем переменные сессии, если они отсутствуют
 	if (!isset($view)) $view = "";
@@ -222,7 +233,7 @@ $tmRne = microtime(true);
 			 // закрываем соединение с базой
 			 mysql_close();
 $tmEnd = microtime(true);
-print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", include: ".($tmPrivSt - $tmSt).", privs: ".($tmPrivEn - $tmPrivSt).", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", post priv & pre&post render: ". ($tmEnd - $tmRne + $tmRn - $tmActionEn + $tmAction - $tmPrivEn) ."</div>");
+print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", include: ".($tmPrivSt - $tmSt).", privs: ".($tmPrivEn - $tmPrivSt).", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", post priv & pre&post render: ". ($tmEnd - $tmRne + $tmRn - $tmActionEn + $tmAction - $tmPrivEn) ."<br/>$privLog</div>");
 			?>
 		   </div>
 		<!--Конец правой колонки -->
