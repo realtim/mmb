@@ -82,15 +82,23 @@ class CMmb
  //
  // вызов  MySqlQuety('...',&$ConnectionId, ...);
 
+	 $needLog = strpos($SqlString, 'raid_registrationenddate') !== false;
+	 global $logger;
+
 	$NewConnection = 0;
 	if (empty($ConnectionId))
 	{
 		$NewConnection = 1;
 
+		$t1 = microtime(true);
 		// Данные берём из settings
 		include("settings.php");
+		$logger->AddTime('include', microtime(true) - $t1);
 
+		$t1 = microtime(true);
 		$ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+		if ($needLog)
+			$logger->AddTime('connect', microtime(true) - $t1);
 
 		// Ошибка соединения
 		if ($ConnectionId <= 0)
@@ -104,11 +112,19 @@ class CMmb
 		//  устанавливаем временную зону
 //		 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
 		//  устанавливаем кодировку для взаимодействия
+
+		$t1 = microtime(true);
 	        mysql_query('set names \'utf8\'', $ConnectionId);
+		if ($needLog)
+			$logger->AddTime('set names utf', microtime(true) - $t1);
 
                 // Выбираем БД ММБ
 //		echo $DBName;
+		$t1 = microtime(true);
 		$rs = mysql_select_db($DBName, $ConnectionId);
+
+		if ($needLog)
+			$logger->AddTime('select db', microtime(true) - $t1);
 
 		if (!$rs)
 		{
@@ -120,8 +136,11 @@ class CMmb
 	}
  
   // echo $ConnectionId;
-   
+
+	 $t1 = microtime(true);
 	$rs = mysql_query($SqlString, $ConnectionId);
+	 if ($needLog)
+		 $logger->AddTime('query', microtime(true) - $t1);
 
 
 	if (!$rs)
@@ -2311,6 +2330,39 @@ class CMmbUI
 	{
 		$defVal = str_replace("&apos;", "\\&apos;", self::toHtml($defaultValue)); // эскейпимся от апострофов в js
 		return " onclick=\"javascript: _onClick(this, '$defVal');\" onblur=\"javascript: _onBlur(this, '$defVal');\" ";
+	}
+}
+
+class CMmbLogger
+{
+	protected $records = array();
+
+	function __construct()
+	{
+
+	}
+
+	public function AddRecord($record)
+	{
+		if (!empty($record))
+			$records[] = $record;
+	}
+
+	public function AddTime($text, $time)
+	{
+		$this->AddRecord($text . ' ' . round($time, 5));
+	}
+
+	public function GetText($asHtml = true)
+	{
+		if (!$asHtml)
+			return implode("\r\n", $this->records);
+
+		$res = '';
+		foreach ($this->records as $rec)
+			$res .= CMmbUI::toHtml($rec) . "<br/>";
+
+		return $res;
 	}
 }
 
