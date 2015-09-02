@@ -82,7 +82,7 @@ class CMmb
  //
  // вызов  MySqlQuety('...',&$ConnectionId, ...);
 
-	 $needLog = strpos($SqlString, 'raid_registrationenddate') !== false;
+	 $needLog = true;
 	 global $logger;
 
 	$NewConnection = 0;
