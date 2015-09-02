@@ -141,7 +141,7 @@ class CMmb
 	 if ($needLog)
 	 {
 		 $logger->AddInterval('query', $t1);
-		 $logger->AddRecord("");
+		 $logger->AddRecord("  ");
 	 }
 
 
