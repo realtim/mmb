@@ -1886,14 +1886,14 @@ send_mime_mail('Автор письма',
 							on t.distance_id = d.distance_id
 				set  tlp.error_id = 4
 				where  tlp.teamlevelpoint_datetime > lp.levelpoint_maxdatetime 
-						and $teamRaidConditio	";
+						and $teamRaidCondition";
 	//	echo $sql;
 		$rs = MySqlQuery($sql);
 
-
-
-
 	// Устанавливаем невзятие обязательных КП
+
+
+/*
 	 // Высчитываем число обязательных точек
 	 if (!empty($teamid)) {     	 
 
@@ -1913,16 +1913,69 @@ send_mime_mail('Автор письма',
 			    where  d.raid_id = $raidid
                                     and lp.pointtype_id = 3 ";
 	 }				 
-				 
-	 $Result = MySqlQuery($sql);
-	 $Row = mysql_fetch_assoc($Result);
-	 $ObligatoryCount = $Row['result'];
-	 mysql_free_result($Result);
 
-						 
+	$ObligatoryCount = CSql::singleValue($sql, 'result');
+*/
+
+	//Ставим ощибку на следующую точку за невзятым обязательным КП
+	$sql = " update TeamLevelPoints tlp0
+			 inner join LevelPoints lp0
+			 on tlp0.levelpoint_id = lp0.levelpoint_id
+			 inner join
+				(select c.team_id, c.up
+				from
+					(select a.team_id, a.levelpoint_order as up, MAX(b.levelpoint_order) as down
+					from
+						(select t1.team_id, lp1.levelpoint_order
+						 from TeamLevelPoints tlp1
+						    	 inner join LevelPoints lp1
+						     	on tlp1.levelpoint_id = lp1.levelpoint_id
+						     	inner join Teams t1
+						     	on t1.team_id = tlp1.team_id
+						     	inner join Distances d1
+						     	on t1.distance_id = d1.distance_id
+						where  $teamRaidCondition1
+						) a
+						inner join
+							(select t2.team_id, lp2.levelpoint_order
+							 from TeamLevelPoints tlp2
+							     inner join LevelPoints lp2
+							     on tlp2.levelpoint_id = lp2.levelpoint_id
+							     inner join Teams t2
+							     on t2.team_id = tlp2.team_id
+							     inner join Distances d2
+							     on t2.distance_id = d2.distance_id
+							 where $teamRaidCondition2
+	 						) b
+						on a.team_id = b.team_id
+						   and a.levelpoint_order > b.levelpoint_order
+					group by a.team_id, a.levelpoint_order
+					having  a.levelpoint_order > MAX(b.levelpoint_order) + 1
+				) c
+				inner join Teams t
+				on c.team_id = t.team_id
+				inner join LevelPoints lp
+				on t.distance_id = lp.distance_id
+				   and lp.levelpoint_order < c.up
+				   and lp.levelpoint_order > c.down
+				   and lp.pointtype_id = 3
+				left outer join LevelPointDiscounts lpd
+				on t.distance_id = lpd.distance_id
+				   and lp.levelpoint_order <= lpd.levelpointdiscount_finish
+				   and  lp.levelpoint_order >= lpd.levelpointdiscount_start
+				where lpd.levelpointdiscount_id is null
+				group by c.team_id, c.up
+			) d
+			on tlp0.team_id = d.team_id
+			   and lp0.levelpoint_order = d.up
+	set tlp0.error_id = 14";
 
 
-	
+		//    echo $sql;
+
+		$rs = MySqlQuery($sql);
+
+
 	}
 	// Конец функции проверки ошибок
  
@@ -1974,8 +2027,9 @@ send_mime_mail('Автор письма',
 		$raidid = CSql::singleValue($sql, 'raid_id');
 	}
 
-	// Убрал расчёт ошибок
-	//RecalcErrors($raidid, $teamid);
+
+	//Ставим ошибки
+	RecalcErrors($raidid, $teamid);
 
 
 	// $raidid мог измениться
@@ -1985,31 +2039,29 @@ send_mime_mail('Автор письма',
      // Результат команды - это результат в максимальной точке
      // Перевод в секунды нужен для корректной работы MAX
 	$sql = " update  Teams t
-		   inner join 
-	          	(select tlp.team_id, 
-			        MAX(COALESCE(lp.levelpoint_order, 0)) as progress,
-					MAX(t.distance_id) as distance_id,
-			        MAX(TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_result, 0))) as secresult
-			 from TeamLevelPoints tlp
-			      inner join Teams t
-			      on tlp.team_id = t.team_id
-			      inner join Distances d
-			      on t.distance_id = d.distance_id
-			      inner join LevelPoints lp
-			      on tlp.levelpoint_id = lp.levelpoint_id
-
-			 where  $teamRaidCondition
-
-                         group by tlp.team_id
-			) a
-		  on t.team_id = a.team_id
-		  inner join 
-			(select  lp.distance_id,
-			         MAX(lp.levelpoint_order) as maxlporder
-			 from LevelPoints lp
-			 group by lp.distance_id 
-			) b
-		  on a.distance_id = b.distance_id
+				inner join
+		          	(select tlp.team_id,
+					        MAX(COALESCE(lp.levelpoint_order, 0)) as progress,
+							MAX(t.distance_id) as distance_id,
+					        MAX(TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_result, 0))) as secresult
+					 from TeamLevelPoints tlp
+					      inner join Teams t
+					      on tlp.team_id = t.team_id
+					      inner join Distances d
+					      on t.distance_id = d.distance_id
+					      inner join LevelPoints lp
+					      on tlp.levelpoint_id = lp.levelpoint_id
+					 where  $teamRaidCondition
+					 group by tlp.team_id
+					) a
+		  		on t.team_id = a.team_id
+		  		inner join
+					(select  lp.distance_id,
+					         MAX(lp.levelpoint_order) as maxlporder
+					from LevelPoints lp
+					group by lp.distance_id
+					) b
+			  	on a.distance_id = b.distance_id
   	          set  team_result =  CASE WHEN b.maxlporder = COALESCE(a.progress, 0) THEN SEC_TO_TIME(COALESCE(a.secresult, 0)) ELSE NULL END
 				, team_maxlevelpointorderdone = COALESCE(a.progress, 0) ";
 
@@ -2024,22 +2076,22 @@ send_mime_mail('Автор письма',
      //
      // Находим минимальную точку с ошибкой
 	$sql = " update  Teams t
-		   inner join 
-	          	(select tlp.team_id, 
-			        MIN(COALESCE(lp.levelpoint_order, 0)) as error
-			 from TeamLevelPoints tlp
-			      inner join Teams t
-			      on tlp.team_id = t.team_id
-			      inner join Distances d
-			      on t.distance_id = d.distance_id
-			      inner join LevelPoints lp
-			      on tlp.levelpoint_id = lp.levelpoint_id
-			 where  COALESCE(tlp.error_id, 0) <> 0
-			        and $teamRaidCondition
-                         group by tlp.team_id
-			) a
-		  on t.team_id = a.team_id
-          set  team_minlevelpointorderwitherror = COALESCE(a.error, 0)";
+				    inner join
+	    		      	(select tlp.team_id,
+					        MIN(COALESCE(lp.levelpoint_order, 0)) as error
+						from TeamLevelPoints tlp
+								inner join Teams t
+							    on tlp.team_id = t.team_id
+			      				inner join Distances d
+			      				on t.distance_id = d.distance_id
+			      				inner join LevelPoints lp
+			      				on tlp.levelpoint_id = lp.levelpoint_id
+						where  COALESCE(tlp.error_id, 0) <> 0
+		        			and $teamRaidCondition
+						group by tlp.team_id
+						) a
+		  			on t.team_id = a.team_id
+          	set  team_minlevelpointorderwitherror = COALESCE(a.error, 0)";
 
 	//     echo $sql;
 	 
@@ -2048,8 +2100,8 @@ send_mime_mail('Автор письма',
 
 	 // Находим невзятые КП
 	 $sql = " update  Teams t
-		   inner join
-	          	(select t.team_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as skippedlevelpoint
+				    inner join
+	    		      	(select t.team_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as skippedlevelpoint
 						from  Teams t
 								inner join  Distances d
 								on t.distance_id = d.distance_id
@@ -2063,9 +2115,9 @@ send_mime_mail('Автор письма',
 								and d.distance_hide = 0 and t.team_hide = 0
 								and $teamRaidCondition
 						group by t.team_id
-				) a
-		  on t.team_id = a.team_id
-          set  team_skippedlevelpoint = COALESCE(a.skippedlevelpoint, '')";
+						) a
+		  			on t.team_id = a.team_id
+	       		set  team_skippedlevelpoint = COALESCE(a.skippedlevelpoint, '')";
 
 		 //     echo $sql;
 
@@ -2075,22 +2127,21 @@ send_mime_mail('Автор письма',
 
 	// Обновляем комментарий у команды, куда включаем и ошибки  
 	$sql = " update  Teams t
-                  inner join
+                inner join
                       (select tlp.team_id 
 						,group_concat(COALESCE(teamlevelpoint_comment, '')) as team_comment
-		       from TeamLevelPoints tlp
-				left outer join Errors err
-				on tlp.error_id = err.error_id
-			    inner join Teams t
-			    on t.team_id = tlp.team_id
-			    inner join Distances d
-			    on t.distance_id = d.distance_id
+				       from TeamLevelPoints tlp
+							left outer join Errors err
+							on tlp.error_id = err.error_id
+						    inner join Teams t
+						    on t.team_id = tlp.team_id
+						    inner join Distances d
+			    			on t.distance_id = d.distance_id
                        where  COALESCE(tlp.teamlevelpoint_comment, '') <> ''
                                 and $teamRaidCondition
-
                        group by tlp.team_id
                       ) a
-		  on t.team_id = a.team_id    
+		  		on t.team_id = a.team_id
 		  set  t.team_comment = a.team_comment";
 
         //   echo $sql;
@@ -2098,22 +2149,21 @@ send_mime_mail('Автор письма',
 
 	//Теперь ошибки
 	$sql = " update  Teams t
-                  inner join
+                inner join
                       (select tlp.team_id 
 						,group_concat(COALESCE(error_name, '')) as team_error
-		       from TeamLevelPoints tlp
-				left outer join Errors err
-				on tlp.error_id = err.error_id
-			    inner join Teams t
-			    on t.team_id = tlp.team_id
-			    inner join Distances d
-			    on t.distance_id = d.distance_id
-                       where  COALESCE(tlp.error_id, 0) <> 0
-                                and $teamRaidCondition
-
-                       group by tlp.team_id
+						from TeamLevelPoints tlp
+								left outer join Errors err
+								on tlp.error_id = err.error_id
+							    inner join Teams t
+							    on t.team_id = tlp.team_id
+							    inner join Distances d
+							    on t.distance_id = d.distance_id
+						where  COALESCE(tlp.error_id, 0) <> 0
+		                       and $teamRaidCondition
+						group by tlp.team_id
                       ) a
-		  on t.team_id = a.team_id    
+		  		on t.team_id = a.team_id
 		  set  t.team_comment = CASE WHEN a.team_error <> '' THEN CONCAT('Ошибки: ', a.team_error, '; ',  COALESCE(t.team_comment, ''))  ELSE t.team_comment END";
 //
         //   echo $sql;
