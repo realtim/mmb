@@ -227,7 +227,7 @@ $tmRne = microtime(true);
 			 $viewsubmode  = "";
 
 			 // закрываем соединение с базой
-			 mysql_close();
+			 CSql::closeConnection();
 $tmEnd = microtime(true);
 print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", include: ".($tmPrivSt - $tmSt).", privs: ".($tmPrivEn - $tmPrivSt).", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", post priv & pre&post render: ". ($tmEnd - $tmRne + $tmRn - $tmActionEn + $tmAction - $tmPrivEn)
 	."<br/><small>". $logger->GetText() . "</small></div>");

@@ -49,7 +49,7 @@ if (!isset($MyPHPScript)) return;
 	{
 		  //.$login." не найден!";
 		$password = "";
-		mysql_close();
+		CSql::closeConnection();
 		CMmb::setErrorMessage('Неверный email или пароль.');
 		return;
 	} 

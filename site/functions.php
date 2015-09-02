@@ -85,58 +85,12 @@ class CMmb
 	 $needLog = true;
 	 global $logger;
 
-	$NewConnection = 0;
-	if (empty($ConnectionId))
-	{
-		$NewConnection = 1;
-
-		$t1 = microtime(true);
-		// Данные берём из settings
-		include("settings.php");
-		if ($needLog)
-			$t1 = $logger->AddInterval('include', $t1);
-
-		$ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
-		if ($needLog)
-			$logger->AddInterval('connect',  $t1);
-
-		// Ошибка соединения
-		if ($ConnectionId <= 0)
-		{
-			echo mysql_error();
-			die();
-			return -1;
-		}
-
-//  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
-		//  устанавливаем временную зону
-//		 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
-		//  устанавливаем кодировку для взаимодействия
-
-		$t1 = microtime(true);
-	        mysql_query('set names \'utf8\'', $ConnectionId);
-		if ($needLog)
-			$t1 = $logger->AddInterval('set names utf', $t1);
-
-                // Выбираем БД ММБ
-//		echo $DBName;
-		$rs = mysql_select_db($DBName, $ConnectionId);
-
-		if ($needLog)
-			$logger->AddInterval('select db', $t1);
-
-		if (!$rs)
-		{
-			echo mysql_error();
-			die();
-			return -1;
-		}
-
-	}
- 
   // echo $ConnectionId;
-
 	 $t1 = microtime(true);
+	 $ConnectionId = CSql::getConnection();
+	 if ($needLog)
+		 $t1 = $logger->AddInterval('getConnection', $t1);
+
 	$rs = mysql_query($SqlString, $ConnectionId);
 	 if ($needLog)
 	 {
@@ -148,6 +102,7 @@ class CMmb
 	if (!$rs)
 	{
 		echo mysql_error();
+		CSql::closeConnection();
 		die();
 		return -1;
 	}
@@ -159,12 +114,7 @@ class CMmb
 	//  echo ' NewId '.$rs;
 	}
 
-
-
-	if ($NewConnection == 1)
-	{
-		//mysql_close($ConnectionId); // try not closing
-	}
+	//CSql::closeConnection(); // try not closing, use global
 
 	return $rs;
  
@@ -172,6 +122,55 @@ class CMmb
 
 
 class CSql {
+
+	protected static $connection = null;
+
+	public static function getConnection()
+	{
+		if (self::$connection !== null)
+			return self::$connection;
+
+		// Данные берём из settings
+		include("settings.php");
+
+		self::$connection = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+
+		// Ошибка соединения
+		if (self::$connection <= 0)
+		{
+			echo mysql_error();
+			die();
+		}
+
+//  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
+		//  устанавливаем временную зону
+//		 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
+		//  устанавливаем кодировку для взаимодействия
+
+		mysql_query('set names \'utf8\'', self::$connection);
+
+		// Выбираем БД ММБ
+//		echo $DBName;
+		$rs = mysql_select_db($DBName, self::$connection);
+
+		if (!$rs)
+		{
+			self::closeConnection();
+			echo mysql_error();
+			die();
+		}
+
+		return self::$connection;
+	}
+
+	public static function closeConnection()
+	{
+		if (self::$connnection !== null)
+			mysql_close(self::$connection);
+		self::$connection = null;
+	}
+
+
 	public static function singleRow($query)
 	{
 		$result = MySqlQuery($query);
