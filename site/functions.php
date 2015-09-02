@@ -139,7 +139,10 @@ class CMmb
 	 $t1 = microtime(true);
 	$rs = mysql_query($SqlString, $ConnectionId);
 	 if ($needLog)
+	 {
 		 $logger->AddInterval('query', $t1);
+		 $logger->AddRecord("");
+	 }
 
 
 	if (!$rs)

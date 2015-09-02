@@ -230,7 +230,7 @@ $tmRne = microtime(true);
 			 mysql_close();
 $tmEnd = microtime(true);
 print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", include: ".($tmPrivSt - $tmSt).", privs: ".($tmPrivEn - $tmPrivSt).", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", post priv & pre&post render: ". ($tmEnd - $tmRne + $tmRn - $tmActionEn + $tmAction - $tmPrivEn)
-	."<br/>". $logger->GetText() . "</div>");
+	."<br/><small>". $logger->GetText() . "</small></div>");
 			?>
 		   </div>
 		<!--Конец правой колонки -->
