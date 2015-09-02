@@ -93,12 +93,12 @@ class CMmb
 		$t1 = microtime(true);
 		// Данные берём из settings
 		include("settings.php");
-		$logger->AddTime('include', microtime(true) - $t1);
+		if ($needLog)
+			$t1 = $logger->AddInterval('include', $t1);
 
-		$t1 = microtime(true);
 		$ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
 		if ($needLog)
-			$logger->AddTime('connect', microtime(true) - $t1);
+			$logger->AddInterval('connect',  $t1);
 
 		// Ошибка соединения
 		if ($ConnectionId <= 0)
@@ -116,15 +116,14 @@ class CMmb
 		$t1 = microtime(true);
 	        mysql_query('set names \'utf8\'', $ConnectionId);
 		if ($needLog)
-			$logger->AddTime('set names utf', microtime(true) - $t1);
+			$t1 = $logger->AddInterval('set names utf', $t1);
 
                 // Выбираем БД ММБ
 //		echo $DBName;
-		$t1 = microtime(true);
 		$rs = mysql_select_db($DBName, $ConnectionId);
 
 		if ($needLog)
-			$logger->AddTime('select db', microtime(true) - $t1);
+			$logger->AddInterval('select db', $t1);
 
 		if (!$rs)
 		{
@@ -140,7 +139,7 @@ class CMmb
 	 $t1 = microtime(true);
 	$rs = mysql_query($SqlString, $ConnectionId);
 	 if ($needLog)
-		 $logger->AddTime('query', microtime(true) - $t1);
+		 $logger->AddInterval('query', $t1);
 
 
 	if (!$rs)
@@ -2345,12 +2344,19 @@ class CMmbLogger
 	public function AddRecord($record)
 	{
 		if (!empty($record))
-			$records[] = $record;
+			$this->records[] = $record;
 	}
 
 	public function AddTime($text, $time)
 	{
 		$this->AddRecord($text . ' ' . round($time, 5));
+	}
+
+	public function AddInterval($text, $stTime)
+	{
+		$en = microtime(true);
+		$this->AddRecord("$text: " . round($en - $stTime, 5));
+		return $en;
 	}
 
 	public function GetText($asHtml = true)

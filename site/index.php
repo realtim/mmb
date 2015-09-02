@@ -46,8 +46,7 @@ $tmPrivSt = microtime(true);
 	{
   	     GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
-$mark1 = microtime(true);
-$logger->AddTime('empty raid', $mark1 - $tmPrivSt);
+$mark1 = $logger->AddInterval('empty raid', $tmPrivSt);
 
   	     $orderBy = $Administrator ? 'raid_id' : 'raid_registrationenddate';
   	     $sql = "select raid_id
@@ -57,15 +56,13 @@ $logger->AddTime('empty raid', $mark1 - $tmPrivSt);
 
 	     $RaidId = CSql::singleValue($sql, 'raid_id');
 
-$logger->AddTime('getraid', microtime(true) - $mark1);
+$logger->AddInterval('getraid', $mark1);
         }
 	// Конец определения ММБ
 
 $mark1 = microtime(true);
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
-$tmPrivEn = microtime(true);
-
-$logger->AddTime('end priv',  $tmPrivEn - $mark1);
+$tmPrivEn = $logger->AddInterval('end priv',  $mark1);
 
 	// Инициализуем переменные сессии, если они отсутствуют
 	if (!isset($view)) $view = "";
