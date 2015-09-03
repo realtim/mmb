@@ -162,7 +162,7 @@ $t1= microtime(true);
  }
  mysql_free_result($Result);
 
-$logger->AddTime("after links", $t1);
+$logger->AddInterval("after links", $t1);
  ?>
 
  <script language="JavaScript">
