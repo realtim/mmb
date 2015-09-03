@@ -142,6 +142,8 @@ $tmActionEn = microtime(true);
 
 
 <?
+$logger->AddRecord("before links");
+$t1= microtime(true);
  $mmbLogos = array();
  $Sql = "select raid_logolink, raid_id from Raids";
  $Result = MySqlQuery($Sql);
@@ -159,6 +161,8 @@ $tmActionEn = microtime(true);
 	 $mmbLogos[] = "                {$Row['raid_id']}: '$link'";
  }
  mysql_free_result($Result);
+
+$logger->AddTime("after links", $t1);
  ?>
 
  <script language="JavaScript">

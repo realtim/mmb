@@ -134,8 +134,6 @@ class CSql {
 		include("settings.php");
 
 		self::$connection = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
-		global $logger;
-		$logger->AddRecord($ServerName);
 
 		// Ошибка соединения
 		if (self::$connection <= 0)
