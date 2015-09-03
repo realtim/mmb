@@ -145,13 +145,23 @@ $tmActionEn = microtime(true);
 $logger->AddRecord("before links");
 $t1= microtime(true);
  $mmbLogos = array();
- $Sql = "select raid_logolink, raid_id from Raids";
+ $Sql = "select raid_logolink, r.raid_id, COALESCE(f.raidfile_name, '') as logo_file
+		from Raids r
+		left outer join (
+			select raidfile_name, raid_id
+	                        from RaidFiles
+	                        where filetype_id = 2
+	     			order by raidfile_id desc
+	     			limit 0, 1
+		) f on r.raid_id = f.raid_id";
  $Result = MySqlQuery($Sql);
  while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
  { 
 	$link = $Row['raid_logolink'];
         // 08.12.2013 Ищем ссылку на логотип  
-        $LogoFile = CSql::raidFileName($Row['raid_id'], 2, false);
+        //$LogoFile = CSql::raidFileName($Row['raid_id'], 2, false);
+
+	$LogoFile = trim($Row['logo_file']);
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
                 $link = $MyStoreHttpLink.$LogoFile;
 
