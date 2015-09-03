@@ -1,6 +1,7 @@
 <?php
 
 $tmSt = microtime(true);
+CMmbLogger::turn(isset($_GET['time']));
 
         // Общие настройки
 	include("settings.php");
@@ -38,15 +39,9 @@ $tmSt = microtime(true);
 
          // 27/12/2013 Заменил на сортировку по ключу
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
-$logger = new CMmbLogger();
-
-$tmPrivSt = microtime(true);
-
         if (empty($RaidId))
 	{
   	     GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
-
-$mark1 = $logger->AddInterval('empty raid', $tmPrivSt);
 
   	     $orderBy = $Administrator ? 'raid_id' : 'raid_registrationenddate';
   	     $sql = "select raid_id
@@ -55,14 +50,10 @@ $mark1 = $logger->AddInterval('empty raid', $tmPrivSt);
 		       LIMIT 0,1 ";
 
 	     $RaidId = CSql::singleValue($sql, 'raid_id');
-
-$logger->AddInterval('getraid', $mark1);
         }
 	// Конец определения ММБ
 
-$mark1 = microtime(true);
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
-$tmPrivEn = $logger->AddInterval('end priv',  $mark1);
 
 	// Инициализуем переменные сессии, если они отсутствуют
 	if (!isset($view)) $view = "";
@@ -127,7 +118,7 @@ $tmAction = microtime(true);
 	        // Обработчик событий, связанных с марш-броском
 		include ("raidaction.php");
 	}
-$tmActionEn = microtime(true);
+$tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 
     // 15,01,2012 Сбрасываем действие в самом конце, а не здесь 
     //$action = "";
@@ -142,15 +133,13 @@ $tmActionEn = microtime(true);
 
 
 <?
-$logger->AddRecord("before links");
-$t1= microtime(true);
  $mmbLogos = array();
  $Sql = "select raid_logolink, r.raid_id, COALESCE(f.raidfile_name, '') as logo_file
 		from Raids r
 		left outer join (
 			select raidfile_name, raid_id
 	                        from RaidFiles
-	                        where filetype_id = 2
+	                        where filetype_id = 2 -- logo link
 	     			order by raidfile_id desc
 	     			limit 0, 1
 		) f on r.raid_id = f.raid_id";
@@ -159,8 +148,6 @@ $t1= microtime(true);
  { 
 	$link = $Row['raid_logolink'];
         // 08.12.2013 Ищем ссылку на логотип  
-        //$LogoFile = CSql::raidFileName($Row['raid_id'], 2, false);
-
 	$LogoFile = trim($Row['logo_file']);
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
                 $link = $MyStoreHttpLink.$LogoFile;
@@ -171,8 +158,6 @@ $t1= microtime(true);
 	 $mmbLogos[] = "                {$Row['raid_id']}: '$link'";
  }
  mysql_free_result($Result);
-
-$logger->AddInterval("after links", $t1);
  ?>
 
  <script language="JavaScript">
@@ -233,7 +218,7 @@ $logger->AddInterval("after links", $t1);
 $tmRn = microtime(true);
                          // вставляем основную часть			
 			 include("mainpart.php");
-$tmRne = microtime(true);
+$tmRne = CMmbLogger::addInterval('---- render', $tmRn);
 
                          // сбрасываем действие
 			 $action = "";
@@ -242,9 +227,9 @@ $tmRne = microtime(true);
 
 			 // закрываем соединение с базой
 			 CSql::closeConnection();
-$tmEnd = microtime(true);
-print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", include: ".($tmPrivSt - $tmSt).", privs: ".($tmPrivEn - $tmPrivSt).", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", post priv & pre&post render: ". ($tmEnd - $tmRne + $tmRn - $tmActionEn + $tmAction - $tmPrivEn)
-	."<br/><small>". $logger->GetText() . "</small></div>");
+$tmEnd = CMmbLogger::addInterval('Total: ', $tmSt);
+print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", pre&post render: ". round($tmEnd - $tmRne + $tmRn - $tmActionEn, 5)
+	."<br/><small>". CMmbLogger::getText() . "</small></div>");
 			?>
 		   </div>
 		<!--Конец правой колонки -->

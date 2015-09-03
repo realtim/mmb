@@ -11,14 +11,13 @@ class CMmb
 
 	public static function setSessionCookie($sessionId)
 	{
-		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/');
+		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/', false, true);
 	}
 
 	public static function clearSessionCookie()
 	{
-		setcookie(CMmb::CookieName, "", time() - 24 * 3600, '/');    // a day ago
+		setcookie(CMmb::CookieName, "", time() - 24 * 3600, '/', false, true);    // a day ago
 	}
-
 
 	public static function setMessage($message)
 	{
@@ -82,21 +81,13 @@ class CMmb
  //
  // вызов  MySqlQuety('...',&$ConnectionId, ...);
 
-	 $needLog = true;
-	 global $logger;
-
   // echo $ConnectionId;
-	 $t1 = microtime(true);
-	 $ConnectionId = CSql::getConnection();
-	 if ($needLog)
-		 $t1 = $logger->AddInterval('getConnection', $t1);
 
+	$ConnectionId = CSql::getConnection();
+
+	$t1 = microtime(true);
 	$rs = mysql_query($SqlString, $ConnectionId);
-	 if ($needLog)
-	 {
-		 $logger->AddInterval('query', $t1);
-		 $logger->AddRecord("  ");
-	 }
+	CMmbLogger::addInterval('query', $t1);
 
 
 	if (!$rs)
@@ -130,6 +121,7 @@ class CSql {
 		if (self::$connection !== null)
 			return self::$connection;
 
+		$t1 = microtime(true);
 		// Данные берём из settings
 		include("settings.php");
 
@@ -159,6 +151,7 @@ class CSql {
 			echo mysql_error();
 			die();
 		}
+		CMmbLogger::addInterval('getConnection', $t1);
 
 		return self::$connection;
 	}
@@ -2336,42 +2329,40 @@ class CMmbUI
 
 class CMmbLogger
 {
-	protected $records = array();
+	protected static $on = false;
+	protected static $records = array();
 
-	function __construct()
+	public static function turn($on)
 	{
-
+		self::$on = ($on == true) ? true : false;
 	}
 
-	public function AddRecord($record)
+	public static function addRecord($record)
 	{
-		if (!empty($record))
-			$this->records[] = $record;
+		if (self::$on && !empty($record))
+			self::$records[] = $record;
 	}
 
-	public function AddTime($text, $time)
+	public static function addInterval($text, $stTime)
 	{
-		$this->AddRecord($text . ' ' . round($time, 5));
-	}
+		if (!self::$on)
+			return 0;
 
-	public function AddInterval($text, $stTime)
-	{
 		$en = microtime(true);
-		$this->AddRecord("$text: " . round($en - $stTime, 5));
+		self::addRecord("$text: " . round($en - $stTime, 5));
 		return $en;
 	}
 
-	public function GetText($asHtml = true)
+	public static function getText($asHtml = true)
 	{
 		if (!$asHtml)
-			return implode("\r\n", $this->records);
+			return implode("\r\n", self::$records);
 
 		$res = '';
-		foreach ($this->records as $rec)
+		foreach (self::$records as $rec)
 			$res .= CMmbUI::toHtml($rec) . "<br/>";
 
 		return $res;
 	}
 }
-
 ?>
