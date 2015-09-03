@@ -1,7 +1,7 @@
 <?php
 
 $tmSt = microtime(true);
-//CMmbLogger::turn(isset($_GET['time']));
+CMmbLogger::turn(isset($_GET['time']));
 
         // Общие настройки
 	include("settings.php");

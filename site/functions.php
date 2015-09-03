@@ -11,12 +11,12 @@ class CMmb
 
 	public static function setSessionCookie($sessionId)
 	{
-		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/', false, true);
+		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/', false);
 	}
 
 	public static function clearSessionCookie()
 	{
-		setcookie(CMmb::CookieName, "", time() - 24 * 3600, '/', false, true);    // a day ago
+		setcookie(CMmb::CookieName, "", time() - 24 * 3600, '/', false);    // a day ago
 	}
 
 	public static function setMessage($message)
@@ -2329,7 +2329,7 @@ class CMmbUI
 
 class CMmbLogger
 {
-	protected static $on = false;
+	protected static $on = true;
 	protected static $records = array();
 
 	public static function turn($on)
@@ -2345,11 +2345,9 @@ class CMmbLogger
 
 	public static function addInterval($text, $stTime)
 	{
-		if (!self::$on)
-			return 0;
-
 		$en = microtime(true);
-		self::addRecord("$text: " . round($en - $stTime, 5));
+		if (self::$on)
+			self::addRecord("$text: " . round($en - $stTime, 5));
 		return $en;
 	}
 
