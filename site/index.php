@@ -86,7 +86,7 @@ CMmbLogger::turn(isset($_GET['time']));
         //Не знаю, относится ли дистанция к переменным сессии, но инициализацию делаем
 	$DistanceId = mmb_validateInt($_REQUEST, 'DistanceId', 0);
 
-$tmAction = microtime(true);
+$tmAction = CMmbLogger::addInterval('before action', $tmSt);
 	if ($action == "") 
 	{
 	// Действие не указано
@@ -230,8 +230,7 @@ $tmRne = CMmbLogger::addInterval('---- render', $tmRn);
 			 CSql::closeConnection();
 $tmEnd = CMmbLogger::addInterval('Total: ', $tmSt);
 
-print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", pre&post render: ". round($tmEnd - $tmRne + $tmRn - $tmActionEn, 5)
-	."<br/><small>". CMmbLogger::getText() . "</small></div>");
+print("<div><small>". CMmbLogger::getText() . "</small></div>");
 			?>
 		   </div>
 		<!--Конец правой колонки -->
