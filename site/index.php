@@ -1,7 +1,7 @@
 <?php
 
 $tmSt = microtime(true);
-CMmbLogger::turn(isset($_GET['time']));
+//CMmbLogger::turn(isset($_GET['time']));
 
         // Общие настройки
 	include("settings.php");
@@ -228,6 +228,7 @@ $tmRne = CMmbLogger::addInterval('---- render', $tmRn);
 			 // закрываем соединение с базой
 			 CSql::closeConnection();
 $tmEnd = CMmbLogger::addInterval('Total: ', $tmSt);
+
 print("<div style='display: block;'>Total: ".($tmEnd - $tmSt).", action: ". ($tmActionEn - $tmAction) . ", render: " .($tmRne - $tmRn).", pre&post render: ". round($tmEnd - $tmRne + $tmRn - $tmActionEn, 5)
 	."<br/><small>". CMmbLogger::getText() . "</small></div>");
 			?>
