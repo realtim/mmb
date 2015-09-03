@@ -11,12 +11,12 @@ class CMmb
 
 	public static function setSessionCookie($sessionId)
 	{
-		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/', false);
+		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/', false, true);
 	}
 
 	public static function clearSessionCookie()
 	{
-		setcookie(CMmb::CookieName, "", time() - 24 * 3600, '/', false);    // a day ago
+		setcookie(CMmb::CookieName, "", time() - 24 * 3600, '/', false, true);    // a day ago
 	}
 
 	public static function setMessage($message)

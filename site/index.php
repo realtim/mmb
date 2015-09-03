@@ -1,12 +1,13 @@
 <?php
 
 $tmSt = microtime(true);
-CMmbLogger::turn(isset($_GET['time']));
 
         // Общие настройки
 	include("settings.php");
 	// Библиотека функций
 	include("functions.php");
+
+CMmbLogger::turn(isset($_GET['time']));
 
         if (isset($DebugMode) and ($DebugMode == 1))
 	{
