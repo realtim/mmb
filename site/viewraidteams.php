@@ -707,7 +707,7 @@
 			    print($Row['team_comment']);
 			    print("</td>\r\n");
 
-			    $skipped = isset($skippedPoints[$Row['team_id']]) ? normalizeSkipped($skippedPoints[$Row['team_id']]) : '&nbsp;';
+			    $skipped = isset($skippedPoints[$Row['team_id']]) ? $skippedPoints[$Row['team_id']] : '&nbsp;';
 			//	$skipped = isset($Row['team_skippedlevelpoint']) ? normalizeSkippedString($Row['team_skippedlevelpoint']) : '&nbsp;';
 
 			    print("<td>$skipped</td>\r\n");
