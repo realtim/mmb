@@ -927,7 +927,7 @@ send_mime_mail('Автор письма',
 	      }  
 
         }
-        // Конец очистик специальных массивов от возможных инъекций
+        // Конец очистки специальных массивов от возможных инъекций
 
 
         // функция экранирует спец.символы в массивах переменных
@@ -2218,6 +2218,7 @@ send_mime_mail('Автор письма',
 
 
 	 // Находим невзятые КП
+	     /*
 	 $sql = " update  Teams t
 		   inner join
 	          	(select t.team_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as skippedlevelpoint
@@ -2240,7 +2241,7 @@ send_mime_mail('Автор письма',
 
 		 //     echo $sql;
 
-		 $rs = MySqlQuery($sql);
+		 $rs = MySqlQuery($sql);*/
 
 
 
