@@ -2330,24 +2330,24 @@ class CMmbUI
 
 class CMmbLogger
 {
-	protected static $on = true;
+	protected static $enabled = false;
 	protected static $records = array();
 
-	public static function turn($on)
+	public static function enable($on)
 	{
-		self::$on = ($on == true) ? true : false;
+		self::$enabled = ($on == true) ? true : false;
 	}
 
 	public static function addRecord($record)
 	{
-		if (self::$on && !empty($record))
+		if (self::$enabled && !empty($record))
 			self::$records[] = $record;
 	}
 
 	public static function addInterval($text, $stTime)
 	{
 		$en = microtime(true);
-		if (self::$on)
+		if (self::$enabled)
 			self::addRecord("$text: " . round($en - $stTime, 5));
 		return $en;
 	}

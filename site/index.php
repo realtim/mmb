@@ -7,7 +7,7 @@ $tmSt = microtime(true);
 	// Библиотека функций
 	include("functions.php");
 
-CMmbLogger::turn(isset($_GET['time']));
+CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 
         if (isset($DebugMode) and ($DebugMode == 1))
 	{
