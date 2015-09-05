@@ -495,8 +495,8 @@
 	                       TIME_FORMAT(tlp.teamlevelpoint_result, '%H:%i') as team_sresult,
 					       COALESCE(t.team_outofrange, 0) as  team_outofrange,
 					       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
-					       COALESCE(t.team_comment, '') as team_comment,
-					       COALESCE(t.team_skippedlevelpoint, '') as team_skippedlevelpoint
+					       COALESCE(t.team_comment, '') as team_comment /*,
+					       COALESCE(t.team_skippedlevelpoint, '') as team_skippedlevelpoint */
 					from  Teams t
 							inner join  Distances d	on t.distance_id = d.distance_id
 							inner join  TeamLevelPoints tlp	on t.team_id = tlp.team_id
@@ -513,8 +513,8 @@
 			               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 					       COALESCE(t.team_outofrange, 0) as  team_outofrange,
 					       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
-				    	   COALESCE(t.team_comment, '') as team_comment,
-						   COALESCE(t.team_skippedlevelpoint, '') as team_skippedlevelpoint
+				    	   COALESCE(t.team_comment, '') as team_comment /*,
+						   COALESCE(t.team_skippedlevelpoint, '') as team_skippedlevelpoint */
 					  from  Teams t
 							inner join  Distances d	on t.distance_id = d.distance_id
 							left outer join LevelPoints lp
@@ -525,14 +525,14 @@
 			          order by distance_name, team_outofrange, team_progress desc, team_error asc, team_result asc, team_num asc ";
 
 
-			$skpd = microtime(true);
-			//	$skippedPoints = GetAllSkippedPoints($RaidId, $levelPointId);
-			//  $skpd = microtime(true) - $skpd;
-			//	$skpd0 = $skippedPoints['__time__'];
-			$skpd0 = 0;
-
 		}
-		// Конец проверки, задан литочка фильтрации
+			$skpd = microtime(true);
+				$skippedPoints = GetAllSkippedPoints($RaidId, $levelPointId);
+			  $skpd = microtime(true) - $skpd;
+				$skpd0 = $skippedPoints['__time__'];
+			//$skpd0 = 0;
+
+		// Конец проверки, задана ли точка фильтрации
 	}
 	elseif ($OrderType == 'Errors')
 	{
@@ -707,8 +707,8 @@
 			    print($Row['team_comment']);
 			    print("</td>\r\n");
 
-			    //$skipped = isset($skippedPoints[$Row['team_id']]) ? normalizeSkipped($skippedPoints[$Row['team_id']]) : '&nbsp;';
-				$skipped = isset($Row['team_skippedlevelpoint']) ? normalizeSkippedString($Row['team_skippedlevelpoint']) : '&nbsp;';
+			    $skipped = isset($skippedPoints[$Row['team_id']]) ? $skippedPoints[$Row['team_id']] : '&nbsp;';
+			//	$skipped = isset($Row['team_skippedlevelpoint']) ? normalizeSkippedString($Row['team_skippedlevelpoint']) : '&nbsp;';
 
 			    print("<td>$skipped</td>\r\n");
 
@@ -741,7 +741,7 @@
 	
 <br/>
 <div id="comment" align="justify" style="font-size: 80%;">
-	Примечания: 1) Команды, взявшие на себя повышенные экологические обязательства,отмечаются знаком <b>ну!</b><br/>
+	Примечания: 1) Команды, взявшие на себя повышенные экологические обязательства, отмечаются знаком <b>ну!</b><br/>
 	2) Участники, которые не вышли на старт, и при этом не удалили свою заявку до окончания регистрации, при следующей заявке отмечаются знаком <b>(?!)</b><br/>
 </div>
 

@@ -11,14 +11,13 @@ class CMmb
 
 	public static function setSessionCookie($sessionId)
 	{
-		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/');
+		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/', false, true);
 	}
 
 	public static function clearSessionCookie()
 	{
-		setcookie(CMmb::CookieName, "", time() - 24 * 3600, '/');    // a day ago
+		setcookie(CMmb::CookieName, "", time() - 24 * 3600, '/', false, true);    // a day ago
 	}
-
 
 	public static function setMessage($message)
 	{
@@ -82,51 +81,19 @@ class CMmb
  //
  // вызов  MySqlQuety('...',&$ConnectionId, ...);
 
-	$NewConnection = 0;
-	if (empty($ConnectionId))
-	{
-		$NewConnection = 1;
-
-		// Данные берём из settings
-		include("settings.php");
-
-		$ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
-
-		// Ошибка соединения
-		if ($ConnectionId <= 0)
-		{
-			echo mysql_error();
-			die();
-			return -1;
-		}
-
-//  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
-		//  устанавливаем временную зону
-//		 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
-		//  устанавливаем кодировку для взаимодействия
-	        mysql_query('set names \'utf8\'', $ConnectionId);
-
-                // Выбираем БД ММБ
-//		echo $DBName;
-		$rs = mysql_select_db($DBName, $ConnectionId);
-
-		if (!$rs)
-		{
-			echo mysql_error();
-			die();
-			return -1;
-		}
-
-	}
- 
   // echo $ConnectionId;
-   
+
+	$ConnectionId = CSql::getConnection();
+
+	$t1 = microtime(true);
 	$rs = mysql_query($SqlString, $ConnectionId);
+	CMmbLogger::addInterval('query', $t1);
 
 
 	if (!$rs)
 	{
 		echo mysql_error();
+		CSql::closeConnection();
 		die();
 		return -1;
 	}
@@ -138,12 +105,7 @@ class CMmb
 	//  echo ' NewId '.$rs;
 	}
 
-
-
-	if ($NewConnection == 1)
-	{
-		//mysql_close($ConnectionId); // try not closing
-	}
+	//CSql::closeConnection(); // try not closing, use global
 
 	return $rs;
  
@@ -151,6 +113,57 @@ class CMmb
 
 
 class CSql {
+
+	protected static $connection = null;
+
+	public static function getConnection()
+	{
+		if (self::$connection !== null)
+			return self::$connection;
+
+		$t1 = microtime(true);
+		// Данные берём из settings
+		include("settings.php");
+
+		self::$connection = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+
+		// Ошибка соединения
+		if (self::$connection <= 0)
+		{
+			echo mysql_error();
+			die();
+		}
+
+//  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
+		//  устанавливаем временную зону
+//		 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
+		//  устанавливаем кодировку для взаимодействия
+
+		mysql_query('set names \'utf8\'', self::$connection);
+
+		// Выбираем БД ММБ
+//		echo $DBName;
+		$rs = mysql_select_db($DBName, self::$connection);
+
+		if (!$rs)
+		{
+			self::closeConnection();
+			echo mysql_error();
+			die();
+		}
+		CMmbLogger::addInterval('getConnection', $t1);
+
+		return self::$connection;
+	}
+
+	public static function closeConnection()
+	{
+		if (self::$connection !== null)
+			mysql_close(self::$connection);
+		self::$connection = null;
+	}
+
+
 	public static function singleRow($query)
 	{
 		$result = MySqlQuery($query);
@@ -914,7 +927,7 @@ send_mime_mail('Автор письма',
 	      }  
 
         }
-        // Конец очистик специальных массивов от возможных инъекций
+        // Конец очистки специальных массивов от возможных инъекций
 
 
         // функция экранирует спец.символы в массивах переменных
@@ -2102,6 +2115,7 @@ send_mime_mail('Автор письма',
 
 
 	 // Находим невзятые КП
+	     /*
 	 $sql = " update  Teams t
 				    inner join
 	    		      	(select t.team_id, GROUP_CONCAT(lp.levelpoint_name ORDER BY lp.levelpoint_order, ' ') as skippedlevelpoint
@@ -2124,7 +2138,7 @@ send_mime_mail('Автор письма',
 
 		 //     echo $sql;
 
-		 $rs = MySqlQuery($sql);
+		 $rs = MySqlQuery($sql);*/
 
 
 
@@ -2209,4 +2223,40 @@ class CMmbUI
 	}
 }
 
+class CMmbLogger
+{
+	protected static $enabled = false;
+	protected static $records = array();
+
+	public static function enable($on)
+	{
+		self::$enabled = ($on == true) ? true : false;
+	}
+
+	public static function addRecord($record)
+	{
+		if (self::$enabled && !empty($record))
+			self::$records[] = $record;
+	}
+
+	public static function addInterval($text, $stTime)
+	{
+		$en = microtime(true);
+		if (self::$enabled)
+			self::addRecord("$text: " . round($en - $stTime, 5));
+		return $en;
+	}
+
+	public static function getText($asHtml = true)
+	{
+		if (!$asHtml)
+			return implode("\r\n", self::$records);
+
+		$res = '';
+		foreach (self::$records as $rec)
+			$res .= CMmbUI::toHtml($rec) . "<br/>";
+
+		return $res;
+	}
+}
 ?>

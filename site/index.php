@@ -1,9 +1,13 @@
 <?php
 
+$tmSt = microtime(true);
+
         // Общие настройки
 	include("settings.php");
 	// Библиотека функций
 	include("functions.php");
+
+CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 
         if (isset($DebugMode) and ($DebugMode == 1))
 	{
@@ -16,7 +20,7 @@
 	}
 
 
-        // Пробегаем помассивам POST GET REAUEST COOKIE  и чистим возможные sql инъекции и мусор
+        // Пробегаем помассивам POST GET REQUEST COOKIE  и чистим возможные sql инъекции и мусор
         ClearArrays();
 
 	// Устанавливаем часовой пояс по умолчанию
@@ -82,6 +86,7 @@
         //Не знаю, относится ли дистанция к переменным сессии, но инициализацию делаем
 	$DistanceId = mmb_validateInt($_REQUEST, 'DistanceId', 0);
 
+$tmAction = CMmbLogger::addInterval('before action', $tmSt);
 	if ($action == "") 
 	{
 	// Действие не указано
@@ -113,9 +118,8 @@
 
 	        // Обработчик событий, связанных с марш-броском
 		include ("raidaction.php");
-
-
 	}
+$tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 
     // 15,01,2012 Сбрасываем действие в самом конце, а не здесь 
     //$action = "";
@@ -131,13 +135,21 @@
 
 <?
  $mmbLogos = array();
- $Sql = "select raid_logolink, raid_id from Raids";
+ $Sql = "select raid_logolink, r.raid_id, COALESCE(f.raidfile_name, '') as logo_file
+		from Raids r
+		left outer join (
+			select raidfile_name, raid_id
+	                        from RaidFiles
+	                        where filetype_id = 2 -- logo link
+	     			order by raidfile_id desc
+	     			limit 0, 1
+		) f on r.raid_id = f.raid_id";
  $Result = MySqlQuery($Sql);
  while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
  { 
 	$link = $Row['raid_logolink'];
         // 08.12.2013 Ищем ссылку на логотип  
-        $LogoFile = CSql::raidFileName($Row['raid_id'], 2, false);
+	$LogoFile = trim($Row['logo_file']);
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
                 $link = $MyStoreHttpLink.$LogoFile;
 
@@ -204,8 +216,10 @@
                             //print('<table width = "100%"><tr><td>'.$statustext.'</td><td style = "border-top-style: dotted; border-top-width: 2px; border-top-color: #CC0000;">&nbsp;</td></tr></table>'."\n");
                           }
 
+$tmRn = microtime(true);
                          // вставляем основную часть			
-			 include("mainpart.php"); 
+			 include("mainpart.php");
+$tmRne = CMmbLogger::addInterval('---- render', $tmRn);
 
                          // сбрасываем действие
 			 $action = "";
@@ -213,7 +227,10 @@
 			 $viewsubmode  = "";
 
 			 // закрываем соединение с базой
-			 mysql_close();
+			 CSql::closeConnection();
+$tmEnd = CMmbLogger::addInterval('Total: ', $tmSt);
+
+print("<div><small>". CMmbLogger::getText() . "</small></div>");
 			?>
 		   </div>
 		<!--Конец правой колонки -->

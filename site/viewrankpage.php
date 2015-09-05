@@ -184,26 +184,22 @@ class CTeamPlaces
 
 */	
 	  	//echo 'sql '.$sql;
-	$sqTime = 0;
-	$gtp = 0;
-	$t1 = microtime(true);
+
+CMmbLogger::addRecord('rank query: ');
 	$Result = MySqlQuery($sql);
-	$t2 = microtime(true);
 
 	if ($ShowAllRaids)
 	{
 		$sqlRaids = "select r.raid_id, r.raid_name, d.distance_name, d.distance_id from Raids r
 			        inner join Distances d on r.raid_id = d.raid_id and d.distance_hide = 0
 		                order by r.raid_id  desc, d.distance_id desc ";
-		$t3 = microtime(true);
 		$ResultRaids = MySqlQuery($sqlRaids);
-		$t4 = microtime(true);
 		$RowCount = mysql_num_rows($ResultRaids);
 		$TableWidth =  $RowCount*100 + 550;
 
 		$ctp = microtime(true);
 		$teamPlaces = new CTeamPlaces();
-		$ctp = microtime(true) - $ctp;
+		CMmbLogger::addInterval('team-places', $ctp);
 
 	} else {
 		$TableWidth = 550;
@@ -282,10 +278,7 @@ $t5 = microtime(true);
 
 	print("</table>\r\n");
 
-$t6 = microtime(true);
-
-	$add = $ShowAllRaids ? "запросы teamPlaces: '$ctp', " : '';
-	print("<div style=\"display: none;\"><small>Общее время: '" . ($t6-$t1) . "' запрос: '" . ($t2-$t1) . "', $add выборка-отрисовка: '" . ($t6-$t5). '</small></div>');
+CMmbLogger::addInterval('выборка-отрисовка',  $t5);
 ?>
 		
 		<br/>
