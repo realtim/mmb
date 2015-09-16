@@ -13,7 +13,10 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.TimePicker;
 import android.widget.TimePicker.OnTimeChangedListener;
 
+import java.util.Date;
+
 import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.model.registry.Settings;
 
 public class DatePanel {
     private static final boolean FOCUSABLE = true;
@@ -75,18 +78,24 @@ public class DatePanel {
     }
 
     private void initDate() {
+        boolean enable = true;
         if (currentState.isCommonStart()) {
             currentState.initInputDateFromCommonStart();
-            disableControls();
+            enable = false;
+        } else if (!Settings.getInstance().isCanEditScantime()) {
+            enable = false;
         } else if (!currentState.isLoggerDataExists()) {
-            disableControls();
+            Date currentDate = new Date();
+            currentState.setInputDate(currentDate);
+            currentState.setPrevDateTime(currentDate);
         }
+        setControlsEnabled(enable);
         initDateControls();
     }
 
-    private void disableControls() {
-        datePicker.setEnabled(false);
-        timePicker.setEnabled(false);
+    private void setControlsEnabled(boolean enabled) {
+        datePicker.setEnabled(enabled);
+        timePicker.setEnabled(enabled);
     }
 
     private void initDateControls() {

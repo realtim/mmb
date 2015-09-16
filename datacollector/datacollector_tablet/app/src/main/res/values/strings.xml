@@ -12,7 +12,6 @@
     <string name="main_user_id">User ID: %d</string>
     <string name="main_device_id">Device ID: %d</string>
     <string name="main_current_raid_id">Current raid ID: %d</string>
-    <string name="main_application_mode">Application mode: %s</string>
     <string name="main_input_data">Input data</string>
     <string name="main_transport">Transport</string>
     <string name="main_import_data">Import</string>
@@ -38,6 +37,7 @@
     <string name="settings_team_fast_select">Fast team select:</string>
     <string name="settings_applied">Settings applied</string>
     <string name="settings_json_dialog_title">Select device</string>
+    <string name="settings_can_edit_scantime">Can edit scan time:</string>
     <string name="settings_application_mode">Application mode:</string>
     <string name="settings_application_mode_input">INPUT</string>
     <string name="settings_application_mode_report">REPORT</string>

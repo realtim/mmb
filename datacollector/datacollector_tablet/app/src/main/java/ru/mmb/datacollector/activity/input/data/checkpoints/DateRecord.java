@@ -10,132 +10,135 @@ import java.util.Locale;
 
 import ru.mmb.datacollector.util.PrettyDateFormat;
 
-public class DateRecord implements Serializable
-{
-	private static final long serialVersionUID = -3532015001709602344L;
+public class DateRecord implements Serializable {
+    private static final long serialVersionUID = -3532015001709602344L;
 
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmm");
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmm");
 
-	private int year;
-	private int month;
-	private int day;
-	private int hour;
-	private int minute;
+    private int year;
+    private int month;
+    private int day;
+    private int hour;
+    private int minute;
 
-	public DateRecord()
-	{
-		this(new Date());
-	}
+    public DateRecord() {
+        this(new Date());
+    }
 
-	public DateRecord(int year, int month, int day, int hour, int minute)
-	{
-		this.year = year;
-		this.month = month;
-		this.day = day;
-		this.hour = hour;
-		this.minute = minute;
-	}
+    public DateRecord(int year, int month, int day, int hour, int minute) {
+        this.year = year;
+        this.month = month;
+        this.day = day;
+        this.hour = hour;
+        this.minute = minute;
+    }
 
-	public DateRecord(Date date)
-	{
-		setDatePart(date);
-		setTimePart(date);
-	}
+    public DateRecord(Date date) {
+        setDatePart(date);
+        setTimePart(date);
+    }
 
-	public void setDatePart(Date date)
-	{
-		Calendar calendar = new GregorianCalendar();
-		calendar.setTime(date);
-		year = calendar.get(Calendar.YEAR);
-		month = calendar.get(Calendar.MONTH);
-		day = calendar.get(Calendar.DAY_OF_MONTH);
-	}
+    public void setDatePart(Date date) {
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        year = calendar.get(Calendar.YEAR);
+        month = calendar.get(Calendar.MONTH);
+        day = calendar.get(Calendar.DAY_OF_MONTH);
+    }
 
-	public void setTimePart(Date date)
-	{
-		Calendar calendar = new GregorianCalendar();
-		calendar.setTime(date);
-		hour = calendar.get(Calendar.HOUR_OF_DAY);
-		minute = calendar.get(Calendar.MINUTE);
-	}
+    public void setTimePart(Date date) {
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        hour = calendar.get(Calendar.HOUR_OF_DAY);
+        minute = calendar.get(Calendar.MINUTE);
+    }
 
-	public Date toDate()
-	{
-		Calendar calendar = new GregorianCalendar(Locale.getDefault());
-		//Log.d("date record", calendar.getTimeZone().getDisplayName());
-		calendar.set(year, month, day, hour, minute);
-		return calendar.getTime();
-	}
+    public Date toDate() {
+        Calendar calendar = new GregorianCalendar(Locale.getDefault());
+        //Log.d("date record", calendar.getTimeZone().getDisplayName());
+        calendar.set(year, month, day, hour, minute);
+        return calendar.getTime();
+    }
 
-	public int getYear()
-	{
-		return year;
-	}
+    public int getYear() {
+        return year;
+    }
 
-	public void setYear(int year)
-	{
-		this.year = year;
-	}
+    public void setYear(int year) {
+        this.year = year;
+    }
 
-	public int getMonth()
-	{
-		return month;
-	}
+    public int getMonth() {
+        return month;
+    }
 
-	public void setMonth(int month)
-	{
-		this.month = month;
-	}
+    public void setMonth(int month) {
+        this.month = month;
+    }
 
-	public int getDay()
-	{
-		return day;
-	}
+    public int getDay() {
+        return day;
+    }
 
-	public void setDay(int day)
-	{
-		this.day = day;
-	}
+    public void setDay(int day) {
+        this.day = day;
+    }
 
-	public int getHour()
-	{
-		return hour;
-	}
+    public int getHour() {
+        return hour;
+    }
 
-	public void setHour(int hour)
-	{
-		this.hour = hour;
-	}
+    public void setHour(int hour) {
+        this.hour = hour;
+    }
 
-	public int getMinute()
-	{
-		return minute;
-	}
+    public int getMinute() {
+        return minute;
+    }
 
-	public void setMinute(int minute)
-	{
-		this.minute = minute;
-	}
+    public void setMinute(int minute) {
+        this.minute = minute;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "DateRecord [year=" + year + ", month=" + month + ", day=" + day + ", hour=" + hour
-		        + ", minute=" + minute + "]";
-	}
+    @Override
+    public String toString() {
+        return "DateRecord [year=" + year + ", month=" + month + ", day=" + day + ", hour=" + hour
+                + ", minute=" + minute + "]";
+    }
 
-	public String toPrettyString()
-	{
-		return PrettyDateFormat.format(toDate());
-	}
+    public String toPrettyString() {
+        return PrettyDateFormat.format(toDate());
+    }
 
-	public String saveToString()
-	{
-		return sdf.format(toDate());
-	}
+    public String saveToString() {
+        return sdf.format(toDate());
+    }
 
-	public static DateRecord parseString(String value) throws ParseException
-	{
-		return new DateRecord(sdf.parse(value));
-	}
+    public static DateRecord parseString(String value) throws ParseException {
+        return new DateRecord(sdf.parse(value));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DateRecord that = (DateRecord) o;
+
+        if (year != that.year) return false;
+        if (month != that.month) return false;
+        if (day != that.day) return false;
+        if (hour != that.hour) return false;
+        return minute == that.minute;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = year;
+        result = 31 * result + month;
+        result = 31 * result + day;
+        result = 31 * result + hour;
+        result = 31 * result + minute;
+        return result;
+    }
 }

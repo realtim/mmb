@@ -12,7 +12,6 @@
     <string name="main_user_id">ID пользователя: %d</string>
     <string name="main_device_id">ID устройства: %d</string>
     <string name="main_current_raid_id">ID текущего ММБ: %d</string>
-    <string name="main_application_mode">Режим работы: %s</string>
     <string name="main_input_data">Ввод данных</string>
     <string name="main_transport">Транспорт</string>
     <string name="main_import_data">Импорт</string>
@@ -37,6 +36,7 @@
     <string name="settings_team_fast_select">Режим быстрого выбора команды:</string>
     <string name="settings_applied">Настройки сохранены</string>
     <string name="settings_json_dialog_title">Выбор планшета</string>
+    <string name="settings_can_edit_scantime">Разрешить менять время:</string>
     <string name="settings_application_mode">Режим работы:</string>
     <string name="settings_application_mode_input">ВВОД ДАННЫХ</string>
     <string name="settings_application_mode_report">ОТЧЁТЫ</string>

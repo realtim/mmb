@@ -180,6 +180,10 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
         return rawLoggerDataDB.getInsertNewLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime, scannedDateTime, changedManual);
     }
 
+    public void saveRawLoggerDataManual(ScanPoint scanPoint, Team team, Date scannedDateTime, Date recordDateTime) {
+        rawLoggerDataDB.saveRawLoggerDataManual(scanPoint, team, scannedDateTime, recordDateTime);
+    }
+
     public List<RawLoggerData> loadRawLoggerData(ScanPoint scanPoint) {
         return rawLoggerDataDB.loadRawLoggerData(scanPoint);
     }

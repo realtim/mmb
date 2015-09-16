@@ -108,6 +108,44 @@ public class RawLoggerDataDB {
         return sql;
     }
 
+    public void saveRawLoggerDataManual(ScanPoint scanPoint, Team team, Date scannedDateTime, Date recordDateTime) {
+        db.beginTransaction();
+        try {
+            RawLoggerData prevRecord = getExistingRecord(scanPoint, team);
+            if (prevRecord != null) {
+                updateExistingLoggerRecordManual(prevRecord, scannedDateTime, recordDateTime);
+            } else {
+                insertNewLoggerRecordManual(scanPoint, team, scannedDateTime, recordDateTime);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    private void updateExistingLoggerRecordManual(RawLoggerData prevRecord, Date scannedDateTime, Date recordDateTime) {
+        String sql =
+                "update " + TABLE_RAW_LOGGER_DATA + " set " + RAWLOGGERDATA_DATE + " = '" +
+                        DateFormat.format(recordDateTime) + "', " + SCANNED_DATE + " = '" +
+                        DateFormat.format(scannedDateTime) + "', " + CHANGED_MANUAL + " = 1" +
+                        " where " + LOGGER_ID + " = " + prevRecord.getLoggerId() + " and " +
+                        SCANPOINT_ID + " = " + prevRecord.getScanPointId() + " and " +
+                        TEAM_ID + " = " + prevRecord.getTeamId();
+        db.execSQL(sql);
+    }
+
+    private void insertNewLoggerRecordManual(ScanPoint scanPoint, Team team, Date scannedDateTime, Date recordDateTime) {
+        String sql =
+                "insert into " + TABLE_RAW_LOGGER_DATA + "(" + USER_ID + ", " + DEVICE_ID + ", " +
+                        LOGGER_ID + ", " + SCANPOINT_ID + ", " + TEAM_ID + ", " + RAWLOGGERDATA_DATE +
+                        ", " + SCANNED_DATE + ", " + CHANGED_MANUAL +
+                        ") VALUES" + "(" + Settings.getInstance().getUserId() + ", " +
+                        Settings.getInstance().getDeviceId() + ", -1, " + scanPoint.getScanPointId() + ", " +
+                        team.getTeamId() + ", '" + DateFormat.format(recordDateTime) + "', '" +
+                        DateFormat.format(scannedDateTime) + "', 1)";
+        db.execSQL(sql);
+    }
+
     public List<RawLoggerData> loadRawLoggerData(ScanPoint scanPoint) {
 
         /*select t.scanpoint_id, t.team_id, t.scanned_date, t.rawloggerdata_date
