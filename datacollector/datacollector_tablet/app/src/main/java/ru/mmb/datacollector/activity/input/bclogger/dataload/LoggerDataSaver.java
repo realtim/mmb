@@ -75,7 +75,7 @@ public class LoggerDataSaver {
         // Dates in DB are saved without seconds, and before() or after() will return
         // undesired results, if seconds are present in parsed result.
         Date recordDateTime = DateUtils.trimToMinutes(sdf.parse(parsingResult.getRecordDateTime()));
-        recordDateTime = substituteForCommonStart(recordDateTime, teamId);
+        recordDateTime = alignToLevelPointLimits(recordDateTime, teamId);
         RawLoggerData existingRecord = SQLiteDatabaseAdapter.getConnectedInstance().getExistingLoggerRecord(loggerId, scanpointId, teamId);
         if (existingRecord != null) {
             if (needUpdateExistingRecord(existingRecord, recordDateTime)) {
@@ -101,24 +101,30 @@ public class LoggerDataSaver {
         return team.getTeamId();
     }
 
-    private Date substituteForCommonStart(Date recordDateTime, int teamId) {
+    private Date alignToLevelPointLimits(Date recordDateTime, int teamId) {
         Team team = TeamsRegistry.getInstance().getTeamById(teamId);
         LevelPoint levelPoint = scanPoint.getLevelPointByDistance(team.getDistanceId());
         if (levelPoint.isCommonStart()) {
             return levelPoint.getLevelPointMinDateTime();
-        } else {
-            return recordDateTime;
+        } else if (levelPoint.getPointType().isStart()) {
+            if (recordDateTime.after(levelPoint.getLevelPointMaxDateTime())) {
+                return levelPoint.getLevelPointMaxDateTime();
+            }
         }
+        return recordDateTime;
     }
 
     private boolean needUpdateExistingRecord(RawLoggerData existingRecord, Date recordDateTime) {
+        // if record was changed manually, then update not needed
+        if (existingRecord.getChangedManual() == 1) return false;
+
         int distanceId = existingRecord.getTeam().getDistanceId();
         if (scanPoint.getLevelPointByDistance(distanceId).getPointType().isStart()) {
-            // start record - use last check
-            return existingRecord.getRecordDateTime().before(recordDateTime);
+            // start record - use first check
+            return existingRecord.getScannedDateTime().after(recordDateTime);
         } else {
-            // finish record - use first check
-            return existingRecord.getRecordDateTime().after(recordDateTime);
+            // finish record - use last check
+            return existingRecord.getScannedDateTime().before(recordDateTime);
         }
     }
 }

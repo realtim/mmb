@@ -67,14 +67,11 @@ public class LoggerReplyParser {
                 if (parsingResult.isFatalError()) {
                     owner.writeError(parsingResult.getErrorMessage());
                 } else {
-                    int scanpointOrder = Integer.parseInt(parsingResult.getScanpointOrder());
-                    if (scanpointOrder == currentScanPoint.getScanPointOrder()) {
-                        if (parsingResult.isWrongRecordDateTime()) {
-                            owner.writeError(parsingResult.getErrorMessage());
-                        } else {
-                            owner.writeToConsole(replyString);
-                            dataSaver.saveToDB(currentScanPoint, parsingResult);
-                        }
+                    // dont ignore data from other scan points
+                    if (parsingResult.isWrongRecordDateTime()) {
+                        owner.writeError(parsingResult.getErrorMessage());
+                    } else {
+                        dataSaver.saveToDB(currentScanPoint, parsingResult);
                     }
                 }
             }
@@ -124,7 +121,7 @@ public class LoggerReplyParser {
             for (byte tempI = 8; tempI > 0; tempI--) {
                 byte sum = (byte) ((crc & 0xFF) ^ (extract & 0xFF));
                 sum = (byte) ((sum & 0xFF) &
-                              0x01); // I had Problems writing this as one line with previous
+                        0x01); // I had Problems writing this as one line with previous
                 crc = (byte) ((crc & 0xFF) >>> 1);
                 if (sum != 0) {
                     crc = (byte) ((crc & 0xFF) ^ 0x8C);

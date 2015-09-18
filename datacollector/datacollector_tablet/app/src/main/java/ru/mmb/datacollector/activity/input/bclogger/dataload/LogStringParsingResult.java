@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import ru.mmb.datacollector.model.LevelPoint;
+import ru.mmb.datacollector.model.PointType;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
@@ -169,12 +170,18 @@ public class LogStringParsingResult {
                 Date recordDateTimeMinutes = DateUtils.trimToMinutes(sdf.parse(recordDateTime));
                 Date dateFrom = levelPoint.getLevelPointMinDateTime();
                 Date dateTo = levelPoint.getLevelPointMaxDateTime();
-                if (levelPoint.isCommonStart()) {
-                    dateFrom = shiftTimeForCommonStart(dateFrom, -6);
-                    dateTo = shiftTimeForCommonStart(dateTo, 6);
-                }
-                if (recordDateTimeMinutes.before(dateFrom) || recordDateTimeMinutes.after(dateTo)) {
-                    setWrongRecordDateTime(true);
+                if (levelPoint.getPointType() == PointType.START) {
+                    dateFrom = shiftTimeForStart(dateFrom, -10);
+                    // check start only for levelPointMinDateTime
+                    // if started after max time, then start time = max
+                    if (recordDateTimeMinutes.before(dateFrom)) {
+                        setWrongRecordDateTime(true);
+                    }
+                } else {
+                    // check other levelPoints for hitting min and max limits
+                    if (recordDateTimeMinutes.before(dateFrom) || recordDateTimeMinutes.after(dateTo)) {
+                        setWrongRecordDateTime(true);
+                    }
                 }
             } catch (Exception e) {
                 setWrongRecordDateTime(true);
@@ -182,10 +189,10 @@ public class LogStringParsingResult {
         }
     }
 
-    private Date shiftTimeForCommonStart(Date date, int hoursShift) {
+    private Date shiftTimeForStart(Date date, int minutesShift) {
         Calendar calendar = new GregorianCalendar();
         calendar.setTime(date);
-        calendar.add(Calendar.HOUR_OF_DAY, hoursShift);
+        calendar.add(Calendar.MINUTE, minutesShift);
         return calendar.getTime();
     }
 }
