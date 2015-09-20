@@ -82,15 +82,13 @@ public class LoggerDataSaver {
                 String sql = SQLiteDatabaseAdapter.getConnectedInstance().getUpdateExistingLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime, recordDateTime, 0);
                 db.execSQL(sql);
                 recordsToSave++;
-                owner.writeToConsole("existing record updated");
-            } else {
-                owner.writeToConsole("existing record NOT updated");
             }
         } else {
             String sql = SQLiteDatabaseAdapter.getConnectedInstance().getInsertNewLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime, recordDateTime, 0);
             db.execSQL(sql);
             recordsToSave++;
-            owner.writeToConsole("new record inserted");
+            Team team = TeamsRegistry.getInstance().getTeamById(teamId);
+            owner.writeToConsole("new record inserted [scanpoint: " + scanPoint.getScanPointName() + ", team: " + team.getTeamNum() + ", time: " + recordDateTime + "]");
         }
     }
 
@@ -108,6 +106,7 @@ public class LoggerDataSaver {
             return levelPoint.getLevelPointMinDateTime();
         } else if (levelPoint.getPointType().isStart()) {
             if (recordDateTime.after(levelPoint.getLevelPointMaxDateTime())) {
+                owner.writeError("record start time set to max for point [scanpoint: " + scanPoint.getScanPointName() + ", team: " + team.getTeamNum() + ", time: " + recordDateTime + "]");
                 return levelPoint.getLevelPointMaxDateTime();
             }
         }
@@ -121,10 +120,18 @@ public class LoggerDataSaver {
         int distanceId = existingRecord.getTeam().getDistanceId();
         if (scanPoint.getLevelPointByDistance(distanceId).getPointType().isStart()) {
             // start record - use first check
-            return existingRecord.getScannedDateTime().after(recordDateTime);
+            if (existingRecord.getScannedDateTime().after(recordDateTime)) {
+                owner.writeError("record start time changed [scanpoint: " + existingRecord.getScanPoint().getScanPointName() + ", team: " + existingRecord.getTeam().getTeamNum() + ", time: " + recordDateTime + "]");
+                return true;
+            }
+
         } else {
             // finish record - use last check
-            return existingRecord.getScannedDateTime().before(recordDateTime);
+            if (existingRecord.getScannedDateTime().before(recordDateTime)) {
+                owner.writeError("record finish time changed [scanpoint: " + existingRecord.getScanPoint().getScanPointName() + ", team: " + existingRecord.getTeam().getTeamNum() + ", time: " + recordDateTime + "]");
+                return true;
+            }
         }
+        return false;
     }
 }
