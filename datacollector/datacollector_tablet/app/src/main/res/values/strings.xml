@@ -18,7 +18,7 @@
     <string name="main_import_barcode_data">Import barcodes</string>
     <string name="main_export_data">Export</string>
     <string name="main_title">MMB datacollector</string>
-    <string name="main_results">Results</string>
+    <string name="main_search_team_on_point">Search team on point</string>
     <string name="main_settings">Settings</string>
     <string name="main_fill_data">Fill test data</string>
     <string name="main_progress_loading">Loading...</string>

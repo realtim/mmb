@@ -17,6 +17,7 @@ import ru.mmb.datacollector.util.DateUtils;
 
 public class LoggerDataSaver {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss, yyyy/MM/dd");
+    private static final SimpleDateFormat prettyFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     private final LoggerDataProcessor owner;
     private final SQLiteDatabase db;
@@ -88,7 +89,8 @@ public class LoggerDataSaver {
             db.execSQL(sql);
             recordsToSave++;
             Team team = TeamsRegistry.getInstance().getTeamById(teamId);
-            owner.writeToConsole("new record inserted [scanpoint: " + scanPoint.getScanPointName() + ", team: " + team.getTeamNum() + ", time: " + recordDateTime + "]");
+            owner.writeToConsole("new record inserted [scanpoint: " + scanPoint.getScanPointName()
+                    + ", team: " + team.getTeamNum() + ", time: " + prettyFormat.format(recordDateTime) + "]");
         }
     }
 
@@ -106,7 +108,9 @@ public class LoggerDataSaver {
             return levelPoint.getLevelPointMinDateTime();
         } else if (levelPoint.getPointType().isStart()) {
             if (recordDateTime.after(levelPoint.getLevelPointMaxDateTime())) {
-                owner.writeError("record start time set to max for point [scanpoint: " + scanPoint.getScanPointName() + ", team: " + team.getTeamNum() + ", time: " + recordDateTime + "]");
+                owner.writeError("record start time set to max for point [scanpoint: "
+                        + scanPoint.getScanPointName() + ", team: " + team.getTeamNum() + ", time: "
+                        + prettyFormat.format(recordDateTime) + "]");
                 return levelPoint.getLevelPointMaxDateTime();
             }
         }
@@ -121,14 +125,18 @@ public class LoggerDataSaver {
         if (scanPoint.getLevelPointByDistance(distanceId).getPointType().isStart()) {
             // start record - use first check
             if (existingRecord.getScannedDateTime().after(recordDateTime)) {
-                owner.writeError("record start time changed [scanpoint: " + existingRecord.getScanPoint().getScanPointName() + ", team: " + existingRecord.getTeam().getTeamNum() + ", time: " + recordDateTime + "]");
+                owner.writeError("record start time changed [scanpoint: " + existingRecord.getScanPoint().getScanPointName()
+                        + ", team: " + existingRecord.getTeam().getTeamNum() + ", time: "
+                        + prettyFormat.format(recordDateTime) + "]");
                 return true;
             }
 
         } else {
             // finish record - use last check
             if (existingRecord.getScannedDateTime().before(recordDateTime)) {
-                owner.writeError("record finish time changed [scanpoint: " + existingRecord.getScanPoint().getScanPointName() + ", team: " + existingRecord.getTeam().getTeamNum() + ", time: " + recordDateTime + "]");
+                owner.writeError("record finish time changed [scanpoint: " + existingRecord.getScanPoint().getScanPointName()
+                        + ", team: " + existingRecord.getTeam().getTeamNum() + ", time: "
+                        + prettyFormat.format(recordDateTime) + "]");
                 return true;
             }
         }

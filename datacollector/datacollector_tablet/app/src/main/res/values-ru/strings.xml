@@ -18,7 +18,7 @@
     <string name="main_import_barcode_data">Импорт штрих-кодов</string>
     <string name="main_export_data">Экспорт</string>
     <string name="main_title">ММБ терминал</string>
-    <string name="main_results">Результаты</string>
+    <string name="main_search_team_on_point">Поиск команды на точке</string>
     <string name="main_settings">Настройки</string>
     <string name="main_progress_loading">Загрузка...</string>
 

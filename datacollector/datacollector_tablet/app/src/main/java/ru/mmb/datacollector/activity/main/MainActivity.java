@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.input.start.StartInputActivity;
-import ru.mmb.datacollector.activity.report.ResultsActivity;
+import ru.mmb.datacollector.activity.report.team.search.start.TeamSearchStartActivity;
 import ru.mmb.datacollector.activity.settings.SettingsActivity;
 import ru.mmb.datacollector.activity.transport.TransportInputActivity;
 import ru.mmb.datacollector.model.registry.Settings;
@@ -29,7 +29,7 @@ public class MainActivity extends Activity {
 
     private Button btnTransport;
     private Button btnInputData;
-    private Button btnResults;
+    private Button btnSearchTeam;
     private Button btnSettings;
 
     private Button btnGenerate;
@@ -53,13 +53,13 @@ public class MainActivity extends Activity {
 
         btnTransport = (Button) findViewById(R.id.main_transportBtn);
         btnInputData = (Button) findViewById(R.id.main_inputDataBtn);
-        btnResults = (Button) findViewById(R.id.main_resultsBtn);
+        btnSearchTeam = (Button) findViewById(R.id.main_searchTeamBtn);
         btnSettings = (Button) findViewById(R.id.main_settingsBtn);
         btnGenerate = (Button) findViewById(R.id.main_generateBtn);
 
         btnTransport.setOnClickListener(new TransportButtonClickListener());
         btnInputData.setOnClickListener(new InputDataClickListener());
-        btnResults.setOnClickListener(new ResultsClickListener());
+        btnSearchTeam.setOnClickListener(new SearchTeamClickListener());
         btnSettings.setOnClickListener(new SettingsClickListener());
         btnGenerate.setOnClickListener(new GenerateClickListener());
 
@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
         boolean enabled = currentState.isEnabled();
         btnTransport.setEnabled(enabled);
         btnInputData.setEnabled(enabled);
-        btnResults.setEnabled(enabled);
+        btnSearchTeam.setEnabled(enabled);
     }
 
     @Override
@@ -126,10 +126,10 @@ public class MainActivity extends Activity {
         }
     }
 
-    private class ResultsClickListener implements OnClickListener {
+    private class SearchTeamClickListener implements OnClickListener {
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(getApplicationContext(), ResultsActivity.class);
+            Intent intent = new Intent(getApplicationContext(), TeamSearchStartActivity.class);
             startActivity(intent);
         }
     }

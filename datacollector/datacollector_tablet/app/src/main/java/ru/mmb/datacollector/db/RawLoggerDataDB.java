@@ -65,7 +65,8 @@ public class RawLoggerDataDB {
                 "select t." + RAWLOGGERDATA_DATE + ", t." + LOGGER_ID + ", t." + SCANNED_DATE +
                         ", t." + CHANGED_MANUAL + " from " + TABLE_RAW_LOGGER_DATA +
                         " as t " + " where t." + SCANPOINT_ID + " = " + scanPoint.getScanPointId() +
-                        " and t." + TEAM_ID + " = " + team.getTeamId();
+                        " and t." + TEAM_ID + " = " + team.getTeamId() + " order by " + CHANGED_MANUAL +
+                        " desc, " + RAWLOGGERDATA_DATE + " desc";
         Cursor resultCursor = db.rawQuery(sql, null);
 
         if (resultCursor.moveToFirst() == false) {
@@ -154,6 +155,14 @@ public class RawLoggerDataDB {
         (select max(t1.rawloggerdata_date) from RawLoggerData t1
         where t1.scanpoint_id = t.scanpoint_id
         and t1.team_id = t.team_id)*/
+
+//        String sql =
+//                "select t." + RAWLOGGERDATA_DATE + ", t." + LOGGER_ID + ", t." + SCANNED_DATE +
+//                        ", t." + CHANGED_MANUAL + " from " + TABLE_RAW_LOGGER_DATA +
+//                        " as t " + " where t." + SCANPOINT_ID + " = " + scanPoint.getScanPointId() +
+//                        " and t." + TEAM_ID + " = " + team.getTeamId() + " order by " + CHANGED_MANUAL +
+//                        " desc, " + RAWLOGGERDATA_DATE + " desc";
+//        Cursor resultCursor = db.rawQuery(sql, null);
 
         List<RawLoggerData> result = new ArrayList<RawLoggerData>();
         String whereCondition = SCANPOINT_ID + " = " + scanPoint.getScanPointId();
