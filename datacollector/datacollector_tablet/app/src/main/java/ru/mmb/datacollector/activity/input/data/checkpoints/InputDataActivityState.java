@@ -182,10 +182,13 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
     }
 
     public void saveInputDataToDB(Date recordDateTime) {
-        SQLiteDatabaseAdapter.getConnectedInstance().saveRawTeamLevelPoints(getCurrentScanPoint(), getCurrentTeam(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
+        SQLiteDatabaseAdapter dbAdapter = SQLiteDatabaseAdapter.getConnectedInstance();
+        dbAdapter.saveRawTeamLevelPoints(getCurrentScanPoint(), getCurrentTeam(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
         if (prevDateTime != null && !prevDateTime.equals(inputDate)) {
-            SQLiteDatabaseAdapter.getConnectedInstance().saveRawLoggerDataManual(getCurrentScanPoint(), getCurrentTeam(), inputDate.toDate(), recordDateTime);
+            dbAdapter.saveRawLoggerDataManual(getCurrentScanPoint(), getCurrentTeam(), inputDate.toDate(), recordDateTime);
         }
+        dbAdapter.incLocalSaveCount();
+        dbAdapter.backupDatabaseIfNeeded(getContext());
     }
 
     public void putTeamLevelPointToDataStorage(Date recordDateTime) {

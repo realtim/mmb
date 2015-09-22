@@ -1,9 +1,16 @@
 package ru.mmb.datacollector.db;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.util.Log;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +30,8 @@ import ru.mmb.datacollector.model.meta.MetaTable;
 import ru.mmb.datacollector.model.registry.Settings;
 
 public class SQLiteDatabaseAdapter extends DatabaseAdapter {
+    private static final int BACKUP_SAVES_COUNT = 20;
+
     private SQLiteDatabase db;
 
     private DistancesDB distancesDB;
@@ -38,6 +47,8 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
     private RawTeamLevelDismissDB rawTeamLevelDismissDB;
 
     private IDGenerator idGenerator;
+
+    private long localSaveCount = 0;
 
     private SQLiteDatabaseAdapter() {
     }
@@ -205,6 +216,48 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
         @Override
         public DatabaseAdapter createDatabaseAdapter() {
             return new SQLiteDatabaseAdapter();
+        }
+    }
+
+    public void backupDatabase(Context context) {
+        closeConnection();
+        saveDatatbaseToBackupDir(context);
+        tryConnectToDB();
+    }
+
+    private void saveDatatbaseToBackupDir(Context context) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            String currentDBPath = Settings.getInstance().getPathToDB();
+            String backupDBPath = Settings.getInstance().getDBBackupDir() + "/datacollector_" + sdf.format(new Date()) + ".db";
+            File currentDB = new File(currentDBPath);
+            File backupDB = new File(backupDBPath);
+
+            FileChannel src = null;
+            FileChannel dst = null;
+            try {
+                src = new FileInputStream(currentDB).getChannel();
+                dst = new FileOutputStream(backupDB, false).getChannel();
+                dst.transferFrom(src, 0, src.size());
+            } finally {
+                if (src != null) src.close();
+                if (dst != null) dst.close();
+            }
+
+            Toast.makeText(context, "datacollector.db backup SUCCESS", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.e("BACKUP_DB", "backup failed", e);
+            Toast.makeText(context, "datacollector.db backup FAILED", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void incLocalSaveCount() {
+        localSaveCount++;
+    }
+
+    public void backupDatabaseIfNeeded(Context context) {
+        if (localSaveCount % BACKUP_SAVES_COUNT == 0) {
+            backupDatabase(context);
         }
     }
 }

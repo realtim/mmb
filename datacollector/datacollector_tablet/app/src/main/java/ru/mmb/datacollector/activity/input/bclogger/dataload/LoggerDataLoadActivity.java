@@ -1,7 +1,9 @@
 package ru.mmb.datacollector.activity.input.bclogger.dataload;
 
 import android.app.Activity;
-import android.os.*;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Process;
 import android.view.View;
 import android.widget.Button;
@@ -9,9 +11,10 @@ import android.widget.TextView;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.ActivityStateWithScanPointAndBTDevice;
-import ru.mmb.datacollector.widget.ConsoleMessagesAppender;
 import ru.mmb.datacollector.bluetooth.ThreadMessageTypes;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.registry.Settings;
+import ru.mmb.datacollector.widget.ConsoleMessagesAppender;
 
 public class LoggerDataLoadActivity extends Activity {
     ActivityStateWithScanPointAndBTDevice currentState;
@@ -79,6 +82,11 @@ public class LoggerDataLoadActivity extends Activity {
         @Override
         public void onClick(View v) {
             setControlsEnabled(false);
+
+            // backup database before logger data import
+            SQLiteDatabaseAdapter dbAdapter = SQLiteDatabaseAdapter.getConnectedInstance();
+            dbAdapter.backupDatabase(LoggerDataLoadActivity.this);
+
             runningThread = new Thread(new Runnable() {
                 @Override
                 public void run() {

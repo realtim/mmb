@@ -143,6 +143,10 @@ public class Settings {
         return getMMBPathFromDBFile() + "/datalog";
     }
 
+    public String getDBBackupDir() {
+        return getMMBPathFromDBFile() + "/db_backup";
+    }
+
     public int getDeviceId() {
         return getIntSetting(DEVICE_ID);
     }
@@ -242,7 +246,7 @@ public class Settings {
     }
 
     /* http transport is not removed totally, so save STUB methods to compile code */
-    
+
     public String getDataServerUrl() {
         return null;
     }

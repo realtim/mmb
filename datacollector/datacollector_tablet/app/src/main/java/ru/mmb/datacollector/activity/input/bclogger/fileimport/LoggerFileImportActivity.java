@@ -15,6 +15,7 @@ import com.filedialog.SelectionMode;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.bluetooth.ThreadMessageTypes;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.widget.ConsoleMessagesAppender;
 
@@ -128,6 +129,11 @@ public class LoggerFileImportActivity extends Activity {
         public void onClick(View v) {
             currentState.setState(STATE_IMPORT_RUNNING);
             refreshState();
+
+            // backup database before logger data import
+            SQLiteDatabaseAdapter dbAdapter = SQLiteDatabaseAdapter.getConnectedInstance();
+            dbAdapter.backupDatabase(LoggerFileImportActivity.this);
+
             importRunner = new LoggerFileImportRunner(currentState.getCurrentScanPoint(), currentState.getFileName(), fileImportHandler);
             importThread = new Thread(new Runnable() {
                 @Override
@@ -162,7 +168,7 @@ public class LoggerFileImportActivity extends Activity {
             if (msg.what == ThreadMessageTypes.MSG_CONSOLE) {
                 consoleAppender.appendMessage((String) msg.obj);
             } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS ||
-                       msg.what == ThreadMessageTypes.MSG_FINISHED_ERROR) {
+                    msg.what == ThreadMessageTypes.MSG_FINISHED_ERROR) {
                 owner.importThread = null;
                 owner.currentState.setState(STATE_NO_FILE_SELECTED);
                 owner.currentState.setFileName(null);
