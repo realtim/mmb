@@ -11,6 +11,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +34,7 @@ import ru.mmb.datacollector.model.registry.Settings;
 
 public class SQLiteDatabaseAdapter extends DatabaseAdapter {
     private static final int BACKUP_SAVES_COUNT = 20;
+    private static final int BACKUP_MAX_FILES = 5;
 
     private SQLiteDatabase db;
 
@@ -226,6 +230,7 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
     }
 
     private void saveDatatbaseToBackupDir(Context context) {
+        removeObsoleteBackupFiles();
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
             String currentDBPath = Settings.getInstance().getPathToDB();
@@ -248,6 +253,24 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
         } catch (Exception e) {
             Log.e("BACKUP_DB", "backup failed", e);
             Toast.makeText(context, "datacollector.db backup FAILED", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void removeObsoleteBackupFiles() {
+        File backupDir = new File(Settings.getInstance().getDBBackupDir());
+        List<File> files = Arrays.asList(backupDir.listFiles());
+        if (files.size() <= BACKUP_MAX_FILES) return;
+        // get earliest files first
+        Collections.sort(files, new Comparator<File>() {
+            @Override
+            public int compare(File file1, File file2) {
+                return new Long(file1.lastModified()).compareTo(new Long(file2.lastModified()));
+            }
+        });
+        // remove first extra files
+        int filesToRemoveCount = files.size() - BACKUP_MAX_FILES;
+        for (int i = 0; i < filesToRemoveCount; i++) {
+            files.get(i).delete();
         }
     }
 
