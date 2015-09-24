@@ -33,7 +33,7 @@ import ru.mmb.datacollector.model.meta.MetaTable;
 import ru.mmb.datacollector.model.registry.Settings;
 
 public class SQLiteDatabaseAdapter extends DatabaseAdapter {
-    private static final int BACKUP_SAVES_COUNT = 20;
+    private static final int BACKUP_SAVES_COUNT = 10;
     private static final int BACKUP_MAX_FILES = 5;
 
     private SQLiteDatabase db;
@@ -230,9 +230,10 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
     }
 
     private void saveDatatbaseToBackupDir(Context context) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        createBackupDirIfNotExists();
         removeObsoleteBackupFiles();
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
             String currentDBPath = Settings.getInstance().getPathToDB();
             String backupDBPath = Settings.getInstance().getDBBackupDir() + "/datacollector_" + sdf.format(new Date()) + ".db";
             File currentDB = new File(currentDBPath);
@@ -256,10 +257,17 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
         }
     }
 
+    private void createBackupDirIfNotExists() {
+        File backupDir = new File(Settings.getInstance().getDBBackupDir());
+        if (!backupDir.exists()) {
+            backupDir.mkdir();
+        }
+    }
+
     private void removeObsoleteBackupFiles() {
         File backupDir = new File(Settings.getInstance().getDBBackupDir());
         List<File> files = Arrays.asList(backupDir.listFiles());
-        if (files.size() <= BACKUP_MAX_FILES) return;
+        if (files.size() < BACKUP_MAX_FILES) return;
         // get earliest files first
         Collections.sort(files, new Comparator<File>() {
             @Override
@@ -268,7 +276,7 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
             }
         });
         // remove first extra files
-        int filesToRemoveCount = files.size() - BACKUP_MAX_FILES;
+        int filesToRemoveCount = files.size() - (BACKUP_MAX_FILES - 1);
         for (int i = 0; i < filesToRemoveCount; i++) {
             files.get(i).delete();
         }

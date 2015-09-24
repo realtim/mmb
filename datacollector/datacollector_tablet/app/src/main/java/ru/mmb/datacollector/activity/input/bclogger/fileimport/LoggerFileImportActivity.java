@@ -134,7 +134,7 @@ public class LoggerFileImportActivity extends Activity {
             SQLiteDatabaseAdapter dbAdapter = SQLiteDatabaseAdapter.getConnectedInstance();
             dbAdapter.backupDatabase(LoggerFileImportActivity.this);
 
-            importRunner = new LoggerFileImportRunner(currentState.getCurrentScanPoint(), currentState.getFileName(), fileImportHandler);
+            importRunner = new LoggerFileImportRunner(currentState.getFileName(), fileImportHandler);
             importThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -172,6 +172,13 @@ public class LoggerFileImportActivity extends Activity {
                 owner.importThread = null;
                 owner.currentState.setState(STATE_NO_FILE_SELECTED);
                 owner.currentState.setFileName(null);
+
+                // backup database after successful logger data import
+                if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
+                    SQLiteDatabaseAdapter dbAdapter = SQLiteDatabaseAdapter.getConnectedInstance();
+                    dbAdapter.backupDatabase(owner);
+                }
+
                 owner.refreshState();
             }
         }

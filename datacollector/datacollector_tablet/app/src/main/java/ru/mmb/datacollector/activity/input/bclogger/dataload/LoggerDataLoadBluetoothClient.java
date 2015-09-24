@@ -63,7 +63,7 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
                     errorLog = createErrorLog();
                     if (errorLog != null) {
                         try {
-                            parser = new LoggerReplyParser(this, currentScanPoint, confLoggerId);
+                            parser = new LoggerReplyParser(this, confLoggerId);
                             parser.parseAndSaveLogData(loggerReply);
                         } finally {
                             errorLog.flush();

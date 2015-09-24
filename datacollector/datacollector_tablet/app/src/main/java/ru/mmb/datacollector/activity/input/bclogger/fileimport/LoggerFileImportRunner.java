@@ -12,10 +12,8 @@ import ru.mmb.datacollector.activity.input.bclogger.dataload.LogStringParsingRes
 import ru.mmb.datacollector.activity.input.bclogger.dataload.LoggerDataProcessor;
 import ru.mmb.datacollector.activity.input.bclogger.dataload.LoggerReplyParser;
 import ru.mmb.datacollector.activity.transport.http.ThreadMessageTypes;
-import ru.mmb.datacollector.model.ScanPoint;
 
 public class LoggerFileImportRunner implements LoggerDataProcessor {
-    private final ScanPoint scanPoint;
     private final String fileName;
     private final Handler handler;
 
@@ -23,8 +21,7 @@ public class LoggerFileImportRunner implements LoggerDataProcessor {
 
     private LoggerReplyParser parser;
 
-    public LoggerFileImportRunner(ScanPoint scanPoint, String fileName, Handler handler) {
-        this.scanPoint = scanPoint;
+    public LoggerFileImportRunner(String fileName, Handler handler) {
         this.fileName = fileName;
         this.handler = handler;
     }
@@ -76,7 +73,7 @@ public class LoggerFileImportRunner implements LoggerDataProcessor {
     public void importFile() {
         try {
             String fileContents = readFileToString();
-            parser = new LoggerReplyParser(this, scanPoint, null);
+            parser = new LoggerReplyParser(this, null);
             parser.parseAndSaveLogData(fileContents);
             sendFinishedSuccessNotification();
         } catch (Exception e) {

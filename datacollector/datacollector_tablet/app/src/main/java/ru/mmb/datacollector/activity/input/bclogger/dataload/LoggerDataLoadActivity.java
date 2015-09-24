@@ -151,6 +151,11 @@ public class LoggerDataLoadActivity extends Activity {
                 consoleAppender.appendMessage((String) msg.obj);
             } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
                 owner.runningThread = null;
+
+                // backup database after logger data import
+                SQLiteDatabaseAdapter dbAdapter = SQLiteDatabaseAdapter.getConnectedInstance();
+                dbAdapter.backupDatabase(owner);
+
                 owner.setControlsEnabled(true);
             }
         }
