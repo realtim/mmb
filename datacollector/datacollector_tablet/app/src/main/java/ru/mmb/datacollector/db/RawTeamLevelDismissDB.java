@@ -12,6 +12,7 @@ import ru.mmb.datacollector.model.Participant;
 import ru.mmb.datacollector.model.RawTeamLevelDismiss;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
+import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.model.registry.UsersRegistry;
@@ -41,10 +42,10 @@ public class RawTeamLevelDismissDB {
         List<Participant> result = new ArrayList<Participant>();
         String sql =
                 "select distinct d." + TEAMUSER_ID + ", sp." + SCANPOINT_ORDER + " from " +
-                TABLE_RAW_TEAM_LEVEL_DISMISS + " as d join " + TABLE_SCANPOINTS + " as sp on (d." +
-                SCANPOINT_ID + " = sp." + SCANPOINT_ID + ") where d." + TEAM_ID + " = " +
-                team.getTeamId() + " and sp." + SCANPOINT_ORDER + " <= " +
-                scanPoint.getScanPointOrder();
+                        TABLE_RAW_TEAM_LEVEL_DISMISS + " as d join " + TABLE_SCANPOINTS + " as sp on (d." +
+                        SCANPOINT_ID + " = sp." + SCANPOINT_ID + ") where d." + TEAM_ID + " = " +
+                        team.getTeamId() + " and sp." + SCANPOINT_ORDER + " <= " +
+                        scanPoint.getScanPointOrder();
         Cursor resultCursor = db.rawQuery(sql, null);
 
         resultCursor.moveToFirst();
@@ -72,15 +73,15 @@ public class RawTeamLevelDismissDB {
                                      List<Participant> dismissedMembers, Date recordDateTime) {
         String selectSql =
                 "select count(*) from " + TABLE_RAW_TEAM_LEVEL_DISMISS + " where " + USER_ID +
-                " = " + Settings.getInstance().getUserId() + " and " + SCANPOINT_ID + " = " +
-                scanPoint.getScanPointId() + " and " + TEAM_ID + " = " + team.getTeamId() +
-                " and " + TEAMUSER_ID + " = " + TEMPLATE_TEAMUSER_ID;
+                        " = " + Settings.getInstance().getUserId() + " and " + SCANPOINT_ID + " = " +
+                        scanPoint.getScanPointId() + " and " + TEAM_ID + " = " + team.getTeamId() +
+                        " and " + TEAMUSER_ID + " = " + TEMPLATE_TEAMUSER_ID;
         String insertSql =
                 "insert into " + TABLE_RAW_TEAM_LEVEL_DISMISS + "(" + DISMISS_DATE + ", " +
-                DEVICE_ID + ", " + USER_ID + ", " + SCANPOINT_ID + ", " + TEAM_ID + ", " +
-                TEAMUSER_ID + ") values (?, " + Settings.getInstance().getDeviceId() + ", " +
-                Settings.getInstance().getUserId() + ", " + scanPoint.getScanPointId() + ", " +
-                team.getTeamId() + ", ?)";
+                        DEVICE_ID + ", " + USER_ID + ", " + SCANPOINT_ID + ", " + TEAM_ID + ", " +
+                        TEAMUSER_ID + ") values (?, " + Settings.getInstance().getDeviceId() + ", " +
+                        Settings.getInstance().getUserId() + ", " + scanPoint.getScanPointId() + ", " +
+                        team.getTeamId() + ", ?)";
         db.beginTransaction();
         try {
             for (Participant member : dismissedMembers) {
@@ -106,10 +107,10 @@ public class RawTeamLevelDismissDB {
         List<RawTeamLevelDismiss> result = new ArrayList<RawTeamLevelDismiss>();
         String sql =
                 "select distinct d." + DISMISS_DATE + ", d." + TEAM_ID + ", d." + TEAMUSER_ID +
-                ", sp." + SCANPOINT_ORDER + " from " + TABLE_RAW_TEAM_LEVEL_DISMISS +
-                " as d join " + TABLE_SCANPOINTS + " as sp on (d." + SCANPOINT_ID + " = sp." +
-                SCANPOINT_ID + ") where sp." + SCANPOINT_ORDER + " <= " +
-                scanPoint.getScanPointOrder();
+                        ", sp." + SCANPOINT_ORDER + " from " + TABLE_RAW_TEAM_LEVEL_DISMISS +
+                        " as d join " + TABLE_SCANPOINTS + " as sp on (d." + SCANPOINT_ID + " = sp." +
+                        SCANPOINT_ID + ") where sp." + SCANPOINT_ORDER + " <= " +
+                        scanPoint.getScanPointOrder();
         Cursor resultCursor = db.rawQuery(sql, null);
 
         resultCursor.moveToFirst();
@@ -137,7 +138,7 @@ public class RawTeamLevelDismissDB {
     public void appendScanPointTeams(ScanPoint scanPoint, Set<Integer> teams) {
         String sql =
                 "select distinct " + TEAM_ID + " from " + TABLE_RAW_TEAM_LEVEL_DISMISS + " where " +
-                SCANPOINT_ID + " = " + scanPoint.getScanPointId();
+                        SCANPOINT_ID + " = " + scanPoint.getScanPointId();
         Cursor resultCursor = db.rawQuery(sql, null);
 
         resultCursor.moveToFirst();
@@ -146,5 +147,35 @@ public class RawTeamLevelDismissDB {
             resultCursor.moveToNext();
         }
         resultCursor.close();
+    }
+
+    public List<RawTeamLevelDismiss> loadAllDismissedMembersForDevice() {
+        List<RawTeamLevelDismiss> result = new ArrayList<RawTeamLevelDismiss>();
+        int deviceId = Settings.getInstance().getDeviceId();
+        String sql =
+                "select distinct d." + USER_ID + ", d." + DISMISS_DATE + ", d." + TEAM_ID + ", d." + TEAMUSER_ID +
+                        ", d." + SCANPOINT_ID + " from " + TABLE_RAW_TEAM_LEVEL_DISMISS +
+                        " as d where d." + DEVICE_ID + " = " + deviceId;
+        Cursor resultCursor = db.rawQuery(sql, null);
+
+        resultCursor.moveToFirst();
+        while (!resultCursor.isAfterLast()) {
+            int userId = resultCursor.getInt(0);
+            Date recordDateTime = DateFormat.parse(resultCursor.getString(1));
+            int teamId = resultCursor.getInt(2);
+            int teamUserId = resultCursor.getInt(3);
+            int scanPointId = resultCursor.getInt(4);
+            RawTeamLevelDismiss teamDismiss =
+                    new RawTeamLevelDismiss(userId, deviceId, scanPointId, teamId, teamUserId, recordDateTime);
+            // init reference fields
+            teamDismiss.setScanPoint(ScanPointsRegistry.getInstance().getScanPointById(scanPointId));
+            teamDismiss.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
+            teamDismiss.setTeamUser(UsersRegistry.getInstance().getUserById(teamUserId));
+            result.add(teamDismiss);
+            resultCursor.moveToNext();
+        }
+        resultCursor.close();
+
+        return result;
     }
 }

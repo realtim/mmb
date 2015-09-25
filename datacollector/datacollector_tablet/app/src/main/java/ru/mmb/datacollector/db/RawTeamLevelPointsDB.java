@@ -12,6 +12,7 @@ import java.util.Set;
 import ru.mmb.datacollector.model.RawTeamLevelPoints;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
+import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.util.DateFormat;
@@ -36,8 +37,8 @@ public class RawTeamLevelPointsDB {
         RawTeamLevelPointsRecord result = null;
         String sql =
                 "select " + RAWTEAMLEVELPOINTS_DATE + ", " + RAWTEAMLEVELPOINTS_POINTS + " from " +
-                TABLE_RAW_TEAM_LEVEL_POINTS + " where " + SCANPOINT_ID + " = " +
-                scanPoint.getScanPointId() + " and " + TEAM_ID + " = " + team.getTeamId();
+                        TABLE_RAW_TEAM_LEVEL_POINTS + " where " + SCANPOINT_ID + " = " +
+                        scanPoint.getScanPointId() + " and " + TEAM_ID + " = " + team.getTeamId();
         Cursor resultCursor = db.rawQuery(sql, null);
 
         if (resultCursor.moveToFirst() == false) {
@@ -64,9 +65,9 @@ public class RawTeamLevelPointsDB {
         List<RawTeamLevelPoints> result = new ArrayList<RawTeamLevelPoints>();
         String sql =
                 "select " + USER_ID + ", " + DEVICE_ID + ", " + TEAM_ID
-                + ", " + RAWTEAMLEVELPOINTS_DATE + ", " + RAWTEAMLEVELPOINTS_POINTS + " from "
-                + TABLE_RAW_TEAM_LEVEL_POINTS + " where " + SCANPOINT_ID + " = "
-                + scanPoint.getScanPointId();
+                        + ", " + RAWTEAMLEVELPOINTS_DATE + ", " + RAWTEAMLEVELPOINTS_POINTS + " from "
+                        + TABLE_RAW_TEAM_LEVEL_POINTS + " where " + SCANPOINT_ID + " = "
+                        + scanPoint.getScanPointId();
         Cursor resultCursor = db.rawQuery(sql, null);
 
         resultCursor.moveToFirst();
@@ -103,7 +104,7 @@ public class RawTeamLevelPointsDB {
     public void appendScanPointTeams(ScanPoint scanPoint, Set<Integer> teams) {
         String sql =
                 "select distinct " + TEAM_ID + " from " + TABLE_RAW_TEAM_LEVEL_POINTS + " where "
-                + SCANPOINT_ID + " = " + scanPoint.getScanPointId();
+                        + SCANPOINT_ID + " = " + scanPoint.getScanPointId();
         Cursor resultCursor = db.rawQuery(sql, null);
 
         resultCursor.moveToFirst();
@@ -132,8 +133,8 @@ public class RawTeamLevelPointsDB {
     private boolean isThisUserRecordExists(ScanPoint scanPoint, Team team) {
         String selectSql =
                 "select count(*) from " + TABLE_RAW_TEAM_LEVEL_POINTS + " where " + USER_ID + " = "
-                + Settings.getInstance().getUserId() + " and " + SCANPOINT_ID + " = "
-                + scanPoint.getScanPointId() + " and " + TEAM_ID + " = " + team.getTeamId();
+                        + Settings.getInstance().getUserId() + " and " + SCANPOINT_ID + " = "
+                        + scanPoint.getScanPointId() + " and " + TEAM_ID + " = " + team.getTeamId();
         Cursor resultCursor = db.rawQuery(selectSql, null);
         resultCursor.moveToFirst();
         int recordCount = resultCursor.getInt(0);
@@ -144,22 +145,54 @@ public class RawTeamLevelPointsDB {
     private void updateExistingRecord(ScanPoint scanPoint, Team team, String takenCheckpoints, Date recordDateTime) {
         String updateSql =
                 "update " + TABLE_RAW_TEAM_LEVEL_POINTS + " set " + DEVICE_ID + " = " +
-                Settings.getInstance().getDeviceId() + ", " + RAWTEAMLEVELPOINTS_DATE + " = '" +
-                DateFormat.format(recordDateTime) + "', " + RAWTEAMLEVELPOINTS_POINTS + " = '" +
-                takenCheckpoints + "' where " + USER_ID + " = " +
-                Settings.getInstance().getUserId() + " and " + SCANPOINT_ID + " = " +
-                scanPoint.getScanPointId() + " and " + TEAM_ID + " = " + team.getTeamId();
+                        Settings.getInstance().getDeviceId() + ", " + RAWTEAMLEVELPOINTS_DATE + " = '" +
+                        DateFormat.format(recordDateTime) + "', " + RAWTEAMLEVELPOINTS_POINTS + " = '" +
+                        takenCheckpoints + "' where " + USER_ID + " = " +
+                        Settings.getInstance().getUserId() + " and " + SCANPOINT_ID + " = " +
+                        scanPoint.getScanPointId() + " and " + TEAM_ID + " = " + team.getTeamId();
         db.execSQL(updateSql);
     }
 
     private void insertNewRecord(ScanPoint scanPoint, Team team, String takenCheckpoints, Date recordDateTime) {
         String insertSql =
                 "insert into " + TABLE_RAW_TEAM_LEVEL_POINTS + " (" + USER_ID + ", " + DEVICE_ID +
-                ", " + SCANPOINT_ID + ", " + TEAM_ID + ", " + RAWTEAMLEVELPOINTS_DATE + ", " +
-                RAWTEAMLEVELPOINTS_POINTS + ") values (" + Settings.getInstance().getUserId() +
-                ", " + Settings.getInstance().getDeviceId() + ", " + scanPoint.getScanPointId() +
-                ", " + team.getTeamId() + ", '" + DateFormat.format(recordDateTime) + "', '" +
-                takenCheckpoints + "')";
+                        ", " + SCANPOINT_ID + ", " + TEAM_ID + ", " + RAWTEAMLEVELPOINTS_DATE + ", " +
+                        RAWTEAMLEVELPOINTS_POINTS + ") values (" + Settings.getInstance().getUserId() +
+                        ", " + Settings.getInstance().getDeviceId() + ", " + scanPoint.getScanPointId() +
+                        ", " + team.getTeamId() + ", '" + DateFormat.format(recordDateTime) + "', '" +
+                        takenCheckpoints + "')";
         db.execSQL(insertSql);
+    }
+
+    public List<RawTeamLevelPoints> loadAllLevelPointsForDevice() {
+        List<RawTeamLevelPoints> result = new ArrayList<RawTeamLevelPoints>();
+        int deviceId = Settings.getInstance().getDeviceId();
+        String sql =
+                "select " + USER_ID + ", " + TEAM_ID + ", " + SCANPOINT_ID + ", " + RAWTEAMLEVELPOINTS_DATE
+                        + ", " + RAWTEAMLEVELPOINTS_POINTS + " from " + TABLE_RAW_TEAM_LEVEL_POINTS
+                        + " where " + DEVICE_ID + " = " + deviceId + " order by " + RAWTEAMLEVELPOINTS_DATE;
+        Cursor resultCursor = db.rawQuery(sql, null);
+
+        resultCursor.moveToFirst();
+        while (!resultCursor.isAfterLast()) {
+            int userId = resultCursor.getInt(0);
+            int teamId = resultCursor.getInt(1);
+            int scanPointId = resultCursor.getInt(2);
+            Date recordDateTime = DateFormat.parse(resultCursor.getString(3));
+            String takenCheckpointNames = replaceNullWithEmptyString(resultCursor.getString(4));
+
+            RawTeamLevelPoints rawTeamLevelPoints =
+                    new RawTeamLevelPoints(teamId, userId, deviceId, scanPointId, takenCheckpointNames, recordDateTime);
+            // init reference fields
+            rawTeamLevelPoints.setScanPoint(ScanPointsRegistry.getInstance().getScanPointById(scanPointId));
+            rawTeamLevelPoints.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
+            rawTeamLevelPoints.initTakenCheckpoints();
+
+            result.add(rawTeamLevelPoints);
+            resultCursor.moveToNext();
+        }
+        resultCursor.close();
+
+        return result;
     }
 }

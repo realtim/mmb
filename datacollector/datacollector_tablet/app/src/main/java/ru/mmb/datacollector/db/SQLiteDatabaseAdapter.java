@@ -153,12 +153,20 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
         return rawTeamLevelPointsDB.loadRawTeamLevelPoints(scanPoint);
     }
 
+    public List<RawTeamLevelPoints> loadAllLevelPointsForDevice() {
+        return rawTeamLevelPointsDB.loadAllLevelPointsForDevice();
+    }
+
     public void saveRawTeamLevelPoints(ScanPoint scanPoint, Team team, String takenCheckpoints, Date recordDateTime) {
         rawTeamLevelPointsDB.saveRawTeamLevelPoints(scanPoint, team, takenCheckpoints, recordDateTime);
     }
 
     public List<RawTeamLevelDismiss> loadDismissedMembers(ScanPoint scanPoint) {
         return rawTeamLevelDismissDB.loadDismissedMembers(scanPoint);
+    }
+
+    public List<RawTeamLevelDismiss> loadAllDismissedMembersForDevice() {
+        return rawTeamLevelDismissDB.loadAllDismissedMembersForDevice();
     }
 
     public List<Participant> getDismissedMembers(ScanPoint scanPoint, Team team) {
@@ -201,6 +209,10 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
 
     public List<RawLoggerData> loadRawLoggerData(ScanPoint scanPoint) {
         return rawLoggerDataDB.loadRawLoggerData(scanPoint);
+    }
+
+    public List<RawLoggerData> loadAllRawLoggerDataForDevice() {
+        return rawLoggerDataDB.loadAllRawLoggerDataForDevice();
     }
 
     public static void init() {

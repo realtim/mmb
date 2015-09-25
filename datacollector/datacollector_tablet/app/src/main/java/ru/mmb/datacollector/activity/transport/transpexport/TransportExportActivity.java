@@ -17,35 +17,30 @@ import ru.mmb.datacollector.transport.exporter.ExportState;
 
 import static ru.mmb.datacollector.activity.Constants.KEY_EXPORT_RESULT_MESSAGE;
 
-public class TransportExportActivity extends Activity
-{
-	private LinearLayout progressBarPanel;
+public class TransportExportActivity extends Activity {
+    private LinearLayout progressBarPanel;
     private Button btnFullExport;
-	private ExportState exportState = null;
+    private ExportState exportState = null;
 
     private Handler exportFinishHandler;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		Settings.getInstance().setCurrentContext(this);
+        Settings.getInstance().setCurrentContext(this);
 
-		setContentView(R.layout.transp_export);
+        setContentView(R.layout.transp_export);
 
-		progressBarPanel = (LinearLayout) findViewById(R.id.transpExport_progressBarPanel);
+        progressBarPanel = (LinearLayout) findViewById(R.id.transpExport_progressBarPanel);
         btnFullExport = (Button) findViewById(R.id.transpExportData_fullExportBtn);
 
         btnFullExport.setOnClickListener(new FullExportClickListener());
 
-        exportFinishHandler = new Handler()
-        {
+        exportFinishHandler = new Handler() {
             @Override
-            public void handleMessage(Message msg)
-            {
-                if (getExportState() != null && !getExportState().isTerminated())
-                {
+            public void handleMessage(Message msg) {
+                if (getExportState() != null && !getExportState().isTerminated()) {
                     String resultMessage = msg.getData().getString(KEY_EXPORT_RESULT_MESSAGE);
                     Toast.makeText(getApplicationContext(), resultMessage, Toast.LENGTH_LONG).show();
                 }
@@ -54,76 +49,62 @@ public class TransportExportActivity extends Activity
             }
         };
 
-		setTitle(getResources().getString(R.string.transp_export_title));
+        setTitle(getResources().getString(R.string.transp_export_title));
 
-		refreshState();
-	}
+        refreshState();
+    }
 
-	public void refreshState()
-	{
+    public void refreshState() {
         btnFullExport.setEnabled(getExportState() == null);
-		refreshProgressBarPanelVisible();
-	}
+        refreshProgressBarPanelVisible();
+    }
 
-	private void refreshProgressBarPanelVisible()
-	{
-		if (exportState != null)
-		{
-			progressBarPanel.setVisibility(View.VISIBLE);
-		}
-		else
-		{
-			progressBarPanel.setVisibility(View.GONE);
-		}
-	}
+    private void refreshProgressBarPanelVisible() {
+        if (exportState != null) {
+            progressBarPanel.setVisibility(View.VISIBLE);
+        } else {
+            progressBarPanel.setVisibility(View.GONE);
+        }
+    }
 
-	public ExportState getExportState()
-	{
-		return exportState;
-	}
+    public ExportState getExportState() {
+        return exportState;
+    }
 
-	public void setExportState(ExportState exportState)
-	{
-		this.exportState = exportState;
-	}
+    public void setExportState(ExportState exportState) {
+        this.exportState = exportState;
+    }
 
-    private void runExport(ExportMode exportMode)
-    {
+    private void runExport(ExportMode exportMode) {
         setExportState(new ExportState());
         refreshState();
 
         ExportDataThread thread =
-                new ExportDataThread(this, exportFinishHandler, exportMode, getExportState(), ExportFormat.JSON);
+                new ExportDataThread(this, exportFinishHandler, getExportState(), ExportFormat.TXT_TO_SITE);
         thread.start();
     }
 
-	private void terminateExport()
-	{
-		if (exportState != null)
-		{
-			exportState.setTerminated(true);
-		}
-	}
+    private void terminateExport() {
+        if (exportState != null) {
+            exportState.setTerminated(true);
+        }
+    }
 
-	@Override
-	protected void onPause()
-	{
-		super.onPause();
-		terminateExport();
-	}
+    @Override
+    protected void onPause() {
+        super.onPause();
+        terminateExport();
+    }
 
-	@Override
-	protected void onStop()
-	{
-		super.onStop();
-		terminateExport();
-	}
+    @Override
+    protected void onStop() {
+        super.onStop();
+        terminateExport();
+    }
 
-    private class FullExportClickListener implements View.OnClickListener
-    {
+    private class FullExportClickListener implements View.OnClickListener {
         @Override
-        public void onClick(View v)
-        {
+        public void onClick(View v) {
             runExport(ExportMode.FULL);
         }
     }

@@ -175,4 +175,38 @@ public class RawLoggerDataDB {
 
         return result;
     }
+
+    public List<RawLoggerData> loadAllRawLoggerDataForDevice() {
+        List<RawLoggerData> result = new ArrayList<RawLoggerData>();
+        int deviceId = Settings.getInstance().getDeviceId();
+        String sql =
+                "select t." + USER_ID + ", t." + LOGGER_ID + ", t." + SCANPOINT_ID + ", t." + TEAM_ID
+                        + ", t." + SCANNED_DATE + ", t." + RAWLOGGERDATA_DATE + " from " + TABLE_RAW_LOGGER_DATA
+                        + " t where t." + DEVICE_ID + " = " + deviceId + " and t."
+                        + RAWLOGGERDATA_DATE + " in (select max(t1." + RAWLOGGERDATA_DATE
+                        + ") from " + TABLE_RAW_LOGGER_DATA + " t1 where t1." + SCANPOINT_ID + " = t."
+                        + SCANPOINT_ID + " and t1." + TEAM_ID + " = t." + TEAM_ID + ")";
+        Cursor resultCursor = db.rawQuery(sql, null);
+
+        resultCursor.moveToFirst();
+        while (!resultCursor.isAfterLast()) {
+            int userId = resultCursor.getInt(0);
+            int loggerId = resultCursor.getInt(1);
+            int scanPointId = resultCursor.getInt(2);
+            int teamId = resultCursor.getInt(3);
+            Date scannedDate = DateFormat.parse(resultCursor.getString(4));
+            Date recordDateTime = DateFormat.parse(resultCursor.getString(5));
+
+            RawLoggerData rawLoggerData = new RawLoggerData(userId, deviceId, loggerId, scanPointId, teamId, recordDateTime, scannedDate, 0);
+            // init refrence fields
+            rawLoggerData.setScanPoint(ScanPointsRegistry.getInstance().getScanPointById(scanPointId));
+            rawLoggerData.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
+
+            result.add(rawLoggerData);
+            resultCursor.moveToNext();
+        }
+        resultCursor.close();
+
+        return result;
+    }
 }
