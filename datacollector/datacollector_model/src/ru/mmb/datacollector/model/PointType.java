@@ -1,12 +1,11 @@
 package ru.mmb.datacollector.model;
 
-public enum PointType
-{
+public enum PointType {
 	START(1),
 
 	FINISH(2),
 
-	TEAM_CONTROL(3),
+	MUST_VISIT(3),
 
 	CHANGE_MAPS(4),
 
@@ -14,37 +13,29 @@ public enum PointType
 
 	private final int id;
 
-	private PointType(int id)
-	{
+	private PointType(int id) {
 		this.id = id;
 	}
 
-	public int getId()
-	{
+	public int getId() {
 		return id;
 	}
 
-	public boolean isFinish()
-	{
+	public boolean isFinish() {
 		return id == 2 || id == 4;
 	}
 
-	public boolean isStart()
-	{
+	public boolean isStart() {
 		return id == 1;
 	}
 
-	public boolean isCheckpoint()
-	{
+	public boolean isCheckpoint() {
 		return id == 3 || id == 5;
 	}
 
-	public static PointType getById(int pointTypeId)
-	{
-		for (PointType pointType : values())
-		{
-			if (pointType.getId() == pointTypeId)
-			{
+	public static PointType getById(int pointTypeId) {
+		for (PointType pointType : values()) {
+			if (pointType.getId() == pointTypeId) {
 				return pointType;
 			}
 		}
