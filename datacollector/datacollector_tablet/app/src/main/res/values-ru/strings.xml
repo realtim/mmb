@@ -90,6 +90,7 @@
 
     <string name="input_data_no_team">&lt;Команда не выбрана></string>
     <string name="input_data_no_team_number">333</string>
+    <string name="input_data_edit_date">Edit</string>
     <string name="input_data_check_all">Все</string>
     <string name="input_data_check_nothing">Очистить</string>
     <string name="input_data_no_result">&lt;Результат не определён></string>

@@ -9,7 +9,6 @@ import java.util.Properties;
 
 import ru.mmb.datacollector.conf.ConfigurationAdapter;
 import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
-import ru.mmb.datacollector.model.report.LevelsRegistry;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -175,7 +174,6 @@ public class Settings {
                 ScanPointsRegistry.getInstance().refresh();
                 TeamsRegistry.getInstance().refresh();
                 UsersRegistry.getInstance().refresh();
-                LevelsRegistry.getInstance().refresh();
                 Log.d("SETTINGS",
                         "current raid ID: " +
                                 ConfigurationAdapter.getInstance().getCurrentRaidId());

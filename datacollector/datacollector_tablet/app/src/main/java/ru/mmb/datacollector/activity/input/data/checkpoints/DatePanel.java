@@ -4,6 +4,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.EditText;
@@ -26,6 +27,7 @@ public class DatePanel {
 
     private final DatePicker datePicker;
     private final LinearLayout timePanel;
+    private final Button btnEditDate;
 
     private boolean refreshingControls = false;
 
@@ -36,13 +38,15 @@ public class DatePanel {
 
         datePicker = (DatePicker) context.findViewById(R.id.inputData_datePicker);
         timePanel = (LinearLayout) context.findViewById(R.id.inputData_timePanel);
-
         timePicker = new TimePicker(context);
         timePicker.setIs24HourView(true);
         timePanel.addView(timePicker);
 
         hookEditTextChildren(datePicker, NOT_FOCUSABLE);
         hookEditTextChildren(timePicker, FOCUSABLE);
+
+        btnEditDate = (Button) context.findViewById(R.id.inputData_editDateButton);
+        btnEditDate.setOnClickListener(new EditDateClickListener());
 
         initDate();
     }
@@ -78,18 +82,17 @@ public class DatePanel {
     }
 
     private void initDate() {
-        boolean enable = true;
         if (currentState.isCommonStart()) {
             currentState.initInputDateFromCommonStart();
-            enable = false;
+            btnEditDate.setVisibility(View.GONE);
         } else if (!Settings.getInstance().isCanEditScantime()) {
-            enable = false;
+            btnEditDate.setVisibility(View.GONE);
         } else if (!currentState.isLoggerDataExists()) {
             Date currentDate = new Date();
             currentState.setInputDate(currentDate);
             currentState.setPrevDateTime(currentDate);
         }
-        setControlsEnabled(enable);
+        setControlsEnabled(false);
         initDateControls();
     }
 
@@ -136,6 +139,14 @@ public class DatePanel {
         public void onDateChanged(DatePicker view, int year, int month, int dayOfMonth) {
             if (refreshingControls) return;
             currentState.setInputDateDatePart(year, month, dayOfMonth);
+        }
+    }
+
+    private class EditDateClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            setControlsEnabled(true);
+            btnEditDate.setVisibility(View.GONE);
         }
     }
 }

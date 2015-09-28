@@ -14,7 +14,6 @@ import java.util.Date;
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.StateChangeListener;
 import ru.mmb.datacollector.activity.input.data.withdraw.WithdrawMemberActivity;
-import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.registry.Settings;
 
 import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY;
@@ -100,16 +99,12 @@ public class InputDataActivity extends Activity implements StateChangeListener {
         datePanel.refreshDateControls();
     }
 
-    private boolean isFinish() {
-        int distanceId = currentState.getCurrentTeam().getDistanceId();
-        LevelPoint levelPoint = currentState.getCurrentScanPoint().getLevelPointByDistance(distanceId);
-        return levelPoint.getPointType().isFinish();
-    }
-
     private class OkBtnClickListener implements OnClickListener {
         @Override
         public void onClick(View v) {
-            if (isFinish()) {
+            // finish - save checkpoints and time
+            // start or must visit - save changed time
+            if (!currentState.isCommonStart()) {
                 Date recordDateTime = new Date();
                 currentState.saveInputDataToDB(recordDateTime);
                 currentState.putTeamLevelPointToDataStorage(recordDateTime);

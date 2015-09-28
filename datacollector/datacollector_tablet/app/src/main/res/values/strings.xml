@@ -91,6 +91,7 @@
 
     <string name="input_data_no_team">&lt;No team selected></string>
     <string name="input_data_no_team_number">333</string>
+    <string name="input_data_edit_date">Edit</string>
     <string name="input_data_check_all">Check all</string>
     <string name="input_data_check_nothing">Clear</string>
     <string name="input_data_no_result">&lt;Result undefined></string>

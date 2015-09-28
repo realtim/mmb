@@ -60,7 +60,6 @@ public class RawLoggerDataDB {
     }
 
     public RawLoggerData getExistingRecord(ScanPoint scanPoint, Team team) {
-        RawLoggerData result = null;
         String sql =
                 "select t." + RAWLOGGERDATA_DATE + ", t." + LOGGER_ID + ", t." + SCANNED_DATE +
                         ", t." + CHANGED_MANUAL + " from " + TABLE_RAW_LOGGER_DATA +
@@ -78,7 +77,7 @@ public class RawLoggerDataDB {
         int loggerId = resultCursor.getInt(1);
         String scannedDateTime = resultCursor.getString(2);
         int changedManual = resultCursor.getInt(3);
-        result = new RawLoggerData(loggerId, scanPoint.getScanPointId(), team.getTeamId(), DateFormat.parse(recordDateTime), DateFormat.parse(scannedDateTime), changedManual);
+        RawLoggerData result = new RawLoggerData(loggerId, scanPoint.getScanPointId(), team.getTeamId(), DateFormat.parse(recordDateTime), DateFormat.parse(scannedDateTime), changedManual);
 
         result.setTeam(team);
         result.setScanPoint(scanPoint);

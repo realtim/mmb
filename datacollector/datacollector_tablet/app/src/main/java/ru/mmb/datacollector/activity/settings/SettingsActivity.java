@@ -237,9 +237,7 @@ public class SettingsActivity extends FragmentActivity {
     private class CanEditScantimeCheckListener implements CompoundButton.OnCheckedChangeListener {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            if (isChecked) {
-                Settings.getInstance().setCanEditScantime(isChecked);
-            }
+            Settings.getInstance().setCanEditScantime(isChecked);
         }
     }
 }
