@@ -34,7 +34,7 @@ import ru.mmb.datacollector.model.registry.Settings;
 
 public class SQLiteDatabaseAdapter extends DatabaseAdapter {
     private static final int BACKUP_SAVES_COUNT = 10;
-    private static final int BACKUP_MAX_FILES = 5;
+    private static final int BACKUP_MAX_FILES = 20;
 
     private SQLiteDatabase db;
 

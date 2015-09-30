@@ -5,6 +5,8 @@
 /.idea/libraries
 .DS_Store
 /build
+/install
 
 doc_work/UserGuide_v2.0.pdf
 doc_work/screenshots
+doc_work/UserGuide_v2.1.pdf
