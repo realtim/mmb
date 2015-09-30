@@ -1,5 +1,7 @@
 package ru.mmb.datacollector.activity.input.bclogger.dataload;
 
+import android.util.Log;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -180,6 +182,7 @@ public class LogStringParsingResult {
         // check record date and time
         try {
             LevelPoint levelPoint = scanPoint.getLevelPointByDistance(team.getDistanceId());
+
             Date recordDateTimeMinutes = DateUtils.trimToMinutes(sdf.parse(recordDateTime));
             Date dateFrom = levelPoint.getLevelPointMinDateTime();
             Date dateTo = levelPoint.getLevelPointMaxDateTime();
@@ -197,6 +200,7 @@ public class LogStringParsingResult {
                 }
             }
         } catch (Exception e) {
+            Log.d("CHECK_LOGDATA", "exception during time check", e);
             setWrongRecordDateTime(true);
         }
     }

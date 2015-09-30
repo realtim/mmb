@@ -125,7 +125,7 @@
     <string name="transport_input_import_dictionaries">Import raid data</string>
     <string name="transport_input_send_to_server">Send RAW to server</string>
     <string name="transport_input_send_logger_data">Send RAW scans to reporter</string>
-    <string name="transport_input_save_data_to_file">Save RAW to file</string>
+    <string name="transport_input_save_data_to_file">Export to site</string>
 
     <string name="transport_report_import_dictionaries">Import raid data</string>
     <string name="transport_report_receive_from_server">Receive from server</string>

@@ -90,7 +90,7 @@ public class LoggerDataSaver {
             db.execSQL(sql);
             recordsToSave++;
             Team team = TeamsRegistry.getInstance().getTeamById(teamId);
-            String message = "new record inserted [scanpoint: " + scanPoint.getScanPointName()
+            String message = "SAVING new record inserted [scanpoint: " + scanPoint.getScanPointName()
                     + ", team: " + team.getTeamNum() + ", time: " + prettyFormat.format(recordDateTime) + "]";
             owner.writeToConsole(message);
             Log.d("DATA_SAVER", message);
@@ -111,9 +111,10 @@ public class LoggerDataSaver {
             return levelPoint.getLevelPointMinDateTime();
         } else if (levelPoint.getPointType().isStart()) {
             if (recordDateTime.after(levelPoint.getLevelPointMaxDateTime())) {
-                String message = "record start time set to max for point [scanpoint: "
-                        + scanPoint.getScanPointName() + ", team: " + team.getTeamNum() + ", time: "
-                        + prettyFormat.format(recordDateTime) + "]";
+                String message = "PREPROCESS record start time set to max for point [scanpoint: "
+                        + scanPoint.getScanPointName() + ", team: " + team.getTeamNum() + ", recordTime: "
+                        + prettyFormat.format(recordDateTime) + ", updatedTime: "
+                        + prettyFormat.format(levelPoint.getLevelPointMaxDateTime()) + "]";
                 owner.writeError(message);
                 Log.d("DATA_SAVER", message);
                 return levelPoint.getLevelPointMaxDateTime();
@@ -130,7 +131,7 @@ public class LoggerDataSaver {
         if (scanPoint.getLevelPointByDistance(distanceId).getPointType().isStart()) {
             // start record - use first check
             if (existingRecord.getScannedDateTime().after(recordDateTime)) {
-                String message = "record start time changed [scanpoint: " + existingRecord.getScanPoint().getScanPointName()
+                String message = "SAVING record start time [scanpoint: " + existingRecord.getScanPoint().getScanPointName()
                         + ", team: " + existingRecord.getTeam().getTeamNum() + ", time: "
                         + prettyFormat.format(recordDateTime) + "]";
                 owner.writeError(message);
@@ -141,7 +142,7 @@ public class LoggerDataSaver {
         } else {
             // finish record - use last check
             if (existingRecord.getScannedDateTime().before(recordDateTime)) {
-                String message = "record finish time changed [scanpoint: " + existingRecord.getScanPoint().getScanPointName()
+                String message = "SAVING record finish time [scanpoint: " + existingRecord.getScanPoint().getScanPointName()
                         + ", team: " + existingRecord.getTeam().getTeamNum() + ", time: "
                         + prettyFormat.format(recordDateTime) + "]";
                 owner.writeError(message);

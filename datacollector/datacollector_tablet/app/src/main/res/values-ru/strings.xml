@@ -124,7 +124,7 @@
     <string name="transport_input_import_dictionaries">Импорт данных ММБ</string>
     <string name="transport_input_send_to_server">Отправить RAW на сервер</string>
     <string name="transport_input_send_logger_data">Отправить RAW данные сканеров</string>
-    <string name="transport_input_save_data_to_file">Сохранить RAW в файл</string>
+    <string name="transport_input_save_data_to_file">Экспорт в файл для сайта</string>
 
     <string name="transport_report_import_dictionaries">Импорт данных ММБ</string>
     <string name="transport_report_receive_from_server">Получить с сервера</string>

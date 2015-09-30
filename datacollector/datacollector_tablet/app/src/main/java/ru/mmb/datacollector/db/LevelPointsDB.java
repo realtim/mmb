@@ -79,11 +79,11 @@ public class LevelPointsDB {
             String levelPointName = resultCursor.getString(5);
             int levelPointPenalty = resultCursor.getInt(6);
             Date levelPointMinDateTime = null;
-            if (!pointType.isCheckpoint()) {
+            if (pointType != PointType.CHECKPOINT) {
                 levelPointMinDateTime = DateFormat.parse(resultCursor.getString(7));
             }
             Date levelPointMaxDateTime = null;
-            if (!pointType.isCheckpoint()) {
+            if (pointType != PointType.CHECKPOINT) {
                 levelPointMaxDateTime = DateFormat.parse(resultCursor.getString(8));
             }
 
