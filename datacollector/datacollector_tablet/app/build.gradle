@@ -8,8 +8,8 @@ android {
         applicationId "ru.mmb.datacollector"
         minSdkVersion 10
         targetSdkVersion 22
-        versionCode 20001
-        versionName "2.1"
+        versionCode 21002
+        versionName "2.1.002"
     }
 
     buildTypes {
