@@ -8,7 +8,6 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.TimePicker;
@@ -26,7 +25,6 @@ public class DatePanel {
     private final InputDataActivityState currentState;
 
     private final DatePicker datePicker;
-    private final LinearLayout timePanel;
     private final Button btnEditDate;
 
     private boolean refreshingControls = false;
@@ -37,10 +35,7 @@ public class DatePanel {
         this.currentState = currentState;
 
         datePicker = (DatePicker) context.findViewById(R.id.inputData_datePicker);
-        timePanel = (LinearLayout) context.findViewById(R.id.inputData_timePanel);
-        timePicker = new TimePicker(context);
-        timePicker.setIs24HourView(true);
-        timePanel.addView(timePicker);
+        timePicker = (TimePicker24Hours) context.findViewById(R.id.inputData_timePicker);
 
         hookEditTextChildren(datePicker, NOT_FOCUSABLE);
         hookEditTextChildren(timePicker, FOCUSABLE);

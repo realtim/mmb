@@ -20,12 +20,12 @@
 
             <LinearLayout
                 android:id="@+id/inputData_existsIndicatorPanel"
-                android:orientation="horizontal"
                 android:layout_width="30dip"
                 android:layout_height="30dip"
                 android:layout_gravity="center_vertical"
                 android:layout_marginRight="@dimen/global_padding"
-                android:background="@color/LightSkyBlue" />
+                android:background="@color/LightSkyBlue"
+                android:orientation="horizontal" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -78,12 +78,12 @@
                 android:calendarViewShown="false"
                 android:datePickerMode="spinner" />
 
-            <LinearLayout
-                android:id="@+id/inputData_timePanel"
+            <ru.mmb.datacollector.activity.input.data.checkpoints.TimePicker24Hours
+                android:id="@+id/inputData_timePicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/global_padding"
-                android:orientation="horizontal" />
+                android:orientation="horizontal"
+                android:timePickerMode="spinner" />
 
             <Button
                 android:id="@+id/inputData_editDateButton"
