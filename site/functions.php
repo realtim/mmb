@@ -1278,7 +1278,7 @@ send_mime_mail('Автор письма',
         $NotStart = 0;     
         $PredRaidId = GetPredRaidForUser($userid, $raidid);
 	
-	// Проверяем  что участник не явился на старт
+	// Проверяем  что участник не явился на старт и при этом команда была в зачете
 	if ($PredRaidId) {
 
 		$sql = " select count(*) as result
@@ -1291,6 +1291,7 @@ send_mime_mail('Автор письма',
 			       and tu.user_id = $userid
 			       and COALESCE(t.team_maxlevelpointorderdone, 0) = 0 
 			       and t.team_hide = 0
+			       and t.team_outofrange = 0
 			       and tu.teamuser_hide = 0 ";
 
 	      // echo $sql;
