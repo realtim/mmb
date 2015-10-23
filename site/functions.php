@@ -469,15 +469,15 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 			ELSE 2
 		END as registration,
 		(select count(*) from LevelPoints lp
-			inner join Distances d on l.distance_id = d.distance_id
+			inner join Distances d on lp.distance_id = d.distance_id
 			where (d.raid_id = r.raid_id) and (NOW() >= DATE_SUB(lp.levelpoint_mindatetime, INTERVAL COALESCE(r.raid_readonlyhoursbeforestart, 8) HOUR)))
 		as cantdelete,
 		(select count(*) from LevelPoints lp
-			inner join Distances d on l.distance_id = d.distance_id
+			inner join Distances d on lp.distance_id = d.distance_id
 			where (d.raid_id = r.raid_id) and (NOW() >= lp.levelpoint_mindatetime))
 		as started,
 		(select count(*) from LevelPoints lp
-			inner join Distances d on l.distance_id = d.distance_id
+			inner join Distances d on lp.distance_id = d.distance_id
 			where (d.raid_id = r.raid_id) and (NOW() < lp.levelpoint_maxdatetime))
 		as notfinished,
 		CASE
