@@ -440,15 +440,17 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		$Moderator = CSql::singleValue($sql, 'user_moderator');
 	}
 
+	// 2015-10-24 Отключаем проверку на старые ммб - всё уже в базе
 	// Определяем, проводился ли марш-бросок до 2012 года
-	$sql = "select CASE WHEN raid_registrationenddate is not null and YEAR(raid_registrationenddate) <= 2011
-			THEN 1
-			ELSE 0
-		END as oldmmb
-		from Raids where raid_id = $RaidId";
-
-	$OldMmb = CSql::singleValue($sql, 'oldmmb');
-
+       
+	//$sql = "select CASE WHEN raid_registrationenddate is not null and YEAR(raid_registrationenddate) <= 2011
+	//		THEN 1
+	//		ELSE 0
+	//	END as oldmmb
+	//	from Raids where raid_id = $RaidId";
+	//
+	//$OldMmb = CSql::singleValue($sql, 'oldmmb');
+       
 
          // 21/11/2013  Добавил RaidStage (финиш закрыт, но нельзя показывать результаты и сместил 6 на 7)
          // 30.10.2013 Для трёхдневного ММБ  изменил INTERVAL 12 на INTERVAL 24  
