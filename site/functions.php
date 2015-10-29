@@ -1877,8 +1877,256 @@ send_mime_mail('Автор письма',
      }
      // Конец функции расчета результата в точке		
  
- 
- 
+
+// Функция поиска ошибок для марш-броска/команды
+function FindErrors($raid_id, $team_id)
+{
+	$distances = array();
+	// Если нужно проверить отдельную команду, то находим дистанцию, по которой она бежала
+	if ($team_id)
+	{
+		$sql = "SELECT distance_id FROM Teams WHERE team_id = $team_id AND team_hide = 0";
+		$Result = MySqlQuery($sql);
+		if (mysql_num_rows($Result) <> 1) die('Команда $team_id отсутствует или удалена, проверка невозможна');
+		$Row = mysql_fetch_assoc($Result);
+		if ($Row) $distances[] = $Row['distance_id'];
+		mysql_free_result($Result);
+	}
+	// Если нужно проверить весь марш-бросок, то находим все дистанции, принадлежащие данному марш-броску
+	if ($raid_id)
+	{
+		$sql = "SELECT distance_id FROM Distances WHERE raid_id = $raid_id AND distance_hide = 0";
+		$Result = MySqlQuery($sql);
+		while ($Row = mysql_fetch_assoc($Result)) $distances[] = $Row['distance_id'];
+		mysql_free_result($Result);
+	}
+	if (!count($distances)) die('Отсутствуют дистанции для проверки');
+
+	// Проверяем в цикле все дистанции (для всех команд с данной дистанции или для конкретной команды
+	$total_errors = 0;
+	foreach ($distances as $distance_id)
+	{
+		// Составляем список команд для проверки на данной дистанции
+		$teams = array();
+		if ($team_id) $teams[] = $team_id;
+		else
+		{
+			$sql = "SELECT DISTINCT TeamLevelPoints.team_id FROM TeamLevelPoints, Teams WHERE TeamLevelPoints.team_id = Teams.team_id AND Teams.distance_id = $distance_id";
+			$Result = MySqlQuery($sql);
+			while ($Row = mysql_fetch_assoc($Result)) $teams[] = $Row['team_id'];
+			mysql_free_result($Result);
+		}
+		if (!count($teams)) continue;
+
+		// На данной дистанции есть команды, которые нужно проверить, выясняем параметры дистанции и проверяем их
+		$points = array();
+		$order = array();
+		$mandatory = array();
+		$scanners = array();
+		$cards = array();
+		$ncard = 0;
+		$sql = "SELECT * FROM LevelPoints WHERE distance_id = $distance_id AND levelpoint_hide = 0 ORDER BY levelpoint_order ASC";
+		$Result = MySqlQuery($sql);
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+			// Проверяем уникальность levelpoint_order
+			if (isset($order[$Row['levelpoint_order']])) die("Дублирующийся levelpoint_order = {$Row['levelpoint_order']}");
+			$order[$Row['levelpoint_order']] = 1;
+			// Запоминаем параметры точки
+			$id = $Row['levelpoint_id'];
+			$points[$id]['order'] = $Row['levelpoint_order'];
+			$points[$id]['pointtype'] = $Row['pointtype_id'];
+			$points[$id]['penalty'] = $Row['levelpoint_penalty'];
+			if ($Row['levelpoint_mindatetime'] && ($Row['levelpoint_mindatetime'] != "0000-00-00 00:00:00"))
+				$points[$id]['min_time'] = $Row['levelpoint_mindatetime'];
+			if ($Row['levelpoint_maxdatetime'] && ($Row['levelpoint_maxdatetime'] != "0000-00-00 00:00:00"))
+				$points[$id]['max_time'] = $Row['levelpoint_maxdatetime'];
+			if ($Row['scanpoint_id']) $points[$id]['scanpoint'] = $Row['scanpoint_id'];
+			// У точек С, Ф, ОКП и СК должно быть корретное время работы
+			if (($points[$id]['pointtype'] == 1) || ($points[$id]['pointtype'] == 2) || ($points[$id]['pointtype'] == 3) || ($points[$id]['pointtype'] == 4))
+			{
+				if (!isset($points[$id]['min_time'])) die("У точки $id не указано время начала работы");
+				if (!isset($points[$id]['max_time'])) die("У точки $id не указано время окончания работы");
+				if ($points[$id]['max_time'] < $points[$id]['max_time']) die("У точки $id некорректный диапазон работы");
+			}
+			// На точках С, Ф и СК должно быть сканеры
+			if (($points[$id]['pointtype'] == 1) || ($points[$id]['pointtype'] == 2) || ($points[$id]['pointtype'] == 4))
+			{
+				if (!isset($points[$id]['scanpoint'])) die("У точки $id не указан scanpoint_id");
+			}
+			// На обычном КП не должно быть сканеров и времени работы точки
+			if ($points[$id]['pointtype'] == 5)
+			{
+				if (isset($points[$id]['min_time']) || isset($points[$id]['max_time'])) die("У точки $id не должно быть времени работы");
+				if (isset($points[$id]['scanpoint'])) die("На точке $id не должно быть сканеров");
+			}
+			// Остальные типы точек не поддерживаем
+			if (($points[$id]['pointtype'] < 1) || ($points[$id]['pointtype'] > 5)) die("Неподдерживаемый тип точки $id");
+			// Добавляем обязательные точки в отдельный массив
+			if (($points[$id]['pointtype'] >= 1) && ($points[$id]['pointtype'] <= 4)) $mandatory[$id] = $points[$id];
+			// Добавляем точки со сканерами в отдельный массив
+			if (isset($points[$id]['scanpoint'])) $scanners[$id] = $points[$id];
+			// Формируем массив с "карточками" по виртуальным этапам
+			if ($points[$id]['pointtype'] == 1)
+			{
+				$ncard++;
+				$cards[$ncard]['start'] = $id;
+			}
+			if ($points[$id]['pointtype'] == 2)
+			{
+				if (isset($cards[$ncard]['finish'])) die("Двойной финиш на этапе в точке $id");
+				$cards[$ncard]['finish'] = $id;
+			}
+			if ($points[$id]['pointtype'] == 4)
+			{
+				// СК одновременно является финишем одного этапа и стартом следующего
+				if (isset($cards[$ncard]['finish'])) die("Двойной финиш на этапе в точке $id");
+				$cards[$ncard]['finish'] = $id;
+				$ncard++;
+				$cards[$ncard]['start'] = $id;
+			}
+		}
+		unset($order);
+		mysql_free_result($Result);
+		// Проверяем получившиеся карточки
+		foreach ($cards as $card)
+			if (!isset($card['finish'])) die("Этап со стартом в точке {$card['start']} не имеет финиша");	
+
+		// Данные о точках дистанции сформированы, проверяем в цикле все команды с дистанции
+		foreach ($teams as $team_id)
+		{
+			// Извлекаем все результаты команды на точках
+			$results = array();
+			$errors = array();
+			$sql = "SELECT * FROM TeamLevelPoints WHERE team_id = $team_id";
+			$Result = MySqlQuery($sql);
+			while ($Row = mysql_fetch_assoc($Result))
+			{
+				// У команды не может быть несколько записей результата на одной точке
+				$id = $Row['levelpoint_id'];
+				if (isset($results[$id])) $errors[$id] = 20; else $errors[$id] = 0;
+				// Запоминаем данные на точке
+				$results[$id]['edit_time'] = $Row['teamlevelpoint_date'];
+				$results[$id]['operator'] = $Row['user_id'];
+				$results[$id]['device'] = $Row['device_id'];
+				$team_time = $Row['teamlevelpoint_datetime'];
+				if ($team_time == "0000-00-00 00:00:00") $team_time = "";
+				$results[$id]['team_time'] = $team_time;
+				// Команда посетила точку, не принадлежащую дистанции
+				if (!$errors[$id] && !isset($points[$id])) $errors[$id] = 21;
+				// На КП без сканера не может быть записи со временем посещения точки
+				if (!$errors[$id] && !isset($scanners[$id]) && $team_time) $errors[$id] = 22;
+				// На КП со сканером не может быть записи о посещении без времени
+				if (!$errors[$id] && isset($scanners[$id]) && !$team_time) $errors[$id] = 23;
+				// Время посещения точки должно быть в интервале работы точки
+				if (!$errors[$id] && $team_time &&
+					(($team_time < $points[$id]['min_time']) || ($team_time > $points[$id]['max_time']))) $errors[$id] = 24;
+				// Время ввода результата меньше времени команды на точке
+				if (!$errors[$id] && $team_time && ($results[$id]['edit_time'] < $team_time)) $errors[$id] = 25;
+			}
+			mysql_free_result($Result);
+
+			// Проверяем последовательность обязательных точек
+			$mandatory_skipped = "";
+			$mandatory_visited = "";
+			foreach ($mandatory as $id => $point)
+			{
+				if (!isset($results[$id]))
+					// Обязательная точка пропущена, запоминаем ее
+					$mandatory_skipped = $point;
+				else
+				{
+					// Обязательная точка посещена, запоминаем ее
+					$mandatory_visited = $point;
+					if ($mandatory_skipped <> "")
+					{
+						// Предыдущая обязательная точка пропущена, ставим на текущей ошибку
+						if (!$errors[$id]) $errors[$id] = 26;
+						$mandatory_skipped = "";
+					}
+				}
+			}
+
+			// Определяем, какую точку команда посетила последней
+			$last_visited_id = "";
+			foreach ($points as $id => $point)
+				if (isset($results[$id])) $last_visited_id = $id;
+			// Последняя посещенная точка должна быть с судьями, которые зарегистрируют посещение
+			// То есть она не может иметь тип 5 (обычный компостер)
+			if (($last_visited_id <> "") && !$errors[$last_visited_id] && ($points[$last_visited_id]['pointtype'] == 5))
+				$errors[$last_visited_id] = 27;
+
+			// Время посещение точек со сканерами должно возрастать от точки к точке
+			$prev_time = -1;
+			foreach ($scanners as $id => $point)
+				if (isset($results[$id]))
+				{
+					if ($results[$id]['team_time'] == "") continue;
+					$curr_time = strtotime($results[$id]['team_time']);
+					if (($prev_time <> -1) && !$errors[$id] && ($curr_time <= $prev_time)) $errors[$id] = 28;
+					$prev_time = $curr_time;
+				}
+
+			// Анализируем КП, расположенные на одной карточке (то есть на одном этапе в старой идеологии)
+			foreach ($cards as $card)
+			{
+				$start_id = $card['start'];
+				$finish_id = $card['finish'];
+				// Если команда не прошла этап, то проверять нечего
+				if (!isset($results[$start_id]) || !isset($results[$finish_id])) continue;
+				// Если у команды уже есть ошибки на старте/финише этапа, то не проверяем
+				if ($errors[$start_id] || $errors[$finish_id]) continue;
+				// Считаем время в пути от старта этапа до финиша
+				$delta = strtotime($results[$finish_id]['team_time']) - strtotime($results[$start_id]['team_time']);
+				// Оно не должно быть слишком маленьким или большим
+				if ($delta < 3 * 60 * 60) $errors[$finish_id] = -1;
+				if ($delta > 25 * 60 * 60) $errors[$finish_id] = -2;
+/*
+				// Анализируем время редактирования для всех точек, введенных на планшетах
+				$start_order = $points[$start_id]['order'];
+				$finish_order = $points[$finish_id]['order'];
+				$tablet_edit_time = "";
+				foreach ($points as $id => $point)
+				{
+					// Анализируем только точки с текущей карточки
+					$point_order = $point['order'];
+					if (($point_order <= $start_order) || ($point_order > $finish_order)) continue;
+					// Проверяем точки, у которых есть результат и он не отредактирован через сайт
+					if (isset($results[$id]) && ($results[$id]['device'] <> 1))
+					{
+						$curr_tablet_edit_time = $results[$id]['edit_time'];
+						if ($tablet_edit_time == "") $tablet_edit_time = $curr_tablet_edit_time;
+						// Все точки с одной карточки, введенные не на сайте, должны иметь одно время редактирования
+						else if (($tablet_edit_time <> $curr_tablet_edit_time) && !$errors[$id]) $errors[$id] = 29;
+					}
+				}
+*/
+			}
+
+			// Проверка времени команды на дистанции с учетом штрафов, хранящегося в Team.team_result
+			// !!
+			// Проверка порядкового номер точки, до которой на дистанции добралась команда, хранящегося в Team.team_maxlevelpointorderdone
+			// !!
+
+			// Обновляем в базе error_id для всех проверенных точек с результатами команды
+			$sql = "UPDATE TeamLevelPoints SET error_id = 0 WHERE team_id = $team_id";
+			MySqlQuery($sql);
+			foreach ($errors as $point_id => $error_id)
+			{
+				if (!$error_id) continue;
+				$total_errors++;
+				$sql = "UPDATE TeamLevelPoints SET error_id = $error_id WHERE team_id = $team_id AND levelpoint_id = $point_id";
+				MySqlQuery($sql);
+			}
+		}
+	}
+
+	// Результат поиска ошибок
+	if ($raid_id) echo "Проверка данных завершена, найдено ошибок: $total_errors<br>\n";
+}
+// Конец функции поиска ошибок для марш-броска/команды
+
+
 	// функция проверяет ошибки
 	function RecalcErrors($raidid, $teamid)
 	{
@@ -2048,7 +2296,7 @@ send_mime_mail('Автор письма',
 
 
 	//Ставим ошибки
-	RecalcErrors($raidid, $teamid);
+	FindErrors($raidid, $teamid);
 
 
 	// $raidid мог измениться

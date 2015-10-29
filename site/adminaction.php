@@ -184,7 +184,7 @@ elseif ($action == 'FindRaidErrors')
 	}
 	if (!$Administrator && !$Moderator) return;
 
-	RecalcErrors($RaidId, 0);
+	FindErrors($RaidId, 0);
 
 /*
 	$n_Errors = 0;
