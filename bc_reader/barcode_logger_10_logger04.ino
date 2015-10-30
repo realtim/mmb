@@ -1,5 +1,5 @@
 /*
-Стандартный вариант прошивки для сканеров 01-06
+Вариант прошивки для сканера 04 (сгорел выход зеленого светодиода - перепаян на соседний)
  SD card attached to SPI bus as follows:
  *MOSI - D11
  *MISO - D12
@@ -17,7 +17,7 @@
  Speaker:
  *D08
  Green LED
- *D09
+ *D06
  Red LED
  *D07
  
@@ -67,7 +67,7 @@
 const byte chipSelect = 10; // SD-card pin
 
 const byte Spk=8;  // BUZZER pin set
-const byte GLed=9;  // GREEN LED pin set
+const byte GLed=6;  // GREEN LED pin set
 const byte RLed=7;  // RED LED pin set
 
 const byte TXPin = 3;

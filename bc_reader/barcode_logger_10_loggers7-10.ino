@@ -1,5 +1,5 @@
 /*
-Стандартный вариант прошивки для сканеров 01-06
+Вариант прошивки для сканеров 07-10 (сигнал RX порта UART пизменен на пин D03)
  SD card attached to SPI bus as follows:
  *MOSI - D11
  *MISO - D12
@@ -7,8 +7,8 @@
  *CS   - D10
  
  Software serial port:
- *TX - D3
- *RX - D4
+ *TX - D4
+ *RX - D3
  
  DS1307 RTC connected via I2C:
  *SCL - A5
@@ -51,7 +51,7 @@
  
  END - return to scanner operation mode
  
- РџР°СЂР°РјРµС‚СЂС‹ РїРѕРґРєР»СЋС‡РµРЅРёСЏ РїРѕ Bluetooth:
+ Bluetooth settings:
  Baudrate - 57600
  Stop bit - 1
  Parity - None
@@ -70,8 +70,8 @@ const byte Spk=8;  // BUZZER pin set
 const byte GLed=9;  // GREEN LED pin set
 const byte RLed=7;  // RED LED pin set
 
-const byte TXPin = 3;
-const byte RXPin = 4;
+const byte TXPin = 4;
+const byte RXPin = 3;
 SoftwareSerial ScannerSerial(RXPin, TXPin);
 
 //initial scanner config
