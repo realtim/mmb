@@ -5,6 +5,9 @@ using System.ComponentModel;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
+using System.Collections;
+using System.Management;
+
 
 namespace BC_Logger_control
 {
@@ -241,8 +244,10 @@ namespace BC_Logger_control
             serialPort1.WriteLine(textBox_getScustom.Text);
             SetText(textBox_getScustom.Text + "\r\n");
             Thread.Sleep(100);
+            while (serialPort1.BytesToRead > 0) Thread.Sleep(100);
             serialPort1.WriteLine(textBox_getLcustom.Text);
             SetText(textBox_getLcustom.Text + "\r\n");
+            Thread.Sleep(100);
             while (serialPort1.BytesToRead > 0) Thread.Sleep(100);
             serialPort1.WriteLine(textBox_getDcustom.Text);
             SetText(textBox_getDcustom.Text + "\r\n");
@@ -376,6 +381,21 @@ namespace BC_Logger_control
                 button_openPort.Enabled = false;
             }
             else comboBox_portName.SelectedIndex = 0;
+
+            /*
+            //get port description from registry
+            Hashtable PortNames = new Hashtable();
+            string[] ports = System.IO.Ports.SerialPort.GetPortNames();
+            if (ports.Length == 0) ;
+            else
+            {
+                PortNames = BuildPortNameHash(ports);
+                foreach (String s in PortNames.Keys)
+                {
+                    textBox_terminal.Text += "\n\r" + PortNames[s] + ": " + s + "\n\r";
+                }
+            }*/
+
         }
 
         private void checkBoxcustomEdit_CheckedChanged(object sender, EventArgs e)

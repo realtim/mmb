@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 namespace BC_Logger_control
 {
     partial class Form1
@@ -1074,6 +1077,52 @@ namespace BC_Logger_control
             dateString += ":" + DateTime.Now.Minute.ToString("D2");
             dateString += ":" + DateTime.Now.Second.ToString("D2");
             return dateString;
+        }
+
+        Hashtable BuildPortNameHash(string[] oPortsToMap)
+        {
+            Hashtable oReturnTable = new Hashtable();
+            MineRegistryForPortName("SYSTEM\\CurrentControlSet\\Enum", oReturnTable, oPortsToMap);
+            return oReturnTable;
+        }
+
+        void MineRegistryForPortName(string strStartKey, Hashtable oTargetMap, string[] oPortNamesToMatch)
+        {
+            if (oTargetMap.Count >= oPortNamesToMatch.Length)
+                return;
+            RegistryKey oCurrentKey = Registry.LocalMachine;
+
+            try
+            {
+                oCurrentKey = oCurrentKey.OpenSubKey(strStartKey);
+
+                string[] oSubKeyNames = oCurrentKey.GetSubKeyNames();
+                if (((IList<string>)oSubKeyNames).Contains("Device Parameters") && strStartKey != "SYSTEM\\CurrentControlSet\\Enum")
+                {
+                    object oPortNameValue = Registry.GetValue("HKEY_LOCAL_MACHINE\\" + strStartKey + "\\Device Parameters", "PortName", null);
+
+                    if (oPortNameValue == null || ((IList<string>)oPortNamesToMatch).Contains(oPortNameValue.ToString()) == false)
+                        return;
+                    object oFriendlyName = Registry.GetValue("HKEY_LOCAL_MACHINE\\" + strStartKey, "FriendlyName", null);
+
+                    string strFriendlyName = "N/A";
+
+                    if (oFriendlyName != null)
+                        strFriendlyName = oFriendlyName.ToString();
+                    if (strFriendlyName.Contains(oPortNameValue.ToString()) == false)
+                        strFriendlyName = string.Format("{0} ({1})", strFriendlyName, oPortNameValue);
+                    oTargetMap[strFriendlyName] = oPortNameValue;
+                }
+                else
+                {
+                    foreach (string strSubKey in oSubKeyNames)
+                        MineRegistryForPortName(strStartKey + "\\" + strSubKey, oTargetMap, oPortNamesToMatch);
+                }
+            }
+            catch
+            {
+
+            }
         }
 
         private System.Windows.Forms.Button button_dlAll;
