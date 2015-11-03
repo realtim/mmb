@@ -45,6 +45,7 @@ namespace BC_Logger_control
             this.button_getD = new System.Windows.Forms.Button();
             this.button_getL = new System.Windows.Forms.Button();
             this.tabPage_Set = new System.Windows.Forms.TabPage();
+            this.checkBox_setEnable = new System.Windows.Forms.CheckBox();
             this.checkBox_autoTime = new System.Windows.Forms.CheckBox();
             this.button_setN = new System.Windows.Forms.Button();
             this.button_setL = new System.Windows.Forms.Button();
@@ -104,7 +105,9 @@ namespace BC_Logger_control
             this.checkBox_autoScroll = new System.Windows.Forms.CheckBox();
             this.checkBox_portMon = new System.Windows.Forms.CheckBox();
             this.button_refresh = new System.Windows.Forms.Button();
-            this.checkBox_setEnable = new System.Windows.Forms.CheckBox();
+            this.textBox_getTcustom = new System.Windows.Forms.TextBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.button_getT = new System.Windows.Forms.Button();
             this.tabControl.SuspendLayout();
             this.tabPage_Get.SuspendLayout();
             this.tabPage_Set.SuspendLayout();
@@ -126,6 +129,7 @@ namespace BC_Logger_control
             // 
             // tabPage_Get
             // 
+            this.tabPage_Get.Controls.Add(this.button_getT);
             this.tabPage_Get.Controls.Add(this.checkBox_delLog);
             this.tabPage_Get.Controls.Add(this.textBox_getDn);
             this.tabPage_Get.Controls.Add(this.textBox_getLn);
@@ -149,7 +153,7 @@ namespace BC_Logger_control
             this.checkBox_delLog.AutoSize = true;
             this.checkBox_delLog.Enabled = false;
             this.checkBox_delLog.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.checkBox_delLog.Location = new System.Drawing.Point(227, 234);
+            this.checkBox_delLog.Location = new System.Drawing.Point(227, 280);
             this.checkBox_delLog.Margin = new System.Windows.Forms.Padding(6);
             this.checkBox_delLog.Name = "checkBox_delLog";
             this.checkBox_delLog.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -194,7 +198,7 @@ namespace BC_Logger_control
             // button_delL
             // 
             this.button_delL.Enabled = false;
-            this.button_delL.Location = new System.Drawing.Point(6, 227);
+            this.button_delL.Location = new System.Drawing.Point(6, 273);
             this.button_delL.Margin = new System.Windows.Forms.Padding(6);
             this.button_delL.Name = "button_delL";
             this.button_delL.Size = new System.Drawing.Size(196, 42);
@@ -277,6 +281,18 @@ namespace BC_Logger_control
             this.tabPage_Set.TabIndex = 0;
             this.tabPage_Set.Text = "Settings";
             this.tabPage_Set.UseVisualStyleBackColor = true;
+            // 
+            // checkBox_setEnable
+            // 
+            this.checkBox_setEnable.AutoSize = true;
+            this.checkBox_setEnable.Enabled = false;
+            this.checkBox_setEnable.Location = new System.Drawing.Point(262, 286);
+            this.checkBox_setEnable.Name = "checkBox_setEnable";
+            this.checkBox_setEnable.Size = new System.Drawing.Size(157, 28);
+            this.checkBox_setEnable.TabIndex = 8;
+            this.checkBox_setEnable.Text = "Enable settings";
+            this.checkBox_setEnable.UseVisualStyleBackColor = true;
+            this.checkBox_setEnable.CheckedChanged += new System.EventHandler(this.checkBox_setEnable_CheckedChanged);
             // 
             // checkBox_autoTime
             // 
@@ -464,6 +480,7 @@ namespace BC_Logger_control
             this.tabPage_Custom.Controls.Add(this.label3);
             this.tabPage_Custom.Controls.Add(this.label14);
             this.tabPage_Custom.Controls.Add(this.label13);
+            this.tabPage_Custom.Controls.Add(this.label15);
             this.tabPage_Custom.Controls.Add(this.label2);
             this.tabPage_Custom.Controls.Add(this.textBox_setTcustom);
             this.tabPage_Custom.Controls.Add(this.textBox_setPcustom);
@@ -477,6 +494,7 @@ namespace BC_Logger_control
             this.tabPage_Custom.Controls.Add(this.textBox_getLcustom);
             this.tabPage_Custom.Controls.Add(this.textBox_setLcustom);
             this.tabPage_Custom.Controls.Add(this.textBox_setNcustom);
+            this.tabPage_Custom.Controls.Add(this.textBox_getTcustom);
             this.tabPage_Custom.Controls.Add(this.textBox_getScustom);
             this.tabPage_Custom.Controls.Add(this.textBox_customCommand);
             this.tabPage_Custom.Controls.Add(this.button_customCommand);
@@ -490,10 +508,10 @@ namespace BC_Logger_control
             // checkBox_customEdit
             // 
             this.checkBox_customEdit.AutoSize = true;
-            this.checkBox_customEdit.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.checkBox_customEdit.Location = new System.Drawing.Point(208, 60);
+            this.checkBox_customEdit.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.checkBox_customEdit.Location = new System.Drawing.Point(283, 61);
             this.checkBox_customEdit.Name = "checkBox_customEdit";
-            this.checkBox_customEdit.Size = new System.Drawing.Size(79, 17);
+            this.checkBox_customEdit.Size = new System.Drawing.Size(124, 28);
             this.checkBox_customEdit.TabIndex = 4;
             this.checkBox_customEdit.Text = "Edit enable";
             this.checkBox_customEdit.UseVisualStyleBackColor = true;
@@ -502,260 +520,261 @@ namespace BC_Logger_control
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label12.Location = new System.Drawing.Point(112, 302);
+            this.label12.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label12.Location = new System.Drawing.Point(112, 327);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(45, 13);
+            this.label12.Size = new System.Drawing.Size(77, 24);
             this.label12.TabIndex = 3;
             this.label12.Text = "Set time";
             // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label11.Location = new System.Drawing.Point(112, 278);
+            this.label11.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label11.Location = new System.Drawing.Point(112, 303);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(59, 13);
+            this.label11.Size = new System.Drawing.Size(99, 24);
             this.label11.TabIndex = 3;
             this.label11.Text = "Set pattern";
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label10.Location = new System.Drawing.Point(112, 254);
+            this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label10.Location = new System.Drawing.Point(112, 279);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(92, 13);
+            this.label10.Size = new System.Drawing.Size(160, 24);
             this.label10.TabIndex = 3;
             this.label10.Text = "Set control point #";
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label9.Location = new System.Drawing.Point(112, 230);
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label9.Location = new System.Drawing.Point(112, 255);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(77, 13);
+            this.label9.Size = new System.Drawing.Size(132, 24);
             this.label9.TabIndex = 3;
             this.label9.Text = "Set scanner ID";
             // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label8.Location = new System.Drawing.Point(112, 206);
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label8.Location = new System.Drawing.Point(112, 231);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(112, 13);
+            this.label8.Size = new System.Drawing.Size(198, 24);
             this.label8.TabIndex = 3;
             this.label8.Text = "End Bluetooth session";
             // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label7.Location = new System.Drawing.Point(112, 182);
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label7.Location = new System.Drawing.Point(112, 207);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(73, 13);
+            this.label7.Size = new System.Drawing.Size(127, 24);
             this.label7.TabIndex = 3;
             this.label7.Text = "Delete all logs";
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label6.Location = new System.Drawing.Point(112, 158);
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label6.Location = new System.Drawing.Point(112, 183);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(99, 13);
+            this.label6.Size = new System.Drawing.Size(175, 24);
             this.label6.TabIndex = 3;
             this.label6.Text = "Get debug log line#";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label5.Location = new System.Drawing.Point(112, 134);
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label5.Location = new System.Drawing.Point(112, 159);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(91, 13);
+            this.label5.Size = new System.Drawing.Size(160, 24);
             this.label5.TabIndex = 3;
             this.label5.Text = "Get scan log line#";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label4.Location = new System.Drawing.Point(112, 110);
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label4.Location = new System.Drawing.Point(112, 135);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(74, 13);
+            this.label4.Size = new System.Drawing.Size(130, 24);
             this.label4.TabIndex = 3;
             this.label4.Text = "Get debug log";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label3.Location = new System.Drawing.Point(112, 86);
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label3.Location = new System.Drawing.Point(112, 111);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(66, 13);
+            this.label3.Size = new System.Drawing.Size(115, 24);
             this.label3.TabIndex = 3;
             this.label3.Text = "Get scan log";
             // 
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label14.Location = new System.Drawing.Point(112, 350);
+            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label14.Location = new System.Drawing.Point(112, 375);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(88, 13);
+            this.label14.Size = new System.Drawing.Size(157, 24);
             this.label14.TabIndex = 3;
             this.label14.Text = "Set numbers only";
             // 
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label13.Location = new System.Drawing.Point(112, 326);
+            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label13.Location = new System.Drawing.Point(112, 351);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(85, 13);
+            this.label13.Size = new System.Drawing.Size(150, 24);
             this.label13.TabIndex = 3;
             this.label13.Text = "Set length check";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label2.Location = new System.Drawing.Point(112, 62);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(63, 13);
+            this.label2.Size = new System.Drawing.Size(107, 24);
             this.label2.TabIndex = 3;
             this.label2.Text = "Get settings";
             // 
             // textBox_setTcustom
             // 
             this.textBox_setTcustom.Enabled = false;
-            this.textBox_setTcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_setTcustom.Location = new System.Drawing.Point(6, 299);
+            this.textBox_setTcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_setTcustom.Location = new System.Drawing.Point(6, 324);
             this.textBox_setTcustom.Name = "textBox_setTcustom";
-            this.textBox_setTcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_setTcustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_setTcustom.TabIndex = 2;
             this.textBox_setTcustom.Text = "SETT";
             // 
             // textBox_setPcustom
             // 
             this.textBox_setPcustom.Enabled = false;
-            this.textBox_setPcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_setPcustom.Location = new System.Drawing.Point(6, 275);
+            this.textBox_setPcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_setPcustom.Location = new System.Drawing.Point(6, 300);
             this.textBox_setPcustom.Name = "textBox_setPcustom";
-            this.textBox_setPcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_setPcustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_setPcustom.TabIndex = 2;
             this.textBox_setPcustom.Text = "SETP";
             // 
             // textBox_setCcustom
             // 
             this.textBox_setCcustom.Enabled = false;
-            this.textBox_setCcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_setCcustom.Location = new System.Drawing.Point(6, 251);
+            this.textBox_setCcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_setCcustom.Location = new System.Drawing.Point(6, 276);
             this.textBox_setCcustom.Name = "textBox_setCcustom";
-            this.textBox_setCcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_setCcustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_setCcustom.TabIndex = 2;
             this.textBox_setCcustom.Text = "SETC";
             // 
             // textBox_setIcustom
             // 
             this.textBox_setIcustom.Enabled = false;
-            this.textBox_setIcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_setIcustom.Location = new System.Drawing.Point(6, 227);
+            this.textBox_setIcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_setIcustom.Location = new System.Drawing.Point(6, 252);
             this.textBox_setIcustom.Name = "textBox_setIcustom";
-            this.textBox_setIcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_setIcustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_setIcustom.TabIndex = 2;
             this.textBox_setIcustom.Text = "SETI";
             // 
             // textBox_endcustom
             // 
             this.textBox_endcustom.Enabled = false;
-            this.textBox_endcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_endcustom.Location = new System.Drawing.Point(6, 203);
+            this.textBox_endcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_endcustom.Location = new System.Drawing.Point(6, 228);
             this.textBox_endcustom.Name = "textBox_endcustom";
-            this.textBox_endcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_endcustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_endcustom.TabIndex = 2;
             this.textBox_endcustom.Text = "END";
             // 
             // textBox_delLogcustom
             // 
             this.textBox_delLogcustom.Enabled = false;
-            this.textBox_delLogcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_delLogcustom.Location = new System.Drawing.Point(6, 179);
+            this.textBox_delLogcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_delLogcustom.Location = new System.Drawing.Point(6, 204);
             this.textBox_delLogcustom.Name = "textBox_delLogcustom";
-            this.textBox_delLogcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_delLogcustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_delLogcustom.TabIndex = 2;
             this.textBox_delLogcustom.Text = "DELLOG";
             // 
             // textBox_getDncustom
             // 
             this.textBox_getDncustom.Enabled = false;
-            this.textBox_getDncustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_getDncustom.Location = new System.Drawing.Point(6, 155);
+            this.textBox_getDncustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_getDncustom.Location = new System.Drawing.Point(6, 180);
             this.textBox_getDncustom.Name = "textBox_getDncustom";
-            this.textBox_getDncustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_getDncustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_getDncustom.TabIndex = 2;
-            this.textBox_getDncustom.Text = "GETD#";
+            this.textBox_getDncustom.Text = "GET#D";
             // 
             // textBox_getLncustom
             // 
             this.textBox_getLncustom.Enabled = false;
-            this.textBox_getLncustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_getLncustom.Location = new System.Drawing.Point(6, 131);
+            this.textBox_getLncustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_getLncustom.Location = new System.Drawing.Point(6, 156);
             this.textBox_getLncustom.Name = "textBox_getLncustom";
-            this.textBox_getLncustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_getLncustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_getLncustom.TabIndex = 2;
-            this.textBox_getLncustom.Text = "GETL#";
+            this.textBox_getLncustom.Text = "GET#L";
+            this.textBox_getLncustom.TextChanged += new System.EventHandler(this.textBox_getLncustom_TextChanged);
             // 
             // textBox_getDcustom
             // 
             this.textBox_getDcustom.Enabled = false;
-            this.textBox_getDcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_getDcustom.Location = new System.Drawing.Point(6, 107);
+            this.textBox_getDcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_getDcustom.Location = new System.Drawing.Point(6, 132);
             this.textBox_getDcustom.Name = "textBox_getDcustom";
-            this.textBox_getDcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_getDcustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_getDcustom.TabIndex = 2;
             this.textBox_getDcustom.Text = "GETD";
             // 
             // textBox_getLcustom
             // 
             this.textBox_getLcustom.Enabled = false;
-            this.textBox_getLcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_getLcustom.Location = new System.Drawing.Point(6, 83);
+            this.textBox_getLcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_getLcustom.Location = new System.Drawing.Point(6, 108);
             this.textBox_getLcustom.Name = "textBox_getLcustom";
-            this.textBox_getLcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_getLcustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_getLcustom.TabIndex = 2;
             this.textBox_getLcustom.Text = "GETL";
             // 
             // textBox_setLcustom
             // 
             this.textBox_setLcustom.Enabled = false;
-            this.textBox_setLcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_setLcustom.Location = new System.Drawing.Point(6, 347);
+            this.textBox_setLcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_setLcustom.Location = new System.Drawing.Point(6, 372);
             this.textBox_setLcustom.Name = "textBox_setLcustom";
-            this.textBox_setLcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_setLcustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_setLcustom.TabIndex = 2;
             this.textBox_setLcustom.Text = "SETL";
             // 
             // textBox_setNcustom
             // 
             this.textBox_setNcustom.Enabled = false;
-            this.textBox_setNcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_setNcustom.Location = new System.Drawing.Point(6, 323);
+            this.textBox_setNcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_setNcustom.Location = new System.Drawing.Point(6, 348);
             this.textBox_setNcustom.Name = "textBox_setNcustom";
-            this.textBox_setNcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_setNcustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_setNcustom.TabIndex = 2;
             this.textBox_setNcustom.Text = "SETN";
             // 
             // textBox_getScustom
             // 
             this.textBox_getScustom.Enabled = false;
-            this.textBox_getScustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_getScustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.textBox_getScustom.Location = new System.Drawing.Point(6, 59);
             this.textBox_getScustom.Name = "textBox_getScustom";
-            this.textBox_getScustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_getScustom.Size = new System.Drawing.Size(100, 29);
             this.textBox_getScustom.TabIndex = 2;
             this.textBox_getScustom.Text = "GETS";
             // 
@@ -803,8 +822,8 @@ namespace BC_Logger_control
             // 
             // textBox_terminal
             // 
-            this.textBox_terminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.textBox_terminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_terminal.Location = new System.Drawing.Point(450, 34);
             this.textBox_terminal.Margin = new System.Windows.Forms.Padding(6);
@@ -929,17 +948,35 @@ namespace BC_Logger_control
             this.button_refresh.UseVisualStyleBackColor = true;
             this.button_refresh.Click += new System.EventHandler(this.button_refresh_Click);
             // 
-            // checkBox_setEnable
+            // textBox_getTcustom
             // 
-            this.checkBox_setEnable.AutoSize = true;
-            this.checkBox_setEnable.Enabled = false;
-            this.checkBox_setEnable.Location = new System.Drawing.Point(262, 286);
-            this.checkBox_setEnable.Name = "checkBox_setEnable";
-            this.checkBox_setEnable.Size = new System.Drawing.Size(157, 28);
-            this.checkBox_setEnable.TabIndex = 8;
-            this.checkBox_setEnable.Text = "Enable settings";
-            this.checkBox_setEnable.UseVisualStyleBackColor = true;
-            this.checkBox_setEnable.CheckedChanged += new System.EventHandler(this.checkBox_setEnable_CheckedChanged);
+            this.textBox_getTcustom.Enabled = false;
+            this.textBox_getTcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_getTcustom.Location = new System.Drawing.Point(6, 83);
+            this.textBox_getTcustom.Name = "textBox_getTcustom";
+            this.textBox_getTcustom.Size = new System.Drawing.Size(100, 29);
+            this.textBox_getTcustom.TabIndex = 2;
+            this.textBox_getTcustom.Text = "GETT";
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label15.Location = new System.Drawing.Point(112, 86);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(138, 24);
+            this.label15.TabIndex = 3;
+            this.label15.Text = "Get logger time";
+            // 
+            // button_getT
+            // 
+            this.button_getT.Location = new System.Drawing.Point(6, 224);
+            this.button_getT.Name = "button_getT";
+            this.button_getT.Size = new System.Drawing.Size(196, 40);
+            this.button_getT.TabIndex = 4;
+            this.button_getT.Text = "Get logger time";
+            this.button_getT.UseVisualStyleBackColor = true;
+            this.button_getT.Click += new System.EventHandler(this.button2_Click);
             // 
             // Form1
             // 
@@ -1171,6 +1208,9 @@ namespace BC_Logger_control
         private System.Windows.Forms.TextBox textBox_setLcustom;
         private System.Windows.Forms.TextBox textBox_setNcustom;
         private System.Windows.Forms.CheckBox checkBox_setEnable;
+        private System.Windows.Forms.Button button_getT;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.TextBox textBox_getTcustom;
 
     }
 }
