@@ -86,6 +86,8 @@ namespace BC_Logger_control
                 button_refresh.Enabled = false;
                 checkBox_setEnable.Enabled = true;
                 aTimer.Enabled = true;
+                serialPort1.DiscardInBuffer();
+                serialPort1.DiscardOutBuffer();
             }
         }
 
@@ -214,6 +216,8 @@ namespace BC_Logger_control
             button_customCommand.Enabled = false;
             button_refresh.Enabled = true;
             checkBox_setEnable.Enabled = false;
+            serialPort1.DiscardInBuffer();
+            serialPort1.DiscardOutBuffer();
         }
 
         private void serialPort1_ErrorReceived(object sender, System.IO.Ports.SerialErrorReceivedEventArgs e)

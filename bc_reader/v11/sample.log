@@ -1,0 +1,137 @@
+Barcode Logger v11(logger7-10)
+SD card-success.
+config.txt accessible
+datalog.txt accessible
+RTC running.
+Current config:
+-Scanner ID: 07
+-Control Point: 00
+-Barcode string length checking: N
+-Numbers only: N
+-Barcode pattern: ********
+-Barcode length: 8
+01:21:33, 2015/11/04
+07, 00, 88999982, 01:21:38, 2015/11/04
+07, 00, 00002202, 01:21:40, 2015/11/04
+07, 00, 00003308, 01:21:41, 2015/11/04
+07, 00, CONFIGB, 01:21:48, 2015/11/04
+BlueTooth operation mode started
+07, 00, CONFIGC01, 01:21:54, 2015/11/04
+-07, 00, CONFIGC01, 01:21:54, 2015/11/04, CRC"
+errors.txt write verification error!
+Control Point # set to: 01
+07, 01, CONFIGC01, 01:22:12, 2015/11/04
+-07, 01, CONFIGC01, 01:22:12, 2015/11/04, C"
+errors.txt write verification error!
+Control Point # set to: 01
+07, 01, 88999982, 01:22:19, 2015/11/04
+07, 01, 88999982, 01:22:22, 2015/11/04
+GETL
+Command received: GETL
+datalog.txt sending
+File size: 641
+====
+#0, 07, 00, 88999982, 01:12:55, 2015/11/04, CRC8=112
+#1, 07, 00, 00002202, 01:13:01, 2015/11/04, CRC8=63
+#2, 07, 00, 88999982, 01:13:06, 2015/11/04, CRC8=144
+#3, 07, 00, 88999982, 01:17:29, 2015/11/04, CRC8=209
+#4, 07, 00, 00002202, 01:17:32, 2015/11/04, CRC8=185
+#5, 07, 00, 88999982, 01:17:50, 2015/11/04, CRC8=247
+#6, 07, 00, 00002202, 01:17:52, 2015/11/04, CRC8=81
+#7, 07, 00, 00003308, 01:17:53, 2015/11/04, CRC8=10
+#8, 07, 00, 88999982, 01:21:38, 2015/11/04, CRC8=40
+#9, 07, 00, 00002202, 01:21:40, 2015/11/04, CRC8=88
+#10, 07, 00, 00003308, 01:21:41, 2015/11/04, CRC8=3
+#11, 07, 01, 88999982, 01:22:19, 2015/11/04, CRC8=193
+#12, 07, 01, 88999982, 01:22:22, 2015/11/04, CRC8=0
+====
+datalog.txt sent
+GETD
+Command received: GETD
+errors.txt sending
+File size: 246
+====
+#0, 00, 00, CONFIGB, 00:19:28, 2076/04/01, CRC8=121
+#1, 07, 00, CONFIGB, 01:17:48, 2015/11/04, CRC8=69
+#2, 07, 00, CONFIGB, 01:21:48, 2015/11/04, CRC8=55
+#3, 07, 00, CONFIGC01, 01:21:54, 2015/11/04, CRC8=18
+#4, 07, 01, CONFIGC01, 01:22:12, 2015/11/04, CRC8=231
+====
+errors.txt sent
+GET#L2
+Command received: GET#L2
+datalog.txt sending, string #2
+====
+Line#=2, 07, 00, 88999982, 01:13:06, 2015/11/04, CRC8=144
+====
+GET#D3
+Command received: GET#D3
+errors.txt sending, string #3
+====
+Line#=3, 07, 00, CONFIGC01, 01:21:54, 2015/11/04, CRC8=18
+====
+GETT
+Command received: GETT
+Current time is: 01:23:06, 2015/11/04
+SETI07
+Command received: SETI07
+Scanner ID set to: 07
+SETC00
+Command received: SETC00
+Control Point # set to: 00
+SETP********
+Command received: SETP********
+Barcode pattern set to: ********
+Barcode length: 8
+SETT
+Nov 04 2015 01:23:25
+Command received: SETT
+Input current date and time "Mon dd yyyy hh:mm:ss" (example: "Dec 06 2014 12:04:00")
+SETNN
+Command received: SETNN
+Numbers only set to: N
+SETNY
+Command received: SETNY
+Numbers only set to: Y
+SETNN
+Command received: SETNN
+Numbers only set to: N
+SETLY
+Command received: SETLY
+String length check set to: Y
+SETLN
+Command received: SETLN
+String length check set to: N
+DELLOG
+Command received: DELLOG
+datalog.txt deleted
+errors.txt deleted
+Barcode Logger v11(logger7-10)
+SD card-success.
+config.txt accessible
+datalog.txt accessible
+RTC running.
+Current config:
+-Scanner ID: 07
+-Control Point: 00
+-Barcode string length checking: N
+-Numbers only: N
+-Barcode pattern: ********
+-Barcode length: 8
+01:25:18, 2015/11/04
+07, 00, CONFIGC01, 01:25:22, 2015/11/04
+Control Point # set to: 01
+07, 01, CONFIGC01, 01:25:30, 2015/11/04
+Control Point # set to: 01
+07, 01, CONFIGC00, 01:25:33, 2015/11/04
+Control Point # set to: 00
+07, 00, 88999982, 01:25:35, 2015/11/04
+07, 00, 00002202, 01:25:38, 2015/11/04
+07, 00, 00003308, 01:25:40, 2015/11/04
+END
+Command received: END
+07, 00, CONFIGB, 01:26:02, 2015/11/04
+BlueTooth operation mode started
+END
+Command received: END
+BlueTooth operation mode ended.
