@@ -35,6 +35,7 @@ namespace BC_Logger_control
             this.components = new System.ComponentModel.Container();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPage_Get = new System.Windows.Forms.TabPage();
+            this.button_getT = new System.Windows.Forms.Button();
             this.checkBox_delLog = new System.Windows.Forms.CheckBox();
             this.textBox_getDn = new System.Windows.Forms.TextBox();
             this.textBox_getLn = new System.Windows.Forms.TextBox();
@@ -75,6 +76,7 @@ namespace BC_Logger_control
             this.label3 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.textBox_setTcustom = new System.Windows.Forms.TextBox();
             this.textBox_setPcustom = new System.Windows.Forms.TextBox();
@@ -88,6 +90,7 @@ namespace BC_Logger_control
             this.textBox_getLcustom = new System.Windows.Forms.TextBox();
             this.textBox_setLcustom = new System.Windows.Forms.TextBox();
             this.textBox_setNcustom = new System.Windows.Forms.TextBox();
+            this.textBox_getTcustom = new System.Windows.Forms.TextBox();
             this.textBox_getScustom = new System.Windows.Forms.TextBox();
             this.textBox_customCommand = new System.Windows.Forms.TextBox();
             this.button_customCommand = new System.Windows.Forms.Button();
@@ -105,9 +108,6 @@ namespace BC_Logger_control
             this.checkBox_autoScroll = new System.Windows.Forms.CheckBox();
             this.checkBox_portMon = new System.Windows.Forms.CheckBox();
             this.button_refresh = new System.Windows.Forms.Button();
-            this.textBox_getTcustom = new System.Windows.Forms.TextBox();
-            this.label15 = new System.Windows.Forms.Label();
-            this.button_getT = new System.Windows.Forms.Button();
             this.tabControl.SuspendLayout();
             this.tabPage_Get.SuspendLayout();
             this.tabPage_Set.SuspendLayout();
@@ -147,6 +147,17 @@ namespace BC_Logger_control
             this.tabPage_Get.TabIndex = 1;
             this.tabPage_Get.Text = "Get data";
             this.tabPage_Get.UseVisualStyleBackColor = true;
+            // 
+            // button_getT
+            // 
+            this.button_getT.Enabled = false;
+            this.button_getT.Location = new System.Drawing.Point(6, 224);
+            this.button_getT.Name = "button_getT";
+            this.button_getT.Size = new System.Drawing.Size(196, 40);
+            this.button_getT.TabIndex = 4;
+            this.button_getT.Text = "Get logger time";
+            this.button_getT.UseVisualStyleBackColor = true;
+            this.button_getT.Click += new System.EventHandler(this.button2_Click);
             // 
             // checkBox_delLog
             // 
@@ -637,6 +648,16 @@ namespace BC_Logger_control
             this.label13.TabIndex = 3;
             this.label13.Text = "Set length check";
             // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label15.Location = new System.Drawing.Point(112, 86);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(138, 24);
+            this.label15.TabIndex = 3;
+            this.label15.Text = "Get logger time";
+            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -768,6 +789,16 @@ namespace BC_Logger_control
             this.textBox_setNcustom.TabIndex = 2;
             this.textBox_setNcustom.Text = "SETN";
             // 
+            // textBox_getTcustom
+            // 
+            this.textBox_getTcustom.Enabled = false;
+            this.textBox_getTcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_getTcustom.Location = new System.Drawing.Point(6, 83);
+            this.textBox_getTcustom.Name = "textBox_getTcustom";
+            this.textBox_getTcustom.Size = new System.Drawing.Size(100, 29);
+            this.textBox_getTcustom.TabIndex = 2;
+            this.textBox_getTcustom.Text = "GETT";
+            // 
             // textBox_getScustom
             // 
             this.textBox_getScustom.Enabled = false;
@@ -822,8 +853,8 @@ namespace BC_Logger_control
             // 
             // textBox_terminal
             // 
-            this.textBox_terminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.textBox_terminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_terminal.Location = new System.Drawing.Point(450, 34);
             this.textBox_terminal.Margin = new System.Windows.Forms.Padding(6);
@@ -947,36 +978,6 @@ namespace BC_Logger_control
             this.button_refresh.Text = "Refresh";
             this.button_refresh.UseVisualStyleBackColor = true;
             this.button_refresh.Click += new System.EventHandler(this.button_refresh_Click);
-            // 
-            // textBox_getTcustom
-            // 
-            this.textBox_getTcustom.Enabled = false;
-            this.textBox_getTcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_getTcustom.Location = new System.Drawing.Point(6, 83);
-            this.textBox_getTcustom.Name = "textBox_getTcustom";
-            this.textBox_getTcustom.Size = new System.Drawing.Size(100, 29);
-            this.textBox_getTcustom.TabIndex = 2;
-            this.textBox_getTcustom.Text = "GETT";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label15.Location = new System.Drawing.Point(112, 86);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(138, 24);
-            this.label15.TabIndex = 3;
-            this.label15.Text = "Get logger time";
-            // 
-            // button_getT
-            // 
-            this.button_getT.Location = new System.Drawing.Point(6, 224);
-            this.button_getT.Name = "button_getT";
-            this.button_getT.Size = new System.Drawing.Size(196, 40);
-            this.button_getT.TabIndex = 4;
-            this.button_getT.Text = "Get logger time";
-            this.button_getT.UseVisualStyleBackColor = true;
-            this.button_getT.Click += new System.EventHandler(this.button2_Click);
             // 
             // Form1
             // 

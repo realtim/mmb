@@ -5,8 +5,6 @@ using System.ComponentModel;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
-using System.Collections;
-using System.Management;
 
 
 namespace BC_Logger_control
@@ -82,6 +80,7 @@ namespace BC_Logger_control
                 button_openPort.Enabled = false;
                 checkBox_delLog.Enabled = true;
                 checkBox_delLog.Checked = false;
+                checkBox_setEnable.Checked = false;
                 button_customCommand.Enabled = true;
                 button_refresh.Enabled = false;
                 checkBox_setEnable.Enabled = true;
@@ -187,6 +186,8 @@ namespace BC_Logger_control
 
         private void button_closePort_Click(object sender, EventArgs e)
         {
+            serialPort1.DiscardInBuffer();
+            serialPort1.DiscardOutBuffer();
             if (serialPort1.IsOpen == true)
             {
                 try
@@ -216,8 +217,6 @@ namespace BC_Logger_control
             button_customCommand.Enabled = false;
             button_refresh.Enabled = true;
             checkBox_setEnable.Enabled = false;
-            serialPort1.DiscardInBuffer();
-            serialPort1.DiscardOutBuffer();
         }
 
         private void serialPort1_ErrorReceived(object sender, System.IO.Ports.SerialErrorReceivedEventArgs e)
