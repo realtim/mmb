@@ -1133,6 +1133,8 @@ if (!isset($MyPHPScript)) return;
            $sql = "select count(*) as resultcount 
 	           from  UserLinks 
 	           where trim(userlink_url) = '".trim($pLinkUrl)."'
+	           	 and linktype_id = $pLinkTypeId
+	           	 and raid_id = $pLinkRaidId
 		         and userlink_hide = 0
 		   ";
       //     echo $sql;
@@ -1150,9 +1152,9 @@ if (!isset($MyPHPScript)) return;
 		     and user_id = $pUserId";
            //echo $sql;
 
-	   if (CSql::singleValue($sql, 'resultcount') >= 3)
+	   if (CSql::singleValue($sql, 'resultcount') >= 4)
 	   {
-   		CMmb::setErrorSm('Уже есть 3 впечатления на этот ММБ.');
+   		CMmb::setErrorSm('Уже есть 4 впечатления на этот ММБ.');
                 return; 
 	   }
 
