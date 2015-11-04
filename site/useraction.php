@@ -1135,6 +1135,7 @@ if (!isset($MyPHPScript)) return;
 	           where trim(userlink_url) = '".trim($pLinkUrl)."'
 	           	 and linktype_id = $pLinkTypeId
 	           	 and raid_id = $pLinkRaidId
+		     	 and user_id = $pUserId
 		         and userlink_hide = 0
 		   ";
       //     echo $sql;
