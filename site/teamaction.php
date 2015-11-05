@@ -1106,7 +1106,7 @@ elseif ($action == "UnionTeams")  {
     
 
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
-			team_registerdt, team_greenpeace, team_hide)
+			team_registerdt, team_greenpeace, team_hide, team_outofrange)
 			values (
 
 			(select COALESCE(MAX(t.team_num), 0) + 1
@@ -1115,7 +1115,7 @@ elseif ($action == "UnionTeams")  {
 				where d.raid_id = $RaidId)
 		
 			-- Все остальное
-			, '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(), $pTeamGreenPeace, 1)";
+			, '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(), $pTeamGreenPeace, 1, 0)";
 
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);
