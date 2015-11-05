@@ -35,8 +35,8 @@ if ($viewmode == 'Add')
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
 	        $RaidMapPrice = (int)$_POST['RaidMapPrice'];
-	        $RaidNoStartPrice = (int)$_POST['NoStartPrice'];
-	        $RaidTeamsLimit = (int)$_POST['TeamsLimit'];
+	        $RaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
+	        $RaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
 	}
 	else
 	// Пробуем создать команду первый раз
@@ -117,8 +117,8 @@ else
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
                 $RaidMapPrice = (int)$_POST['RaidMapPrice'];
-                $RaidNoStartPrice = (int)$_POST['NoStartPrice'];
-                $RaidTeamsLimit = (int)$_POST['TeamsLimit'];
+                $RaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
+                $RaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
 
 	}
 	else
