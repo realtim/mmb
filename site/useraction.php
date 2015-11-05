@@ -15,6 +15,7 @@ if (!isset($MyPHPScript)) return;
    // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении, 
         //но и при правке, если не былди заполнены поля при добавлении
 	 $UserCityPlaceHolder = 'Город';
+	 $UserPhonePlaceHolder = 'Телефон';
 
    if ($action == "")
    {
@@ -80,6 +81,7 @@ if (!isset($MyPHPScript)) return;
            $pUserEmail = $_POST['UserEmail'];
            $pUserName = $_POST['UserName'];
            $pUserCity = $_POST['UserCity'];
+           $pUserPhone = $_POST['UserPhone'];
            $pUserBirthYear = $_POST['UserBirthYear'];
            $pUserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
            $pUserId = $_POST['UserId']; 
@@ -88,6 +90,7 @@ if (!isset($MyPHPScript)) return;
            $pUserConfirmNewPassword = mmb_validate($_POST, 'UserConfirmNewPassword', '');
          
 	   if ($pUserCity == $UserCityPlaceHolder) { $pUserCity = ''; }  
+	   if ($pUserPhone == $UserPhonePlaceHolder) { $pUserPhone = ''; }  
 
            // 03/07/2014  Скрываем ФИО	 
            $pUserNoShow = mmb_isOn($_POST, 'UserNoShow');
@@ -213,10 +216,10 @@ if (!isset($MyPHPScript)) return;
 
 		 $sql = "insert into  Users (user_email, user_name, user_birthyear, user_password, user_registerdt,
 		                             user_sessionfornewpassword, user_sendnewpasswordrequestdt, 
-					     user_prohibitadd, user_city, user_noshow)
+					     user_prohibitadd, user_city, user_phone, user_noshow)
 		                     values ('$pUserEmail', '$pUserName', $pUserBirthYear, '', now(),
 				             '$ChangePasswordSessionId', now(),
-					      $pUserProhibitAdd, '$pUserCity', $pUserNoShow)";
+					      $pUserProhibitAdd, '$pUserCity', '$pUserPhone', $pUserNoShow)";
 //                 echo $sql;  
                  // При insert должен вернуться послений id - это реализовано в  MySqlQuery
 		 $newUserId = MySqlQuery($sql);
@@ -266,6 +269,7 @@ if (!isset($MyPHPScript)) return;
 		$sql = "update  Users set   user_email = trim('$pUserEmail'),
 		                     user_name = trim('$pUserName'),
 		                     user_city = trim('$pUserCity'),
+		                     user_phone = trim('$pUserPhone'),
 		                     user_prohibitadd = $pUserProhibitAdd,
 		                     user_noshow = $pUserNoShow,
 				     user_birthyear = $pUserBirthYear
