@@ -62,6 +62,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
         $pRaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
         $pRaidMapPrice = (int)$_POST['RaidMapPrice'];
 	$pRaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
+	$pRaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
 
 /*
         // Обрабатываем зхагрузку файла эмблемы
@@ -194,12 +195,15 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
                 $sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
 		                           raid_startpoint, raid_finishpoint, raid_closedate,
 					   raid_noshowresult, raid_fileprefix,
-					   raid_readonlyhoursbeforestart, raid_mapprice, raid_nostartprice
+					   raid_readonlyhoursbeforestart, raid_mapprice, 
+					   raid_nostartprice, raid_teamslimit
 					   )
 			values (trim('$pRaidName'), trim('$pRaidPeriod'), $regEndDate
 				, trim('$pRaidStartPointName'), trim('$pRaidFinishPointName')
 				, $closeDate
-				, $pRaidNoShowResult, trim('$pRaidFilePrefix'), $pRaidReadOnlyHoursBeforeStart, $pRaidMapPrice, $pRaidNoStartPrice)";
+				, $pRaidNoShowResult, trim('$pRaidFilePrefix')
+				, $pRaidReadOnlyHoursBeforeStart, $pRaidMapPrice
+				, $pRaidNoStartPrice, $pRaidTeamsLimit)";
 
 
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
@@ -285,20 +289,15 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		$sql = "update Raids set raid_name = trim('$pRaidName'),
 				raid_period = trim('$pRaidPeriod'),
 				raid_registrationenddate = $regEndDate
-
-		 -- , raid_logolink = trim('$pRaidLogoLink')
-		 -- , raid_ruleslink = trim('$pRaidRulesLink')
-			, raid_startpoint =  trim('$pRaidStartPointName')
-		-- , raid_startlink = trim('$pRaidStartLink')
-			, raid_finishpoint = trim('$pRaidFinishPointName')
-			, raid_closedate = $closeDate
-
-		-- , raid_znlink = trim('$pRaidZnLink')
-			, raid_noshowresult = $pRaidNoShowResult
-			, raid_readonlyhoursbeforestart = $pRaidReadOnlyHoursBeforeStart
-			, raid_mapprice = $pRaidMapPrice
-			, raid_nostartprice = $pRaidNoStartPrice
-			, raid_fileprefix = trim('$pRaidFilePrefix')
+				, raid_startpoint =  trim('$pRaidStartPointName')
+				, raid_finishpoint = trim('$pRaidFinishPointName')
+				, raid_closedate = $closeDate
+				, raid_noshowresult = $pRaidNoShowResult
+				, raid_readonlyhoursbeforestart = $pRaidReadOnlyHoursBeforeStart
+				, raid_mapprice = $pRaidMapPrice
+				, raid_nostartprice = $pRaidNoStartPrice
+				, raid_teamslimit = $pRaidTeamsLimit
+				, raid_fileprefix = trim('$pRaidFilePrefix')
 		        where raid_id = $RaidId";
 	    
 	        //       echo $sql;
