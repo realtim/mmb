@@ -520,7 +520,7 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	{
 
 	        // Получаем информацию о лимите и о зарегистированных командах
-		$sql = "select count(t.*) as teamscount, COALESCE(r.raid_teamslimit, 0) as teamslimit
+		$sql = "select count(*) as teamscount, COALESCE(r.raid_teamslimit, 0) as teamslimit
 			from Raids r 
 				inner join Distances d
 				on r.raid_id = d.raid_id
@@ -567,7 +567,7 @@ function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOut
         if ($TeamOutOfRange == 1) return(1);
 
         // Получаем информацию о лимите и о зарегистированных командах
-	$sql = "select count(t.*) as teamscount, COALESCE(r.raid_teamslimit, 0) as teamslimit
+	$sql = "select count(*) as teamscount, COALESCE(r.raid_teamslimit, 0) as teamslimit
 		from Raids r 
 			inner join Distances d
 			on r.raid_id = d.raid_id
