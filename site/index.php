@@ -150,12 +150,10 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
         // 08.12.2013 Ищем ссылку на логотип  
 	$LogoFile = trim($Row['logo_file']);
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
-                $link = $MyStoreHttpLink.$LogoFile;
-
-        //  Конец получения ссылки на информацию о старте
-
-        //print('LogoImgArr['.$Row['raid_id'].'] = new Image();'."\r\n");
+        {
+         $link = $MyStoreHttpLink.$LogoFile;
 	 $mmbLogos[] = "                {$Row['raid_id']}: '$link'";
+        }
  }
  mysql_free_result($Result);
  ?>
