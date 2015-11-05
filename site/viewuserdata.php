@@ -7,6 +7,7 @@ if (!isset($MyPHPScript)) return;
        // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении, 
         //но и при правке, если не былди заполнены поля при добавлении
 	 $UserCityPlaceHolder = 'Город';
+       	 $UserPhonePlaceHolder = 'Телефон';
        
 
 
@@ -27,6 +28,7 @@ if (!isset($MyPHPScript)) return;
 	      $UserBirthYear = (int)$_POST['UserBirthYear'];
 	      $UserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
 	      $UserCity = CMmbUI::toHtml($_POST['UserCity']);           // а что нам вообще пришло?
+	      $UserPhone = CMmbUI::toHtml($_POST['UserPhone']);           // а что нам вообще пришло?
               // 03/07/2014  Добавляем анонмиов
 	      $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');
 
@@ -37,6 +39,7 @@ if (!isset($MyPHPScript)) return;
 	      $UserBirthYear = 'Год рождения';
 	      $UserProhibitAdd = 0;
 	      $UserCity =  $UserCityPlaceHolder;
+	      $UserPhone =  $UserPhonePlaceHolder;
 	      $UserNoShow = 0;
 
              }
@@ -68,7 +71,7 @@ if (!isset($MyPHPScript)) return;
 		}
            
 		$sql = "select user_email, CASE WHEN COALESCE(u.user_noshow, 0) = 1 and user_id <> $UserId THEN '$Anonimus' ELSE u.user_name END as user_name,
-		         user_birthyear, user_prohibitadd, user_city, user_noshow from  Users u where user_id = $pUserId";
+		         user_birthyear, user_prohibitadd, user_city, user_phone, user_noshow from  Users u where user_id = $pUserId";
                 $row = CSql::singleRow($sql);
 
 	        // Если вернулись после ошибки переменные не нужно инициализировать
@@ -82,6 +85,7 @@ if (!isset($MyPHPScript)) return;
 		  $UserBirthYear = (int)$_POST['UserBirthYear'];
 		  $UserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
 		  $UserCity = $_POST['UserCity'];
+		  $UserPhone = $_POST['UserPhone'];
 		  $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');
 
                 } else {
@@ -91,12 +95,14 @@ if (!isset($MyPHPScript)) return;
 		  $UserBirthYear = (int)$row['user_birthyear'];  
 		  $UserProhibitAdd = $row['user_prohibitadd'];  
 		  $UserCity = $row['user_city'];
+		  $UserPhone = $row['user_phone'];
 		  $UserNoShow = $row['user_noshow'];  
 
                 }
 
 	         $UserName = CMmbUI::toHtml($UserName);
 	         $UserCity = CMmbUI::toHtml($UserCity);
+	         $UserPhone = CMmbUI::toHtml($UserPhone);
 
 	        $NextActionName = 'UserChangeData';
 		$AllowEdit = 0;
@@ -115,6 +121,7 @@ if (!isset($MyPHPScript)) return;
 
          // Заменяем пустое значение на подсказку
 	 if (empty($UserCity)) {$UserCity =  $UserCityPlaceHolder; } 
+	 if (empty($UserPhone)) {$UserPhone =  $UserPhonePlaceHolder; } 
 
 	 
          if ($AllowEdit == 0) 
@@ -302,6 +309,10 @@ if (!isset($MyPHPScript)) return;
 	        .($UserCity <> $UserCityPlaceHolder ? '' : CMmbUI::placeholder($UserCityPlaceHolder))
 	        .' title = "Город"></td></tr>'."\r\n");
 
+
+         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserPhone" size="20" value="'.$UserPhone.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+	        .($UserPhone <> $UserPhonePlaceHolder ? '' : CMmbUI::placeholder($UserPhonePlaceHolder))
+	        .' title = "Телефон"></td></tr>'."\r\n");
 
 //                 '.( $UserCity <> $UserCityPlaceHolder ? '' : 'onclick = "javascript: this.value=\'\';" onblur = "javascript: this.value=\''.$UserCityPlaceHolder.'\';"').'
 
