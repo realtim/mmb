@@ -100,26 +100,26 @@ else
 	if ($viewsubmode == "ReturnAfterError")
 	{
 		ReverseClearArrays();
-		$RaidName = $_POST['pRaidName'];
-		$RaidPeriod = $_POST['pRaidPeriod'];
-                $RaidRegistrationEndDate = $_POST['pRaidRegistrationEndDate'];
-		$ClearRaidRegistrationEndDate = $_POST['pClearRaidRegistrationEndDate'];
+		$RaidName = $_POST['RaidName'];
+		$RaidPeriod = $_POST['RaidPeriod'];
+                $RaidRegistrationEndDate = $_POST['RaidRegistrationEndDate'];
+		$ClearRaidRegistrationEndDate = $_POST['ClearRaidRegistrationEndDate'];
 	//	$RaidLogoLink = $_POST['RaidLogoLink'];
 	//	$RaidRulesLink = $_POST['RaidRulesLink'];
-		$RaidStartPointName = $_POST['pRaidStartPointName'];
+		$RaidStartPointName = $_POST['RaidStartPointName'];
 	//	$RaidStartLink = $_POST['RaidStartLink'];
-		$RaidFinishPointName = $_POST['pRaidFinishPointName'];
-		$RaidCloseDate = $_POST['pRaidCloseDate'];
-		$ClearRaidCloseDate = $_POST['pClearRaidCloseDate'];     // а ничего, что он всюду сравнивается с on? !!!
+		$RaidFinishPointName = $_POST['RaidFinishPointName'];
+		$RaidCloseDate = $_POST['RaidCloseDate'];
+		$ClearRaidCloseDate = $_POST['ClearRaidCloseDate'];     // а ничего, что он всюду сравнивается с on? !!!
 	//	$RaidZnLink = $_POST['RaidZnLink'];
                 //В отличие от остальных полей это - вычисляемое и после ошибки не возвращается
-		$RaidDistancesCount = (int)$_POST['pRaidDistancesCount'];
-		$RaidNoShowResult = $_POST['pRaidNoShowResult'];         // а ничего, что он всюду сравнивается с on? !!!
-                $RaidReadOnlyHoursBeforeStart = (int)$_POST['pRaidReadOnlyHoursBeforeStart'];
-		$RaidFilePrefix = $_POST['pRaidFilePrefix'];
-                $RaidMapPrice = (int)$_POST['pRaidMapPrice'];
-                $RaidNoStartPrice = (int)$_POST['pRaidNoStartPrice'];
-                $RaidTeamsLimit = (int)$_POST['pRaidTeamsLimit'];
+		$RaidDistancesCount = (int)$_POST['RaidDistancesCount'];
+		$RaidNoShowResult = $_POST['RaidNoShowResult'];         // а ничего, что он всюду сравнивается с on? !!!
+                $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
+		$RaidFilePrefix = $_POST['RaidFilePrefix'];
+                $RaidMapPrice = (int)$_POST['RaidMapPrice'];
+                $RaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
+                $RaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
 
 	}
 	else
