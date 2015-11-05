@@ -36,8 +36,8 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	$nextRaidId = $rowRaids['raid_id'];
 	$RaidName = trim($rowRaids['raid_name']);
 	$RaidPeriod = trim($rowRaids['raid_period']);
-	$RaidRulesLink = $rowRaids['raid_ruleslink'];
-	$RaidStartLink = $rowRaids['raid_startlink'];
+	$RaidRulesLink = '';
+	$RaidStartLink = '';
 	$RaidStartPoint = $rowRaids['raid_startpoint'];
 	$RaidFinishPoint = $rowRaids['raid_finishpoint'];
  
