@@ -308,7 +308,7 @@ print('<tr><td class="input">Стоимость неявки (руб.) <input ty
 
 
 // ============ Лимит команд
-print('<tr><td class="input">Лимит команд <input type="text" name="TeamsLimit" size="8" maxlength="4" value="'.$RaidTeamsLimit.'" tabindex="'.(++$TabIndex)
+print('<tr><td class="input">Лимит команд <input type="text" name="RaidTeamsLimit" size="8" maxlength="4" value="'.$RaidTeamsLimit.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidTeamsLimit))
 	.' title="Лимит команд"></td></tr>'."\r\n");
 
