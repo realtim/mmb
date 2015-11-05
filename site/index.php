@@ -135,7 +135,7 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 
 <?
  $mmbLogos = array();
- $Sql = "select raid_logolink, r.raid_id, COALESCE(f.raidfile_name, '') as logo_file
+ $Sql = "select r.raid_id, COALESCE(f.raidfile_name, '') as logo_file
 		from Raids r
 		left outer join (
 			select raidfile_name, raid_id
@@ -147,7 +147,6 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
  $Result = MySqlQuery($Sql);
  while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
  { 
-	$link = $Row['raid_logolink'];
         // 08.12.2013 Ищем ссылку на логотип  
 	$LogoFile = trim($Row['logo_file']);
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
