@@ -22,6 +22,7 @@ if ($viewmode == 'Add')
 		$RaidName = $_POST['RaidName'];
 		$RaidPeriod = $_POST['RaidPeriod'];
                 $RaidRegistrationEndDate = $_POST['RaidRegistrationEndDate'];
+		$ClearRegistrationEndDateDate = mmb_isOn($_POST, 'ClearRaidRegistrationEndDateDate');
            //     $RaidLogoLink = $_POST['RaidLogoLink'];
            //     $RaidRulesLink = $_POST['RaidRulesLink'];
 		$RaidStartPointName = $_POST['RaidStartPointName'];
