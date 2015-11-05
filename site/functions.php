@@ -1010,11 +1010,6 @@ send_mime_mail('Автор письма',
     
 	if (empty($raidid))
 	{
-	$sql = "select raid_logolink
-	        from Raids 
-		order by raid_registrationenddate desc
-		LIMIT 0,1 ";
-
 
         // 08.12.2013 Ищем ссылку на логотип  
         $sqlFile = "select rf.raidfile_name
@@ -1029,11 +1024,7 @@ send_mime_mail('Автор письма',
 	} else {
 
 
-	$sql = "select raid_logolink
-	        from Raids 
-		where  raid_id = $raidid
-		LIMIT 0,1 ";
-	
+
 	    // 08.12.2013 Ищем ссылку на логотип  
         $sqlFile = "select rf.raidfile_name
 	     from RaidFiles rf
@@ -1048,7 +1039,7 @@ send_mime_mail('Автор письма',
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
 	        return $MyStoreHttpLink.$LogoFile;
 
-        return CSql::singleValue($sql, 'raid_logolink');
+        return '';
     }
       // Конец получения логотипа
 
