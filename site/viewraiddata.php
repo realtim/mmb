@@ -36,6 +36,7 @@ if ($viewmode == 'Add')
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
 	        $RaidMapPrice = (int)$_POST['RaidMapPrice'];
 	        $RaidNoStartPrice = (int)$_POST['NoStartPrice'];
+	        $RaidTeamsLimit = (int)$_POST['TeamsLimit'];
 	}
 	else
 	// Пробуем создать команду первый раз
@@ -59,6 +60,7 @@ if ($viewmode == 'Add')
                 $RaidFilePrefix = '';
 		$RaidMapPrice = 0;
 		$RaidNoStartPrice = 0;
+		$RaidTeamsLimit = 0;
 	}
 
 	// Определяем следующее действие
@@ -80,14 +82,15 @@ else
 
 	$sql = "select r.raid_name, r.raid_period, r.raid_registrationenddate,
 	               (CASE WHEN r.raid_registrationenddate is null THEN 1 ELSE 0 END) as raid_clearregistrationenddate,
-		       r.raid_logolink, r.raid_ruleslink,  r.raid_startpoint, 
-		       r.raid_startlink, r.raid_finishpoint, r.raid_closedate,
-		       r.raid_znlink, COALESCE(r.raid_noshowresult, 0) as raid_noshowresult,
+		       r.raid_startpoint, 
+		       r.raid_finishpoint, r.raid_closedate,
+		       COALESCE(r.raid_noshowresult, 0) as raid_noshowresult,
 		       COALESCE(r.raid_readonlyhoursbeforestart, 8) as raid_readonlyhoursbeforestart,  
 		       COALESCE(r.raid_mapprice, 8) as raid_mapprice,  COALESCE(r.raid_nostartprice, 8) as raid_nostartprice,  
 		       r.raid_fileprefix,
       	               (CASE WHEN r.raid_closedate is null THEN 1 ELSE 0 END) as raid_clearclosedate,
-		       (select count(*) from Distances where distance_hide = 0 and raid_id = $RaidId) as raid_distancescount
+		       (select count(*) from Distances where distance_hide = 0 and raid_id = $RaidId) as raid_distancescount,
+		       r.raid_teamslimit
 		from Raids r
 		where r.raid_id = $RaidId";
 	$Row = CSql::singleRow($sql);
@@ -115,6 +118,7 @@ else
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
                 $RaidMapPrice = (int)$_POST['RaidMapPrice'];
                 $RaidNoStartPrice = (int)$_POST['NoStartPrice'];
+                $RaidTeamsLimit = (int)$_POST['TeamsLimit'];
 
 	}
 	else
@@ -138,6 +142,7 @@ else
 		$RaidFilePrefix = $Row['raid_fileprefix'];
                 $RaidMapPrice = (int)$Row['raid_mapprice'];
                 $RaidNoStartPrice = (int)$Row['raid_nostartprice'];
+                $RaidTeamsLimit = (int)$Row['raid_teamslimit'];
 
 	}
 
@@ -300,6 +305,12 @@ print('<tr><td class="input">Стоимость неявки (руб.) <input ty
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidNoStartPrice))
 	.' title="Стоимость неявки (руб.)"></td></tr>'."\r\n");
 
+
+
+// ============ Лимит команд
+print('<tr><td class="input">Лимит команд <input type="text" name="TeamsLimit" size="8" maxlength="4" value="'.$RaidTeamsLimit.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidTeamsLimit))
+	.' title="Лимит команд"></td></tr>'."\r\n");
 
 
 /*
