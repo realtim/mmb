@@ -370,12 +370,16 @@
 /*
 ============================= точки ===============================
 */
+// 06/11/2015 Закоментировал условие фильтрации по результатам, чтобы ускорить запрос
+// вместо этого просто фильтруем по типам  - не показываем только КП
+// если потом появятся новые типы точек - нужно проверить условие where
 
         $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name,
         		tlp1.teamscount, tlp2.teamuserscount
                 from  LevelPoints lp
  	  		inner join Distances d
 			on lp.distance_id = d.distance_id
+/*
                         inner join
 				      (
 				       select tlp.levelpoint_id
@@ -387,7 +391,7 @@
 					group by tlp.levelpoint_id
 					) a
 					  on lp.levelpoint_id = a.levelpoint_id
-			left outer join
+*/			left outer join
 			     (select tlp.levelpoint_id, count(t.team_id) as teamscount
 			     from TeamLevelPoints tlp
 			          inner join Teams t on t.team_id = tlp.team_id
@@ -406,6 +410,7 @@
 				group by tlp.levelpoint_id
 			     	) tlp2
 		     	on lp.levelpoint_id = tlp2.levelpoint_id					  
+		where lp.pointtype_id <> 5
 		order by lp.levelpoint_order ";
 
 	//echo 'sql '.$sql;
