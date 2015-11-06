@@ -67,7 +67,7 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 		  {
 		  	print("<div class=\"impress\"><a href=\"{$Row['userlink_url']}\" title=\"" . CMmbUI::toHtml($Row['userlink_name']) . "\">$Label</a> ". CMmbUI::toHtml($Row['user_name']). "$TeamDist \r\n");
 		  } else {
-		  	print("<div class=\"impress\">{$Row['userlink_url']}". CMmbUI::toHtml($Row['user_name']). "$TeamDist \r\n");
+		  	print("<div class=\"impress\">{$Row['userlink_url']} ". CMmbUI::toHtml($Row['user_name']). "$TeamDist \r\n");
 		  }
                   print("</div>\r\n");
 			  
