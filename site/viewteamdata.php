@@ -317,7 +317,7 @@ if ($viewmode <> "Add" and CanEditOutOfRange($Administrator, $Moderator, $TeamUs
 			";
 		$Row = CSql::singleRow($sql);
         	// Если указан лимит и он уже достигнут или превышен и команда "в зачете". то нельзя создавать
-		print("<tr><td class="input">В зачете команд  $Row['teamslimit'] лимит $Row['teamslimit']</td></tr>\n\n");
+		print('<tr><td class="input">В зачете команд  '$Row['teamslimit']'' лимит '$Row['teamslimit']'</td></tr>\n\n");
 
 }
 
