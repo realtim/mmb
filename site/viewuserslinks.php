@@ -54,7 +54,7 @@ if (!isset($viewsubmode)) $viewsubmode = "";
                   if ($PredLinkType <> $Row['linktype_name']) {
 		  
 		        $PredLinkType = $Row['linktype_name'];
-		        $LinkTextOnly = $Row['link_textonly'];
+		        $LinkTextOnly = $Row['linktype_textonly'];
 			print("<div align = \"left\" style = \"margin-left: 15px; margin-top: 25px;\"><b>{$Row['linktype_name']}</b></div>\r\n");
 		        
 		  }
