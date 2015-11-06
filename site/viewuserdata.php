@@ -535,7 +535,7 @@ if (!isset($MyPHPScript)) return;
 		
                  
 		$sql = "select ul.userlink_id, ul.userlink_name, lt.linktype_name,
-		               ul.userlink_url, r.raid_name 
+		               ul.userlink_url, r.raid_name, lt.linktype_textonly 
 		        from  UserLinks ul
 			      inner join LinkTypes lt  on ul.linktype_id = lt.linktype_id
 			      inner join Raids r on ul.raid_id = r.raid_id 
@@ -578,12 +578,13 @@ if (!isset($MyPHPScript)) return;
 
 		// Показываем выпадающий список типов ссылок
 		print('<select name="LinkTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
-		$sql = "select linktype_id, linktype_name from LinkTypes where linktype_hide = 0  order by linktype_id ";
+		$sql = "select linktype_id, linktype_name, linktype_textonly from LinkTypes where linktype_hide = 0  order by linktype_order asc ";
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 			$linktypeselected = '';
-			print('<option value="'.$Row['linktype_id'].'" '.$linktypeselected.' >'.$Row['linktype_name']."</option>\n");
+			$LinkNameDisabled =  (empty($Row['linktype_textonly']) ? 'off', 'on');
+			print('<option value="'.$Row['linktype_id'].'" '.$linktypeselected.'  onclick = "javascript:document..UserLinksForm.NewLinkName.disabled='.$LinkNameDisabled.';">'.$Row['linktype_name']."</option>\n");
 		}
 		mysql_free_result($Result);
 		print('</select>'."\n");
