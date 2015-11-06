@@ -548,7 +548,7 @@ if (!isset($MyPHPScript)) return;
 		{
 
                   $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : CMmbUI::toHtml($Row['userlink_name']);
-		  print('<div class="team_res">'.$Row['raid_name'].' '.$Row['linktype_name'].' <a href = "'.$Row['userlink_url'].'"
+		  print('<div class="team_res">'.$Row['raid_name'].' '.$Row['linktype_name'].' <a href = "'.CMmbUI::toHtml($Row['userlink_url']).'"
 		          title = "'.CMmbUI::toHtml($Row['userlink_name']).'">'.$Label.'</a>'."\r\n");
                   print('<input type="button" style = "margin-left: 20px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите удалить впечатление ? \')) {DelLink('.$Row['userlink_id'].');}"  name="DelLinkButton" value="Удалить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                   print('</div>'."\r\n");
