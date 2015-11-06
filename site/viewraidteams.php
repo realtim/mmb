@@ -371,24 +371,42 @@
 ============================= точки ===============================
 */
 
-        $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name
+        $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name,
+        		tlp1.teamscount, tlp2.teamuserscount
                 from  LevelPoints lp
-                      inner join
+ 	  		inner join Distances d
+			on lp.distance_id = d.distance_id
+                        inner join
 				      (
 				       select tlp.levelpoint_id
 				       from TeamLevelPoints tlp
-				            inner join Teams t
-				            on tlp.team_id = t.team_id
-				      		inner join Distances d
-				      		on t.distance_id = d.distance_id
-					   where raid_id = $RaidId and $DistanceCondition
-					         and  TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_duration, 0)) <> 0
-					   group by tlp.levelpoint_id
-					  ) a
+				            inner join Teams t on tlp.team_id = t.team_id
+				            inner join Distances d on t.distance_id = d.distance_id
+					where d.raid_id = $RaidId and $DistanceCondition
+					      and  TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_duration, 0)) <> 0
+					group by tlp.levelpoint_id
+					) a
 					  on lp.levelpoint_id = a.levelpoint_id
- 		      	 	  inner join Distances d
-				      on lp.distance_id = d.distance_id
-				order by lp.levelpoint_order ";
+			left outer join
+			     (select tlp.levelpoint_id, count(t.team_id) as teamscount
+			     from TeamLevelPoints tlp
+			          inner join Teams t on t.team_id = tlp.team_id
+				  inner join Distances d on t.distance_id = d.distance_id
+			     where d.raid_id = $RaidId and $DistanceCondition
+			     group by tlp.levelpoint_id
+			     ) tlp1
+		     	on lp.levelpoint_id = tlp1.levelpoint_id
+		     	left outer join
+		     		(select tlp.levelpoint_id, count(tu.teamuser_id) as teamuserscount
+		     		from TeamLevelPoints tlp
+			     		inner join Teams t on t.team_id = tlp.team_id
+				        inner join TeamUsers tu on t.team_id = tu.team_id
+					inner join Distances d on t.distance_id = d.distance_id
+			        where d.raid_id = $RaidId and $DistanceCondition
+				group by tlp.levelpoint_id
+			     	) tlp2
+		     	on lp.levelpoint_id = tlp2.levelpoint_id					  
+		order by lp.levelpoint_order ";
 
 	//echo 'sql '.$sql;
 	$Result = MySqlQuery($sql);
