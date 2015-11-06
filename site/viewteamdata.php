@@ -299,6 +299,28 @@ else
 	print('<tr><td class="input">Время окончания регистрации: '.$RaidRegistrationEndDate."</td></tr>\n\n");
 }
 
+// ============ Информация для тех, кто может править "ВНе зачета!" о лимитах
+
+if ($viewmode <> "Add" and CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)) 
+{
+
+      // Получаем информацию о лимите и о зарегистированных командах
+		$sql = "select count(*) as teamscount, COALESCE(r.raid_teamslimit, 0) as teamslimit
+			from Raids r 
+				inner join Distances d
+				on r.raid_id = d.raid_id
+				inner join Teams t
+				on d.distance_id = t.distance_id
+			where r.raid_id=$RaidId
+				and t.team_hide = 0
+				and t.team_outofrange = 0
+			";
+		$Row = CSql::singleRow($sql);
+        	// Если указан лимит и он уже достигнут или превышен и команда "в зачете". то нельзя создавать
+		print("<tr><td class="input">В зачете команд  $Row['teamslimit'] лимит $Row['teamslimit']</td></tr>\n\n");
+
+}
+
 // ============ Название команды
 print('<tr><td class="input"><input type="text" name="TeamName" size="50" value="'.$TeamName.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($TeamName))
