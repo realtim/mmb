@@ -7,12 +7,19 @@ if (!isset($MyPHPScript)) return;
 if (!isset($viewmode)) $viewmode = "";
 if (!isset($viewsubmode)) $viewsubmode = "";
 
+?>
 
+<div>
+Внимание! Ссылки ведут на сторонние ресурсы и не проверяются. Если вы сомневаетесь в надежности источника, то не переходите по ссылке.	
+</div>
+
+<?
 
                 $sql = "select ul.userlink_id, ul.userlink_name, lt.linktype_name,
 		               ul.userlink_url, r.raid_name, r.raid_id,
 			       u.user_name,   a.team_name, a.team_num,
-			       a.distance_name, a.distance_id
+			       a.distance_name, a.distance_id,
+			       lt.linktype_textonly, lt.linktype_order
 		        from  UserLinks ul
 			      inner join LinkTypes lt  on ul.linktype_id = lt.linktype_id
 			      inner join Raids r on ul.raid_id = r.raid_id 
@@ -27,11 +34,13 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 			       on ul.user_id = a.user_id and ul.raid_id = a.raid_id
 			where ul.userlink_hide = 0 
 			      and r.raid_id =  $RaidId
-			order by r.raid_id desc, userlink_id  asc"; 
+			order by r.raid_id desc, lt.linktype_order asc, userlink_id  asc"; 
                 //  echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
 
                 $PredRaid = '';
+                $PredLinkType = '';
+                $LinkTextOnly = 0;
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
@@ -42,10 +51,24 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 		        $PredRaid = $Row['raid_name'];
 		  }
 
+                  if ($PredLinkType <> $Row['linktype_name']) {
+		  
+		        $PredLinkType = $Row['linktype_name'];
+		        $LinkTextOnly = $Row['link_textonly'];
+			print('<div align = "left" style = "margin-left: 15px; margin-top: 25px;"><b>{$Row['linktype_name']}</b></div>\r\n');
+		        
+		  }
+
+
                   $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : CMmbUI::toHtml($Row['userlink_name']);
 		  $TeamDist = (empty($Row['team_name']) ? '' : ', команда '.CMmbUI::toHtml($Row['team_name']).', N '.$Row['team_num'].', дистанция '.$Row['distance_name']);
 
-		  print("<div class=\"impress\">{$Row['linktype_name']} <a href=\"{$Row['userlink_url']}\" title=\"" . CMmbUI::toHtml($Row['userlink_name']) . "\">$Label</a> ". CMmbUI::toHtml($Row['user_name']). "$TeamDist \r\n");
+		  if (empty($LinkTextOnly))
+		  {
+		  	print("<div class=\"impress\"><a href=\"{$Row['userlink_url']}\" title=\"" . CMmbUI::toHtml($Row['userlink_name']) . "\">$Label</a> ". CMmbUI::toHtml($Row['user_name']). "$TeamDist \r\n");
+		  } else {
+		  	print("<div class=\"impress\">{$Row['userlink_url']}". CMmbUI::toHtml($Row['user_name']). "$TeamDist \r\n");
+		  }
                   print("</div>\r\n");
 			  
 		}
