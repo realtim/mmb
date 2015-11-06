@@ -584,7 +584,7 @@ if (!isset($MyPHPScript)) return;
 		{
 			$linktypeselected = '';
 			$LinkNameDisabled =  (empty($Row['linktype_textonly']) ? 'off' : 'on');
-			print('<option value="'.$Row['linktype_id'].'" '.$linktypeselected.'  onclick = "javascript:document..UserLinksForm.NewLinkName.disabled='.$LinkNameDisabled.';">'.$Row['linktype_name']."</option>\n");
+			print('<option value="'.$Row['linktype_id'].'" '.$linktypeselected.'  onclick = "javascript:document.UserLinksForm.NewLinkName.disabled='.$LinkNameDisabled.';">'.$Row['linktype_name']."</option>\n");
 		}
 		mysql_free_result($Result);
 		print('</select>'."\n");
