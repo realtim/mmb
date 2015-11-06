@@ -414,14 +414,14 @@
 	print('<select name="LevelPointId" style = "margin-left: 10px; margin-right: 5px;" 
                        onchange = "LevelPointIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
         $levelpointselected =  (0 == $_REQUEST['LevelPointId'] ? 'selected' : '');
-	print("<option value = '0' $levelpointselected>точку (КП)</option>\r\n");
+	print("<option value = '0' $levelpointselected>точку</option>\r\n");
 
 	if (!isset($_REQUEST['LevelPointId'])) $_REQUEST['LevelPointId'] = "";
 
         while ($Row = mysql_fetch_assoc($Result))
 	{
 		$levelpointselected = ($Row['levelpoint_id'] == $_REQUEST['LevelPointId']  ? 'selected' : '');
-		print("<option value = '{$Row['levelpoint_id']}' $levelpointselected>{$Row['distance_name']} {$Row['levelpoint_name']}</option>\r\n");
+		print("<option value = '{$Row['levelpoint_id']}' $levelpointselected>{$Row['distance_name']} {$Row['levelpoint_name']} ({$Row['teamscount']}/{$Row['teamuserscount']})</option>\r\n");
 	}
 	print('</select>'."\r\n");  
 	mysql_free_result($Result);		
