@@ -128,6 +128,7 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
  <head>
   <title>ММБ</title>
   <link rel="Stylesheet" type="text/css"  href="styles/mmb.css" />
+  <link rel="icon" type="image/png" href="mmbfiles/mmb?favicon.png" />
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
  </head>
