@@ -124,12 +124,18 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
     // 15,01,2012 Сбрасываем действие в самом конце, а не здесь 
     //$action = "";
 
-?><html>
- <head>
-  <title>ММБ</title>
-  <link rel="stylesheet" type="text/css"  href="styles/mmb.css" />
-  <link rel="icon" type="image/png" href="styles/mmb_favicon.png" />
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	// 17-02-2016 Пропсиал файлы в относительную папку
+	$FavIconFile = $MyLocation.'styles/mmb_favicon.png';
+	$CssFile = $MyLocation.'styles/mmb.css';
+	
+
+?>
+
+
+<html>
+	  <link rel="stylesheet" type="text/css"  href="<? echo $CssFile; ?>" />
+	  <link rel="icon" type="image/png" href="<? echo $FavIconFile; ?>" />
+	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
  </head>
 
