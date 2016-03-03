@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
 
     defaultConfig {
         applicationId "ru.mmb.datacollector"
         minSdkVersion 10
-        targetSdkVersion 22
-        versionCode 21002
-        versionName "2.1.002"
+        targetSdkVersion 23
+        versionCode 22001
+        versionName "2.2.001"
     }
 
     buildTypes {
@@ -27,6 +27,5 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-v4:21.0.3'
-    compile files('libs/datacollector-model.jar')
+    compile 'com.android.support:support-v4:23.2.0'
 }

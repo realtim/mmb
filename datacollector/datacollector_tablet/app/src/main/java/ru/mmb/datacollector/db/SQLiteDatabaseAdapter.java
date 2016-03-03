@@ -32,7 +32,7 @@ import ru.mmb.datacollector.model.User;
 import ru.mmb.datacollector.model.meta.MetaTable;
 import ru.mmb.datacollector.model.registry.Settings;
 
-public class SQLiteDatabaseAdapter extends DatabaseAdapter {
+public class SQLiteDatabaseAdapter {
     private static final int BACKUP_SAVES_COUNT = 10;
     private static final int BACKUP_MAX_FILES = 20;
 
@@ -54,10 +54,11 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
 
     private long localSaveCount = 0;
 
+    private static SQLiteDatabaseAdapter instance = null;
+
     private SQLiteDatabaseAdapter() {
     }
 
-    @Override
     public void tryConnectToDB() {
         try {
             db =
@@ -91,7 +92,6 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
         DistancesDB.performTestQuery(db);
     }
 
-    @Override
     public boolean isConnected() {
         return db != null;
     }
@@ -107,12 +107,10 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
         return db;
     }
 
-    @Override
     public List<Distance> loadDistances(int raidId) {
         return distancesDB.loadDistances(raidId);
     }
 
-    @Override
     public List<Team> loadTeams() {
         return teamsDB.loadTeams();
     }
@@ -125,22 +123,18 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
         return metaTablesDB.loadMetaTables();
     }
 
-    @Override
     public List<User> loadUsers() {
         return usersDB.loadUsers();
     }
 
-    @Override
     public List<ScanPoint> loadScanPoints(int raidId) {
         return scanPointsDB.loadScanPoints(raidId);
     }
 
-    @Override
     public List<LevelPoint> loadLevelPoints(int raidId) {
         return levelPointsDB.loadLevelPoints(raidId);
     }
 
-    @Override
     public List<LevelPointDiscount> loadLevelPointDiscounts(int raidId) {
         return levelPointDiscountsDB.loadLevelPointDiscounts(raidId);
     }
@@ -215,24 +209,19 @@ public class SQLiteDatabaseAdapter extends DatabaseAdapter {
         return rawLoggerDataDB.loadAllRawLoggerDataForDevice();
     }
 
-    public static void init() {
-        DatabaseAdapter.databaseAdapterFactory = new SQLiteDatatbaseAdapterFactory();
-        Log.d("DATABASE_ADAPTER", "initialized");
-    }
-
     public static SQLiteDatabaseAdapter getRawInstance() {
-        return (SQLiteDatabaseAdapter) DatabaseAdapter.getRawInstance();
+        if (instance == null) {
+            instance = new SQLiteDatabaseAdapter();
+            instance.tryConnectToDB();
+        }
+        return instance;
     }
 
     public static SQLiteDatabaseAdapter getConnectedInstance() {
-        return (SQLiteDatabaseAdapter) DatabaseAdapter.getConnectedInstance();
-    }
-
-    private static class SQLiteDatatbaseAdapterFactory implements DatabaseAdapterFactory {
-        @Override
-        public DatabaseAdapter createDatabaseAdapter() {
-            return new SQLiteDatabaseAdapter();
-        }
+        SQLiteDatabaseAdapter result = getRawInstance();
+        if (!result.isConnected())
+            return null;
+        return result;
     }
 
     public void backupDatabase(Context context) {

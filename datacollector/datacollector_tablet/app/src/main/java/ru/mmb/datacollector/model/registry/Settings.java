@@ -7,7 +7,6 @@ import android.util.Log;
 import java.io.File;
 import java.util.Properties;
 
-import ru.mmb.datacollector.conf.ConfigurationAdapter;
 import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -174,9 +173,7 @@ public class Settings {
                 ScanPointsRegistry.getInstance().refresh();
                 TeamsRegistry.getInstance().refresh();
                 UsersRegistry.getInstance().refresh();
-                Log.d("SETTINGS",
-                        "current raid ID: " +
-                                ConfigurationAdapter.getInstance().getCurrentRaidId());
+                Log.d("SETTINGS", "current raid ID: " + getCurrentRaidId());
             }
         }
     }
