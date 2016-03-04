@@ -1,24 +1,14 @@
-Совместная сборка всех проектов.
+!!! Проекты datacollector_model и datacollector_server устарели и больше не используются.
 
-Проект datacollector_model используется другими проектами.
+Основной рабочий проект - datacollector_tablet.
 
-Проекты datacollector_model и datacollector_server созданы в Eclipse.
-Проект datacollector_tablet создан в AndroidStudio.
+Разработка ведётся в AndroidStudio.
+В git файлы проекта idea не положены. Нужно в своей версии AndroidStudio просто импортировать build.gradle из datacollector_tablet.
 
-Автоматическое форматирование
+Сборка проекта - gradle assemble.
+Затем можно достать готовый APK из директории app/build/output/apk.
 
-	Файл formatter.xml подключается в Eclipse.
-	Window -> Preferences -> Java -> Code Style -> Formatter -> Import...
-	Позволяет однотипно форматировать код во всех файлах.
-
-	Автоматическое форматирование при сохранении настраивается в разделе
-	Window -> Preferences -> Java -> Editor -> Save Actions
-
-	Автоматического форматирования в AndroidStudio нет.
-	Форматирование настроено в самом проекте. Ручное форматирование - Ctrl+Alt+L.
-
-Сборка проектов
-
-	Проект datacollector_model собирается через экспорт в jar прямо в Eclipse.
-	Для собрки создан файл описания в папке jardesc.
-	Jar-файл собирается и помещается потом как библиотека в другие проекты.
+Для того, чтобы в GIT не пролезли файлы от Idea и Eclipse их надо добавить в файл глобальных исключений Git строки:
+.idea
+*.iml
+.settings

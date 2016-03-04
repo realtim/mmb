@@ -14,6 +14,12 @@ public class BluetoothAdapterEnableActivity extends Activity {
         super.onStart();
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (bluetoothAdapter == null) {
+            onAdapterStateChanged();
+            return;
+        }
+
         if (!bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_CODE_LAUNCH_BLUETOOTH_ACTIVITY);
@@ -42,6 +48,10 @@ public class BluetoothAdapterEnableActivity extends Activity {
     }
 
     private void onLaunchBluetoothActivityResult(int resultCode) {
+        if (bluetoothAdapter == null) {
+            onAdapterStateChanged();
+            return;
+        }
         if (resultCode == RESULT_OK) {
             long timeOld = System.currentTimeMillis();
             while (!bluetoothAdapter.isEnabled()) {
