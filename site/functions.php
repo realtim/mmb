@@ -2473,6 +2473,80 @@ function FindErrors($raid_id, $team_id)
      // Конец функции расчета штрафа для КП без амнистий		
 
 
+	// Функция проверяет, превышен ли лимит заявок на ММБ
+	function IsOutOfRaidLimit($RaidId)
+	{
+		 // Получаем информацию о лимите и о зарегистированных командах
+		$sql = "select count(*) as teamscount, COALESCE(r.raid_teamslimit, 0) as teamslimit
+			from Raids r 
+				inner join Distances d
+				on r.raid_id = d.raid_id
+				inner join Teams t
+				on d.distance_id = t.distance_id
+			where r.raid_id=$RaidId
+				and t.team_hide = 0
+				and t.team_outofrange = 0
+			";
+		$Row = CSql::singleRow($sql);
+        	// Если указан лимит и он уже достигнут или превышен и команда "в зачете". то нельзя создавать
+		if ($Row['teamslimit'] > 0 && $Row['teamscount'] >= $Row['teamslimit']) 
+		{
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+	// Конец проверки лимита заявок
+
+	// Функция находит первую команду в спсике ожидания	
+	function FindFirstTeamInWaitList($RaidId)
+	{
+		 // Получаем информацию о лимите и о зарегистированных командах
+		$sql = "select t.team_id
+			from Raids r 
+				inner join Distances d
+				on r.raid_id = d.raid_id
+				inner join Teams t
+				on d.distance_id = t.distance_id
+			where r.raid_id=$RaidId
+				and t.team_hide = 0
+				and t.team_waitdt is not null
+			order by  t.team_waitdt ASC
+			LIMIT 0,1
+			";
+		$Row = CSql::singleRow($sql);
+		return $Row['team_id'];
+	}
+	// Конец поиска первой командлы в списке ожидания
+	
+
+	// Функция перводит все команды из списка ожидания вне зачета
+	function ClearWaitList($RaidId)
+	{
+		$sql = " update  Teams t
+                	inner join
+				(
+				select t.team_id
+				from Raids r 
+					inner join Distances d
+					on r.raid_id = d.raid_id
+					inner join Teams t
+					on d.distance_id = t.distance_id
+				where r.raid_id=$RaidId
+					and t.team_hide = 0
+					and t.team_outofrange = 1
+					and t.team_waitdt is not null
+				) a
+			on t.team_id = a.team_id
+			set  t.team_waitdt = NULL, t.team_outofrange = 1
+			";
+		$rs = MySqlQuery($sql);
+
+		return;
+	}
+	// Конец поиска первой командлы в списке ожидания
+	
+
 	function mmb_validate($var, $key, $default = "")
 	{
 		return isset($var[$key]) ? $var[$key] : $default;
