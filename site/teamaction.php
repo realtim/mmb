@@ -218,6 +218,11 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$NotStartPreviousRaidId = CheckNotStart($NewUserId, $RaidId);	
 	}
 	
+	
+	$OutOfRaidLimit =  IsOutOfRaidLimit($RaidId);
+	$WaitTeamId = FindFirstTeamInWaitList($RaidId);
+	
+	
 
 	// Добавляем/изменяем команду в базе
 	$TeamActionTextForEmail = "";
@@ -225,7 +230,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	// Новая команда
 	{
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
-			team_registerdt, team_greenpeace, team_outofrange)
+			team_registerdt, team_greenpeace, team_outofrange, team_waitdt)
 			values (";
 		// Номер команды
 		if ($OldMmb) $sql = $sql.$pTeamNum;
@@ -238,7 +243,14 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		}
 		// Все остальное
 		$sql .= ", '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(),
-			$pTeamGreenPeace, $TeamOutOfRange)";
+			$pTeamGreenPeace";
+		// Если превышен лимит команл или есть команда в списке ожидания, то не регистрируем в зачет			
+		if ($OutOfRaidLimit > 0 OR $WaitTeamId > 0) {
+			$sql .= ", 1, NOW())";
+		} else {
+			$sql .= ", $TeamOutOfRange, NULL)";
+		}
+			
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);
 		// Поменялся TeamId, заново определяем права доступа
@@ -424,6 +436,15 @@ elseif ($action == 'HideTeamUser')
 	{
 		$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 		$rs = MySqlQuery($sql);
+
+		// Ищем первую команду в листе ожидания
+		$WaitTeamId = FindFirstTeamInWaitList($RaidId);
+		if ($WaitTeamId > 0) {
+			$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
+			$rs = MySqlQuery($sql);
+		}
+		
+
 		$view = "";
 	}
 
@@ -635,6 +656,15 @@ elseif ($action == 'HideTeam')
 	$rs = MySqlQuery($sql);
 	$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 	$rs = MySqlQuery($sql);
+
+
+	// Ищем первую команду в листе ожидания
+	$WaitTeamId = FindFirstTeamInWaitList($RaidId);
+	if ($WaitTeamId > 0) {
+		$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
+		$rs = MySqlQuery($sql);
+	}
+
 
 	$view = "ViewRaidTeams";
 }
