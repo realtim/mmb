@@ -439,7 +439,7 @@ elseif ($action == 'HideTeamUser')
 
 		// Ищем первую команду в листе ожидания
 		$WaitTeamId = FindFirstTeamInWaitList($RaidId);
-		if ($WaitTeamId > 0) {
+		if ($WaitTeamId > 0 AND $RaidStage == 1) {
 			$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
 			$rs = MySqlQuery($sql);
 		}
@@ -660,7 +660,7 @@ elseif ($action == 'HideTeam')
 
 	// Ищем первую команду в листе ожидания
 	$WaitTeamId = FindFirstTeamInWaitList($RaidId);
-	if ($WaitTeamId > 0) {
+	if ($WaitTeamId > 0  AND $RaidStage == 1) {
 		$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
 		$rs = MySqlQuery($sql);
 	}
