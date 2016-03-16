@@ -608,20 +608,22 @@
 
 	if ($OrderType == 'Num') {
 
-			$ColumnWidth = 350;
-			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
+		$ColumnWidth = 350;
+		$ColumnSmallWidth = 50;
+			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
 		
 	} elseif ($OrderType == 'Place') {
 
-            $ColumnWidth = 350;
-			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
+        	$ColumnWidth = 350;
+		$ColumnSmallWidth = 50;
+			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Отсечки времени</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");
+                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
+                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Комментарий</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Не пройдены точки</td>'."\r\n");
 
@@ -630,12 +632,14 @@
 	
 	
             $ColumnWidth = 350;
-			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
+	    $ColumnSmallWidth = 50;
+
+			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Отсечки времени</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");  
+                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
+                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Комментарий</td>'."\r\n");  
 
 		
