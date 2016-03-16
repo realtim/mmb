@@ -2302,6 +2302,7 @@ function FindErrors($raid_id, $team_id)
 		       tlp.teamlevelpoint_duration = NULL,
 		       t.team_maxlevelpointorderdone = NULL,
 		       t.team_minlevelpointorderwitherror = NULL,
+		       t.team_donelevelpoint = NULL,
 		       t.team_comment = NULL,
 		       tlp.error_id = NULL
  		  where $teamRaidCondition" ;
@@ -2400,6 +2401,7 @@ function FindErrors($raid_id, $team_id)
 
 
 	 // Находим невзятые КП
+	 // расчет закомментирован, так ка Сергей строит список другим способом
 	     /*
 	 $sql = " update  Teams t
 				    inner join
@@ -2492,8 +2494,51 @@ function FindErrors($raid_id, $team_id)
 		  set  t.team_comment = CASE WHEN a.team_error <> '' THEN CONCAT('Предупреждения: ', a.team_error, '; ',  COALESCE(t.team_comment, ''))  ELSE t.team_comment END";
         //   echo $sql;
 	$rs = MySqlQuery($sql);
+
+
+	//Теперь в это поле добавляем предупреждения  tlp.error_id  < 0
+	$sql = " update  Teams t
+                inner join
+                      (select tlp.team_id 
+						,group_concat(COALESCE(error_name, '')) as team_error
+						from TeamLevelPoints tlp
+								left outer join Errors err
+								on tlp.error_id = err.error_id
+							    inner join Teams t
+							    on t.team_id = tlp.team_id
+							    inner join Distances d
+							    on t.distance_id = d.distance_id
+						where  COALESCE(tlp.error_id, 0) < 0
+		                       and $teamRaidCondition
+						group by tlp.team_id
+                      ) a
+		  		on t.team_id = a.team_id
+		  set  t.team_comment = CASE WHEN a.team_error <> '' THEN CONCAT('Предупреждения: ', a.team_error, '; ',  COALESCE(t.team_comment, ''))  ELSE t.team_comment END";
+        //   echo $sql;
+	$rs = MySqlQuery($sql);
+
+	//считаем (только для интерфейса список вщзятых КП 
+	$sql = " update  Teams t
+                inner join
+                      (select tlp.team_id 
+			,group_concat(DATE_FORMAT(COALESCE(tlp.teamlevelpoint_datetime, ''),'%H:%i')  order by teamlevelpoint_datetime  separator ' - ') as team_donelevelpoint
+						from TeamLevelPoints tlp
+							    inner join Teams t
+							    on t.team_id = tlp.team_id
+							    inner join Distances d
+							    on t.distance_id = d.distance_id
+						where  COALESCE(tlp.teamlevelpoint_datetime, 0) > 0
+		                       and $teamRaidCondition
+						group by tlp.team_id
+                      ) a
+		  		on t.team_id = a.team_id
+		  set  t.team_donelevelpoint = a.team_donelevelpoint ";
+        //   echo $sql;
+	$rs = MySqlQuery($sql);
+
+
      }
-     // Конец функции расчета штрафа для КП без амнистий		
+     // Конец функции пересчета результат команды по данным в точках	
 
 
 	// Функция проверяет, превышен ли лимит заявок на ММБ
