@@ -517,7 +517,7 @@
 					       d.distance_name, d.distance_id,
 	                       TIME_FORMAT(tlp.teamlevelpoint_result, '%H:%i') as team_sresult,
 					       COALESCE(t.team_outofrange, 0) as  team_outofrange,
-					       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
+					       COALESCE(t.team_donelevelpoint, COALESCE(lp.levelpoint_name, '')) as levelpoint_name,
 					       COALESCE(t.team_comment, '') as team_comment /*,
 					       COALESCE(t.team_skippedlevelpoint, '') as team_skippedlevelpoint */
 					from  Teams t
@@ -535,7 +535,7 @@
 					       d.distance_name, d.distance_id,
 			               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 					       COALESCE(t.team_outofrange, 0) as  team_outofrange,
-					       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
+					       COALESCE(t.team_donelevelpoint, COALESCE(lp.levelpoint_name, '')) as levelpoint_name,
 				    	   COALESCE(t.team_comment, '') as team_comment /*,
 						   COALESCE(t.team_skippedlevelpoint, '') as team_skippedlevelpoint */
 					  from  Teams t
