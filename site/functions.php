@@ -2468,6 +2468,10 @@ function FindErrors($raid_id, $team_id)
 		  		on t.team_id = a.team_id
 		  set  t.team_comment = CASE WHEN a.team_error <> '' THEN CONCAT('Ошибки: ', a.team_error, '; ',  COALESCE(t.team_comment, ''))  ELSE t.team_comment END";
 
+        //   echo $sql;
+	$rs = MySqlQuery($sql);
+
+
 	//Теперь в это поле добавляем предупреждения  tlp.error_id  < 0
 	$sql = " update  Teams t
                 inner join
@@ -2486,8 +2490,6 @@ function FindErrors($raid_id, $team_id)
                       ) a
 		  		on t.team_id = a.team_id
 		  set  t.team_comment = CASE WHEN a.team_error <> '' THEN CONCAT('Предупреждения: ', a.team_error, '; ',  COALESCE(t.team_comment, ''))  ELSE t.team_comment END";
-
-//
         //   echo $sql;
 	$rs = MySqlQuery($sql);
      }
