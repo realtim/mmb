@@ -518,21 +518,8 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
         // Если команда не определена, и регистрация не закончена, то нужно проверить лимит
 	if ($RaidStage < 2 && empty($TeamId) && $TeamOutOfRange == 0)
 	{
-
-	        // Получаем информацию о лимите и о зарегистированных командах
-		$sql = "select count(*) as teamscount, COALESCE(r.raid_teamslimit, 0) as teamslimit
-			from Raids r 
-				inner join Distances d
-				on r.raid_id = d.raid_id
-				inner join Teams t
-				on d.distance_id = t.distance_id
-			where r.raid_id=$RaidId
-				and t.team_hide = 0
-				and t.team_outofrange = 0
-			";
-		$Row = CSql::singleRow($sql);
-        	// Если указан лимит и он уже достигнут или превышен и команда "в зачете". то нельзя создавать
-		if ($Row['teamslimit'] > 0 && $Row['teamscount'] >= $Row['teamslimit']) 
+        	// Если достигнут лимит или есть команды в списке ожидания, то "вне зачета"
+		if (IsOutOfRaidLimit($RaidId) == 1 OR FindFirstTeamInWaitList($RaidId) > 0) 
 		{
 			$TeamOutOfRange = 1;
 		}
@@ -565,22 +552,6 @@ function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOut
 
         // Если стоит признак, что команла вне зачета, то можно
         if ($TeamOutOfRange == 1) return(1);
-
-        // Получаем информацию о лимите и о зарегистированных командах
-	$sql = "select count(*) as teamscount, COALESCE(r.raid_teamslimit, 0) as teamslimit
-		from Raids r 
-			inner join Distances d
-			on r.raid_id = d.raid_id
-			inner join Teams t
-			on d.distance_id = t.distance_id
-		where r.raid_id=$RaidId
-			and t.team_hide = 0
-			and t.team_outofrange = 0
-		";
-	$Row = CSql::singleRow($sql);
-
-        // Если указан лимит и он уже достигнут или превышен и команда "в зачете". то нельзя создавать
-	if ($Row['teamslimit'] > 0 && $Row['teamscount'] >= $Row['teamslimit'] && $TeamOutOfRange == 0) return(0);
 
         // Если не стоит признак, что команла вне зачета, то только до закрытия регистрации
         if (($TeamOutOfRange == 0) && ($RaidStage < 2)) return(1);
