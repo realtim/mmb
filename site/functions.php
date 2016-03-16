@@ -2155,7 +2155,8 @@ function FindErrors($raid_id, $team_id)
 	}
 
 	// Результат поиска ошибок
-	if ($raid_id) echo "Проверка данных завершена, найдено ошибок: $total_errors<br>\n";
+	// if ($raid_id) echo "Проверка данных завершена, найдено ошибок: $total_errors<br>\n";
+	return($total_errors);
 }
 // Конец функции поиска ошибок для марш-броска/команды
 

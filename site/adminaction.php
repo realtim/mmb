@@ -184,7 +184,7 @@ elseif ($action == 'FindRaidErrors')
 	}
 	if (!$Administrator && !$Moderator) return;
 
-	FindErrors($RaidId, 0);
+	$total_errors = FindErrors($RaidId, 0);
 
 /*
 	$n_Errors = 0;
@@ -272,7 +272,7 @@ elseif ($action == 'RecalcRaidRank')
 	$Result = 0;
 	$Result =  RecalcTeamUsersRank($RaidId); 
 
-	CMmb::setShortResult('Рейтинг участников марш-броска пересчитан', 'ViewAdminDataPage');
+	CMmb::setShortResult('Рейтинг участников марш-броска пересчитан, найдено '.$total_errors.' ошибок', 'ViewAdminDataPage');
 }
 // =============== Никаких действий не требуется ==============================
 else
