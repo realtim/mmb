@@ -176,7 +176,7 @@ if (!isset($MyPHPScript)) return;
 		   $Msg =  $Msg."Кто-то (возможно, это были Вы) пытается зарегистрировать учетную запись на сайте ММБ, связанную с этим адресом e-mail.\r\n";
 		   $Msg =  $Msg."Запись помечена, как неактивная, поэтому повторно высылается ссылка для активации:\r\n";
 		   $Msg =  $Msg."Для активации пользователя и получения пароля необходимо перейти по ссылке:\r\n";
-		   $Msg =  $Msg.$MyHttpLink.$MyPHPScript."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+		   $Msg =  $Msg.$MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
 		   $Msg =  $Msg."Учетные записи без активации могут быть удалены.\r\n";
 		   //$Msg =  $Msg."P.S. Если Вас зарегистрировали без Вашего желания - просто проигнорируйте письмо - приносим извинения за доставленные неудобства."."\r\n";
 			    
@@ -236,7 +236,7 @@ if (!isset($MyPHPScript)) return;
 		   $Msg = "Здравствуйте!\r\n\r\n";
 		   $Msg =  $Msg."Кто-то (возможно, это были Вы) зарегистрировал учетную запись на сайте ММБ, связанную с этим адресом e-mail.\r\n";
 		   $Msg =  $Msg."Для активации пользователя и получения пароля необходимо перейти по ссылке:\r\n";
-		   $Msg =  $Msg.$MyHttpLink.$MyPHPScript."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+		   $Msg =  $Msg.$MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
 		   $Msg =  $Msg."Учетные записи без активации могут быть удалены.\r\n";
 		   $Msg =  $Msg."P.S. Если Вас зарегистрировали без Вашего желания - просто проигнорируйте письмо - приносим извинения за доставленные неудобства.\r\n";
 			    
@@ -403,7 +403,7 @@ if (!isset($MyPHPScript)) return;
 	   $Msg = "Здравствуйте!\r\n\r\n";
 	   $Msg =  $Msg."Кто-то (возможно, это были Вы) запросил восстановление пароля на сайте ММБ для этого адреса e-mail.\r\n";
 	   $Msg =  $Msg."Для получения нового пароля необходимо перейти по ссылке:\r\n";
-	   $Msg =  $Msg.$MyHttpLink.$MyPHPScript."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+	   $Msg =  $Msg.$MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
 	   $Msg =  $Msg."P.S. Если Вы не запрашивали восстановление пароля - просто проигнорируйте письмо - приносим извинения за доставленные неудобства.\r\n";
 
 	   //echo $Message;				     
