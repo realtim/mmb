@@ -2426,7 +2426,7 @@ function FindErrors($raid_id, $team_id)
 
 
 
-	// Обновляем комментарий у команды, куда включаем и ошибки  
+	// Обновляем комментарий у команды
 	$sql = " update  Teams t
                 inner join
                       (select tlp.team_id 
@@ -2448,7 +2448,7 @@ function FindErrors($raid_id, $team_id)
         //   echo $sql;
 	$rs = MySqlQuery($sql);
 
-	//Теперь ошибки
+	//Теперь в это поле добавляем ошибки  tlp.error_id  > 0
 	$sql = " update  Teams t
                 inner join
                       (select tlp.team_id 
@@ -2460,12 +2460,32 @@ function FindErrors($raid_id, $team_id)
 							    on t.team_id = tlp.team_id
 							    inner join Distances d
 							    on t.distance_id = d.distance_id
-						where  COALESCE(tlp.error_id, 0) <> 0
+						where  COALESCE(tlp.error_id, 0) > 0
 		                       and $teamRaidCondition
 						group by tlp.team_id
                       ) a
 		  		on t.team_id = a.team_id
 		  set  t.team_comment = CASE WHEN a.team_error <> '' THEN CONCAT('Ошибки: ', a.team_error, '; ',  COALESCE(t.team_comment, ''))  ELSE t.team_comment END";
+
+	//Теперь в это поле добавляем предупреждения  tlp.error_id  < 0
+	$sql = " update  Teams t
+                inner join
+                      (select tlp.team_id 
+						,group_concat(COALESCE(error_name, '')) as team_error
+						from TeamLevelPoints tlp
+								left outer join Errors err
+								on tlp.error_id = err.error_id
+							    inner join Teams t
+							    on t.team_id = tlp.team_id
+							    inner join Distances d
+							    on t.distance_id = d.distance_id
+						where  COALESCE(tlp.error_id, 0) < 0
+		                       and $teamRaidCondition
+						group by tlp.team_id
+                      ) a
+		  		on t.team_id = a.team_id
+		  set  t.team_comment = CASE WHEN a.team_error <> '' THEN CONCAT('Предупреждения: ', a.team_error, '; ',  COALESCE(t.team_comment, ''))  ELSE t.team_comment END";
+
 //
         //   echo $sql;
 	$rs = MySqlQuery($sql);
