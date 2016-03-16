@@ -2374,7 +2374,8 @@ function FindErrors($raid_id, $team_id)
 	
 
      //
-     // Находим минимальную точку с ошибкой
+     // Находим минимальную точку с ошибкой (COALESCE(tlp.error_id, 0) > 0)
+     // < 0 - это не ошибка - предупреждение
 	$sql = " update  Teams t
 				    inner join
 	    		      	(select tlp.team_id,
@@ -2386,7 +2387,7 @@ function FindErrors($raid_id, $team_id)
 			      				on t.distance_id = d.distance_id
 			      				inner join LevelPoints lp
 			      				on tlp.levelpoint_id = lp.levelpoint_id
-						where  COALESCE(tlp.error_id, 0) <> 0
+						where  COALESCE(tlp.error_id, 0) > 0
 		        			and $teamRaidCondition
 						group by tlp.team_id
 						) a
