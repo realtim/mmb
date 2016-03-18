@@ -2498,7 +2498,7 @@ function FindErrors($raid_id, $team_id)
 	$sql = " update  Teams t
                 inner join
                       (select tlp.team_id 
-			,group_concat(DATE_FORMAT(COALESCE(tlp.teamlevelpoint_datetime, ''),'%H:%i')  order by teamlevelpoint_datetime  separator ' - ') as team_donelevelpoint
+			,group_concat(DATE_FORMAT(COALESCE(tlp.teamlevelpoint_datetime, ''),'%H:%i')  order by teamlevelpoint_datetime  separator ', ') as team_donelevelpoint
 						from TeamLevelPoints tlp
 							    inner join Teams t
 							    on t.team_id = tlp.team_id
