@@ -53,7 +53,7 @@ if (!isset($MyPHPScript)) return;
 	     $SaveButtonText = 'Зарегистрировать';
              // Кнопка "Сделать модератором" не выводится при добавлении пользователя
              $ModeratorButtonText = '';
-             // Кнопка "Объединить" не выводится при добавлении пользователя
+             // Кнопка "Запросить слияние" не выводится при добавлении пользователя
 	     $UnionButtonText = '';
 
          } else {
@@ -108,7 +108,7 @@ if (!isset($MyPHPScript)) return;
 		$AllowEdit = 0;
 		$SaveButtonText = 'Сохранить изменения';
 		$ModeratorButtonText = 'Сделать модератором';
-		$UnionButtonText = 'Объединить';
+		$UnionButtonText = 'Запросить слияние';
 		
 
                 if (($pUserId == $UserId) || $Administrator)
@@ -369,7 +369,7 @@ if (!isset($MyPHPScript)) return;
 
 	 if (CanRequestUserUnion($Administrator, $UserId, $pUserId)) {
 
-	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите оставить запрос на объединение с этим пользователем? \')) { MakeUnionRequest(); }"  name="UnionButton" value="'.$UnionButtonText.'" tabindex = "'.(++$TabIndex).'">';
+	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите оставить запрос на слияние этого пользователя с Вашей учетной записью? \')) { MakeUnionRequest(); }"  name="UnionButton" value="'.$UnionButtonText.'" tabindex = "'.(++$TabIndex).'">';
 	 
 	 }
 
@@ -377,7 +377,7 @@ if (!isset($MyPHPScript)) return;
 	 if (trim($ModeratorUnionString) <> '') {
 	    print('<tr><td class = "input"  style =  "padding-top: 10px;">'.$ModeratorUnionString.'</td></tr>'."\r\n");
 	 }
-	 // Конец проверки, что есть кнопка сделать модератором или объединить
+	 // Конец проверки, что есть кнопка сделать модератором или запросить слияние
 
          print('</tr>'."\r\n"); 
 

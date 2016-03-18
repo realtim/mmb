@@ -399,7 +399,9 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		if (mysql_num_rows($Result) == 0) $TeamId = 0;
 		$TeamOutOfRange = $Row['team_outofrange'];
 		mysql_free_result($Result);
-	} 
+	}
+	// Если ($TeamId == 0) && ($RaidId != 0), то сделать $TeamId равным команде пользователя, если он участвует в RaidId
+	// !! реализовать алгоритм !!
 
 	// Проверяем, является ли пользователь членом команды
 	if (($UserId > 0) && ($TeamId > 0))
@@ -545,15 +547,18 @@ function CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOut
 	if ($RaidStage == 7) return(0);
 
 	// В старом марш-броске можно всем, если он открыт через raid_closedate
-	if ($OldMmb) return(1);
+	//if ($OldMmb) return(1);
 
 	// Модератор может до закрытия редактирования через raid_closedate
 	if ($Moderator && ($RaidStage < 7)) return(1);
 
-        // Если стоит признак, что команла вне зачета, то можно
+	// Если пользователь уже состоит в команде, то новую нельзя
+	// !! реализовать алгоритм !!
+
+        // Если стоит признак, что команда вне зачета, то можно
         if ($TeamOutOfRange == 1) return(1);
 
-        // Если не стоит признак, что команла вне зачета, то только до закрытия регистрации
+        // Если не стоит признак, что команда вне зачета, то только до закрытия регистрации
         if (($TeamOutOfRange == 0) && ($RaidStage < 2)) return(1);
 
         // Если попали сюда, то нельзя
@@ -686,7 +691,7 @@ function CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $Raid
 
 // 04,06,2014
 // ----------------------------------------------------------------------------
-// Проверка возможности объединиться с пользователем
+// Проверка возможности запросить слияние с пользователем
 
 function CanRequestUserUnion($Administrator, $UserId, $ParentUserId)
 {
@@ -695,7 +700,7 @@ function CanRequestUserUnion($Administrator, $UserId, $ParentUserId)
 	// Оба пользователя должны быть определеные
 	if (!$UserId || !$ParentUserId) return(0);
 
-	// Нельзя объединить с самим собой
+	// Нельзя запросить слияние с самим собой
 	if ($UserId == $ParentUserId) return(0);
 
         // Тут добавить проверку наличия записей в журнале объединения
@@ -712,7 +717,7 @@ function CanRequestUserUnion($Administrator, $UserId, $ParentUserId)
         // Пока и всем остальным разрешаем делать запросы          
         return(1);
 }
-// Конец проверки возможности объединиться с пользователем
+// Конец проверки возможности запросить слияние с пользователем
 
 // region join users
 // 06,06,2014

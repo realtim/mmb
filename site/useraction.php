@@ -856,10 +856,10 @@ if (!isset($MyPHPScript)) return;
                 // Отправляем письмо
 		SendMail(trim($UserEmail), $Msg, $UserName);
    }
-   // ============ Добавить пользхователя в объединение ====================================
+   // ============ Добавить пользователя в слияние ====================================
    
    elseif ($action == "AddUserInUnion")  {
-	// Действие вызывается нажатием кнопки "Объединить"
+	// Действие вызывается нажатием кнопки "Запросить слияние"
 
 	if ($UserId <= 0)
 	{
@@ -875,12 +875,12 @@ if (!isset($MyPHPScript)) return;
         $pUserId = $_POST['UserId']; 
 
         if ($UserId == $pUserId) {
-		CMmb::setErrorMessage('Нельзя объединить с самим собой');
+		CMmb::setErrorMessage('Нельзя сделать слияние с самим собой');
 		return;
 	}
 
      
-        // Проверяем, что пользователя нет в объединении
+        // Проверяем, что пользователя нет в слиянии
 	$sql = " select userunionlog_id
 	         from UserUnionLogs 
 		 where union_status <> 0
@@ -889,7 +889,7 @@ if (!isset($MyPHPScript)) return;
 
 	if (CSql::rowCount($sql) > 0)
 	{
-		CMmb::setResult('Пользователь уже есть в объединении', 'ViewUserUnionPage', '');
+		CMmb::setResult('Пользователь уже есть в слиянии', 'ViewUserUnionPage', '');
 		$viewsubmode = "ReturnAfterError";
 
 	       return;
@@ -930,9 +930,9 @@ if (!isset($MyPHPScript)) return;
 			$pRequestUserName = CSql::userName($UserId);
 
 			$Msg = "Уважаемый пользователь $pUserName!\r\n\r\n"
-			      ."Сделан запрос на объединения Вас с пользователем $pRequestUserName\r\n"
-			      ."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил объединение, а Ваша учетная запись скрыта"."\r\n"
-			      ."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на старницу 'Связь пользователей' и отклонить запрос."."\r\n\r\n";
+			      ."Сделан запрос на слияние Вас с пользователем $pRequestUserName\r\n"
+			      ."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил слияние, а Ваша учетная запись скрыта"."\r\n"
+			      ."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на старницу 'Слияние пользователей' и отклонить запрос."."\r\n\r\n";
 		 	   
 			// Отправляем письмо
 			SendMail(trim($pUserEmail), $Msg, $pUserName);
@@ -942,7 +942,7 @@ if (!isset($MyPHPScript)) return;
            }
 
 	   // Конец проверки на успешное добавление запроса
-	   CMmb::setResult('Создан запрос на объединение пользователей', 'ViewUserUnionPage', '');
+	   CMmb::setResult('Создан запрос на слияние пользователей', 'ViewUserUnionPage', '');
 
   } elseif ($action == "RejectUnion")  {
 	// Действие вызывается нажатием кнопки "Отклонить" 
@@ -1017,7 +1017,7 @@ if (!isset($MyPHPScript)) return;
 
 	if (!CanRollBackUserUnion($Administrator, $UserUnionLogId, $UserId)) {
 
-		CMmb::setErrorMessage('Нет прав на откат объединения');
+		CMmb::setErrorMessage('Нет прав на отмену слияния');
 	      return;
 	}
 
