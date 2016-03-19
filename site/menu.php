@@ -123,7 +123,7 @@ if (!isset($MyPHPScript)) return;
 		print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
 		print('<tr><td><a href="?UserId='.$UserId.'" title="Переход к Вашей карточке пользователя">'.$UserName.'</a></tr>'."\r\n");
 		// !! реализовать показ ссылки на список заявок только если заявки существуют и не отклонены !!
-		print('<tr><td><a href="javascript:ViewUserUnionPage();" title="Заявки на слияние Вас с другими пользователями">Слияние пользователей</a></td></tr>'."\r\n");
+		print('<tr><td><a href="javascript:ViewUserUnionPage();" title="Заявки на слияние Вас с другими пользователями">Запросы на слияние</a></td></tr>'."\r\n");
 		print('<tr><td><a href="javascript:UserLogout();" style="font-size: 80%;">Выход</a></td></tr>'."\r\n");
 		print('</table>'."\r\n");
 		print('</form>'."\n");
