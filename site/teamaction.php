@@ -253,16 +253,16 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);
-		// Поменялся TeamId, заново определяем права доступа
-		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 		if ($TeamId <= 0)
 		{
 			setViewError('Ошибка записи новой команды.');
 			return;
 		}
-
 		$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid) values ($TeamId, $NewUserId, $NotStartPreviousRaidId)";
 		MySqlQuery($sql);
+
+		// Поменялся TeamId, заново определяем права доступа
+		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 		$TeamActionTextForEmail = "создана команда";
 		$SendEmailToAllTeamUsers = 1;
 		// Теперь нужно открыть на просмотр
