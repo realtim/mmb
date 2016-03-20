@@ -453,6 +453,8 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	//
 	//$OldMmb = CSql::singleValue($sql, 'oldmmb');
        
+       // 20/03/2016 ДОбавил фильтрацию точек с нулеым или NULL  мимнимальным и максимальным временем точки, так как для обычных 
+       // КП это время решили не вносить
 
          // 21/11/2013  Добавил RaidStage (финиш закрыт, но нельзя показывать результаты и сместил 6 на 7)
          // 30.10.2013 Для трёхдневного ММБ  изменил INTERVAL 12 на INTERVAL 24  
@@ -474,15 +476,22 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		END as registration,
 		(select count(*) from LevelPoints lp
 			inner join Distances d on lp.distance_id = d.distance_id
-			where (d.raid_id = r.raid_id) and (NOW() >= DATE_SUB(lp.levelpoint_mindatetime, INTERVAL COALESCE(r.raid_readonlyhoursbeforestart, 8) HOUR)))
+			where (d.raid_id = r.raid_id) and (NOW() >= DATE_SUB(lp.levelpoint_mindatetime, INTERVAL COALESCE(r.raid_readonlyhoursbeforestart, 8) HOUR))
+				and  COALESCE(lp.levelpoint_mindatetime, 0) > 0			
+		)
 		as cantdelete,
 		(select count(*) from LevelPoints lp
 			inner join Distances d on lp.distance_id = d.distance_id
-			where (d.raid_id = r.raid_id) and (NOW() >= lp.levelpoint_mindatetime))
+			where (d.raid_id = r.raid_id) and (NOW() >= lp.levelpoint_mindatetime)
+				and  COALESCE(lp.levelpoint_mindatetime, 0) > 0			
+
+		)
 		as started,
 		(select count(*) from LevelPoints lp
 			inner join Distances d on lp.distance_id = d.distance_id
-			where (d.raid_id = r.raid_id) and (NOW() < lp.levelpoint_maxdatetime))
+			where (d.raid_id = r.raid_id) and (NOW() < lp.levelpoint_maxdatetime)
+				and  COALESCE(lp.levelpoint_maxdatetime, 0) > 0			
+		)
 		as notfinished,
 		CASE
 			WHEN (r.raid_closedate IS NULL) OR (r.raid_closedate >= DATE(NOW())) THEN 0
