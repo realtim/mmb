@@ -336,12 +336,14 @@ print('Дистанция '."\n");
 
 
 // 21.03.2016 Определяем, когда можно и когда нельзя менять дистанцию
-// при вводе дистанцию можно менять всегда
+// при вводе дистанцию можно менять всегда до закрытия протокола
 // при правке дистанцию можно менять только до закрытия регистрации участнику
-// и нельзя не участнику, если он не модератор
-	if (CSql::userAdmin($UserId)
-		or CSql::userModerator($UserId, $RaidId)
-		or ($viewmode <> 'Add' and $TeamId == CSql::userTeamId($UserId, $RaidId) and CSql::raidStage($RaidId) < 2)
+// и нельзя не участнику, если он не модератор  для команд в зачете
+// для команд вне зачета до закрытия проткола
+	if (
+		($viewmode == 'Add' and CSql::raidStage($RaidId) < 7)
+		or ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or  CSql::userModerator($UserId, $RaidId)) and !CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 2)
+		or ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or  CSql::userModerator($UserId, $RaidId)) and CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
 	   )
 	{
 		$DisabledDistanceText =  '';
