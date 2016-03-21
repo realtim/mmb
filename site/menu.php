@@ -123,7 +123,7 @@ if (!isset($MyPHPScript)) return;
 		print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
 		print('<tr><td><a href="?UserId='.$UserId.'" title="Переход к Вашей карточке пользователя">'.$UserName.'</a></tr>'."\r\n");
 		// !! реализовать показ ссылки на список заявок только если заявки существуют и не отклонены !!
-		if (userUnionLogId($UserId)) {
+		if (CSql::userUnionLogId($UserId)) {
 			print('<tr><td><a href="javascript:ViewUserUnionPage();" title="Заявки на слияние Вас с другими пользователями">Запросы на слияние</a></td></tr>'."\r\n");
 		}
 		print('<tr><td><a href="javascript:UserLogout();" style="font-size: 80%;">Выход</a></td></tr>'."\r\n");
@@ -281,15 +281,15 @@ if (!isset($MyPHPScript)) return;
 		//CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)
 
 	if ($UserId and $RaidId 
-		and  (!userTeamId($UserId, $RaidId) or userAdmin($UserId) or userModerator($UserId, $RaidId)) 
-		and  raidStage($RaidId) >= 1 and raidStage($RaidId) < 7)
+		and  (!CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) 
+		and  CSql::raidStage($RaidId) >= 1 and CSql::raidStage($RaidId) < 7)
 	{
 		print('<tr><td><a href="javascript:NewTeam();" title="Регистрация новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n");
 	}
 	// !! реализовать показ ссылки на свою команду, если она существует !!
 	
-	if (userTeamId($UserId, $RaidId)) {
-		print('<tr><td><a href="'.$MyPHPScript.'"?TeamId="'.userTeamId($UserId, $RaidId).'";" title="Просмотр карточки Вашей команды">Моя команда</a></td></tr>'."\r\n");
+	if (CSql::userTeamId($UserId, $RaidId)) {
+		print('<tr><td><a href="'.$MyPHPScript.'"?TeamId="'.CSql::userTeamId($UserId, $RaidId).'";" title="Просмотр карточки Вашей команды">Моя команда</a></td></tr>'."\r\n");
 	}
 	
 	
