@@ -37,15 +37,12 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 	$RaidId = (int) mmb_validateInt($_REQUEST, 'RaidId', 0);
 	$TeamId = (int) mmb_validateInt($_REQUEST, 'TeamId', 0);
 	$DistanceId = (int) mmb_validateInt($_REQUEST, 'DistanceId', 0);
-	$UserId = (int) mmb_validateInt($_REQUEST, 'UserId', 0);
 
-	// 21/03/2016  Если не указан 	$UserId  получаем его из сессии.
+	// 21/03/2016  получаем $UserId из сессии.
 	// эта инициализация сейчас перекрываетвя в GetPrivileges, но есдли в будующем захочется отказаться от GetPrivileges
 	// то полезно пользователя определять через 
-        if (empty($UserId))
-        {
-		$UserId = (int) CSql::userId($SessionId);
-        }
+	// В GetSession также  обновляются данные сессии - это нужно вынести в отдлеьный метод
+	$UserId = (int) CSql::userId($SessionId);
 
          // 27/12/2013 Заменил на сортировку по ключу
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
