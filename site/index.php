@@ -37,13 +37,13 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 	$RaidId = (int) mmb_validateInt($_REQUEST, 'RaidId', 0);
 	$TeamId = (int) mmb_validateInt($_REQUEST, 'TeamId', 0);
 	$DistanceId = (int) mmb_validateInt($_REQUEST, 'DistanceId', 0);
-
 	// 21/03/2016  получаем $UserId из сессии.
 	// эта инициализация сейчас перекрываетвя в GetPrivileges, но есдли в будующем захочется отказаться от GetPrivileges
-	// то полезно пользователя определять через 
-	// В GetSession также  обновляются данные сессии - это нужно вынести в отдлеьный метод
+	// то полезно пользователя определять здесь и остальные необходимые операции тоже здесь делать
 	$UserId = (int) CSql::userId($SessionId);
-
+	// обновляем данные сессии (удаляем закрытые, пишем в cookies	
+	UpdateSession($SessionId);
+	
          // 27/12/2013 Заменил на сортировку по ключу
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
         if (empty($RaidId))
@@ -60,6 +60,7 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
         }
 	// Конец определения ММБ
 
+	// 21/03/2016 хочется потихоньку перетащить всю существенную часть из GetPrivileges  и убрать этот вызов
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
 	// Инициализуем переменные сессии, если они отсутствуют
@@ -109,8 +110,14 @@ $tmAction = CMmbLogger::addInterval('before action', $tmSt);
 		include ("useraction.php");
 		// Если у нас новая сессия после логина, логаута или
 		// прихода по ссылке - заново определяем права доступа
-		if ($SessionId <> $OldSessionId)
+		if ($SessionId <> $OldSessionId) {
+
+			$UserId = (int) CSql::userId($SessionId);
+			// обновляем данные сессии (удаляем закрытые, пишем в cookies	
+			UpdateSession($SessionId);
+			// 21/03/2016 хочется потихоньку перетащить всю существенную часть из GetPrivileges  и убрать этот вызов
 			GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
+		}
 
 	        // Обработчик событий, связанных с командой
 		include ("teamaction.php");
