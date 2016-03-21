@@ -280,7 +280,7 @@ if (!isset($MyPHPScript)) return;
 	// Создание новой команды возможно, пока не закрыт протокол 
 		//CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)
 
-
+/*
 echo CSql::userTeamId($UserId, $RaidId);
 echo '1';
 echo CSql::userAdmin($UserId);
@@ -289,8 +289,8 @@ echo CSql::userModerator($UserId, $RaidId);
 echo '3';
 echo CSql::raidStage($RaidId);
 echo '4';
-
-	if ($UserId and $RaidId 
+*/
+	if (isset($UserId) and isset($RaidId) 
 		and  (!CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) 
 		and  CSql::raidStage($RaidId) >= 1 and CSql::raidStage($RaidId) < 7)
 	{
