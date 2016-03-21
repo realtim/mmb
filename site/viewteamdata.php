@@ -17,7 +17,14 @@ if ($viewmode == 'Add')
 	}
 
 	// Если запрещено создавать команду - молча выходим, сообщение уже выведено в teamaction.php
-	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)) return;
+	//if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)) return;
+	if (  (CSql::userTeamId($UserId, $RaidId) and !CSql::userAdmin($UserId) and !CSql::userModerator($UserId, $RaidId)) 
+		or CSql::raidStage($RaidId) < 1 or CSql::raidStage($RaidId) >= 7)
+	{
+		return;
+	}
+
+
 
 	$Sql = "select user_email from Users where user_id = $UserId";
 	$UserEmail = CSql::singleValue($Sql, 'user_email');
@@ -326,8 +333,27 @@ $TabIndex = 0;
 print('<tr><td class="input">'."\n");
 // ============ Дистанция
 print('Дистанция '."\n");
+
+
+// 21.03.2016 Определяем, когда можно и когда нельзя менять дистанцию
+// при вводе дистанцию можно менять всегда
+// при правке дистанцию можно менять только до закрытия регистрации участнику
+// и нельзя не участнику, если он не модератор
+	if (CSql::userAdmin($UserId)
+		or CSql::userModerator($UserId, $RaidId)
+		or ($viewmode <> 'Add' and $TeamId == CSql::userTeamId($UserId, $RaidId) and CSql::raidStage($RaidId) < 2)
+	   )
+	{
+		$DisabledDistanceText =  'disabeld';
+	} else {
+		$DisabledDistanceText =  '';
+	}
+
+
+
+
 // Показываем выпадающий список дистанций
-print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
+print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"'.$DisabledDistanceText.'>'."\n");
 $sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
 $Result = MySqlQuery($sql);
 while ($Row = mysql_fetch_assoc($Result))
@@ -457,8 +483,19 @@ if ($viewmode <> "Add")
 // Возможность добавлять участников заканчивается вместе с возможностью создавать команды
 // Обычный пользователь может добавлять новых участников при редактировании своей команды
 // Модератор/Администратор могут создавать новые команды с другим участником вместо себя
-if (($AllowEdit == 1) && CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange) &&
-	(($viewmode <> "Add") || $Moderator || $Administrator))
+//if (($AllowEdit == 1) && CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange) &&
+//	(($viewmode <> "Add") || $Moderator || $Administrator))
+
+
+// 21.03.2016 Определяем, когда можно добавлять нового пользователя
+// при добавлении команды можно только можераторам или администраторам
+
+// при правке дистанцию можно менять только до закрытия регистрации участнику
+// и только участнику
+if ( CSql::userAdmin($UserId)
+      or CSql::userModerator($UserId, $RaidId)
+      or ($viewmode <> 'Add' and $TeamId == CSql::userTeamId($UserId, $RaidId) and CSql::raidStage($RaidId) < 2)
+    )
 {
 	print('<tr><td class="input" style="padding-top: 10px;">'."\n");
 
