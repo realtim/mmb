@@ -350,7 +350,7 @@ class CSql {
 	public static function userModerator($userId, $raidId)
 	{
 		$sql = "select count(*) as moderator
-			from  RaidModeratos rm
+			from  RaidModerators rm
 			where rm.raidmoderator_hide = 0 and rm.raid_id = $raidId and rm.user_id = $userId ";
 
 		return self::singleValue($sql, 'moderator');
