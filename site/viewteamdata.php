@@ -493,7 +493,7 @@ if ($viewmode <> "Add")
 
 if (       ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and !CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 2)
     	or ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and  CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
-    	or ($viewmode == 'Add' and (CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) CSql::raidStage($RaidId) < 7)
+    	or ($viewmode == 'Add' and (CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and CSql::raidStage($RaidId) < 7)
     )
 {
 	print('<tr><td class="input" style="padding-top: 10px;">'."\n");
