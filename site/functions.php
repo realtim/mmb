@@ -134,15 +134,15 @@ class CSql {
 			die();
 		}
 
-//  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
+		//  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
 		//  устанавливаем временную зону
-//		 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
+		//		 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
 		//  устанавливаем кодировку для взаимодействия
 
 		mysql_query('set names \'utf8\'', self::$connection);
 
 		// Выбираем БД ММБ
-//		echo $DBName;
+		//		echo $DBName;
 		$rs = mysql_select_db($DBName, self::$connection);
 
 		if (!$rs)
@@ -226,7 +226,149 @@ class CSql {
 
 		return  "'$year-".substr($tDate, -2)."-".substr($tDate, 0, 2)." ".substr($tTime, 0, 2).":".substr($tTime, 2, 2).":$seconds'";
 	}
+
+	// 21.03.2016 Добавляю сервисные функции в этот класс, хотя может нужно  потом разбивать на  отдельеные классы
+	public static function userId($sessionId)
+	{
+		$sql = "select user_id  from   Sessions  where session_id = $sessionId";
+
+		return self::singleValue($sql, 'user_id');
+	}
+
+	// 21.03.2016 возвращает teamId команды для заданного пользователя и ММБ
+	public static function userTeamId($userId, $raidId)
+	{
+		$sql = "select tu.team_id
+			from TeamUsers tu
+				inner join Teams t on tu.team_id = t.team_id
+				inner join Distances d on t.distance_id = d.distance_id
+			where tu.teamuser_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId and tu.user_id = $userId";
+
+		return self::singleValue($sql, 'team_id');
+	}
+
+
+	// 21.03.2016 возвращает userUnionLogId записи о попытке объедиенения с другим пользователем  для заданного пользователя
+	// только для ситуации запроса или успешного объединения (если отклонено или отмена, то функция не вернёт id)
+	public static function userUnionLogId($userId)
+	{
+		$sql = "select uul.userunionlog_id
+			from UserUnionLogs uul
+			where uul.union_status in (1,2) and (uul.user_id = $userId or uul.user_parentid = $userId)";
+
+		return self::singleValue($sql, 'userunionlog_id');
+	}
+
+	// 21.03.2016 возвращает teamId команды для заданного пользователя и ММБ
+	public static function teamOutOfRange($teamId)
+	{
+		$sql = "select COALESCE(t.team_outofrange, 0) as team_outofrange
+			from  Teams t
+			where t.team_hide = 0 and t.team_id = $teamId";
+
+		return self::singleValue($sql, 'team_outofrange');
+	}
+
+
+
+	// 20/03/2016 ДОбавил фильтрацию точек с нулеым или NULL  мимнимальным и максимальным временем точки, так как для обычных 
+        // КП это время решили не вносить
+        // 21/11/2013  Добавил RaidStage (финиш закрыт, но нельзя показывать результаты и сместил 6 на 7)
+        // 30.10.2013 Для трёхдневного ММБ  изменил INTERVAL 12 на INTERVAL 24  
+	public static function raidStageId($raidId)
+	{
+
+		// RaidStage указывает на то, на какой временной стадии находится ммб
+		// 0 - raid_registrationenddate IS NULL, марш-бросок не показывать
+		// 1 - raid_registrationenddate еще не наступил
+		// 2 - raid_registrationenddate наступил, но удалять участников еще можно
+		// 3 - удалять участников уже нельзя, но первый этап не стартовал
+		// 4 - первый этап стартовал, финиш еще не закрылся
+		// 5 - финиш закрылся, но результаты нельзя показывать
+		// 6 - результаты можно показывать, но  raid_closedate не наступил или Is NULL
+		// 7 - raid_closedate наступил
+
+		$sql = "select
+		CASE
+			WHEN r.raid_registrationenddate IS NULL THEN 0
+			WHEN r.raid_registrationenddate >= DATE(NOW()) THEN 1
+			ELSE 2
+		END as registration,
+		(select count(*) from LevelPoints lp
+			inner join Distances d on lp.distance_id = d.distance_id
+			where (d.raid_id = r.raid_id) and (NOW() >= DATE_SUB(lp.levelpoint_mindatetime, INTERVAL COALESCE(r.raid_readonlyhoursbeforestart, 8) HOUR))
+				and  COALESCE(lp.levelpoint_mindatetime, 0) > 0			
+		)
+		as cantdelete,
+		(select count(*) from LevelPoints lp
+			inner join Distances d on lp.distance_id = d.distance_id
+			where (d.raid_id = r.raid_id) and (NOW() >= lp.levelpoint_mindatetime)
+				and  COALESCE(lp.levelpoint_mindatetime, 0) > 0			
+
+		)
+		as started,
+		(select count(*) from LevelPoints lp
+			inner join Distances d on lp.distance_id = d.distance_id
+			where (d.raid_id = r.raid_id) and (NOW() < lp.levelpoint_maxdatetime)
+				and  COALESCE(lp.levelpoint_maxdatetime, 0) > 0			
+		)
+		as notfinished,
+		CASE
+			WHEN (r.raid_closedate IS NULL) OR (r.raid_closedate >= DATE(NOW())) THEN 0
+			ELSE 1
+		END as closed,
+		COALESCE(r.raid_noshowresult, 0) as noshowresult
+		from Raids r where r.raid_id = $raidId";
+
+		$Row = self::singleRow($sql);
+
+		if ($Row['registration'] == 0) $RaidStage = 0;
+		elseif ($Row['registration'] == 1) $RaidStage = 1;
+		else
+		{
+			if ($Row['cantdelete'] == 0) $RaidStage = 2;
+			elseif ($Row['started'] == 0) $RaidStage = 3;
+			elseif ($Row['notfinished'] > 0) $RaidStage = 4;
+			else
+			{
+				if ($Row['closed'] == 0)
+				{
+				  if ($Row['noshowresult'] == 1)  $RaidStage = 5;
+				  else $RaidStage = 6;
+				}  
+				else $RaidStage = 7;
+			}
+		}
+		// Конец разбора стадии ММБ
+
+		return $RaidStage;
+	}
+	// Конец функции raidStageId
+
+
+	// 21.03.2016 возвращает признак модератора
+	public static function userModerator($userId, $raidId)
+	{
+		$sql = "select count(*) as moderator
+			from  RaidModeratos rm
+			where rm.raidmoderator_hide = 0 and rm.raid_id = $raidId and rm.user_id = $userId ";
+
+		return self::singleValue($sql, 'moderator');
+	}
+
+	// 21.03.2016 возвращает признак администратора
+	public static function userAdmin($userId)
+	{
+		$sql = "select count(*) as admin
+			from  Users u
+			where u.user_id = $userId ";
+
+		return self::singleValue($sql, 'admin');
+	}
+
+	
 }
+// Конец описания класса cSql
 
   function StartSession($UserId) {
 
