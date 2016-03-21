@@ -230,7 +230,7 @@ class CSql {
 	// 21.03.2016 Добавляю сервисные функции в этот класс, хотя может нужно  потом разбивать на  отдельеные классы
 	public static function userId($sessionId)
 	{
-		$sql = "select user_id  from   Sessions  where session_id = $sessionId";
+		$sql = "select user_id  from   Sessions  where session_id = '$sessionId'";
 
 		return self::singleValue($sql, 'user_id');
 	}
