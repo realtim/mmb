@@ -447,6 +447,8 @@ class CSql {
   }
 
 
+
+
   // Закрываем сессию
   function CloseSession($SessionId, $CloseStatus) {
   //  $CloseStatus  1 - превышение временеия с последнего обновления
@@ -458,12 +460,36 @@ class CSql {
       } 
 
         // м.б. потом ещё нужно будет закрывать открытые соединения с БД
-       $Result = MySqlQuery("update  Sessions set session_updatetime = now(), session_status = $CloseStatus
+        $Result = MySqlQuery("update  Sessions set session_updatetime = now(), session_status = $CloseStatus
 			    where session_status = 0 and session_id = '$SessionId'");
-	  CMmb::clearSessionCookie();
+	CMmb::clearSessionCookie();
 
       return;
    }
+
+  // 21.03.2016 Обновляем данные сессии
+  function UpdateSession($SessionId) {
+
+      if (empty($SessionId))
+      {
+        return 0;
+      } 
+
+      // Закрываем все сессии, которые неактивны 20 минут
+      CloseInactiveSessions(CMmb::SessionTimeout);
+
+      // Очищаем таблицу
+      ClearSessions();
+  
+      $Result = MySqlQuery("update  Sessions set session_updatetime = now()
+			    where session_status = 0 and session_id = '$SessionId'");
+
+      CMmb::setSessionCookie($SessionId);
+
+      return;
+
+    }
+
 
 
     // Гененрируем пароль
