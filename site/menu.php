@@ -289,9 +289,11 @@ echo '-1';
 echo $UserId;
 echo '-2';
 echo $RaidId;
-echo '0';
+*/
+echo '0 ';
+
 echo CSql::userTeamId($UserId, $RaidId);
-echo '1';
+/*echo '1';
 echo CSql::userAdmin($UserId);
 echo '2';
 echo CSql::userModerator($UserId, $RaidId);
