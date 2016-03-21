@@ -34,8 +34,10 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 	// Инициализируем права доступа пользователя
 	$SessionId = mmb_validate($_COOKIE, CMmb::CookieName, '');
 	$OldSessionId = $SessionId;
-	$RaidId = (int) mmb_validate($_REQUEST, 'RaidId', 0);
+	$RaidId = (int) mmb_validateInt($_REQUEST, 'RaidId', 0);
 	$TeamId = (int) mmb_validateInt($_REQUEST, 'TeamId', 0);
+	$DistanceId = (int) mmb_validateInt($_REQUEST, 'DistanceId', 0);
+	$UserId = (int) mmb_validateInt($_REQUEST, 'UserId', 0);
 
 
          // 27/12/2013 Заменил на сортировку по ключу
@@ -85,8 +87,6 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 		$action = "";
 
 
-        //Не знаю, относится ли дистанция к переменным сессии, но инициализацию делаем
-	$DistanceId = mmb_validateInt($_REQUEST, 'DistanceId', 0);
 
 $tmAction = CMmbLogger::addInterval('before action', $tmSt);
 	if ($action == "") 
