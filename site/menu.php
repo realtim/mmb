@@ -99,8 +99,8 @@ if (!isset($MyPHPScript)) return;
 
 <?php
 
-        if !isset($UserId)  $UserId = 0;
-        if !isset($RaidId)  $RaidId = 0;
+        if (!isset($UserId)) { $UserId = 0; }
+        if (!isset($RaidId)) { $RaidId = 0; }
 
 	// какое выводить меню
 	if ($UserId <= 0)
