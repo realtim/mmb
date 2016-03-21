@@ -653,7 +653,9 @@ elseif ($action == 'HideTeam')
 	}
 	mysql_free_result($Result);
 
-	$sql = "update TeamUsers set teamuser_hide = 1 where team_id = $TeamId";
+	// 21/03/2016 заменил на удаление
+	//$sql = "update TeamUsers set teamuser_hide = 1 where team_id = $TeamId";
+	$sql = "delete from TeamUsers where team_id = $TeamId";
 	$rs = MySqlQuery($sql);
 	$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 	$rs = MySqlQuery($sql);
