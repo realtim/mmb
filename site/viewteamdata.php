@@ -346,14 +346,14 @@ print('Дистанция '."\n");
 	{
 		$DisabledDistanceText =  '';
 	} else {
-		$DisabledDistanceText =  'disabeld';
+		$DisabledDistanceText =  'disabled';
 	}
 
 
 
 
 // Показываем выпадающий список дистанций
-print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"'.$DisabledDistanceText.'>'."\n");
+print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'" '.$DisabledDistanceText.'>'."\n");
 $sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
 $Result = MySqlQuery($sql);
 while ($Row = mysql_fetch_assoc($Result))
