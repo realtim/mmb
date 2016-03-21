@@ -123,7 +123,9 @@ if (!isset($MyPHPScript)) return;
 		print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
 		print('<tr><td><a href="?UserId='.$UserId.'" title="Переход к Вашей карточке пользователя">'.$UserName.'</a></tr>'."\r\n");
 		// !! реализовать показ ссылки на список заявок только если заявки существуют и не отклонены !!
-		print('<tr><td><a href="javascript:ViewUserUnionPage();" title="Заявки на слияние Вас с другими пользователями">Запросы на слияние</a></td></tr>'."\r\n");
+		if (userUnionLogId($UserId)) {
+			print('<tr><td><a href="javascript:ViewUserUnionPage();" title="Заявки на слияние Вас с другими пользователями">Запросы на слияние</a></td></tr>'."\r\n");
+		}
 		print('<tr><td><a href="javascript:UserLogout();" style="font-size: 80%;">Выход</a></td></tr>'."\r\n");
 		print('</table>'."\r\n");
 		print('</form>'."\n");
@@ -267,13 +269,30 @@ if (!isset($MyPHPScript)) return;
 	print("</select>\r\n");
 	print("</td></tr>\r\n");
 
+
+	// 21/03/2016 Новая логика показа ссылки "Новая команда"
+	// интервал: от регистрации до закрытия протокола
+	//  кому: всем, у кого ещё нет команды, мрдератору, администратору.
+	// Комменатрий: реально пользователь без спец.ю пав может создать команду только "Вне зачета" - это должно проверяться уже на этапе записи данных
+	// модератор и администратор могут указать не себя, а дргугоо пользователя, пожтому им нужно датьвозможность создавать команду, даже когда они сами уже участвуют в какой-то
+	// и - опрять же - проверка при записи данных, что ользователь может быть только в одной команде
 	// 19/06/2015 Пользователь должен быть авторизован и иметь права
-	if ($UserId && CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
+	// Создание новой команды возможно, пока не закрыт протокол 
+		//CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)
+
+	if ($UserId and $RaidId 
+		and  (!userTeamId($UserId, $RaidId) or userAdmin($UserId) or userModerator($UserId, $RaidId)) 
+		and  raidStage($RaidId) >= 1 and raidStage($RaidId) < 7)
 	{
 		print('<tr><td><a href="javascript:NewTeam();" title="Регистрация новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n");
 	}
 	// !! реализовать показ ссылки на свою команду, если она существует !!
-
+	
+	if (userTeamId($UserId, $RaidId)) {
+		print('<tr><td><a href="'.$MyPHPScript.'"?TeamId="'.userTeamId($UserId, $RaidId).'";" title="Просмотр карточки Вашей команды">Моя команда</a></td></tr>'."\r\n");
+	}
+	
+	
 	// Команды
 	print('<tr><td><a href="?RaidId='.$RaidId.'" title="Список зарегистрированных команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n");
 
