@@ -39,19 +39,26 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 	$DistanceId = (int) mmb_validateInt($_REQUEST, 'DistanceId', 0);
 	$UserId = (int) mmb_validateInt($_REQUEST, 'UserId', 0);
 
+	// 21/03/2016  Если не указан 	$UserId  получаем его из сессии.
+	// эта инициализация сейчас перекрываетвя в GetPrivileges, но есдли в будующем захочется отказаться от GetPrivileges
+	// то полезно пользователя определять через 
+        if (empty($UserId))
+        {
+		$UserId = (int) CSql::userId($sessionId);
+        }
 
          // 27/12/2013 Заменил на сортировку по ключу
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
         if (empty($RaidId))
 	{
-  	     GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
-  	     $orderBy = $Administrator ? 'raid_id' : 'raid_registrationenddate';
+  	     //GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
+
+  	     $orderBy = CSql::userAdmin($UserId) ? 'raid_id' : 'raid_registrationenddate';
   	     $sql = "select raid_id
 		       from Raids
 		       order by $orderBy desc
 		       LIMIT 0,1 ";
-
 	     $RaidId = CSql::singleValue($sql, 'raid_id');
         }
 	// Конец определения ММБ
