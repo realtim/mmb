@@ -284,22 +284,20 @@ if (!isset($MyPHPScript)) return;
 	// Создание новой команды возможно, пока не закрыт протокол 
 		//CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)
 
-/*
-echo '-1';
-echo $UserId;
-echo '-2';
-echo $RaidId;
-*/
-echo '0 ';
 
+echo '-1 ';
+echo $UserId;
+echo '-2 ';
+echo $RaidId;
+echo '0 ';
 echo !CSql::userTeamId($UserId, $RaidId);
-echo '1';
+echo '1 ';
 echo CSql::userAdmin($UserId);
-echo '2';
+echo '2 ';
 echo CSql::userModerator($UserId, $RaidId);
-echo '3';
+echo '3 ';
 echo CSql::raidStage($RaidId);
-echo '4';
+echo '4 ';
 
 	if ($UserId and $RaidId 
 		and  (!CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) 
