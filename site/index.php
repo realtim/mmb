@@ -44,7 +44,7 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 	// то полезно пользователя определять через 
         if (empty($UserId))
         {
-		$UserId = (int) CSql::userId($sessionId);
+		$UserId = (int) CSql::userId($SessionId);
         }
 
          // 27/12/2013 Заменил на сортировку по ключу
