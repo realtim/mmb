@@ -344,9 +344,9 @@ print('Дистанция '."\n");
 		or ($viewmode <> 'Add' and $TeamId == CSql::userTeamId($UserId, $RaidId) and CSql::raidStage($RaidId) < 2)
 	   )
 	{
-		$DisabledDistanceText =  'disabeld';
-	} else {
 		$DisabledDistanceText =  '';
+	} else {
+		$DisabledDistanceText =  'disabeld';
 	}
 
 
