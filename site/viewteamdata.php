@@ -489,12 +489,11 @@ if ($viewmode <> "Add")
 
 // 21.03.2016 Определяем, когда можно добавлять нового пользователя
 // при добавлении команды можно только можераторам или администраторам
+// при правке - в зависимости от типа команды
 
-// при правке дистанцию можно менять только до закрытия регистрации участнику
-// и только участнику
-if ( CSql::userAdmin($UserId)
-      or CSql::userModerator($UserId, $RaidId)
-      or ($viewmode <> 'Add' and $TeamId == CSql::userTeamId($UserId, $RaidId) and CSql::raidStage($RaidId) < 2)
+if (       ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and !CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 2)
+    	or ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and  CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
+    	or ($viewmode == 'Add' and (CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) CSql::raidStage($RaidId) < 7)
     )
 {
 	print('<tr><td class="input" style="padding-top: 10px;">'."\n");
