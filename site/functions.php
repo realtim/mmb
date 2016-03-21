@@ -362,7 +362,7 @@ class CSql {
 	{
 		$sql = "select count(*) as admin
 			from  Users u
-			where u.user_id = $userId ";
+			where u.user_id = $userId and user_admin = 1 ";
 
 		return self::singleValue($sql, 'admin');
 	}
