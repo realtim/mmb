@@ -275,7 +275,7 @@ class CSql {
         // КП это время решили не вносить
         // 21/11/2013  Добавил RaidStage (финиш закрыт, но нельзя показывать результаты и сместил 6 на 7)
         // 30.10.2013 Для трёхдневного ММБ  изменил INTERVAL 12 на INTERVAL 24  
-	public static function raidStageId($raidId)
+	public static function raidStage($raidId)
 	{
 
 		// RaidStage указывает на то, на какой временной стадии находится ммб
