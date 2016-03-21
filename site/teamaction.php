@@ -184,10 +184,11 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
                //
 		//if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
 		// Проверка на добавление нового пользователя
-		if !(      ($action == 'TeamChangeData' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId))  and !CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 2)
+		if ( !(      ($action == 'TeamChangeData' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId))  and !CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 2)
       			or ($action == 'TeamChangeData' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId))  and  CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
       			or ($action == 'AddTeam' and ($NewUserId == $UserId or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and !$pTeamOutOfRange and CSql::raidStage($RaidId) < 2)
       			or ($action == 'AddTeam' and ($NewUserId == $UserId or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and  $pTeamOutOfRange and CSql::raidStage($RaidId) < 7)
+    	  	       )
     	  	    )
 		{
 	  
