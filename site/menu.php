@@ -289,7 +289,7 @@ if (!isset($MyPHPScript)) return;
 	// !! реализовать показ ссылки на свою команду, если она существует !!
 	
 	if (CSql::userTeamId($UserId, $RaidId)) {
-		print('<tr><td><a href="'.$MyPHPScript.'?TeamId='.CSql::userTeamId($UserId, $RaidId).';" title="Просмотр карточки Вашей команды">Моя команда</a></td></tr>'."\r\n");
+		print('<tr><td><a href="'.$MyPHPScript.'?TeamId='.CSql::userTeamId($UserId, $RaidId).'" title="Просмотр карточки Вашей команды">Моя команда</a></td></tr>'."\r\n");
 	}
 	
 	
