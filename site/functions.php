@@ -244,7 +244,7 @@ class CSql {
 				inner join Distances d on t.distance_id = d.distance_id
 			where tu.teamuser_hide = 0 and t.team_hide = 0 and d.raid_id = $raidId and tu.user_id = $userId";
 
-		echo $sql; 
+	//	echo $sql; 
 		return self::singleValue($sql, 'team_id');
 	}
 
