@@ -354,7 +354,7 @@ print('Дистанция '."\n");
 	}
 
 
-if !$DisabledDistance {
+if (!$DisabledDistance) {
 
 	// Показываем выпадающий список дистанций
 	print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'" '.$DisabledDistanceText.'>'."\n");
