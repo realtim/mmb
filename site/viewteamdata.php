@@ -334,6 +334,8 @@ print('<tr><td class="input">'."\n");
 // ============ Дистанция
 print('Дистанция '."\n");
 
+// 22-03-2016 Отключение через disabled для списка (select) приводит к тому, что перестает передаваться информация о дистанции
+// поставил анализ
 
 // 21.03.2016 Определяем, когда можно и когда нельзя менять дистанцию
 // при вводе дистанцию можно менять всегда до закрытия протокола
@@ -346,25 +348,44 @@ print('Дистанция '."\n");
 		or ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or  CSql::userModerator($UserId, $RaidId)) and CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
 	   )
 	{
-		$DisabledDistanceText =  '';
+		$DisabledDistance =  0;
 	} else {
-		$DisabledDistanceText =  'disabled';
+		$DisabledDistance = 1;
 	}
 
 
+if !$DisabledDistance {
 
+	// Показываем выпадающий список дистанций
+	print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'" '.$DisabledDistanceText.'>'."\n");
+	$sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
+	$Result = MySqlQuery($sql);
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+		$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
+		print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
+	}
+	mysql_free_result($Result);
+	print('</select>'."\n");
 
-// Показываем выпадающий список дистанций
-print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'" '.$DisabledDistanceText.'>'."\n");
-$sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
-$Result = MySqlQuery($sql);
-while ($Row = mysql_fetch_assoc($Result))
-{
-	$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
-	print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
+	
+}  else {
+
+	print('<input type="hidden" name="DistanceId" size="50" value="'.$DistanceId.'" tabindex="'.(++$TabIndex).'">'."\n");
+	print('<select name="DistanceDisabledId" class="leftmargin" tabindex="'.(++$TabIndex).'" disabled>'."\n");
+	$sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
+	$Result = MySqlQuery($sql);
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+		$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
+		print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
+	}
+	mysql_free_result($Result);
+	print('</select>'."\n");
+
 }
-mysql_free_result($Result);
-print('</select>'."\n");
+// Конец проверки на блокировку выбора дистанции
+
 print('</td></tr>'."\n\n");
 
 // ============ Название команды
