@@ -67,7 +67,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pTeamNum = (int) $_POST['TeamNum'];
 	$pTeamName = $_POST['TeamName'];
 	$pTeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
-        // Используем только при правке (м.б. нужна доп. проверка на права
+        // Ниже  доп. проверка на права и определение этого флага при записи данных
 	$pTeamOutOfRange = mmb_isOn($_POST, 'TeamOutOfRange');
 	$pTeamMapsCount = (int)$_POST['TeamMapsCount'];
 	$pTeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
@@ -183,11 +183,11 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
                // 19.05.2013 внёс изменения, чтобы разрешить регистрацию вне зачета
                //
 		//if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
-		// Проверка на добавление нового пользователя
+		// Проверка на право добавить нового пользователя пользователя
+		// флаг вне зачета не проверяется для добавления команды, так как он устанавливается позже при записи
 		if ( !(      ($action == 'TeamChangeData' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId))  and !CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 2)
       			or ($action == 'TeamChangeData' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId))  and  CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
-      			or ($action == 'AddTeam' and ($NewUserId == $UserId or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and !$pTeamOutOfRange and CSql::raidStage($RaidId) < 2)
-      			or ($action == 'AddTeam' and ($NewUserId == $UserId or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and  $pTeamOutOfRange and CSql::raidStage($RaidId) < 7)
+      			or ($action == 'AddTeam' and ($NewUserId == $UserId or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and CSql::raidStage($RaidId) < 7)
     	  	       )
     	  	    )
 		{
@@ -240,6 +240,14 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	if ($action == "AddTeam")
 	// Новая команда
 	{
+
+		// Дополнительная проверка на флаг.  Если регистрация закончена, то 
+		if (CSql::raidStage($RaidId) >= 2 OR $OutOfRaidLimit > 0 OR $WaitTeamId > 0)  {
+			$TeamOutOfRange = 1;
+		} else {
+			$TeamOutOfRange = 0;
+		}
+
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
 			team_registerdt, team_greenpeace, team_outofrange, team_waitdt)
 			values (";
@@ -254,12 +262,12 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		}
 		// Все остальное
 		$sql .= ", '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(),
-			$pTeamGreenPeace";
+			$pTeamGreenPeace, $TeamOutOfRange";
 		// Если превышен лимит команл или есть команда в списке ожидания, то не регистрируем в зачет			
 		if ($OutOfRaidLimit > 0 OR $WaitTeamId > 0) {
-			$sql .= ", 1, NOW())";
+			$sql .= ", NOW())";
 		} else {
-			$sql .= ", $TeamOutOfRange, NULL)";
+			$sql .= ", NULL)";
 		}
 			
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
