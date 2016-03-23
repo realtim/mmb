@@ -2735,6 +2735,7 @@ function FindErrors($raid_id, $team_id)
 				on d.distance_id = t.distance_id
 			where r.raid_id=$RaidId
 				and t.team_hide = 0
+				and t.team_outofrange = 1
 				and t.team_waitdt is not null
 			order by  t.team_waitdt ASC
 			LIMIT 0,1
