@@ -442,33 +442,8 @@ elseif ($action == 'HideTeamUser')
 	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId";
 	$TeamUserCount = CSql::singleValue($sql, 'result');
 
-	// 07.2015 Заменил на физическое удаление
-	$sql = "delete from TeamUsers where teamuser_id = $HideTeamUserId";
-	//$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
-	$rs = MySqlQuery($sql);
 
-	if ($TeamUserCount > 1)         // Кто-то ещё остается
-	{
-		$view = "ViewTeamData";
-	}
-	else                            // Это был последний участник
-	{
-		$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
-		$rs = MySqlQuery($sql);
-
-		// Ищем первую команду в листе ожидания
-		$WaitTeamId = FindFirstTeamInWaitList($RaidId);
-		$RaidOutOffLimit = IsOutOfRaidLimit($RaidId);
-		if ($RaidOutOffLimit == 0 AND $WaitTeamId > 0 AND $RaidStage == 1) {
-			$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
-			$rs = MySqlQuery($sql);
-		}
-		
-
-		$view = "";
-	}
-
-	// Отправить письмо всем участникам команды об удалении
+	// Отправить письмо всем участникам команды об удалении (до физического удаления!)
 	// Кроме того, кто удалял
 	if ($UserId > 0 and $TeamId > 0)
 	{
@@ -509,6 +484,34 @@ elseif ($action == 'HideTeamUser')
 		mysql_free_result($Result);
 	}
 	// Конец отправки писем об удалении
+
+
+	// 07.2015 Заменил на физическое удаление
+	$sql = "delete from TeamUsers where teamuser_id = $HideTeamUserId";
+	//$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
+	$rs = MySqlQuery($sql);
+
+	if ($TeamUserCount > 1)         // Кто-то ещё остается
+	{
+		$view = "ViewTeamData";
+	}
+	else                            // Это был последний участник
+	{
+		$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
+		$rs = MySqlQuery($sql);
+
+		// Ищем первую команду в листе ожидания
+		$WaitTeamId = FindFirstTeamInWaitList($RaidId);
+		$RaidOutOffLimit = IsOutOfRaidLimit($RaidId);
+		if ($RaidOutOffLimit == 0 AND $WaitTeamId > 0 AND $RaidStage == 1) {
+			$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
+			$rs = MySqlQuery($sql);
+		}
+		
+
+		$view = "";
+	}
+
 
 	$view = mmb_validate($_POST, 'view', 'ViewTeamData');
 }
