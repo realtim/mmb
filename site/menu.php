@@ -363,7 +363,7 @@ echo '4 ';
 
 	// Внешние сылки
 	print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
-	print('<tr><td><a href="http://www.livejournal.com/community/_mmb_" title="Сообщество ММБ в Живом Журнале>ЖЖ</a></td></tr>'."\r\n");
+	print('<tr><td><a href="http://www.livejournal.com/community/_mmb_" title="Сообщество ММБ в Живом Журнале">ЖЖ</a></td></tr>'."\r\n");
 	print('<tr><td><a href="http://slazav.mccme.ru/maps/" title="Карты ММБ для просмотра и загрузки в GPS">Карты</a></td></tr>'."\r\n");
 	print('<tr><td><a href="?badges" title="Значки со всех ММБ">Все значки</a></td></tr>'."\r\n");
 	print('<tr><td><a href="?rating" title="Страница рейтинга участников">Рейтинг</a></td></tr>'."\r\n");
