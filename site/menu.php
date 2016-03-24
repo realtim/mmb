@@ -363,12 +363,12 @@ echo '4 ';
 
 	// Внешние сылки
 	print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
-	print('<tr><td><a href="http://www.livejournal.com/community/_mmb_" title="Сообщество ММБ в Живом Журнале">ЖЖ</a></td></tr>'."\r\n");
-	print('<tr><td><a href="http://slazav.mccme.ru/maps/" title="Карты ММБ для просмотра и загрузки в GPS">Карты</a></td></tr>'."\r\n");
+	print('<tr><td><a href="http://www.livejournal.com/community/_mmb_" title="Сообщество ММБ в Живом Журнале" target = "_blank">ЖЖ</a></td></tr>'."\r\n");
+	print('<tr><td><a href="http://slazav.mccme.ru/maps/" title="Карты ММБ для просмотра и загрузки в GPS" target = "_blank">Карты</a></td></tr>'."\r\n");
 	print('<tr><td><a href="?badges" title="Значки со всех ММБ">Все значки</a></td></tr>'."\r\n");
 	print('<tr><td><a href="?rating" title="Страница рейтинга участников">Рейтинг</a></td></tr>'."\r\n");
-	print('<tr><td><a href="'.$MyLocation.'vp_old.html" title="Ручная подборка впечатлений за 2003-2013гг">Архив впечатлений</a></td></tr>'."\r\n");
-	print('<tr><td> <a href="http://slazav.mccme.ru/mmb/" title="Статическая версия сайта 2009г">Архив сайта</a></td></tr>'."\r\n");
+	print('<tr><td><a href="'.$MyLocation.'vp_old.html" title="Ручная подборка впечатлений за 2003-2013гг" target = "_blank">Архив впечатлений</a></td></tr>'."\r\n");
+	print('<tr><td> <a href="http://slazav.mccme.ru/mmb/" title="Статическая версия сайта 2009г" target = "_blank">Архив сайта</a></td></tr>'."\r\n");
 	print('</table>'."\r\n");
 
 	print('</br>'."\r\n");
