@@ -145,7 +145,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 		  $DistanceLink = "?RaidId=$nextRaidId";
 		}
 	
-	        print('<a href="'.$DistanceLink.'">'."$DistanceName.</a>: $DistanceCounters $DistanceData\r\n");
+	        print('<a href="'.$DistanceLink.'">'."$DistanceName</a>: $DistanceCounters $DistanceData\r\n");
 	
 	}
 	mysql_free_result($resultDistance);
