@@ -1939,13 +1939,128 @@ send_mime_mail('Автор письма',
 		return;
 	}
 
-	$teamRaidCondition1 = (!empty($teamid)) ? " t1.team_id = $teamid" : "d1.raid_id = $raidid";
-	$teamRaidCondition2 = (!empty($teamid)) ? " t2.team_id = $teamid" : "d2.raid_id = $raidid";
-
-
+	$teamRaidCondition = (!empty($teamid)) ? " t1.team_id = $teamid" : "d1.raid_id = $raidid";
+	
 		/*
         правильный вариант с штрафом в следующей точке со временем
         */
+/*
+   правильно сдедлать удаление, но нет прав.
+
+	$sql = " DROP TABLE IF EXISTS tmp_tlp1 ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " DROP TABLE IF EXISTS tmp_tlp2 ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " DROP TABLE IF EXISTS tmp_tlp3 ";
+	$rs = MySqlQuery($sql);
+*/
+
+
+	// можно наверное ещ ускорить, если вторую временную таблицу из первой копирваниемполучать, а не запросом
+
+	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
+				tmp_rtlppwd1 (
+                 team_id INT, INDEX (team_id),
+                 levelpoint_order INT,  INDEX (levelpoint_order) 
+			     ) 
+				ENGINE=MEMORY ";
+	$rs = MySqlQuery($sql);
+				
+	$sql = " DELETE FROM tmp_rtlppwd1  ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " INSERT INTO tmp_rtlppwd1 (team_id, levelpoint_order)
+			 select t1.team_id, lp1.levelpoint_order 
+                                  from TeamLevelPoints tlp1 
+                                           inner join LevelPoints lp1 on tlp1.levelpoint_id = lp1.levelpoint_id 
+                                           inner join Teams t1 on t1.team_id = tlp1.team_id 
+                                           inner join Distances d1 on t1.distance_id = d1.distance_id 
+                                  where $teamRaidCondition
+			";
+	$rs = MySqlQuery($sql);
+			 
+	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
+				tmp_rtlppwd2 (
+		             team_id INT, INDEX (team_id),
+		             levelpoint_order INT,  INDEX (levelpoint_order) 
+			     ) 
+				ENGINE=MEMORY ";
+	$rs = MySqlQuery($sql);
+				
+	$sql = " DELETE FROM tmp_rtlppwd2  ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " INSERT INTO tmp_rtlppwd2 (team_id, levelpoint_order)
+			 select t1.team_id, lp1.levelpoint_order 
+                                  from TeamLevelPoints tlp1 
+                                           inner join LevelPoints lp1 on tlp1.levelpoint_id = lp1.levelpoint_id 
+                                           inner join Teams t1 on t1.team_id = tlp1.team_id 
+                                           inner join Distances d1 on t1.distance_id = d1.distance_id 
+                                  where $teamRaidCondition
+			";
+	$rs = MySqlQuery($sql);
+
+	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
+				tmp_rtlppwd3 (
+                                 team_id INT, INDEX (team_id),
+                                 up  INT,  INDEX (up) ,
+                                 penalty INT
+				        ) 
+				ENGINE=MEMORY ";
+	$rs = MySqlQuery($sql);
+				
+	$sql = " DELETE FROM tmp_rtlppwd3  ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " INSERT INTO tmp_rtlppwd3 (team_id, up, penalty)
+			 select c.team_id, c.up, SUM(COALESCE(lp.levelpoint_penalty, 0)) as penalty
+         			from
+		         		(select a.team_id, a.levelpoint_order as up, MAX(b.levelpoint_order) as down
+                                         from   tmp_rtlppwd1 a 
+                                                  inner join tmp_rtlppwd2  b 
+                                                  on a.team_id = b.team_id and a.levelpoint_order > b.levelpoint_order 
+                                         group by a.team_id, a.levelpoint_order 
+                                         having a.levelpoint_order > MAX(b.levelpoint_order) + 1
+             			) c
+		            	inner join Teams t
+				        on c.team_id = t.team_id
+        				inner join LevelPoints lp
+	              			on t.distance_id = lp.distance_id
+			           	     and lp.levelpoint_order < c.up
+             				    and  lp.levelpoint_order > c.down
+              				left outer join LevelPointDiscounts lpd
+		            		on t.distance_id = lpd.distance_id 
+				             and lp.levelpoint_order <= lpd.levelpointdiscount_finish
+              				     and  lp.levelpoint_order >= lpd.levelpointdiscount_start
+           			where lpd.levelpointdiscount_id is null
+					group by c.team_id, c.up
+			";
+	$rs = MySqlQuery($sql);
+
+	$sql = "update TeamLevelPoints tlp0
+				 inner join LevelPoints lp0
+				 on tlp0.levelpoint_id = lp0.levelpoint_id
+				 inner join tmp_rtlppwd3 d
+				 on tlp0.team_id = d.team_id
+					and lp0.levelpoint_order = d.up
+			set  tlp0.teamlevelpoint_penalty = COALESCE(tlp0.teamlevelpoint_penalty, 0) + COALESCE(d.penalty, 0) 
+			";
+	$rs = MySqlQuery($sql);
+
+	$sql = " DELETE FROM tmp_rtlppwd1  ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " DELETE FROM tmp_rtlppwd2  ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " DELETE FROM tmp_rtlppwd3  ";
+	$rs = MySqlQuery($sql);
+
+
+/*
+старый  вариант 
 
 	 $sql = " update TeamLevelPoints tlp0
 			 inner join LevelPoints lp0
@@ -1999,10 +2114,28 @@ send_mime_mail('Автор письма',
 			   and lp0.levelpoint_order = d.up
 		set tlp0.teamlevelpoint_penalty = COALESCE(tlp0.teamlevelpoint_penalty, 0) + COALESCE(d.penalty, 0)";
 
+*/
+/*
 
-       //    echo $sql;
-	 
-	  $rs = MySqlQuery($sql);
+          select  tlp0.teamlevelpoint_penalty = COALESCE(tlp0.teamlevelpoint_penalty, 0) + COALESCE(d.penalty, 0) 
+	  from  TeamLevelPoints tlp0
+			 inner join LevelPoints lp0
+			 on tlp0.levelpoint_id = lp0.levelpoint_id
+			 inner join tmp_tlp3 d
+			on tlp0.team_id = d.team_id
+			   and lp0.levelpoint_order = d.up
+
+
+  update TeamLevelPoints tlp0
+			 inner join LevelPoints lp0
+			 on tlp0.levelpoint_id = lp0.levelpoint_id
+			 inner join tmp_tlp3 d
+			on tlp0.team_id = d.team_id
+			   and lp0.levelpoint_order = d.up
+          set  tlp0.teamlevelpoint_penalty = COALESCE(tlp0.teamlevelpoint_penalty, 0) + COALESCE(d.penalty, 0) 
+
+*/
+
 	
      }
      // Конец функции расчета штрафа для КП без амнистий		
@@ -2015,6 +2148,162 @@ send_mime_mail('Автор письма',
 	 if (empty($teamid) and empty($raidid)) {     	 
 	    return;
 	 }
+
+	$teamRaidCondition = (!empty($teamid)) ? " t1.team_id = $teamid" : "d1.raid_id = $raidid";
+
+
+
+
+
+	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
+				tmp_rtlpr1 (
+                  team_id INT, INDEX (team_id),
+                  levelpoint_order INT,  INDEX (levelpoint_order) 
+			     ) 
+				ENGINE=MEMORY ";
+
+//echo $sql.";";
+
+	$rs = MySqlQuery($sql);
+				
+	$sql = " DELETE FROM tmp_rtlpr1  ";
+	$rs = MySqlQuery($sql);
+	
+	$sql = " INSERT INTO tmp_rtlpr1 (team_id, levelpoint_order)
+			 select t1.team_id, lp1.levelpoint_order 
+                                  from TeamLevelPoints tlp1 
+                                           inner join LevelPoints lp1 on tlp1.levelpoint_id = lp1.levelpoint_id 
+                                           inner join Teams t1 on t1.team_id = tlp1.team_id 
+                                           inner join Distances d1 on t1.distance_id = d1.distance_id 
+                                  where lp1.pointtype_id <> 1 
+								         and $teamRaidCondition
+			";
+     //echo $sql.";";
+
+			
+	 $rs = MySqlQuery($sql);
+			 
+	 $sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
+				tmp_rtlpr2 (
+		              team_id INT, INDEX (team_id),
+		              levelpoint_order INT,  INDEX (levelpoint_order),
+                      durationinsec INT, 
+					  penaltyinmin INT
+			     ) 
+				ENGINE=MEMORY ";
+	//echo $sql.";";
+	$rs = MySqlQuery($sql);
+				
+	$sql = " DELETE FROM tmp_rtlpr2  ";
+	$rs = MySqlQuery($sql);
+	
+	$sql = " INSERT INTO tmp_rtlpr2 (team_id, levelpoint_order, durationinsec, penaltyinmin)
+			 select t1.team_id, lp1.levelpoint_order,  
+				    TIME_TO_SEC(COALESCE(tlp1.teamlevelpoint_duration, 0)) as durationinsec, 
+					COALESCE(tlp1.teamlevelpoint_penalty, 0) as penaltyinmin  
+                                  from TeamLevelPoints tlp1 
+                                           inner join LevelPoints lp1 on tlp1.levelpoint_id = lp1.levelpoint_id 
+                                           inner join Teams t1 on t1.team_id = tlp1.team_id 
+                                           inner join Distances d1 on t1.distance_id = d1.distance_id 
+                                  where lp1.pointtype_id <> 1 
+								         and $teamRaidCondition
+			";
+	
+	//echo $sql.";";
+
+	$rs = MySqlQuery($sql);
+	
+	
+
+	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
+				tmp_rtlpr3 (
+                                 team_id INT, INDEX (team_id),
+                                 up  INT, INDEX (up),
+								 totaldurationinsec INT,
+                                 totalpenaltyinsec INT
+				        ) 
+				ENGINE=MEMORY";
+
+	//echo $sql.";";
+	$rs = MySqlQuery($sql);
+				
+	$sql = " DELETE FROM tmp_rtlpr3  ";
+	$rs = MySqlQuery($sql);
+	
+	$sql = " INSERT INTO tmp_rtlpr3 (team_id, up, totaldurationinsec, totalpenaltyinsec)
+			 select a.team_id as team_id, 
+			        a.levelpoint_order as up, 
+			        SUM(b.durationinsec) as totaldurationinsec,
+					SUM(b.penaltyinmin)*60 as totalpenaltyinsec 
+         			from
+		         		(select team_id, levelpoint_order from tmp_rtlpr1) a 
+                        inner join
+						(select team_id, levelpoint_order, durationinsec, penaltyinmin from tmp_rtlpr2) b 
+                        on a.team_id = b.team_id and a.levelpoint_order >= b.levelpoint_order 
+                    group by a.team_id, a.levelpoint_order 
+			";
+
+
+
+	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
+				tmp_rtlpr4 (
+                                 team_id INT, INDEX (team_id),
+                                 levelpoint_id  INT, INDEX (levelpoint_id),
+								 result TIME
+				        ) 
+				ENGINE=MEMORY";
+
+	//echo $sql.";";
+	$rs = MySqlQuery($sql);
+				
+	$sql = " DELETE FROM tmp_rtlpr4  ";
+	$rs = MySqlQuery($sql);
+	
+	$sql = " INSERT INTO tmp_rtlpr4 (team_id, levelpoint_id, result)
+			 select c.team_id as team_id, 
+			        lp0.levelpoint_id as levelpoint_id, 
+					SEC_TO_TIME(c.totaldurationinsec + c.totalpenaltyinsec) as result
+    		 from tmp_rtlpr3  c
+                  inner join Teams t1 on t1.team_id = c.team_id 
+			      inner join LevelPoints lp0
+				  on t1.distance_id = lp0.distance_id 
+				     and lp0.levelpoint_order = c.up
+			";
+    
+
+     //echo $sql.";";
+	 
+	$rs = MySqlQuery($sql);
+
+	$sql = "update TeamLevelPoints tlp0
+				 inner join tmp_rtlpr4 d
+				 on tlp0.team_id = d.team_id
+					and tlp0.levelpoint_id = d.levelpoint_id
+			set  tlp0.teamlevelpoint_result = d.result
+			";
+
+	//echo $sql.";";
+	 
+	$rs = MySqlQuery($sql);
+
+
+
+// Правильно сдлеать удаление, но нет прав
+
+	$sql = " DELETE FROM tmp_rtlpr1  ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " DELETE FROM tmp_rtlpr2  ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " DELETE FROM tmp_rtlpr3  ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " DELETE FROM tmp_rtlpr4  ";
+	$rs = MySqlQuery($sql);
+
+/*
+
 
 	 $teamRaidCondition1 = (!empty($teamid)) ? " t1.team_id = $teamid" : "d1.raid_id = $raidid";
 	 $teamRaidCondition2 = (!empty($teamid)) ? " t2.team_id = $teamid" : "d2.raid_id = $raidid";
@@ -2059,9 +2348,11 @@ send_mime_mail('Автор письма',
 			   and lp0.levelpoint_order = c.up
 		set tlp0.teamlevelpoint_result = c.result ";
 
+
         //   echo $sql;
 	 
 	  $rs = MySqlQuery($sql);
+*/
 	
      }
      // Конец функции расчета результата в точке		
@@ -2449,7 +2740,16 @@ function FindErrors($raid_id, $team_id)
 
 	$teamRaidCondition = (!empty($teamid)) ? " t.team_id = $teamid" : "d.raid_id = $raidid";
 
-         // Обнуляем данные расчета
+
+	if (empty($teamid)) {
+		CMmbLogger::enable(0);
+		//CMmbLogger::enable(1);
+	} 
+
+
+		 $tm0 = microtime(true);
+
+		 // Обнуляем данные расчета
 	$sql = " update  TeamLevelPoints tlp
 		         join Teams t
 			 on tlp.team_id = t.team_id
@@ -2466,13 +2766,27 @@ function FindErrors($raid_id, $team_id)
 				 
 	$rs = MySqlQuery($sql);
 
-	
+		 $tm1 = CMmbLogger::addInterval(' 1 ', $tm0);
+
 	RecalcTeamLevelPointsDuration($raidid, $teamid);
+
+		 $tm2 = CMmbLogger::addInterval(' 2', $tm1);
+
 	RecalcTeamLevelPointsPenaltyWithDiscount($raidid, $teamid);
+
+		 $tm3 = CMmbLogger::addInterval(' 3', $tm2);
+
 	RecalcTeamLevelPointsPenaltyWithoutDiscount($raidid, $teamid);
+
+		 $tm4 = CMmbLogger::addInterval(' 4', $tm3);
+
+
 	RecalcTeamLevelPointsResult($raidid, $teamid);
 
-	// Находим ключ ММБ, если указана только команда
+		 $tm5 = CMmbLogger::addInterval(' 5', $tm4);
+
+
+		 // Находим ключ ММБ, если указана только команда
 	if (empty($raidid)) 
 	{
 		$sql = "select d.raid_id
@@ -2486,8 +2800,11 @@ function FindErrors($raid_id, $team_id)
 	}
 
 
+
 	//Ставим ошибки
-	FindErrors($raidid, $teamid);
+	//FindErrors($raidid, $teamid);
+
+		 $tm6 = CMmbLogger::addInterval(' 6', $tm5);
 
 
 	// $raidid мог измениться
@@ -2527,11 +2844,16 @@ function FindErrors($raid_id, $team_id)
 	 
 	$rs = MySqlQuery($sql);
 
-     // теперь можно посчитать рейтинг
-	RecalcTeamUsersRank($raidid);
-	
+		 $tm7 = CMmbLogger::addInterval(' 7', $tm6);
 
-     //
+
+	 // теперь можно посчитать рейтинг
+	RecalcTeamUsersRank($raidid);
+
+
+		 $tm8 = CMmbLogger::addInterval(' 8', $tm7);
+
+		 //
      // Находим минимальную точку с ошибкой (COALESCE(tlp.error_id, 0) > 0)
      // < 0 - это не ошибка - предупреждение
 	$sql = " update  Teams t
@@ -2555,6 +2877,8 @@ function FindErrors($raid_id, $team_id)
 	//     echo $sql;
 	 
 	$rs = MySqlQuery($sql);
+
+		 $tm9 = CMmbLogger::addInterval(' 9', $tm8);
 
 
 	 // Находим невзятые КП
@@ -2608,7 +2932,10 @@ function FindErrors($raid_id, $team_id)
         //   echo $sql;
 	$rs = MySqlQuery($sql);
 
-	//Теперь в это поле добавляем ошибки  tlp.error_id  > 0
+		 $tm10 = CMmbLogger::addInterval(' 10', $tm9);
+
+
+		 //Теперь в это поле добавляем ошибки  tlp.error_id  > 0
 	$sql = " update  Teams t
                 inner join
                       (select tlp.team_id 
@@ -2630,8 +2957,10 @@ function FindErrors($raid_id, $team_id)
         //   echo $sql;
 	$rs = MySqlQuery($sql);
 
+		 $tm11 = CMmbLogger::addInterval(' 11', $tm10);
 
-	//Теперь в это поле добавляем предупреждения  tlp.error_id  < 0
+
+		 //Теперь в это поле добавляем предупреждения  tlp.error_id  < 0
 	$sql = " update  Teams t
                 inner join
                       (select tlp.team_id 
@@ -2653,7 +2982,10 @@ function FindErrors($raid_id, $team_id)
 	$rs = MySqlQuery($sql);
 
 
-	//Теперь в это поле добавляем предупреждения  tlp.error_id  < 0
+		 $tm12 = CMmbLogger::addInterval(' 12', $tm11);
+
+
+		 //Теперь в это поле добавляем предупреждения  tlp.error_id  < 0
 	$sql = " update  Teams t
                 inner join
                       (select tlp.team_id 
@@ -2674,7 +3006,10 @@ function FindErrors($raid_id, $team_id)
         //   echo $sql;
 	$rs = MySqlQuery($sql);
 
-	//считаем (только для интерфейса список вщзятых КП 
+		 $tm13 = CMmbLogger::addInterval(' 13', $tm12);
+
+
+		 //считаем (только для интерфейса список вщзятых КП
 	$sql = " update  Teams t
                 inner join
                       (select tlp.team_id 
@@ -2693,6 +3028,13 @@ function FindErrors($raid_id, $team_id)
         //   echo $sql;
 	$rs = MySqlQuery($sql);
 
+		 $tm14 = CMmbLogger::addInterval(' 14', $tm13);
+
+
+		 $msg = CMmbLogger::getText();
+
+		 //CMmb::setShortResult($msg, '');
+		 CMmb::setMessage($msg);
 
      }
      // Конец функции пересчета результат команды по данным в точках	
