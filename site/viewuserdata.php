@@ -309,11 +309,12 @@ if (!isset($MyPHPScript)) return;
 	        .($UserCity <> $UserCityPlaceHolder ? '' : CMmbUI::placeholder($UserCityPlaceHolder))
 	        .' title = "Город"></td></tr>'."\r\n");
 
-
+	 if ($AllowEdit == 1)
+        {
          print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserPhone" size="20" value="'.$UserPhone.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
 	        .($UserPhone <> $UserPhonePlaceHolder ? '' : CMmbUI::placeholder($UserPhonePlaceHolder))
 	        .' title = "Телефон"></td></tr>'."\r\n");
-
+        }
 //                 '.( $UserCity <> $UserCityPlaceHolder ? '' : 'onclick = "javascript: this.value=\'\';" onblur = "javascript: this.value=\''.$UserCityPlaceHolder.'\';"').'
 
          print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
