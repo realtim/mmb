@@ -457,7 +457,7 @@
     // Информация о дистанции(ях)
     print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");
 
-    $sql = "select  d.distance_name, d.distance_data
+    $sql = "select  d.distance_name, d.distance_data, d.distance_id
             from Distances d
             where d.distance_hide = 0 and  d.raid_id = $RaidId";
 				
@@ -466,6 +466,66 @@
     // теперь цикл обработки данных по дистанциям
     while ($Row = mysql_fetch_assoc($Result))
     {
+
+	$whereDistanceId = $Row['distance_name'];
+
+	$sql = "  select count(team_id)  as inrangecount
+		 from  Teams t 
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 0
+		  ";
+    	$teamInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+	  
+    	$sql = "  select count(team_id)  as teaminrangecount
+		 from  Teams t 
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 1
+		  ";
+    	$teamOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+
+    	$sql = "  select sum(COALESCE(team_mapscount, 0))  as inrangecount
+		 from  Teams t 
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 0
+		  ";
+    	$mapsInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+
+
+    	$sql = "  select sum(COALESCE(team_mapscount, 0))  as outofrangecount
+		 from  Teams t 
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 1
+		  ";
+    	$mapsOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+		  
+    	$sql = "  select count(tu.teamuser_id)   as inrangecount
+		 from  Teams t 
+		 	inner join  TeamUsers tu
+		        on t.team_id = tu.team_id
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and tu.teamuser_hide = 0
+		       and t.team_outofrange = 0
+		  ";
+    	$teamUserInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+
+    	$sql = "  select count(tu.teamuser_id)   as outofrangecount
+		 from  Teams t 
+		 	inner join  TeamUsers tu
+		        on t.team_id = tu.team_id
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and tu.teamuser_hide = 0
+		       and t.team_outofrange = 1
+		  ";
+    	$teamUserOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+
+    
+
        	print('<tr><td width="100">'.$Row['distance_name'].'</td>
         <td width="300">'.$Row['distance_data']."</td>\r\n");
 
@@ -597,62 +657,7 @@
     	$allUsers = microtime(true) - $t2;
     
 
-    	$sql = "  select count(team_id)  as inrangecount
-		 from  Teams t 
-		 where t.distance_id = $distanceId
-		       and t.team_hide = 0
-		       and t.team_outofrange = 0
-		  ";
-    	$teamInRangeCount =  CSql::singleValue($sql, 'inrangecount');
-	  
-    	$sql = "  select count(team_id)  as teaminrangecount
-		 from  Teams t 
-		 where t.distance_id = $distanceId
-		       and t.team_hide = 0
-		       and t.team_outofrange = 1
-		  ";
-    	$teamOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
-
-    	$sql = "  select sum(COALESCE(team_mapscount, 0))  as inrangecount
-		 from  Teams t 
-		 where t.distance_id = $distanceId
-		       and t.team_hide = 0
-		       and t.team_outofrange = 0
-		  ";
-    	$mapsInRangeCount =  CSql::singleValue($sql, 'inrangecount');
-
-
-    	$sql = "  select sum(COALESCE(team_mapscount, 0))  as outofrangecount
-		 from  Teams t 
-		 where t.distance_id = $distanceId
-		       and t.team_hide = 0
-		       and t.team_outofrange = 1
-		  ";
-    	$mapsOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
-		  
-    	$sql = "  select count(tu.teamuser_id)   as inrangecount
-		 from  Teams t 
-		 	inner join  TeamUsers tu
-		        on t.team_id = tu.team_id
-		 where t.distance_id = $distanceId
-		       and t.team_hide = 0
-		       and tu.teamuser_hide = 0
-		       and t.team_outofrange = 0
-		  ";
-    	$teamUserInRangeCount =  CSql::singleValue($sql, 'inrangecount');
-
-    	$sql = "  select count(tu.teamuser_id)   as outofrangecount
-		 from  Teams t 
-		 	inner join  TeamUsers tu
-		        on t.team_id = tu.team_id
-		 where t.distance_id = $distanceId
-		       and t.team_hide = 0
-		       and tu.teamuser_hide = 0
-		       and t.team_outofrange = 1
-		  ";
-    	$teamUserOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
-
-    
+    	
 	
     $tdstyle = 'padding: 5px 0px 2px 5px;';
     $tdstyle = '';
