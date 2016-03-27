@@ -75,8 +75,8 @@ if (!isset($MyPHPScript)) return;
 	// Функция отправки сообщения
 	function SendMessageForAll()
 	{ 
-		document.UserSendMessageForAllForm.action.value = "SendMessageForAll";
-		document.UserSendMessageForAllForm.submit();
+		document.SendMessageForAllForm.action.value = "SendMessageForAll";
+		document.SendMessageForAllForm.submit();
 	}
 
 
