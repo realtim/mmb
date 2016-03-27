@@ -85,6 +85,8 @@ if (!isset($MyPHPScript)) return;
            $pUserBirthYear = $_POST['UserBirthYear'];
            $pUserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
            $pUserId = $_POST['UserId']; 
+       	// флаги разрешения получать письма передаем только при правке (см. ниже)
+
 
            $pUserNewPassword = mmb_validate($_POST, 'UserNewPassword', '');
            $pUserConfirmNewPassword = mmb_validate($_POST, 'UserConfirmNewPassword', '');
@@ -252,6 +254,11 @@ if (!isset($MyPHPScript)) return;
            } elseif ($action == 'UserChangeData') {
 
               // Правка текущего пользователя
+              
+              	// флаги подписки передаем только при правке
+	           $pUserAllowChangeInfo = mmb_isOn($_POST, 'UserAllowChangeInfo');
+        	   $pUserAllowOrgMessages = mmb_isOn($_POST, 'UserAllowOrgMessages');
+
 	   
              // Если вызвали с таким действием, должны быть определны оба пользователя
 		if ($pUserId <= 0 or $UserId <= 0)
@@ -271,6 +278,8 @@ if (!isset($MyPHPScript)) return;
 		                     user_city = trim('$pUserCity'),
 		                     user_phone = trim('$pUserPhone'),
 		                     user_prohibitadd = $pUserProhibitAdd,
+		                     user_allowchangeinfo = $pUserAllowChangeInfo,
+		                     user_alloworgmessages = $pUserAllowOrgMessages,
 		                     user_noshow = $pUserNoShow,
 				     user_birthyear = $pUserBirthYear
 		        where user_id = $pUserId";
