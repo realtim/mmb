@@ -75,6 +75,7 @@ if (!isset($MyPHPScript)) return;
 	// Функция отправки сообщения
 	function SendMessageForAll()
 	{ 
+                alert('1');
 		document.SendMessageForAllForm.action.value = "SendMessageForAll";
 		document.SendMessageForAllForm.submit();
 	}
@@ -148,7 +149,7 @@ if (!isset($MyPHPScript)) return;
 
 		print('<div class="team_res"><textarea name="MessageText"  rows="4" cols="50" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
 	        title = "Текст сообщения">Текст сообщения</textarea></div>'."\r\n");
-    	        print('</br><input type="button" onClick = "javascript: SendMessageForAll();"  name="SendMessageForAllButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
+    	        print('</br><input type="button" onClick = "javascript:SendMessageForAll();"  name="SendMessageForAllButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                    
 	        print('</form>'."\r\n");
 
