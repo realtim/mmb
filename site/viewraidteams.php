@@ -477,7 +477,7 @@
 		  ";
     	$teamInRangeCount =  CSql::singleValue($sql, 'inrangecount');
 	  
-    	$sql = "  select count(team_id)  as teaminrangecount
+    	$sql = "  select count(team_id)  as outofrangecount
 		 from  Teams t 
 		 where t.distance_id = $whereDistanceId
 		       and t.team_hide = 0
