@@ -124,7 +124,7 @@ if (!isset($MyPHPScript)) return;
 
 
 
- 	print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Рассылка для всех участников!':</div>'."\r\n");
+ 	print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Рассылка для всех участников!:</div>'."\r\n");
 		print('<form  name = "SendMessageForAll"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
