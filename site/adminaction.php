@@ -347,7 +347,7 @@ elseif ($action == 'SendMessageForAll')
 			}
 		
 		        // Отправляем письмо
-			SendMail(trim($UserEmail), $Msg, $UserName, $pSubject);
+		//	SendMail(trim($UserEmail), $Msg, $UserName, $pSubject);
 		}
   		mysql_free_result($UserResult);
  
