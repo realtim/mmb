@@ -467,7 +467,7 @@
     while ($Row = mysql_fetch_assoc($Result))
     {
 
-	$whereDistanceId = $Row['distance_name'];
+	$whereDistanceId = (int)$Row['distance_id'];
 
 	$sql = "  select count(team_id)  as inrangecount
 		 from  Teams t 
