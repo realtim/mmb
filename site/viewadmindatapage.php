@@ -130,8 +130,7 @@ if (!isset($MyPHPScript)) return;
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
 
-                $TabIndex = 1;
-	        $DisabledText = '';
+                 $DisabledText = '';
                 $NewMessageSubject = 'Тема рассылки';
                 
 	//	print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
@@ -149,7 +148,7 @@ if (!isset($MyPHPScript)) return;
 
 		print('<div class="team_res"><textarea name="MessageText"  rows="4" cols="50" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
 	        title = "Текст сообщения">Текст сообщения</textarea></div>'."\r\n");
-    	        print('</br><input type="button" onClick = "javascript:SendMessageForAll();"  name="SendMessageForAllButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
+    	        print('</br><input type="button" onClick = "javascript:alert('2');SendMessageForAll();"  name="SendMessageForAllButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                    
 	        print('</form>'."\r\n");
 
