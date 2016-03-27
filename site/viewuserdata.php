@@ -71,7 +71,8 @@ if (!isset($MyPHPScript)) return;
 		}
            
 		$sql = "select user_email, CASE WHEN COALESCE(u.user_noshow, 0) = 1 and user_id <> $UserId THEN '$Anonimus' ELSE u.user_name END as user_name,
-		         user_birthyear, user_prohibitadd, user_city, user_phone, user_noshow from  Users u where user_id = $pUserId";
+		         user_birthyear, user_prohibitadd, user_city, user_phone, user_noshow, 
+		         user_allowsendchangeinfo, user_allowsendorgmessages from  Users u where user_id = $pUserId";
                 $row = CSql::singleRow($sql);
 
 	        // Если вернулись после ошибки переменные не нужно инициализировать
@@ -87,6 +88,8 @@ if (!isset($MyPHPScript)) return;
 		  $UserCity = $_POST['UserCity'];
 		  $UserPhone = $_POST['UserPhone'];
 		  $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');
+		  $UserAllowChangeInfo =  mmb_isOn($_POST, 'UserAllowChangeInfo');
+		  $UserAllowOrgMessages =  mmb_isOn($_POST, 'UserAllowOrgMessages');
 
                 } else {
 
@@ -97,6 +100,8 @@ if (!isset($MyPHPScript)) return;
 		  $UserCity = $row['user_city'];
 		  $UserPhone = $row['user_phone'];
 		  $UserNoShow = $row['user_noshow'];  
+		  $UserAllowChangeInfo = (int)$row['user_allowsendchangeinfo'];  
+		  $UserAllowOrgMessages =  (int)$row['user_allowsendorgmessages'];  
 
                 }
 
@@ -323,6 +328,14 @@ if (!isset($MyPHPScript)) return;
           // 03/07/2014 
          print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserNoShow" '.(($UserNoShow == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
 	        title = "Вместо ФИО будет выводится текст: \''.$Anonimus.'\' Исключения: 1) Вы сами, модератор и администратор увидят в карточке пользователя ФИО. 2) При запросе на объединение с другим пользователем, инициатором которого являетесь Вы, ему будет открываться Ваше ФИО в журнале объединений и письме, чтобы он знал, кто пытается его присоединить к себе." /> Не показывать моё ФИО в результатах, рейтингах и т.п.</td></tr>'."\r\n");
+
+
+         print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserAllowChangeInfo" '.(($UserAllowChangeInfo == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+	        title = "На Ваш email будет отправляться письмо, когда вносятся изменения в карточку пользователя или в данные команды, участником которой Вы являетесь." />Получать информацию при изменении данных пользователя или команды. Нерекоменлуется снимать этот флаг</td></tr>'."\r\n");
+
+         print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserAllowOrgMessages" '.(($UserAllowOrgMessages == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+	        title = "На Ваш email будет отправляться письмо, когда открывается регистрация или когда организаторы осуществляют рассылку важной информации." />Получать информацию об открытии информации, о публикации результатов и т.п. Если флаг не установлен, то информационное письмо может прийти только в случае экстренной рассылки.</td></tr>'."\r\n");
+
 
 	 if (($AllowEdit == 1) and  ($viewmode <> 'Add'))
         {
