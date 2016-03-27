@@ -72,6 +72,14 @@ if (!isset($MyPHPScript)) return;
 	}
 
 
+	// Функция отправки сообщения
+	function SendMessageForAll()
+	{ 
+		document.UserSendMessageForAllForm.action.value = "SendMessageForAll";
+		document.UserSendMessageForAllForm.submit();
+	}
+
+
 </script>
 <!-- Конец вывода javascrpit -->
 
@@ -111,38 +119,40 @@ if (!isset($MyPHPScript)) return;
                           onclick = "javascript: FindRaidErrors();"
                           tabindex = "104"></td></tr>'."\r\n");
 
-/*
-Теперь рейтинг считается вместе с результатами
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RecalcRaidRankButton" value="Пересчитать рейтинг"
-                          onclick = "javascript: RecalcRaidRank();"
-                          tabindex = "105"></td></tr>'."\r\n");
-*/
-
-/*
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:270px;" name="RecalcAllRaidsResultsButton" value="Пересчитать рейтинг по всем ММБ"
-                          onclick = "javascript: RecalcAllRaidsRank();"
-                          tabindex = "106"></td></tr>'."\r\n");
-*/
-       //  показываем кнопку "Очистить таблицы" 
-	  // print('<input type="button" style = "width:185px; margin-top:10px;" name="ClearTablesButton" value="Очистить таблицы"
-          //                onclick = "ClearTables();"
-          //                tabindex = "402">'."\r\n");
-
-         
-         // Конец вывода кнопок
-
 	 print('</table></form>'."\r\n"); 
 	 // Конец вывода формы с данными пользователя
-/* 
-	 print('</br>'."\r\n"); 
- 	print('<form name = "LoadFileForm"  enctype="multipart/form-data" action="'.$MyPHPScript.'" method="POST">');
-        print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
-        print('<input type = "hidden" name = "action" value = "LoadRaidDataFile">'."\r\n");
-	print('<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />');
-	print('Файл с данными: <input name="android" type="file" /> &nbsp;');
-	print('<input type="submit" value="Загрузить" />');
-	print('</form>');
-*/
+
+
+
+ 	print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Рассылка для всех участников!':</div>'."\r\n");
+		print('<form  name = "SendMessageForAll"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
+		print('<input type = "hidden" name = "action" value = "">'."\r\n");
+	        print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
+
+                $TabIndex = 1;
+	        $DisabledText = '';
+                $NewMessageSubject = 'Тема рассылки';
+                
+		print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
+
+		// Показываем выпадающий список типов ссылок
+		print('<select name="SendForAllTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
+			print('<option value="1" selected>обычная</option>'."\n");
+			print('<option value="2" >экстренная</option>'."\n");
+		print('</select>'."\n");
+
+		print('<input type="text" name="MessageSubject" size="30" value="'.$NewMessageSubject.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+		. CMmbUI::placeholder($NewMessageSubject) . ' title = "Тема рассылки">'."\r\n");
+
+		print("</div>\r\n");
+
+		print('<div class="team_res"><textarea name="MessageText"  rows="4" cols="50" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
+	        title = "Текст сообщения">Текст сообщения</textarea></div>'."\r\n");
+    	        print('</br><input type="button" onClick = "javascript: SendMessageForAll();"  name="SendMessageForAllButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
+                   
+	        print('</form>'."\r\n");
+
+
 
 ?>
 
