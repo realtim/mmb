@@ -278,8 +278,8 @@ if (!isset($MyPHPScript)) return;
 		                     user_city = trim('$pUserCity'),
 		                     user_phone = trim('$pUserPhone'),
 		                     user_prohibitadd = $pUserProhibitAdd,
-		                     user_allowchangeinfo = $pUserAllowChangeInfo,
-		                     user_alloworgmessages = $pUserAllowOrgMessages,
+		                     user_allowsendchangeinfo = $pUserAllowChangeInfo,
+		                     user_allowsendorgmessages = $pUserAllowOrgMessages,
 		                     user_noshow = $pUserNoShow,
 				     user_birthyear = $pUserBirthYear
 		        where user_id = $pUserId";
