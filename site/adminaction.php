@@ -287,7 +287,7 @@ elseif ($action == 'SendMessageForAll')
 	if (!$Administrator) return;
 
 	
-	     CMmb::setViews(''ViewAdminDataPage'', '');
+	     CMmb::setViews('ViewAdminDataPage', '');
              $pText = $_POST['MessageText'];
              $pSubject = $_POST['MessageSubject'];
              $pSendType = (int)$_POST['SendForAllTypeId'];
