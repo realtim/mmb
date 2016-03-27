@@ -590,11 +590,69 @@
 	}
 
    	$prep = microtime(true);
-    $Result = MySqlQuery($sql);
-    $t2 = microtime(true);
+	$Result = MySqlQuery($sql);
+    	$t2 = microtime(true);
 
-    $TeamMembers  = GetAllTeamMembers($RaidId, $distanceId);
-    $allUsers = microtime(true) - $t2;
+    	$TeamMembers  = GetAllTeamMembers($RaidId, $distanceId);
+    	$allUsers = microtime(true) - $t2;
+    
+
+    	$sql = "  select count(team_id)  as inrangecount
+		 from  Teams t 
+		 where t.distance_id = $distanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 0
+		  ";
+    	$teamInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+	  
+    	$sql = "  select count(team_id)  as teaminrangecount
+		 from  Teams t 
+		 where t.distance_id = $distanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 1
+		  ";
+    	$teamOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+
+    	$sql = "  select sum(COALESCE(team_mapscount, 0))  as inrangecount
+		 from  Teams t 
+		 where t.distance_id = $distanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 0
+		  ";
+    	$mapsInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+
+
+    	$sql = "  select sum(COALESCE(team_mapscount, 0))  as outofrangecount
+		 from  Teams t 
+		 where t.distance_id = $distanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 1
+		  ";
+    	$mapsOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+		  
+    	$sql = "  select count(tu.teamuser_id)   as inrangecount
+		 from  Teams t 
+		 	inner join  TeamUsers tu
+		        on t.team_id = tu.team_id
+		 where t.distance_id = $distanceId
+		       and t.team_hide = 0
+		       and tu.teamuser_hide = 0
+		       and t.team_outofrange = 0
+		  ";
+    	$teamUserInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+
+    	$sql = "  select count(tu.teamuser_id)   as outofrangecount
+		 from  Teams t 
+		 	inner join  TeamUsers tu
+		        on t.team_id = tu.team_id
+		 where t.distance_id = $distanceId
+		       and t.team_hide = 0
+		       and tu.teamuser_hide = 0
+		       and t.team_outofrange = 1
+		  ";
+    	$teamUserOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+
+    
 	
     $tdstyle = 'padding: 5px 0px 2px 5px;';
     $tdstyle = '';
@@ -611,16 +669,16 @@
 		$ColumnWidth = 350;
 		$ColumnSmallWidth = 50;
 			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда ('.$teamInRangeCount.'/'.$teamOutOfRangeCount.' , карт '.$mapsInRangeCount.'/'.$mapsOutOfRangeCount.')</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники ('.$teamUserInRangeCount.'/'.$teamUserOutOfRangeCount.')</td>'."\r\n");  
 		
 	} elseif ($OrderType == 'Place') {
 
         	$ColumnWidth = 350;
 		$ColumnSmallWidth = 50;
 			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда ('.$teamInRangeCount.'/'.$teamOutOfRangeCount.' , карт '.$mapsInRangeCount.'/'.$mapsOutOfRangeCount.')</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники ('.$teamUserInRangeCount.'/'.$teamUserOutOfRangeCount.')</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Отсечки времени</td>'."\r\n");  
                         print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
                         print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");
