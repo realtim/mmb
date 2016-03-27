@@ -274,6 +274,93 @@ elseif ($action == 'RecalcRaidRank')
 
 	CMmb::setShortResult('Рейтинг участников марш-броска пересчитан, найдено '.$total_errors.' ошибок', 'ViewAdminDataPage');
 }
+// =============== Рассылка всем участникам ММБ ===================
+elseif ($action == 'SendMessageForAll')
+{
+	if ($RaidId <= 0)
+	{
+		CMmb::setShortResult('Марш-бросок не найден', '');
+		return;
+	}
+
+	// рассылать всем может только администратор
+	if (!$Administrator) return;
+
+	
+	     CMmb::setViews(''ViewAdminDataPage'', '');
+             $pText = $_POST['MessageText'];
+             $pSubject = $_POST['MessageSubject'];
+             $pSendType = (int)$_POST['SendForAllTypeId'];
+             
+             if ($pSendType == 1 OR !isset($pSendType))
+             {
+	           $UserCondition = ' and u.user_allosendorgmessages = 1 ';
+             } else {
+	           $UserCondition = '';
+             }
+             
+
+	     if (empty($pSubject) or trim($pSubject) == 'Тема рассылки')
+	     {
+		CMmb::setError('Укажите тему сообщения.', $view, '');
+                return; 
+	     }
+
+
+	     if (empty($pText) or trim($pText) == 'Текст сообщения')
+	     {
+		CMmb::setError('Укажите текст сообщения.', $view, '');
+                return; 
+	     }
+
+     
+             // Смотрим пользователей
+             $sql = "  select tu.user_id, u.user_name, u.user_email 
+             		from TeamUsers tu
+             			inner join Teams t
+             			on tu.team_id = t.team_id
+             			inner join Users u
+             			on tu.user_id = u.user_id
+             			inner join Distances d
+             			on t.distance_id = d.distance_id
+             		where d.raid_id = $RaidId
+             			and t.team_hide = 0
+             			and tu.teamuser_hide = 0
+             			and user_id = 19
+             			$UserCond
+             		order by tu.user_id
+             ";
+
+		echo $sql;
+		
+		$UserResult = MySqlQuery($sql);
+
+		while ($UserRow = mysql_fetch_assoc($UserResult))
+		{
+		        $UserEmail = $UserRow['user_email'];
+		        $UserName = $UserRow['user_name'];
+		
+	
+		        $pTextArr = explode('\r\n', $pText); 
+		       	foreach ($pTextArr as $NowString) {
+			   $Msg .= $NowString."\r\n";
+			}
+		
+		        // Отправляем письмо
+			SendMail(trim($UserEmail), $Msg, $UserName, $pSubject);
+		}
+  		mysql_free_result($UserResult);
+ 
+		CMmb::setShortResult('Сообщение выслано.', '');
+
+        
+	
+	
+	
+	$Result = 0;
+
+	CMmb::setShortResult('Рассылка запущена', 'ViewAdminDataPage');
+}
 // =============== Никаких действий не требуется ==============================
 else
 {
