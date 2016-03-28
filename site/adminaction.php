@@ -294,7 +294,7 @@ elseif ($action == 'SendMessageForAll')
              
              if ($pSendType == 1 OR !isset($pSendType))
              {
-	           $UserCondition = ' and u.user_allosendorgmessages = 1 ';
+	           $UserCondition = ' and u.user_allowsendorgmessages = 1 ';
              } else {
 	           $UserCondition = ' and true ';
              }
