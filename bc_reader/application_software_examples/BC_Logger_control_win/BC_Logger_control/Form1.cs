@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
-
+using System.Collections;
 
 namespace BC_Logger_control
 {
@@ -40,7 +40,7 @@ namespace BC_Logger_control
             else comboBox_portName.SelectedIndex = 0;
             textBox_setT.Text = getDateString();
         }
-
+        
         private void button_openPort_Click(object sender, EventArgs e)
         {
             //if (serialPort1.IsOpen == true) comboBox_portName.SelectedIndex=0;
@@ -69,7 +69,6 @@ namespace BC_Logger_control
                 button_getD.Enabled = true;
                 button_getLn.Enabled = true;
                 button_getDn.Enabled = true;
-                button_getT.Enabled = true;
                 button_delL.Enabled = false;
                 button_end.Enabled = true;
                 button_dlAll.Enabled = true;
@@ -80,17 +79,11 @@ namespace BC_Logger_control
                 button_openPort.Enabled = false;
                 checkBox_delLog.Enabled = true;
                 checkBox_delLog.Checked = false;
-                checkBox_setEnable.Checked = false;
-                button_customCommand.Enabled = true;
                 button_refresh.Enabled = false;
                 checkBox_setEnable.Enabled = true;
                 aTimer.Enabled = true;
-                serialPort1.DiscardInBuffer();
-                serialPort1.DiscardOutBuffer();
             }
         }
-
-
 
         private void button_setI_Click(object sender, EventArgs e)
         {
@@ -163,8 +156,7 @@ namespace BC_Logger_control
             SetText(textBox_endcustom.Text + "\r\n");
             checkBox_delLog.Checked = false;
         }
-
-
+       
         private void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {
             if (checkBox_portMon.Checked == true)
@@ -182,13 +174,10 @@ namespace BC_Logger_control
                 buf_busy = false;
             }
         }
-
-
+        
         private void button_closePort_Click(object sender, EventArgs e)
         {
-            serialPort1.DiscardInBuffer();
-            serialPort1.DiscardOutBuffer();
-            if (serialPort1.IsOpen == true)
+            if (serialPort1.IsOpen==true)
             {
                 try
                 {
@@ -205,7 +194,6 @@ namespace BC_Logger_control
             button_getD.Enabled = false;
             button_getLn.Enabled = false;
             button_getDn.Enabled = false;
-            button_getT.Enabled = false;
             button_delL.Enabled = false;
             checkBox_delLog.Checked = false;
             checkBox_delLog.Enabled = false;
@@ -214,15 +202,13 @@ namespace BC_Logger_control
             aTimer.Enabled = false;
             comboBox_portName.Enabled = true;
             button_openPort.Enabled = true;
-            button_customCommand.Enabled = false;
             button_refresh.Enabled = true;
             checkBox_setEnable.Enabled = false;
         }
 
         private void serialPort1_ErrorReceived(object sender, System.IO.Ports.SerialErrorReceivedEventArgs e)
         {
-            System.IO.Ports.SerialError error = e.EventType;
-            SetText("COM port error " + error.ToString() + "\r\n");
+            SetText("COM port error\r\n");
         }
 
         private void button_clear_Click(object sender, EventArgs e)
@@ -250,10 +236,8 @@ namespace BC_Logger_control
             serialPort1.WriteLine(textBox_getScustom.Text);
             SetText(textBox_getScustom.Text + "\r\n");
             Thread.Sleep(100);
-            while (serialPort1.BytesToRead > 0) Thread.Sleep(100);
             serialPort1.WriteLine(textBox_getLcustom.Text);
             SetText(textBox_getLcustom.Text + "\r\n");
-            Thread.Sleep(100);
             while (serialPort1.BytesToRead > 0) Thread.Sleep(100);
             serialPort1.WriteLine(textBox_getDcustom.Text);
             SetText(textBox_getDcustom.Text + "\r\n");
@@ -339,7 +323,7 @@ namespace BC_Logger_control
 
         private void checkBox_delLog_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_delLog.Checked == true) button_delL.Enabled = true;
+            if (checkBox_delLog.Checked == true) button_delL.Enabled=true;
             else button_delL.Enabled = false;
         }
 
@@ -367,12 +351,6 @@ namespace BC_Logger_control
             }
         }
 
-        private void button_customCommand_Click(object sender, EventArgs e)
-        {
-            serialPort1.WriteLine(textBox_customCommand.Text);
-            SetText(textBox_customCommand.Text + "\r\n");
-        }
-
         private void button_refresh_Click(object sender, EventArgs e)
         {
             comboBox_portName.Items.Clear();
@@ -388,11 +366,13 @@ namespace BC_Logger_control
             }
             else comboBox_portName.SelectedIndex = 0;
 
-            /*
-            //get port description from registry
+
             Hashtable PortNames = new Hashtable();
             string[] ports = System.IO.Ports.SerialPort.GetPortNames();
-            if (ports.Length == 0) ;
+            if (ports.Length == 0)
+            {
+                textBox_terminal.Text += "ERROR: No COM ports exist\n\r";
+            }
             else
             {
                 PortNames = BuildPortNameHash(ports);
@@ -400,7 +380,9 @@ namespace BC_Logger_control
                 {
                     textBox_terminal.Text += "\n\r" + PortNames[s] + ": " + s + "\n\r";
                 }
-            }*/
+            }
+
+
 
         }
 
@@ -409,7 +391,6 @@ namespace BC_Logger_control
             if (checkBox_customEdit.Checked == true)
             {
                 textBox_getScustom.Enabled = true;
-                textBox_getTcustom.Enabled = true;
                 textBox_getLcustom.Enabled = true;
                 textBox_getDcustom.Enabled = true;
                 textBox_getLncustom.Enabled = true;
@@ -426,7 +407,6 @@ namespace BC_Logger_control
             else
             {
                 textBox_getScustom.Enabled = false;
-                textBox_getTcustom.Enabled = false;
                 textBox_getLcustom.Enabled = false;
                 textBox_getDcustom.Enabled = false;
                 textBox_getLncustom.Enabled = false;
@@ -444,7 +424,7 @@ namespace BC_Logger_control
 
         private void checkBox_setEnable_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_setEnable.Checked == true)
+            if (checkBox_setEnable.Checked==true)
             {
                 button_setI.Enabled = true;
                 button_setC.Enabled = true;
@@ -468,13 +448,7 @@ namespace BC_Logger_control
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-            serialPort1.WriteLine(textBox_getTcustom.Text);
-            SetText(textBox_getTcustom.Text + "\r\n");
-        }
-
-        private void textBox_getLncustom_TextChanged(object sender, EventArgs e)
+        private void checkBox_portMon_CheckedChanged(object sender, EventArgs e)
         {
 
         }
