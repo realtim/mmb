@@ -326,12 +326,12 @@ elseif ($action == 'SendMessageForAll')
              		where d.raid_id = $RaidId
              			and t.team_hide = 0
              			and tu.teamuser_hide = 0
-             			and u.user_id = 19
+             			and u.user_id in (19, 4)
              			$UserCondition
              		order by tu.user_id
              ";
 
-		echo $sql;
+	//	echo $sql;
 		
 		$UserResult = MySqlQuery($sql);
 		
