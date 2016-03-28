@@ -11,6 +11,7 @@ if (!isset($MyPHPScript)) return;
     return;
    }
          
+         
  
 // Выводим javascrpit
 ?>
