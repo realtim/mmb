@@ -296,7 +296,7 @@ elseif ($action == 'SendMessageForAll')
              {
 	           $UserCondition = ' and u.user_allosendorgmessages = 1 ';
              } else {
-	           $UserCondition = '';
+	           $UserCondition = ' and true ';
              }
              
 
@@ -327,7 +327,7 @@ elseif ($action == 'SendMessageForAll')
              			and t.team_hide = 0
              			and tu.teamuser_hide = 0
              			and user_id = 19
-             			$UserCond
+             			$UserCondition
              		order by tu.user_id
              ";
 
