@@ -334,6 +334,7 @@ elseif ($action == 'SendMessageForAll')
 		echo $sql;
 		
 		$UserResult = MySqlQuery($sql);
+		
 
 		while ($UserRow = mysql_fetch_assoc($UserResult))
 		{
@@ -341,6 +342,7 @@ elseif ($action == 'SendMessageForAll')
 		        $UserName = $UserRow['user_name'];
 		
 	
+			$Msg = '';
 		        $pTextArr = explode('\r\n', $pText); 
 		       	foreach ($pTextArr as $NowString) {
 			   $Msg .= $NowString."\r\n";
