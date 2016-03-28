@@ -86,6 +86,8 @@ if (!isset($MyPHPScript)) return;
 
 <?php
 
+		$TabIndex = 1;
+
          // выводим форму с данными пользователя
 	 
 	 print('<form  name = "AdminForm" enctype="multipart/form-data"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
@@ -103,22 +105,22 @@ if (!isset($MyPHPScript)) return;
 
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="JSONdump" value="Получить дамп"
                           onclick = "javascript: JSON();"
-                          tabindex = "101"></td></tr>'."\r\n");
+                          tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 
 
 	  print('<tr><td style = "padding-top: 10px; padding-bottom: 10px;">Файл с данными:<br/><input  type="file" name="android" /> &nbsp;
-                 <input type="button"  style = "width:185px;" name = "LoadRaidDataFileButton"  value="Загрузить"  onclick = "javascript: LoadRaidDataFile(); "  tabindex = "102"  /></td></tr>'."\r\n");
+                 <input type="button"  style = "width:185px;" name = "LoadRaidDataFileButton"  value="Загрузить"  onclick = "javascript: LoadRaidDataFile(); "  tabindex = "'.(++$TabIndex).'"  /></td></tr>'."\r\n");
 
 
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RecalcRaidResultsButton" value="Пересчитать результаты"
                           onclick = "javascript: RecalcRaidResults();"
-                          tabindex = "103"></td></tr>'."\r\n");
+                          tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="FindRaidErrorsButton" value="Найти ошибки"
                           onclick = "javascript: FindRaidErrors();"
-                          tabindex = "104"></td></tr>'."\r\n");
+                          tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 	 print('</table></form>'."\r\n"); 
 	 // Конец вывода формы с данными пользователя
