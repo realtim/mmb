@@ -440,7 +440,7 @@ elseif ($action == 'HideTeamUser')
 
 
 	// Проверка на повторное удаление 
-	$sql = "select teamuser_id from TeamUsers where teamuser_hide = 0 and tu.teamuser_id = $HideTeamUserId";
+	$sql = "select teamuser_id from TeamUsers where teamuser_hide = 0 and teamuser_id = $HideTeamUserId";
 	if (CSql::singleValue($sql, 'teamuser_id') <>  $HideTeamUserId)
 	{
 		CMmb::setErrorMessage('Удаляемый пользователь не найден или уже удален');
