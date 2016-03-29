@@ -450,8 +450,8 @@ elseif ($action == 'HideTeamUser')
 
 
 	// Смотрим, был ли это последний участник или нет
-	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId";
-	$TeamUserCount = CSql::singleValue($sql, 'result');
+	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId and teamuser_id <> $HideTeamUserId";
+	$RestTeamUser = CSql::singleValue($sql, 'result');
 
 
 	// Отправить письмо всем участникам команды об удалении (до физического удаления!)
@@ -472,8 +472,14 @@ elseif ($action == 'HideTeamUser')
 			order by tu.teamuser_id asc";
 		$Result = MySqlQuery($sql);
 
-		if ($TeamUserCount > 1)         // В команде еще осталось как минимум 2 участника
+		if ($RestTeamUser =  1)
 		{
+			$Row = mysql_fetch_assoc($Result);
+			$Msg = "Уважаемый участник ".$Row['user_name']."!\n\nВаша команда (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).") была удалена.\nАвтор изменений: ".$ChangeDataUserName.".\nВы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
+			// Отправляем письмо
+			SendMail($Row['user_email'], $Msg, $Row['user_name']);
+		} else {
+			
 			while ($Row = mysql_fetch_assoc($Result))
 			{
 				// Формируем сообщение
@@ -484,13 +490,7 @@ elseif ($action == 'HideTeamUser')
 				// Отправляем письмо
 				SendMail($Row['user_email'], $Msg, $Row['user_name']);
 			}
-		}
-		elseif ($TeamUserCount == 1)
-		{
-			$Row = mysql_fetch_assoc($Result);
-			$Msg = "Уважаемый участник ".$Row['user_name']."!\n\nВаша команда (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).") была удалена.\nАвтор изменений: ".$ChangeDataUserName.".\nВы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
-			// Отправляем письмо
-			SendMail($Row['user_email'], $Msg, $Row['user_name']);
+
 		}
 		mysql_free_result($Result);
 	}
@@ -503,17 +503,11 @@ elseif ($action == 'HideTeamUser')
 	$rs = MySqlQuery($sql);
 
 
-	// Повторная проверка 
+	// Повторная проверка  после удаления
 	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId";
 	$TeamUserCount = CSql::singleValue($sql, 'result');
 
-
-
-	if ($TeamUserCount > 1)         // Кто-то ещё остается
-	{
-		$view = "ViewTeamData";
-	}
-	elseif ($TeamUserCount == 1)    // Это был последний участник
+	if ($RestTeamUser == 1 and $TeamUserCount == 0)    // Это был последний участник
 	{
 		$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 		$rs = MySqlQuery($sql);
@@ -525,9 +519,11 @@ elseif ($action == 'HideTeamUser')
 			$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
 			$rs = MySqlQuery($sql);
 		}
-		
 
 		$view = "";
+
+	} else {
+		$view = "ViewTeamData";
 	}
 
 
