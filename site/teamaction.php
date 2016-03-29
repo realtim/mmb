@@ -450,8 +450,8 @@ elseif ($action == 'HideTeamUser')
 
 
 	// Смотрим, был ли это последний участник или нет
-	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId and teamuser_id <> $HideTeamUserId";
-	$RestTeamUser = CSql::singleValue($sql, 'result');
+	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId";
+	$StartTeamUserCount = CSql::singleValue($sql, 'result');
 
 
 	// Отправить письмо всем участникам команды об удалении (до физического удаления!)
@@ -472,7 +472,7 @@ elseif ($action == 'HideTeamUser')
 			order by tu.teamuser_id asc";
 		$Result = MySqlQuery($sql);
 
-		if ($RestTeamUser =  1)
+		if ($StartTeamUserCount == 1)
 		{
 			$Row = mysql_fetch_assoc($Result);
 			$Msg = "Уважаемый участник ".$Row['user_name']."!\n\nВаша команда (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).") была удалена.\nАвтор изменений: ".$ChangeDataUserName.".\nВы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
@@ -507,7 +507,7 @@ elseif ($action == 'HideTeamUser')
 	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId";
 	$TeamUserCount = CSql::singleValue($sql, 'result');
 
-	if ($RestTeamUser == 1 and $TeamUserCount == 0)    // Это был последний участник
+	if ($StartTeamUserCount == 1 and $TeamUserCount == 0)    // Это был последний участник
 	{
 		$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 		$rs = MySqlQuery($sql);
