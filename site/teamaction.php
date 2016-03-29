@@ -438,6 +438,17 @@ elseif ($action == 'HideTeamUser')
 		return;
 	}
 
+
+	// Проверка на повторное удаление 
+	$sql = "select teamuser_id from TeamUsers where teamuser_hide = 0 and tu.teamuser_id = $HideTeamUserId";
+	if (CSql::singleValue($sql, 'teamuser_id') <>  $HideTeamUserId)
+	{
+		CMmb::setErrorMessage('Удаляемый пользователь не найден или уже удален');
+		return;
+	}
+
+
+
 	// Смотрим, был ли это последний участник или нет
 	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId";
 	$TeamUserCount = CSql::singleValue($sql, 'result');
@@ -491,11 +502,18 @@ elseif ($action == 'HideTeamUser')
 	//$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
 	$rs = MySqlQuery($sql);
 
+
+	// Повторная проверка 
+	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId";
+	$TeamUserCount = CSql::singleValue($sql, 'result');
+
+
+
 	if ($TeamUserCount > 1)         // Кто-то ещё остается
 	{
 		$view = "ViewTeamData";
 	}
-	else                            // Это был последний участник
+	elseif ($TeamUserCount == 1)    // Это был последний участник
 	{
 		$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 		$rs = MySqlQuery($sql);
