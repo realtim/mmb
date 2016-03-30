@@ -140,8 +140,9 @@ if (!isset($MyPHPScript)) return;
 
 		// Показываем выпадающий список типов ссылок
 		print('<select name="SendForAllTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
-			print('<option value="1" selected>обычная</option>'."\n");
-			print('<option value="2" >экстренная</option>'."\n");
+			print('<option value="1" selected>Обычная (всем участникам ММБ, с учетом флага)</option>'."\n");
+			print('<option value="2">Экстренная (всем участникам ММБ, без учета флага)</option>'."\n");
+			print('<option value="3">Пользователям (всем пользователям сайта, с учетом флага)</option>'."\n");
 		print('</select>'."\n");
 
 		print('<input type="text" name="MessageSubject" size="30" value="'.$NewMessageSubject.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
