@@ -538,6 +538,7 @@ class CSql {
     function SendMailForAll($raidId, $msgSubject, $msgText, $sendingType)
     {
 	global $DebugMode;
+	private $debagCond;
 	
 	
 	echo $raidId, $msgSubject, $msgText, $sendingType;
