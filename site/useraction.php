@@ -4,8 +4,18 @@
 function UACanEdit($pUserId)
 {
 	global $UserId, $Administrator;
-	return  (($pUserId == $UserId) || $Administrator) ? (1) : (0);
+
+	return  (($pUserId == $userId) || $Administrator) ? (1) : (0);
 }
+
+function UACanLinkEdit($pUserId, $raidId, $userId)
+{
+	$Admin = CSql::userAdmin($userId)
+	$RaidModerator = CSql::userModerator($userId, $raidId)
+	
+	return  (($pUserId == $userId) || $Admin || $RaidModerator) ? (1) : (0);
+}
+
 
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
@@ -1097,9 +1107,7 @@ if (!isset($MyPHPScript)) return;
 		return;
 	}
 
-	// Права на редактирование
-	if (!UACanEdit($pUserId))
-		return;              // выходим
+
 
 	$pLinkName = trim($_POST['NewLinkName']);
 	$pLinkUrl = trim($_POST['NewLinkUrl']);
@@ -1140,6 +1148,15 @@ if (!isset($MyPHPScript)) return;
 	{
 		$pLinkName = '';
 	}
+
+	 $userId = CSql::userId($sessionId)
+
+	// Права на редактирование
+	if (!UACanLinkEdit($pUserId, $pLinkRaidId, $userId))
+		return;              // выходим
+
+
+
 
 
 	// Прверяем, что нет ссылки с таким адресом
@@ -1201,9 +1218,6 @@ if (!isset($MyPHPScript)) return;
 		return;
 	}
 
-	// Права на редактирование
-	if (!UACanEdit($pUserId))
-		return;              // выходим
 
 	$pUserLinkId = trim($_POST['UserLinkId']);
         if (!isset($pUserLinkId)) {$pUserLinkId = 0;}
@@ -1213,6 +1227,20 @@ if (!isset($MyPHPScript)) return;
 		CMmb::setErrorMessage('Ссылка не найдена');
 		return;
 	}
+
+
+	 $sql = "select raid_id 
+	           from  UserLinks 
+	           where userlink_id = $pUserLinkId
+		   ";
+      //     echo $sql;
+	 $raidId = CSql::singleValue($sql, 'raid_id')
+	 $userId = CSql::userId($sessionId)
+
+	// Права на редактирование
+	if (!UACanLinkEdit($pUserId, $raidId, $userId))
+		return;              // выходим
+
 
 	$Sql = "update  UserLinks set userlink_hide = 1 where userlink_id = $pUserLinkId";
 
