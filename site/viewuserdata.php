@@ -627,7 +627,10 @@ if (!isset($MyPHPScript)) return;
 
 	   }
 	   // Конец блока ссылок на впечатления
-	   
+	  
+	// оступ 
+	print('<div align = "left" style = "padding-top: 5px;"><br/></div>'."\r\n");
+
 	   
 ?>
 
