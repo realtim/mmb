@@ -585,7 +585,7 @@ if (!isset($MyPHPScript)) return;
 		print('<select name="LinkRaidId"  tabindex="'.(++$TabIndex).'">'."\n");
 		
 		$RaidCondition = '';
-		if (CSql::userModerator($UserId, $RaidId) == 1)
+		if (CSql::userModerator($UserId, $RaidId) == 1 and $UserId <> $pUserId)
 		{
 			$RaidCondition = "where raid_id = $RaidId";
 		}
