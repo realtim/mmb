@@ -1149,7 +1149,7 @@ if (!isset($MyPHPScript)) return;
 		$pLinkName = '';
 	}
 
-	 $userId = CSql::userId($sessionId)
+	 $userId = CSql::userId($sessionId);
 
 	// Права на редактирование
 	if (!UACanLinkEdit($pUserId, $pLinkRaidId, $userId))
@@ -1234,8 +1234,8 @@ if (!isset($MyPHPScript)) return;
 	           where userlink_id = $pUserLinkId
 		   ";
       //     echo $sql;
-	 $raidId = CSql::singleValue($sql, 'raid_id')
-	 $userId = CSql::userId($sessionId)
+	 $raidId = CSql::singleValue($sql, 'raid_id');
+	 $userId = CSql::userId($sessionId);
 
 	// Права на редактирование
 	if (!UACanLinkEdit($pUserId, $raidId, $userId))
