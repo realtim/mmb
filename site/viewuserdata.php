@@ -4,6 +4,15 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+
+	function UACanLinkEdit($pUserId, $raidId, $userId)
+	{
+		$Admin = CSql::userAdmin($userId);
+		$RaidModerator = CSql::userModerator($userId, $raidId);
+		return  (($pUserId == $userId) || $Admin || $RaidModerator) ? (1) : (0);
+	}
+
+
        // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении, 
         //но и при правке, если не былди заполнены поля при добавлении
 	 $UserCityPlaceHolder = 'Город';
@@ -536,7 +545,7 @@ if (!isset($MyPHPScript)) return;
 
 
           // 04.07.2014  Блок ссылок на впечатления.
-	  if ($viewmode <> 'Add' and $AllowEdit == 1)
+	  if ($viewmode <> 'Add' and  UACanLinkEdit($pUserId, $RaidId, $UserId) == 1)
 	  {
 		// Выводим спсиок впечатлений, которые относятся к данному пользователю 
 	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Впечатления:</div>'."\r\n");
@@ -580,7 +589,14 @@ if (!isset($MyPHPScript)) return;
 
 		// Показываем выпадающий список ММБ
 		print('<select name="LinkRaidId"  tabindex="'.(++$TabIndex).'">'."\n");
-		$sql = "select raid_id, raid_name from Raids order by raid_id  desc";
+		
+		$RaidCondition = '';
+		if (CSql::userModerator($UserId, $RaidId) == 1)
+		{
+			$RaidCondition = "where raid_id = $RaidId";
+		}
+		
+		$sql = "select raid_id, raid_name from Raids $RaidCondition order by raid_id  desc";
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
 		{
