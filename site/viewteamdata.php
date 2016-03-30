@@ -599,7 +599,7 @@ if ($AllowEdit == 1)
 			print('Если Ваша команда не сможет участвовать в ММБ, пожалуйста, удалите ее до '.$EditEnd.".<br/>\n");
 			// Напомним о тех, кто в листе ожидания
 			if (($RaidStage <= 1) and $WaitCount)
-				print('Если Вы успеете удалить свою команду до '.$RegistrationEnd.', то первая из '.$WaitCount.'команд в листе ожидания сможет участвовать в зачете благодаря Вам.<br/>'."\n");
+				print('Если Вы успеете удалить свою команду до '.$RegistrationEnd.', то первая из '.$WaitCount.' команд в листе ожидания сможет участвовать в зачете благодаря Вам.<br/>'."\n");
 		}
 		print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить команду: '.trim($TeamName).'? \')) {HideTeam();}" name="HideTeamButton" value="Удалить команду" tabindex="'.(++$TabIndex).'"> </td></tr>'."\n");
 	}
