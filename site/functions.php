@@ -643,7 +643,7 @@ class CSql {
 	       $sql = "";
         }
              
- 		echo $sql;
+ 	//echo $sql;
 		
 	$UserResult = MySqlQuery($sql);
 		
@@ -658,15 +658,17 @@ class CSql {
 		       	foreach ($pTextArr as $NowString) {
 			   $Msg .= $NowString."\r\n";
 			}
+		       $Msg .= " \r\n";
 
 			// добавляем комментарий	
 			if ($sendingType == 1 or $sendingType == 3)
 			{
-			   $Msg .= "\r\n Если Вы не хотите получать информационные письма, то снимите соответсвующую отметку в карточке пользователя на сайте ММБ \r\n";
+			   $Msg .= "\r\n Если Вы не хотите получать информационные письма, то снимите соответсвующую отметку в карточке пользователя на сайте ММБ \r\n \r\n";
 			}
 		
+		        //echo $sendingType." ".
 		        // Отправляем письмо
-			SendMail(trim($UserEmail),  $msgText, $UserName,  $msgSubject);
+			SendMail(trim($UserEmail),  $Msg, $UserName,  $msgSubject);
 	}
   	mysql_free_result($UserResult);
   	
