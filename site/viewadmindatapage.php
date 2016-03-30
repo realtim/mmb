@@ -141,7 +141,7 @@ if (!isset($MyPHPScript)) return;
 	//	print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
 
 		// Показываем выпадающий список типов ссылок
-		print('<select name="SendForAllTypeId" size="50"  tabindex="'.(++$TabIndex).'">'."\n");
+		print('<select name="SendForAllTypeId"  tabindex="'.(++$TabIndex).'">'."\n");
 			print('<option value="1" selected>Обычная (всем участникам выбранного ММБ, с учетом флага)</option>'."\n");
 			print('<option value="2">Экстренная (всем участникам выбранного ММБ)</option>'."\n");
 			print('<option value="3">Пользователям (всем пользователям сайта, с учетом флага)</option>'."\n");
