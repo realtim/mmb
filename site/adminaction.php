@@ -286,19 +286,11 @@ elseif ($action == 'SendMessageForAll')
 	// рассылать всем может только администратор
 	if (!$Administrator) return;
 
-	
-	     CMmb::setViews('ViewAdminDataPage', '');
+        CMmb::setViews('ViewAdminDataPage', '');
+
              $pText = $_POST['MessageText'];
              $pSubject = $_POST['MessageSubject'];
              $pSendType = (int)$_POST['SendForAllTypeId'];
-             
-             if ($pSendType == 1 OR !isset($pSendType))
-             {
-	           $UserCondition = ' and u.user_allowsendorgmessages = 1 ';
-             } else {
-	           $UserCondition = ' and true ';
-             }
-             
 
 	     if (empty($pSubject) or trim($pSubject) == 'Тема рассылки')
 	     {
@@ -313,55 +305,17 @@ elseif ($action == 'SendMessageForAll')
                 return; 
 	     }
 
-     
-             // Смотрим пользователей
-             $sql = "  select tu.user_id, u.user_name, u.user_email 
-             		from TeamUsers tu
-             			inner join Teams t
-             			on tu.team_id = t.team_id
-             			inner join Users u
-             			on tu.user_id = u.user_id
-             			inner join Distances d
-             			on t.distance_id = d.distance_id
-             		where d.raid_id = $RaidId
-             			and t.team_hide = 0
-             			and tu.teamuser_hide = 0
-             			$UserCondition
-             		order by tu.user_id
-             ";
+	     if (empty($pSendType) or $pSendType == 0)
+	     {
+		CMmb::setError('Укажите тип рассылки.', $view, '');
+                return; 
+	     }
 
-// условие для теста
-//             			and u.user_id in (19, 4)
-
-	//	echo $sql;
-		
-		$UserResult = MySqlQuery($sql);
-		
-
-		while ($UserRow = mysql_fetch_assoc($UserResult))
-		{
-		        $UserEmail = $UserRow['user_email'];
-		        $UserName = $UserRow['user_name'];
-		
-	
-			$Msg = '';
-		        $pTextArr = explode('\r\n', $pText); 
-		       	foreach ($pTextArr as $NowString) {
-			   $Msg .= $NowString."\r\n";
-			}
-		
-		        // Отправляем письмо
-			SendMail(trim($UserEmail), $Msg, $UserName, $pSubject);
-		}
-  		mysql_free_result($UserResult);
- 
-		CMmb::setShortResult('Сообщение выслано.', '');
-
-        
-	
-	
-	
 	$Result = 0;
+
+	$Result = SendMailForAll($RaidId, $pSubject, $pText, $pSendType);
+     
+        echo "result = $Result";
 
 	CMmb::setShortResult('Рассылка запущена', 'ViewAdminDataPage');
 }
