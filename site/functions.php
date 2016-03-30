@@ -72,6 +72,8 @@ class CMmb
 		$view = $newView;
 		$viewmode = $newViewMode;
 	}
+
+	
 };
 
 
@@ -531,6 +533,138 @@ class CSql {
 
     return ;
     }
+
+
+    function SendMailForAll($raidId, $msgSubject, $msgText, $sendingType)
+    {
+	global $DebugMode;
+	
+	// тут нужны проверки
+	if ($raidId <= 0)
+	{
+		CMmb::setShortResult('Марш-бросок не найден', '');
+		return(-1);
+	}
+
+	if (empty($pSubject) or trim($pSubject) == 'Тема рассылки')
+	{
+		CMmb::setShortResult('Укажите тему сообщения', '');
+                return(-1); 
+	}
+
+	if (empty($pText) or trim($pText) == 'Текст сообщения')
+	{
+		CMmb::setShortResult('Укажите текст сообщения', '');
+                return(-1); 
+	}
+     
+	if (empty($sendingType) or $sendingType == 0)
+	{
+		CMmb::setShortResult('Укажите тип рассылки', '');
+                return(-1); 
+	}
+
+	// рассылать всем может только администратор
+	if (!$Administrator) return (-1);
+
+
+	$UserCondition = '';
+	
+	if (isset($DebugMode) and ($DebugMode == 1))
+	{
+		$DebugCond = " and u.user_id = 19 ";
+	} else {
+		$DebugCond = "";
+	}
+	
+	
+        if ($sendingType == 1)
+        {
+
+		// информационное сообщение
+	     $sql = "  select tu.user_id, u.user_name, u.user_email 
+             		from TeamUsers tu
+             			inner join Teams t
+             			on tu.team_id = t.team_id
+             			inner join Users u
+             			on tu.user_id = u.user_id
+             			inner join Distances d
+             			on t.distance_id = d.distance_id
+             		where d.raid_id = $RaidId
+             			and t.team_hide = 0
+             			and tu.teamuser_hide = 0
+             			$DebagCond
+             			and u.user_allowsendorgmessages = 1
+             		order by tu.user_id ";
+	    
+        }
+        elseif ($sendingType == 2)
+        {
+
+		// экстренная рассылка
+	     $sql = "  select tu.user_id, u.user_name, u.user_email 
+             		from TeamUsers tu
+             			inner join Teams t
+             			on tu.team_id = t.team_id
+             			inner join Users u
+             			on tu.user_id = u.user_id
+             			inner join Distances d
+             			on t.distance_id = d.distance_id
+             		where d.raid_id = $RaidId
+             			and t.team_hide = 0
+             			and tu.teamuser_hide = 0
+             			$DebagCond
+             			and u.user_allowsendorgmessages = 1
+             		order by tu.user_id ";
+
+
+        }
+        elseif ($sendingType == 3)
+        {
+
+		// информаия об открытии регистрации или общая рассылка по всем поьзователям вне ММБ
+	     $sql = "  select u.user_id, u.user_name, u.user_email 
+             		from  Users u
+             		where u.user_hide = 0
+            		      $DebagCond
+             		      and u.user_allowsendorgmessages = 1
+             		order by u.user_id ";
+
+        }
+        else
+        {
+	       $sql = "";
+        }
+             
+ 		echo $sql;
+		
+	$UserResult = MySqlQuery($sql);
+		
+	while ($UserRow = mysql_fetch_assoc($UserResult))
+	{
+		        $UserEmail = $UserRow['user_email'];
+		        $UserName = $UserRow['user_name'];
+		
+	
+			$Msg = '';
+		        $pTextArr = explode('\r\n', $pText); 
+		       	foreach ($pTextArr as $NowString) {
+			   $Msg .= $NowString."\r\n";
+			}
+		
+		        // Отправляем письмо
+	//		SendMail(trim($UserEmail),  $msgText, $UserName,  $msgSubject);
+	}
+  	mysql_free_result($UserResult);
+  	
+  	return (1);
+ 
+    }
+    // конец рассылки сообщений по всем пользователям
+	
+	
+
+
 
 // ----------------------------------------------------------------------------
 // Инициализация всех переменных, отвечающих за уровни доступа
@@ -3185,4 +3319,8 @@ class CMmbLogger
 		return $res;
 	}
 }
+
+
+
+
 ?>
