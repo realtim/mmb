@@ -541,7 +541,7 @@ class CSql {
 	// $debagCond;
 	
 	
-	echo $raidId, $msgSubject, $msgText, $sendingType;
+//	echo $raidId, $msgSubject, $msgText, $sendingType;
 //		return(-1);
 
 	$SessionId = mmb_validate($_COOKIE, CMmb::CookieName, '');
@@ -625,7 +625,6 @@ class CSql {
              			and t.team_hide = 0
              			and tu.teamuser_hide = 0
              			$debugCond
-             			and u.user_allowsendorgmessages = 1
              		order by tu.user_id ";
 
 
@@ -658,9 +657,15 @@ class CSql {
 		
 	
 			$Msg = '';
-		        $pTextArr = explode('\r\n', $pText); 
+		        $pTextArr = explode('\r\n', $msgText); 
 		       	foreach ($pTextArr as $NowString) {
 			   $Msg .= $NowString."\r\n";
+			}
+
+			// добавляем комментарий	
+			if ($sendingType == 1 or $sendingType == 3)
+			{
+			   $Msg .= "\r\n Если Вы не хотите получать информационные письма, то снимите соответсвующую отметку в карточке пользователя на сайте ММБ \r\n";
 			}
 		
 		        // Отправляем письмо
