@@ -133,19 +133,20 @@ if (!isset($MyPHPScript)) return;
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	        print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
 
-		print("<br/>\r\n");
 
-                 $DisabledText = '';
+                $DisabledText = '';
                 $NewMessageSubject = 'Тема рассылки';
                 $NewMessageText =  'Текст сообщения';
 	//	print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
 
 		// Показываем выпадающий список типов ссылок
+		print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">'."\r\n");
 		print('<select name="SendForAllTypeId"  tabindex="'.(++$TabIndex).'">'."\n");
 			print('<option value="1" selected>Обычная (всем участникам выбранного ММБ, с учетом флага)</option>'."\n");
 			print('<option value="2">Экстренная (всем участникам выбранного ММБ)</option>'."\n");
 			print('<option value="3">Пользователям (всем пользователям сайта, с учетом флага)</option>'."\n");
 		print('</select>'."\n");
+		print('</div>'."\r\n");
 
 		print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">'."\r\n");
 		print('<input type="text" name="MessageSubject" size="50" value="'.$NewMessageSubject.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
@@ -154,7 +155,7 @@ if (!isset($MyPHPScript)) return;
 
 	//	print("</div>\r\n");
 
-		print('<div class="team_res"><textarea name="MessageText"  rows="5" cols="70" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+		print('<div class="team_res"><textarea name="MessageText"  rows="5" cols="60" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
 		. CMmbUI::placeholder($NewMessageText) .' title = "Текст сообщения">'.$NewMessageText.'</textarea></div>'."\r\n");
     	        print("<br/>\r\n");
     	        print('<input type="button" onClick = "javascript: SendMessageForAll();;"  name="SendMessageForAllButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
