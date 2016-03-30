@@ -545,7 +545,7 @@ class CSql {
 
 	$SessionId = mmb_validate($_COOKIE, CMmb::CookieName, '');
 	$UserId = (int) CSql::userId($SessionId);
-	$Admin = (int) CSql::userAdmin($userId);
+	$Admin = (int) CSql::userAdmin($UserId);
 
 	
 	// тут нужны проверки
