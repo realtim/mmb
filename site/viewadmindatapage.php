@@ -135,7 +135,7 @@ if (!isset($MyPHPScript)) return;
 
                  $DisabledText = '';
                 $NewMessageSubject = 'Тема рассылки';
-                
+                $NewMessageText =  'Текст сообщения';
 	//	print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
 
 		// Показываем выпадающий список типов ссылок
@@ -144,14 +144,14 @@ if (!isset($MyPHPScript)) return;
 			print('<option value="2">Экстренная (всем участникам ММБ, без учета флага)</option>'."\n");
 			print('<option value="3">Пользователям (всем пользователям сайта, с учетом флага)</option>'."\n");
 		print('</select>'."\n");
-
-		print('<input type="text" name="MessageSubject" size="30" value="'.$NewMessageSubject.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+		print("<br/>\r\n");
+		print('<input type="text" name="MessageSubject" size="50" value="'.$NewMessageSubject.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
 		. CMmbUI::placeholder($NewMessageSubject) . ' title = "Тема рассылки">'."\r\n");
 
 	//	print("</div>\r\n");
 
-		print('<div class="team_res"><textarea name="MessageText"  rows="4" cols="50" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
-	        title = "Текст сообщения">Текст сообщения</textarea></div>'."\r\n");
+		print('<div class="team_res"><textarea name="MessageText"  rows="4" cols="50" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+		. CMmbUI::placeholder($NewMessageText) .' title = "Текст сообщения">'.$NewMessageText.'</textarea></div>'."\r\n");
     	        print("<br/>\r\n");
     	        print('<input type="button" onClick = "javascript: SendMessageForAll();;"  name="SendMessageForAllButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
 
