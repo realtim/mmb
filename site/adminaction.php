@@ -315,9 +315,13 @@ elseif ($action == 'SendMessageForAll')
 
 	$Result = SendMailForAll($RaidId, $pSubject, $pText, $pSendType);
      
-        echo "result = $Result";
-
-	CMmb::setShortResult('Рассылка запущена', 'ViewAdminDataPage');
+        if ($Result == 1)
+        {
+		CMmb::setShortResult('Рассылка запущена', 'ViewAdminDataPage');
+        } else {
+        	CMmb::setError('Ошибка при отправке рассылки.', $view, '');
+                return; 
+        }
 }
 // =============== Никаких действий не требуется ==============================
 else
