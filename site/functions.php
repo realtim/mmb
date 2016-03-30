@@ -580,13 +580,11 @@ class CSql {
 	if (!$Admin) return (-1);
 
 
-	$UserCondition = '';
-	
 	if (isset($DebugMode) and ($DebugMode == 1))
 	{
-		$DebugCond = " and u.user_id = 19 ";
+		$debugCond = " and u.user_id = 19 ";
 	} else {
-		$DebugCond = "";
+		$debugCond = "";
 	}
 	
 	
@@ -602,10 +600,10 @@ class CSql {
              			on tu.user_id = u.user_id
              			inner join Distances d
              			on t.distance_id = d.distance_id
-             		where d.raid_id = $RaidId
+             		where d.raid_id = $raidId
              			and t.team_hide = 0
              			and tu.teamuser_hide = 0
-             			$DebagCond
+             			$debagCond
              			and u.user_allowsendorgmessages = 1
              		order by tu.user_id ";
 	    
@@ -622,10 +620,10 @@ class CSql {
              			on tu.user_id = u.user_id
              			inner join Distances d
              			on t.distance_id = d.distance_id
-             		where d.raid_id = $RaidId
+             		where d.raid_id = $raidId
              			and t.team_hide = 0
              			and tu.teamuser_hide = 0
-             			$DebagCond
+             			$debagCond
              			and u.user_allowsendorgmessages = 1
              		order by tu.user_id ";
 
@@ -638,7 +636,7 @@ class CSql {
 	     $sql = "  select u.user_id, u.user_name, u.user_email 
              		from  Users u
              		where u.user_hide = 0
-            		      $DebagCond
+            		      $debagCond
              		      and u.user_allowsendorgmessages = 1
              		order by u.user_id ";
 
