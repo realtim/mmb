@@ -541,7 +541,12 @@ class CSql {
 	
 	
 	echo $raidId, $msgSubject, $msgText, $sendingType;
-		return(-1);
+//		return(-1);
+
+	$SessionId = mmb_validate($_COOKIE, CMmb::CookieName, '');
+	$UserId = (int) CSql::userId($SessionId);
+	$Admin = userAdmin($userId)
+
 	
 	// тут нужны проверки
 	if ($raidId <= 0)
@@ -550,13 +555,13 @@ class CSql {
 		return(-1);
 	}
 
-	if (empty($pSubject) or trim($pSubject) == 'Тема рассылки')
+	if (empty($msgSubject) or trim($msgSubject) == 'Тема рассылки')
 	{
 		CMmb::setShortResult('Укажите тему сообщения', '');
                 return(-1); 
 	}
 
-	if (empty($pText) or trim($pText) == 'Текст сообщения')
+	if (empty($msgText) or trim($msgText) == 'Текст сообщения')
 	{
 		CMmb::setShortResult('Укажите текст сообщения', '');
                 return(-1); 
@@ -568,8 +573,11 @@ class CSql {
                 return(-1); 
 	}
 
+
+	echo $raidId, $msgSubject, $msgText, $sendingType, $Admin;
+
 	// рассылать всем может только администратор
-	if (!$Administrator) return (-1);
+	if (!$Admin) return (-1);
 
 
 	$UserCondition = '';
