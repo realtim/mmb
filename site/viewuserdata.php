@@ -4,14 +4,8 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
-
-	function UACanLinkEdit($pUserId, $raidId, $userId)
-	{
-		$Admin = CSql::userAdmin($userId);
-		$RaidModerator = CSql::userModerator($userId, $raidId);
-		return  (($pUserId == $userId) || $Admin || $RaidModerator) ? (1) : (0);
-	}
-
+	// объявлена в UserAction
+	//	function UACanLinkEdit($pUserId, $raidId, $userId)
 
        // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении, 
         //но и при правке, если не былди заполнены поля при добавлении
