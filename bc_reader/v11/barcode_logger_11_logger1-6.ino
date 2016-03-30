@@ -11,8 +11,8 @@
  *CS   - D10
  
  Software serial port:
- *TX - D4
- *RX - D3
+ *TX - D3
+ *RX - D4
  
  DS1307 RTC connected via I2C:
  *SCL - A5
@@ -68,8 +68,8 @@ const byte Spk=8;  // BUZZER pin set
 const byte GLed=9;  // GREEN LED pin set
 const byte RLed=7;  // RED LED pin set
 
-const byte TXPin = 4;
-const byte RXPin = 3;
+const byte TXPin = 3;
+const byte RXPin = 4;
 SoftwareSerial ScannerSerial(RXPin, TXPin);
 
 //initial scanner config
