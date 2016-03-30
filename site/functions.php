@@ -540,9 +540,6 @@ class CSql {
 	global $DebugMode;
 	// $debagCond;
 	
-	
-//	echo $raidId, $msgSubject, $msgText, $sendingType;
-//		return(-1);
 
 	$SessionId = mmb_validate($_COOKIE, CMmb::CookieName, '');
 	$UserId = (int) CSql::userId($SessionId);
@@ -575,7 +572,7 @@ class CSql {
 	}
 
 
-	echo $raidId, $msgSubject, $msgText, $sendingType, $Admin;
+//	echo $raidId, $msgSubject, $msgText, $sendingType, $Admin;
 
 	// рассылать всем может только администратор
 	if (!$Admin) return (-1);
@@ -669,7 +666,7 @@ class CSql {
 			}
 		
 		        // Отправляем письмо
-	//		SendMail(trim($UserEmail),  $msgText, $UserName,  $msgSubject);
+			SendMail(trim($UserEmail),  $msgText, $UserName,  $msgSubject);
 	}
   	mysql_free_result($UserResult);
   	
