@@ -10,8 +10,8 @@ function UACanEdit($pUserId)
 
 function UACanLinkEdit($pUserId, $raidId, $userId)
 {
-	$Admin = CSql::userAdmin($userId)
-	$RaidModerator = CSql::userModerator($userId, $raidId)
+	$Admin = CSql::userAdmin($userId);
+	$RaidModerator = CSql::userModerator($userId, $raidId);
 	
 	return  (($pUserId == $userId) || $Admin || $RaidModerator) ? (1) : (0);
 }
