@@ -580,7 +580,7 @@ class CSql {
 
 	if (isset($DebugMode) and ($DebugMode == 1))
 	{
-		$debugCond = " and u.user_id = 19 ";
+		$debugCond = " and u.user_admin = 1 ";
 	} else {
 		$debugCond = "";
 	}
