@@ -34,7 +34,13 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 			       on ul.user_id = a.user_id and ul.raid_id = a.raid_id
 			where ul.userlink_hide = 0 
 			      and r.raid_id =  $RaidId
-			order by r.raid_id desc, lt.linktype_order asc, userlink_id  asc"; 
+			order by r.raid_id desc, lt.linktype_order asc,
+				CASE lt.linktype_id 
+					WHEN 6 THEN  CAST(userlink_url as decimal(5,2))
+					ELSE userlink_id  
+				END  asc"; 
+
+		//order by r.raid_id desc, lt.linktype_order asc, userlink_id  asc"; 
                 //  echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
 
