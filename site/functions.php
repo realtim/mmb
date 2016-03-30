@@ -539,6 +539,10 @@ class CSql {
     {
 	global $DebugMode;
 	
+	
+	echo $raidId, $msgSubject, $msgText, $sendingType
+		return(-1);
+	
 	// тут нужны проверки
 	if ($raidId <= 0)
 	{
