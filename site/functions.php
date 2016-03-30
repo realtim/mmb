@@ -604,7 +604,7 @@ class CSql {
              		where d.raid_id = $raidId
              			and t.team_hide = 0
              			and tu.teamuser_hide = 0
-             			$debagCond
+             			$debugCond
              			and u.user_allowsendorgmessages = 1
              		order by tu.user_id ";
 	    
@@ -624,7 +624,7 @@ class CSql {
              		where d.raid_id = $raidId
              			and t.team_hide = 0
              			and tu.teamuser_hide = 0
-             			$debagCond
+             			$debugCond
              			and u.user_allowsendorgmessages = 1
              		order by tu.user_id ";
 
@@ -637,7 +637,7 @@ class CSql {
 	     $sql = "  select u.user_id, u.user_name, u.user_email 
              		from  Users u
              		where u.user_hide = 0
-            		      $debagCond
+            		      $debugCond
              		      and u.user_allowsendorgmessages = 1
              		order by u.user_id ";
 
