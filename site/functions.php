@@ -110,27 +110,47 @@ class CMmb
 	//CSql::closeConnection(); // try not closing, use global
 
 	return $rs;
- 
 }
 
 
 class CSql {
-
 	protected static $connection = null;
 
 	public static function getConnection()
 	{
-		if (self::$connection !== null)
-			return self::$connection;
+		if (self::$connection === null)
+			self::$connection = self::createConnection();
 
+		return self::$connection;
+	}
+
+	// закрывает переданное соединение. При вызове без параметра -- закрывает общее.
+	public static function closeConnection($conn = null)
+	{
+		if ($conn !== null)
+		{
+			mysql_close(self::$connection);
+			return;	
+		}
+		
+		if (self::$connection !== null)
+			mysql_close(self::$connection);
+		self::$connection = null;
+	}
+	
+	// returns: sql connection on success, die() on error
+	// вызывать только если вам действительно нужен личный коннекшен. Например, такой нужен логгеру
+	// логировать ошибки мимо sql
+	public static function createConnection()
+	{
 		$t1 = microtime(true);
 		// Данные берём из settings
 		include("settings.php");
 
-		self::$connection = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+		$connection = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
 
 		// Ошибка соединения
-		if (self::$connection <= 0)
+		if ($connection <= 0)
 		{
 			echo mysql_error();
 			die();
@@ -141,30 +161,22 @@ class CSql {
 		//		 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
 		//  устанавливаем кодировку для взаимодействия
 
-		mysql_query('set names \'utf8\'', self::$connection);
+		mysql_query('set names \'utf8\'', $connection);
 
 		// Выбираем БД ММБ
 		//		echo $DBName;
-		$rs = mysql_select_db($DBName, self::$connection);
+		$rs = mysql_select_db($DBName, $connection);
 
 		if (!$rs)
 		{
-			self::closeConnection();
+			self::closeConnection($connection);
 			echo mysql_error();
 			die();
 		}
 		CMmbLogger::addInterval('getConnection', $t1);
-
-		return self::$connection;
+		
+		return $connection;
 	}
-
-	public static function closeConnection()
-	{
-		if (self::$connection !== null)
-			mysql_close(self::$connection);
-		self::$connection = null;
-	}
-
 
 	public static function singleRow($query)
 	{
@@ -3302,6 +3314,8 @@ class CMmbLogger
 {
 	protected static $enabled = false;
 	protected static $records = array();
+	
+	protected static $sqlConn = null;
 
 	public static function enable($on)
 	{
@@ -3333,9 +3347,14 @@ class CMmbLogger
 
 		return $res;
 	}
+	
+	protected static getConnection()
+	{
+		if (self::$sqlConn === null)
+			self::$sqlConn = CSql::createConnection();
+		
+		return self::$sqlConn;
+	}
 }
-
-
-
 
 ?>
