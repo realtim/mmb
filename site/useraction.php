@@ -5,7 +5,7 @@ function UACanEdit($pUserId)
 {
 	global $UserId, $Administrator;
 
-	return  (($pUserId == $userId) || $Administrator) ? (1) : (0);
+	return  (($pUserId == $UserId) || $Administrator) ? (1) : (0);
 }
 
 function UACanLinkEdit($pUserId, $raidId, $userId)
