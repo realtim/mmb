@@ -1612,6 +1612,7 @@ send_mime_mail('Автор письма',
 	         where d.raid_id < $raidid
 		       and tu.user_id = $userid
 		       and t.team_hide = 0
+		       and t.team_outofrange = 0
 		       and tu.teamuser_hide = 0 
 		 order  by d.raid_id DESC
 		 LIMIT 0,1";
@@ -1638,6 +1639,7 @@ send_mime_mail('Автор письма',
 			       inner join Distances d
 			       on t.distance_id = d.distance_id
 		         where d.raid_id = $PredRaidId
+		               and d.raid_id >= 19
 			       and tu.user_id = $userid
 			       and COALESCE(t.team_maxlevelpointorderdone, 0) = 0 
 			       and t.team_hide = 0
