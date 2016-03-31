@@ -3350,7 +3350,7 @@ class CMmbLogger
 		return $res;
 	}
 	
-	protected static getConnection()
+	protected static function getConnection()
 	{
 		if (self::$sqlConn === null)
 			self::$sqlConn = CSql::createConnection();
