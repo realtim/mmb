@@ -11,7 +11,7 @@ import java.io.InputStream;
 import ru.mmb.datacollector.activity.input.bclogger.dataload.LogStringParsingResult;
 import ru.mmb.datacollector.activity.input.bclogger.dataload.LoggerDataProcessor;
 import ru.mmb.datacollector.activity.input.bclogger.dataload.LoggerReplyParser;
-import ru.mmb.datacollector.activity.transport.http.ThreadMessageTypes;
+import ru.mmb.datacollector.bluetooth.ThreadMessageTypes;
 
 public class LoggerFileImportRunner implements LoggerDataProcessor {
     private final String fileName;

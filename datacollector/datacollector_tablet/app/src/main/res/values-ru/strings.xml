@@ -14,12 +14,10 @@
     <string name="main_current_raid_id">ID текущего ММБ: %d</string>
     <string name="main_input_data">Ввод данных</string>
     <string name="main_transport">Транспорт</string>
-    <string name="main_import_data">Импорт</string>
-    <string name="main_import_barcode_data">Импорт штрих-кодов</string>
-    <string name="main_export_data">Экспорт</string>
     <string name="main_title">ММБ терминал</string>
     <string name="main_search_team_on_point">Поиск команды на точке</string>
     <string name="main_settings">Настройки</string>
+    <string name="main_fill_data">Генерация тестовых данных</string>
     <string name="main_progress_loading">Загрузка...</string>
 
     <string name="settings_title">Настройки</string>
@@ -32,17 +30,9 @@
     <string name="settings_last_export_date">Последняя дата экспорта:</string>
     <string name="settings_transp_user_id">Transport user ID:</string>
     <string name="settings_transp_user_password">Transport user password:</string>
-    <string name="settings_team_clear_filter">Очищать фильтр после успешного ввода:</string>
-    <string name="settings_team_fast_select">Режим быстрого выбора команды:</string>
     <string name="settings_applied">Настройки сохранены</string>
     <string name="settings_json_dialog_title">Выбор планшета</string>
     <string name="settings_can_edit_scantime">Разрешить менять время:</string>
-    <string name="settings_application_mode">Режим работы:</string>
-    <string name="settings_application_mode_input">ВВОД ДАННЫХ</string>
-    <string name="settings_application_mode_report">ОТЧЁТЫ</string>
-    <string name="settings_data_server_url">URL (cервер данных):</string>
-    <string name="settings_data_server_user_name">Логин (сервер данных):</string>
-    <string name="settings_data_server_password">Пароль (сервер данных):</string>
 
     <string name="input_global_no_selected_scan_point">&lt;Точка ввода не выбрана></string>
     <string name="input_start_no_scan_point">&lt;Точка ввода не выбрана></string>
@@ -77,7 +67,6 @@
 
     <string name="input_bclogger_dataload_get_log">Загрузить данные</string>
     <string name="input_bclogger_dataload_get_debug">Загрузить ERRORS</string>
-    <string name="input_bclogger_dataload_clear_device">Очистить файлы</string>
     <string name="input_bclogger_dataload_clear_console">Очистить консоль</string>
 
     <string name="input_bclogger_fileimport_select_file">Выбор файла импорта</string>
@@ -122,13 +111,7 @@
     <string name="file_dialog_err">Ошибка</string>
 
     <string name="transport_input_import_dictionaries">Импорт данных ММБ</string>
-    <string name="transport_input_send_to_server">Отправить RAW на сервер</string>
-    <string name="transport_input_send_logger_data">Отправить RAW данные сканеров</string>
     <string name="transport_input_save_data_to_file">Экспорт в файл для сайта</string>
-
-    <string name="transport_report_import_dictionaries">Импорт данных ММБ</string>
-    <string name="transport_report_receive_from_server">Получить с сервера</string>
-    <string name="transport_report_receive_logger_data">Получить данные сканеров</string>
 
     <string name="transp_import_title">Импорт</string>
     <string name="transp_import_dicts_title">Импорт справочников</string>
@@ -147,29 +130,6 @@
     <string name="transp_export_error">Ошибка экспорта.</string>
     <string name="transp_export_success">Экспорт завершён.</string>
     <string name="transp_export_running">В процессе</string>
-
-    <string name="transport_bclogger_receive_title">Загрузка данных LOGGERов</string>
-    <string name="transport_bclogger_receive_start_listening">Ждать подключения</string>
-    <string name="transport_bclogger_receive_stop_listening">Прервать ожидание</string>
-    <string name="transport_bclogger_receive_clear_console">Очистить консоль</string>
-
-    <string name="transport_bclogger_send_title">Отправить данные LOGGERов</string>
-    <string name="transport_bclogger_send_no_device">&lt;Report планшет не выбран></string>
-    <string name="transport_bclogger_send_select_device">Выберите report планшет</string>
-    <string name="transport_bclogger_send_send_data">Отправить данные</string>
-    <string name="transport_bclogger_send_clear_console">Очистить консоль</string>
-
-    <string name="transport_http_send_title">Отправить RAW данные на сервер</string>
-    <string name="transport_http_send_send_data">Отправить данные</string>
-    <string name="transport_http_send_clear_console">Очистить консоль</string>
-
-    <string name="transport_http_receive_title">Получить обработанные данные с сервера</string>
-    <string name="transport_http_receive_receive_data">Получить данные</string>
-    <string name="transport_http_receive_clear_console">Очистить консоль</string>
-
-    <string name="results_search_team_on_point">Поиск команды на точке</string>
-    <string name="results_team_report">Отчёт по команде</string>
-    <string name="results_group_report">Полный отчёт </string>
 
     <string name="team_search_start_no_scan_point">&lt;Точка ввода не выбрана></string>
     <string name="team_search_start_select_scan_point">Выбор точки ввода</string>
@@ -190,24 +150,10 @@
     <string name="report_team_filter_number_exact">Точно</string>
     <string name="report_team_filter_team">Команда:</string>
     <string name="report_team_filter_member">Участник:</string>
-
-    <string name="report_team_title">Поиск команды</string>
-    <string name="report_team_sort_num">Номер</string>
-    <string name="report_team_sort_team">Команда</string>
-    <string name="report_team_sort_member">Участник</string>
     <string name="report_team_filter_status_number">Номер:</string>
     <string name="report_team_filter_status_exact">точно</string>
     <string name="report_team_filter_status_team">Команда:</string>
     <string name="report_team_filter_status_member">Участник:</string>
     <string name="report_team_filter_status_empty">Без фильтра</string>
-    <string name="report_team_result_error">Ошибка построения отчёта по команде.</string>
-
-    <string name="report_global_title">Глобальный отчёт</string>
-    <string name="report_global_all_teams">Все команды</string>
-    <string name="report_global_selected_teams">Выбранные команды</string>
-    <string name="report_global_start_builder">Старт</string>
-    <string name="report_global_result_error">Ошибка построения глобального отчёта.</string>
-
-    <string name="results_title">Отчёты по результатам</string>
 
 </resources>

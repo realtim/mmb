@@ -20,7 +20,6 @@ public class Settings {
     private static final String USER_ID = "user_id";
     private static final String CURRENT_RAID_ID = "current_raid_id";
     private static final String CAN_EDIT_SCANTIME = "can_edit_scantime";
-    private static final String LAST_EXPORT_DATE = "last_export_date";
     private static final String TRANSP_USER_ID = "transp_user_id";
     private static final String TRANSP_USER_PASSWORD = "transp_user_password";
 
@@ -70,7 +69,6 @@ public class Settings {
         loadProperty(DEVICE_ID);
         loadProperty(CURRENT_RAID_ID);
         loadProperty(CAN_EDIT_SCANTIME);
-        loadProperty(LAST_EXPORT_DATE);
         loadProperty(TRANSP_USER_ID);
         loadProperty(TRANSP_USER_PASSWORD);
     }
@@ -178,14 +176,6 @@ public class Settings {
         }
     }
 
-    public String getLastExportDate() {
-        return settings.getProperty(LAST_EXPORT_DATE, "");
-    }
-
-    public void setLastExportDate(String lastExportDate) {
-        setValue(LAST_EXPORT_DATE, lastExportDate);
-    }
-
     public int getTranspUserId() {
         return getIntSetting(TRANSP_USER_ID);
     }
@@ -238,19 +228,5 @@ public class Settings {
             return -1;
         }
         return Integer.parseInt(valueString);
-    }
-
-    /* http transport is not removed totally, so save STUB methods to compile code */
-
-    public String getDataServerUrl() {
-        return null;
-    }
-
-    public String getDataServerUserName() {
-        return null;
-    }
-
-    public String getDataServerPassword() {
-        return null;
     }
 }

@@ -9,7 +9,6 @@ public class Constants {
     public static final String KEY_CURRENT_TEAM = "current.team";
     public static final String KEY_CURRENT_DEVICE_INFO = "current.device.info";
     public static final String KEY_CURRENT_BLUETOOTH_FILTER_JUST_LOGGERS = "current.bluetooth.filter.just.loggers";
-    public static final String KEY_CURRENT_EXPORT_FORMAT = "current.export.format";
     public static final String KEY_CURRENT_INPUT_CHECKPOINTS_STATE =
             "current.input.checkpoint.state";
     public static final String KEY_CURRENT_INPUT_CHECKED_DATE =
@@ -18,21 +17,13 @@ public class Constants {
     public static final String KEY_CURRENT_INPUT_WITHDRAWN_CHECKED =
             "current.input.withdrawn.checked";
     public static final String KEY_EXPORT_RESULT_MESSAGE = "export.result.message";
-    public static final String KEY_REPORT_TEAM_SORT_COLUMN = "report.team.sort.column";
-    public static final String KEY_REPORT_TEAM_SORT_ORDER = "report.team.sort.order";
-    public static final String KEY_REPORT_TEAM_FILTER_STATE = "report.team.filter.state";
-    public static final String KEY_REPORT_TEAM_FILTER_NUMBER_EXACT =
-            "report.team.filter.number.exact";
-    public static final String KEY_REPORT_TEAM_FILTER_NUMBER = "report.team.filter.number";
-    public static final String KEY_REPORT_TEAM_FILTER_TEAM = "report.team.filter.team";
-    public static final String KEY_REPORT_TEAM_FILTER_MEMBER = "report.team.filter.member";
-    public static final String KEY_REPORT_TEAM_RESULT_MESSAGE = "report.team.result.message";
-    public static final String KEY_REPORT_GLOBAL_REPORT_MODE = "report.global.report.mode";
-    public static final String KEY_REPORT_GLOBAL_SELECTED_TEAMS = "report.global.selected.teams";
-    public static final String KEY_REPORT_GLOBAL_RESULT_MESSAGE = "report.global.result.message";
+    public static final String KEY_TEAM_FILTER_STATE = "team.filter.state";
+    public static final String KEY_TEAM_FILTER_NUMBER_EXACT = "team.filter.number.exact";
+    public static final String KEY_TEAM_FILTER_NUMBER = "team.filter.number";
+    public static final String KEY_TEAM_FILTER_TEAM = "team.filter.team";
+    public static final String KEY_TEAM_FILTER_MEMBER = "team.filter.member";
 
     public static final int REQUEST_CODE_DEFAULT_ACTIVITY = -1;
-    public static final int REQUEST_CODE_MAIN_ACTIVITY = 1;
     public static final int REQUEST_CODE_SETTINGS_ACTIVITY = 2;
     public static final int REQUEST_CODE_INPUT_HISTORY_ACTIVITY = 4;
     public static final int REQUEST_CODE_INPUT_DATA_ACTIVITY = 5;

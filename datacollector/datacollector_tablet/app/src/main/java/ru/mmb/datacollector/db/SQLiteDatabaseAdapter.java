@@ -27,7 +27,6 @@ import ru.mmb.datacollector.model.RawTeamLevelDismiss;
 import ru.mmb.datacollector.model.RawTeamLevelPoints;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
-import ru.mmb.datacollector.model.TeamResult;
 import ru.mmb.datacollector.model.User;
 import ru.mmb.datacollector.model.meta.MetaTable;
 import ru.mmb.datacollector.model.registry.Settings;
@@ -45,7 +44,6 @@ public class SQLiteDatabaseAdapter {
     private TeamsDB teamsDB;
     private MetaTablesDB metaTablesDB;
     private UsersDB usersDB;
-    private TeamResultsDB teamResultsDB;
     private RawLoggerDataDB rawLoggerDataDB;
     private RawTeamLevelPointsDB rawTeamLevelPointsDB;
     private RawTeamLevelDismissDB rawTeamLevelDismissDB;
@@ -61,8 +59,7 @@ public class SQLiteDatabaseAdapter {
 
     public void tryConnectToDB() {
         try {
-            db =
-                    SQLiteDatabase.openDatabase(Settings.getInstance().getPathToDB(), null, SQLiteDatabase.OPEN_READWRITE);
+            db = SQLiteDatabase.openDatabase(Settings.getInstance().getPathToDB(), null, SQLiteDatabase.OPEN_READWRITE);
             // Log.d("SQLiteDatabaseAdapter", "db open " + Settings.getInstance().getPathToDB());
             performTestQuery();
             // Log.d("SQLiteDatabaseAdapter", "db open SUCCESS");
@@ -77,7 +74,6 @@ public class SQLiteDatabaseAdapter {
             rawLoggerDataDB = new RawLoggerDataDB(db);
             rawTeamLevelPointsDB = new RawTeamLevelPointsDB(db);
             rawTeamLevelDismissDB = new RawTeamLevelDismissDB(db);
-            teamResultsDB = new TeamResultsDB(db);
         } catch (SQLiteException e) {
             if (db != null) {
                 db.close();
@@ -175,10 +171,6 @@ public class SQLiteDatabaseAdapter {
     public void appendScanPointTeams(ScanPoint scanPoint, Set<Integer> teams) {
         rawTeamLevelPointsDB.appendScanPointTeams(scanPoint, teams);
         rawTeamLevelDismissDB.appendScanPointTeams(scanPoint, teams);
-    }
-
-    public List<TeamResult> loadTeamResults(Team team) {
-        return teamResultsDB.loadTeamResults(team);
     }
 
     public RawLoggerData getExistingLoggerRecord(int loggerId, int scanpointId, int teamId) {

@@ -12,7 +12,6 @@ import android.widget.Toast;
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.transport.exporter.ExportFormat;
-import ru.mmb.datacollector.transport.exporter.ExportMode;
 import ru.mmb.datacollector.transport.exporter.ExportState;
 
 import static ru.mmb.datacollector.activity.Constants.KEY_EXPORT_RESULT_MESSAGE;
@@ -75,7 +74,7 @@ public class TransportExportActivity extends Activity {
         this.exportState = exportState;
     }
 
-    private void runExport(ExportMode exportMode) {
+    private void runExport() {
         setExportState(new ExportState());
         refreshState();
 
@@ -105,7 +104,7 @@ public class TransportExportActivity extends Activity {
     private class FullExportClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            runExport(ExportMode.FULL);
+            runExport();
         }
     }
 }

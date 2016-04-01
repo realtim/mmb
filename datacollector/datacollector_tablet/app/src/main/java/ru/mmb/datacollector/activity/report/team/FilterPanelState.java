@@ -6,11 +6,11 @@ import android.os.Bundle;
 
 import ru.mmb.datacollector.R;
 
-import static ru.mmb.datacollector.activity.Constants.KEY_REPORT_TEAM_FILTER_MEMBER;
-import static ru.mmb.datacollector.activity.Constants.KEY_REPORT_TEAM_FILTER_NUMBER;
-import static ru.mmb.datacollector.activity.Constants.KEY_REPORT_TEAM_FILTER_NUMBER_EXACT;
-import static ru.mmb.datacollector.activity.Constants.KEY_REPORT_TEAM_FILTER_STATE;
-import static ru.mmb.datacollector.activity.Constants.KEY_REPORT_TEAM_FILTER_TEAM;
+import static ru.mmb.datacollector.activity.Constants.KEY_TEAM_FILTER_MEMBER;
+import static ru.mmb.datacollector.activity.Constants.KEY_TEAM_FILTER_NUMBER;
+import static ru.mmb.datacollector.activity.Constants.KEY_TEAM_FILTER_NUMBER_EXACT;
+import static ru.mmb.datacollector.activity.Constants.KEY_TEAM_FILTER_STATE;
+import static ru.mmb.datacollector.activity.Constants.KEY_TEAM_FILTER_TEAM;
 
 public class FilterPanelState {
     private final String prefix;
@@ -29,29 +29,29 @@ public class FilterPanelState {
 
     public void save(Bundle savedInstanceState)
     {
-        savedInstanceState.putSerializable(KEY_REPORT_TEAM_FILTER_STATE, filterState);
-        savedInstanceState.putBoolean(KEY_REPORT_TEAM_FILTER_NUMBER_EXACT, filterNumberExact);
+        savedInstanceState.putSerializable(KEY_TEAM_FILTER_STATE, filterState);
+        savedInstanceState.putBoolean(KEY_TEAM_FILTER_NUMBER_EXACT, filterNumberExact);
         if (numberFilter != null)
-            savedInstanceState.putString(KEY_REPORT_TEAM_FILTER_NUMBER, numberFilter);
+            savedInstanceState.putString(KEY_TEAM_FILTER_NUMBER, numberFilter);
         if (teamFilter != null)
-            savedInstanceState.putString(KEY_REPORT_TEAM_FILTER_TEAM, teamFilter);
+            savedInstanceState.putString(KEY_TEAM_FILTER_TEAM, teamFilter);
         if (memberFilter != null)
-            savedInstanceState.putString(KEY_REPORT_TEAM_FILTER_MEMBER, memberFilter);
+            savedInstanceState.putString(KEY_TEAM_FILTER_MEMBER, memberFilter);
     }
 
     public void load(Bundle savedInstanceState)
     {
-        if (savedInstanceState.containsKey(KEY_REPORT_TEAM_FILTER_STATE))
+        if (savedInstanceState.containsKey(KEY_TEAM_FILTER_STATE))
             filterState =
-                    (FilterState) savedInstanceState.getSerializable(KEY_REPORT_TEAM_FILTER_STATE);
-        if (savedInstanceState.containsKey(KEY_REPORT_TEAM_FILTER_NUMBER_EXACT))
-            filterNumberExact = savedInstanceState.getBoolean(KEY_REPORT_TEAM_FILTER_NUMBER_EXACT);
-        if (savedInstanceState.containsKey(KEY_REPORT_TEAM_FILTER_NUMBER))
-            numberFilter = savedInstanceState.getString(KEY_REPORT_TEAM_FILTER_NUMBER);
-        if (savedInstanceState.containsKey(KEY_REPORT_TEAM_FILTER_TEAM))
-            teamFilter = savedInstanceState.getString(KEY_REPORT_TEAM_FILTER_TEAM);
-        if (savedInstanceState.containsKey(KEY_REPORT_TEAM_FILTER_MEMBER))
-            memberFilter = savedInstanceState.getString(KEY_REPORT_TEAM_FILTER_MEMBER);
+                    (FilterState) savedInstanceState.getSerializable(KEY_TEAM_FILTER_STATE);
+        if (savedInstanceState.containsKey(KEY_TEAM_FILTER_NUMBER_EXACT))
+            filterNumberExact = savedInstanceState.getBoolean(KEY_TEAM_FILTER_NUMBER_EXACT);
+        if (savedInstanceState.containsKey(KEY_TEAM_FILTER_NUMBER))
+            numberFilter = savedInstanceState.getString(KEY_TEAM_FILTER_NUMBER);
+        if (savedInstanceState.containsKey(KEY_TEAM_FILTER_TEAM))
+            teamFilter = savedInstanceState.getString(KEY_TEAM_FILTER_TEAM);
+        if (savedInstanceState.containsKey(KEY_TEAM_FILTER_MEMBER))
+            memberFilter = savedInstanceState.getString(KEY_TEAM_FILTER_MEMBER);
     }
 
     public FilterState getFilterState()
@@ -77,18 +77,18 @@ public class FilterPanelState {
     public void saveToSharedPreferences(SharedPreferences preferences)
     {
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(prefix + "." + KEY_REPORT_TEAM_FILTER_STATE, getFilterState().name());
-        editor.putBoolean(prefix + "." + KEY_REPORT_TEAM_FILTER_NUMBER_EXACT, isFilterNumberExact());
+        editor.putString(prefix + "." + KEY_TEAM_FILTER_STATE, getFilterState().name());
+        editor.putBoolean(prefix + "." + KEY_TEAM_FILTER_NUMBER_EXACT, isFilterNumberExact());
         editor.commit();
     }
 
     public void loadFromSharedPreferences(SharedPreferences preferences)
     {
         String filterStateName =
-                preferences.getString(prefix + "." + KEY_REPORT_TEAM_FILTER_STATE, "SHOW_JUST_NUMBER");
+                preferences.getString(prefix + "." + KEY_TEAM_FILTER_STATE, "SHOW_JUST_NUMBER");
         setFilterState(FilterState.getByName(filterStateName));
         setFilterNumberExact(preferences.getBoolean(prefix + "."
-                                                    + KEY_REPORT_TEAM_FILTER_NUMBER_EXACT, true));
+                                                    + KEY_TEAM_FILTER_NUMBER_EXACT, true));
     }
 
     public String getNumberFilter()
