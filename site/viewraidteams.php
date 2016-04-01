@@ -379,24 +379,14 @@
                 from  LevelPoints lp
  	  		inner join Distances d
 			on lp.distance_id = d.distance_id
-/*
-                        inner join
-				      (
-				       select tlp.levelpoint_id
-				       from TeamLevelPoints tlp
-				            inner join Teams t on tlp.team_id = t.team_id
-				            inner join Distances d on t.distance_id = d.distance_id
-					where d.raid_id = $RaidId and $DistanceCondition
-					      and  TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_duration, 0)) <> 0
-					group by tlp.levelpoint_id
-					) a
-					  on lp.levelpoint_id = a.levelpoint_id
-*/			left outer join
+			left outer join
 			     (select tlp.levelpoint_id, count(t.team_id) as teamscount
 			     from TeamLevelPoints tlp
 			          inner join Teams t on t.team_id = tlp.team_id
 				  inner join Distances d on t.distance_id = d.distance_id
 			     where d.raid_id = $RaidId and $DistanceCondition
+			     		and t.team_ide = 0
+			     		and t.team_outofrange = 0
 			     group by tlp.levelpoint_id
 			     ) tlp1
 		     	on lp.levelpoint_id = tlp1.levelpoint_id
@@ -407,6 +397,9 @@
 				        inner join TeamUsers tu on t.team_id = tu.team_id
 					inner join Distances d on t.distance_id = d.distance_id
 			        where d.raid_id = $RaidId and $DistanceCondition
+			     		and t.team_ide = 0
+			     		and t.team_outofrange = 0
+			     		and tu.teamuser_hide = 0
 				group by tlp.levelpoint_id
 			     	) tlp2
 		     	on lp.levelpoint_id = tlp2.levelpoint_id					  
