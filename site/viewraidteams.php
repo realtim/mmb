@@ -385,7 +385,7 @@
 			          inner join Teams t on t.team_id = tlp.team_id
 				  inner join Distances d on t.distance_id = d.distance_id
 			     where d.raid_id = $RaidId and $DistanceCondition
-			     		and t.team_ide = 0
+			     		and t.team_hide = 0
 			     		and t.team_outofrange = 0
 			     group by tlp.levelpoint_id
 			     ) tlp1
@@ -397,7 +397,7 @@
 				        inner join TeamUsers tu on t.team_id = tu.team_id
 					inner join Distances d on t.distance_id = d.distance_id
 			        where d.raid_id = $RaidId and $DistanceCondition
-			     		and t.team_ide = 0
+			     		and t.team_hide = 0
 			     		and t.team_outofrange = 0
 			     		and tu.teamuser_hide = 0
 				group by tlp.levelpoint_id
