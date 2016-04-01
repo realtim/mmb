@@ -6,7 +6,6 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -16,17 +15,15 @@ import ru.mmb.datacollector.model.registry.Settings;
 public class MetaTable {
     private final int tableId;
     private final String tableName;
-    private final String updateDateColumnName;
 
     private final Map<String, MetaColumn> columnsByName = new HashMap<String, MetaColumn>();
     private final Map<Integer, MetaColumn> columnsByOrder = new TreeMap<Integer, MetaColumn>();
 
     private String exportWhereAppendix = "";
 
-    public MetaTable(int tableId, String tableName, String updateDateColumnName) {
+    public MetaTable(int tableId, String tableName) {
         this.tableId = tableId;
         this.tableName = tableName;
-        this.updateDateColumnName = updateDateColumnName;
     }
 
     public int getTableId() {
@@ -37,10 +34,6 @@ public class MetaTable {
         return tableName;
     }
 
-    public String getUpdateDateColumnName() {
-        return updateDateColumnName;
-    }
-
     public void addColumn(MetaColumn metaColumn) {
         columnsByName.put(metaColumn.getColumnName(), metaColumn);
         columnsByOrder.put(metaColumn.getColumnOrder(), metaColumn);
@@ -48,16 +41,6 @@ public class MetaTable {
 
     public MetaColumn getColumnByName(String columnName) {
         return columnsByName.get(columnName);
-    }
-
-    public Date getUpdateDate(JSONObject tableRow) throws JSONException {
-        MetaColumn updateDateColumn = getUpdateDateColumn();
-        return (Date) updateDateColumn.getValue(tableRow);
-    }
-
-    public String generateUpdateDateSelectSQL(JSONObject tableRow) throws JSONException {
-        return "select " + updateDateColumnName + " from " + tableName + " where "
-                + generatePKCondition(tableRow);
     }
 
     protected String generatePKCondition(JSONObject tableRow) throws JSONException {
@@ -71,11 +54,6 @@ public class MetaTable {
             }
         }
         return sb.toString();
-    }
-
-    public MetaColumn getUpdateDateColumn() {
-        if (updateDateColumnName == null) return null;
-        return getColumnByName(updateDateColumnName);
     }
 
     public String generateCheckExistsSQL(JSONObject tableRow) throws JSONException {
