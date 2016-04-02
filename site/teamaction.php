@@ -32,7 +32,10 @@ if ($action == "RegisterNewTeam")
 	}
 
 	// Проверка возможности создать команду
-	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
+	//	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
+	if ((CSql::userTeamId($UserId, $RaidId) and !CSql::userAdmin($UserId) and !CSql::userModerator($UserId, $RaidId))
+      	    or CSql::raidStage($RaidId) < 1 or CSql::raidStage($RaidId) >= 7
+    	   )
 	{
 		CMmb::setMessage('Регистрация на марш-бросок закрыта');
 		return;
@@ -64,7 +67,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pTeamNum = (int) $_POST['TeamNum'];
 	$pTeamName = $_POST['TeamName'];
 	$pTeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
-        // Используем только при правке (м.б. нужна доп. проверка на права
+        // Ниже  доп. проверка на права и определение этого флага при записи данных
 	$pTeamOutOfRange = mmb_isOn($_POST, 'TeamOutOfRange');
 	$pTeamMapsCount = (int)$_POST['TeamMapsCount'];
 	$pTeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
@@ -178,7 +181,15 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		}
 
                // 19.05.2013 внёс изменения, чтобы разрешить регистрацию вне зачета
-		if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
+               //
+		//if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
+		// Проверка на право добавить нового пользователя пользователя
+		// флаг вне зачета не проверяется для добавления команды, так как он устанавливается позже при записи
+		if ( !(      ($action == 'TeamChangeData' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId))  and !CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 2)
+      			or ($action == 'TeamChangeData' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId))  and  CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
+      			or ($action == 'AddTeam' and ($NewUserId == $UserId or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and CSql::raidStage($RaidId) < 7)
+    	  	       )
+    	  	    )
 		{
 	  
 			$NewUserId = 0;
@@ -218,14 +229,27 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$NotStartPreviousRaidId = CheckNotStart($NewUserId, $RaidId);	
 	}
 	
+	
+	$OutOfRaidLimit =  IsOutOfRaidLimit($RaidId);
+	$WaitTeamId = FindFirstTeamInWaitList($RaidId);
+	
+	
 
 	// Добавляем/изменяем команду в базе
 	$TeamActionTextForEmail = "";
 	if ($action == "AddTeam")
 	// Новая команда
 	{
+
+		// Дополнительная проверка на флаг.  Если регистрация закончена, то 
+		if (CSql::raidStage($RaidId) >= 2 OR $OutOfRaidLimit > 0 OR $WaitTeamId > 0)  {
+			$TeamOutOfRange = 1;
+		} else {
+			$TeamOutOfRange = 0;
+		}
+
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
-			team_registerdt, team_greenpeace, team_outofrange)
+			team_registerdt, team_greenpeace, team_outofrange, team_waitdt)
 			values (";
 		// Номер команды
 		if ($OldMmb) $sql = $sql.$pTeamNum;
@@ -238,19 +262,26 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		}
 		// Все остальное
 		$sql .= ", '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(),
-			$pTeamGreenPeace, $TeamOutOfRange)";
+			$pTeamGreenPeace, $TeamOutOfRange";
+		// Если превышен лимит команл или есть команда в списке ожидания, то не регистрируем в зачет			
+		if ($OutOfRaidLimit > 0 OR $WaitTeamId > 0) {
+			$sql .= ", NOW())";
+		} else {
+			$sql .= ", NULL)";
+		}
+			
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);
-		// Поменялся TeamId, заново определяем права доступа
-		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 		if ($TeamId <= 0)
 		{
 			setViewError('Ошибка записи новой команды.');
 			return;
 		}
-
 		$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid) values ($TeamId, $NewUserId, $NotStartPreviousRaidId)";
 		MySqlQuery($sql);
+
+		// Поменялся TeamId, заново определяем права доступа
+		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 		$TeamActionTextForEmail = "создана команда";
 		$SendEmailToAllTeamUsers = 1;
 		// Теперь нужно открыть на просмотр
@@ -407,27 +438,23 @@ elseif ($action == 'HideTeamUser')
 		return;
 	}
 
+
+	// Проверка на повторное удаление 
+	$sql = "select teamuser_id from TeamUsers where teamuser_hide = 0 and teamuser_id = $HideTeamUserId";
+	if (CSql::singleValue($sql, 'teamuser_id') <>  $HideTeamUserId)
+	{
+		CMmb::setErrorMessage('Удаляемый пользователь не найден или уже удален');
+		return;
+	}
+
+
+
 	// Смотрим, был ли это последний участник или нет
 	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId";
-	$TeamUserCount = CSql::singleValue($sql, 'result');
+	$StartTeamUserCount = CSql::singleValue($sql, 'result');
 
-	// 07.2015 Заменил на физическое удаление
-	$sql = "delete from TeamUsers where teamuser_id = $HideTeamUserId";
-	//$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
-	$rs = MySqlQuery($sql);
 
-	if ($TeamUserCount > 1)         // Кто-то ещё остается
-	{
-		$view = "ViewTeamData";
-	}
-	else                            // Это был последний участник
-	{
-		$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
-		$rs = MySqlQuery($sql);
-		$view = "";
-	}
-
-	// Отправить письмо всем участникам команды об удалении
+	// Отправить письмо всем участникам команды об удалении (до физического удаления!)
 	// Кроме того, кто удалял
 	if ($UserId > 0 and $TeamId > 0)
 	{
@@ -445,29 +472,60 @@ elseif ($action == 'HideTeamUser')
 			order by tu.teamuser_id asc";
 		$Result = MySqlQuery($sql);
 
-		if ($TeamUserCount > 1)         // В команде еще осталось как минимум 2 участника
+		if ($StartTeamUserCount == 1)
 		{
+			$Row = mysql_fetch_assoc($Result);
+			$Msg = "Уважаемый участник ".$Row['user_name']."!\n\nВаша команда (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).") была удалена.\nАвтор изменений: ".$ChangeDataUserName.".\n\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
+			// Отправляем письмо
+			SendMail($Row['user_email'], $Msg, $Row['user_name']);
+		} else {
+			
 			while ($Row = mysql_fetch_assoc($Result))
 			{
 				// Формируем сообщение
 				if (trim($DelUserName) <> trim($Row['user_name']))
 					$Msg = "Уважаемый участник ".$Row['user_name']."!\n\nИз Вашей команды (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).") был удален участник: ".$DelUserName.".\nАвтор изменений: ".$ChangeDataUserName.".\nВы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
 				else
-					$Msg = "Уважаемый участник ".$Row['user_name']."!\n\nВы были удалены из команды (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).")\nАвтор изменений: ".$ChangeDataUserName.".\nВы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
+					$Msg = "Уважаемый участник ".$Row['user_name']."!\n\nВы были удалены из команды (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).")\nАвтор изменений: ".$ChangeDataUserName.".\n\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
 				// Отправляем письмо
 				SendMail($Row['user_email'], $Msg, $Row['user_name']);
 			}
-		}
-		elseif ($TeamUserCount == 1)
-		{
-			$Row = mysql_fetch_assoc($Result);
-			$Msg = "Уважаемый участник ".$Row['user_name']."!\n\nВаша команда (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).") была удалена.\nАвтор изменений: ".$ChangeDataUserName.".\nВы можете увидеть результат на сайте и при необходимости внести свои изменения.\n\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
-			// Отправляем письмо
-			SendMail($Row['user_email'], $Msg, $Row['user_name']);
+
 		}
 		mysql_free_result($Result);
 	}
 	// Конец отправки писем об удалении
+
+
+	// 07.2015 Заменил на физическое удаление
+	$sql = "delete from TeamUsers where teamuser_id = $HideTeamUserId";
+	//$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
+	$rs = MySqlQuery($sql);
+
+
+	// Повторная проверка  после удаления
+	$sql = "select count(*) as result from TeamUsers where teamuser_hide = 0 and team_id = $TeamId";
+	$TeamUserCount = CSql::singleValue($sql, 'result');
+
+	if ($StartTeamUserCount == 1 and $TeamUserCount == 0)    // Это был последний участник
+	{
+		$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
+		$rs = MySqlQuery($sql);
+
+		// Ищем первую команду в листе ожидания
+		$WaitTeamId = FindFirstTeamInWaitList($RaidId);
+		$RaidOutOffLimit = IsOutOfRaidLimit($RaidId);
+		if ($RaidOutOffLimit == 0 AND $WaitTeamId > 0 AND $RaidStage == 1) {
+			$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
+			$rs = MySqlQuery($sql);
+		}
+
+		$view = "";
+
+	} else {
+		$view = "ViewTeamData";
+	}
+
 
 	$view = mmb_validate($_POST, 'view', 'ViewTeamData');
 }
@@ -631,10 +689,22 @@ elseif ($action == 'HideTeam')
 	}
 	mysql_free_result($Result);
 
-	$sql = "update TeamUsers set teamuser_hide = 1 where team_id = $TeamId";
+	// 21/03/2016 заменил на удаление
+	//$sql = "update TeamUsers set teamuser_hide = 1 where team_id = $TeamId";
+	$sql = "delete from TeamUsers where team_id = $TeamId";
 	$rs = MySqlQuery($sql);
 	$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 	$rs = MySqlQuery($sql);
+
+
+	// Ищем первую команду в листе ожидания
+	$WaitTeamId = FindFirstTeamInWaitList($RaidId);
+	$RaidOutOffLimit = IsOutOfRaidLimit($RaidId);
+	if ($RaidOutOffLimit == 0 AND $WaitTeamId > 0 AND $RaidStage == 1) {
+		$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
+		$rs = MySqlQuery($sql);
+	}
+
 
 	$view = "ViewRaidTeams";
 }
@@ -1106,7 +1176,7 @@ elseif ($action == "UnionTeams")  {
     
 
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
-			team_registerdt, team_greenpeace, team_hide)
+			team_registerdt, team_greenpeace, team_hide, team_outofrange)
 			values (
 
 			(select COALESCE(MAX(t.team_num), 0) + 1
@@ -1115,7 +1185,7 @@ elseif ($action == "UnionTeams")  {
 				where d.raid_id = $RaidId)
 		
 			-- Все остальное
-			, '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(), $pTeamGreenPeace, 1)";
+			, '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(), $pTeamGreenPeace, 1, 0)";
 
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);

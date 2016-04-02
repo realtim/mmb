@@ -1,94 +1,74 @@
 package ru.mmb.datacollector.activity.transport.transpexport;
 
-import static ru.mmb.datacollector.activity.Constants.KEY_EXPORT_RESULT_MESSAGE;
-import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.transport.exporter.ExportFormat;
-import ru.mmb.datacollector.transport.exporter.ExportMode;
-import ru.mmb.datacollector.transport.exporter.ExportState;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-public abstract class ExportThread extends Thread
-{
-	private final TransportExportActivity activity;
-	private final ExportMode exportMode;
-	private final ExportState exportState;
-	private final ExportFormat exportFormat;
-	private final Handler finishHandler;
+import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.transport.exporter.ExportFormat;
+import ru.mmb.datacollector.transport.exporter.ExportState;
 
-	protected abstract String exportData() throws Exception;
+import static ru.mmb.datacollector.activity.Constants.KEY_EXPORT_RESULT_MESSAGE;
 
-	public ExportThread(TransportExportActivity activity, Handler finishHandler, ExportMode exportMode, ExportState exportState, ExportFormat exportFormat)
-	{
-		super();
-		this.activity = activity;
-		this.finishHandler = finishHandler;
-		this.exportMode = exportMode;
-		this.exportState = exportState;
-		this.exportFormat = exportFormat;
-	}
+public abstract class ExportThread extends Thread {
+    private final TransportExportActivity activity;
+    private final ExportState exportState;
+    private final ExportFormat exportFormat;
+    private final Handler finishHandler;
 
-	public ExportMode getExportMode()
-	{
-		return exportMode;
-	}
+    protected abstract String exportData() throws Exception;
 
-	public ExportState getExportState()
-	{
-		return exportState;
-	}
+    public ExportThread(TransportExportActivity activity, Handler finishHandler, ExportState exportState, ExportFormat exportFormat) {
+        super();
+        this.activity = activity;
+        this.finishHandler = finishHandler;
+        this.exportState = exportState;
+        this.exportFormat = exportFormat;
+    }
 
-	public TransportExportActivity getActivity()
-	{
-		return activity;
-	}
+    public ExportState getExportState() {
+        return exportState;
+    }
 
-	@Override
-	public void run()
-	{
-		boolean wasError = false;
-		String errorMessage = "";
-		String fileName = "";
-		try
-		{
-			fileName = exportData();
-		}
-		catch (Exception e)
-		{
-			wasError = true;
-			errorMessage = e.getClass().getSimpleName() + " - " + e.getMessage();
-			e.printStackTrace();
-		}
+    public TransportExportActivity getActivity() {
+        return activity;
+    }
 
-		finishHandler.sendMessage(prepareResultMessage(wasError, errorMessage, fileName));
-	}
+    @Override
+    public void run() {
+        boolean wasError = false;
+        String errorMessage = "";
+        String fileName = "";
+        try {
+            fileName = exportData();
+        } catch (Exception e) {
+            wasError = true;
+            errorMessage = e.getClass().getSimpleName() + " - " + e.getMessage();
+            e.printStackTrace();
+        }
 
-	private Message prepareResultMessage(boolean wasError, String errorMessage, String fileName)
-	{
-		Message msg = new Message();
-		Bundle messageBundle = new Bundle();
-		messageBundle.putString(KEY_EXPORT_RESULT_MESSAGE, getResultMessageString(wasError, errorMessage, fileName));
-		msg.setData(messageBundle);
-		return msg;
-	}
+        finishHandler.sendMessage(prepareResultMessage(wasError, errorMessage, fileName));
+    }
 
-	private String getResultMessageString(boolean wasError, String errorMessage, String fileName)
-	{
-		if (!wasError)
-		{
-			return activity.getResources().getString(R.string.transp_export_success) + "\n"
-			        + fileName;
-		}
-		else
-		{
-			return activity.getResources().getString(R.string.transp_export_error) + "\n"
-			        + errorMessage;
-		}
-	}
+    private Message prepareResultMessage(boolean wasError, String errorMessage, String fileName) {
+        Message msg = new Message();
+        Bundle messageBundle = new Bundle();
+        messageBundle.putString(KEY_EXPORT_RESULT_MESSAGE, getResultMessageString(wasError, errorMessage, fileName));
+        msg.setData(messageBundle);
+        return msg;
+    }
 
-	public ExportFormat getExportFormat()
-	{
-		return exportFormat;
-	}
+    private String getResultMessageString(boolean wasError, String errorMessage, String fileName) {
+        if (!wasError) {
+            return activity.getResources().getString(R.string.transp_export_success) + "\n"
+                    + fileName;
+        } else {
+            return activity.getResources().getString(R.string.transp_export_error) + "\n"
+                    + errorMessage;
+        }
+    }
+
+    public ExportFormat getExportFormat() {
+        return exportFormat;
+    }
 }

@@ -12,17 +12,12 @@
     <string name="main_user_id">User ID: %d</string>
     <string name="main_device_id">Device ID: %d</string>
     <string name="main_current_raid_id">Current raid ID: %d</string>
-    <string name="main_application_mode">Application mode: %s</string>
     <string name="main_input_data">Input data</string>
     <string name="main_transport">Transport</string>
-    <string name="main_import_data">Import</string>
-    <string name="main_import_barcode_data">Import barcodes</string>
-    <string name="main_export_data">Export</string>
     <string name="main_title">MMB datacollector</string>
-    <string name="main_results">Results</string>
+    <string name="main_search_team_on_point">Search team on point</string>
     <string name="main_settings">Settings</string>
     <string name="main_fill_data">Fill test data</string>
-    <string name="main_progress_loading">Loading...</string>
 
     <string name="settings_title">Settings</string>
     <string name="settings_path_to_db">DB file:</string>
@@ -34,16 +29,9 @@
     <string name="settings_last_export_date">Last export:</string>
     <string name="settings_transp_user_id">Transport user ID:</string>
     <string name="settings_transp_user_password">Transport user password:</string>
-    <string name="settings_team_clear_filter">Clear team filter after OK:</string>
-    <string name="settings_team_fast_select">Fast team select:</string>
     <string name="settings_applied">Settings applied</string>
     <string name="settings_json_dialog_title">Select device</string>
-    <string name="settings_application_mode">Application mode:</string>
-    <string name="settings_application_mode_input">INPUT</string>
-    <string name="settings_application_mode_report">REPORT</string>
-    <string name="settings_data_server_url">Data server URL:</string>
-    <string name="settings_data_server_user_name">Data server login:</string>
-    <string name="settings_data_server_password">Data server password:</string>
+    <string name="settings_can_edit_scantime">Can edit scan time:</string>
 
     <string name="input_global_no_selected_scan_point">&lt;No input point selected></string>
     <string name="input_start_no_scan_point">&lt;No input point selected></string>
@@ -78,7 +66,6 @@
 
     <string name="input_bclogger_dataload_get_log">Get datalog</string>
     <string name="input_bclogger_dataload_get_debug">Get errors</string>
-    <string name="input_bclogger_dataload_clear_device">Clear device</string>
     <string name="input_bclogger_dataload_clear_console">Clear console</string>
 
     <string name="input_bclogger_fileimport_select_file">Select import file</string>
@@ -91,6 +78,7 @@
 
     <string name="input_data_no_team">&lt;No team selected></string>
     <string name="input_data_no_team_number">333</string>
+    <string name="input_data_edit_date">Edit</string>
     <string name="input_data_check_all">Check all</string>
     <string name="input_data_check_nothing">Clear</string>
     <string name="input_data_no_result">&lt;Result undefined></string>
@@ -122,13 +110,7 @@
     <string name="file_dialog_err">Error</string>
 
     <string name="transport_input_import_dictionaries">Import raid data</string>
-    <string name="transport_input_send_to_server">Send RAW to server</string>
-    <string name="transport_input_send_logger_data">Send RAW scans to reporter</string>
-    <string name="transport_input_save_data_to_file">Save RAW to file</string>
-
-    <string name="transport_report_import_dictionaries">Import raid data</string>
-    <string name="transport_report_receive_from_server">Receive from server</string>
-    <string name="transport_report_receive_logger_data">Receive scans data</string>
+    <string name="transport_input_save_data_to_file">Export to site</string>
 
     <string name="transp_import_title">Import</string>
     <string name="transp_import_dicts_title">Import dictionaries</string>
@@ -147,29 +129,6 @@
     <string name="transp_export_error">Export failed.</string>
     <string name="transp_export_success">Export success.</string>
     <string name="transp_export_running">Running</string>
-
-    <string name="transport_bclogger_receive_title">Receive LOGGER data</string>
-    <string name="transport_bclogger_receive_start_listening">Start listening</string>
-    <string name="transport_bclogger_receive_stop_listening">Stop listening</string>
-    <string name="transport_bclogger_receive_clear_console">Clear console</string>
-
-    <string name="transport_bclogger_send_title">Send LOGGER data</string>
-    <string name="transport_bclogger_send_no_device">&lt;No report device selected></string>
-    <string name="transport_bclogger_send_select_device">Select report device</string>
-    <string name="transport_bclogger_send_send_data">Send data</string>
-    <string name="transport_bclogger_send_clear_console">Clear console</string>
-
-    <string name="transport_http_send_title">Send RAW data to server</string>
-    <string name="transport_http_send_send_data">Send data</string>
-    <string name="transport_http_send_clear_console">Clear console</string>
-
-    <string name="transport_http_receive_title">Receive merged data server</string>
-    <string name="transport_http_receive_receive_data">Receive data</string>
-    <string name="transport_http_receive_clear_console">Clear console</string>
-
-    <string name="results_search_team_on_point">Search team on point</string>
-    <string name="results_team_report">Team report</string>
-    <string name="results_group_report">Group report</string>
 
     <string name="team_search_start_no_scan_point">&lt;No input point selected></string>
     <string name="team_search_start_select_scan_point">Select input point</string>
@@ -190,24 +149,10 @@
     <string name="report_team_filter_number_exact">Exact</string>
     <string name="report_team_filter_team">Team:</string>
     <string name="report_team_filter_member">Member:</string>
-
-    <string name="report_team_title">Search team</string>
-    <string name="report_team_sort_num">Num</string>
-    <string name="report_team_sort_team">Team</string>
-    <string name="report_team_sort_member">Member</string>
     <string name="report_team_filter_status_number">Number:</string>
     <string name="report_team_filter_status_exact">exact</string>
     <string name="report_team_filter_status_team">Team:</string>
     <string name="report_team_filter_status_member">Member:</string>
     <string name="report_team_filter_status_empty">No filter</string>
-    <string name="report_team_result_error">Build team report failed.</string>
-
-    <string name="report_global_title">Global report</string>
-    <string name="report_global_all_teams">All teams</string>
-    <string name="report_global_selected_teams">Selected teams</string>
-    <string name="report_global_start_builder">Start</string>
-    <string name="report_global_result_error">Build global report failed.</string>
-
-    <string name="results_title">Result reports</string>
 
 </resources>

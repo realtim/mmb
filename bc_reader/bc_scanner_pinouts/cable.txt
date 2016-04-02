@@ -1,12 +1,40 @@
-male PS/2    female PS/2
- 5|6         6|5
-3   4       4   3
- 1 2         2 1
+male PS/2   female PS/2   RJ50 cable
+   5|6          6|5       0   ||   9
+  3   4        4   3      ----------
+   1 2          2 1       |        |
+                          ----------
 
-Signal Pin Connector  Signal      Cable     Laser CCD
- RX   -D04-    1   -   DATA  - dark green  -  8  - 3 - TX
-GND   -GND-    3   -   GND   - brown       -  2  - 7 - GND
-+5V   -+5V-    4   -   +5V   - yellow      -  1  - 5 - +5V
-SPK   -D08-    5   -   CLK   - black       -  3  - 6 - SPK
-GRN   -D09-    2   -         - pink        -  6  - 1 - Green LED
-RED   -D07-    6   -         - light green -  7  - 8 - Red LED
+Laser Kraftway KLS-08? PS/2
+                 PS/2   RJ50
+Signal Pin  Connector Pin Signal
+RED   -D07-    1     - 8 - TX
+Vcc   -+5v-    3     - 2 - GND
+GND   -GND-    4     - 1 - +5V
+GRN   -D09-    5     - 3 - SPK
+SPK   -D08-    2     - 6 - Green LED
+ RX   -D04-    6     - 7 - Red LED
+
+
+CCD Poslink PS-900KB / Champ SD200 SmartPro CCD
+ Arduino      PS/2      RJ50
+Signal Pin  Connector Pin Signal
+RED   -D07-     1    - 3 -TX
+Vcc   -+5v-     3    - 7 -GND
+GND   -GND-     4    - 5 -+5V
+GRN   -D09-     5    - 6 -SPK
+SPK   -D08-     2    - 1 -Green LED
+ RX   -D04-     6    - 8 -Red LED
+                      
+CipherLAB 1021Plus CCD
+ Arduino      PS/2      RJ50
+Signal Pin  Connector Pin Signal
+RED   -D07-     1    - 2 -TX        yellow
+Vcc   -+5v-     3    - 3 -GND       black
+GND   -GND-     4    - 6 -+5V       red
+GRN   -D09-     5    - 7 -SPK       blue
+SPK   -D08-     2    - 4 -Green LED green
+ RX   -D04-     6    - 5 -Red LED   orange
+                       9 -OUT?
+                       
+Honeywell MS9540 VoyagerCG Laser
+

@@ -10,8 +10,9 @@ import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
@@ -37,15 +38,9 @@ public class SettingsActivity extends FragmentActivity {
     private EditText editCurrentRaidId;
     private EditText editTranspUserId;
     private EditText editTranspUserPassword;
-    private EditText editDataServerUrl;
-    private EditText editDataServerUserName;
-    private EditText editDataServerPassword;
+    private CheckBox checkCanEditScantime;
     private TextEditorActionListener textEditorActionListener;
     private TextEditorFocusChangeListener textEditorFocusChangeListener;
-
-    private RadioButton rbApplicationModeInput;
-    private RadioButton rbApplicationModeReport;
-    private AppModeRadioButtonClickListener appModeRadioClickListener;
 
     private EditText currentEditor = null;
 
@@ -84,18 +79,9 @@ public class SettingsActivity extends FragmentActivity {
         hookTextEditor(editTranspUserId, EditorInfo.IME_ACTION_NEXT);
         editTranspUserPassword = (EditText) findViewById(R.id.settings_transpUserPasswordEdit);
         hookTextEditor(editTranspUserId, EditorInfo.IME_ACTION_NEXT);
-        editDataServerUrl = (EditText) findViewById(R.id.settings_dataServerUrlEdit);
-        hookTextEditor(editDataServerUrl, EditorInfo.IME_ACTION_NEXT);
-        editDataServerUserName = (EditText) findViewById(R.id.settings_dataServerUserNameEdit);
-        hookTextEditor(editDataServerUserName, EditorInfo.IME_ACTION_NEXT);
-        editDataServerPassword = (EditText) findViewById(R.id.settings_dataServerPasswordEdit);
-        hookTextEditor(editDataServerPassword, EditorInfo.IME_ACTION_DONE);
 
-        rbApplicationModeInput = (RadioButton) findViewById(R.id.settings_appModeInputRadio);
-        rbApplicationModeReport = (RadioButton) findViewById(R.id.settings_appModeReportRadio);
-        appModeRadioClickListener = new AppModeRadioButtonClickListener();
-        rbApplicationModeInput.setOnClickListener(appModeRadioClickListener);
-        rbApplicationModeReport.setOnClickListener(appModeRadioClickListener);
+        checkCanEditScantime = (CheckBox) findViewById(R.id.settings_canEditScantimeCheck);
+        checkCanEditScantime.setOnCheckedChangeListener(new CanEditScantimeCheckListener());
 
         refreshState();
     }
@@ -115,14 +101,7 @@ public class SettingsActivity extends FragmentActivity {
         editCurrentRaidId.setText(Integer.toString(Settings.getInstance().getCurrentRaidId()));
         editTranspUserId.setText(Integer.toString(Settings.getInstance().getTranspUserId()));
         editTranspUserPassword.setText(Settings.getInstance().getTranspUserPassword());
-        if (Settings.MODE_INPUT.equals(Settings.getInstance().getApplicationMode())) {
-            rbApplicationModeInput.setChecked(true);
-        } else {
-            rbApplicationModeReport.setChecked(true);
-        }
-        editDataServerUrl.setText(Settings.getInstance().getDataServerUrl());
-        editDataServerUserName.setText(Settings.getInstance().getDataServerUserName());
-        editDataServerPassword.setText(Settings.getInstance().getDataServerPassword());
+        checkCanEditScantime.setChecked(Settings.getInstance().isCanEditScantime());
     }
 
     @Override
@@ -186,15 +165,6 @@ public class SettingsActivity extends FragmentActivity {
         }
         if (view == editTranspUserPassword) {
             Settings.getInstance().setTranspUserPassword(editTranspUserPassword.getText().toString());
-        }
-        if (view == editDataServerUrl) {
-            Settings.getInstance().setDataServerUrl(editDataServerUrl.getText().toString());
-        }
-        if (view == editDataServerUserName) {
-            Settings.getInstance().setDataServerUserName(editDataServerUserName.getText().toString());
-        }
-        if (view == editDataServerPassword) {
-            Settings.getInstance().setDataServerPassword(editDataServerPassword.getText().toString());
         }
     }
 
@@ -264,14 +234,10 @@ public class SettingsActivity extends FragmentActivity {
         }
     }
 
-    private class AppModeRadioButtonClickListener implements OnClickListener {
+    private class CanEditScantimeCheckListener implements CompoundButton.OnCheckedChangeListener {
         @Override
-        public void onClick(View v) {
-            if (rbApplicationModeInput.isChecked()) {
-                Settings.getInstance().setApplicationMode(Settings.MODE_INPUT);
-            } else {
-                Settings.getInstance().setApplicationMode(Settings.MODE_REPORT);
-            }
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            Settings.getInstance().setCanEditScantime(isChecked);
         }
     }
 }

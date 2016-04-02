@@ -33,12 +33,12 @@
                 android:text="@string/main_input_data" />
 
             <Button
-                android:id="@+id/main_resultsBtn"
+                android:id="@+id/main_searchTeamBtn"
                 android:layout_width="@dimen/main_button_width"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="@dimen/global_double_padding"
-                android:text="@string/main_results" />
+                android:text="@string/main_search_team_on_point" />
 
             <Button
                 android:id="@+id/main_settingsBtn"
@@ -113,16 +113,6 @@
                 android:layout_gravity="right"
                 android:layout_marginTop="@dimen/global_padding"
                 android:text="@string/main_current_raid_id"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@color/LightPink" />
-
-            <TextView
-                android:id="@+id/main_applicationModeLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:layout_marginTop="@dimen/global_padding"
-                android:text="@string/main_application_mode"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@color/LightPink" />
         </LinearLayout>

@@ -4,8 +4,18 @@
 function UACanEdit($pUserId)
 {
 	global $UserId, $Administrator;
+
 	return  (($pUserId == $UserId) || $Administrator) ? (1) : (0);
 }
+
+function UACanLinkEdit($pUserId, $raidId, $userId)
+{
+	$Admin = CSql::userAdmin($userId);
+	$RaidModerator = CSql::userModerator($userId, $raidId);
+	
+	return  (($pUserId == $userId) || $Admin || $RaidModerator) ? (1) : (0);
+}
+
 
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
@@ -15,6 +25,7 @@ if (!isset($MyPHPScript)) return;
    // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении, 
         //но и при правке, если не былди заполнены поля при добавлении
 	 $UserCityPlaceHolder = 'Город';
+	 $UserPhonePlaceHolder = 'Телефон';
 
    if ($action == "")
    {
@@ -80,14 +91,18 @@ if (!isset($MyPHPScript)) return;
            $pUserEmail = $_POST['UserEmail'];
            $pUserName = $_POST['UserName'];
            $pUserCity = $_POST['UserCity'];
+           $pUserPhone = $_POST['UserPhone'];
            $pUserBirthYear = $_POST['UserBirthYear'];
            $pUserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
            $pUserId = $_POST['UserId']; 
+       	// флаги разрешения получать письма передаем только при правке (см. ниже)
+
 
            $pUserNewPassword = mmb_validate($_POST, 'UserNewPassword', '');
            $pUserConfirmNewPassword = mmb_validate($_POST, 'UserConfirmNewPassword', '');
          
 	   if ($pUserCity == $UserCityPlaceHolder) { $pUserCity = ''; }  
+	   if ($pUserPhone == $UserPhonePlaceHolder) { $pUserPhone = ''; }  
 
            // 03/07/2014  Скрываем ФИО	 
            $pUserNoShow = mmb_isOn($_POST, 'UserNoShow');
@@ -173,7 +188,7 @@ if (!isset($MyPHPScript)) return;
 		   $Msg =  $Msg."Кто-то (возможно, это были Вы) пытается зарегистрировать учетную запись на сайте ММБ, связанную с этим адресом e-mail.\r\n";
 		   $Msg =  $Msg."Запись помечена, как неактивная, поэтому повторно высылается ссылка для активации:\r\n";
 		   $Msg =  $Msg."Для активации пользователя и получения пароля необходимо перейти по ссылке:\r\n";
-		   $Msg =  $Msg.$MyHttpLink.$MyPHPScript."?action=sendpasswordafterrequest&changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+		   $Msg =  $Msg.$MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
 		   $Msg =  $Msg."Учетные записи без активации могут быть удалены.\r\n";
 		   //$Msg =  $Msg."P.S. Если Вас зарегистрировали без Вашего желания - просто проигнорируйте письмо - приносим извинения за доставленные неудобства."."\r\n";
 			    
@@ -213,10 +228,10 @@ if (!isset($MyPHPScript)) return;
 
 		 $sql = "insert into  Users (user_email, user_name, user_birthyear, user_password, user_registerdt,
 		                             user_sessionfornewpassword, user_sendnewpasswordrequestdt, 
-					     user_prohibitadd, user_city, user_noshow)
+					     user_prohibitadd, user_city, user_phone, user_noshow)
 		                     values ('$pUserEmail', '$pUserName', $pUserBirthYear, '', now(),
 				             '$ChangePasswordSessionId', now(),
-					      $pUserProhibitAdd, '$pUserCity', $pUserNoShow)";
+					      $pUserProhibitAdd, '$pUserCity', '$pUserPhone', $pUserNoShow)";
 //                 echo $sql;  
                  // При insert должен вернуться послений id - это реализовано в  MySqlQuery
 		 $newUserId = MySqlQuery($sql);
@@ -233,7 +248,7 @@ if (!isset($MyPHPScript)) return;
 		   $Msg = "Здравствуйте!\r\n\r\n";
 		   $Msg =  $Msg."Кто-то (возможно, это были Вы) зарегистрировал учетную запись на сайте ММБ, связанную с этим адресом e-mail.\r\n";
 		   $Msg =  $Msg."Для активации пользователя и получения пароля необходимо перейти по ссылке:\r\n";
-		   $Msg =  $Msg.$MyHttpLink.$MyPHPScript."?action=sendpasswordafterrequest&changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+		   $Msg =  $Msg.$MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
 		   $Msg =  $Msg."Учетные записи без активации могут быть удалены.\r\n";
 		   $Msg =  $Msg."P.S. Если Вас зарегистрировали без Вашего желания - просто проигнорируйте письмо - приносим извинения за доставленные неудобства.\r\n";
 			    
@@ -249,6 +264,11 @@ if (!isset($MyPHPScript)) return;
            } elseif ($action == 'UserChangeData') {
 
               // Правка текущего пользователя
+              
+              	// флаги подписки передаем только при правке
+	           $pUserAllowChangeInfo = mmb_isOn($_POST, 'UserAllowChangeInfo');
+        	   $pUserAllowOrgMessages = mmb_isOn($_POST, 'UserAllowOrgMessages');
+
 	   
              // Если вызвали с таким действием, должны быть определны оба пользователя
 		if ($pUserId <= 0 or $UserId <= 0)
@@ -266,7 +286,10 @@ if (!isset($MyPHPScript)) return;
 		$sql = "update  Users set   user_email = trim('$pUserEmail'),
 		                     user_name = trim('$pUserName'),
 		                     user_city = trim('$pUserCity'),
+		                     user_phone = trim('$pUserPhone'),
 		                     user_prohibitadd = $pUserProhibitAdd,
+		                     user_allowsendchangeinfo = $pUserAllowChangeInfo,
+		                     user_allowsendorgmessages = $pUserAllowOrgMessages,
 		                     user_noshow = $pUserNoShow,
 				     user_birthyear = $pUserBirthYear
 		        where user_id = $pUserId";
@@ -399,7 +422,7 @@ if (!isset($MyPHPScript)) return;
 	   $Msg = "Здравствуйте!\r\n\r\n";
 	   $Msg =  $Msg."Кто-то (возможно, это были Вы) запросил восстановление пароля на сайте ММБ для этого адреса e-mail.\r\n";
 	   $Msg =  $Msg."Для получения нового пароля необходимо перейти по ссылке:\r\n";
-	   $Msg =  $Msg.$MyHttpLink.$MyPHPScript."?action=sendpasswordafterrequest&changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+	   $Msg =  $Msg.$MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
 	   $Msg =  $Msg."P.S. Если Вы не запрашивали восстановление пароля - просто проигнорируйте письмо - приносим извинения за доставленные неудобства.\r\n";
 
 	   //echo $Message;				     
@@ -846,16 +869,16 @@ if (!isset($MyPHPScript)) return;
 
 //		$Msg .=  $pText;
 		$Msg .=  "\r\nДля ответа необходимо авторизоваться и открыть карточку пользователя $SendMessageUserName\r\n"
-			  .$MyHttpLink.$MyLocation."?action=UserInfo&UserId=$UserId\r\n";
+			  .$MyHttpLink.$MyLocation."?UserId=$UserId\r\n";
 		
 			    
                 // Отправляем письмо
 		SendMail(trim($UserEmail), $Msg, $UserName);
    }
-   // ============ Добавить пользхователя в объединение ====================================
+   // ============ Добавить пользователя в слияние ====================================
    
    elseif ($action == "AddUserInUnion")  {
-	// Действие вызывается нажатием кнопки "Объединить"
+	// Действие вызывается нажатием кнопки "Запросить слияние"
 
 	if ($UserId <= 0)
 	{
@@ -871,12 +894,12 @@ if (!isset($MyPHPScript)) return;
         $pUserId = $_POST['UserId']; 
 
         if ($UserId == $pUserId) {
-		CMmb::setErrorMessage('Нельзя объединить с самим собой');
+		CMmb::setErrorMessage('Нельзя сделать слияние с самим собой');
 		return;
 	}
 
      
-        // Проверяем, что пользователя нет в объединении
+        // Проверяем, что пользователя нет в слиянии
 	$sql = " select userunionlog_id
 	         from UserUnionLogs 
 		 where union_status <> 0
@@ -885,7 +908,7 @@ if (!isset($MyPHPScript)) return;
 
 	if (CSql::rowCount($sql) > 0)
 	{
-		CMmb::setResult('Пользователь уже есть в объединении', 'ViewUserUnionPage', '');
+		CMmb::setResult('Пользователь уже есть в слиянии', 'ViewUserUnionPage', '');
 		$viewsubmode = "ReturnAfterError";
 
 	       return;
@@ -926,9 +949,9 @@ if (!isset($MyPHPScript)) return;
 			$pRequestUserName = CSql::userName($UserId);
 
 			$Msg = "Уважаемый пользователь $pUserName!\r\n\r\n"
-			      ."Сделан запрос на объединения Вас с пользователем $pRequestUserName\r\n"
-			      ."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил объединение, а Ваша учетная запись скрыта"."\r\n"
-			      ."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на старницу 'Связь пользователей' и отклонить запрос."."\r\n\r\n";
+			      ."Сделан запрос на слияние Вас с пользователем $pRequestUserName\r\n"
+			      ."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил слияние, а Ваша учетная запись скрыта"."\r\n"
+			      ."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на страницу 'Запросы на слияние' и отклонить запрос."."\r\n\r\n";
 		 	   
 			// Отправляем письмо
 			SendMail(trim($pUserEmail), $Msg, $pUserName);
@@ -938,7 +961,7 @@ if (!isset($MyPHPScript)) return;
            }
 
 	   // Конец проверки на успешное добавление запроса
-	   CMmb::setResult('Создан запрос на объединение пользователей', 'ViewUserUnionPage', '');
+	   CMmb::setResult('Создан запрос на слияние пользователей', 'ViewUserUnionPage', '');
 
   } elseif ($action == "RejectUnion")  {
 	// Действие вызывается нажатием кнопки "Отклонить" 
@@ -1013,7 +1036,7 @@ if (!isset($MyPHPScript)) return;
 
 	if (!CanRollBackUserUnion($Administrator, $UserUnionLogId, $UserId)) {
 
-		CMmb::setErrorMessage('Нет прав на откат объединения');
+		CMmb::setErrorMessage('Нет прав на отмену слияния');
 	      return;
 	}
 
@@ -1084,9 +1107,7 @@ if (!isset($MyPHPScript)) return;
 		return;
 	}
 
-	// Права на редактирование
-	if (!UACanEdit($pUserId))
-		return;              // выходим
+
 
 	$pLinkName = trim($_POST['NewLinkName']);
 	$pLinkUrl = trim($_POST['NewLinkUrl']);
@@ -1128,11 +1149,23 @@ if (!isset($MyPHPScript)) return;
 		$pLinkName = '';
 	}
 
+	 $userId = CSql::userId($SessionId);
+
+	// Права на редактирование
+	if (!UACanLinkEdit($pUserId, $pLinkRaidId, $userId))
+		return;              // выходим
+
+
+
+
 
 	// Прверяем, что нет ссылки с таким адресом
            $sql = "select count(*) as resultcount 
 	           from  UserLinks 
 	           where trim(userlink_url) = '".trim($pLinkUrl)."'
+	           	 and linktype_id = $pLinkTypeId
+	           	 and raid_id = $pLinkRaidId
+		     	 and user_id = $pUserId
 		         and userlink_hide = 0
 		   ";
       //     echo $sql;
@@ -1150,9 +1183,9 @@ if (!isset($MyPHPScript)) return;
 		     and user_id = $pUserId";
            //echo $sql;
 
-	   if (CSql::singleValue($sql, 'resultcount') >= 3)
+	   if (CSql::singleValue($sql, 'resultcount') >= 4)
 	   {
-   		CMmb::setErrorSm('Уже есть 3 впечатления на этот ММБ.');
+   		CMmb::setErrorSm('Уже есть 4 впечатления на этот ММБ.');
                 return; 
 	   }
 
@@ -1185,9 +1218,6 @@ if (!isset($MyPHPScript)) return;
 		return;
 	}
 
-	// Права на редактирование
-	if (!UACanEdit($pUserId))
-		return;              // выходим
 
 	$pUserLinkId = trim($_POST['UserLinkId']);
         if (!isset($pUserLinkId)) {$pUserLinkId = 0;}
@@ -1197,6 +1227,20 @@ if (!isset($MyPHPScript)) return;
 		CMmb::setErrorMessage('Ссылка не найдена');
 		return;
 	}
+
+
+	 $sql = "select raid_id 
+	           from  UserLinks 
+	           where userlink_id = $pUserLinkId
+		   ";
+      //     echo $sql;
+	 $raidId = CSql::singleValue($sql, 'raid_id');
+	 $userId = CSql::userId($SessionId);
+
+	// Права на редактирование
+	if (!UACanLinkEdit($pUserId, $raidId, $userId))
+		return;              // выходим
+
 
 	$Sql = "update  UserLinks set userlink_hide = 1 where userlink_id = $pUserLinkId";
 

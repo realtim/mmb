@@ -63,7 +63,7 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
                     errorLog = createErrorLog();
                     if (errorLog != null) {
                         try {
-                            parser = new LoggerReplyParser(this, currentScanPoint, confLoggerId);
+                            parser = new LoggerReplyParser(this, confLoggerId);
                             parser.parseAndSaveLogData(loggerReply);
                         } finally {
                             errorLog.flush();
@@ -88,11 +88,11 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
     }
 
     private void saveLoggerReplyToLogFile(String loggerReply, String logFileName) {
-        SimpleDateFormat currTimeFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
+        SimpleDateFormat currTimeFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
         createDatalogDirIfNotExists();
         String fileName =
                 Settings.getInstance().getDatalogDir() + "/bclogger_" + logFileName + "_" +
-                currTimeFormat.format(new Date()) + ".txt";
+                        currTimeFormat.format(new Date()) + ".txt";
         try {
             File outputFile = new File(fileName);
             if (!outputFile.exists()) outputFile.createNewFile();
@@ -123,7 +123,7 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
         SimpleDateFormat currTimeFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
         createDatalogDirIfNotExists();
         String fileName = Settings.getInstance().getDatalogDir() + "/" +
-                          "bclogger_load_errors_" + currTimeFormat.format(new Date()) + ".txt";
+                "bclogger_load_errors_" + currTimeFormat.format(new Date()) + ".txt";
         File outputFile = new File(fileName);
         try {
             if (!outputFile.exists()) outputFile.createNewFile();

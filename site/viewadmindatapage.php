@@ -11,6 +11,7 @@ if (!isset($MyPHPScript)) return;
     return;
    }
          
+         
  
 // Выводим javascrpit
 ?>
@@ -72,10 +73,21 @@ if (!isset($MyPHPScript)) return;
 	}
 
 
+	// Функция отправки сообщения
+	function SendMessageForAll()
+	{ 
+		document.SendMessageForAllForm.action.value = "SendMessageForAll";
+		document.SendMessageForAllForm.submit();
+              return true;
+	}
+
+
 </script>
 <!-- Конец вывода javascrpit -->
 
 <?php
+
+		$TabIndex = 1;
 
          // выводим форму с данными пользователя
 	 
@@ -94,55 +106,63 @@ if (!isset($MyPHPScript)) return;
 
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="JSONdump" value="Получить дамп"
                           onclick = "javascript: JSON();"
-                          tabindex = "101"></td></tr>'."\r\n");
+                          tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 
 
 	  print('<tr><td style = "padding-top: 10px; padding-bottom: 10px;">Файл с данными:<br/><input  type="file" name="android" /> &nbsp;
-                 <input type="button"  style = "width:185px;" name = "LoadRaidDataFileButton"  value="Загрузить"  onclick = "javascript: LoadRaidDataFile(); "  tabindex = "102"  /></td></tr>'."\r\n");
+                 <input type="button"  style = "width:185px;" name = "LoadRaidDataFileButton"  value="Загрузить"  onclick = "javascript: LoadRaidDataFile(); "  tabindex = "'.(++$TabIndex).'"  /></td></tr>'."\r\n");
 
 
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RecalcRaidResultsButton" value="Пересчитать результаты"
                           onclick = "javascript: RecalcRaidResults();"
-                          tabindex = "103"></td></tr>'."\r\n");
+                          tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="FindRaidErrorsButton" value="Найти ошибки"
                           onclick = "javascript: FindRaidErrors();"
-                          tabindex = "104"></td></tr>'."\r\n");
-
-/*
-Теперь рейтинг считается вместе с результатами
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RecalcRaidRankButton" value="Пересчитать рейтинг"
-                          onclick = "javascript: RecalcRaidRank();"
-                          tabindex = "105"></td></tr>'."\r\n");
-*/
-
-/*
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:270px;" name="RecalcAllRaidsResultsButton" value="Пересчитать рейтинг по всем ММБ"
-                          onclick = "javascript: RecalcAllRaidsRank();"
-                          tabindex = "106"></td></tr>'."\r\n");
-*/
-       //  показываем кнопку "Очистить таблицы" 
-	  // print('<input type="button" style = "width:185px; margin-top:10px;" name="ClearTablesButton" value="Очистить таблицы"
-          //                onclick = "ClearTables();"
-          //                tabindex = "402">'."\r\n");
-
-         
-         // Конец вывода кнопок
+                          tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 	 print('</table></form>'."\r\n"); 
 	 // Конец вывода формы с данными пользователя
-/* 
-	 print('</br>'."\r\n"); 
- 	print('<form name = "LoadFileForm"  enctype="multipart/form-data" action="'.$MyPHPScript.'" method="POST">');
-        print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
-        print('<input type = "hidden" name = "action" value = "LoadRaidDataFile">'."\r\n");
-	print('<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />');
-	print('Файл с данными: <input name="android" type="file" /> &nbsp;');
-	print('<input type="submit" value="Загрузить" />');
-	print('</form>');
-*/
+
+
+
+ 	print('<div style = "margin-top: 30px; margin-bottom: 10px; text-align: left">Рассылка для всех участников!</div>'."\r\n");
+		print('<form  name = "SendMessageForAllForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
+		print('<input type = "hidden" name = "action" value = "">'."\r\n");
+	        print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
+
+
+                $DisabledText = '';
+                $NewMessageSubject = 'Тема рассылки';
+                $NewMessageText =  'Текст сообщения';
+	//	print('<div align = "left" style = "padding-top: 5px;">'."\r\n");
+
+		// Показываем выпадающий список типов ссылок
+		print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">'."\r\n");
+		print('<select name="SendForAllTypeId"  tabindex="'.(++$TabIndex).'">'."\n");
+			print('<option value="1" selected>Обычная (всем участникам выбранного ММБ, с учетом флага)</option>'."\n");
+			print('<option value="2">Экстренная (всем участникам выбранного ММБ)</option>'."\n");
+			print('<option value="3">Пользователям (всем пользователям сайта, с учетом флага)</option>'."\n");
+		print('</select>'."\n");
+		print('</div>'."\r\n");
+
+		print('<div style = "margin-top: 10px; margin-bottom: 10px; text-align: left">'."\r\n");
+		print('<input type="text" name="MessageSubject" size="50" value="'.$NewMessageSubject.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+		. CMmbUI::placeholder($NewMessageSubject) . ' title = "Тема рассылки">'."\r\n");
+		print('</div>'."\r\n");
+
+	//	print("</div>\r\n");
+
+		print('<div class="team_res"><textarea name="MessageText"  rows="5" cols="60" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
+		. CMmbUI::placeholder($NewMessageText) .' title = "Текст сообщения">'.$NewMessageText.'</textarea></div>'."\r\n");
+    	        print("<br/>\r\n");
+    	        print('<input type="button" onClick = "javascript: SendMessageForAll();;"  name="SendMessageForAllButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
+
+	        print('</form>'."\r\n");
+
+
 
 ?>
 

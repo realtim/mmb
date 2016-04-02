@@ -7,16 +7,11 @@ import android.util.Log;
 import java.io.File;
 import java.util.Properties;
 
-import ru.mmb.datacollector.conf.ConfigurationAdapter;
 import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
-import ru.mmb.datacollector.model.report.LevelsRegistry;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class Settings {
-    public static final String MODE_INPUT = "input";
-    public static final String MODE_REPORT = "report";
-
     private static final String SETTINGS_FILE = "settings";
 
     private static final String PATH_TO_DB = "path_to_db";
@@ -24,13 +19,9 @@ public class Settings {
     private static final String DEVICE_ID = "device_id";
     private static final String USER_ID = "user_id";
     private static final String CURRENT_RAID_ID = "current_raid_id";
-    private static final String APPLICATION_MODE = "application_mode";
-    private static final String LAST_EXPORT_DATE = "last_export_date";
+    private static final String CAN_EDIT_SCANTIME = "can_edit_scantime";
     private static final String TRANSP_USER_ID = "transp_user_id";
     private static final String TRANSP_USER_PASSWORD = "transp_user_password";
-    private static final String DATA_SERVER_URL = "data_server_url";
-    private static final String DATA_SERVER_USER_NAME = "data_server_user_name";
-    private static final String DATA_SERVER_PASSWORD = "data_server_password";
 
     private static Settings instance = null;
 
@@ -77,13 +68,9 @@ public class Settings {
         loadProperty(USER_ID);
         loadProperty(DEVICE_ID);
         loadProperty(CURRENT_RAID_ID);
-        loadProperty(APPLICATION_MODE);
-        loadProperty(LAST_EXPORT_DATE);
+        loadProperty(CAN_EDIT_SCANTIME);
         loadProperty(TRANSP_USER_ID);
         loadProperty(TRANSP_USER_PASSWORD);
-        loadProperty(DATA_SERVER_URL);
-        loadProperty(DATA_SERVER_USER_NAME);
-        loadProperty(DATA_SERVER_PASSWORD);
     }
 
     private void loadProperty(String propertyName) {
@@ -152,6 +139,10 @@ public class Settings {
         return getMMBPathFromDBFile() + "/datalog";
     }
 
+    public String getDBBackupDir() {
+        return getMMBPathFromDBFile() + "/db_backup";
+    }
+
     public int getDeviceId() {
         return getIntSetting(DEVICE_ID);
     }
@@ -180,20 +171,9 @@ public class Settings {
                 ScanPointsRegistry.getInstance().refresh();
                 TeamsRegistry.getInstance().refresh();
                 UsersRegistry.getInstance().refresh();
-                LevelsRegistry.getInstance().refresh();
-                Log.d("SETTINGS",
-                        "current raid ID: " +
-                        ConfigurationAdapter.getInstance().getCurrentRaidId());
+                Log.d("SETTINGS", "current raid ID: " + getCurrentRaidId());
             }
         }
-    }
-
-    public String getLastExportDate() {
-        return settings.getProperty(LAST_EXPORT_DATE, "");
-    }
-
-    public void setLastExportDate(String lastExportDate) {
-        setValue(LAST_EXPORT_DATE, lastExportDate);
     }
 
     public int getTranspUserId() {
@@ -212,30 +192,6 @@ public class Settings {
         setValue(TRANSP_USER_PASSWORD, transpUserPassword);
     }
 
-    public String getDataServerUrl() {
-        return settings.getProperty(DATA_SERVER_URL, "");
-    }
-
-    public void setDataServerUrl(String dataServerUrl) {
-        setValue(DATA_SERVER_URL, dataServerUrl);
-    }
-
-    public String getDataServerUserName() {
-        return settings.getProperty(DATA_SERVER_USER_NAME, "");
-    }
-
-    public void setDataServerUserName(String dataServerUserName) {
-        setValue(DATA_SERVER_USER_NAME, dataServerUserName);
-    }
-
-    public String getDataServerPassword() {
-        return settings.getProperty(DATA_SERVER_PASSWORD, "");
-    }
-
-    public void setDataServerPassword(String dataServerPassword) {
-        setValue(DATA_SERVER_PASSWORD, dataServerPassword);
-    }
-
     private boolean setValue(String settingName, String newValue) {
         boolean changed = false;
         String oldValue = (String) settings.get(settingName);
@@ -247,20 +203,12 @@ public class Settings {
         return changed;
     }
 
-    public boolean isApplicationModeInput() {
-        return MODE_INPUT.equals(getApplicationMode());
+    public boolean isCanEditScantime() {
+        return Boolean.parseBoolean(settings.getProperty(CAN_EDIT_SCANTIME, Boolean.FALSE.toString()));
     }
 
-    public boolean isApplicationModeReport() {
-        return MODE_REPORT.equals(getApplicationMode());
-    }
-
-    public String getApplicationMode() {
-        return settings.getProperty(APPLICATION_MODE, MODE_INPUT);
-    }
-
-    public void setApplicationMode(String applicationMode) {
-        setValue(APPLICATION_MODE, applicationMode);
+    public void setCanEditScantime(boolean canEditScantime) {
+        setValue(CAN_EDIT_SCANTIME, Boolean.toString(canEditScantime));
     }
 
     private void saveSetting(String settingName, String value) {

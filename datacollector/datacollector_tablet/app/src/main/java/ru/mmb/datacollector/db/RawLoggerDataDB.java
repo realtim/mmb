@@ -60,12 +60,12 @@ public class RawLoggerDataDB {
     }
 
     public RawLoggerData getExistingRecord(ScanPoint scanPoint, Team team) {
-        RawLoggerData result = null;
         String sql =
                 "select t." + RAWLOGGERDATA_DATE + ", t." + LOGGER_ID + ", t." + SCANNED_DATE +
                         ", t." + CHANGED_MANUAL + " from " + TABLE_RAW_LOGGER_DATA +
                         " as t " + " where t." + SCANPOINT_ID + " = " + scanPoint.getScanPointId() +
-                        " and t." + TEAM_ID + " = " + team.getTeamId();
+                        " and t." + TEAM_ID + " = " + team.getTeamId() + " order by " + CHANGED_MANUAL +
+                        " desc, " + RAWLOGGERDATA_DATE + " desc";
         Cursor resultCursor = db.rawQuery(sql, null);
 
         if (resultCursor.moveToFirst() == false) {
@@ -77,7 +77,7 @@ public class RawLoggerDataDB {
         int loggerId = resultCursor.getInt(1);
         String scannedDateTime = resultCursor.getString(2);
         int changedManual = resultCursor.getInt(3);
-        result = new RawLoggerData(loggerId, scanPoint.getScanPointId(), team.getTeamId(), DateFormat.parse(recordDateTime), DateFormat.parse(scannedDateTime), changedManual);
+        RawLoggerData result = new RawLoggerData(loggerId, scanPoint.getScanPointId(), team.getTeamId(), DateFormat.parse(recordDateTime), DateFormat.parse(scannedDateTime), changedManual);
 
         result.setTeam(team);
         result.setScanPoint(scanPoint);
@@ -108,19 +108,53 @@ public class RawLoggerDataDB {
         return sql;
     }
 
+    public void saveRawLoggerDataManual(ScanPoint scanPoint, Team team, Date scannedDateTime, Date recordDateTime) {
+        db.beginTransaction();
+        try {
+            RawLoggerData prevRecord = getExistingRecord(scanPoint, team);
+            if (prevRecord != null) {
+                updateExistingLoggerRecordManual(prevRecord, scannedDateTime, recordDateTime);
+            } else {
+                insertNewLoggerRecordManual(scanPoint, team, scannedDateTime, recordDateTime);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    private void updateExistingLoggerRecordManual(RawLoggerData prevRecord, Date scannedDateTime, Date recordDateTime) {
+        String sql =
+                "update " + TABLE_RAW_LOGGER_DATA + " set " + RAWLOGGERDATA_DATE + " = '" +
+                        DateFormat.format(recordDateTime) + "', " + SCANNED_DATE + " = '" +
+                        DateFormat.format(scannedDateTime) + "', " + CHANGED_MANUAL + " = 1" +
+                        " where " + LOGGER_ID + " = " + prevRecord.getLoggerId() + " and " +
+                        SCANPOINT_ID + " = " + prevRecord.getScanPointId() + " and " +
+                        TEAM_ID + " = " + prevRecord.getTeamId();
+        db.execSQL(sql);
+    }
+
+    private void insertNewLoggerRecordManual(ScanPoint scanPoint, Team team, Date scannedDateTime, Date recordDateTime) {
+        String sql =
+                "insert into " + TABLE_RAW_LOGGER_DATA + "(" + USER_ID + ", " + DEVICE_ID + ", " +
+                        LOGGER_ID + ", " + SCANPOINT_ID + ", " + TEAM_ID + ", " + RAWLOGGERDATA_DATE +
+                        ", " + SCANNED_DATE + ", " + CHANGED_MANUAL +
+                        ") VALUES" + "(" + Settings.getInstance().getUserId() + ", " +
+                        Settings.getInstance().getDeviceId() + ", -1, " + scanPoint.getScanPointId() + ", " +
+                        team.getTeamId() + ", '" + DateFormat.format(recordDateTime) + "', '" +
+                        DateFormat.format(scannedDateTime) + "', 1)";
+        db.execSQL(sql);
+    }
+
     public List<RawLoggerData> loadRawLoggerData(ScanPoint scanPoint) {
-
-        /*select t.scanpoint_id, t.team_id, t.scanned_date, t.rawloggerdata_date
-        from RawLoggerData t
-        where t.rawloggerdata_date in
-        (select max(t1.rawloggerdata_date) from RawLoggerData t1
-        where t1.scanpoint_id = t.scanpoint_id
-        and t1.team_id = t.team_id)*/
-
         List<RawLoggerData> result = new ArrayList<RawLoggerData>();
-        String whereCondition = SCANPOINT_ID + " = " + scanPoint.getScanPointId();
-        Cursor resultCursor =
-                db.query(TABLE_RAW_LOGGER_DATA, new String[]{LOGGER_ID, TEAM_ID, SCANNED_DATE}, whereCondition, null, null, null, null);
+        String sql =
+                "select t." + LOGGER_ID + ", t." + TEAM_ID + ", t." + SCANNED_DATE
+                        + " from " + TABLE_RAW_LOGGER_DATA + " t where t." + SCANPOINT_ID + " = "
+                        + scanPoint.getScanPointId() + " and t." + RAWLOGGERDATA_DATE + " in (select max(t1."
+                        + RAWLOGGERDATA_DATE + ") from " + TABLE_RAW_LOGGER_DATA + " t1 where t1."
+                        + SCANPOINT_ID + " = t." + SCANPOINT_ID + " and t1." + TEAM_ID + " = t." + TEAM_ID + ")";
+        Cursor resultCursor = db.rawQuery(sql, null);
 
         resultCursor.moveToFirst();
         while (!resultCursor.isAfterLast()) {
@@ -131,6 +165,40 @@ public class RawLoggerDataDB {
             RawLoggerData rawLoggerData = new RawLoggerData(loggerId, scanPoint.getScanPointId(), teamId, scannedDate, scannedDate, 0);
             // init refrence fields
             rawLoggerData.setScanPoint(scanPoint);
+            rawLoggerData.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
+
+            result.add(rawLoggerData);
+            resultCursor.moveToNext();
+        }
+        resultCursor.close();
+
+        return result;
+    }
+
+    public List<RawLoggerData> loadAllRawLoggerDataForDevice() {
+        List<RawLoggerData> result = new ArrayList<RawLoggerData>();
+        int deviceId = Settings.getInstance().getDeviceId();
+        String sql =
+                "select t." + USER_ID + ", t." + LOGGER_ID + ", t." + SCANPOINT_ID + ", t." + TEAM_ID
+                        + ", t." + SCANNED_DATE + ", t." + RAWLOGGERDATA_DATE + " from " + TABLE_RAW_LOGGER_DATA
+                        + " t where t." + DEVICE_ID + " = " + deviceId + " and t."
+                        + RAWLOGGERDATA_DATE + " in (select max(t1." + RAWLOGGERDATA_DATE
+                        + ") from " + TABLE_RAW_LOGGER_DATA + " t1 where t1." + SCANPOINT_ID + " = t."
+                        + SCANPOINT_ID + " and t1." + TEAM_ID + " = t." + TEAM_ID + ")";
+        Cursor resultCursor = db.rawQuery(sql, null);
+
+        resultCursor.moveToFirst();
+        while (!resultCursor.isAfterLast()) {
+            int userId = resultCursor.getInt(0);
+            int loggerId = resultCursor.getInt(1);
+            int scanPointId = resultCursor.getInt(2);
+            int teamId = resultCursor.getInt(3);
+            Date scannedDate = DateFormat.parse(resultCursor.getString(4));
+            Date recordDateTime = DateFormat.parse(resultCursor.getString(5));
+
+            RawLoggerData rawLoggerData = new RawLoggerData(userId, deviceId, loggerId, scanPointId, teamId, recordDateTime, scannedDate, 0);
+            // init refrence fields
+            rawLoggerData.setScanPoint(ScanPointsRegistry.getInstance().getScanPointById(scanPointId));
             rawLoggerData.setTeam(TeamsRegistry.getInstance().getTeamById(teamId));
 
             result.add(rawLoggerData);

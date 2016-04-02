@@ -6,7 +6,6 @@ import ru.mmb.datacollector.model.registry.DistancesRegistry;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.model.registry.UsersRegistry;
-import ru.mmb.datacollector.model.report.LevelsRegistry;
 import ru.mmb.datacollector.transport.importer.ImportState;
 import ru.mmb.datacollector.transport.importer.Importer;
 
@@ -33,7 +32,7 @@ public class ImportThread extends Thread {
             e.printStackTrace();
             importState.appendMessage("Import failed for " + fileName);
             importState.appendMessage("ERROR: " + e.getClass().getSimpleName() + " - "
-                                      + e.getMessage());
+                    + e.getMessage());
             importState.setFinished(true);
         }
         importState.appendMessage("Import finished.");
@@ -44,7 +43,6 @@ public class ImportThread extends Thread {
             ScanPointsRegistry.getInstance().refresh();
             TeamsRegistry.getInstance().refresh();
             UsersRegistry.getInstance().refresh();
-            LevelsRegistry.getInstance().refresh();
 
             // update data storages after import
             ru.mmb.datacollector.model.history.DataStorage.reset();

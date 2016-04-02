@@ -3,19 +3,15 @@ package ru.mmb.datacollector.activity.input.bclogger.dataload;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.mmb.datacollector.model.ScanPoint;
-
 public class LoggerReplyParser {
     public static final Pattern REGEXP_LOG_DATA = Pattern.compile("(\\d{2}), (\\d{2}), (\\d{8}), (\\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), Line#=(\\d+), CRC8=(\\d+)");
     public static final Pattern REGEXP_TO_CHECK_CRC = Pattern.compile("(\\d{2}, \\d{2}, \\d{8}, \\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), Line#=\\d+, CRC8=\\d+");
 
     private final LoggerDataProcessor owner;
-    private final ScanPoint currentScanPoint;
     private final String confLoggerId;
 
-    public LoggerReplyParser(LoggerDataProcessor owner, ScanPoint currentScanPoint, String confLoggerId) {
+    public LoggerReplyParser(LoggerDataProcessor owner, String confLoggerId) {
         this.owner = owner;
-        this.currentScanPoint = currentScanPoint;
         this.confLoggerId = confLoggerId;
     }
 
@@ -62,19 +58,16 @@ public class LoggerReplyParser {
                     }
                 }
 
-                parsingResult.checkConsistencyErrors(confLoggerId, currentScanPoint);
+                parsingResult.checkConsistencyErrors(confLoggerId);
 
                 if (parsingResult.isFatalError()) {
                     owner.writeError(parsingResult.getErrorMessage());
                 } else {
-                    int scanpointOrder = Integer.parseInt(parsingResult.getScanpointOrder());
-                    if (scanpointOrder == currentScanPoint.getScanPointOrder()) {
-                        if (parsingResult.isWrongRecordDateTime()) {
-                            owner.writeError(parsingResult.getErrorMessage());
-                        } else {
-                            owner.writeToConsole(replyString);
-                            dataSaver.saveToDB(currentScanPoint, parsingResult);
-                        }
+                    // dont ignore data from other scan points
+                    if (parsingResult.isWrongRecordDateTime()) {
+                        owner.writeError(parsingResult.getErrorMessage());
+                    } else {
+                        dataSaver.saveToDB(parsingResult);
                     }
                 }
             }
@@ -124,7 +117,7 @@ public class LoggerReplyParser {
             for (byte tempI = 8; tempI > 0; tempI--) {
                 byte sum = (byte) ((crc & 0xFF) ^ (extract & 0xFF));
                 sum = (byte) ((sum & 0xFF) &
-                              0x01); // I had Problems writing this as one line with previous
+                        0x01); // I had Problems writing this as one line with previous
                 crc = (byte) ((crc & 0xFF) >>> 1);
                 if (sum != 0) {
                     crc = (byte) ((crc & 0xFF) ^ 0x8C);

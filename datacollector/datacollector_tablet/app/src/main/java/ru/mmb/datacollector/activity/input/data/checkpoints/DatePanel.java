@@ -4,16 +4,19 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.TimePicker;
 import android.widget.TimePicker.OnTimeChangedListener;
 
+import java.util.Date;
+
 import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.model.registry.Settings;
 
 public class DatePanel {
     private static final boolean FOCUSABLE = true;
@@ -22,7 +25,7 @@ public class DatePanel {
     private final InputDataActivityState currentState;
 
     private final DatePicker datePicker;
-    private final LinearLayout timePanel;
+    private final Button btnEditDate;
 
     private boolean refreshingControls = false;
 
@@ -32,14 +35,13 @@ public class DatePanel {
         this.currentState = currentState;
 
         datePicker = (DatePicker) context.findViewById(R.id.inputData_datePicker);
-        timePanel = (LinearLayout) context.findViewById(R.id.inputData_timePanel);
-
-        timePicker = new TimePicker(context);
-        timePicker.setIs24HourView(true);
-        timePanel.addView(timePicker);
+        timePicker = (TimePicker24Hours) context.findViewById(R.id.inputData_timePicker);
 
         hookEditTextChildren(datePicker, NOT_FOCUSABLE);
         hookEditTextChildren(timePicker, FOCUSABLE);
+
+        btnEditDate = (Button) context.findViewById(R.id.inputData_editDateButton);
+        btnEditDate.setOnClickListener(new EditDateClickListener());
 
         initDate();
     }
@@ -77,16 +79,21 @@ public class DatePanel {
     private void initDate() {
         if (currentState.isCommonStart()) {
             currentState.initInputDateFromCommonStart();
-            disableControls();
+            btnEditDate.setVisibility(View.GONE);
+        } else if (!Settings.getInstance().isCanEditScantime()) {
+            btnEditDate.setVisibility(View.GONE);
         } else if (!currentState.isLoggerDataExists()) {
-            disableControls();
+            Date currentDate = new Date();
+            currentState.setInputDate(currentDate);
+            currentState.setPrevDateTime(currentDate);
         }
+        setControlsEnabled(false);
         initDateControls();
     }
 
-    private void disableControls() {
-        datePicker.setEnabled(false);
-        timePicker.setEnabled(false);
+    private void setControlsEnabled(boolean enabled) {
+        datePicker.setEnabled(enabled);
+        timePicker.setEnabled(enabled);
     }
 
     private void initDateControls() {
@@ -127,6 +134,14 @@ public class DatePanel {
         public void onDateChanged(DatePicker view, int year, int month, int dayOfMonth) {
             if (refreshingControls) return;
             currentState.setInputDateDatePart(year, month, dayOfMonth);
+        }
+    }
+
+    private class EditDateClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            setControlsEnabled(true);
+            btnEditDate.setVisibility(View.GONE);
         }
     }
 }

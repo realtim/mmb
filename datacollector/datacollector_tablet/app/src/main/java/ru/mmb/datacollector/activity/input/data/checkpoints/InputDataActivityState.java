@@ -26,6 +26,7 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
     private CheckedState checkedState = new CheckedState();
     private DateRecord inputDate = new DateRecord();
     private boolean loggerDataExists = false;
+    private DateRecord prevDateTime = null;
 
     public InputDataActivityState() {
         super("input.data");
@@ -40,9 +41,8 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         return checkedState.isChecked(checkpoint.getCheckpointOrder());
     }
 
-    public void setInputDate(int year, int month, int day, int hour, int minute) {
-        inputDate = new DateRecord(year, month, day, hour, minute);
-        fireStateChanged();
+    public void setPrevDateTime(Date prevDateTime) {
+        this.prevDateTime = new DateRecord(prevDateTime);
     }
 
     public void setInputDateDatePart(int year, int month, int day) {
@@ -160,9 +160,13 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
                 RawLoggerData rawLoggerData =
                         SQLiteDatabaseAdapter.getConnectedInstance().getExistingLoggerRecord(getCurrentScanPoint(), getCurrentTeam());
                 if (rawLoggerData != null) {
-                    inputDate = new DateRecord(rawLoggerData.getRecordDateTime());
+                    inputDate = new DateRecord(rawLoggerData.getScannedDateTime());
+                    prevDateTime = new DateRecord(rawLoggerData.getScannedDateTime());
                     loggerDataExists = true;
                 }
+            } else {
+                inputDate = new DateRecord(levelPoint.getLevelPointMinDateTime());
+                loggerDataExists = true;
             }
         }
     }
@@ -178,8 +182,13 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
     }
 
     public void saveInputDataToDB(Date recordDateTime) {
-        SQLiteDatabaseAdapter.getConnectedInstance().saveRawTeamLevelPoints(getCurrentScanPoint(), getCurrentTeam(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
-        // TODO save changed RawLoggerData
+        SQLiteDatabaseAdapter dbAdapter = SQLiteDatabaseAdapter.getConnectedInstance();
+        dbAdapter.saveRawTeamLevelPoints(getCurrentScanPoint(), getCurrentTeam(), checkedState.getTakenCheckpointsRawText(), recordDateTime);
+        if (prevDateTime != null && !prevDateTime.equals(inputDate)) {
+            dbAdapter.saveRawLoggerDataManual(getCurrentScanPoint(), getCurrentTeam(), inputDate.toDate(), recordDateTime);
+        }
+        dbAdapter.incLocalSaveCount();
+        dbAdapter.backupDatabaseIfNeeded(getContext());
     }
 
     public void putTeamLevelPointToDataStorage(Date recordDateTime) {

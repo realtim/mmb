@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    package="ru.mmb.datacollector"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="ru.mmb.datacollector">
 
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".application.ApplicationWithSingletonsInit"
+        android:name="android.app.Application"
         android:allowBackup="true"
         android:icon="@mipmap/mmb"
         android:label="@string/app_name"
@@ -20,41 +19,31 @@
             android:name=".activity.main.MainActivity"
             android:label="@string/app_name">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.transport.TransportInputActivity"/>
-        <activity android:name=".activity.transport.TransportReportActivity"/>
-        <activity android:name=".activity.input.start.StartInputActivity"/>
-        <activity android:name=".activity.input.scanpoint.SelectScanPointActivity"/>
+        <activity android:name=".activity.transport.TransportInputActivity" />
+        <activity android:name=".activity.input.start.StartInputActivity" />
+        <activity android:name=".activity.input.scanpoint.SelectScanPointActivity" />
         <activity
             android:name=".activity.input.data.history.HistoryActivity"
-            android:windowSoftInputMode="stateHidden"/>
-        <activity android:name=".activity.input.data.checkpoints.InputDataActivity"/>
-        <activity android:name=".activity.input.data.withdraw.WithdrawMemberActivity"/>
-        <activity android:name=".activity.transport.transpimport.TransportImportActivity"/>
-        <activity android:name=".activity.transport.transpexport.TransportExportActivity"/>
-        <activity android:name=".activity.report.ResultsActivity"/>
-        <activity android:name=".activity.report.global.ReportGlobalResultActivity"/>
-        <activity
-            android:name=".activity.report.team.result.TeamResultActivity"
-            android:windowSoftInputMode="stateHidden"/>
-        <activity android:name=".activity.settings.SettingsActivity"/>
-        <activity android:name="com.filedialog.FileDialog"/>
-        <activity android:name=".activity.input.bclogger.start.StartWorkWithBCLoggerActivity"/>
-        <activity android:name=".activity.bluetooth.BluetoothSelectDeviceActivity"/>
-        <activity android:name=".activity.input.bclogger.settings.LoggerSettingsActivity"/>
-        <activity android:name=".activity.input.bclogger.dataload.LoggerDataLoadActivity"/>
-        <activity android:name=".activity.input.bclogger.fileimport.LoggerFileImportActivity"/>
-        <activity android:name=".activity.transport.bclogger.receive.TransportLoggerReceiveActivity"/>
-        <activity android:name=".activity.transport.bclogger.send.TransportLoggerSendActivity"/>
-        <activity android:name=".activity.transport.http.send.TransportHttpSendActivity"/>
-        <activity android:name=".activity.transport.http.receive.TransportHttpReceiveActivity"/>
-        <activity android:name=".activity.report.team.search.start.TeamSearchStartActivity"/>
+            android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".activity.input.data.checkpoints.InputDataActivity" />
+        <activity android:name=".activity.input.data.withdraw.WithdrawMemberActivity" />
+        <activity android:name=".activity.transport.transpimport.TransportImportActivity" />
+        <activity android:name=".activity.transport.transpexport.TransportExportActivity" />
+        <activity android:name=".activity.settings.SettingsActivity" />
+        <activity android:name="com.filedialog.FileDialog" />
+        <activity android:name=".activity.input.bclogger.start.StartWorkWithBCLoggerActivity" />
+        <activity android:name=".activity.bluetooth.BluetoothSelectDeviceActivity" />
+        <activity android:name=".activity.input.bclogger.settings.LoggerSettingsActivity" />
+        <activity android:name=".activity.input.bclogger.dataload.LoggerDataLoadActivity" />
+        <activity android:name=".activity.input.bclogger.fileimport.LoggerFileImportActivity" />
+        <activity android:name=".activity.report.team.search.start.TeamSearchStartActivity" />
         <activity
             android:name=".activity.report.team.search.search.TeamSearchActivity"
-            android:windowSoftInputMode="stateHidden"/>
+            android:windowSoftInputMode="stateHidden" />
     </application>
 
 </manifest>

@@ -1,0 +1,141 @@
+№YmAN°RTC running.
+Current config:
+-Scanner ID: 02
+-Control Point: 01
+-Barcode string length checking: Y
+-Numbers only: Y
+-Barcode pattern: ********
+-Barcode length: 8
+12:01:49, 2015/10/18
+02, 01, 00002202, 12:02:12, 2015/10/18
+02, 01, 88999982, 12:15:03, 2015/10/18
+02, 01, 00002202, 12:15:07, 2015/10/18
+02, 01, 00003308, 12:15:09, 2015/10/18
+02, 01, CONFIGB, 12:15:12, 2015/10/18
+BlueTooth operation mode started
+Command received: GETS
+
+Current config:
+-Scanner ID: 02
+-Control Point: 01
+-Barcode string length checking: Y
+-Numbers only: Y
+-Barcode pattern: ********
+-Barcode length: 8
+12:15:18, 2015/10/18
+12:15:18, 2015/10/18
+datalog.txt size: 560
+errors.txt size: 1156
+Command received: GETS
+
+Current config:
+-Scanner ID: 02
+-Control Point: 01
+-Barcode string length checking: Y
+-Numbers only: Y
+-Barcode pattern: ********
+-Barcode length: 8
+12:15:57, 2015/10/18
+12:15:57, 2015/10/18
+datalog.txt size: 560
+errors.txt size: 1156
+Command received: SETT
+
+Input current date and time "Mon dd yyyy hh:mm:ss" (example: "Dec 06 2014 12:04:00")
+Current time (+4 sec.) is: 12:16:33, 2015/10/18
+Command received: SETI02
+
+Scanner ID set to: 02
+Command received: SETC01
+
+Control Point # set to: 01
+Command received: SETT
+
+Input current date and time "Mon dd yyyy hh:mm:ss" (example: "Dec 06 2014 12:04:00")
+Current time (+4 sec.) is: 12:16:33, 2015/10/18
+Command received: GETS
+
+Current config:
+-Scanner ID: 02
+-Control Point: 01
+-Barcode string length checking: Y
+-Numbers only: Y
+-Barcode pattern: ********
+-Barcode length: 8
+12:17:10, 2015/10/18
+12:17:10, 2015/10/18
+datalog.txt size: 560
+errors.txt size: 1156
+Command received: GETL
+
+datalog.txt sending
+File size: 560
+====
+02, 01, 00003308, 21:24:12, 2015/10/14, Line#=0, CRC8=6
+02, 01, 88999982, 01:20:12, 2099/15/31, Line#=1, CRC8=134
+02, 01, 00002202, 01:20:19, 2099/15/31, Line#=2, CRC8=194
+02, 01, 88999982, 01:20:49, 2099/15/31, Line#=3, CRC8=175
+02, 01, 88999982, 01:21:32, 2099/15/31, Line#=4, CRC8=82
+02, 01, 88999982, 00:37:26, 2015/10/18, Line#=5, CRC8=134
+02, 01, 00002202, 00:37:27, 2015/10/18, Line#=6, CRC8=208
+02, 01, 00003308, 00:37:29, 2015/10/18, Line#=7, CRC8=144
+02, 01, 88999982, 00:41:28, 2015/10/18, Line#=8, CRC8=244
+02, 01, 88999982, 12:01:17, 2015/10/18, Line#=9, CRC8=71
+02, 01, 00002202, 12:02:12, 2015/10/18, Line#=10, CRC8=50
+02, 01, 88999982, 12:15:03, 2015/10/18, Line#=11, CRC8=232
+02, 01, 00002202, 12:15:07, 2015/10/18, Line#=12, CRC8=183
+02, 01, 00003308, 12:15:09, 2015/10/18, Line#=13, CRC8=247
+====
+datalog.txt sent
+Command received: GETD
+
+errors.txt sending
+File size: 1156
+====
+02, 01, CONFIGB, 21:24:24, 2015/10/14, Line#=0, CRC8=94
+02, 01, CONFIGB, 03:17:44, 2015/10/16, Line#=1, CRC8=210
+02, 01, 74451507368870, 20:49:41, 2015/10/17, Line#=2, CRC8=32
+02, 01, 74451507368870, 20:49:44, 2015/10/17, Line#=3, CRC8=41
+02, 01, 74451507368870, 20:49:46, 2015/10/17, Line#=4, CRC8=126
+02, 01, 74451507368870, 20:49:50, 2015/10/17, Line#=5, CRC8=171
+02, 01, 74451507368870, 20:51:04, 2015/10/17, Line#=6, CRC8=178
+02, 01, 74451507368870, 20:51:10, 2015/10/17, Line#=7, CRC8=48
+02, 01, 74451507368870, 20:51:11, 2015/10/17, Line#=8, CRC8=151
+02, 01, 74451507368870, 20:51:13, 2015/10/17, Line#=9, CRC8=192
+02, 01, 74451507368870, 20:51:17, 2015/10/17, Line#=10, CRC8=110
+02, 01, 74451507368870, 20:51:19, 2015/10/17, Line#=11, CRC8=210
+02, 01, 74451507368870, 20:53:49, 2015/10/17, Line#=12, CRC8=79
+02, 01, 74451507368870, 20:53:52, 2015/10/17, Line#=13, CRC8=214
+02, 01, 74451507368870, 20:53:54, 2015/10/17, Line#=14, CRC8=47
+02, 01, 74451507368870, 20:53:56, 2015/10/17, Line#=15, CRC8=120
+02, 01, 74451507368870, 20:54:00, 2015/10/17, Line#=16, CRC8=146
+02, 01, 74451507368870, 20:54:04, 2015/10/17, Line#=17, CRC8=60
+02, 01, 74451507368870, 21:18:43, 2015/10/17, Line#=18, CRC8=177
+02, 01, 74451507368870, 21:18:45, 2015/10/17, Line#=19, CRC8=72
+02, 01, 74451507368870, 00:56:21, 2099/15/31, Line#=20, CRC8=1
+02, 01, 74451507368870, 01:15:36, 2099/15/31, Line#=21, CRC8=155
+02, 01, CONFIGB, 01:21:43, 2099/15/31, Line#=22, CRC8=233
+02, 01, CONFIGC01, 00:37:36, 2015/10/18, Line#=23, CRC8=113
+02, 01, CONFIGB, 00:41:30, 2015/10/18, Line#=24, CRC8=69
+02, 01, CONFIGB, 12:15:12, 2015/10/18, Line#=25, CRC8=187
+====
+errors.txt sent
+Command received: GET#L10
+
+datalog.txt sending, string #10
+====
+02, 01, 00002202, 12:02:12, 2015/10/18, Line#=10, CRC8=50
+====
+Command received: GET#D20
+
+errors.txt sending, string #20
+====
+02, 01, 74451507368870, 00:56:21, 2099/15/31, Line#=20, CRC8=1
+====
+Command received: DELLOG
+
+datalog.txt deleted
+errors.txt deleted
+Command received: END
+
+BlueTooth operation mode ended.

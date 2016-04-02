@@ -36,8 +36,8 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	$nextRaidId = $rowRaids['raid_id'];
 	$RaidName = trim($rowRaids['raid_name']);
 	$RaidPeriod = trim($rowRaids['raid_period']);
-	$RaidRulesLink = $rowRaids['raid_ruleslink'];
-	$RaidStartLink = $rowRaids['raid_startlink'];
+	$RaidRulesLink = '';
+	$RaidStartLink = '';
 	$RaidStartPoint = $rowRaids['raid_startpoint'];
 	$RaidFinishPoint = $rowRaids['raid_finishpoint'];
  
@@ -145,7 +145,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 		  $DistanceLink = "?RaidId=$nextRaidId";
 		}
 	
-	        print("<a href=\"$DistanceLink\">$DistanceName</a>: $DistanceCounters $DistanceData\r\n");
+	        print('<a href="'.$DistanceLink.'">'."$DistanceName</a>: $DistanceCounters $DistanceData\r\n");
 	
 	}
 	mysql_free_result($resultDistance);
@@ -161,9 +161,9 @@ print('<hr>'."\r\n");
 print('<p align="left" style="text-align: justify;">'."\r\n");
 print('<a name="help">Обычно за месяц до проведения ММБ в сеть выкладывается положение, за неделю - раскрывается место старта.<br/>
  После названия дистанции в скобках через слэш указывается число: команд (зелёным - "<a href="http://community.livejournal.com/_mmb_/2010/09/24/">нет сломанным унитазам</a>"), заказанных карт и участников.
- Дальше идут параметры дистанции: километраж - по прямой между вершинами КП, в скобках  - количество КП, через слэш - этапы.
+ Дальше идут параметры дистанции: километраж - по прямой между вершинами КП, в скобках - количество КП, через слэш - этапы.
  После снятия дистанции на месте КП вместо компостера может висеть кусочек светоотражалки, если об этом позаботился снимающий, если не сгрызли мыши и т.п.
- Карты дистанции выкладываются в разделе "Файлы", обновленные карты местности (без дистанции), а также векторные карты - смотрите в разделе <a href="http://slazav.mccme.ru/maps/">"Карты"</a>
+ Карты дистанции выкладываются в разделе "Файлы", обновленные карты местности (без дистанции), а также векторные карты - смотрите в разделе "<a href="http://slazav.mccme.ru/maps/">Карты</a>"
 '."\r\n");
 print("</p>\r\n");
 

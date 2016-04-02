@@ -1,62 +1,38 @@
 package ru.mmb.datacollector.transport.exporter;
 
-import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
-import ru.mmb.datacollector.model.meta.MetaTable;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-public abstract class DataExtractor
-{
-	private MetaTable currentTable = null;
-	private final SQLiteDatabase db;
-	private final ExportMode exportMode;
+import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
+import ru.mmb.datacollector.model.meta.MetaTable;
 
-	protected abstract void exportRow(Cursor cursor) throws Exception;
+public abstract class DataExtractor {
+    private MetaTable currentTable = null;
+    private final SQLiteDatabase db;
 
-	public DataExtractor(ExportMode exportMode)
-	{
-		// DatacollectorDB.getRawInstance() will never be null, but db can be null.
-		this.db = SQLiteDatabaseAdapter.getRawInstance().getDb();
-		this.exportMode = exportMode;
-	}
+    protected abstract void exportRow(Cursor cursor) throws Exception;
 
-	public void setCurrentTable(MetaTable metaTable)
-	{
-		currentTable = metaTable;
-	}
+    public DataExtractor() {
+        // DatacollectorDB.getRawInstance() will never be null, but db can be null.
+        this.db = SQLiteDatabaseAdapter.getRawInstance().getDb();
+    }
 
-	public MetaTable getCurrentTable()
-	{
-		return currentTable;
-	}
+    public void setCurrentTable(MetaTable metaTable) {
+        currentTable = metaTable;
+    }
 
-	public boolean hasRecordsToExport()
-	{
-		if (currentTable == null) return false;
+    public MetaTable getCurrentTable() {
+        return currentTable;
+    }
 
-		String sql = currentTable.generateCheckNewRecordsSQL(exportMode);
-		Cursor cursor = db.rawQuery(sql, null);
-		try
-		{
-			cursor.moveToFirst();
-			return cursor.getInt(0) > 0;
-		}
-		finally
-		{
-			cursor.close();
-		}
-	}
-
-	public void exportNewRecords(ExportState exportState) throws Exception
-	{
-		String selectSql = currentTable.generateSelectNewRecordsSQL(exportMode);
-		Cursor cursor = db.rawQuery(selectSql, null);
-		cursor.moveToFirst();
-		while (!cursor.isAfterLast() && !exportState.isTerminated())
-		{
-			exportRow(cursor);
-			cursor.moveToNext();
-		}
-		cursor.close();
-	}
+    public void exportAllRecords(ExportState exportState) throws Exception {
+        String selectSql = currentTable.generateSelectAllRecordsSQL();
+        Cursor cursor = db.rawQuery(selectSql, null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast() && !exportState.isTerminated()) {
+            exportRow(cursor);
+            cursor.moveToNext();
+        }
+        cursor.close();
+    }
 }

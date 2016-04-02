@@ -11,17 +11,18 @@ import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
+import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.transport.importer.Importer;
 import ru.mmb.datacollector.util.DateUtils;
 
 public class LoggerDataSaver {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss, yyyy/MM/dd");
+    private static final SimpleDateFormat prettyFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     private final LoggerDataProcessor owner;
     private final SQLiteDatabase db;
     private int recordsToSave;
-    private ScanPoint scanPoint;
 
     public LoggerDataSaver(LoggerDataProcessor owner) {
         this.owner = owner;
@@ -45,8 +46,9 @@ public class LoggerDataSaver {
         }
     }
 
-    public void saveToDB(ScanPoint scanPoint, LogStringParsingResult parsingResult) {
-        this.scanPoint = scanPoint;
+    public void saveToDB(LogStringParsingResult parsingResult) {
+        ScanPoint scanPoint = ScanPointsRegistry.getInstance().getScanPointByOrder(parsingResult.getScanpointOrderNumber());
+        if (scanPoint == null) return;
 
         if (recordsToSave == 0 && !db.inTransaction()) {
             db.beginTransaction();
@@ -75,22 +77,23 @@ public class LoggerDataSaver {
         // Dates in DB are saved without seconds, and before() or after() will return
         // undesired results, if seconds are present in parsed result.
         Date recordDateTime = DateUtils.trimToMinutes(sdf.parse(parsingResult.getRecordDateTime()));
-        recordDateTime = substituteForCommonStart(recordDateTime, teamId);
+        recordDateTime = alignToLevelPointLimits(scanPoint, recordDateTime, teamId);
         RawLoggerData existingRecord = SQLiteDatabaseAdapter.getConnectedInstance().getExistingLoggerRecord(loggerId, scanpointId, teamId);
         if (existingRecord != null) {
-            if (needUpdateExistingRecord(existingRecord, recordDateTime)) {
+            if (needUpdateExistingRecord(scanPoint, existingRecord, recordDateTime)) {
                 String sql = SQLiteDatabaseAdapter.getConnectedInstance().getUpdateExistingLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime, recordDateTime, 0);
                 db.execSQL(sql);
                 recordsToSave++;
-                owner.writeToConsole("existing record updated");
-            } else {
-                owner.writeToConsole("existing record NOT updated");
             }
         } else {
             String sql = SQLiteDatabaseAdapter.getConnectedInstance().getInsertNewLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime, recordDateTime, 0);
             db.execSQL(sql);
             recordsToSave++;
-            owner.writeToConsole("new record inserted");
+            Team team = TeamsRegistry.getInstance().getTeamById(teamId);
+            String message = "SAVING new record inserted [scanpoint: " + scanPoint.getScanPointName()
+                    + ", team: " + team.getTeamNum() + ", time: " + prettyFormat.format(recordDateTime) + "]";
+            owner.writeToConsole(message);
+            Log.d("DATA_SAVER", message);
         }
     }
 
@@ -101,24 +104,52 @@ public class LoggerDataSaver {
         return team.getTeamId();
     }
 
-    private Date substituteForCommonStart(Date recordDateTime, int teamId) {
+    private Date alignToLevelPointLimits(ScanPoint scanPoint, Date recordDateTime, int teamId) {
         Team team = TeamsRegistry.getInstance().getTeamById(teamId);
         LevelPoint levelPoint = scanPoint.getLevelPointByDistance(team.getDistanceId());
         if (levelPoint.isCommonStart()) {
             return levelPoint.getLevelPointMinDateTime();
-        } else {
-            return recordDateTime;
+        } else if (levelPoint.getPointType().isStart()) {
+            if (recordDateTime.after(levelPoint.getLevelPointMaxDateTime())) {
+                String message = "PREPROCESS record start time set to max for point [scanpoint: "
+                        + scanPoint.getScanPointName() + ", team: " + team.getTeamNum() + ", recordTime: "
+                        + prettyFormat.format(recordDateTime) + ", updatedTime: "
+                        + prettyFormat.format(levelPoint.getLevelPointMaxDateTime()) + "]";
+                owner.writeError(message);
+                Log.d("DATA_SAVER", message);
+                return levelPoint.getLevelPointMaxDateTime();
+            }
         }
+        return recordDateTime;
     }
 
-    private boolean needUpdateExistingRecord(RawLoggerData existingRecord, Date recordDateTime) {
+    private boolean needUpdateExistingRecord(ScanPoint scanPoint, RawLoggerData existingRecord, Date recordDateTime) {
+        // if record was changed manually, then update not needed
+        if (existingRecord.getChangedManual() == 1) return false;
+
         int distanceId = existingRecord.getTeam().getDistanceId();
         if (scanPoint.getLevelPointByDistance(distanceId).getPointType().isStart()) {
-            // start record - use last check
-            return existingRecord.getRecordDateTime().before(recordDateTime);
+            // start record - use first check
+            if (existingRecord.getScannedDateTime().after(recordDateTime)) {
+                String message = "SAVING record start time [scanpoint: " + existingRecord.getScanPoint().getScanPointName()
+                        + ", team: " + existingRecord.getTeam().getTeamNum() + ", time: "
+                        + prettyFormat.format(recordDateTime) + "]";
+                owner.writeError(message);
+                Log.d("DATA_SAVER", message);
+                return true;
+            }
+
         } else {
-            // finish record - use first check
-            return existingRecord.getRecordDateTime().after(recordDateTime);
+            // finish record - use last check
+            if (existingRecord.getScannedDateTime().before(recordDateTime)) {
+                String message = "SAVING record finish time [scanpoint: " + existingRecord.getScanPoint().getScanPointName()
+                        + ", team: " + existingRecord.getTeam().getTeamNum() + ", time: "
+                        + prettyFormat.format(recordDateTime) + "]";
+                owner.writeError(message);
+                Log.d("DATA_SAVER", message);
+                return true;
+            }
         }
+        return false;
     }
 }

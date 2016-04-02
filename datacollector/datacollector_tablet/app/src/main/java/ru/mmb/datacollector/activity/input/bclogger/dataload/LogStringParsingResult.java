@@ -1,13 +1,17 @@
 package ru.mmb.datacollector.activity.input.bclogger.dataload;
 
+import android.util.Log;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import ru.mmb.datacollector.model.LevelPoint;
+import ru.mmb.datacollector.model.PointType;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
+import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.util.DateUtils;
 
@@ -19,6 +23,7 @@ public class LogStringParsingResult {
     private boolean regexpMatches = true;
     private boolean crcFailed = false;
     private boolean wrongLoggerId = false;
+    private boolean wrongScanPoint = false;
     private boolean wrongTeamNumber = false;
     private boolean wrongRecordDateTime = false;
 
@@ -30,10 +35,6 @@ public class LogStringParsingResult {
 
     public LogStringParsingResult(String source) {
         this.source = source;
-    }
-
-    public String getSource() {
-        return source;
     }
 
     public boolean isRegexpMatches() {
@@ -60,6 +61,14 @@ public class LogStringParsingResult {
         this.wrongLoggerId = wrongLoggerId;
     }
 
+    public boolean isWrongScanPoint() {
+        return wrongScanPoint;
+    }
+
+    public void setWrongScanPoint(boolean wrongScanPoint) {
+        this.wrongScanPoint = wrongScanPoint;
+    }
+
     public boolean isWrongTeamNumber() {
         return wrongTeamNumber;
     }
@@ -84,16 +93,12 @@ public class LogStringParsingResult {
         this.loggerId = loggerId;
     }
 
-    public String getScanpointOrder() {
-        return scanpointOrder;
+    public int getScanpointOrderNumber() {
+        return Integer.parseInt(scanpointOrder);
     }
 
     public void setScanpointOrder(String scanpointOrder) {
         this.scanpointOrder = scanpointOrder;
-    }
-
-    public String getTeamInfo() {
-        return teamInfo;
     }
 
     public void setTeamInfo(String teamInfo) {
@@ -121,11 +126,7 @@ public class LogStringParsingResult {
     }
 
     public boolean isFatalError() {
-        return !isRegexpMatches() || isWrongLoggerId() || isWrongTeamNumber() || isCrcFailed();
-    }
-
-    public boolean isDateError() {
-        return isRegexpMatches() && isWrongRecordDateTime();
+        return !isRegexpMatches() || isWrongLoggerId() || isWrongScanPoint() || isWrongTeamNumber() || isCrcFailed();
     }
 
     public String getErrorMessage() {
@@ -138,6 +139,9 @@ public class LogStringParsingResult {
         if (isWrongLoggerId()) {
             return "ERROR [" + source + "] check LOGGER_ID failed";
         }
+        if (isWrongScanPoint()) {
+            return "ERROR [" + source + "] check SCANPOINT_ORDER failed";
+        }
         if (isWrongTeamNumber()) {
             return "ERROR [" + source + "] check TEAM_NUMBER failed";
         }
@@ -147,10 +151,22 @@ public class LogStringParsingResult {
         return "UNKNOWN ERROR";
     }
 
-    public void checkConsistencyErrors(String confLoggerId, ScanPoint scanPoint) {
+    public void checkConsistencyErrors(String confLoggerId) {
         // check logger ID
         if (confLoggerId != null && !confLoggerId.equals(loggerId)) {
             setWrongLoggerId(true);
+        }
+        // check scanPoint for record
+        ScanPoint scanPoint = null;
+        int scanpointOrderConverted = -1;
+        try {
+            scanpointOrderConverted = Integer.parseInt(scanpointOrder);
+            scanPoint = ScanPointsRegistry.getInstance().getScanPointByOrder(scanpointOrderConverted);
+        } catch (NumberFormatException e) {
+        }
+        if (scanpointOrderConverted == -1 || scanPoint == null) {
+            setWrongScanPoint(true);
+            return;
         }
         // check team ID
         Team team = null;
@@ -161,31 +177,38 @@ public class LogStringParsingResult {
         }
         if (team == null) {
             setWrongTeamNumber(true);
+            return;
         }
         // check record date and time
-        if (team != null) {
-            try {
-                LevelPoint levelPoint = scanPoint.getLevelPointByDistance(team.getDistanceId());
-                Date recordDateTimeMinutes = DateUtils.trimToMinutes(sdf.parse(recordDateTime));
-                Date dateFrom = levelPoint.getLevelPointMinDateTime();
-                Date dateTo = levelPoint.getLevelPointMaxDateTime();
-                if (levelPoint.isCommonStart()) {
-                    dateFrom = shiftTimeForCommonStart(dateFrom, -6);
-                    dateTo = shiftTimeForCommonStart(dateTo, 6);
+        try {
+            LevelPoint levelPoint = scanPoint.getLevelPointByDistance(team.getDistanceId());
+
+            Date recordDateTimeMinutes = DateUtils.trimToMinutes(sdf.parse(recordDateTime));
+            Date dateFrom = levelPoint.getLevelPointMinDateTime();
+            Date dateTo = levelPoint.getLevelPointMaxDateTime();
+            if (levelPoint.getPointType() == PointType.START) {
+                dateFrom = shiftTimeForStart(dateFrom, -10);
+                // check start only for levelPointMinDateTime
+                // if started after max time, then start time = max
+                if (recordDateTimeMinutes.before(dateFrom)) {
+                    setWrongRecordDateTime(true);
                 }
+            } else {
+                // check other levelPoints for hitting min and max limits
                 if (recordDateTimeMinutes.before(dateFrom) || recordDateTimeMinutes.after(dateTo)) {
                     setWrongRecordDateTime(true);
                 }
-            } catch (Exception e) {
-                setWrongRecordDateTime(true);
             }
+        } catch (Exception e) {
+            Log.d("CHECK_LOGDATA", "exception during time check", e);
+            setWrongRecordDateTime(true);
         }
     }
 
-    private Date shiftTimeForCommonStart(Date date, int hoursShift) {
+    private Date shiftTimeForStart(Date date, int minutesShift) {
         Calendar calendar = new GregorianCalendar();
         calendar.setTime(date);
-        calendar.add(Calendar.HOUR_OF_DAY, hoursShift);
+        calendar.add(Calendar.MINUTE, minutesShift);
         return calendar.getTime();
     }
 }

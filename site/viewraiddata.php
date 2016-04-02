@@ -22,6 +22,7 @@ if ($viewmode == 'Add')
 		$RaidName = $_POST['RaidName'];
 		$RaidPeriod = $_POST['RaidPeriod'];
                 $RaidRegistrationEndDate = $_POST['RaidRegistrationEndDate'];
+		$ClearRegistrationEndDateDate = mmb_isOn($_POST, 'ClearRaidRegistrationEndDateDate');
            //     $RaidLogoLink = $_POST['RaidLogoLink'];
            //     $RaidRulesLink = $_POST['RaidRulesLink'];
 		$RaidStartPointName = $_POST['RaidStartPointName'];
@@ -35,7 +36,8 @@ if ($viewmode == 'Add')
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
 	        $RaidMapPrice = (int)$_POST['RaidMapPrice'];
-	        $RaidNoStartPrice = (int)$_POST['NoStartPrice'];
+	        $RaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
+	        $RaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
 	}
 	else
 	// Пробуем создать команду первый раз
@@ -59,6 +61,7 @@ if ($viewmode == 'Add')
                 $RaidFilePrefix = '';
 		$RaidMapPrice = 0;
 		$RaidNoStartPrice = 0;
+		$RaidTeamsLimit = 0;
 	}
 
 	// Определяем следующее действие
@@ -80,14 +83,15 @@ else
 
 	$sql = "select r.raid_name, r.raid_period, r.raid_registrationenddate,
 	               (CASE WHEN r.raid_registrationenddate is null THEN 1 ELSE 0 END) as raid_clearregistrationenddate,
-		       r.raid_logolink, r.raid_ruleslink,  r.raid_startpoint, 
-		       r.raid_startlink, r.raid_finishpoint, r.raid_closedate,
-		       r.raid_znlink, COALESCE(r.raid_noshowresult, 0) as raid_noshowresult,
+		       r.raid_startpoint, 
+		       r.raid_finishpoint, r.raid_closedate,
+		       COALESCE(r.raid_noshowresult, 0) as raid_noshowresult,
 		       COALESCE(r.raid_readonlyhoursbeforestart, 8) as raid_readonlyhoursbeforestart,  
 		       COALESCE(r.raid_mapprice, 8) as raid_mapprice,  COALESCE(r.raid_nostartprice, 8) as raid_nostartprice,  
 		       r.raid_fileprefix,
       	               (CASE WHEN r.raid_closedate is null THEN 1 ELSE 0 END) as raid_clearclosedate,
-		       (select count(*) from Distances where distance_hide = 0 and raid_id = $RaidId) as raid_distancescount
+		       (select count(*) from Distances where distance_hide = 0 and raid_id = $RaidId) as raid_distancescount,
+		       r.raid_teamslimit
 		from Raids r
 		where r.raid_id = $RaidId";
 	$Row = CSql::singleRow($sql);
@@ -99,22 +103,23 @@ else
 		$RaidName = $_POST['RaidName'];
 		$RaidPeriod = $_POST['RaidPeriod'];
                 $RaidRegistrationEndDate = $_POST['RaidRegistrationEndDate'];
-		$ClearRaidRegistrationEndDate = $_POST['ClearRaidRegistrationEndDate'];
+		$ClearRaidRegistrationEndDate = mmb_isOn($_POST, 'ClearRaidRegistrationEndDate');
 	//	$RaidLogoLink = $_POST['RaidLogoLink'];
 	//	$RaidRulesLink = $_POST['RaidRulesLink'];
 		$RaidStartPointName = $_POST['RaidStartPointName'];
 	//	$RaidStartLink = $_POST['RaidStartLink'];
 		$RaidFinishPointName = $_POST['RaidFinishPointName'];
 		$RaidCloseDate = $_POST['RaidCloseDate'];
-		$ClearRaidCloseDate = $_POST['ClearRaidCloseDate'];     // а ничего, что он всюду сравнивается с on? !!!
+		$ClearRaidCloseDate = mmb_isOn($_POST, 'ClearRaidCloseDate');     // а ничего, что он всюду сравнивается с on? !!!
 	//	$RaidZnLink = $_POST['RaidZnLink'];
                 //В отличие от остальных полей это - вычисляемое и после ошибки не возвращается
-		$RaidDistancesCount = (int)$Row['raid_distancescount'];
-		$RaidNoShowResult = $_POST['RaidNoShowResult'];         // а ничего, что он всюду сравнивается с on? !!!
+		$RaidDistancesCount = (int)$_POST['RaidDistancesCount'];
+		$RaidNoShowResult = mmb_isOn($_POST, 'RaidNoShowResult');         // а ничего, что он всюду сравнивается с on? !!!
                 $RaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
 		$RaidFilePrefix = $_POST['RaidFilePrefix'];
                 $RaidMapPrice = (int)$_POST['RaidMapPrice'];
-                $RaidNoStartPrice = (int)$_POST['NoStartPrice'];
+                $RaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
+                $RaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
 
 	}
 	else
@@ -138,6 +143,7 @@ else
 		$RaidFilePrefix = $Row['raid_fileprefix'];
                 $RaidMapPrice = (int)$Row['raid_mapprice'];
                 $RaidNoStartPrice = (int)$Row['raid_nostartprice'];
+                $RaidTeamsLimit = (int)$Row['raid_teamslimit'];
 
 	}
 
@@ -300,6 +306,12 @@ print('<tr><td class="input">Стоимость неявки (руб.) <input ty
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidNoStartPrice))
 	.' title="Стоимость неявки (руб.)"></td></tr>'."\r\n");
 
+
+
+// ============ Лимит команд
+print('<tr><td class="input">Лимит команд <input type="text" name="RaidTeamsLimit" size="8" maxlength="4" value="'.$RaidTeamsLimit.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidTeamsLimit))
+	.' title="Лимит команд"></td></tr>'."\r\n");
 
 
 /*

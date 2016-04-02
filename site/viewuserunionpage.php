@@ -56,7 +56,7 @@ if (!isset($MyPHPScript)) return;
 	        print("</form>\r\n");
 
                print("</br>\r\n");
- 	       print('<div style = "margin-top: 15px;" align = "left">Журнал заявок на объединение пользователей</div>'."\r\n");
+		print('<div style = "margin-top: 15px;" align = "left">Журнал заявок на слияние пользователей</div>'."\r\n");
                print("</br>\r\n");
 
            // Администратору показываем все записи
@@ -65,8 +65,8 @@ if (!isset($MyPHPScript)) return;
 
 	  $sql = "  select u.user_name, 
 			   CASE WHEN uul.union_status = 1 THEN 'Запрос'
-			        WHEN uul.union_status = 2 THEN 'Объединены'
-			        WHEN uul.union_status = 3 THEN 'Отмена объединения'
+			        WHEN uul.union_status = 2 THEN 'Слияние произведено'
+			        WHEN uul.union_status = 3 THEN 'Отмена слияния'
 			        WHEN uul.union_status = 0 THEN 'Отклонено'
 				ELSE ''
 			   END as unionstatus,
@@ -89,7 +89,7 @@ if (!isset($MyPHPScript)) return;
 		print("<table class=\"std\">\r\n");
 		print('<tr class="head gray">
  	                 <td width="150">Пользователь</td>
-		         <td width="300">Объединение с</td>
+		         <td width="300">Слияние с</td>
  	                 <td width="200">Статус</td>
  	                 <td width="150">Создана</td>
 			 <td width="400">Возможные действия</td>

@@ -16,22 +16,6 @@
         android:text="@string/transport_input_import_dictionaries" />
 
     <Button
-        android:id="@+id/transportInput_sendToServerBtn"
-        android:layout_width="@dimen/main_button_width"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/global_double_padding"
-        android:text="@string/transport_input_send_to_server" />
-
-    <Button
-        android:id="@+id/transportInput_sendLoggerDataBtn"
-        android:layout_width="@dimen/main_button_width"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/global_double_padding"
-        android:text="@string/transport_input_send_logger_data" />
-
-    <Button
         android:id="@+id/transportInput_saveDataToFileBtn"
         android:layout_width="@dimen/main_button_width"
         android:layout_height="wrap_content"

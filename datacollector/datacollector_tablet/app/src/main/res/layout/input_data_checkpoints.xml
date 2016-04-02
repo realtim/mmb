@@ -6,38 +6,38 @@
     android:paddingBottom="@dimen/global_padding"
     android:paddingLeft="@dimen/global_padding"
     android:paddingRight="@dimen/global_padding"
-    android:paddingTop="@dimen/global_padding" >
+    android:paddingTop="@dimen/global_padding">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="right" >
+            android:layout_gravity="right">
 
             <LinearLayout
                 android:id="@+id/inputData_existsIndicatorPanel"
-                android:orientation="horizontal"
                 android:layout_width="30dip"
                 android:layout_height="30dip"
                 android:layout_gravity="center_vertical"
                 android:layout_marginRight="@dimen/global_padding"
-                android:background="@color/LightSkyBlue" />
-            
+                android:background="@color/LightSkyBlue"
+                android:orientation="horizontal" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="left" >
+                    android:layout_gravity="left">
 
                     <TextView
                         android:id="@+id/inputData_teamNumberTextView"
@@ -69,21 +69,29 @@
             android:id="@+id/inputData_datePanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/global_padding" >
+            android:layout_marginTop="@dimen/global_padding">
 
             <DatePicker
                 android:id="@+id/inputData_datePicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:calendarViewShown="false"
-                android:datePickerMode="spinner"/>
+                android:datePickerMode="spinner" />
 
-            <LinearLayout
-                android:id="@+id/inputData_timePanel"
+            <ru.mmb.datacollector.activity.input.data.checkpoints.TimePicker24Hours
+                android:id="@+id/inputData_timePicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:timePickerMode="spinner" />
+
+            <Button
+                android:id="@+id/inputData_editDateButton"
+                android:layout_width="100dip"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginLeft="@dimen/global_padding"
-                android:orientation="horizontal" />
+                android:text="@string/input_data_edit_date" />
         </LinearLayout>
 
         <LinearLayout
@@ -91,11 +99,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/global_double_padding"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content">
 
                 <Button
                     android:id="@+id/inputData_checkAllButton"
@@ -115,19 +123,18 @@
                 android:id="@+id/inputData_checkpointsPanel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/global_padding" >
-            </TableLayout>
+                android:layout_marginTop="@dimen/global_padding"></TableLayout>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
 
                 <TextView
@@ -143,7 +150,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="right"
-                    android:layout_marginTop="@dimen/global_padding" >
+                    android:layout_marginTop="@dimen/global_padding">
 
                     <Button
                         android:id="@+id/inputData_okButton"

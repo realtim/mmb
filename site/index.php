@@ -34,26 +34,33 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 	// Инициализируем права доступа пользователя
 	$SessionId = mmb_validate($_COOKIE, CMmb::CookieName, '');
 	$OldSessionId = $SessionId;
-	$RaidId = (int) mmb_validate($_REQUEST, 'RaidId', 0);
+	$RaidId = (int) mmb_validateInt($_REQUEST, 'RaidId', 0);
 	$TeamId = (int) mmb_validateInt($_REQUEST, 'TeamId', 0);
-
-
+	$DistanceId = (int) mmb_validateInt($_REQUEST, 'DistanceId', 0);
+	// 21/03/2016  получаем $UserId из сессии.
+	// эта инициализация сейчас перекрываетвя в GetPrivileges, но есдли в будующем захочется отказаться от GetPrivileges
+	// то полезно пользователя определять здесь и остальные необходимые операции тоже здесь делать
+	$UserId = (int) CSql::userId($SessionId);
+	// обновляем данные сессии (удаляем закрытые, пишем в cookies	
+	UpdateSession($SessionId);
+	
          // 27/12/2013 Заменил на сортировку по ключу
          // Находим последний ММБ, если ММБ не указан, чтобы определить привелегии
         if (empty($RaidId))
 	{
-  	     GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
-  	     $orderBy = $Administrator ? 'raid_id' : 'raid_registrationenddate';
+  	     //GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
+
+  	     $orderBy = CSql::userAdmin($UserId) ? 'raid_id' : 'raid_registrationenddate';
   	     $sql = "select raid_id
 		       from Raids
 		       order by $orderBy desc
 		       LIMIT 0,1 ";
-
 	     $RaidId = CSql::singleValue($sql, 'raid_id');
         }
 	// Конец определения ММБ
 
+	// 21/03/2016 хочется потихоньку перетащить всю существенную часть из GetPrivileges  и убрать этот вызов
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
 	// Инициализуем переменные сессии, если они отсутствуют
@@ -77,14 +84,14 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 		$action = "ViewRaidFilesPage";
 	else if (isset($_GET['links']))
 		$action = "ViewUsersLinksPage";
+	else if (isset($_GET['changepasswordsessionid']))
+		$action = "sendpasswordafterrequest";
 	else if (mmb_validateInt($_GET, 'RaidId', '') !== false)        // должно идти предпоследним
 		$action = "ViewRaidTeams";
 	else
 		$action = "";
 
 
-        //Не знаю, относится ли дистанция к переменным сессии, но инициализацию делаем
-	$DistanceId = mmb_validateInt($_REQUEST, 'DistanceId', 0);
 
 $tmAction = CMmbLogger::addInterval('before action', $tmSt);
 	if ($action == "") 
@@ -103,8 +110,14 @@ $tmAction = CMmbLogger::addInterval('before action', $tmSt);
 		include ("useraction.php");
 		// Если у нас новая сессия после логина, логаута или
 		// прихода по ссылке - заново определяем права доступа
-		if ($SessionId <> $OldSessionId)
+		if ($SessionId <> $OldSessionId) {
+
+			$UserId = (int) CSql::userId($SessionId);
+			// обновляем данные сессии (удаляем закрытые, пишем в cookies	
+			UpdateSession($SessionId);
+			// 21/03/2016 хочется потихоньку перетащить всю существенную часть из GetPrivileges  и убрать этот вызов
 			GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
+		}
 
 	        // Обработчик событий, связанных с командой
 		include ("teamaction.php");
@@ -124,18 +137,25 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
     // 15,01,2012 Сбрасываем действие в самом конце, а не здесь 
     //$action = "";
 
-?><html>
- <head>
-  <title>ММБ</title>
-  <link rel="Stylesheet" type="text/css"  href="styles/mmb.css" />
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	// 17-02-2016 Пропсиал файлы в относительную папку
+	$FavIconFile = $MyLocation.'styles/mmb_favicon.png';
+	$CssFile = $MyLocation.'styles/mmb.css';
+	
+
+?>
+
+
+<html>
+	  <link rel="stylesheet" type="text/css"  href="<? echo $CssFile; ?>" />
+	  <link rel="icon" type="image/png" href="<? echo $FavIconFile; ?>" />
+	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
  </head>
 
 
 <?
  $mmbLogos = array();
- $Sql = "select raid_logolink, r.raid_id, COALESCE(f.raidfile_name, '') as logo_file
+ $Sql = "select r.raid_id, COALESCE(f.raidfile_name, '') as logo_file
 		from Raids r
 		left outer join (
 			select raidfile_name, raid_id
@@ -147,16 +167,13 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
  $Result = MySqlQuery($Sql);
  while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
  { 
-	$link = $Row['raid_logolink'];
         // 08.12.2013 Ищем ссылку на логотип  
 	$LogoFile = trim($Row['logo_file']);
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
-                $link = $MyStoreHttpLink.$LogoFile;
-
-        //  Конец получения ссылки на информацию о старте
-
-        //print('LogoImgArr['.$Row['raid_id'].'] = new Image();'."\r\n");
+        {
+         $link = $MyStoreHttpLink.$LogoFile;
 	 $mmbLogos[] = "                {$Row['raid_id']}: '$link'";
+        }
  }
  mysql_free_result($Result);
  ?>

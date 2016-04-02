@@ -4,9 +4,13 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+	// объявлена в UserAction
+	//	function UACanLinkEdit($pUserId, $raidId, $userId)
+
        // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении, 
         //но и при правке, если не былди заполнены поля при добавлении
 	 $UserCityPlaceHolder = 'Город';
+       	 $UserPhonePlaceHolder = 'Телефон';
        
 
 
@@ -27,6 +31,7 @@ if (!isset($MyPHPScript)) return;
 	      $UserBirthYear = (int)$_POST['UserBirthYear'];
 	      $UserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
 	      $UserCity = CMmbUI::toHtml($_POST['UserCity']);           // а что нам вообще пришло?
+	      $UserPhone = CMmbUI::toHtml($_POST['UserPhone']);           // а что нам вообще пришло?
               // 03/07/2014  Добавляем анонмиов
 	      $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');
 
@@ -37,6 +42,7 @@ if (!isset($MyPHPScript)) return;
 	      $UserBirthYear = 'Год рождения';
 	      $UserProhibitAdd = 0;
 	      $UserCity =  $UserCityPlaceHolder;
+	      $UserPhone =  $UserPhonePlaceHolder;
 	      $UserNoShow = 0;
 
              }
@@ -50,7 +56,7 @@ if (!isset($MyPHPScript)) return;
 	     $SaveButtonText = 'Зарегистрировать';
              // Кнопка "Сделать модератором" не выводится при добавлении пользователя
              $ModeratorButtonText = '';
-             // Кнопка "Объединить" не выводится при добавлении пользователя
+             // Кнопка "Запросить слияние" не выводится при добавлении пользователя
 	     $UnionButtonText = '';
 
          } else {
@@ -68,7 +74,8 @@ if (!isset($MyPHPScript)) return;
 		}
            
 		$sql = "select user_email, CASE WHEN COALESCE(u.user_noshow, 0) = 1 and user_id <> $UserId THEN '$Anonimus' ELSE u.user_name END as user_name,
-		         user_birthyear, user_prohibitadd, user_city, user_noshow from  Users u where user_id = $pUserId";
+		         user_birthyear, user_prohibitadd, user_city, user_phone, user_noshow, 
+		         user_allowsendchangeinfo, user_allowsendorgmessages from  Users u where user_id = $pUserId";
                 $row = CSql::singleRow($sql);
 
 	        // Если вернулись после ошибки переменные не нужно инициализировать
@@ -82,7 +89,10 @@ if (!isset($MyPHPScript)) return;
 		  $UserBirthYear = (int)$_POST['UserBirthYear'];
 		  $UserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
 		  $UserCity = $_POST['UserCity'];
+		  $UserPhone = $_POST['UserPhone'];
 		  $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');
+		  $UserAllowChangeInfo =  mmb_isOn($_POST, 'UserAllowChangeInfo');
+		  $UserAllowOrgMessages =  mmb_isOn($_POST, 'UserAllowOrgMessages');
 
                 } else {
 
@@ -91,18 +101,22 @@ if (!isset($MyPHPScript)) return;
 		  $UserBirthYear = (int)$row['user_birthyear'];  
 		  $UserProhibitAdd = $row['user_prohibitadd'];  
 		  $UserCity = $row['user_city'];
+		  $UserPhone = $row['user_phone'];
 		  $UserNoShow = $row['user_noshow'];  
+		  $UserAllowChangeInfo = (int)$row['user_allowsendchangeinfo'];  
+		  $UserAllowOrgMessages =  (int)$row['user_allowsendorgmessages'];  
 
                 }
 
 	         $UserName = CMmbUI::toHtml($UserName);
 	         $UserCity = CMmbUI::toHtml($UserCity);
+	         $UserPhone = CMmbUI::toHtml($UserPhone);
 
 	        $NextActionName = 'UserChangeData';
 		$AllowEdit = 0;
 		$SaveButtonText = 'Сохранить изменения';
 		$ModeratorButtonText = 'Сделать модератором';
-		$UnionButtonText = 'Объединить';
+		$UnionButtonText = 'Запросить слияние';
 		
 
                 if (($pUserId == $UserId) || $Administrator)
@@ -115,6 +129,7 @@ if (!isset($MyPHPScript)) return;
 
          // Заменяем пустое значение на подсказку
 	 if (empty($UserCity)) {$UserCity =  $UserCityPlaceHolder; } 
+	 if (empty($UserPhone)) {$UserPhone =  $UserPhonePlaceHolder; } 
 
 	 
          if ($AllowEdit == 0) 
@@ -302,7 +317,12 @@ if (!isset($MyPHPScript)) return;
 	        .($UserCity <> $UserCityPlaceHolder ? '' : CMmbUI::placeholder($UserCityPlaceHolder))
 	        .' title = "Город"></td></tr>'."\r\n");
 
-
+	 if ($AllowEdit == 1)
+        {
+         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserPhone" size="20" value="'.$UserPhone.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+	        .($UserPhone <> $UserPhonePlaceHolder ? '' : CMmbUI::placeholder($UserPhonePlaceHolder))
+	        .' title = "Телефон"></td></tr>'."\r\n");
+        }
 //                 '.( $UserCity <> $UserCityPlaceHolder ? '' : 'onclick = "javascript: this.value=\'\';" onblur = "javascript: this.value=\''.$UserCityPlaceHolder.'\';"').'
 
          print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserProhibitAdd" '.(($UserProhibitAdd == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
@@ -311,6 +331,14 @@ if (!isset($MyPHPScript)) return;
           // 03/07/2014 
          print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserNoShow" '.(($UserNoShow == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
 	        title = "Вместо ФИО будет выводится текст: \''.$Anonimus.'\' Исключения: 1) Вы сами, модератор и администратор увидят в карточке пользователя ФИО. 2) При запросе на объединение с другим пользователем, инициатором которого являетесь Вы, ему будет открываться Ваше ФИО в журнале объединений и письме, чтобы он знал, кто пытается его присоединить к себе." /> Не показывать моё ФИО в результатах, рейтингах и т.п.</td></tr>'."\r\n");
+
+
+         print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserAllowChangeInfo" '.(($UserAllowChangeInfo == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+	        title = "На Ваш email будет отправляться письмо, когда вносятся изменения в карточку пользователя или в данные команды, участником которой Вы являетесь." />Получать информацию при изменении данных пользователя или команды. <br/><i>Не рекомендуется снимать этот флаг</i></td></tr>'."\r\n");
+
+         print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserAllowOrgMessages" '.(($UserAllowOrgMessages == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+	        title = "На Ваш email будет отправляться письмо, когда открывается регистрация или когда организаторы осуществляют рассылку важной информации." />Получать информацию об открытии информации, о публикации результатов и т.п. <br/><i>Если флаг не установлен, то информационное письмо может прийти только в случае экстренной рассылки.</i></td></tr>'."\r\n");
+
 
 	 if (($AllowEdit == 1) and  ($viewmode <> 'Add'))
         {
@@ -358,7 +386,7 @@ if (!isset($MyPHPScript)) return;
 
 	 if (CanRequestUserUnion($Administrator, $UserId, $pUserId)) {
 
-	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите оставить запрос на объединение с этим пользователем? \')) { MakeUnionRequest(); }"  name="UnionButton" value="'.$UnionButtonText.'" tabindex = "'.(++$TabIndex).'">';
+	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите оставить запрос на слияние этого пользователя с Вашей учетной записью? \')) { MakeUnionRequest(); }"  name="UnionButton" value="'.$UnionButtonText.'" tabindex = "'.(++$TabIndex).'">';
 	 
 	 }
 
@@ -366,7 +394,7 @@ if (!isset($MyPHPScript)) return;
 	 if (trim($ModeratorUnionString) <> '') {
 	    print('<tr><td class = "input"  style =  "padding-top: 10px;">'.$ModeratorUnionString.'</td></tr>'."\r\n");
 	 }
-	 // Конец проверки, что есть кнопка сделать модератором или объединить
+	 // Конец проверки, что есть кнопка сделать модератором или запросить слияние
 
          print('</tr>'."\r\n"); 
 
@@ -511,7 +539,7 @@ if (!isset($MyPHPScript)) return;
 
 
           // 04.07.2014  Блок ссылок на впечатления.
-	  if ($viewmode <> 'Add' and $AllowEdit == 1)
+	  if ($viewmode <> 'Add' and  UACanLinkEdit($pUserId, $RaidId, $UserId) == 1)
 	  {
 		// Выводим спсиок впечатлений, которые относятся к данному пользователю 
 	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Впечатления:</div>'."\r\n");
@@ -524,7 +552,7 @@ if (!isset($MyPHPScript)) return;
 		
                  
 		$sql = "select ul.userlink_id, ul.userlink_name, lt.linktype_name,
-		               ul.userlink_url, r.raid_name 
+		               ul.userlink_url, r.raid_name, lt.linktype_textonly 
 		        from  UserLinks ul
 			      inner join LinkTypes lt  on ul.linktype_id = lt.linktype_id
 			      inner join Raids r on ul.raid_id = r.raid_id 
@@ -537,7 +565,7 @@ if (!isset($MyPHPScript)) return;
 		{
 
                   $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : CMmbUI::toHtml($Row['userlink_name']);
-		  print('<div class="team_res">'.$Row['raid_name'].' '.$Row['linktype_name'].' <a href = "'.$Row['userlink_url'].'"
+		  print('<div class="team_res">'.$Row['raid_name'].' '.$Row['linktype_name'].' <a href = "'.CMmbUI::toHtml($Row['userlink_url']).'"
 		          title = "'.CMmbUI::toHtml($Row['userlink_name']).'">'.$Label.'</a>'."\r\n");
                   print('<input type="button" style = "margin-left: 20px;" onClick = "javascript: if (confirm(\'Вы уверены, что хотите удалить впечатление ? \')) {DelLink('.$Row['userlink_id'].');}"  name="DelLinkButton" value="Удалить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                   print('</div>'."\r\n");
@@ -555,7 +583,14 @@ if (!isset($MyPHPScript)) return;
 
 		// Показываем выпадающий список ММБ
 		print('<select name="LinkRaidId"  tabindex="'.(++$TabIndex).'">'."\n");
-		$sql = "select raid_id, raid_name from Raids order by raid_id  desc";
+		
+		$RaidCondition = '';
+		if (CSql::userModerator($UserId, $RaidId) == 1 and $UserId <> $pUserId)
+		{
+			$RaidCondition = "where raid_id = $RaidId";
+		}
+		
+		$sql = "select raid_id, raid_name from Raids $RaidCondition order by raid_id  desc";
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
 		{
@@ -567,12 +602,13 @@ if (!isset($MyPHPScript)) return;
 
 		// Показываем выпадающий список типов ссылок
 		print('<select name="LinkTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
-		$sql = "select linktype_id, linktype_name from LinkTypes where linktype_hide = 0  order by linktype_id ";
+		$sql = "select linktype_id, linktype_name, linktype_textonly from LinkTypes where linktype_hide = 0  order by linktype_order asc ";
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 			$linktypeselected = '';
-			print('<option value="'.$Row['linktype_id'].'" '.$linktypeselected.' >'.$Row['linktype_name']."</option>\n");
+			$LinkNameDisabled =  (empty($Row['linktype_textonly']) ? 'false' : 'true');
+			print('<option value="'.$Row['linktype_id'].'" '.$linktypeselected.'  onclick = "javascript:document.UserLinksForm.NewLinkName.disabled='.$LinkNameDisabled.';">'.$Row['linktype_name']."</option>\n");
 		}
 		mysql_free_result($Result);
 		print('</select>'."\n");
@@ -591,7 +627,10 @@ if (!isset($MyPHPScript)) return;
 
 	   }
 	   // Конец блока ссылок на впечатления
-	   
+	  
+	// оступ 
+	print('<div align = "left" style = "padding-top: 5px;"><br/></div>'."\r\n");
+
 	   
 ?>
 

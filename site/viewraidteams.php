@@ -370,25 +370,41 @@
 /*
 ============================= точки ===============================
 */
+// 06/11/2015 Закоментировал условие фильтрации по результатам, чтобы ускорить запрос
+// вместо этого просто фильтруем по типам  - не показываем только КП
+// если потом появятся новые типы точек - нужно проверить условие where
 
-        $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name
+        $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name,
+        		tlp1.teamscount, tlp2.teamuserscount
                 from  LevelPoints lp
-                      inner join
-				      (
-				       select tlp.levelpoint_id
-				       from TeamLevelPoints tlp
-				            inner join Teams t
-				            on tlp.team_id = t.team_id
-				      		inner join Distances d
-				      		on t.distance_id = d.distance_id
-					   where raid_id = $RaidId and $DistanceCondition
-					         and  TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_duration, 0)) <> 0
-					   group by tlp.levelpoint_id
-					  ) a
-					  on lp.levelpoint_id = a.levelpoint_id
- 		      	 	  inner join Distances d
-				      on lp.distance_id = d.distance_id
-				order by lp.levelpoint_order ";
+ 	  		inner join Distances d
+			on lp.distance_id = d.distance_id
+			left outer join
+			     (select tlp.levelpoint_id, count(t.team_id) as teamscount
+			     from TeamLevelPoints tlp
+			          inner join Teams t on t.team_id = tlp.team_id
+				  inner join Distances d on t.distance_id = d.distance_id
+			     where d.raid_id = $RaidId and $DistanceCondition
+			     		and t.team_hide = 0
+			     		and t.team_outofrange = 0
+			     group by tlp.levelpoint_id
+			     ) tlp1
+		     	on lp.levelpoint_id = tlp1.levelpoint_id
+		     	left outer join
+		     		(select tlp.levelpoint_id, count(tu.teamuser_id) as teamuserscount
+		     		from TeamLevelPoints tlp
+			     		inner join Teams t on t.team_id = tlp.team_id
+				        inner join TeamUsers tu on t.team_id = tu.team_id
+					inner join Distances d on t.distance_id = d.distance_id
+			        where d.raid_id = $RaidId and $DistanceCondition
+			     		and t.team_hide = 0
+			     		and t.team_outofrange = 0
+			     		and tu.teamuser_hide = 0
+				group by tlp.levelpoint_id
+			     	) tlp2
+		     	on lp.levelpoint_id = tlp2.levelpoint_id					  
+		where d.raid_id = $RaidId and $DistanceCondition and lp.pointtype_id <> 5
+		order by lp.levelpoint_order ";
 
 	//echo 'sql '.$sql;
 	$Result = MySqlQuery($sql);
@@ -396,14 +412,14 @@
 	print('<select name="LevelPointId" style = "margin-left: 10px; margin-right: 5px;" 
                        onchange = "LevelPointIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
         $levelpointselected =  (0 == $_REQUEST['LevelPointId'] ? 'selected' : '');
-	print("<option value = '0' $levelpointselected>точку (КП)</option>\r\n");
+	print("<option value = '0' $levelpointselected>точку</option>\r\n");
 
 	if (!isset($_REQUEST['LevelPointId'])) $_REQUEST['LevelPointId'] = "";
 
         while ($Row = mysql_fetch_assoc($Result))
 	{
 		$levelpointselected = ($Row['levelpoint_id'] == $_REQUEST['LevelPointId']  ? 'selected' : '');
-		print("<option value = '{$Row['levelpoint_id']}' $levelpointselected>{$Row['distance_name']} {$Row['levelpoint_name']}</option>\r\n");
+		print("<option value = '{$Row['levelpoint_id']}' $levelpointselected>{$Row['distance_name']} {$Row['levelpoint_name']} ({$Row['teamscount']}/{$Row['teamuserscount']})</option>\r\n");
 	}
 	print('</select>'."\r\n");  
 	mysql_free_result($Result);		
@@ -434,7 +450,7 @@
     // Информация о дистанции(ях)
     print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");
 
-    $sql = "select  d.distance_name, d.distance_data
+    $sql = "select  d.distance_name, d.distance_data, d.distance_id
             from Distances d
             where d.distance_hide = 0 and  d.raid_id = $RaidId";
 				
@@ -443,12 +459,73 @@
     // теперь цикл обработки данных по дистанциям
     while ($Row = mysql_fetch_assoc($Result))
     {
+
+	$whereDistanceId = (int)$Row['distance_id'];
+
+	$sql = "  select count(team_id)  as inrangecount
+		 from  Teams t 
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 0
+		  ";
+    	$teamInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+	  
+    	$sql = "  select count(team_id)  as outofrangecount
+		 from  Teams t 
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 1
+		  ";
+    	$teamOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+
+    	$sql = "  select sum(COALESCE(team_mapscount, 0))  as inrangecount
+		 from  Teams t 
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 0
+		  ";
+    	$mapsInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+
+
+    	$sql = "  select sum(COALESCE(team_mapscount, 0))  as outofrangecount
+		 from  Teams t 
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and t.team_outofrange = 1
+		  ";
+    	$mapsOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+		  
+    	$sql = "  select count(tu.teamuser_id)   as inrangecount
+		 from  Teams t 
+		 	inner join  TeamUsers tu
+		        on t.team_id = tu.team_id
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and tu.teamuser_hide = 0
+		       and t.team_outofrange = 0
+		  ";
+    	$teamUserInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+
+    	$sql = "  select count(tu.teamuser_id)   as outofrangecount
+		 from  Teams t 
+		 	inner join  TeamUsers tu
+		        on t.team_id = tu.team_id
+		 where t.distance_id = $whereDistanceId
+		       and t.team_hide = 0
+		       and tu.teamuser_hide = 0
+		       and t.team_outofrange = 1
+		  ";
+    	$teamUserOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+
+    
+
        	print('<tr><td width="100">'.$Row['distance_name'].'</td>
         <td width="300">'.$Row['distance_data']."</td>\r\n");
 
         // Если идёт регистрацию время окончания выделяем жирным
         $bStyle = $RaidStage == 1 ? 'style="font-weight: bold;"': '';
         print("<td $bStyle>Регистрация до: $RaidRegisterEndDt</td>\r\n");
+        print("<td>команд: $teamInRangeCount/$teamOutOfRangeCount, карт: $mapsInRangeCount/$mapsOutOfRangeCount, участников: $teamUserInRangeCount/$teamUserOutOfRangeCount</td>\r\n");
 
 	if (!empty($RaidCloseDt))
 	{
@@ -494,7 +571,7 @@
 					       d.distance_name, d.distance_id,
 	                       TIME_FORMAT(tlp.teamlevelpoint_result, '%H:%i') as team_sresult,
 					       COALESCE(t.team_outofrange, 0) as  team_outofrange,
-					       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
+					       COALESCE(t.team_donelevelpoint, COALESCE(lp.levelpoint_name, '')) as levelpoint_name,
 					       COALESCE(t.team_comment, '') as team_comment /*,
 					       COALESCE(t.team_skippedlevelpoint, '') as team_skippedlevelpoint */
 					from  Teams t
@@ -512,7 +589,7 @@
 					       d.distance_name, d.distance_id,
 			               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 					       COALESCE(t.team_outofrange, 0) as  team_outofrange,
-					       COALESCE(lp.levelpoint_name, '') as levelpoint_name,
+					       COALESCE(t.team_donelevelpoint, COALESCE(lp.levelpoint_name, '')) as levelpoint_name,
 				    	   COALESCE(t.team_comment, '') as team_comment /*,
 						   COALESCE(t.team_skippedlevelpoint, '') as team_skippedlevelpoint */
 					  from  Teams t
@@ -567,11 +644,14 @@
 	}
 
    	$prep = microtime(true);
-    $Result = MySqlQuery($sql);
-    $t2 = microtime(true);
+	$Result = MySqlQuery($sql);
+    	$t2 = microtime(true);
 
-    $TeamMembers  = GetAllTeamMembers($RaidId, $distanceId);
-    $allUsers = microtime(true) - $t2;
+    	$TeamMembers  = GetAllTeamMembers($RaidId, $distanceId);
+    	$allUsers = microtime(true) - $t2;
+    
+
+    	
 	
     $tdstyle = 'padding: 5px 0px 2px 5px;';
     $tdstyle = '';
@@ -585,20 +665,22 @@
 
 	if ($OrderType == 'Num') {
 
-			$ColumnWidth = 350;
-			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
+		$ColumnWidth = 350;
+		$ColumnSmallWidth = 50;
+			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
 		
 	} elseif ($OrderType == 'Place') {
 
-            $ColumnWidth = 350;
-			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
+        	$ColumnWidth = 350;
+		$ColumnSmallWidth = 50;
+			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Точка финиша</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Отсечки времени</td>'."\r\n");  
+                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
+                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Комментарий</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Не пройдены точки</td>'."\r\n");
 
@@ -607,12 +689,14 @@
 	
 	
             $ColumnWidth = 350;
-			print('<td width = "50" style = "'.$thstyle.'">Номер</td>'."\r\n");  
+	    $ColumnSmallWidth = 50;
+
+			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Точка финиша</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");  
+                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Отсечки времени</td>'."\r\n");  
+                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
+                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");  
                         print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Комментарий</td>'."\r\n");  
 
 		

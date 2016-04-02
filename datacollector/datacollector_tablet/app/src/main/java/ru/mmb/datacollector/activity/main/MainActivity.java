@@ -10,10 +10,9 @@ import android.widget.TextView;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.input.start.StartInputActivity;
-import ru.mmb.datacollector.activity.report.ResultsActivity;
+import ru.mmb.datacollector.activity.report.team.search.start.TeamSearchStartActivity;
 import ru.mmb.datacollector.activity.settings.SettingsActivity;
 import ru.mmb.datacollector.activity.transport.TransportInputActivity;
-import ru.mmb.datacollector.activity.transport.TransportReportActivity;
 import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.util.FillData;
 
@@ -27,11 +26,10 @@ public class MainActivity extends Activity {
     private TextView labUserId;
     private TextView labDeviceId;
     private TextView labCurrentRaidId;
-    private TextView labApplicationMode;
 
     private Button btnTransport;
     private Button btnInputData;
-    private Button btnResults;
+    private Button btnSearchTeam;
     private Button btnSettings;
 
     private Button btnGenerate;
@@ -52,17 +50,16 @@ public class MainActivity extends Activity {
         labUserId = (TextView) findViewById(R.id.main_userIDLabel);
         labDeviceId = (TextView) findViewById(R.id.main_deviceIDLabel);
         labCurrentRaidId = (TextView) findViewById(R.id.main_currentRaidIDLabel);
-        labApplicationMode = (TextView) findViewById(R.id.main_applicationModeLabel);
 
         btnTransport = (Button) findViewById(R.id.main_transportBtn);
         btnInputData = (Button) findViewById(R.id.main_inputDataBtn);
-        btnResults = (Button) findViewById(R.id.main_resultsBtn);
+        btnSearchTeam = (Button) findViewById(R.id.main_searchTeamBtn);
         btnSettings = (Button) findViewById(R.id.main_settingsBtn);
         btnGenerate = (Button) findViewById(R.id.main_generateBtn);
 
         btnTransport.setOnClickListener(new TransportButtonClickListener());
         btnInputData.setOnClickListener(new InputDataClickListener());
-        btnResults.setOnClickListener(new ResultsClickListener());
+        btnSearchTeam.setOnClickListener(new SearchTeamClickListener());
         btnSettings.setOnClickListener(new SettingsClickListener());
         btnGenerate.setOnClickListener(new GenerateClickListener());
 
@@ -90,16 +87,13 @@ public class MainActivity extends Activity {
         labDeviceId.setTextColor(currentState.getColor(this, currentState.isDeviceIdSelected()));
         labCurrentRaidId.setText(currentState.getCurrentRaidIDText(this));
         labCurrentRaidId.setTextColor(currentState.getColor(this, currentState.isCurrentRaidIdSelected()));
-        labApplicationMode.setText(currentState.getApplicationModeText(this));
-        // Application mode is always defined. It is INPUT by default.
-        labApplicationMode.setTextColor(currentState.getColor(this, true));
     }
 
     private void refreshButtons() {
         boolean enabled = currentState.isEnabled();
         btnTransport.setEnabled(enabled);
-        btnInputData.setEnabled(enabled && Settings.getInstance().isApplicationModeInput());
-        btnResults.setEnabled(enabled && Settings.getInstance().isApplicationModeReport());
+        btnInputData.setEnabled(enabled);
+        btnSearchTeam.setEnabled(enabled);
     }
 
     @Override
@@ -119,13 +113,8 @@ public class MainActivity extends Activity {
     private class TransportButtonClickListener implements OnClickListener {
         @Override
         public void onClick(View v) {
-            if (Settings.getInstance().isApplicationModeInput()) {
-                Intent intent = new Intent(getApplicationContext(), TransportInputActivity.class);
-                startActivity(intent);
-            } else {
-                Intent intent = new Intent(getApplicationContext(), TransportReportActivity.class);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(getApplicationContext(), TransportInputActivity.class);
+            startActivity(intent);
         }
     }
 
@@ -137,10 +126,10 @@ public class MainActivity extends Activity {
         }
     }
 
-    private class ResultsClickListener implements OnClickListener {
+    private class SearchTeamClickListener implements OnClickListener {
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(getApplicationContext(), ResultsActivity.class);
+            Intent intent = new Intent(getApplicationContext(), TeamSearchStartActivity.class);
             startActivity(intent);
         }
     }
@@ -153,12 +142,10 @@ public class MainActivity extends Activity {
         }
     }
 
-	private class GenerateClickListener implements OnClickListener
-    {
-		@Override
-		public void onClick(View v)
-		{
-			FillData.execute();
-		}
-	}
+    private class GenerateClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+            FillData.execute();
+        }
+    }
 }

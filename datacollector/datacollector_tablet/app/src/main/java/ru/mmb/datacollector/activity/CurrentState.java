@@ -1,100 +1,89 @@
 package ru.mmb.datacollector.activity;
 
-import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_DEFAULT_ACTIVITY;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-public abstract class CurrentState
-{
-	private final List<StateChangeListener> listeners = new ArrayList<StateChangeListener>();
+import java.util.ArrayList;
+import java.util.List;
 
-	private final String prefix;
+import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_DEFAULT_ACTIVITY;
 
-	public CurrentState(String prefix)
-	{
-		this.prefix = prefix;
-	}
+public abstract class CurrentState {
+    private final List<StateChangeListener> listeners = new ArrayList<StateChangeListener>();
 
-	public abstract void save(Bundle savedInstanceState);
+    private final String prefix;
+    private Context context;
 
-	public abstract void load(Bundle savedInstanceState);
+    public CurrentState(String prefix) {
+        this.prefix = prefix;
+    }
 
-	protected abstract void update(boolean fromSavedBundle);
+    public abstract void save(Bundle savedInstanceState);
 
-	public void prepareStartActivityIntent(Intent intent)
-	{
-		prepareStartActivityIntent(intent, REQUEST_CODE_DEFAULT_ACTIVITY);
-	}
+    public abstract void load(Bundle savedInstanceState);
 
-	public void prepareStartActivityIntent(Intent intent, int activityRequestId)
-	{
-		// default do nothing
-		// override in subclasses if needed
-	}
+    protected abstract void update(boolean fromSavedBundle);
 
-	public void loadFromIntent(Intent data)
-	{
-		Bundle extras = data.getExtras();
-		if (extras == null) return;
-		loadFromExtrasBundle(extras);
-	}
+    public void prepareStartActivityIntent(Intent intent) {
+        prepareStartActivityIntent(intent, REQUEST_CODE_DEFAULT_ACTIVITY);
+    }
 
-	protected void loadFromExtrasBundle(Bundle extras)
-	{
-		// default do nothing
-		// override in subclasses if needed
-	}
+    public void prepareStartActivityIntent(Intent intent, int activityRequestId) {
+        // default do nothing
+        // override in subclasses if needed
+    }
 
-	public void saveToSharedPreferences(SharedPreferences preferences)
-	{
-	}
+    public void loadFromIntent(Intent data) {
+        Bundle extras = data.getExtras();
+        if (extras == null) return;
+        loadFromExtrasBundle(extras);
+    }
 
-	public void loadFromSharedPreferences(SharedPreferences preferences)
-	{
-	}
+    protected void loadFromExtrasBundle(Bundle extras) {
+        // default do nothing
+        // override in subclasses if needed
+    }
 
-	public void addStateChangeListener(StateChangeListener listener)
-	{
-		if (!listeners.contains(listener)) listeners.add(listener);
-	}
+    public void saveToSharedPreferences(SharedPreferences preferences) {
+    }
 
-	public void removeStateChangeListener(StateChangeListener listener)
-	{
-		listeners.remove(listener);
-	}
+    public void loadFromSharedPreferences(SharedPreferences preferences) {
+    }
 
-	protected void fireStateChanged()
-	{
-		for (StateChangeListener listener : listeners)
-		{
-			listener.onStateChange();
-		}
-	}
+    public void addStateChangeListener(StateChangeListener listener) {
+        if (!listeners.contains(listener)) listeners.add(listener);
+    }
 
-	public String getPrefix()
-	{
-		return prefix;
-	}
+    public void removeStateChangeListener(StateChangeListener listener) {
+        listeners.remove(listener);
+    }
 
-	public void initialize(Activity activity, Bundle savedInstanceState)
-	{
-		if (savedInstanceState == null)
-		{
-			loadFromSharedPreferences(activity.getPreferences(Context.MODE_PRIVATE));
-			loadFromIntent(activity.getIntent());
-			update(Constants.UPDATE_FOR_FIRST_LAUNCH);
-		}
-		else
-		{
-			load(savedInstanceState);
-			update(Constants.UPDATE_FROM_SAVED_BUNDLE);
-		}
-	}
+    protected void fireStateChanged() {
+        for (StateChangeListener listener : listeners) {
+            listener.onStateChange();
+        }
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
+    public void initialize(Activity activity, Bundle savedInstanceState) {
+        context = activity;
+        if (savedInstanceState == null) {
+            loadFromSharedPreferences(activity.getPreferences(Context.MODE_PRIVATE));
+            loadFromIntent(activity.getIntent());
+            update(Constants.UPDATE_FOR_FIRST_LAUNCH);
+        } else {
+            load(savedInstanceState);
+            update(Constants.UPDATE_FROM_SAVED_BUNDLE);
+        }
+    }
 }

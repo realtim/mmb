@@ -184,7 +184,7 @@ elseif ($action == 'FindRaidErrors')
 	}
 	if (!$Administrator && !$Moderator) return;
 
-	RecalcErrors($RaidId, 0);
+	$total_errors = FindErrors($RaidId, 0);
 
 /*
 	$n_Errors = 0;
@@ -272,7 +272,56 @@ elseif ($action == 'RecalcRaidRank')
 	$Result = 0;
 	$Result =  RecalcTeamUsersRank($RaidId); 
 
-	CMmb::setShortResult('Рейтинг участников марш-броска пересчитан', 'ViewAdminDataPage');
+	CMmb::setShortResult('Рейтинг участников марш-броска пересчитан, найдено '.$total_errors.' ошибок', 'ViewAdminDataPage');
+}
+// =============== Рассылка всем участникам ММБ ===================
+elseif ($action == 'SendMessageForAll')
+{
+	if ($RaidId <= 0)
+	{
+		CMmb::setShortResult('Марш-бросок не найден', '');
+		return;
+	}
+
+	// рассылать всем может только администратор
+	if (!$Administrator) return;
+
+        CMmb::setViews('ViewAdminDataPage', '');
+
+             $pText = $_POST['MessageText'];
+             $pSubject = $_POST['MessageSubject'];
+             $pSendType = (int)$_POST['SendForAllTypeId'];
+
+	     if (empty($pSubject) or trim($pSubject) == 'Тема рассылки')
+	     {
+		CMmb::setError('Укажите тему сообщения.', $view, '');
+                return; 
+	     }
+
+
+	     if (empty($pText) or trim($pText) == 'Текст сообщения')
+	     {
+		CMmb::setError('Укажите текст сообщения.', $view, '');
+                return; 
+	     }
+
+	     if (empty($pSendType) or $pSendType == 0)
+	     {
+		CMmb::setError('Укажите тип рассылки.', $view, '');
+                return; 
+	     }
+
+	$Result = 0;
+
+	$Result = SendMailForAll($RaidId, $pSubject, $pText, $pSendType);
+     
+        if ($Result == 1)
+        {
+		CMmb::setShortResult('Рассылка запущена', 'ViewAdminDataPage');
+        } else {
+        	CMmb::setError('Ошибка при отправке рассылки.', $view, '');
+                return; 
+        }
 }
 // =============== Никаких действий не требуется ==============================
 else
