@@ -72,8 +72,6 @@ class CMmb
 		$view = $newView;
 		$viewmode = $newViewMode;
 	}
-
-	
 };
 
 
@@ -81,7 +79,7 @@ class CMmb
  {
  // Можно передавать соединение по ссылке &$ConnectionId  MySqlQuery($SqlString,&$ConnectionId, $SessionId,$NonSecure);
  //
- // вызов  MySqlQuety('...',&$ConnectionId, ...);
+ // вызов  MySqlQuery('...',&$ConnectionId, ...);
 
   // echo $ConnectionId;
 
@@ -124,12 +122,17 @@ class CSql {
 		return self::$connection;
 	}
 
+	public static function quote($str)
+	{
+		return mysql_real_escape_string($str);
+	}
+
 	// закрывает переданное соединение. При вызове без параметра -- закрывает общее.
 	public static function closeConnection($conn = null)
 	{
 		if ($conn !== null)
 		{
-			mysql_close(self::$connection);
+			mysql_close($conn);
 			return;	
 		}
 		
@@ -151,10 +154,7 @@ class CSql {
 
 		// Ошибка соединения
 		if ($connection <= 0)
-		{
-			echo mysql_error();
-			die();
-		}
+			self::dieOnSqlError(null, 'createConnection', 'mysql_connect: ', mysql_error());
 
 		//  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
 		//  устанавливаем временную зону
@@ -169,13 +169,20 @@ class CSql {
 
 		if (!$rs)
 		{
+			$err = mysql_error();
 			self::closeConnection($connection);
-			echo mysql_error();
-			die();
+			self::dieOnSqlError(null, 'createConnection', "mysql_select_db '$DBName'", $err);
 		}
 		CMmbLogger::addInterval('getConnection', $t1);
 		
 		return $connection;
+	}
+
+	public static function dieOnSqlError($user, $op, $message, $err)
+	{
+		CMmbLogger::sc($user, $op, $message . " error: $err");
+		echo $err;
+		die();
 	}
 
 	public static function singleRow($query)
@@ -641,7 +648,7 @@ class CSql {
         elseif ($sendingType == 3)
         {
 
-		// информаия об открытии регистрации или общая рассылка по всем поьзователям вне ММБ
+		// информаия об открытии регистрации или общая рассылка по всем пользователям вне ММБ
 	     $sql = "  select u.user_id, u.user_name, u.user_email 
              		from  Users u
              		where u.user_hide = 0
@@ -3319,6 +3326,12 @@ class CMmbLogger
 	
 	protected static $sqlConn = null;
 
+	const LogInfo = 	'info';
+	const LogTrace = 	'trace';
+	const LogDebug = 	'debug';
+	const LogError = 	'error';
+	const LogCritical = 'critical';
+
 	public static function enable($on)
 	{
 		self::$enabled = ($on == true) ? true : false;
@@ -3349,6 +3362,43 @@ class CMmbLogger
 
 		return $res;
 	}
+
+	public static function i($user, $operation, $message)
+	{
+		self::addLogRecord($user, self::LogInfo, $operation, $message);
+	}
+	public static function t($user, $operation, $message)
+	{
+		self::addLogRecord($user, self::LogTrace, $operation, $message);
+	}
+	public static function d($user, $operation, $message)
+	{
+		self::addLogRecord($user, self::LogDebug, $operation, $message);
+	}
+	public static function e($user, $operation, $message)
+	{
+		self::addLogRecord($user, self::LogError, $operation, $message);
+	}
+	public static function c($user, $operation, $message)
+	{
+		self::addLogRecord($user, self::LogCritical, $operation, $message);
+	}
+	
+	// super critical use, when no sql connection given 
+	public static function sc($user, $operation, $message)
+	{
+		if ($user === null)
+			$user = '<неизвестен>';
+		if ($operation === null)
+			$operation = '<не указана>';
+		if ($message === null)
+			$message = '<неизвестна>';
+		
+		$msg = "Критическя ошибка!\r\n\r\nid пользователя: $user\r\n"
+			."Операция: $operation\r\n"
+			."Текст ошибки: $message\r\n";
+		SendMail(trim('mmbsite@googlegroups.com'),  $msg, 'Админы и программисты',  'Критическая ошибка на сайте');
+	}
 	
 	protected static function getConnection()
 	{
@@ -3356,6 +3406,31 @@ class CMmbLogger
 			self::$sqlConn = CSql::createConnection();
 		
 		return self::$sqlConn;
+	}
+	
+	private static function addLogRecord($user, $level, $operation, $message)
+	{
+		$conn = self::getConnection();
+
+		// todo поддержка minLogLevel
+
+		$uid = ($user == null || !is_numeric($user)) ? 'null' : $user;
+
+		$qOperation = $operation == null ? 'null' : CSql::quote($operation);
+		$qMessage = $message == null ? 'null' : CSql::quote($message);
+
+		$query = "insert into mmb_logs (level, user_id, operation, message, stamp)
+                values ($level, $uid, $qOperation, $qMessage, UTC_TIMESTAMP)";
+
+		$rs = mysql_query($query, $conn);	// потому что надо работать со своим соединением :(
+		if (!$rs)
+		{
+			$err = mysql_error($conn);
+//			self::sc($user, $operation, $message);		// sql не работает -- кого волнует исходное сообщение!
+			CSql::closeConnection($conn);
+			self::$sqlConn = null;
+			CSql::dieOnSqlError(null, 'addLogRecord', "adding record: '$query'", $err);
+		}
 	}
 }
 
