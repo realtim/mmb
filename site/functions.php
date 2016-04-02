@@ -92,7 +92,9 @@ class CMmb
 
 	if (!$rs)
 	{
-		echo mysql_error();
+		$err = mysql_error();
+		CMmbLogger::e(null, 'MySqlQuery', "sql error: '$SqlString' \r\non query: '$SqlString'");
+		echo $err;
 		CSql::closeConnection();
 		die();
 		return -1;
@@ -180,7 +182,7 @@ class CSql {
 
 	public static function dieOnSqlError($user, $op, $message, $err)
 	{
-		CMmbLogger::sc($user, $op, $message . " error: $err");
+		CMmbLogger::fatal($user, $op, $message . " error: $err");
 		echo $err;
 		die();
 	}
@@ -198,6 +200,8 @@ class CSql {
 		$result = MySqlQuery($query);
 		$row = mysql_fetch_assoc($result);
 		mysql_free_result($result);
+		if (!isset($row[$key]))
+			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist , query: '$query'");
 		return $row[$key];
 	}
 
@@ -3325,12 +3329,14 @@ class CMmbLogger
 	protected static $records = array();
 	
 	protected static $sqlConn = null;
+	protected static $minLevelCode = null;
+	protected static $fatalErrorMail = null;
 
-	const LogInfo = 	'info';
-	const LogTrace = 	'trace';
-	const LogDebug = 	'debug';
-	const LogError = 	'error';
-	const LogCritical = 'critical';
+	const Trace = 	'trace';
+	const Debug = 	'debug';
+	const Info = 	'info';
+	const Error = 	'error';
+	const Critical = 'critical';
 
 	public static function enable($on)
 	{
@@ -3363,63 +3369,72 @@ class CMmbLogger
 		return $res;
 	}
 
-	public static function i($user, $operation, $message)
-	{
-		self::addLogRecord($user, self::LogInfo, $operation, $message);
-	}
 	public static function t($user, $operation, $message)
 	{
-		self::addLogRecord($user, self::LogTrace, $operation, $message);
+		self::addLogRecord($user, self::Trace, $operation, $message);
 	}
 	public static function d($user, $operation, $message)
 	{
-		self::addLogRecord($user, self::LogDebug, $operation, $message);
+		self::addLogRecord($user, self::Debug, $operation, $message);
+	}
+	public static function i($user, $operation, $message)
+	{
+		self::addLogRecord($user, self::Info, $operation, $message);
 	}
 	public static function e($user, $operation, $message)
 	{
-		self::addLogRecord($user, self::LogError, $operation, $message);
+		self::addLogRecord($user, self::Error, $operation, $message);
 	}
 	public static function c($user, $operation, $message)
 	{
-		self::addLogRecord($user, self::LogCritical, $operation, $message);
+		self::addLogRecord($user, self::Critical, $operation, $message);
 	}
 	
-	// super critical use, when no sql connection given 
-	public static function sc($user, $operation, $message)
+	// fatal.  use, when no sql connection given
+	public static function fatal($user, $operation, $message)
 	{
+		$mail = self::$fatalErrorMail == null ? 'mmbsite@googlegroups.com' : self::$fatalErrorMail; 
+
 		if ($user === null)
 			$user = '<неизвестен>';
 		if ($operation === null)
 			$operation = '<не указана>';
 		if ($message === null)
 			$message = '<неизвестна>';
-		
-		$msg = "Критическя ошибка!\r\n\r\nid пользователя: $user\r\n"
+
+		$msg = "Критическая ошибка!\r\n\r\nid пользователя: $user\r\n"
 			."Операция: $operation\r\n"
 			."Текст ошибки: $message\r\n";
-		SendMail(trim('mmbsite@googlegroups.com'),  $msg, 'Админы и программисты',  'Критическая ошибка на сайте');
+		SendMail(trim($mail),  $msg, 'Админы и программисты',  'Критическая ошибка на сайте');
 	}
 	
 	protected static function getConnection()
 	{
 		if (self::$sqlConn === null)
+		{
+			include("settings.php");
+
 			self::$sqlConn = CSql::createConnection();
+			self::$minLevelCode = self::levelCode($MinLogLevel);
+			self::$fatalErrorMail = $FatalErrorMail;
+		}
 		
 		return self::$sqlConn;
 	}
 	
 	private static function addLogRecord($user, $level, $operation, $message)
 	{
+		if (self::levelCode($level) <  self::$minLevelCode)
+			return;
+		
 		$conn = self::getConnection();
-
-		// todo поддержка minLogLevel
 
 		$uid = ($user == null || !is_numeric($user)) ? 'null' : $user;
 
 		$qOperation = $operation == null ? 'null' : CSql::quote($operation);
 		$qMessage = $message == null ? 'null' : CSql::quote($message);
 
-		$query = "insert into mmb_logs (level, user_id, operation, message, stamp)
+		$query = "insert into Logs (logs_level, user_id, logs_operation, logs_message, logs_dt)
                 values ($level, $uid, $qOperation, $qMessage, UTC_TIMESTAMP)";
 
 		$rs = mysql_query($query, $conn);	// потому что надо работать со своим соединением :(
@@ -3430,6 +3445,19 @@ class CMmbLogger
 			CSql::closeConnection($conn);
 			self::$sqlConn = null;
 			CSql::dieOnSqlError(null, 'addLogRecord', "adding record: '$query'", $err);
+		}
+	}
+
+	private static function levelCode($level)
+	{
+		switch($level)
+		{
+			case self::Trace: return 0;
+			case self::Debug: return 1;
+			case self::Info: return 2;
+			case self::Error: return 3;
+			case self::Critical: return 4;
+			default: return -1;
 		}
 	}
 }
