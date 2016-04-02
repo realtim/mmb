@@ -89,7 +89,7 @@ class CMmb
 	$rs = mysql_query($SqlString, $ConnectionId);
 	CMmbLogger::addInterval('query', $t1);
 
-
+/*
 	if (!$rs)
 	{
 		$err = mysql_error();
@@ -99,6 +99,7 @@ class CMmb
 		die();
 		return -1;
 	}
+*/
 
 	// Если был insert - возвращаем последний id
 	if (strpos($SqlString, 'insert') !== false)
@@ -201,7 +202,7 @@ class CSql {
 		$row = mysql_fetch_assoc($result);
 		mysql_free_result($result);
 		if (!isset($row[$key]))
-			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist , query: '$query'");
+//			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist , query: '$query'");
 		return $row[$key];
 	}
 
