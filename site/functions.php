@@ -3425,6 +3425,7 @@ class CMmbLogger
 	
 	private static function addLogRecord($user, $level, $operation, $message)
 	{
+		return;
 		if (self::levelCode($level) <  self::$minLevelCode)
 			return;
 		
