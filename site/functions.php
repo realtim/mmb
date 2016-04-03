@@ -11,6 +11,7 @@ class CMmb
 
 	public static function setSessionCookie($sessionId)
 	{
+		echo "sess $sessionId";
 		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/', null, false, true);
 	}
 
