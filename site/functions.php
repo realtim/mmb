@@ -11,7 +11,7 @@ class CMmb
 
 	public static function setSessionCookie($sessionId)
 	{
-		echo "sess $sessionId";
+//		echo "sess $sessionId";
 		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/', null, false, true);
 	}
 
@@ -88,7 +88,7 @@ class CMmb
 
 	$t1 = microtime(true);
 	$rs = mysql_query($SqlString, $ConnectionId);
-	CMmbLogger::addInterval('query', $t1);
+//	CMmbLogger::addInterval('query', $t1);
 
 /*
 	if (!$rs)
@@ -177,7 +177,7 @@ class CSql {
 			self::closeConnection($connection);
 			self::dieOnSqlError(null, 'createConnection', "mysql_select_db '$DBName'", $err);
 		}
-		CMmbLogger::addInterval('getConnection', $t1);
+	//	CMmbLogger::addInterval('getConnection', $t1);
 		
 		return $connection;
 	}
