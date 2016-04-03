@@ -3424,10 +3424,12 @@ class CMmbLogger
 	
 	private static function addLogRecord($user, $level, $operation, $message)
 	{
+
+                $conn = self::getConnection();
 		if (self::levelCode($level) <  self::$minLevelCode)
 			return;
 		
-		$conn = self::getConnection();
+
 
 		$uid = ($user == null || !is_numeric($user)) ? 'null' : $user;
 
