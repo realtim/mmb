@@ -11,7 +11,6 @@ class CMmb
 
 	public static function setSessionCookie($sessionId)
 	{
-//		echo "sess $sessionId";
 		setcookie(CMmb::CookieName, $sessionId, time() + 60 * CMmb::SessionTimeout, '/', null, false, true);
 	}
 
@@ -88,7 +87,7 @@ class CMmb
 
 	$t1 = microtime(true);
 	$rs = mysql_query($SqlString, $ConnectionId);
-//	CMmbLogger::addInterval('query', $t1);
+	CMmbLogger::addInterval('query', $t1);
 
 /*
 	if (!$rs)
@@ -202,7 +201,7 @@ class CSql {
 		$result = MySqlQuery($query);
 		$row = mysql_fetch_assoc($result);
 		mysql_free_result($result);
-		if (!isset($row[$key]))
+//		if (!isset($row[$key]))
 //			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist , query: '$query'");
 		return $row[$key];
 	}
