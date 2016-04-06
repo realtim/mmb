@@ -200,8 +200,8 @@ class CSql {
 		$result = MySqlQuery($query);
 		$row = mysql_fetch_assoc($result);
 		mysql_free_result($result);
-		if (!isset($row[$key]))
-			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist , query: '$query'");
+		/*if (!isset($row[$key]))
+			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist , query: '$query'"); */
 		return $row[$key];
 	}
 
