@@ -89,17 +89,17 @@ class CMmb
 	$rs = mysql_query($SqlString, $ConnectionId);
 	CMmbLogger::addInterval('query', $t1);
 
-/*
+
 	if (!$rs)
 	{
 		$err = mysql_error();
-		CMmbLogger::e(null, 'MySqlQuery', "sql error: '$SqlString' \r\non query: '$SqlString'");
+		CMmbLogger::e(null, 'MySqlQuery', "sql error: '$err' \r\non query: '$SqlString'");
 		echo $err;
 		CSql::closeConnection();
 		die();
 		return -1;
 	}
-*/
+
 
 	// Если был insert - возвращаем последний id
 	if (strpos($SqlString, 'insert') !== false)
@@ -127,7 +127,7 @@ class CSql {
 
 	public static function quote($str)
 	{
-		return mysql_real_escape_string($str);
+		return "'" . mysql_real_escape_string($str) . "'";
 	}
 
 	// закрывает переданное соединение. При вызове без параметра -- закрывает общее.
@@ -196,13 +196,14 @@ class CSql {
 		return $row;
 	}
 
-	public static function singleValue($query, $key)
+	public static function singleValue($query, $key, $strict = true)
 	{
 		$result = MySqlQuery($query);
 		$row = mysql_fetch_assoc($result);
 		mysql_free_result($result);
-//		if (!isset($row[$key]))
-//			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist , query: '$query'");
+
+		if (!isset($row[$key]) && $strict == true)
+			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist , query: '$query'");
 		return $row[$key];
 	}
 
@@ -256,9 +257,9 @@ class CSql {
 	// 21.03.2016 Добавляю сервисные функции в этот класс, хотя может нужно  потом разбивать на  отдельеные классы
 	public static function userId($sessionId)
 	{
-		$sql = "select user_id  from   Sessions  where session_id = '$sessionId'";
+		$sql = "select user_id from Sessions where session_id = '$sessionId'";
 
-		return self::singleValue($sql, 'user_id');
+		return self::singleValue($sql, 'user_id', false);
 	}
 
 	// 21.03.2016 возвращает teamId команды для заданного пользователя и ММБ
@@ -3394,6 +3395,9 @@ class CMmbLogger
 	// fatal.  use, when no sql connection given
 	public static function fatal($user, $operation, $message)
 	{
+		if (self::$fatalErrorMail == null)
+			self::initVars();
+
 		$mail = self::$fatalErrorMail == null ? 'mmbsite@googlegroups.com' : self::$fatalErrorMail; 
 
 		if ($user === null)
@@ -3413,11 +3417,8 @@ class CMmbLogger
 	{
 		if (self::$sqlConn === null)
 		{
-			include("settings.php");
-
+			self::initVars();
 			self::$sqlConn = CSql::createConnection();
-			self::$minLevelCode = self::levelCode($MinLogLevel);
-			self::$fatalErrorMail = $FatalErrorMail;
 		}
 		
 		return self::$sqlConn;
@@ -3425,7 +3426,8 @@ class CMmbLogger
 	
 	private static function addLogRecord($user, $level, $operation, $message)
 	{
-		return;
+		if (self::$minLevelCode === null)
+			self::initVars();
 		if (self::levelCode($level) <  self::$minLevelCode)
 			return;
 		
@@ -3433,6 +3435,7 @@ class CMmbLogger
 
 		$uid = ($user == null || !is_numeric($user)) ? 'null' : $user;
 
+		$level = CSql::quote($level);
 		$qOperation = $operation == null ? 'null' : CSql::quote($operation);
 		$qMessage = $message == null ? 'null' : CSql::quote($message);
 
@@ -3443,10 +3446,10 @@ class CMmbLogger
 		if (!$rs)
 		{
 			$err = mysql_error($conn);
-//			self::sc($user, $operation, $message);		// sql не работает -- кого волнует исходное сообщение!
+//			self::fatal($user, $operation, $message);		// sql не работает -- кого волнует исходное сообщение!
 			CSql::closeConnection($conn);
 			self::$sqlConn = null;
-			CSql::dieOnSqlError(null, 'addLogRecord', "adding record: '$query'", $err);
+			CSql::dieOnSqlError($user, 'addLogRecord', "adding record: '$query'", $err);
 		}
 	}
 
@@ -3461,6 +3464,18 @@ class CMmbLogger
 			case self::Critical: return 4;
 			default: return -1;
 		}
+	}
+
+	// по факту это д.б. статический конструктор
+	private static function initVars()
+	{
+		if (self::$minLevelCode !== null && self::$fatalErrorMail !== null)
+			return;
+
+		include("settings.php");
+
+		self::$minLevelCode = self::levelCode($MinLogLevel);
+		self::$fatalErrorMail = $FatalErrorMail;
 	}
 }
 
