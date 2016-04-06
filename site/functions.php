@@ -93,8 +93,8 @@ class CMmb
 	if (!$rs)
 	{
 		$err = mysql_error();
-		CMmbLogger::e(null, 'MySqlQuery', "sql error: '$SqlString' \r\non query: '$SqlString'");
-		echo $err;
+		CMmbLogger::e(null, 'MySqlQuery', "sql error: '$err' \r\non query: '$SqlString'");
+		echo "my err" . $err;
 		CSql::closeConnection();
 		die();
 		return -1;
@@ -3393,6 +3393,9 @@ class CMmbLogger
 	// fatal.  use, when no sql connection given
 	public static function fatal($user, $operation, $message)
 	{
+		if (self::$fatalErrorMail == null)
+			self::initVars();
+
 		$mail = self::$fatalErrorMail == null ? 'mmbsite@googlegroups.com' : self::$fatalErrorMail; 
 
 		if ($user === null)
@@ -3412,11 +3415,8 @@ class CMmbLogger
 	{
 		if (self::$sqlConn === null)
 		{
-			include("settings.php");
-
+			self::initVars();
 			self::$sqlConn = CSql::createConnection();
-			self::$minLevelCode = self::levelCode($MinLogLevel);
-			self::$fatalErrorMail = $FatalErrorMail;
 		}
 		
 		return self::$sqlConn;
@@ -3424,12 +3424,12 @@ class CMmbLogger
 	
 	private static function addLogRecord($user, $level, $operation, $message)
 	{
-
-                $conn = self::getConnection();
+		if (self::$minLevelCode === null)
+			self::initVars();
 		if (self::levelCode($level) <  self::$minLevelCode)
 			return;
-		
 
+		$conn = self::getConnection();
 
 		$uid = ($user == null || !is_numeric($user)) ? 'null' : $user;
 
@@ -3448,6 +3448,10 @@ class CMmbLogger
 			self::$sqlConn = null;
 			CSql::dieOnSqlError(null, 'addLogRecord', "adding record: '$query'", $err);
 		}
+	}
+
+	private static function initVars()
+	{
 	}
 
 	private static function levelCode($level)
