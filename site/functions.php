@@ -196,12 +196,12 @@ class CSql {
 		return $row;
 	}
 
-	public static function singleValue($query, $key)
+	public static function singleValue($query, $key, $strict = true)
 	{
 		$result = MySqlQuery($query);
 		$row = mysql_fetch_assoc($result);
 		mysql_free_result($result);
-		if (!isset($row[$key]))
+		if (!isset($row[$key]) && $strict == true)
 			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist , query: '$query'");
 		return $row[$key];
 	}
@@ -258,7 +258,7 @@ class CSql {
 	{
 		$sql = "select user_id  from   Sessions  where session_id = '$sessionId'";
 
-		return self::singleValue($sql, 'user_id');
+		return self::singleValue($sql, 'user_id', false);
 	}
 
 	// 21.03.2016 возвращает teamId команды для заданного пользователя и ММБ
