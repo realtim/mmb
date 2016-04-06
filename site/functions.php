@@ -3434,6 +3434,7 @@ class CMmbLogger
 
 		$uid = ($user == null || !is_numeric($user)) ? 'null' : $user;
 
+		$level = CSql::quote($level);
 		$qOperation = $operation == null ? 'null' : CSql::quote($operation);
 		$qMessage = $message == null ? 'null' : CSql::quote($message);
 
@@ -3447,7 +3448,7 @@ class CMmbLogger
 //			self::sc($user, $operation, $message);		// sql не работает -- кого волнует исходное сообщение!
 			CSql::closeConnection($conn);
 			self::$sqlConn = null;
-			CSql::dieOnSqlError(null, 'addLogRecord', "adding record: '$query'", $err);
+			CSql::dieOnSqlError($user, 'addLogRecord', "adding record: '$query'", $err);
 		}
 	}
 
