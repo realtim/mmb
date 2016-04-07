@@ -266,7 +266,9 @@ if (!isset($MyPHPScript)) return;
               // Правка текущего пользователя
               
               	// флаги подписки передаем только при правке
-	           $pUserAllowChangeInfo = mmb_isOn($_POST, 'UserAllowChangeInfo');
+              	// пока убрал обработку флага ChangeInf
+              
+	     //      $pUserAllowChangeInfo = mmb_isOn($_POST, 'UserAllowChangeInfo');
         	   $pUserAllowOrgMessages = mmb_isOn($_POST, 'UserAllowOrgMessages');
 
 	   
@@ -282,13 +284,13 @@ if (!isset($MyPHPScript)) return;
 
 
                   // 03/07/2014  Добавляем признак анонимности (скрывать ФИО)
+//		                     user_allowsendchangeinfo = $pUserAllowChangeInfo,
 
 		$sql = "update  Users set   user_email = trim('$pUserEmail'),
 		                     user_name = trim('$pUserName'),
 		                     user_city = trim('$pUserCity'),
 		                     user_phone = trim('$pUserPhone'),
 		                     user_prohibitadd = $pUserProhibitAdd,
-		                     user_allowsendchangeinfo = $pUserAllowChangeInfo,
 		                     user_allowsendorgmessages = $pUserAllowOrgMessages,
 		                     user_noshow = $pUserNoShow,
 				     user_birthyear = $pUserBirthYear
