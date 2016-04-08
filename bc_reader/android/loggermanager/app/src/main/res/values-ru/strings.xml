@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">loggermanager</string>
+
+    <string name="main_select_logger_label">Logger</string>
+    <string name="main_no_logger_selected">&lt;Logger не выбран&gt;</string>
+    <string name="main_logger_id_label">Logger ID</string>
+    <string name="main_scanpoint_label">Scanpoint ID</string>
+    <string name="main_pattern_label">Pattern</string>
+    <string name="main_check_length_label">Check length</string>
+    <string name="main_only_digits_label">Only digits</string>
+    <string name="main_time_label">Time</string>
+    <string name="main_update_setting">&gt;</string>
+    <string name="main_select_save_dir">Директория сохранения</string>
+    <string name="main_no_save_dir">Директория сохранения не выбрана</string>
+    <string name="main_get_log">Получить log</string>
+    <string name="main_get_debug">Получить debug</string>
+    <string name="main_get_log_line">Получить строку log</string>
+    <string name="main_get_debug_line">Получить строку debug</string>
+    <string name="main_clear_device">Очистить все логи</string>
+</resources>

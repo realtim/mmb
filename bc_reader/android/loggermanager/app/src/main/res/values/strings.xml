@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">loggermanager</string>
+
+    <string name="main_select_logger_label">Logger</string>
+    <string name="main_no_logger_selected">&lt;No logger selected&gt;</string>
+    <string name="main_logger_id_label">Logger ID</string>
+    <string name="main_scanpoint_label">Scanpoint ID</string>
+    <string name="main_pattern_label">Pattern</string>
+    <string name="main_check_length_label">Check length</string>
+    <string name="main_only_digits_label">Only digits</string>
+    <string name="main_time_label">Time</string>
+    <string name="main_update_setting">&gt;</string>
+    <string name="main_select_save_dir">Select save dir</string>
+    <string name="main_no_save_dir">Save dir not defined</string>
+    <string name="main_get_log">Get log</string>
+    <string name="main_get_debug">Get debug</string>
+    <string name="main_get_log_line">Get log line</string>
+    <string name="main_get_debug_line">Get debug line</string>
+    <string name="main_clear_device">Clear device</string>
+</resources>
