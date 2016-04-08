@@ -8,6 +8,8 @@ import android.widget.ToggleButton;
 import android.widget.ViewFlipper;
 
 import ru.mmb.loggermanager.R;
+import ru.mmb.loggermanager.bluetooth.BluetoothAdapterEnableActivity;
+import ru.mmb.loggermanager.bluetooth.DeviceInfo;
 import ru.mmb.loggermanager.widget.ConsoleMessagesAppender;
 
 public class MainActivity extends BluetoothAdapterEnableActivity {

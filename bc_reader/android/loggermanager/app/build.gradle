@@ -8,9 +8,10 @@ android {
         applicationId "ru.mmb.loggermanager"
         minSdkVersion 10
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode 10001
+        versionName "1.0.001"
     }
+
     buildTypes {
         release {
             minifyEnabled false
