@@ -497,9 +497,10 @@ elseif ($action == 'HideTeamUser')
 	// Конец отправки писем об удалении
 
 
+	// 04.2016 вернул обратно
 	// 07.2015 Заменил на физическое удаление
-	$sql = "delete from TeamUsers where teamuser_id = $HideTeamUserId";
-	//$sql = "update TeamUsers set teamuser_hide = 1 where teamuser_id = ".$HideTeamUserId;
+ 	//$sql = "delete from TeamUsers where teamuser_id = $HideTeamUserId";
+	$sql = "update TeamUsers set teamuser_hide = 1, teamuser_changedt = NOW() where teamuser_id = ".$HideTeamUserId;
 	$rs = MySqlQuery($sql);
 
 
@@ -689,9 +690,10 @@ elseif ($action == 'HideTeam')
 	}
 	mysql_free_result($Result);
 
+	// 04.2016 вернул обновление
 	// 21/03/2016 заменил на удаление
-	//$sql = "update TeamUsers set teamuser_hide = 1 where team_id = $TeamId";
-	$sql = "delete from TeamUsers where team_id = $TeamId";
+	//$sql = "delete from TeamUsers where team_id = $TeamId";
+	$sql = "update TeamUsers set teamuser_hide = 1, teamuser_changedt = NOW() where team_id = $TeamId";
 	$rs = MySqlQuery($sql);
 	$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 	$rs = MySqlQuery($sql);
