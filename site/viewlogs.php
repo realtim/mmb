@@ -1,15 +1,13 @@
 <?php
 /**
  * Created by PhpStorm.
+ * User: Serge Titov
  * Date: 10.04.2016
  * Time: 17:46
  */
 
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
-
-
-// todo добавить проверку прав!!!
 
 print("<h3>Просмотр логов системы</h3>\n");
 
