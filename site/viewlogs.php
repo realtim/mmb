@@ -31,7 +31,7 @@ print("<h3>Просмотр логов системы</h3>\n");
         <option value="5000">5000</option>
     </select>
 
-    <input type="hidden" value="viewLogs" name="logs"/>
+    <input type="hidden" value="viewLogs" name="action"/>
     </div>
 
 
@@ -46,7 +46,7 @@ print("<h3>Просмотр логов системы</h3>\n");
 
     $sql = "select logs_id, logs_level, user_id, logs_operation, logs_message, logs_dt from Logs 
         where $cond 
-        order by id desc 
+        order by logs_id desc 
         limit $limit";
 
     $Result = MySqlQuery($sql);
