@@ -30,6 +30,8 @@ print("<h3>Просмотр логов системы</h3>\n");
         <option value="500">500</option>
         <option value="5000">5000</option>
     </select>
+
+    <input type="hidden" value="viewLogs" name="logs"/>
     </div>
 
 
@@ -39,9 +41,10 @@ print("<h3>Просмотр логов системы</h3>\n");
     $limit = mmb_validateInt($_REQUEST, 'num_rec', 100); 
     $cond = 'true';
 
-    print('<span>'.count($_REQUEST['levels']).'</span>');
+    if (isset($_REQUEST['levels']))
+        print('<span>'.count($_REQUEST['levels']).'</span>');
 
-    $sql = "select logs_id, logs_level, user_id, logs_operation, logs_message, logs_dt CURRENT_TIMESTAMP from Logs 
+    $sql = "select logs_id, logs_level, user_id, logs_operation, logs_message, logs_dt from Logs 
         where $cond 
         order by id desc 
         limit $limit";
