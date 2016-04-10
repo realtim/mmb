@@ -61,6 +61,9 @@ if (!isset($MyPHPScript)) return;
 		// Впечатления
 		include("viewuserslinks.php");
 	}
+	elseif ($view == "viewLogs") {			// просмотр логов
+		include("viewlogs.php");
+	}
 
 	// Очищаем переменную
 	$view = "";

@@ -76,6 +76,8 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 		$action = "TeamInfo";
 	else if (isset($_GET['rating']))
 		$action = "ViewRankPage";
+	else if (isset($_GET['logs']))
+		$action = "viewLogs";
 	else if (isset($_GET['badges']))
 		$action = "ViewAllBadgesPage";
 	else if (isset($_GET['amnesty']))
