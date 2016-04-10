@@ -54,7 +54,7 @@ print("<h3>Просмотр логов системы</h3>\n");
     print("<table class='std'>\n");
     print("<tr><th width='50'>id</th><th>Время</th><th>Уровень</th><th>Пользователь</th><th>Опреация</th><th>Сообщение</th><th>Длительность</th></tr>\n");
     while ($Row = mysql_fetch_assoc($Result))
-        print("<tr><td>{$Row['logs_id']}</td><td>" . date("Y-m-d hh:mm:ss", $Row['logs_dt']). "</td><td>{$Row['logs_level']}</td><td>{$Row['user_id']}</td><td>{$Row['logs_operation']}</td><td>{$Row['logs_message']}</td><td> </td></tr>\n"); // <td>{$Row['logs_duration']}</td>
+        print("<tr><td>{$Row['logs_id']}</td><td>" . $Row['logs_dt'] /*date("Y-m-d hh:mm:ss", $Row['logs_dt'])*/ . "</td><td>{$Row['logs_level']}</td><td>{$Row['user_id']}</td><td>{$Row['logs_operation']}</td><td>{$Row['logs_message']}</td><td> </td></tr>\n"); // <td>{$Row['logs_duration']}</td>
 
     mysql_free_result($Result);
     print("</table>");
