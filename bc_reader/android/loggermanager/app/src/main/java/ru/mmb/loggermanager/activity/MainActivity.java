@@ -2,6 +2,8 @@ package ru.mmb.loggermanager.activity;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -22,6 +24,13 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private ToggleButton panelsToggle;
     private ViewFlipper panelsFlipper;
 
+    private EditText loggerIdEdit;
+    private EditText scanpointEdit;
+    private EditText patternEdit;
+    private CheckBox checkLengthCheckBox;
+    private CheckBox onlyDigitsCheckBox;
+    private TextView loggerTimeLabel;
+
     private TextView consoleTextView;
     private ConsoleMessagesAppender consoleAppender;
 
@@ -36,6 +45,13 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         panelsFlipper = (ViewFlipper) findViewById(R.id.main_panelsFlipper);
 
         selectLoggerPanel = new SelectLoggerPanel(this);
+
+        loggerIdEdit = (EditText) findViewById(R.id.main_loggerIdEditText);
+        scanpointEdit = (EditText) findViewById(R.id.main_scanpointEditText);
+        patternEdit = (EditText) findViewById(R.id.main_patternEditText);
+        checkLengthCheckBox = (CheckBox) findViewById(R.id.main_checkLengthCheckBox);
+        onlyDigitsCheckBox = (CheckBox) findViewById(R.id.main_onlyDigitsCheckBox);
+        loggerTimeLabel = (TextView) findViewById(R.id.main_loggerTimeLabel);
 
         consoleTextView = (TextView) findViewById(R.id.main_consoleTextView);
         consoleAppender = new ConsoleMessagesAppender(consoleTextView);
@@ -55,20 +71,29 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }
 
         setControlsEnabled(false);
-        reloadSelectedLoggerSettings();
-        setControlsEnabled(true);
+        clearControls();
+        if (selectedLogger != null) {
+            reloadSelectedLoggerSettings();
+            setControlsEnabled(true);
+        }
+    }
+
+    private void clearControls() {
+        loggerIdEdit.setText("");
+        scanpointEdit.setText("");
+        patternEdit.setText("");
+        checkLengthCheckBox.setChecked(false);
+        onlyDigitsCheckBox.setChecked(false);
+        loggerTimeLabel.setText("");
     }
 
     private void reloadSelectedLoggerSettings() {
+
     }
 
     public void selectedLoggerChanged(DeviceInfo selectedLogger) {
-        if (selectedLogger == null) {
-            setControlsEnabled(false);
-        } else {
-            this.selectedLogger = selectedLogger;
-            refreshState();
-        }
+        this.selectedLogger = selectedLogger;
+        refreshState();
     }
 
     private void setControlsEnabled(boolean value) {
