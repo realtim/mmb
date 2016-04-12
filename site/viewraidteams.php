@@ -730,7 +730,7 @@
                         // Формируем колонку Участники			
 			if (!isset($TeamMembers[$Row['team_id']]))
 			{
-				print('<div class= "input">no member records in team '{$Row['team_id']}'</div>'."\r\n");
+				print('<div class= "input">no member records in team '.$Row['team_id'].'</div>'."\r\n");
 				//	die("</td></tr></table> no member records in team '{$Row['team_id']}'");
 			}
 			
