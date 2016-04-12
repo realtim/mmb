@@ -38,7 +38,7 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 	$TeamId = (int) mmb_validateInt($_REQUEST, 'TeamId', 0);
 	$DistanceId = (int) mmb_validateInt($_REQUEST, 'DistanceId', 0);
 	// 21/03/2016  получаем $UserId из сессии.
-	// эта инициализация сейчас перекрываетвя в GetPrivileges, но есдли в будующем захочется отказаться от GetPrivileges
+	// эта инициализация сейчас перекрываетcя в GetPrivileges, но если в будующем захочется отказаться от GetPrivileges
 	// то полезно пользователя определять здесь и остальные необходимые операции тоже здесь делать
 	$UserId = (int) CSql::userId($SessionId);
 	// обновляем данные сессии (удаляем закрытые, пишем в cookies	

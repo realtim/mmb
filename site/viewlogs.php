@@ -8,41 +8,53 @@
 
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
-
-print("<h3>Просмотр логов системы</h3>\n");
-
-
 ?>
+
+<h4>Просмотр логов</h4>
 <form name="LogsForm" action="<? echo $MyPHPScript; ?>" method="post">
-    <div>
-    Типы сообщений: <select name="levels"  multiple style="margin-left: 10px; margin-right: 5px;"
-            onchange="document.LogsForm.submit();">
-        <option value="trace">trace</option>
-        <option value="debug">debug</option>
-        <option value="info">info</option>
-        <option value="error">error</option>
-        <option value="critical">critical</option>
-        </select>
-
-    Количество: <select name="num_rec"  style="margin-left: 10px; margin-right: 5px;"
-            onchange="document.LogsForm.submit();">
-        <option value="100">100</option>
-        <option value="500">500</option>
-        <option value="5000">5000</option>
-    </select>
-
     <input type="hidden" value="viewLogs" name="action"/>
-    </div>
+    <input type="hidden" value="" id="testFatal" name="testFatal"/>
 
+    <div style="margin-bottom: 1ex;">
 
 <?php
 
+    // фильтруем типы ошибок и печатаем селект
+    $allLevels = array(CMmbLogger::Trace, CMmbLogger::Debug, CMmbLogger::Info, CMmbLogger::Error, CMmbLogger::Critical);
+    $levels = array();
+    foreach ($allLevels as $lev)
+        if (in_array($lev, @$_REQUEST['levels']))
+            $levels[] = $lev;
 
-    $limit = mmb_validateInt($_REQUEST, 'num_rec', 100); 
-    $cond = 'true';
+    print("Типы сообщений: <select name=\"levels\" size=\"5\" multiple style=\"margin-left: 10px; margin-right: 5px; vertical-align: top;\"
+            onchange=\"document.LogsForm.submit();\">");
+    foreach ($allLevels as $lev)
+    {
+        $sel = in_array($lev, $levels) ? ' selected="selected"' : '';
+        print("<option value=\"$lev\"$sel>$lev</option>\n");
+    }
+    print("</select>\n\n");
 
-    if (isset($_REQUEST['levels']))
-        print('<span>'.count($_REQUEST['levels']).'</span>');
+    // фильтруем кол-во ошибок и печатаем селект
+    $limit = mmb_validateInt($_REQUEST, 'num_rec', 100);
+    print('Количество: <select name="num_rec" style="margin-left: 10px; margin-right: 5px;" onchange="document.LogsForm.submit();">');
+    foreach (array(100, 500, 1000) as $lim)
+    {
+        $sel = $lim == $limit ? ' selected="selected"' : '';
+        print("<option value=\"$lim\"$sel>$lim</option>\n");
+    }
+    print("</select>\n");
+
+
+    //todo удалить!
+    print('<input type="button" value="Test fatal" onclick="$get(\'testFatal\').value = 1; document.LogsForm.submit();" style="margin-left:3em"/>');
+    if (mmb_validateInt($_REQUEST, 'testFatal', 0) == 1) 
+        CMmbLogger::fatal($UserId, 'viewLogs', "проверка доставки сообщений о фатальных ошибках");
+
+    print("</div>\n");
+
+
+    $cond = count($levels) == 0 ? 'true' : "logs_level in ('" . implode("', '", $levels) . "')";
 
     $sql = "select logs_id, logs_level, user_id, logs_operation, logs_message, logs_dt from Logs 
         where $cond 
@@ -52,7 +64,7 @@ print("<h3>Просмотр логов системы</h3>\n");
     $Result = MySqlQuery($sql);
 
     print("<table class='std'>\n");
-    print("<tr><th width='50'>id</th><th>Время</th><th>Уровень</th><th>Пользователь</th><th>Опреация</th><th>Сообщение</th><th>Длительность</th></tr>\n");
+    print("<tr class='gray head'><th width='50'>id</th><th>Время</th><th>Уровень</th><th>Пользователь</th><th>Операция</th><th>Сообщение</th><th>Длительность</th></tr>\n");
     while ($Row = mysql_fetch_assoc($Result))
         print("<tr><td>{$Row['logs_id']}</td><td>" . $Row['logs_dt'] /*date("Y-m-d hh:mm:ss", $Row['logs_dt'])*/ . "</td><td>{$Row['logs_level']}</td><td>{$Row['user_id']}</td><td>{$Row['logs_operation']}</td><td>{$Row['logs_message']}</td><td> </td></tr>\n"); // <td>{$Row['logs_duration']}</td>
 
