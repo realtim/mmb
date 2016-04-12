@@ -732,23 +732,24 @@
 			{
 				print('<div class= "input">no member records in team '.$Row['team_id'].'</div>'."\r\n");
 				//	die("</td></tr></table> no member records in team '{$Row['team_id']}'");
-			}
-			
-			foreach($TeamMembers[$Row['team_id']] as $UserRow)
-			{
-				print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'&RaidId=' . $RaidId . '">'.CMmbUI::toHtml($UserRow['user_name']).'</a> '.$UserRow['user_birthyear'].' '.CMmbUI::toHtml($UserRow['user_city'])."\r\n");
-
-				// Отметка невыхода на старт в предыдущем ММБ
-				if ($UserRow['teamuser_notstartraidid'] > 0)
-					print(' <a title="Участник был заявлен, но не вышел на старт в прошлый раз" href="#comment">(?!)</a> ');
-
-				// Неявку участников показываем, если загружены результаты
-				if ($CanViewResults)
+			} else {
+		
+				foreach($TeamMembers[$Row['team_id']] as $UserRow)
 				{
-					if ($UserRow['levelpoint_name'] <> '')
+					print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'&RaidId=' . $RaidId . '">'.CMmbUI::toHtml($UserRow['user_name']).'</a> '.$UserRow['user_birthyear'].' '.CMmbUI::toHtml($UserRow['user_city'])."\r\n");
+
+					// Отметка невыхода на старт в предыдущем ММБ
+					if ($UserRow['teamuser_notstartraidid'] > 0)
+						print(' <a title="Участник был заявлен, но не вышел на старт в прошлый раз" href="#comment">(?!)</a> ');
+
+					// Неявку участников показываем, если загружены результаты
+					if ($CanViewResults)
+					{
+						if ($UserRow['levelpoint_name'] <> '')
 						print("<i>Не явился(-ась) в: {$UserRow['levelpoint_name']}</i>\r\n");
+					}
+					print('</div>'."\r\n");
 				}
-				print('</div>'."\r\n");
 			}
 			// Конец формирования колонки Участники
 			print("</td>\r\n");
