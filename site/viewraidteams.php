@@ -729,8 +729,11 @@
 
                         // Формируем колонку Участники			
 			if (!isset($TeamMembers[$Row['team_id']]))
-				die("</td></tr></table> no member records in team '{$Row['team_id']}'");
-
+			{
+				print('<div class= "input">no member records in team '{$Row['team_id']}'</div>'."\r\n");
+				//	die("</td></tr></table> no member records in team '{$Row['team_id']}'");
+			}
+			
 			foreach($TeamMembers[$Row['team_id']] as $UserRow)
 			{
 				print('<div class= "input"><a href="?UserId='.$UserRow['user_id'].'&RaidId=' . $RaidId . '">'.CMmbUI::toHtml($UserRow['user_name']).'</a> '.$UserRow['user_birthyear'].' '.CMmbUI::toHtml($UserRow['user_city'])."\r\n");
