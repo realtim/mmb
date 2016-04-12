@@ -22,9 +22,10 @@ if (!isset($MyPHPScript)) return;
     // фильтруем типы ошибок и печатаем селект
     $allLevels = array(CMmbLogger::Trace, CMmbLogger::Debug, CMmbLogger::Info, CMmbLogger::Error, CMmbLogger::Critical);
     $levels = array();
-    foreach ($allLevels as $lev)
-        if (in_array($lev, @$_REQUEST['levels']))
-            $levels[] = $lev;
+    if (is_array(@$_REQUEST['levels']))
+        foreach ($allLevels as $lev)
+            if (in_array($lev, $_REQUEST['levels']))
+                $levels[] = $lev;
 
     print("Типы сообщений: <select name=\"levels\" size=\"5\" multiple style=\"margin-left: 10px; margin-right: 5px; vertical-align: top;\"
             onchange=\"document.LogsForm.submit();\">");
@@ -47,7 +48,7 @@ if (!isset($MyPHPScript)) return;
 
 
     //todo удалить!
-    print('<input type="button" value="Test fatal" onclick="$get(\'testFatal\').value = 1; document.LogsForm.submit();" style="margin-left:3em"/>');
+    print('<input type="button" value="Test fatal" onclick="document.getElementById(\'testFatal\').value = 1; document.LogsForm.submit();" style="margin-left:3em"/>');
     if (mmb_validateInt($_REQUEST, 'testFatal', 0) == 1) 
         CMmbLogger::fatal($UserId, 'viewLogs', "проверка доставки сообщений о фатальных ошибках");
 
