@@ -10,22 +10,27 @@
 if (!isset($MyPHPScript)) return;
 ?>
 
-<h4>Просмотр логов</h4>
 <form name="LogsForm" action="<? echo $MyPHPScript; ?>" method="post">
     <input type="hidden" value="viewLogs" name="action"/>
-    <input type="hidden" value="" id="testFatal" name="testFatal"/>
 
-    <div style="margin-bottom: 1ex;">
+    <div style="margin-bottom: 2ex;">
 
 <?php
 
     // фильтруем типы ошибок и печатаем селект
     $allLevels = array(CMmbLogger::Trace, CMmbLogger::Debug, CMmbLogger::Info, CMmbLogger::Error, CMmbLogger::Critical);
     $levels = array();
-    if (is_array(@$_REQUEST['levels']))
-        foreach ($allLevels as $lev)
-            if (in_array($lev, $_REQUEST['levels']))
-                $levels[] = $lev;
+    $rawLevels = mmb_validate($_REQUEST, 'levels', array());
+    if (!is_array($rawLevels ))
+    {
+        print($rawLevels . "<br/>");
+        $rawLevels = array($rawLevels);
+    }
+
+
+    foreach ($allLevels as $lev)
+        if (in_array($lev, $rawLevels))
+            $levels[] = $lev;
 
     print("Типы сообщений: <select name=\"levels\" size=\"5\" multiple style=\"margin-left: 10px; margin-right: 5px; vertical-align: top;\"
             onchange=\"document.LogsForm.submit();\">");
@@ -45,12 +50,6 @@ if (!isset($MyPHPScript)) return;
         print("<option value=\"$lim\"$sel>$lim</option>\n");
     }
     print("</select>\n");
-
-
-    //todo удалить!
-    print('<input type="button" value="Test fatal" onclick="document.getElementById(\'testFatal\').value = 1; document.LogsForm.submit();" style="margin-left:3em"/>');
-    if (mmb_validateInt($_REQUEST, 'testFatal', 0) == 1) 
-        CMmbLogger::fatal($UserId, 'viewLogs', "проверка доставки сообщений о фатальных ошибках");
 
     print("</div>\n");
 
