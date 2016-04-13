@@ -21,18 +21,23 @@ if (!isset($MyPHPScript)) return;
     $levels = array();
 
 echo("levels:<br/>");
-foreach ($_REQUEST['levels'] as $lev)
-    echo($lev. "<br/>");
+if (isset($_REQUEST['levels']))
+    foreach ($_REQUEST['levels'] as $lev)
+        echo($lev. "<br/>");
 
 echo("levels[]<br/>");
-foreach ($_REQUEST['levels[]'] as $lev)
-    echo($lev. "<br/>");
+if (isset($_REQUEST['levels[]']))
+    foreach ($_REQUEST['levels[]'] as $lev)
+        echo($lev. "<br/>");
 
     $rawLevels = mmb_validate($_REQUEST, 'levels', array());
 
-echo("rawLevels: isarrr: ".is_array($rawLevels)."<br/>");
-foreach ($rawLevels as $lev)
-    echo($lev. "<br/>");
+echo("rawLevels: isarrr: <br/>");
+if (is_array($rawLevels))
+    foreach ($rawLevels as $lev)
+        echo($lev. "<br/>");
+else
+    echo("not an arr: '$rawLevels'<br/>");
 
     if (!is_array($rawLevels))
         $rawLevels = array($rawLevels);
