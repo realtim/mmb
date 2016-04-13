@@ -1257,79 +1257,73 @@ send_mime_mail('Автор письма',
 
         // функция экранирует спец.символы
 	function EscapeString($str)
-        {
-                $str = (string) $str;
-                $search=array("\\","\0","\n","\r","\x1a","'",'"');
-                $replace=array("\\\\","\\0","\\n","\\r","\Z","\'",'\"');
-                return str_replace($search,$replace,$str);
-        }
+	{
+		if (is_array($str))
+		{
+			foreach($str as $k => $v)
+				$str[$k] = EscapeString($v); 
+			return;
+		}
+		
+		$str = (string) $str;
+		$search=array("\\","\0","\n","\r","\x1a","'",'"');
+		$replace=array("\\\\","\\0","\\n","\\r","\Z","\'",'\"');
+		return str_replace($search,$replace,$str);
+	}
 
 	function ReverseEscapeString($str)
-        {
-                $str = (string) $str;
-                $search=array("\\\\","\\0","\\n","\\r","\Z","\'",'\"');
-                $replace=array("\\","\0","\n","\r","\x1a","'",'"');
-                return str_replace($search,$replace,$str);
-        }
+	{
+		if (is_array($str))
+		{
+			foreach($str as $k => $v)
+				$str[$k] = ReverseEscapeString($v);
+			return;
+		}
+		
+		$str = (string) $str;
+		$search=array("\\\\","\\0","\\n","\\r","\Z","\'",'\"');
+		$replace=array("\\","\0","\n","\r","\x1a","'",'"');
+		return str_replace($search,$replace,$str);
+	}
 
 
 
         // функция экранирует спец.символы в массивах переменных
         // POST GET
 	function ClearArrays()
-        {
+	{
+		foreach ($_POST as $key => $value)
+			$_POST[$key] = EscapeString($value);
 
-	      foreach ($_POST as $key => $value)
-              {
-		$_POST[$key] = EscapeString($value);
-	      }
+		foreach ($_GET as $key => $value)
+			$_GET[$key] = EscapeString($value);
 
-	      foreach ($_GET as $key => $value)
-              {
-		$_GET[$key] = EscapeString($value);
-	      }  
-
-	      foreach ($_REQUEST as $key => $value)
-              {
-		$_REQUEST[$key] = EscapeString($value);
-	      }  
-
-	      foreach ($_COOKIE as $key => $value)
-              {
-		$_COOKIE[$key] = EscapeString($value);
-	      }  
-
-        }
+		foreach ($_REQUEST as $key => $value)
+			$_REQUEST[$key] = EscapeString($value);
+		
+		foreach ($_COOKIE as $key => $value)
+			$_COOKIE[$key] = EscapeString($value);
+	}
         // Конец очистки специальных массивов от возможных инъекций
 
 
-        // функция экранирует спец.символы в массивах переменных
-        // POST GET
+	// функция экранирует спец.символы в массивах переменных
+	// POST GET
 	function ReverseClearArrays()
-        {
-
-	      foreach ($_POST as $key => $value)
-              {
-		$_POST[$key] = ReverseEscapeString($value);
-	      }
-
-	      foreach ($_GET as $key => $value)
-              {
-		$_GET[$key] = ReverseEscapeString($value);
-	      }  
-
-	      foreach ($_REQUEST as $key => $value)
-              {
-		$_REQUEST[$key] = ReverseEscapeString($value);
-	      }  
-
-	      foreach ($_COOKIE as $key => $value)
-              {
-		$_COOKIE[$key] = ReverseEscapeString($value);
-	      }  
-
-        }
-        // Конец очистки специальных массивов от возможных инъекций
+	{
+		foreach ($_POST as $key => $value)
+			$_POST[$key] = ReverseEscapeString($value);
+		
+		foreach ($_GET as $key => $value)
+			$_GET[$key] = ReverseEscapeString($value);
+		
+		foreach ($_REQUEST as $key => $value)
+			$_REQUEST[$key] = ReverseEscapeString($value);
+		
+		foreach ($_COOKIE as $key => $value)
+			$_COOKIE[$key] = ReverseEscapeString($value);
+	}
+	// Конец очистки специальных массивов от возможных инъекций
 
      // функция получает ссылку на  логотип
     function GetMmbLogo($raidid)
