@@ -130,7 +130,7 @@ elseif ($action == 'RaidCardsExport')
 	$output = fopen('php://output', 'w');
 
 
-	fwrite($output, 'Дистанция;Номера карточек');
+	fwrite($output, 'Дистанция;Номера карточек'."\n");
   
   	$sql = "select t.team_num, d.distance_name
 		  from Teams t
@@ -149,7 +149,7 @@ elseif ($action == 'RaidCardsExport')
 			if ($PredDistance <> "")
 			// записываем накопленное
 			{
-				fwrite($output, $CardsArr);
+				fwrite($output, $CardsArr."\n");
 			}
 			$PredDistance = $Row['distance_name'];
 			$CardsArr = $PredDistance.';'.$Row['team_num'];
@@ -163,9 +163,9 @@ elseif ($action == 'RaidCardsExport')
   	mysql_free_result($Result);
 
   	// записываем накопленное
-  	fwrite($output, $CardsArr);
-  	fwrite($output, '====');
-  	fwrite($output, 'Дистанция;Номер;GPS;Название;Участники;Карты;Сумма');
+  	fwrite($output, $CardsArr."\n");
+  	fwrite($output, '===='."\n");
+  	fwrite($output, 'Дистанция;Номер;GPS;Название;Участники;Карты;Сумма'."\n");
 
 	  $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name,
 		  t.team_mapscount, d.distance_name, d.distance_id
@@ -190,12 +190,12 @@ elseif ($action == 'RaidCardsExport')
 		{
 			if ($First == 1)
 			{
-				fwrite($output, $Row['distance_name'].';'.$Row['team_num'].';'.($Row['team_usegps'] == 1 ? '+' : '').';'.$Row['team_name'].';'.$UserRow['user_name'].' '.$UserRow['user_birthyear'].';'.$Row['team_mapscount'].';'.CalcualteTeamPayment($Row['team_id']));
+				fwrite($output, $Row['distance_name'].';'.$Row['team_num'].';'.($Row['team_usegps'] == 1 ? '+' : '').';'.$Row['team_name'].';'.$UserRow['user_name'].' '.$UserRow['user_birthyear'].';'.$Row['team_mapscount'].';'.CalcualteTeamPayment($Row['team_id'])."\n");
 				$First = 0;
 			}
 			else
 			{
-				fwrite($output,  ';;;;'.$UserRow['user_name'].' '.$UserRow['user_birthyear']);
+				fwrite($output,  ';;;;'.$UserRow['user_name'].' '.$UserRow['user_birthyear']."\n");
 			}
 		}
   
