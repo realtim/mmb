@@ -25,19 +25,20 @@ if (isset($_REQUEST['levels']))
 {
     echo(nl2br(print_r($_REQUEST['levels'], 1)) . "<br/>");
 
-    //echo(nl2br(print_r($_REQUEST, 1)) . "<br/>");
-
-    if (is_array($_REQUEST['levels']))
-        foreach ($_REQUEST['levels'] as $lev)
-            echo($lev . "<br/>");
+    echo(nl2br(print_r($_REQUEST, 1)) . "<br/>");
 }
+
+echo("post levels:<br/>");
+if (isset($_POST['levels']))
+    echo(nl2br(print_r($_POST['levels'], 1)) . "<br/>");
+
 
 echo("<br/>levels[]<br/>");
 if (isset($_REQUEST['levels[]']))
     foreach ($_REQUEST['levels[]'] as $lev)
         echo($lev. "<br/>");
 
-    $rawLevels = mmb_validate($_REQUEST, 'levels', array());
+    $rawLevels = mmb_validate($_POST, 'levels', array());
 
 echo("rawLevels: isarrr:" . is_array($rawLevels) . "<br/>");
 echo("rawLevels:" . nl2br(print_r($rawLevels, 1)) . "<br/>");
