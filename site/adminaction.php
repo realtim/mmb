@@ -323,6 +323,50 @@ elseif ($action == 'SendMessageForAll')
                 return; 
         }
 }
+// =============== Генерация списка участников  ===================
+elseif ($action == 'RaidTeamUserExport')
+{
+
+	if ($RaidId <= 0)
+	{
+		CMmb::setShortResult('Марш-бросок не найден', '');
+		return;
+	}
+
+	// рассылать всем может только администратор
+	if (!$Administrator) return;
+
+        CMmb::setViews('ViewAdminDataPage', '');
+
+
+	$Sql = "select u.user_name, user_birthyear, 
+			COALESCE(u.user_city, '') as user_city,
+			COALESCE(u.user_phone, '') as user_phone,
+		        t.team_num, t.team_name, t.team_outofrange  
+		from Teams t 
+			inner join Distances d on t.distance_id = d.distance_id
+			inner join TeamUsers tu on tu.team_id = t.team_id
+			inner join Users u on tu.user_id = u.user_id
+		where t.team_hide = 0 
+			and tu.teamuser_hide = 0
+			and d.raid_id = $RaidId
+		order by user_name
+		";
+	
+	$Result = MySqlQuery($Sql);
+
+	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
+	header('Content-Type: text/csv; charset=utf-8');
+	header('Content-Disposition: attachment; filename=raidteamusers.csv');
+
+	// create a file pointer connected to the output stream
+	$output = fopen('php://output', 'w');
+
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) {  fputcsv($output, $row); }
+	mysql_free_result($Result);
+
+ 	fclose($output);
+}
 // =============== Никаких действий не требуется ==============================
 else
 {
