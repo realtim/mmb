@@ -19,7 +19,21 @@ if (!isset($MyPHPScript)) return;
     // фильтруем типы ошибок и печатаем селект
     $allLevels = array(CMmbLogger::Trace, CMmbLogger::Debug, CMmbLogger::Info, CMmbLogger::Error, CMmbLogger::Critical);
     $levels = array();
+
+echo("levels:<br/>");
+foreach ($_REQUEST['levels'] as $lev)
+    echo($lev. "<br/>");
+
+echo("levels[]<br/>");
+foreach ($_REQUEST['levels[]'] as $lev)
+    echo($lev. "<br/>");
+
     $rawLevels = mmb_validate($_REQUEST, 'levels', array());
+
+echo("rawLevels: isarrr: ".is_array($rawLevels)."<br/>");
+foreach ($rawLevels as $lev)
+    echo($lev. "<br/>");
+
     if (!is_array($rawLevels))
         $rawLevels = array($rawLevels);
 
@@ -47,14 +61,21 @@ if (!isset($MyPHPScript)) return;
     print("</select>\n");
 
 
-    $searchVal = mmb_validate($_REQUEST, 'search', '');
+    $searchVal = ReverseEscapeString(mmb_validate($_REQUEST, 'search', ''));
     print("<input type=\"text\" placeholder=\"Искать\" name=\"search\" onchange=\"document.LogsForm.submit()\" style=\"margin-left: 2em;\" value='". CMmbUI::toHtml($searchVal). "'/>");
-
     print("</div>\n");
 
 
     $cond = count($levels) == 0 ? 'true' : "logs_level in ('" . implode("', '", $levels) . "')";
-    $searchCond = $searchVal == '' ? 'true' : "logs_message like(".CSql::quote("%$searchVal%").")";
+    if ($searchVal == '')
+        $searchCond = 'true';
+    else // quote for using in like
+    {
+        $search =  array("%",   "_",   "[",   "]");
+        $replace = array("\\%", "\\_", "\\[", "\\]");
+        $searchVal = str_replace($search, $replace, $searchVal);
+        $searchCond = "logs_message like(" . CSql::quote("%$searchVal%") . ")";
+    }
 
     $sql = "select logs_id, logs_level, user_id, logs_operation, logs_message, logs_dt from Logs 
         where $cond and $searchCond 
