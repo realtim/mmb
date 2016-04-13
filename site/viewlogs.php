@@ -55,7 +55,6 @@ if (!isset($MyPHPScript)) return;
     $cond = count($levels) == 0 ? 'true' : "logs_level in ('" . implode("', '", $levels) . "')";
     if ($searchVal == '')
         $searchCond = 'true';
-    else // quote for using in like
     {
         $search =  array("%",   "_",   "[",   "]");
         $replace = array("\\%", "\\_", "\\[", "\\]");
@@ -63,7 +62,7 @@ if (!isset($MyPHPScript)) return;
         $searchCond = "logs_message like(" . CSql::quote("%$searchVal%") . ")";
     }
 
-    $sql = "select logs_id, logs_level, user_id, logs_operation, logs_message, logs_dt from Logs 
+    $sql = "select logs_id, logs_level, user_id, logs_operation, logs_message, logs_dt, logs_duration from Logs 
         where $cond and $searchCond 
         order by logs_id desc 
         limit $limit";
@@ -71,13 +70,18 @@ if (!isset($MyPHPScript)) return;
     $Result = MySqlQuery($sql);
 
     print("<table class='std'>\n");
-    print("<tr class='gray head'><th width='50'>id</th><th>Время</th><th>Уровень</th><th>Пользователь</th><th>Операция</th><th>Сообщение</th><th>Длительность</th></tr>\n");
+    print("<tr class='gray head'><th>#</th><th width='50'>id</th><th>Время</th><th>Уровень</th><th>Пользователь</th><th>Операция</th><th>Сообщение</th><th>Длительность</th></tr>\n");
+    $cnt = 0;
     while ($Row = mysql_fetch_assoc($Result))
-        print("<tr><td>{$Row['logs_id']}</td><td>" . $Row['logs_dt'] /*date("Y-m-d hh:mm:ss", $Row['logs_dt'])*/ . "</td><td>{$Row['logs_level']}</td><td>{$Row['user_id']}</td><td>{$Row['logs_operation']}</td><td>". nl2br($Row['logs_message']) ."</td><td> </td></tr>\n"); // <td>{$Row['logs_duration']}</td>
+    {
+        print("<tr><td>$cnt</td><td>{$Row['logs_id']}</td><td>" . $Row['logs_dt'] /*date("Y-m-d hh:mm:ss", $Row['logs_dt'])*/ . "</td><td>{$Row['logs_level']}</td><td>{$Row['user_id']}</td><td>{$Row['logs_operation']}</td><td>" . nl2br($Row['logs_message']) . "</td><td>{$Row['logs_duration']}</td></tr>\n");
+        $cnt++;
+    }
 
     mysql_free_result($Result);
+    if ($cnt == 0)
+        print("<tr><td colspan='8'>Записей, подпадающих под условия, не найдено</td></tr>\n");
     print("</table>");
 
 ?>
     </form>
-
