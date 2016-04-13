@@ -1262,7 +1262,7 @@ send_mime_mail('Автор письма',
 		{
 			foreach($str as $k => $v)
 				$str[$k] = EscapeString($v); 
-			return;
+			return $str;
 		}
 		
 		$str = (string) $str;
@@ -1277,7 +1277,7 @@ send_mime_mail('Автор письма',
 		{
 			foreach($str as $k => $v)
 				$str[$k] = ReverseEscapeString($v);
-			return;
+			return $str;
 		}
 		
 		$str = (string) $str;
