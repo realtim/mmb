@@ -55,6 +55,7 @@ if (!isset($MyPHPScript)) return;
     $cond = count($levels) == 0 ? 'true' : "logs_level in ('" . implode("', '", $levels) . "')";
     if ($searchVal == '')
         $searchCond = 'true';
+    else // quote for using in like('%...%')
     {
         $search =  array("%",   "_",   "[",   "]");
         $replace = array("\\%", "\\_", "\\[", "\\]");
