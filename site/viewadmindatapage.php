@@ -55,6 +55,20 @@ if (!isset($MyPHPScript)) return;
 		document.AdminForm.submit();
 	}
 
+	function RaidTeamUsersExport()
+	{ 
+		document.AdminForm.action.value = "RaidTeamUsersExport";
+                document.AdminForm.RaidId.value = document.FindTeamForm.RaidId.value;
+		document.AdminForm.submit();
+	}
+
+	function RaidCardsExport()
+	{ 
+		document.AdminForm.action.value = "RaidCardsExport";
+                document.AdminForm.RaidId.value = document.FindTeamForm.RaidId.value;
+		document.AdminForm.submit();
+	}
+
 
 	function RecalcRaidRank()
 	{ 
@@ -104,11 +118,18 @@ if (!isset($MyPHPScript)) return;
 
           //print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><a href = "?action=JSON&sessionid='.$SessionId.'" target = "_blank">JSON dump</a></td></tr>'."\r\n");
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="JSONdump" value="Получить дамп"
-                          onclick = "javascript: JSON();"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Получить данные для карточек"
+                          onclick = "javascript: RaidCardsExport();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="JSONdump" value="Выгрузить список участников"
+                          onclick = "javascript: RaidTeamUsersExport();"
+                          tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
+
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RTUdump" value="Получить дамп"
+                          onclick = "javascript: JSON();"
+                          tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 	  print('<tr><td style = "padding-top: 10px; padding-bottom: 10px;">Файл с данными:<br/><input  type="file" name="android" /> &nbsp;
                  <input type="button"  style = "width:185px;" name = "LoadRaidDataFileButton"  value="Загрузить"  onclick = "javascript: LoadRaidDataFile(); "  tabindex = "'.(++$TabIndex).'"  /></td></tr>'."\r\n");
