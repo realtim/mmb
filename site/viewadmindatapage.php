@@ -118,12 +118,12 @@ if (!isset($MyPHPScript)) return;
 
           //print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><a href = "?action=JSON&sessionid='.$SessionId.'" target = "_blank">JSON dump</a></td></tr>'."\r\n");
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Получить данные для карточек"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Получить карточки"
                           onclick = "javascript: RaidCardsExport();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="JSONdump" value="Выгрузить список участников"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="JSONdump" value="Список участников"
                           onclick = "javascript: RaidTeamUsersExport();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
