@@ -205,6 +205,9 @@ elseif ($action == 'RaidCardsExport')
   	mysql_free_result($Result);
 
  	fclose($output);
+
+ 	die();
+ 	return;
 }
 // =============== Получение дампа ===================
 elseif ($action == 'JSON')
@@ -418,10 +421,14 @@ elseif ($action == 'RaidTeamUsersExport')
 	// create a file pointer connected to the output stream
 	$output = fopen('php://output', 'w');
 
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) {  fputcsv($output, $row); }
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) {  fputcsv($output, $Row); }
 	mysql_free_result($Result);
 
  	fclose($output);
+ 	die();
+ 	return;
+
+ 	
 }
 // =============== Никаких действий не требуется ==============================
 else
