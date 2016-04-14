@@ -15,11 +15,6 @@ namespace BC_Logger_control
         public Form1()
         {
             InitializeComponent();
-            aTimer = new System.Timers.Timer();
-            aTimer.Interval = 200;
-            aTimer.Elapsed += textBox_terminal_Click;
-            aTimer.AutoReset = true;
-            aTimer.Enabled = false;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -40,7 +35,7 @@ namespace BC_Logger_control
             else comboBox_portName.SelectedIndex = 0;
             textBox_setT.Text = getDateString();
         }
-        
+
         private void button_openPort_Click(object sender, EventArgs e)
         {
             //if (serialPort1.IsOpen == true) comboBox_portName.SelectedIndex=0;
@@ -70,7 +65,7 @@ namespace BC_Logger_control
                 button_getLn.Enabled = true;
                 button_getDn.Enabled = true;
                 button_delL.Enabled = false;
-                button_end.Enabled = true;
+                button_gett.Enabled = true;
                 button_dlAll.Enabled = true;
                 button_closePort.Enabled = true;
                 button_openPort.Enabled = false;
@@ -81,7 +76,7 @@ namespace BC_Logger_control
                 checkBox_delLog.Checked = false;
                 button_refresh.Enabled = false;
                 checkBox_setEnable.Enabled = true;
-                aTimer.Enabled = true;
+                //aTimer.Enabled = true;
             }
         }
 
@@ -121,14 +116,169 @@ namespace BC_Logger_control
 
         private void button_getL_Click(object sender, EventArgs e)
         {
+            string fname = "scanner" + textBox_setI.Text + "-" + getDateString().Replace(':', '_').Replace(' ', '_') + ".csv";
+            String logRX = "", errLines = "";
+            byte crc = 0;
+            checkBox_portMon.Checked = false;
+
             serialPort1.WriteLine(textBox_getLcustom.Text);
             SetText(textBox_getLcustom.Text + "\r\n");
+
+            serialPort1.ReadTimeout = 500;
+            bool flag = false;
+            int i = 0;
+            logRX = serialPort1.ReadLine()+"\n";
+            SetText(logRX);
+            if (logRX != "Command received: GETL\r\n") SetText("Error\r\n");
+            logRX = serialPort1.ReadLine() + "\n";
+            SetText(logRX);
+            logRX = serialPort1.ReadLine() + "\n";
+            SetText(logRX);
+            logRX = serialPort1.ReadLine() + "\n";
+            SetText(logRX);
+            if (logRX != "====\r\n") SetText("Error\r\n");
+            while (flag == false)
+            {
+                try
+                {
+                    logRX = serialPort1.ReadLine() + "\n";
+                    if (logRX != "====\r\n")
+                    {
+                        int strLen = logRX.LastIndexOf(",");
+                        crc = crcCalc(logRX.Substring(0, strLen));
+                        int getcrc = 0;
+                        strLen += 7;
+                        if (int.TryParse(logRX.Substring(strLen, logRX.Length - strLen - 2), out getcrc) != true)
+                        {
+                            SetText("CRC not recognized in line " + i.ToString() + ": " + logRX);
+                            errLines += i.ToString() + ", ";
+                        }
+                        if (crc == getcrc)
+                        {
+                            SetText(logRX);
+                            try
+                            {
+                                File.AppendAllText(fname, logRX, Encoding.GetEncoding(inputCodePage));
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("\r\nError write to file " + fname + ": " + ex.Message);
+                            }
+                        }
+                        else
+                        {
+                            SetText("CRC error in line " + i.ToString() + ": " + logRX);
+                        }
+                        i++;
+                    }
+                    else
+                    {
+                        SetText(logRX);
+                        flag = true;
+                    }
+                }
+                catch (TimeoutException ex)
+                {
+                    SetText("Error reading string: timeout. " + ex.Message);
+                    flag = true;
+                }
+            }
+            SetText(i.ToString() + " strings received\r\n");
+            SetText("Errors in strings: " + errLines + "\r\n");
+            checkBox_portMon.Checked = true;
+
+            i = 0;
+            byte[] rx = new byte[5242880];
+            while (serialPort1.BytesToRead > 0)
+            {
+                rx[i] = (byte)serialPort1.ReadByte();
+                i++;
+            }
+            SetText(System.Text.Encoding.GetEncoding(inputCodePage).GetString(rx, 0, i));
         }
 
         private void button_getD_Click(object sender, EventArgs e)
         {
+            string fname = "scanner" + textBox_setI.Text + "-" + getDateString().Replace(':','_').Replace(' ','_') + "_DEBUG.csv";
+            String logRX = "", errLines="";
+            byte crc = 0;
+            checkBox_portMon.Checked = false;
+
             serialPort1.WriteLine(textBox_getDcustom.Text);
             SetText(textBox_getDcustom.Text + "\r\n");
+
+            serialPort1.ReadTimeout = 500;
+            bool flag = false;
+            int i = 0;
+            logRX = serialPort1.ReadLine() + "\n";
+            SetText(logRX);
+            if (logRX != "Command received: GETD\r\n") SetText("Error\r\n");
+            logRX = serialPort1.ReadLine() + "\n";
+            SetText(logRX);
+            logRX = serialPort1.ReadLine() + "\n";
+            SetText(logRX);
+            logRX = serialPort1.ReadLine() + "\n";
+            SetText(logRX);
+            if (logRX != "====\r\n") SetText("Error\r\n");
+            while (flag == false)
+            {
+                try
+                {
+                    logRX = serialPort1.ReadLine() + "\n";
+                    if (logRX != "====\r\n")
+                    {
+                        int strLen = logRX.LastIndexOf(",");
+                        crc = crcCalc(logRX.Substring(0, strLen));
+                        int getcrc = 0;
+                        strLen += 7;
+                        if (int.TryParse(logRX.Substring(strLen, logRX.Length - strLen - 2), out getcrc) != true)
+                        {
+                            SetText("CRC not recognized in line " + i.ToString() + ": " + logRX);
+                            errLines += i.ToString() + ", ";
+                        }
+                        if (crc == getcrc)
+                        {
+                            SetText(logRX);
+                            try
+                            {
+                                File.AppendAllText(fname, logRX, Encoding.GetEncoding(inputCodePage));
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("\r\nError write to file " + fname + ": " + ex.Message);
+                            }
+                        }
+                        else
+                        {
+                            SetText("CRC error in line " + i.ToString() + ": " + logRX);
+                            errLines += i.ToString() + ", ";
+                        }
+                        i++;
+                    }
+                    else
+                    {
+                        SetText(logRX);
+                        flag = true;
+                    }
+                }
+                catch (TimeoutException ex)
+                {
+                    SetText("Error reading string: timeout. " + ex.Message);
+                    flag = true;
+                }
+            }
+            SetText(i.ToString() + " strings received\r\n");
+            SetText("Errors in strings: " + errLines + "\r\n");
+            checkBox_portMon.Checked = true;
+            //serialPort1_DataReceived(,EventArgs.Empty);
+            i = 0;
+            byte[] rx = new byte[5242880];
+            while (serialPort1.BytesToRead > 0)
+            {
+                rx[i] = (byte)serialPort1.ReadByte();
+                i++;
+            }
+            SetText(System.Text.Encoding.GetEncoding(inputCodePage).GetString(rx, 0, i));
         }
 
         private void button_getLn_Click(object sender, EventArgs e)
@@ -152,32 +302,29 @@ namespace BC_Logger_control
 
         private void button_end_Click(object sender, EventArgs e)
         {
-            serialPort1.WriteLine(textBox_endcustom.Text);
-            SetText(textBox_endcustom.Text + "\r\n");
+            serialPort1.WriteLine(textBox_getTcustom.Text);
+            SetText(textBox_getTcustom.Text + "\r\n");
             checkBox_delLog.Checked = false;
         }
-       
+
         private void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {
             if (checkBox_portMon.Checked == true)
             {
                 int i = 0;
-                byte[] rx = new byte[524288];
+                byte[] rx = new byte[5242880];
                 while (serialPort1.BytesToRead > 0)
                 {
                     rx[i] = (byte)serialPort1.ReadByte();
                     i++;
                 }
-                while (buf_busy) ;
-                buf_busy = true;
-                buffer += System.Text.Encoding.GetEncoding(inputCodePage).GetString(rx, 0, i);
-                buf_busy = false;
+                SetText(System.Text.Encoding.GetEncoding(inputCodePage).GetString(rx, 0, i));
             }
         }
-        
+
         private void button_closePort_Click(object sender, EventArgs e)
         {
-            if (serialPort1.IsOpen==true)
+            if (serialPort1.IsOpen == true)
             {
                 try
                 {
@@ -197,12 +344,13 @@ namespace BC_Logger_control
             button_delL.Enabled = false;
             checkBox_delLog.Checked = false;
             checkBox_delLog.Enabled = false;
-            button_end.Enabled = false;
+            button_gett.Enabled = false;
             button_dlAll.Enabled = false;
-            aTimer.Enabled = false;
+            //aTimer.Enabled = false;
             comboBox_portName.Enabled = true;
             button_openPort.Enabled = true;
             button_refresh.Enabled = true;
+            checkBox_setEnable.Checked = false;
             checkBox_setEnable.Enabled = false;
         }
 
@@ -271,15 +419,6 @@ namespace BC_Logger_control
             }
         }
 
-        private void textBox_terminal_Click(object sender, EventArgs e)
-        {
-            while (buf_busy) ;
-            buf_busy = true;
-            SetText(buffer);
-            buffer = "";
-            buf_busy = false;
-        }
-
         private void button_sendSet_Click(object sender, EventArgs e)
         {
             serialPort1.WriteLine(textBox_setIcustom.Text + textBox_setI.Text);
@@ -323,7 +462,7 @@ namespace BC_Logger_control
 
         private void checkBox_delLog_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_delLog.Checked == true) button_delL.Enabled=true;
+            if (checkBox_delLog.Checked == true) button_delL.Enabled = true;
             else button_delL.Enabled = false;
         }
 
@@ -396,7 +535,7 @@ namespace BC_Logger_control
                 textBox_getLncustom.Enabled = true;
                 textBox_getDncustom.Enabled = true;
                 textBox_delLogcustom.Enabled = true;
-                textBox_endcustom.Enabled = true;
+                textBox_getTcustom.Enabled = true;
                 textBox_setIcustom.Enabled = true;
                 textBox_setCcustom.Enabled = true;
                 textBox_setPcustom.Enabled = true;
@@ -412,7 +551,7 @@ namespace BC_Logger_control
                 textBox_getLncustom.Enabled = false;
                 textBox_getDncustom.Enabled = false;
                 textBox_delLogcustom.Enabled = false;
-                textBox_endcustom.Enabled = false;
+                textBox_getTcustom.Enabled = false;
                 textBox_setIcustom.Enabled = false;
                 textBox_setCcustom.Enabled = false;
                 textBox_setPcustom.Enabled = false;
@@ -424,7 +563,7 @@ namespace BC_Logger_control
 
         private void checkBox_setEnable_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_setEnable.Checked==true)
+            if (checkBox_setEnable.Checked == true)
             {
                 button_setI.Enabled = true;
                 button_setC.Enabled = true;
@@ -448,9 +587,10 @@ namespace BC_Logger_control
             }
         }
 
-        private void checkBox_portMon_CheckedChanged(object sender, EventArgs e)
+        private void button_gett_Click(object sender, EventArgs e)
         {
-
+            serialPort1.WriteLine(textBox_getTcustom.Text);
+            SetText(textBox_getTcustom.Text + "\r\n");
         }
     }
 }

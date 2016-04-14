@@ -65,3 +65,4 @@ C:\jekyll\_programming\projects\BC_Logger_control_win\BC_Logger_control\obj\Rele
 C:\jekyll\_programming\projects\BC_Logger_control_win\BC_Logger_control\obj\Release\BC_Logger_control.application
 E:\WORK\my_projects\c_sharp\BC_Logger_control_win\BC_Logger_control\obj\Release\BC_Logger_control.csprojResolveAssemblyReference.cache
 E:\WORK\my_projects\c_sharp\BC_Logger_control_win\BC_Logger_control\obj\Release\BC_Logger_control.TrustInfo.xml
+C:\jekyll\_programming\projects\BC_Logger_control_win\BC_Logger_control\obj\Release\BC_Logger_control.TrustInfo.xml

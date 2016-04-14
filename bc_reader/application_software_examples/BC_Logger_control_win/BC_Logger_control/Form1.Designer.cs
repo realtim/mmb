@@ -50,6 +50,7 @@ namespace BC_Logger_control
             this.button_setN = new System.Windows.Forms.Button();
             this.button_setL = new System.Windows.Forms.Button();
             this.button_sendAll = new System.Windows.Forms.Button();
+            this.button_gett = new System.Windows.Forms.Button();
             this.button_gettime = new System.Windows.Forms.Button();
             this.checkBox_setN = new System.Windows.Forms.CheckBox();
             this.checkBox_setL = new System.Windows.Forms.CheckBox();
@@ -80,7 +81,7 @@ namespace BC_Logger_control
             this.textBox_setPcustom = new System.Windows.Forms.TextBox();
             this.textBox_setCcustom = new System.Windows.Forms.TextBox();
             this.textBox_setIcustom = new System.Windows.Forms.TextBox();
-            this.textBox_endcustom = new System.Windows.Forms.TextBox();
+            this.textBox_getTcustom = new System.Windows.Forms.TextBox();
             this.textBox_delLogcustom = new System.Windows.Forms.TextBox();
             this.textBox_getDncustom = new System.Windows.Forms.TextBox();
             this.textBox_getLncustom = new System.Windows.Forms.TextBox();
@@ -90,7 +91,6 @@ namespace BC_Logger_control
             this.textBox_setNcustom = new System.Windows.Forms.TextBox();
             this.textBox_getScustom = new System.Windows.Forms.TextBox();
             this.button_getS = new System.Windows.Forms.Button();
-            this.button_end = new System.Windows.Forms.Button();
             this.textBox_terminal = new System.Windows.Forms.TextBox();
             this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
@@ -101,8 +101,8 @@ namespace BC_Logger_control
             this.button_closePort = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.checkBox_autoScroll = new System.Windows.Forms.CheckBox();
-            this.checkBox_portMon = new System.Windows.Forms.CheckBox();
             this.button_refresh = new System.Windows.Forms.Button();
+            this.checkBox_portMon = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabPage_Get.SuspendLayout();
             this.tabPage_Set.SuspendLayout();
@@ -256,6 +256,7 @@ namespace BC_Logger_control
             this.tabPage_Set.Controls.Add(this.button_setN);
             this.tabPage_Set.Controls.Add(this.button_setL);
             this.tabPage_Set.Controls.Add(this.button_sendAll);
+            this.tabPage_Set.Controls.Add(this.button_gett);
             this.tabPage_Set.Controls.Add(this.button_gettime);
             this.tabPage_Set.Controls.Add(this.checkBox_setN);
             this.tabPage_Set.Controls.Add(this.checkBox_setL);
@@ -280,7 +281,7 @@ namespace BC_Logger_control
             // 
             this.checkBox_setEnable.AutoSize = true;
             this.checkBox_setEnable.Enabled = false;
-            this.checkBox_setEnable.Location = new System.Drawing.Point(262, 286);
+            this.checkBox_setEnable.Location = new System.Drawing.Point(266, 11);
             this.checkBox_setEnable.Name = "checkBox_setEnable";
             this.checkBox_setEnable.Size = new System.Drawing.Size(157, 28);
             this.checkBox_setEnable.TabIndex = 8;
@@ -291,23 +292,25 @@ namespace BC_Logger_control
             // checkBox_autoTime
             // 
             this.checkBox_autoTime.AutoSize = true;
+            this.checkBox_autoTime.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.checkBox_autoTime.Checked = true;
             this.checkBox_autoTime.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_autoTime.Location = new System.Drawing.Point(183, 181);
+            this.checkBox_autoTime.Location = new System.Drawing.Point(140, 287);
             this.checkBox_autoTime.Margin = new System.Windows.Forms.Padding(6);
             this.checkBox_autoTime.Name = "checkBox_autoTime";
-            this.checkBox_autoTime.Size = new System.Drawing.Size(15, 14);
+            this.checkBox_autoTime.Size = new System.Drawing.Size(70, 28);
             this.checkBox_autoTime.TabIndex = 7;
+            this.checkBox_autoTime.Text = " auto";
             this.checkBox_autoTime.UseVisualStyleBackColor = true;
             this.checkBox_autoTime.CheckedChanged += new System.EventHandler(this.checkBox_autoTime_CheckedChanged);
             // 
             // button_setN
             // 
             this.button_setN.Enabled = false;
-            this.button_setN.Location = new System.Drawing.Point(6, 225);
+            this.button_setN.Location = new System.Drawing.Point(6, 172);
             this.button_setN.Margin = new System.Windows.Forms.Padding(6);
             this.button_setN.Name = "button_setN";
-            this.button_setN.Size = new System.Drawing.Size(218, 42);
+            this.button_setN.Size = new System.Drawing.Size(204, 42);
             this.button_setN.TabIndex = 6;
             this.button_setN.Text = "Enable numbers only";
             this.button_setN.UseVisualStyleBackColor = true;
@@ -316,10 +319,10 @@ namespace BC_Logger_control
             // button_setL
             // 
             this.button_setL.Enabled = false;
-            this.button_setL.Location = new System.Drawing.Point(6, 279);
+            this.button_setL.Location = new System.Drawing.Point(6, 226);
             this.button_setL.Margin = new System.Windows.Forms.Padding(6);
             this.button_setL.Name = "button_setL";
-            this.button_setL.Size = new System.Drawing.Size(218, 42);
+            this.button_setL.Size = new System.Drawing.Size(204, 42);
             this.button_setL.TabIndex = 5;
             this.button_setL.Text = "Enable length check";
             this.button_setL.UseVisualStyleBackColor = true;
@@ -328,22 +331,34 @@ namespace BC_Logger_control
             // button_sendAll
             // 
             this.button_sendAll.Enabled = false;
-            this.button_sendAll.Location = new System.Drawing.Point(262, 15);
+            this.button_sendAll.Location = new System.Drawing.Point(269, 48);
             this.button_sendAll.Margin = new System.Windows.Forms.Padding(6);
             this.button_sendAll.Name = "button_sendAll";
-            this.button_sendAll.Size = new System.Drawing.Size(156, 92);
+            this.button_sendAll.Size = new System.Drawing.Size(149, 59);
             this.button_sendAll.TabIndex = 4;
             this.button_sendAll.Text = "Send all settings";
             this.button_sendAll.UseVisualStyleBackColor = true;
             this.button_sendAll.Click += new System.EventHandler(this.button_sendSet_Click);
             // 
+            // button_gett
+            // 
+            this.button_gett.Enabled = false;
+            this.button_gett.Location = new System.Drawing.Point(262, 241);
+            this.button_gett.Margin = new System.Windows.Forms.Padding(6);
+            this.button_gett.Name = "button_gett";
+            this.button_gett.Size = new System.Drawing.Size(156, 32);
+            this.button_gett.TabIndex = 3;
+            this.button_gett.Text = "Get logger time";
+            this.button_gett.UseVisualStyleBackColor = true;
+            this.button_gett.Click += new System.EventHandler(this.button_gett_Click);
+            // 
             // button_gettime
             // 
             this.button_gettime.Enabled = false;
-            this.button_gettime.Location = new System.Drawing.Point(262, 225);
+            this.button_gettime.Location = new System.Drawing.Point(262, 197);
             this.button_gettime.Margin = new System.Windows.Forms.Padding(6);
             this.button_gettime.Name = "button_gettime";
-            this.button_gettime.Size = new System.Drawing.Size(156, 42);
+            this.button_gettime.Size = new System.Drawing.Size(156, 32);
             this.button_gettime.TabIndex = 3;
             this.button_gettime.Text = "Get PC time";
             this.button_gettime.UseVisualStyleBackColor = true;
@@ -352,7 +367,7 @@ namespace BC_Logger_control
             // checkBox_setN
             // 
             this.checkBox_setN.AutoSize = true;
-            this.checkBox_setN.Location = new System.Drawing.Point(235, 234);
+            this.checkBox_setN.Location = new System.Drawing.Point(222, 187);
             this.checkBox_setN.Margin = new System.Windows.Forms.Padding(6);
             this.checkBox_setN.Name = "checkBox_setN";
             this.checkBox_setN.Size = new System.Drawing.Size(15, 14);
@@ -362,7 +377,7 @@ namespace BC_Logger_control
             // checkBox_setL
             // 
             this.checkBox_setL.AutoSize = true;
-            this.checkBox_setL.Location = new System.Drawing.Point(235, 286);
+            this.checkBox_setL.Location = new System.Drawing.Point(222, 241);
             this.checkBox_setL.Margin = new System.Windows.Forms.Padding(6);
             this.checkBox_setL.Name = "checkBox_setL";
             this.checkBox_setL.Size = new System.Drawing.Size(15, 14);
@@ -372,27 +387,27 @@ namespace BC_Logger_control
             // textBox_setT
             // 
             this.textBox_setT.Enabled = false;
-            this.textBox_setT.Location = new System.Drawing.Point(213, 177);
+            this.textBox_setT.Location = new System.Drawing.Point(222, 285);
             this.textBox_setT.Margin = new System.Windows.Forms.Padding(6);
             this.textBox_setT.MaxLength = 20;
             this.textBox_setT.Name = "textBox_setT";
-            this.textBox_setT.Size = new System.Drawing.Size(205, 29);
+            this.textBox_setT.Size = new System.Drawing.Size(196, 29);
             this.textBox_setT.TabIndex = 1;
             this.textBox_setT.Text = "Mar 01 2015 12:00:00";
             // 
             // textBox_setP
             // 
-            this.textBox_setP.Location = new System.Drawing.Point(215, 124);
+            this.textBox_setP.Location = new System.Drawing.Point(222, 124);
             this.textBox_setP.Margin = new System.Windows.Forms.Padding(6);
             this.textBox_setP.MaxLength = 100;
             this.textBox_setP.Name = "textBox_setP";
-            this.textBox_setP.Size = new System.Drawing.Size(203, 29);
+            this.textBox_setP.Size = new System.Drawing.Size(196, 29);
             this.textBox_setP.TabIndex = 1;
             this.textBox_setP.Text = "********";
             // 
             // textBox_setC
             // 
-            this.textBox_setC.Location = new System.Drawing.Point(215, 70);
+            this.textBox_setC.Location = new System.Drawing.Point(222, 71);
             this.textBox_setC.Margin = new System.Windows.Forms.Padding(6);
             this.textBox_setC.MaxLength = 2;
             this.textBox_setC.Name = "textBox_setC";
@@ -402,23 +417,23 @@ namespace BC_Logger_control
             // 
             // textBox_setI
             // 
-            this.textBox_setI.Location = new System.Drawing.Point(213, 15);
+            this.textBox_setI.Location = new System.Drawing.Point(222, 17);
             this.textBox_setI.Margin = new System.Windows.Forms.Padding(6);
             this.textBox_setI.MaxLength = 2;
             this.textBox_setI.Name = "textBox_setI";
-            this.textBox_setI.Size = new System.Drawing.Size(37, 29);
+            this.textBox_setI.Size = new System.Drawing.Size(35, 29);
             this.textBox_setI.TabIndex = 1;
             this.textBox_setI.Text = "00";
             // 
             // button_setT
             // 
             this.button_setT.Enabled = false;
-            this.button_setT.Location = new System.Drawing.Point(6, 172);
+            this.button_setT.Location = new System.Drawing.Point(6, 280);
             this.button_setT.Margin = new System.Windows.Forms.Padding(6);
             this.button_setT.Name = "button_setT";
-            this.button_setT.Size = new System.Drawing.Size(158, 42);
+            this.button_setT.Size = new System.Drawing.Size(122, 42);
             this.button_setT.TabIndex = 0;
-            this.button_setT.Text = "Set time [auto]";
+            this.button_setT.Text = "Set time";
             this.button_setT.UseVisualStyleBackColor = true;
             this.button_setT.Click += new System.EventHandler(this.button_setT_Click);
             // 
@@ -428,7 +443,7 @@ namespace BC_Logger_control
             this.button_setP.Location = new System.Drawing.Point(6, 118);
             this.button_setP.Margin = new System.Windows.Forms.Padding(6);
             this.button_setP.Name = "button_setP";
-            this.button_setP.Size = new System.Drawing.Size(196, 42);
+            this.button_setP.Size = new System.Drawing.Size(204, 42);
             this.button_setP.TabIndex = 0;
             this.button_setP.Text = "Set pattern";
             this.button_setP.UseVisualStyleBackColor = true;
@@ -440,7 +455,7 @@ namespace BC_Logger_control
             this.button_setC.Location = new System.Drawing.Point(6, 65);
             this.button_setC.Margin = new System.Windows.Forms.Padding(6);
             this.button_setC.Name = "button_setC";
-            this.button_setC.Size = new System.Drawing.Size(196, 42);
+            this.button_setC.Size = new System.Drawing.Size(204, 42);
             this.button_setC.TabIndex = 0;
             this.button_setC.Text = "Set control point";
             this.button_setC.UseVisualStyleBackColor = true;
@@ -452,7 +467,7 @@ namespace BC_Logger_control
             this.button_setI.Location = new System.Drawing.Point(6, 11);
             this.button_setI.Margin = new System.Windows.Forms.Padding(6);
             this.button_setI.Name = "button_setI";
-            this.button_setI.Size = new System.Drawing.Size(196, 42);
+            this.button_setI.Size = new System.Drawing.Size(204, 42);
             this.button_setI.TabIndex = 0;
             this.button_setI.Text = "Set scanner ID";
             this.button_setI.UseVisualStyleBackColor = true;
@@ -479,7 +494,7 @@ namespace BC_Logger_control
             this.tabPage_Custom.Controls.Add(this.textBox_setPcustom);
             this.tabPage_Custom.Controls.Add(this.textBox_setCcustom);
             this.tabPage_Custom.Controls.Add(this.textBox_setIcustom);
-            this.tabPage_Custom.Controls.Add(this.textBox_endcustom);
+            this.tabPage_Custom.Controls.Add(this.textBox_getTcustom);
             this.tabPage_Custom.Controls.Add(this.textBox_delLogcustom);
             this.tabPage_Custom.Controls.Add(this.textBox_getDncustom);
             this.tabPage_Custom.Controls.Add(this.textBox_getLncustom);
@@ -499,7 +514,7 @@ namespace BC_Logger_control
             // 
             this.checkBox_customEdit.AutoSize = true;
             this.checkBox_customEdit.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.checkBox_customEdit.Location = new System.Drawing.Point(208, 4);
+            this.checkBox_customEdit.Location = new System.Drawing.Point(350, 4);
             this.checkBox_customEdit.Name = "checkBox_customEdit";
             this.checkBox_customEdit.Size = new System.Drawing.Size(79, 17);
             this.checkBox_customEdit.TabIndex = 4;
@@ -553,9 +568,9 @@ namespace BC_Logger_control
             this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label8.Location = new System.Drawing.Point(112, 150);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(112, 13);
+            this.label8.Size = new System.Drawing.Size(78, 13);
             this.label8.TabIndex = 3;
-            this.label8.Text = "End Bluetooth session";
+            this.label8.Text = "Get logger time";
             // 
             // label7
             // 
@@ -677,15 +692,15 @@ namespace BC_Logger_control
             this.textBox_setIcustom.TabIndex = 2;
             this.textBox_setIcustom.Text = "SETI";
             // 
-            // textBox_endcustom
+            // textBox_getTcustom
             // 
-            this.textBox_endcustom.Enabled = false;
-            this.textBox_endcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.textBox_endcustom.Location = new System.Drawing.Point(6, 147);
-            this.textBox_endcustom.Name = "textBox_endcustom";
-            this.textBox_endcustom.Size = new System.Drawing.Size(100, 18);
-            this.textBox_endcustom.TabIndex = 2;
-            this.textBox_endcustom.Text = "END";
+            this.textBox_getTcustom.Enabled = false;
+            this.textBox_getTcustom.Font = new System.Drawing.Font("Microsoft Sans Serif", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.textBox_getTcustom.Location = new System.Drawing.Point(6, 147);
+            this.textBox_getTcustom.Name = "textBox_getTcustom";
+            this.textBox_getTcustom.Size = new System.Drawing.Size(100, 18);
+            this.textBox_getTcustom.TabIndex = 2;
+            this.textBox_getTcustom.Text = "GETT";
             // 
             // textBox_delLogcustom
             // 
@@ -705,7 +720,7 @@ namespace BC_Logger_control
             this.textBox_getDncustom.Name = "textBox_getDncustom";
             this.textBox_getDncustom.Size = new System.Drawing.Size(100, 18);
             this.textBox_getDncustom.TabIndex = 2;
-            this.textBox_getDncustom.Text = "GETD#";
+            this.textBox_getDncustom.Text = "GET#D";
             // 
             // textBox_getLncustom
             // 
@@ -715,7 +730,7 @@ namespace BC_Logger_control
             this.textBox_getLncustom.Name = "textBox_getLncustom";
             this.textBox_getLncustom.Size = new System.Drawing.Size(100, 18);
             this.textBox_getLncustom.TabIndex = 2;
-            this.textBox_getLncustom.Text = "GETL#";
+            this.textBox_getLncustom.Text = "GET#L";
             // 
             // textBox_getDcustom
             // 
@@ -779,18 +794,6 @@ namespace BC_Logger_control
             this.button_getS.UseVisualStyleBackColor = true;
             this.button_getS.Click += new System.EventHandler(this.button_getS_Click);
             // 
-            // button_end
-            // 
-            this.button_end.Enabled = false;
-            this.button_end.Location = new System.Drawing.Point(228, 369);
-            this.button_end.Margin = new System.Windows.Forms.Padding(6);
-            this.button_end.Name = "button_end";
-            this.button_end.Size = new System.Drawing.Size(196, 42);
-            this.button_end.TabIndex = 0;
-            this.button_end.Text = "End Bluetooth session";
-            this.button_end.UseVisualStyleBackColor = true;
-            this.button_end.Click += new System.EventHandler(this.button_end_Click);
-            // 
             // textBox_terminal
             // 
             this.textBox_terminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -802,9 +805,8 @@ namespace BC_Logger_control
             this.textBox_terminal.Name = "textBox_terminal";
             this.textBox_terminal.ReadOnly = true;
             this.textBox_terminal.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox_terminal.Size = new System.Drawing.Size(277, 483);
+            this.textBox_terminal.Size = new System.Drawing.Size(277, 472);
             this.textBox_terminal.TabIndex = 1;
-            this.textBox_terminal.Click += new System.EventHandler(this.textBox_terminal_Click);
             this.textBox_terminal.TextChanged += new System.EventHandler(this.textBox_terminal_TextChanged);
             // 
             // serialPort1
@@ -825,7 +827,7 @@ namespace BC_Logger_control
             this.comboBox_portName.Location = new System.Drawing.Point(78, 420);
             this.comboBox_portName.Margin = new System.Windows.Forms.Padding(6);
             this.comboBox_portName.Name = "comboBox_portName";
-            this.comboBox_portName.Size = new System.Drawing.Size(113, 32);
+            this.comboBox_portName.Size = new System.Drawing.Size(360, 32);
             this.comboBox_portName.TabIndex = 2;
             // 
             // label1
@@ -840,7 +842,7 @@ namespace BC_Logger_control
             // 
             // button_openPort
             // 
-            this.button_openPort.Location = new System.Drawing.Point(12, 469);
+            this.button_openPort.Location = new System.Drawing.Point(12, 464);
             this.button_openPort.Margin = new System.Windows.Forms.Padding(6);
             this.button_openPort.Name = "button_openPort";
             this.button_openPort.Size = new System.Drawing.Size(133, 42);
@@ -851,10 +853,10 @@ namespace BC_Logger_control
             // 
             // button_clear
             // 
-            this.button_clear.Location = new System.Drawing.Point(301, 420);
+            this.button_clear.Location = new System.Drawing.Point(228, 369);
             this.button_clear.Margin = new System.Windows.Forms.Padding(6);
             this.button_clear.Name = "button_clear";
-            this.button_clear.Size = new System.Drawing.Size(123, 42);
+            this.button_clear.Size = new System.Drawing.Size(100, 42);
             this.button_clear.TabIndex = 6;
             this.button_clear.Text = "Clear log";
             this.button_clear.UseVisualStyleBackColor = true;
@@ -863,7 +865,7 @@ namespace BC_Logger_control
             // button_closePort
             // 
             this.button_closePort.Enabled = false;
-            this.button_closePort.Location = new System.Drawing.Point(156, 469);
+            this.button_closePort.Location = new System.Drawing.Point(156, 464);
             this.button_closePort.Margin = new System.Windows.Forms.Padding(6);
             this.button_closePort.Name = "button_closePort";
             this.button_closePort.Size = new System.Drawing.Size(133, 42);
@@ -874,10 +876,10 @@ namespace BC_Logger_control
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(301, 469);
+            this.button1.Location = new System.Drawing.Point(340, 369);
             this.button1.Margin = new System.Windows.Forms.Padding(6);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(123, 42);
+            this.button1.Size = new System.Drawing.Size(98, 42);
             this.button1.TabIndex = 7;
             this.button1.Text = "Save log";
             this.button1.UseVisualStyleBackColor = true;
@@ -896,6 +898,16 @@ namespace BC_Logger_control
             this.checkBox_autoScroll.Text = "Autoscroll";
             this.checkBox_autoScroll.UseVisualStyleBackColor = true;
             // 
+            // button_refresh
+            // 
+            this.button_refresh.Location = new System.Drawing.Point(305, 464);
+            this.button_refresh.Name = "button_refresh";
+            this.button_refresh.Size = new System.Drawing.Size(133, 42);
+            this.button_refresh.TabIndex = 10;
+            this.button_refresh.Text = "Refresh";
+            this.button_refresh.UseVisualStyleBackColor = true;
+            this.button_refresh.Click += new System.EventHandler(this.button_refresh_Click);
+            // 
             // checkBox_portMon
             // 
             this.checkBox_portMon.AutoSize = true;
@@ -908,17 +920,6 @@ namespace BC_Logger_control
             this.checkBox_portMon.TabIndex = 9;
             this.checkBox_portMon.Text = "Port monitoring";
             this.checkBox_portMon.UseVisualStyleBackColor = true;
-            this.checkBox_portMon.CheckedChanged += new System.EventHandler(this.checkBox_portMon_CheckedChanged);
-            // 
-            // button_refresh
-            // 
-            this.button_refresh.Location = new System.Drawing.Point(200, 420);
-            this.button_refresh.Name = "button_refresh";
-            this.button_refresh.Size = new System.Drawing.Size(89, 42);
-            this.button_refresh.TabIndex = 10;
-            this.button_refresh.Text = "Refresh";
-            this.button_refresh.UseVisualStyleBackColor = true;
-            this.button_refresh.Click += new System.EventHandler(this.button_refresh_Click);
             // 
             // Form1
             // 
@@ -930,7 +931,6 @@ namespace BC_Logger_control
             this.Controls.Add(this.checkBox_autoScroll);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button_clear);
-            this.Controls.Add(this.button_end);
             this.Controls.Add(this.button_openPort);
             this.Controls.Add(this.button_closePort);
             this.Controls.Add(this.label1);
@@ -971,7 +971,6 @@ namespace BC_Logger_control
         private System.Windows.Forms.Button button_setC;
         private System.Windows.Forms.Button button_setI;
         private System.Windows.Forms.TabPage tabPage_Get;
-        private System.Windows.Forms.Button button_end;
         private System.Windows.Forms.Button button_delL;
         private System.Windows.Forms.Button button_getDn;
         private System.Windows.Forms.Button button_getLn;
@@ -997,7 +996,6 @@ namespace BC_Logger_control
         private System.Windows.Forms.CheckBox checkBox_delLog;
         private System.Windows.Forms.CheckBox checkBox_autoTime;
         private System.Windows.Forms.CheckBox checkBox_autoScroll;
-        private System.Windows.Forms.CheckBox checkBox_portMon;
         private System.Windows.Forms.TabPage tabPage_Custom;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label7;
@@ -1006,7 +1004,7 @@ namespace BC_Logger_control
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox textBox_endcustom;
+        private System.Windows.Forms.TextBox textBox_getTcustom;
         private System.Windows.Forms.TextBox textBox_delLogcustom;
         private System.Windows.Forms.TextBox textBox_getDncustom;
         private System.Windows.Forms.TextBox textBox_getLncustom;
@@ -1031,9 +1029,6 @@ namespace BC_Logger_control
 
 
         const int inputCodePage = 866;
-        string buffer = "";
-        bool buf_busy = false;
-
 
         delegate void SetTextCallback1(string text);
         private void SetText(string text)
@@ -1148,6 +1143,32 @@ namespace BC_Logger_control
             }
         }
 
+        private System.Windows.Forms.Button button_gett;
+        private System.Windows.Forms.CheckBox checkBox_portMon;
+
+        byte crcCalc(String inString)
+        {
+            char[] instr=inString.ToCharArray(0, inString.Length);
+            byte crc = 0x00;
+            int i = 0;
+            while (i < inString.Length)
+            {
+                for (byte tempI = 8; tempI>0; tempI--)
+                {
+                    byte sum = (byte) ((crc & 0xFF) ^ (instr[i] & 0xFF));
+                    sum = (byte) ((sum & 0xFF) & 0x01);
+
+                    crc >>= 1;
+                    if (sum!=0)
+                    {
+                        crc ^= 0x8C;
+                    }
+                    instr[i] >>= 1;
+                }
+                i++;
+            }
+            return (crc);
+        }
 
 
     }
