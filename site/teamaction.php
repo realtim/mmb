@@ -33,9 +33,7 @@ if ($action == "RegisterNewTeam")
 
 	// Проверка возможности создать команду
 	//	if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
-	if ((CSql::userTeamId($UserId, $RaidId) and !CSql::userAdmin($UserId) and !CSql::userModerator($UserId, $RaidId))
-      	    or CSql::raidStage($RaidId) < 1 or CSql::raidStage($RaidId) >= 7
-    	   )
+	if (!CRights::canCreateTeam($UserId, $RaidId))
 	{
 		CMmb::setMessage('Регистрация на марш-бросок закрыта');
 		return;
@@ -186,7 +184,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		// Проверка на право добавить нового пользователя пользователя
 		// флаг вне зачета не проверяется для добавления команды, так как он устанавливается позже при записи
 		if ( !(      ($action == 'TeamChangeData' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId))  and !CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 2)
-      			or ($action == 'TeamChangeData' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId))  and  CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
+      			or ($action == 'TeamChangeData'   and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId))  and  CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
       			or ($action == 'AddTeam' and ($NewUserId == $UserId or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and CSql::raidStage($RaidId) < 7)
     	  	       )
     	  	    )

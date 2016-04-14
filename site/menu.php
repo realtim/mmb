@@ -299,18 +299,14 @@ echo '3 ';
 echo CSql::raidStage($RaidId);
 echo '4 ';
 */
-	if ($UserId and $RaidId 
-		and  (!CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) 
-		and  CSql::raidStage($RaidId) >= 1 and CSql::raidStage($RaidId) < 7)
-	{
+	if ($UserId and $RaidId and CRights::canCreateTeam($UserId, $RaidId))
 		print('<tr><td><a href="javascript:NewTeam();" title="Регистрация новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n");
-	}
 	// !! реализовать показ ссылки на свою команду, если она существует !!
-	
-	if (CSql::userTeamId($UserId, $RaidId)) {
-		print('<tr><td><a href="'.$MyPHPScript.'?TeamId='.CSql::userTeamId($UserId, $RaidId).'" title="Просмотр карточки Вашей команды">Моя команда</a></td></tr>'."\r\n");
-	}
-	
+
+
+	$teamId = CSql::userTeamId($UserId, $RaidId);
+	if ($teamId)
+		print("<tr><td><a href=\"$MyPHPScript?TeamId=$teamId\" title=\"Просмотр карточки Вашей команды\">Моя команда</a></td></tr>\r\n");
 	
 	// Команды
 	print('<tr><td><a href="?RaidId='.$RaidId.'" title="Список зарегистрированных команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n");
@@ -369,9 +365,12 @@ echo '4 ';
 	print('<tr><td><a href="?rating" title="Страница рейтинга участников">Рейтинг</a></td></tr>'."\r\n");
 	print('<tr><td><a href="'.$MyLocation.'vp_old.html" title="Ручная подборка впечатлений за 2003-2013гг" target = "_blank">Архив впечатлений</a></td></tr>'."\r\n");
 	print('<tr><td> <a href="http://slazav.mccme.ru/mmb/" title="Статическая версия сайта 2009г" target = "_blank">Архив сайта</a></td></tr>'."\r\n");
-	print('</table>'."\r\n");
 
-	print('</br>'."\r\n");
+	if (CRights::canViewLogs($UserId))
+		print('<tr><td><a href="?logs" title="Просмотр логов">Логи</a></td></tr>'."\r\n");
+
+	print("</table>\r\n");
+	print("</br>\r\n");
 
 	// Почта
 	print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");

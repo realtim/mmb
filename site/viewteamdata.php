@@ -18,12 +18,8 @@ if ($viewmode == 'Add')
 
 	// Если запрещено создавать команду - молча выходим, сообщение уже выведено в teamaction.php
 	//if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)) return;
-	if (  (CSql::userTeamId($UserId, $RaidId) and !CSql::userAdmin($UserId) and !CSql::userModerator($UserId, $RaidId)) 
-		or CSql::raidStage($RaidId) < 1 or CSql::raidStage($RaidId) >= 7)
-	{
+	if (!CRights::canCreateTeam($UserId, $RaidId))
 		return;
-	}
-
 
 
 	$Sql = "select user_email from Users where user_id = $UserId";

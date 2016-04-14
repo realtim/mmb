@@ -316,6 +316,11 @@ if ($action == "ViewRankPage")  {
 
 	CMmb::setViews('ViewRankPage', '');
 }
+// =============== Показываем страницу логов ===================
+else if ($action == "viewLogs")  {
+	// todo добавить проверку прав!!!
+	CMmb::setViews('viewLogs', '');
+}
 // =============== Пересчет рейтинга для ММБ ===================
 elseif ($action == 'RecalcRaidRank')
 {
