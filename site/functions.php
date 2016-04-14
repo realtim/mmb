@@ -3450,17 +3450,6 @@ class CMmbLogger
 		}
 	}
 
-	private static function initVars()
-	{
-		if (self::$minLevelCode !== null && self::$fatalErrorMail !== null)
-			return;
-
-		include("settings.php");
-
-		self::$minLevelCode = self::levelCode($MinLogLevel);
-		self::$fatalErrorMail = $FatalErrorMail;
-	}
-
 	private static function levelCode($level)
 	{
 		switch($level)
