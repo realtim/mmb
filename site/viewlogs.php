@@ -8,6 +8,10 @@
 
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
+
+if (!CRights::canViewLogs($UserId))     // нет прав -- вываливаемся
+    return;
+
 ?>
 
 <form name="LogsForm" action="<? echo $MyPHPScript; ?>" method="post">

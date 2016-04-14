@@ -4,6 +4,8 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+include("rights.php");
+
 class CMmb
 {
 	const SessionTimeout = 20; // minutes
