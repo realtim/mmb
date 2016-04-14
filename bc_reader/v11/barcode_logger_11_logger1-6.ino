@@ -1,29 +1,27 @@
 /*
-РќРѕРІРѕРІРІРµРґРµРЅРёСЏ:
- - РїСЂРѕРІРµСЂР° РєРѕСЂСЂРµРєС‚РЅРѕСЃС‚Рё РІСЂРµРјРµРЅРё СЃ RTC
- - РєРѕРЅС‚СЂРѕР»СЊРЅС‹Рµ СЃСѓРјРјС‹ CRC8 РїРµСЂРµРґР°РІР°РµРјС‹С… РїРѕ Bluetooth Р»РѕРіРѕРІ
- - Р·Р°РєРѕРјРјРµРЅС‚РёСЂРѕРІР°РЅР° РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ РїРѕР»СѓС‡РµРЅРёСЏ Р»РѕРіР° РїРѕСЃС‚СЂРѕС‡РЅРѕ (РІС‹РґРµР»РёС‚СЊ CRC8 РІ РїРѕРґРїСЂРѕРіСЂР°РјРјСѓ Рё СЂР°Р±РѕС‚Р°С‚СЊ СЃ РіР»РѕР±Р°Р»СЊРЅС‹РјРё РїРµСЂРµРјРµРЅРЅС‹РјРё)
+To do:
+ - check RTC time according to config
  
  SD card attached to SPI bus as follows:
- *MOSI - D11
- *MISO - D12
- *CLK  - D13
- *CS   - D10
+ MOSI - D11
+ MISO - D12
+ CLK  - D13
+ CS   - D10
  
  Software serial port:
- *TX - D3
- *RX - D4
+ TX - D3
+ RX - D4
  
  DS1307 RTC connected via I2C:
- *SCL - A5
- *SDA - A4
+ SCL - A5
+ SDA - A4
  
  Speaker:
- *D08
+ D08
  Green LED
- *D09
+ D09
  Red LED
- *D07
+ D07
  
  Libraries used:
  RTClib.h - adafruit library
@@ -64,30 +62,30 @@
 
 const byte chipSelect = 10; // SD-card pin
 
-const byte Spk=8;  // BUZZER pin set
-const byte GLed=9;  // GREEN LED pin set
-const byte RLed=7;  // RED LED pin set
+const byte Spk = 8; // BUZZER pin set
+const byte GLed = 9; // GREEN LED pin set
+const byte RLed = 7; // RED LED pin set
 
 const byte TXPin = 3;
 const byte RXPin = 4;
 SoftwareSerial ScannerSerial(RXPin, TXPin);
 
 //initial scanner config
-String cfgID="00";
-String cfgCP="00";
-char cfgNumOnly='N';
-char cfgStrLCheck='N';
-int cfgStrLength=0, i=0;
-String cfgPattern="";
-char cfgFile[]="config.txt";
-char logFile[]="datalog.txt";
-char errFile[]="errors.txt";
-
-String dataString = "";
-String dataString2 = "";
-int strSize=0, strSize2=0;
-boolean bc_data, bt_data, bt_mode=false;
-byte flag=0;
+String cfgID = "00";
+String cfgCP = "00";
+char cfgNumOnly = 'N';
+char cfgStrLCheck = 'N';
+int cfgStrLength = 0, i = 0;
+String cfgPattern = "";
+char cfgFile[] = "config.txt";
+char logFile[] = "datalog.txt";
+char errFile[] = "errors.txt";
+//String divider=", ";
+String ScannerData = "";
+String BTData = "";
+int ScannerStrSize = 0, BTStrSize = 0;
+boolean bc_data = false, bt_data = false;
+byte flag = 0;
 
 RTC_DS1307 rtc;
 
@@ -115,20 +113,20 @@ void setup()
     dataFile = SD.open(cfgFile, FILE_READ);
     if (dataFile)
     {
-      cfgID+=char(dataFile.read());
-      cfgID+=char(dataFile.read());
+      cfgID[0] = dataFile.read();
+      cfgID[1] = dataFile.read();
       dataFile.read();
-      cfgCP+=char(dataFile.read());
-      cfgCP+=char(dataFile.read());
+      cfgCP[0] = dataFile.read();
+      cfgCP[1] = dataFile.read();
       dataFile.read();
-      cfgStrLCheck=char(dataFile.read());
+      cfgStrLCheck = char(dataFile.read());
       dataFile.read();
-      cfgNumOnly=char(dataFile.read());
+      cfgNumOnly = char(dataFile.read());
       dataFile.read();
-      while (dataFile.available() && i==0)
+      while (dataFile.available() && i == 0)
       {
-        cfgPattern+=char(dataFile.read());
-        if (cfgPattern[cfgStrLength]==0x0D || cfgPattern[cfgStrLength]==0x0A)
+        cfgPattern += char(dataFile.read());
+        if (cfgPattern[cfgStrLength] == 0x0D || cfgPattern[cfgStrLength] == 0x0A)
         {
           i++;
         }
@@ -144,9 +142,8 @@ void setup()
       errOpen(cfgFile);
     }
 
-
     dataFile = SD.open(logFile, FILE_WRITE);
-    if (dataFile)  // if the file is available, write to it
+    if (dataFile)  // check if the file is available
     {
       Serial.print(logFile);
       Serial.println(F(" accessible"));
@@ -181,89 +178,88 @@ void setup()
 
 void loop()
 {
-  char key=0;
+  char key = 0;
 
-  while (key!=0x0D && key!=0x0A)
+  while (bt_data==false && bc_data==false)
   {
     //reading BarcodeScanner
     if (ScannerSerial.available())
     {
       key = ScannerSerial.read();
-      //Serial.println(key);
-      if (key>31)
+      if (key > 31)
       {
-        dataString += char(key);
-        if (cfgNumOnly=='Y')
+        ScannerData += char(key);
+        if (cfgNumOnly == 'Y')
         {
-          if (dataString[strSize+8]<'0' || dataString[strSize+8]>'9') flag++; //Only numbers are allowed in the barcode
+          //??????????????????
+          if (ScannerData[ScannerStrSize] < '0' || ScannerData[ScannerStrSize] > '9') flag++; //Only numbers are allowed in the barcode
         }
-        strSize++;
+        ScannerStrSize++;
       }
-      else if (key==0x0D || key==0x0A) bc_data=true;
+      else if (key == 0x0D || key == 0x0A)
+      {
+        bc_data = true;
+        while (ScannerSerial.peek() == 0x0D || ScannerSerial.peek() == 0x0A) ScannerSerial.read(); // clear "\r\n" from input
+      }
     }
     //reading Bluetooth
     if (Serial.available())
     {
       key = Serial.read();
-      if (key>31)
+      if (key > 31)
       {
-        dataString2 += char(key);
-        strSize2++;
+        BTData += char(key);
+        BTStrSize++;
       }
-      else if (key==0x0D || key==0x0A) bt_data=true;
+      else if (key == 0x0D || key == 0x0A)
+      {
+        bt_data = true;
+        while (Serial.peek() == 0x0D || Serial.peek() == 0x0A) Serial.read(); // clear "\r\n" from input
+      }
     }
   }
 
-
-
-
-
-
-
-
-
   // if it's a barcode data
-  if (bc_data==true)
+  if (bc_data == true)
   {
-
-    if (strSize==0) return; //only CR/LF was in the buffer
+    bc_data = false;
+    //if (ScannerStrSize == 0) return; //only CR/LF was in the buffer
     // make a string for assembling the data to log:
-    dataString = cfgID + F(", ") + cfgCP + F(", ") + dataString + F(", ") + GetDateTime();
-    Serial.println(dataString);
-
+    ScannerData = cfgID + F(", ") + cfgCP + F(", ") + ScannerData + F(", ") + GetDateTime();
+    Serial.println(ScannerData);
     //Command barcode found
-    if (dataString[8]=='C'&& dataString[9]=='O'&& dataString[10]=='N'&& dataString[11]=='F'&& dataString[12]=='I'&& dataString[13]=='G'&& dataString[14]=='C')
+    if (ScannerStrSize>=9 && ScannerData[8] == 'C' && ScannerData[9] == 'O' && ScannerData[10] == 'N' && ScannerData[11] == 'F' && ScannerData[12] == 'I' && ScannerData[13] == 'G' && ScannerData[14] == 'C') //Set control point
     {
-      stringToFile(errFile, dataString);
-        cfgCP="";
-        cfgCP+=char(dataString[15]);
-        cfgCP+=char(dataString[16]);
-        Serial.print(F("Control Point # set to: "));
-        Serial.println(cfgCP);
-        confUpdate();
+      stringToFile(errFile, ScannerData);
+      cfgCP = "";
+      cfgCP += char(ScannerData[15]);
+      cfgCP += char(ScannerData[16]);
+      Serial.print(F("Control Point # set to: "));
+      Serial.println(cfgCP);
+      confUpdate();
       Alarm(GLed, 4000, 200);
     }
-    else  //Non config barcode
+    else if (ScannerStrSize > 0)  //Non config barcode
     {
-      if (flag>0) Serial.println(F("Illegal chars"));
-      if (cfgStrLCheck=='Y' && strSize!=cfgStrLength && flag==0)  // String length does not match the settings
+      if (flag > 0) Serial.println(F("Illegal chars"));
+      if (cfgStrLCheck == 'Y' && ScannerStrSize != cfgStrLength && flag == 0) // String length does not match the settings
       {
         Serial.println(F("String size does not match"));
         flag++;
       }
-      i=0;
-      while(i<cfgStrLength && flag==0)
+      i = 0;
+      while (i < cfgStrLength && flag == 0)
       {
-        if (cfgPattern[i]!='*' && dataString[8+i]!=cfgPattern[i])  //String does not match the pattern
+        if (cfgPattern[i] != '*' && ScannerData[8 + i] != cfgPattern[i]) //String does not match the pattern
         {
           Serial.println(F("Pattern does not match"));
           flag++;
         }
         i++;
       }
-      if (flag==0) //No mismatches found, string recognized
+      if (flag == 0) //No mismatches found, string recognized
       {
-        if (stringToFile(logFile, dataString)==0)
+        if (stringToFile(logFile, ScannerData) == 0)
         {
 
           delay(200);
@@ -273,69 +269,57 @@ void loop()
       else //Unknown barcode scanned
       {
         Serial.println(F("Barcode not recognized"));
-        if (stringToFile(errFile, dataString)==0)
+        if (stringToFile(errFile, ScannerData) == 0)
         {
           Alarm(RLed, 2000, 1000);  //String written in the log file
         }
       }
     }
-    dataString = "";
-    strSize=0;
-    flag=0;
-    bc_data=false;
-  }
-  //end of barcode section
-
-
-
-
-
-
-
-
-
-
+    ScannerData = "";
+    ScannerStrSize = 0;
+    flag = 0;
+  } //end of barcode section
 
   // if it's a BT command
-  else if (bc_data==true)
+  else if (bt_data == true && BTStrSize > 0)
   {
+    bt_data = false;
     Alarm(GLed, 4000, 200);
     digitalWrite(RLed, HIGH);
     digitalWrite(GLed, HIGH);
     Serial.print(F("Command received: "));
-    Serial.println(dataString2);
-
-    if (dataString2[0]=='S'&& dataString2[1]=='E'&& dataString2[2]=='T' && bt_mode==true)  //SETTINGS
+    Serial.println(BTData);
+    if (BTStrSize>=5 && BTData[0] == 'S' && BTData[1] == 'E' && BTData[2] == 'T') //SETTINGS
     {
-      switch (dataString2[3])
+      switch (BTData[3])
       {
       case 'I':  //change scanner ID
-        cfgID="";
-        cfgID+=char(dataString2[4]);
-        cfgID+=char(dataString2[5]);
+        cfgID = "";
+        cfgID += char(BTData[4]);
+        cfgID += char(BTData[5]);
         Serial.print(F("Scanner ID set to: "));
         Serial.println(cfgID);
         confUpdate();
         break;
 
       case 'C':  //change control point
-        cfgCP="";
-        cfgCP+=char(dataString2[4]);
-        cfgCP+=char(dataString2[5]);
+        cfgCP = "";
+        cfgCP += char(BTData[4]);
+        cfgCP += char(BTData[5]);
         Serial.print(F("Control Point # set to: "));
         Serial.println(cfgCP);
         confUpdate();
         break;
 
       case 'L':  //Set Barcode length checking
-        cfgStrLCheck=char(dataString2[4]);
+        cfgStrLCheck = char(BTData[4]);
         Serial.print(F("String length check set to: "));
         Serial.println(cfgStrLCheck);
         confUpdate();
         break;
 
       case 'N':  //Set char presence checking
-        cfgNumOnly=char(dataString2[4]);
+        cfgNumOnly = char(BTData[4]);
         Serial.print(F("Numbers only set to: "));
         Serial.println(cfgNumOnly);
         confUpdate();
@@ -343,11 +327,11 @@ void loop()
 
       case 'P':  //Set Barcode pattern
         //i=0;
-        cfgStrLength=0;
-        cfgPattern="";
-        while (dataString2[4+cfgStrLength]!=0x0D && dataString2[4+cfgStrLength]!=0x0A && dataString2[4+cfgStrLength]!=0x00)
+        cfgStrLength = 0;
+        cfgPattern = "";
+        while (BTData[4 + cfgStrLength] != 0x0D && BTData[4 + cfgStrLength] != 0x0A && BTData[4 + cfgStrLength] != 0x00)
         {
-          cfgPattern+=char(dataString2[4+cfgStrLength]);
+          cfgPattern += char(BTData[4 + cfgStrLength]);
           cfgStrLength++;
         }
         Serial.print(F("Barcode pattern set to: "));
@@ -360,35 +344,35 @@ void loop()
       case 'T':  //change current time
         char tm[9], dt[13];
         Serial.println(F("Input current date and time \"Mon dd yyyy hh:mm:ss\" (example: \"Dec 06 2014 12:04:00\")"));
-        key=0;
-        dataString2="";
-        while (ScannerSerial.available()) ScannerSerial.read();  // clear the BlueTooth buffer
-        while (key!=0x0D && key!=0x0A)
+        key = 0;
+        BTData = "";
+        //while (ScannerSerial.available()) ScannerSerial.read();  // clear the BlueTooth buffer
+        while (key != 0x0D && key != 0x0A)
         {
           if (Serial.available())
           {
-            key=Serial.read();
-            if (key>31 && key<128) dataString2+=char(key);
+            key = Serial.read();
+            if (key > 31 && key < 128) BTData += char(key);
           }
         }
-        for(key=0;key<12;key++)
+        for (key = 0; key < 12; key++)
         {
-          dt[key]=dataString2[key];
+          dt[key] = BTData[key];
         }
-        dt[12]=0;
+        dt[12] = 0;
 
-        for(key=0;key<8;key++)
+        for (key = 0; key < 8; key++)
         {
-          tm[key]=dataString2[key+12];
+          tm[key] = BTData[key + 12];
         }
-        tm[8]=0;
+        tm[8] = 0;
         rtc.adjust(DateTime(dt, tm));
         break;
       }
     }
-    else if (dataString2[0]=='G'&& dataString2[1]=='E'&& dataString2[2]=='T')  //DOWNLOAD data
+    else if (BTStrSize>=4 && BTData[0] == 'G' && BTData[1] == 'E' && BTData[2] == 'T') //DOWNLOAD data
     {
-      switch (dataString2[3])
+      switch (BTData[3])
       {
       case 'T':  //get current time
         Serial.print(F("Current time is: "));
@@ -427,74 +411,63 @@ void loop()
 
       case '#':  //get selected string by number
         long int linenum;
-        String numString="";
-        strSize=5;
-        while (dataString2[strSize]>='0' && dataString2[strSize]<='9')
+        String numString = "";
+        if (BTStrSize>=5)
         {
-          numString+=dataString2[strSize];
-          strSize++;
+          BTStrSize = 5;
+          while (BTData[BTStrSize] >= '0' && BTData[BTStrSize] <= '9')
+          {
+            numString += BTData[BTStrSize];
+            BTStrSize++;
+          }
+          linenum = numString.toInt();
+          if (BTData[4] == 'L') getLogLine(logFile, linenum); //from LOG file
+          else if (BTData[4] == 'D') getLogLine(errFile, linenum); //from DEBUG file
         }
-        linenum=numString.toInt();
-        if (dataString2[4]=='L') getLogLine(logFile, linenum);  //from LOG file
-        if (dataString2[4]=='D') getLogLine(errFile, linenum);  //from DEBUG file
         break;
       }
     }
-    else if (dataString2[0]=='D' && dataString2[1]=='E' && dataString2[2]=='L' && dataString2[3]=='L' && dataString2[4]=='O' && dataString2[5]=='G' && bt_mode==true)  //Remove datalog.txt and errors.txt
+    else if (BTStrSize>=6 && BTData[0] == 'D' && BTData[1] == 'E' && BTData[2] == 'L' && BTData[3] == 'L' && BTData[4] == 'O' && BTData[5] == 'G') //Remove datalog.txt and errors.txt
     {
-      if (SD.remove("datalog.txt")==true) Serial.println(F("datalog.txt deleted"));
+      if (SD.remove("datalog.txt") == true) Serial.println(F("datalog.txt deleted"));
       else Serial.println(F("Error deleting datalog.txt!"));
-      if (SD.remove("errors.txt")==true) Serial.println(F("errors.txt deleted"));
+      if (SD.remove("errors.txt") == true) Serial.println(F("errors.txt deleted"));
       else Serial.println(F("Error deleting errors.txt!"));
     }
-    dataString2 = "";
-    strSize2=0;
+    else Serial.println(F("Unknown command!"));
+    BTData = "";
+    BTStrSize = 0;
     digitalWrite(RLed, LOW);
     digitalWrite(GLed, LOW);
-    bt_data=false;
-  }
-  //end of BT section
+  } //end of BT section
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 String GetDateTime()  //assemble time+date string
 {
   String TimeString = "";
   DateTime now = rtc.now();
-  if (now.hour()>23 || now.hour()<0 || now.minute()>59 || now.minute()<0 || now.second()>59 || now.second()<0 || now.month()>12 || now.month()<0 || now.day()>31 || now.day()<0 || now.year()<2015 || now.year()>2020)
+  if (now.hour() > 23 || now.hour() < 0 || now.minute() > 59 || now.minute() < 0 || now.second() > 59 || now.second() < 0 || now.month() > 12 || now.month() < 0 || now.day() > 31 || now.day() < 0 || now.year() < 2016 /*|| now.year()>2016*/)
   {
     Serial.println(F("RTC clock incorrect!"));
     Alarm(RLed, 2000, 5000);
   }
-  if (now.hour()<10) TimeString += "0";
+  if (now.hour() < 10) TimeString += "0";
   TimeString += String(now.hour(), DEC);
   TimeString += ":";
-  if (now.minute()<10) TimeString += "0";
+  if (now.minute() < 10) TimeString += "0";
   TimeString += String(now.minute(), DEC);
   TimeString += ":";
-  if (now.second()<10) TimeString += "0";
+  if (now.second() < 10) TimeString += "0";
   TimeString += String(now.second(), DEC);
   TimeString += F(", ");
   TimeString += String(now.year(), DEC);
   TimeString += "/";
-  if (now.month()<10) TimeString += "0";
+  if (now.month() < 10) TimeString += "0";
   TimeString += String(now.month(), DEC);
   TimeString += "/";
-  if (now.day()<10) TimeString += "0";
+  if (now.day() < 10) TimeString += "0";
   TimeString += String(now.day(), DEC);
-  return(TimeString);
+  return (TimeString);
 }
 
 
@@ -526,7 +499,7 @@ void Alarm(int led, int freq, int pause)  //Alarm light and sound
 {
   digitalWrite(led, HIGH);
   tone(Spk, freq, pause);
-  delay(pause+100);
+  delay(pause + 100);
   digitalWrite(led, LOW);
 }
 
@@ -561,27 +534,27 @@ void confPrint()  //settings print on screen
 void getLog(char fileName[])  //send full file to serial with line# and CRC8
 {
   char key;
-  byte crc=0;
+  byte crc = 0;
   dataFile = SD.open(fileName, FILE_READ);
   if (dataFile)
   {
-    long int linenum=0;
+    long int linenum = 0;
     Serial.print(fileName);
     Serial.println(F(" sending"));
     Serial.print(F("File size: "));
     Serial.println(dataFile.size());
     Serial.println(F("===="));
-    Serial.print("#" + String(linenum) + ", ");
-    while(dataFile.available())
+    //Serial.print("#" + String(linenum) + ", ");
+    while (dataFile.available())
     {
       key = dataFile.read();
-      if (key!=0x0D && key!=0x0A) Serial.write(key);
+      if (key != 0x0D && key != 0x0A) Serial.write(key);
       else
       {
         linenum++;
-        dataFile.read();
+        if (dataFile.peek() == 0x0D || dataFile.peek() == 0x0A) dataFile.read();
         Serial.println("");
-        if(dataFile.available()) Serial.print("#" + String(linenum) + ", ");
+        //if(dataFile.available()) Serial.print("#" + String(linenum) + ", ");
       }
     }
     Serial.println(F("===="));
@@ -598,7 +571,7 @@ void getLog(char fileName[])  //send full file to serial with line# and CRC8
 
 void getLogLine(char fileName[], long int line)  //send line from file to serial with line# and CRC8
 {
-  long int linenum=0;
+  long int linenum = 0;
   char key;
   dataFile = SD.open(fileName, FILE_READ);
   if (dataFile)
@@ -607,24 +580,24 @@ void getLogLine(char fileName[], long int line)  //send line from file to serial
     Serial.print(F(" sending, string #"));
     Serial.println(line);
     Serial.println(F("===="));
-    while(linenum<line && dataFile.available())
+    while (linenum < line && dataFile.available())
     {
-      key=char(dataFile.read());
-      if (key==0x0D || key==0x0A)
+      key = char(dataFile.read());
+      if (key == 0x0D || key == 0x0A)
       {
         linenum++;
         dataFile.read();
       }
     }
-    Serial.print("Line#=" + String(linenum) + ", ");
+    //Serial.print("Line#=" + String(linenum) + ", ");
     do {
       key = dataFile.read();
-      if (key!=0x0D && key!=0x0A)
+      if (key != 0x0D && key != 0x0A)
       {
         Serial.write(key);
       }
-    } 
-    while (key!=0x0D && key!=0x0A && dataFile.available());
+    }
+    while (key != 0x0D && key != 0x0A && dataFile.available());
     Serial.println(F("\r\n===="));
     dataFile.close();
   }
@@ -634,18 +607,18 @@ void getLogLine(char fileName[], long int line)  //send line from file to serial
 
 byte stringToFile(char fileName[], String logString)  //print string to file with write verification
 {
-  String logString2="";
-  char key=0;
+  String logString2 = "";
+  char key = 0;
   dataFile = SD.open(fileName, FILE_WRITE);
   if (dataFile)
   {
-    logString+=", CRC8=" + String(crcCalc(logString));
+    logString += ", CRC8=" + String(crcCalc(logString));
     dataFile.println(logString);
-    dataFile.seek(dataFile.size()-logString.length()-2);  //Check if the written data is the same as scanned.
+    dataFile.seek(dataFile.size() - logString.length() - 2); //Check if the written data is the same as scanned.
     while (dataFile.available())
     {
-      key=char(dataFile.read());
-      if (key!=0x0D && key!=0x0A) logString2 += key;
+      key = char(dataFile.read());
+      if (key != 0x0D && key != 0x0A) logString2 += key;
     }
     dataFile.close();
     if (logString != logString2) //Record is not corect
@@ -654,14 +627,14 @@ byte stringToFile(char fileName[], String logString)  //print string to file wit
       Serial.print(fileName);
       Serial.println(F(" write verification error!"));
       Alarm(RLed, 2000, 5000);
-      return(1);
+      return (1);
     }
-    return(0);
+    return (0);
   }
   else
   {
     errOpen(fileName);
-    return(1);
+    return (1);
   }
 }
 
@@ -669,8 +642,8 @@ byte stringToFile(char fileName[], String logString)  //print string to file wit
 byte crcCalc(String inString)
 {
   byte crc = 0x00, key, key2;
-  int i=0;
-  while (i<inString.length())
+  int i = 0;
+  while (i < inString.length())
   {
     for (byte tempI = 8; tempI; tempI--)
     {
@@ -684,8 +657,9 @@ byte crcCalc(String inString)
     }
     i++;
   }
-  return(crc);
+  return (crc);
 }
+
 
 
 
