@@ -534,7 +534,7 @@ void confPrint()  //settings print on screen
 void getLog(char fileName[])  //send full file to serial with line# and CRC8
 {
   char key;
-  byte crc = 0;
+  //byte crc = 0;
   dataFile = SD.open(fileName, FILE_READ);
   if (dataFile)
   {
@@ -641,7 +641,7 @@ byte stringToFile(char fileName[], String logString)  //print string to file wit
 
 byte crcCalc(String inString)
 {
-  byte crc = 0x00, key, key2;
+  byte crc = 0x00;
   int i = 0;
   while (i < inString.length())
   {
