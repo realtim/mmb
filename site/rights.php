@@ -11,8 +11,6 @@ class CRights
 {
     public static function canViewLogs($userId)
     {
-        return true;    // todo удалить в основной ветке!
-
         global $Administrator;
         return $Administrator || $userId == 2202; // Сергей Титов
     }
