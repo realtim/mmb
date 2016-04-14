@@ -41,6 +41,8 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 	// эта инициализация сейчас перекрываетcя в GetPrivileges, но если в будующем захочется отказаться от GetPrivileges
 	// то полезно пользователя определять здесь и остальные необходимые операции тоже здесь делать
 	$UserId = (int) CSql::userId($SessionId);
+
+
 	// обновляем данные сессии (удаляем закрытые, пишем в cookies	
 	UpdateSession($SessionId);
 	

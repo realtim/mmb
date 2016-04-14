@@ -106,6 +106,109 @@ if (empty($RaidId))
   die();
   return;
 }
+// =============== Генерация списка карточек в файл  ===================
+elseif ($action == 'RaidCardsExport')
+{
+
+	if ($RaidId <= 0)
+	{
+		CMmb::setShortResult('Марш-бросок не найден', '');
+		return;
+	}
+
+	// рассылать всем может только администратор
+	if (!$Administrator) return;
+
+        CMmb::setViews('ViewAdminDataPage', '');
+
+
+	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
+	header('Content-Type: text; charset=utf-8');
+	header('Content-Disposition: attachment; filename=raidcards.txt');
+
+	// create a file pointer connected to the output stream
+	$output = fopen('php://output', 'w');
+
+
+	fwrite($output, 'Дистанция;Номера карточек'."\n");
+  
+  	$sql = "select t.team_num, d.distance_name
+		  from Teams t
+	       		inner join Distances d on t.distance_id = d.distance_id
+		  where d.distance_hide = 0 and t.team_hide = 0 and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = $RaidId
+		  order by d.distance_name, team_num asc";
+
+  	$Result = MySqlQuery($sql);
+
+  	$PredDistance = "";
+  	$CardsArr = "";
+  	while ($Row = mysql_fetch_assoc($Result))
+  	{
+		if ($Row['distance_name'] <> $PredDistance)
+		{
+			if ($PredDistance <> "")
+			// записываем накопленное
+			{
+				fwrite($output, $CardsArr."\n");
+			}
+			$PredDistance = $Row['distance_name'];
+			$CardsArr = $PredDistance.';'.$Row['team_num'];
+		}
+		else
+		// копим
+		{
+			$CardsArr = $CardsArr.','.$Row['team_num'];
+		}
+  	}
+  	mysql_free_result($Result);
+
+  	// записываем накопленное
+  	fwrite($output, $CardsArr."\n");
+  	fwrite($output, '===='."\n");
+  	fwrite($output, 'Дистанция;Номер;GPS;Название;Участники;Карты;Сумма'."\n");
+
+	  $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name,
+		  t.team_mapscount, d.distance_name, d.distance_id
+	  		from Teams t
+			inner join Distances d on t.distance_id = d.distance_id
+		  where d.distance_hide = 0 and t.team_hide = 0  and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = $RaidId
+	  	  order by d.distance_name, team_num asc";
+
+  	$Result = MySqlQuery($sql);
+
+  	while ($Row = mysql_fetch_assoc($Result))
+  	{
+		$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, u.user_id
+			from TeamUsers tu
+				inner join Users u on tu.user_id = u.user_id
+			where tu.teamuser_hide = 0   and team_id = {$Row['team_id']}
+			order by tu.teamuser_id asc";
+		$UserResult = MySqlQuery($sql);
+
+		$First = 1;
+		while ($UserRow = mysql_fetch_assoc($UserResult))
+		{
+			if ($First == 1)
+			{
+				fwrite($output, $Row['distance_name'].';'.$Row['team_num'].';'.($Row['team_usegps'] == 1 ? '+' : '').';'.$Row['team_name'].';'.$UserRow['user_name'].' '.$UserRow['user_birthyear'].';'.$Row['team_mapscount'].';'.CalcualteTeamPayment($Row['team_id'])."\n");
+				$First = 0;
+			}
+			else
+			{
+				fwrite($output,  ';;;;'.$UserRow['user_name'].' '.$UserRow['user_birthyear']."\n");
+			}
+		}
+  
+		mysql_free_result($UserResult);
+  	}
+
+  	mysql_free_result($Result);
+
+ 	fclose($output);
+
+ 	die();
+ 	return;
+}
 // =============== Получение дампа ===================
 elseif ($action == 'JSON')
 {
@@ -185,50 +288,6 @@ elseif ($action == 'FindRaidErrors')
 	if (!$Administrator && !$Moderator) return;
 
 	$total_errors = FindErrors($RaidId, 0);
-
-/*
-	$n_Errors = 0;
-	$n_Warnings = 0;
-
-	// Обрабатываем в цикле все дистанции марш-броска
-        $sql = 'select distance_id, distance_name from Distances d where d.distance_hide = 0 and d.raid_id = '.$RaidId.' order by distance_name';
-	$DResult = MySqlQuery($sql);
-        while ($Distance = mysql_fetch_assoc($DResult))
-	{
-		// Получаем список этапов дистанции и их параметры
-		$sql = 'select * from Levels l where  l.level_hide = 0 and l.distance_id = '.$Distance['distance_id'].' order by level_order ASC';
-		$Result = MySqlQuery($sql);
-		$nlevel = 1;
-		unset($Levels);
-	        while ($Row = mysql_fetch_assoc($Result))
-		{
-			foreach ($Row as $key => $value) $Levels[$key][$nlevel] = $value;
-			$nlevel++;
-		}
-		mysql_free_result($Result);
-		// Переводим все временные парамеры этапов в секунды
-		foreach ($Levels['level_begtime'] as &$time) $time = strtotime($time);
-		foreach ($Levels['level_maxbegtime'] as &$time) $time = strtotime($time);
-		foreach ($Levels['level_minendtime'] as &$time) $time = strtotime($time);
-		foreach ($Levels['level_endtime'] as &$time) $time = strtotime($time);
-
-		// Проверяем в цикле все команды, записанные на эту дистанцию
-		$sql = 'select team_id, team_progress, team_result from Teams where distance_id = '.$Distance['distance_id'].' and team_hide = 0 order by team_num ASC';
-		$Result = MySqlQuery($sql);
-	        while ($Team = mysql_fetch_assoc($Result))
-		{
-			$Error = ValidateTeam($Team, $Levels);
-			if ($Error > 0) $n_Errors++;
-			elseif ($Error < 0) $n_Warnings++;
-		}
-		mysql_free_result($Result);
-	}
-	mysql_free_result($DResult);
-*/
-
-	//$statustext = 'Найдено '.$n_Errors.' ошибок и '.$n_Warnings.' предупреждений';
-
-	//vhj;
 
 	$view = "ViewAdminDataPage";
 }
@@ -327,6 +386,54 @@ elseif ($action == 'SendMessageForAll')
         	CMmb::setError('Ошибка при отправке рассылки.', $view, '');
                 return; 
         }
+}
+// =============== Генерация списка участников  ===================
+elseif ($action == 'RaidTeamUsersExport')
+{
+
+	if ($RaidId <= 0)
+	{
+		CMmb::setShortResult('Марш-бросок не найден', '');
+		return;
+	}
+
+	// рассылать всем может только администратор
+	if (!$Administrator) return;
+
+        CMmb::setViews('ViewAdminDataPage', '');
+
+
+	$Sql = "select u.user_name, user_birthyear, 
+			COALESCE(u.user_city, '') as user_city,
+			COALESCE(u.user_phone, '') as user_phone,
+		        t.team_num, t.team_name, t.team_outofrange  
+		from Teams t 
+			inner join Distances d on t.distance_id = d.distance_id
+			inner join TeamUsers tu on tu.team_id = t.team_id
+			inner join Users u on tu.user_id = u.user_id
+		where t.team_hide = 0 
+			and tu.teamuser_hide = 0
+			and d.raid_id = $RaidId
+		order by user_name
+		";
+	
+	$Result = MySqlQuery($Sql);
+
+	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
+	header('Content-Type: text/csv; charset=utf-8');
+	header('Content-Disposition: attachment; filename=raidteamusers.csv');
+
+	// create a file pointer connected to the output stream
+	$output = fopen('php://output', 'w');
+
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) {  fputcsv($output, $Row); }
+	mysql_free_result($Result);
+
+ 	fclose($output);
+ 	die();
+ 	return;
+
+ 	
 }
 // =============== Никаких действий не требуется ==============================
 else

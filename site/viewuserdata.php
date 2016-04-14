@@ -321,7 +321,7 @@ if (!isset($MyPHPScript)) return;
         {
          print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserPhone" size="20" value="'.$UserPhone.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
 	        .($UserPhone <> $UserPhonePlaceHolder ? '' : CMmbUI::placeholder($UserPhonePlaceHolder))
-	        .' title = "Телефон"></td></tr>'."\r\n");
+	        .' title = "Телефон для связи с участником во время ММБ"></td></tr>'."\r\n");
         }
 //                 '.( $UserCity <> $UserCityPlaceHolder ? '' : 'onclick = "javascript: this.value=\'\';" onblur = "javascript: this.value=\''.$UserCityPlaceHolder.'\';"').'
 
@@ -333,11 +333,13 @@ if (!isset($MyPHPScript)) return;
 	        title = "Вместо ФИО будет выводится текст: \''.$Anonimus.'\' Исключения: 1) Вы сами, модератор и администратор увидят в карточке пользователя ФИО. 2) При запросе на объединение с другим пользователем, инициатором которого являетесь Вы, ему будет открываться Ваше ФИО в журнале объединений и письме, чтобы он знал, кто пытается его присоединить к себе." /> Не показывать моё ФИО в результатах, рейтингах и т.п.</td></tr>'."\r\n");
 
 
-         print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserAllowChangeInfo" '.(($UserAllowChangeInfo == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
-	        title = "На Ваш email будет отправляться письмо, когда вносятся изменения в карточку пользователя или в данные команды, участником которой Вы являетесь." />Получать информацию при изменении данных пользователя или команды. <br/><i>Не рекомендуется снимать этот флаг</i></td></tr>'."\r\n");
+// Закомментировал, пока нет обработки этого флага в рассылке писем
+//         print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserAllowChangeInfo" '.(($UserAllowChangeInfo == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
+//	        title = "На Ваш email будет отправляться письмо, когда вносятся изменения в карточку пользователя или в данные команды, участником которой Вы являетесь." />Получать информацию при изменении данных пользователя или команды. <br/><i>Не рекомендуется снимать этот флаг</i></td></tr>'."\r\n");
+
 
          print('<tr><td class = "input"><input type="checkbox"  autocomplete = "off" name="UserAllowOrgMessages" '.(($UserAllowOrgMessages == 1) ? 'checked="checked"' : '').' tabindex = "'.(++$TabIndex).'" '.$DisabledText.'
-	        title = "На Ваш email будет отправляться письмо, когда открывается регистрация или когда организаторы осуществляют рассылку важной информации." />Получать информацию об открытии информации, о публикации результатов и т.п. <br/><i>Если флаг не установлен, то информационное письмо может прийти только в случае экстренной рассылки.</i></td></tr>'."\r\n");
+	        title = "На Ваш email будет отправляться инормация от организаторов." />Получать информационные сообщения от организаторов.<br/><i>Если флаг снят, то письмо всё равно может быть отправлено в случае экстренной рассылки участникам марш-броска.</i></td></tr>'."\r\n");
 
 
 	 if (($AllowEdit == 1) and  ($viewmode <> 'Add'))

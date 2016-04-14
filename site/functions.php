@@ -96,7 +96,8 @@ class CMmb
 	{
 		$err = mysql_error();
 		CMmbLogger::e(null, 'MySqlQuery', "sql error: '$err' \r\non query: '$SqlString'");
-		echo "my err" . $err;
+		echo $err;
+
 		CSql::closeConnection();
 		die();
 		return -1;
@@ -178,7 +179,7 @@ class CSql {
 			self::closeConnection($connection);
 			self::dieOnSqlError(null, 'createConnection', "mysql_select_db '$DBName'", $err);
 		}
-		CMmbLogger::addInterval('getConnection', $t1);
+	//	CMmbLogger::addInterval('getConnection', $t1);
 		
 		return $connection;
 	}
@@ -203,8 +204,9 @@ class CSql {
 		$result = MySqlQuery($query);
 		$row = mysql_fetch_assoc($result);
 		mysql_free_result($result);
+
 		if (!isset($row[$key]) && $strict == true)
-			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist , query: '$query'");
+			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist, query:\n$query");
 		return $row[$key];
 	}
 
@@ -258,7 +260,7 @@ class CSql {
 	// 21.03.2016 Добавляю сервисные функции в этот класс, хотя может нужно  потом разбивать на  отдельеные классы
 	public static function userId($sessionId)
 	{
-		$sql = "select user_id  from   Sessions  where session_id = '$sessionId'";
+		$sql = "select user_id from Sessions where session_id = '$sessionId'";
 
 		return self::singleValue($sql, 'user_id', false);
 	}
@@ -3441,7 +3443,7 @@ class CMmbLogger
 		if (!$rs)
 		{
 			$err = mysql_error($conn);
-//			self::sc($user, $operation, $message);		// sql не работает -- кого волнует исходное сообщение!
+//			self::fatal($user, $operation, $message);		// sql не работает -- кого волнует исходное сообщение!
 			CSql::closeConnection($conn);
 			self::$sqlConn = null;
 			CSql::dieOnSqlError($user, 'addLogRecord', "adding record: '$query'", $err);
@@ -3470,6 +3472,18 @@ class CMmbLogger
 			case self::Critical: return 4;
 			default: return -1;
 		}
+	}
+
+	// по факту это д.б. статический конструктор
+	private static function initVars()
+	{
+		if (self::$minLevelCode !== null && self::$fatalErrorMail !== null)
+			return;
+
+		include("settings.php");
+
+		self::$minLevelCode = self::levelCode($MinLogLevel);
+		self::$fatalErrorMail = $FatalErrorMail;
 	}
 }
 
