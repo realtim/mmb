@@ -130,7 +130,7 @@ elseif ($action == 'RaidCardsExport')
 	$output = fopen('php://output', 'w');
 
 
-	fwrite($output, 'Дистанция;Номера карточек'."\n");
+	fwrite($output, iconv('UTF-8', 'Windows-1251', 'Дистанция;Номера карточек')."\n");
   
   	$sql = "select t.team_num, d.distance_name
 		  from Teams t
