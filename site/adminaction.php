@@ -149,7 +149,7 @@ elseif ($action == 'RaidCardsExport')
 			if ($PredDistance <> "")
 			// записываем накопленное
 			{
-				fwrite($output, $CardsArr."\n");
+				fwrite($output, iconv('UTF-8', 'Windows-1251', $CardsArr)."\n");
 			}
 			$PredDistance = $Row['distance_name'];
 			$CardsArr = $PredDistance.';'.$Row['team_num'];
@@ -163,9 +163,15 @@ elseif ($action == 'RaidCardsExport')
   	mysql_free_result($Result);
 
   	// записываем накопленное
-  	fwrite($output, $CardsArr."\n");
-  	fwrite($output, '===='."\n");
-  	fwrite($output, 'Дистанция;Номер;GPS;Название;Участники;Карты;Сумма'."\n");
+  	
+
+  	
+//  	fwrite($output, $CardsArr."\n");
+	fwrite($output, iconv('UTF-8', 'Windows-1251', $CardsArr)."\n");
+//  	fwrite($output, '===='."\n");
+	fwrite($output, iconv('UTF-8', 'Windows-1251', '====')."\n");
+  //	fwrite($output, 'Дистанция;Номер;GPS;Название;Участники;Карты;Сумма'."\n");
+	fwrite($output, iconv('UTF-8', 'Windows-1251', 'Дистанция;Номер;GPS;Название;Участники;Карты;Сумма')."\n");
 
 	  $sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name,
 		  t.team_mapscount, d.distance_name, d.distance_id
@@ -190,12 +196,14 @@ elseif ($action == 'RaidCardsExport')
 		{
 			if ($First == 1)
 			{
-				fwrite($output, $Row['distance_name'].';'.$Row['team_num'].';'.($Row['team_usegps'] == 1 ? '+' : '').';'.$Row['team_name'].';'.$UserRow['user_name'].' '.$UserRow['user_birthyear'].';'.$Row['team_mapscount'].';'.CalcualteTeamPayment($Row['team_id'])."\n");
+				$strtowrite = $Row['distance_name'].';'.$Row['team_num'].';'.($Row['team_usegps'] == 1 ? '+' : '').';'.$Row['team_name'].';'.$UserRow['user_name'].' '.$UserRow['user_birthyear'].';'.$Row['team_mapscount'].';'.CalcualteTeamPayment($Row['team_id']);
+				fwrite($output, iconv('UTF-8', 'Windows-1251', $strtowrite)."\n");
 				$First = 0;
 			}
 			else
 			{
-				fwrite($output,  ';;;;'.$UserRow['user_name'].' '.$UserRow['user_birthyear']."\n");
+				$strtowrite = ';;;;'.$UserRow['user_name'].' '.$UserRow['user_birthyear'];
+				fwrite($output, iconv('UTF-8', 'Windows-1251', $strtowrite)."\n");
 			}
 		}
   
@@ -420,8 +428,8 @@ elseif ($action == 'RaidTeamUsersExport')
 	$Result = MySqlQuery($Sql);
 
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
-	header('Content-Type: text/csv; charset=windows-1251');
-	header('Content-Disposition: attachment; filename=raidteamusers.csv');
+	header('Content-Type: text/plain; charset=windows-1251');
+	header('Content-Disposition: attachment; filename=raidteamusers.txt');
 
 	// create a file pointer connected to the output stream
 	$output = fopen('php://output', 'w');
