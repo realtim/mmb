@@ -123,7 +123,7 @@ elseif ($action == 'RaidCardsExport')
 
 
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
-	header('Content-Type: text; charset=windows-1251');
+	header('Content-Type: text/plain; charset=windows-1251');
 	header('Content-Disposition: attachment; filename=raidcards.txt');
 
 	// create a file pointer connected to the output stream
