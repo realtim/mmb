@@ -1,9 +1,9 @@
 package ru.mmb.loggermanager.activity;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -11,28 +11,36 @@ import android.widget.ViewFlipper;
 
 import ru.mmb.loggermanager.R;
 import ru.mmb.loggermanager.bluetooth.BluetoothAdapterEnableActivity;
+import ru.mmb.loggermanager.bluetooth.BluetoothClient;
 import ru.mmb.loggermanager.bluetooth.DeviceInfo;
+import ru.mmb.loggermanager.bluetooth.ThreadMessageTypes;
 import ru.mmb.loggermanager.widget.ConsoleMessagesAppender;
 
 public class MainActivity extends BluetoothAdapterEnableActivity {
 
     private LinearLayout globalContainerPanel;
 
-    private SelectLoggerPanel selectLoggerPanel;
     private DeviceInfo selectedLogger = null;
 
     private ToggleButton panelsToggle;
     private ViewFlipper panelsFlipper;
 
-    private EditText loggerIdEdit;
-    private EditText scanpointEdit;
-    private EditText patternEdit;
-    private CheckBox checkLengthCheckBox;
-    private CheckBox onlyDigitsCheckBox;
-    private TextView loggerTimeLabel;
+    private LoggerSettings loggerSettings = new LoggerSettings();
+    private SettingsPanel settingsPanel;
 
     private TextView consoleTextView;
+
     private ConsoleMessagesAppender consoleAppender;
+    private BluetoothClient bluetoothClient;
+    private Thread runningThread = null;
+
+    public DeviceInfo getSelectedLogger() {
+        return selectedLogger;
+    }
+
+    public ConsoleMessagesAppender getConsoleAppender() {
+        return consoleAppender;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,17 +52,33 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         panelsToggle.setOnClickListener(new PanelsSwitchListener());
         panelsFlipper = (ViewFlipper) findViewById(R.id.main_panelsFlipper);
 
-        selectLoggerPanel = new SelectLoggerPanel(this);
-
-        loggerIdEdit = (EditText) findViewById(R.id.main_loggerIdEditText);
-        scanpointEdit = (EditText) findViewById(R.id.main_scanpointEditText);
-        patternEdit = (EditText) findViewById(R.id.main_patternEditText);
-        checkLengthCheckBox = (CheckBox) findViewById(R.id.main_checkLengthCheckBox);
-        onlyDigitsCheckBox = (CheckBox) findViewById(R.id.main_onlyDigitsCheckBox);
-        loggerTimeLabel = (TextView) findViewById(R.id.main_loggerTimeLabel);
+        new SelectLoggerPanel(this);
+        settingsPanel = new SettingsPanel(this);
 
         consoleTextView = (TextView) findViewById(R.id.main_consoleTextView);
         consoleAppender = new ConsoleMessagesAppender(consoleTextView);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if (runningThread != null) {
+            bluetoothClient.terminate();
+            runningThread.interrupt();
+            runningThread = null;
+        }
+    }
+
+    private void setControlsEnabled(boolean value) {
+        panelsToggle.setEnabled(value);
+        panelsFlipper.setEnabled(value);
+        settingsPanel.setControlsEnabled(value);
+    }
+
+    public void selectedLoggerChanged(DeviceInfo selectedLogger) {
+        this.selectedLogger = selectedLogger;
+        refreshState();
     }
 
     @Override
@@ -71,34 +95,38 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }
 
         setControlsEnabled(false);
-        clearControls();
+        settingsPanel.clearControls();
         if (selectedLogger != null) {
             reloadSelectedLoggerSettings();
-            setControlsEnabled(true);
         }
     }
 
-    private void clearControls() {
-        loggerIdEdit.setText("");
-        scanpointEdit.setText("");
-        patternEdit.setText("");
-        checkLengthCheckBox.setChecked(false);
-        onlyDigitsCheckBox.setChecked(false);
-        loggerTimeLabel.setText("");
+    public void reloadSelectedLoggerSettings() {
+        final LoggerSettingsBluetoothClient settingsBtClient =
+                new LoggerSettingsBluetoothClient(this, selectedLogger, new ReloadSettingsBtHandler(), loggerSettings);
+        bluetoothClient = settingsBtClient;
+        setControlsEnabled(false);
+        runningThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                settingsBtClient.reloadSettings();
+            }
+        });
+        runningThread.start();
     }
 
-    private void reloadSelectedLoggerSettings() {
-
-    }
-
-    public void selectedLoggerChanged(DeviceInfo selectedLogger) {
-        this.selectedLogger = selectedLogger;
-        refreshState();
-    }
-
-    private void setControlsEnabled(boolean value) {
-        panelsToggle.setEnabled(value);
-        panelsFlipper.setEnabled(value);
+    public void sendLoggerSettingsCommand(final String command) {
+        final LoggerSettingsBluetoothClient settingsBtClient =
+                new LoggerSettingsBluetoothClient(this, selectedLogger, new SendSettingsBtHandler(), loggerSettings);
+        bluetoothClient = settingsBtClient;
+        setControlsEnabled(false);
+        runningThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                settingsBtClient.sendCommand(command);
+            }
+        });
+        runningThread.start();
     }
 
     private class PanelsSwitchListener implements View.OnClickListener {
@@ -108,6 +136,39 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
                 panelsFlipper.showNext();
             } else {
                 panelsFlipper.showPrevious();
+            }
+        }
+    }
+
+    private class SendSettingsBtHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == ThreadMessageTypes.MSG_CONSOLE) {
+                consoleAppender.appendMessage((String) msg.obj);
+            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
+                runningThread = null;
+                setControlsEnabled(true);
+            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
+                runningThread = null;
+                settingsPanel.clearControls();
+                setControlsEnabled(false);
+            }
+        }
+    }
+
+    private class ReloadSettingsBtHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == ThreadMessageTypes.MSG_CONSOLE) {
+                consoleAppender.appendMessage((String) msg.obj);
+            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
+                runningThread = null;
+                settingsPanel.updateLoggerSettings(loggerSettings);
+                setControlsEnabled(true);
+            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
+                runningThread = null;
+                settingsPanel.clearControls();
+                setControlsEnabled(false);
             }
         }
     }

@@ -10,6 +10,7 @@
     <string name="main_only_digits_label">Only digits</string>
     <string name="main_time_label">Time</string>
     <string name="main_update_setting">&gt;</string>
+    <string name="main_reload_settings">Обновить</string>
     <string name="main_select_save_dir">Директория сохранения</string>
     <string name="main_no_save_dir">Директория сохранения не выбрана</string>
     <string name="main_get_log">Получить log</string>

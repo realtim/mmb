@@ -10,6 +10,7 @@
     <string name="main_only_digits_label">Only digits</string>
     <string name="main_time_label">Time</string>
     <string name="main_update_setting">&gt;</string>
+    <string name="main_reload_settings">Reload</string>
     <string name="main_select_save_dir">Select save dir</string>
     <string name="main_no_save_dir">Save dir not defined</string>
     <string name="main_get_log">Get log</string>

@@ -6,7 +6,7 @@
     android:orientation="horizontal">
 
     <LinearLayout
-        android:layout_width="450dp"
+        android:layout_width="500dp"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
@@ -83,6 +83,14 @@
                         android:layout_gravity="center_vertical"
                         android:layout_marginLeft="@dimen/activity_horizontal_margin"
                         android:text="@string/main_update_setting" />
+
+                    <Button
+                        android:id="@+id/main_reloadSettingsButton"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:text="@string/main_reload_settings" />
                 </LinearLayout>
 
                 <LinearLayout
