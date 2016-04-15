@@ -426,7 +426,7 @@ elseif ($action == 'RaidTeamUsersExport')
 	// create a file pointer connected to the output stream
 	$output = fopen('php://output', 'w');
 
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) {  fputcsv($output, $Row, ';'); }
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) {  fputcsv($output, iconv('UTF-8', 'Windows-1251', $Row), ';'); }
 	mysql_free_result($Result);
 
  	fclose($output);
