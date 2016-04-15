@@ -123,7 +123,7 @@ elseif ($action == 'RaidCardsExport')
 
 
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
-	header('Content-Type: text; charset=utf-8');
+	header('Content-Type: text; charset=windows-1251');
 	header('Content-Disposition: attachment; filename=raidcards.txt');
 
 	// create a file pointer connected to the output stream
@@ -420,13 +420,13 @@ elseif ($action == 'RaidTeamUsersExport')
 	$Result = MySqlQuery($Sql);
 
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
-	header('Content-Type: text/csv; charset=utf-8');
+	header('Content-Type: text/csv; charset=windows-1251');
 	header('Content-Disposition: attachment; filename=raidteamusers.csv');
 
 	// create a file pointer connected to the output stream
 	$output = fopen('php://output', 'w');
 
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) {  fputcsv($output, $Row); }
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) {  fputcsv($output, $Row, ';'); }
 	mysql_free_result($Result);
 
  	fclose($output);
