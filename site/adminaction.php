@@ -428,10 +428,10 @@ elseif ($action == 'RaidTeamUsersExport')
 
 	while ( ( $Row = mysql_fetch_assoc($Result) ) )
 	{  
-		$strtowrite = $Row['user_name'].';'.$Row['user_birthyear'].';'.$Row['user_city'].';'.
-				$Row['user_phone'].';'.$Row['team_num'].';'.$Row['team_name'].';'.
-				$Row['team_outofrange'].'\n';
-		fwrite($output, iconv('UTF-8', 'Windows-1251', $strtowrite)); 
+		$strtowrite = trim($Row['user_name']).';'.$Row['user_birthyear'].';'.$Row['user_city'].';'.
+				$Row['user_phone'].';'.$Row['team_num'].';'.trim($Row['team_name']).';'.
+				$Row['team_outofrange'];
+		fwrite($output, iconv('UTF-8', 'Windows-1251', $strtowrite)."\n"); 
 		//fputcsv($output, $Row, ';');
 	}
 	mysql_free_result($Result);
