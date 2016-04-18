@@ -87,10 +87,10 @@ public abstract class LoggerBluetoothClient extends BluetoothClient {
     }
 
     protected void updateLoggerTime() {
-        sendRequestWaitForReply("SETT\n");
+        sendRequestWaitForReply("SETT1\n");
         Date currentTime = new Date();
         String timeString =
                 loggerDateFormat.format(currentTime) + " " + loggerTimeFormat.format(currentTime);
-        sendRequestWaitForReply(timeString + "\n", 5000, true);
+        sendRequestWaitForReply(timeString + "\n", 200, true);
     }
 }

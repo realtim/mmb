@@ -28,19 +28,9 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private LoggerSettings loggerSettings = new LoggerSettings();
     private SettingsPanel settingsPanel;
 
-    private TextView consoleTextView;
-
     private ConsoleMessagesAppender consoleAppender;
     private BluetoothClient bluetoothClient;
     private Thread runningThread = null;
-
-    public DeviceInfo getSelectedLogger() {
-        return selectedLogger;
-    }
-
-    public ConsoleMessagesAppender getConsoleAppender() {
-        return consoleAppender;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +45,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         new SelectLoggerPanel(this);
         settingsPanel = new SettingsPanel(this);
 
-        consoleTextView = (TextView) findViewById(R.id.main_consoleTextView);
+        TextView consoleTextView = (TextView) findViewById(R.id.main_consoleTextView);
         consoleAppender = new ConsoleMessagesAppender(consoleTextView);
     }
 
@@ -102,31 +92,40 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     }
 
     public void reloadSelectedLoggerSettings() {
-        final LoggerSettingsBluetoothClient settingsBtClient =
-                new LoggerSettingsBluetoothClient(this, selectedLogger, new ReloadSettingsBtHandler(), loggerSettings);
-        bluetoothClient = settingsBtClient;
-        setControlsEnabled(false);
-        runningThread = new Thread(new Runnable() {
+        runLoggerSettingsBtClientMethod(new SettingsRunnable() {
             @Override
             public void run() {
                 settingsBtClient.reloadSettings();
             }
-        });
+        }, new ReloadSettingsBtHandler());
+    }
+
+    public void runLoggerSettingsBtClientMethod(SettingsRunnable runnable, Handler handler) {
+        LoggerSettingsBluetoothClient settingsBtClient =
+                new LoggerSettingsBluetoothClient(this, selectedLogger, handler, loggerSettings);
+        bluetoothClient = settingsBtClient;
+        setControlsEnabled(false);
+        runnable.setSettingsBtClient(settingsBtClient);
+        runningThread = new Thread(runnable);
         runningThread.start();
     }
 
     public void sendLoggerSettingsCommand(final String command) {
-        final LoggerSettingsBluetoothClient settingsBtClient =
-                new LoggerSettingsBluetoothClient(this, selectedLogger, new SendSettingsBtHandler(), loggerSettings);
-        bluetoothClient = settingsBtClient;
-        setControlsEnabled(false);
-        runningThread = new Thread(new Runnable() {
+        runLoggerSettingsBtClientMethod(new SettingsRunnable() {
             @Override
             public void run() {
                 settingsBtClient.sendCommand(command);
             }
-        });
-        runningThread.start();
+        }, new SendSettingsBtHandler());
+    }
+
+    public void updateLoggerTime() {
+        runLoggerSettingsBtClientMethod(new SettingsRunnable() {
+            @Override
+            public void run() {
+                settingsBtClient.updateLoggerTime();
+            }
+        }, new SendSettingsBtHandler());
     }
 
     private class PanelsSwitchListener implements View.OnClickListener {
@@ -148,7 +147,8 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
             } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
                 runningThread = null;
                 setControlsEnabled(true);
-            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
+                reloadSelectedLoggerSettings();
+            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_ERROR) {
                 runningThread = null;
                 settingsPanel.clearControls();
                 setControlsEnabled(false);
@@ -165,11 +165,19 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
                 runningThread = null;
                 settingsPanel.updateLoggerSettings(loggerSettings);
                 setControlsEnabled(true);
-            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
+            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_ERROR) {
                 runningThread = null;
                 settingsPanel.clearControls();
                 setControlsEnabled(false);
             }
+        }
+    }
+
+    private abstract class SettingsRunnable implements Runnable {
+        protected LoggerSettingsBluetoothClient settingsBtClient;
+
+        public void setSettingsBtClient(LoggerSettingsBluetoothClient settingsBtClient) {
+            this.settingsBtClient = settingsBtClient;
         }
     }
 }

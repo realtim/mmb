@@ -5,6 +5,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import ru.mmb.loggermanager.R;
 
@@ -55,7 +56,9 @@ public class SettingsPanel {
             public void onClick(View v) {
                 String loggerId = loggerIdEdit.getText().toString();
                 if (!validateTwoDigitsNumber(loggerId)) {
-                    // TODO show message
+                    showValidationError(
+                            owner.getResources().getString(R.string.main_two_digits_error),
+                            loggerId);
                     return;
                 }
                 int loggerIdInt = Integer.parseInt(loggerId);
@@ -67,13 +70,15 @@ public class SettingsPanel {
         updateScanpointButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String scanpointId = scanpointEdit.getText().toString();
-                if (!validateTwoDigitsNumber(scanpointId)) {
-                    // TODO show message
+                String scanpointNum = scanpointEdit.getText().toString();
+                if (!validateTwoDigitsNumber(scanpointNum)) {
+                    showValidationError(
+                            owner.getResources().getString(R.string.main_two_digits_error),
+                            scanpointNum);
                     return;
                 }
-                int scanpointIdInt = Integer.parseInt(scanpointId);
-                sendLoggerCommand("SETC" + String.format("%02d", scanpointIdInt) + "\n");
+                int scanpointIdInt = Integer.parseInt(scanpointNum);
+                owner.sendLoggerSettingsCommand("SETC" + String.format("%02d", scanpointIdInt) + "\n");
             }
         });
 
@@ -81,7 +86,14 @@ public class SettingsPanel {
         updatePatternButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO implement
+                String pattern = patternEdit.getText().toString();
+                if (pattern.length() != 8) {
+                    showValidationError(
+                            owner.getResources().getString(R.string.main_pattern_error),
+                            pattern);
+                    return;
+                }
+                owner.sendLoggerSettingsCommand("SETP" + pattern + "\n");
             }
         });
 
@@ -89,7 +101,8 @@ public class SettingsPanel {
         updateCheckLengthButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO implement
+                String checkLength = checkLengthCheckBox.isChecked() ? "Y" : "N";
+                owner.sendLoggerSettingsCommand("SETL" + checkLength + "\n");
             }
         });
 
@@ -97,7 +110,8 @@ public class SettingsPanel {
         updateOnlyDigitsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO implement
+                String onlyDigits = onlyDigitsCheckBox.isChecked() ? "Y" : "N";
+                owner.sendLoggerSettingsCommand("SETN" + onlyDigits + "\n");
             }
         });
 
@@ -105,9 +119,13 @@ public class SettingsPanel {
         updateLoggerTimeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO implement
+                owner.updateLoggerTime();
             }
         });
+    }
+
+    private void showValidationError(String message, String value) {
+        Toast.makeText(owner, message.replace("${value}", value), Toast.LENGTH_SHORT).show();
     }
 
     private boolean validateTwoDigitsNumber(String value) {
@@ -123,10 +141,6 @@ public class SettingsPanel {
             return false;
         }
         return true;
-    }
-
-    private void sendLoggerCommand(String command) {
-        owner.sendLoggerSettingsCommand(command);
     }
 
     public void clearControls() {

@@ -58,4 +58,15 @@ public class LoggerSettingsBluetoothClient extends LoggerBluetoothClient {
             sendFinishedErrorNotification();
         }
     }
+
+    public void updateLoggerTime() {
+        boolean connected = connect();
+        if (connected) {
+            super.updateLoggerTime();
+            disconnectImmediately();
+            sendFinishedSuccessNotification();
+        } else {
+            sendFinishedErrorNotification();
+        }
+    }
 }
