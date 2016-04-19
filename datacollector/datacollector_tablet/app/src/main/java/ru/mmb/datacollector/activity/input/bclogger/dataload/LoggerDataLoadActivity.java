@@ -55,7 +55,7 @@ public class LoggerDataLoadActivity extends Activity {
 
         consoleAppender = new ConsoleMessagesAppender(areaConsole);
         Handler bluetoothHandler = new BluetoothHandler(this, consoleAppender);
-        bluetoothClient = new LoggerDataLoadBluetoothClient(this, currentState.getCurrentDeviceInfo(), bluetoothHandler, currentState.getCurrentScanPoint());
+        bluetoothClient = new LoggerDataLoadBluetoothClient(this, currentState.getCurrentDeviceInfo(), bluetoothHandler);
 
         setControlsEnabled(true);
     }
