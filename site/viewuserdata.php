@@ -523,9 +523,9 @@ if (!isset($MyPHPScript)) return;
 	  {
 		// Выводим спсиок устройств, которые относятся к данному пользователю 
 	        print('<div style = "margin-top: 25px; margin-bottom: 5px; text-align: left">Cообщение для пользователя '.$UserName.': 
-	        <br/>Включить в копию автора собщения <input type="checkbox" name="SendMessageCopyToAuthor" tabindex = "'.(++$TabIndex).'"  
+	        <br/>включить в копию автора собщения <input type="checkbox" name="SendMessageCopyToAuthor" tabindex = "'.(++$TabIndex).'"  
 	        title = "Письмо будет отправлено вместе с копией автору" />
-	        Обратите внимание: при установленной отметке получатель будет видеть адрес электронной почты автора!
+	        <br/>(обратите внимание: при установленной отметке получатель будет видеть адрес электронной почты автора!)
 	        </div>'."\r\n");
 		print('<form  name = "UserSendMessageForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
