@@ -528,10 +528,8 @@ if (!isset($MyPHPScript)) return;
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
 
 	        print('<div style = "margin-top: 25px; margin-bottom: 5px; text-align: left">Cообщение для пользователя '.$UserName.': 
-	        <br/><small>включить в копию автора собщения <input type="checkbox" name="SendMessageCopyToAuthor" tabindex = "'.(++$TabIndex).'"  
-	        title = "Письмо будет отправлено вместе с копией автору" />
-	        <br/>(получатель будет видеть адрес электронной почты автора)</small>
-	        </div>'."\r\n");
+	        <br/><small>отправить копию автору собщения <input type="checkbox" name="SendMessageCopyToAuthor" tabindex = "'.(++$TabIndex).'"  
+	        title = "Письмо будет отправлено вместе с копией автору" /></small></div>'."\r\n");
 
                 $TabIndex = 1;
 	        $DisabledText = '';
