@@ -532,6 +532,9 @@ if (!isset($MyPHPScript)) return;
 	        $DisabledText = '';
 		print('<div class="team_res"><textarea name="MessageText"  rows="4" cols="50" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
 	        title = "Текст сообщения">Текст сообщения</textarea></div>'."\r\n");
+    	        print('</br>Включит в копию автора собщения <input type="checkbox" name="SendMessageCopyToAuthor" tabindex = "'.(++$TabIndex).'"  
+	        title = "Защита от случайного удаления" /> '."\r\n");
+    	        print('</br>Обратите внимание: при  установленно отмтке получатель будет видеть адрес электронной почты автора'."\r\n");
     	        print('</br><input type="button" onClick = "javascript: SendMessage();"  name="SendMessageButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                    
 	        print('</form>'."\r\n");
