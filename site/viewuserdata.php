@@ -536,8 +536,8 @@ if (!isset($MyPHPScript)) return;
 
                 $TabIndex = 1;
 	        $DisabledText = '';
-		print('<div class="team_res"><textarea name="MessageText"  rows="4" cols="50" value="'.$NewMessageSubject.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText. ' '
-		. CMmbUI::placeholder($NewMessageSubject) . '   title = "Текст сообщения">Текст сообщения</textarea></div>'."\r\n");
+		print('<div class="team_res"><textarea name="MessageText"  rows="4" cols="50" value="'.$NewMessageText.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText. ' '
+		. CMmbUI::placeholder($NewMessageText) . '   title = "Текст сообщения">Текст сообщения</textarea></div>'."\r\n");
     	        print('<br/><input type="button" onClick = "javascript: SendMessage();"  name="SendMessageButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
 	        print('</form>'."\r\n");
 
