@@ -837,7 +837,8 @@ if (!isset($MyPHPScript)) return;
 
              $pUserId = $_POST['UserId'];
              $pText = $_POST['MessageText'];
-
+             $pSendMessageCopyToAuthor = mmb_isOn($_POST, 'SendMessageCopyToAuthor'); 
+		
 	     if (empty($pText) or trim($pText) == 'Текст сообщения')
 	     {
 		CMmb::setError('Укажите текст сообщения.', $view, '');
@@ -855,6 +856,17 @@ if (!isset($MyPHPScript)) return;
 		$row = CSql::fullUser($pUserId);
                 $UserEmail = $row['user_email'];
 		$UserName = $row['user_name'];
+
+		if ($pSendMessageCopyToAuthor == 1) {
+			$row = CSql::fullUser($UserId);
+        	        $AuthorUserEmail = $row['user_email'];
+			$AuthorUserName = $row['user_name'];
+			if (!empty($AuthorUserEmail)) {
+				$UserEmail = trim($UserEmail).','.trim($AuthorUserEmail);
+			}
+		}
+
+
 
 		CMmb::setShortResult('Сообщение выслано.', '');
 
@@ -875,7 +887,7 @@ if (!isset($MyPHPScript)) return;
 		
 			    
                 // Отправляем письмо
-		SendMail(trim($UserEmail), $Msg, $UserName);
+		SendMail(trim($UserEmail).','.trim($UserEmail), $Msg, $UserName);
    }
    // ============ Добавить пользователя в слияние ====================================
    
