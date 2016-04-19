@@ -862,9 +862,6 @@ if (!isset($MyPHPScript)) return;
 			$row = CSql::fullUser($UserId);
         	        $AuthorUserEmail = $row['user_email'];
 			$AuthorUserName = $row['user_name'];
-			if (!empty($AuthorUserEmail)) {
-				$UserEmail = trim($UserEmail).', '.trim($AuthorUserEmail);
-			}
 		}
 
 
@@ -889,7 +886,16 @@ if (!isset($MyPHPScript)) return;
 		
 		//echo 'user mail'.$UserEmail;	    
                 // Отправляем письмо
-		SendMail(trim($UserEmail), $Msg, $UserName);
+
+		// Отправляем копию
+		if (!empty($AuthorUserEmail)) {
+
+			$Msg = "Копия письма, которое Вами было отправлено $UserName\r\n ================ \r\n".$Msg;
+			SendMail(trim($AuthorUserEmail), $Msg, $UserName);
+		}
+
+
+
    }
    // ============ Добавить пользователя в слияние ====================================
    
