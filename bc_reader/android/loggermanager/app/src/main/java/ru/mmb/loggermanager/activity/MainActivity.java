@@ -1,25 +1,33 @@
 package ru.mmb.loggermanager.activity;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 import android.widget.ViewFlipper;
 
+import com.filedialog.FileDialog;
+
 import ru.mmb.loggermanager.R;
+import ru.mmb.loggermanager.activity.dataload.LoggerDataLoadBluetoothClient;
+import ru.mmb.loggermanager.activity.settings.LoggerSettings;
+import ru.mmb.loggermanager.activity.settings.LoggerSettingsBluetoothClient;
 import ru.mmb.loggermanager.bluetooth.BluetoothAdapterEnableActivity;
 import ru.mmb.loggermanager.bluetooth.BluetoothClient;
 import ru.mmb.loggermanager.bluetooth.DeviceInfo;
 import ru.mmb.loggermanager.bluetooth.ThreadMessageTypes;
+import ru.mmb.loggermanager.conf.Configuration;
 import ru.mmb.loggermanager.widget.ConsoleMessagesAppender;
+
+import static ru.mmb.loggermanager.activity.Constants.REQUEST_CODE_SAVE_DIR_DIALOG;
 
 public class MainActivity extends BluetoothAdapterEnableActivity {
 
-    private LinearLayout globalContainerPanel;
-
+    private boolean adapterActive = false;
     private DeviceInfo selectedLogger = null;
 
     private ToggleButton panelsToggle;
@@ -27,6 +35,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
     private LoggerSettings loggerSettings = new LoggerSettings();
     private SettingsPanel settingsPanel;
+    private LogsPanel logsPanel;
 
     private ConsoleMessagesAppender consoleAppender;
     private BluetoothClient bluetoothClient;
@@ -37,13 +46,24 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        globalContainerPanel = (LinearLayout) findViewById(R.id.main_globalContainerPanel);
-        panelsToggle = (ToggleButton) findViewById(R.id.main_switchPanelsToggle);
-        panelsToggle.setOnClickListener(new PanelsSwitchListener());
+        Configuration.getInstance().loadConfiguration(this);
+
         panelsFlipper = (ViewFlipper) findViewById(R.id.main_panelsFlipper);
+        panelsToggle = (ToggleButton) findViewById(R.id.main_switchPanelsToggle);
+        panelsToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (panelsToggle.isChecked()) {
+                    panelsFlipper.showNext();
+                } else {
+                    panelsFlipper.showPrevious();
+                }
+            }
+        });
 
         new SelectLoggerPanel(this);
         settingsPanel = new SettingsPanel(this);
+        logsPanel = new LogsPanel(this);
 
         TextView consoleTextView = (TextView) findViewById(R.id.main_consoleTextView);
         consoleAppender = new ConsoleMessagesAppender(consoleTextView);
@@ -60,10 +80,24 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_SAVE_DIR_DIALOG:
+                if (resultCode == Activity.RESULT_OK) {
+                    logsPanel.changeSaveDir(data.getStringExtra(FileDialog.RESULT_PATH));
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
     private void setControlsEnabled(boolean value) {
         panelsToggle.setEnabled(value);
         panelsFlipper.setEnabled(value);
         settingsPanel.setControlsEnabled(value);
+        logsPanel.setControlsEnabled(value);
     }
 
     public void selectedLoggerChanged(DeviceInfo selectedLogger) {
@@ -73,70 +107,84 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
     @Override
     protected void onAdapterStateChanged() {
-        refreshState();
+        if (adapterActive != isAdapterEnabled()) {
+            consoleAppender.appendMessage("changing adapter state");
+            adapterActive = isAdapterEnabled();
+            refreshState();
+        }
     }
 
     private void refreshState() {
-        if (!isAdapterEnabled()) {
-            globalContainerPanel.setEnabled(false);
-            return;
-        } else if (!globalContainerPanel.isEnabled()) {
-            globalContainerPanel.setEnabled(true);
-        }
-
         setControlsEnabled(false);
         settingsPanel.clearControls();
-        if (selectedLogger != null) {
+        if (isAdapterEnabled() && selectedLogger != null) {
             reloadSelectedLoggerSettings();
         }
     }
 
     public void reloadSelectedLoggerSettings() {
-        runLoggerSettingsBtClientMethod(new SettingsRunnable() {
+        runLoggerSettingsBtClientMethod(new BluetoothClientRunnable<LoggerSettingsBluetoothClient>() {
             @Override
             public void run() {
-                settingsBtClient.reloadSettings();
+                bluetoothClient.reloadSettings();
             }
         }, new ReloadSettingsBtHandler());
     }
 
-    public void runLoggerSettingsBtClientMethod(SettingsRunnable runnable, Handler handler) {
+    public void runLoggerSettingsBtClientMethod(BluetoothClientRunnable<LoggerSettingsBluetoothClient> runnable, Handler handler) {
+        setControlsEnabled(false);
         LoggerSettingsBluetoothClient settingsBtClient =
                 new LoggerSettingsBluetoothClient(this, selectedLogger, handler, loggerSettings);
         bluetoothClient = settingsBtClient;
-        setControlsEnabled(false);
-        runnable.setSettingsBtClient(settingsBtClient);
+        runnable.setBluetoothClient(settingsBtClient);
         runningThread = new Thread(runnable);
         runningThread.start();
     }
 
     public void sendLoggerSettingsCommand(final String command) {
-        runLoggerSettingsBtClientMethod(new SettingsRunnable() {
+        runLoggerSettingsBtClientMethod(new BluetoothClientRunnable<LoggerSettingsBluetoothClient>() {
             @Override
             public void run() {
-                settingsBtClient.sendCommand(command);
+                bluetoothClient.sendCommand(command);
             }
         }, new SendSettingsBtHandler());
     }
 
     public void updateLoggerTime() {
-        runLoggerSettingsBtClientMethod(new SettingsRunnable() {
+        runLoggerSettingsBtClientMethod(new BluetoothClientRunnable<LoggerSettingsBluetoothClient>() {
             @Override
             public void run() {
-                settingsBtClient.updateLoggerTime();
+                bluetoothClient.updateLoggerTime();
             }
         }, new SendSettingsBtHandler());
     }
 
-    private class PanelsSwitchListener implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            if (panelsToggle.isChecked()) {
-                panelsFlipper.showNext();
-            } else {
-                panelsFlipper.showPrevious();
+    public void loadLogsFromLogger() {
+        runLoggerDataLoadBtClientMethod(new BluetoothClientRunnable<LoggerDataLoadBluetoothClient>() {
+            @Override
+            public void run() {
+                bluetoothClient.loadLogData();
             }
-        }
+        }, new LoadDataBtHandler());
+    }
+
+    public void runLoggerDataLoadBtClientMethod(BluetoothClientRunnable<LoggerDataLoadBluetoothClient> runnable, Handler handler) {
+        setControlsEnabled(false);
+        LoggerDataLoadBluetoothClient dataLoadBtClient =
+                new LoggerDataLoadBluetoothClient(this, selectedLogger, handler);
+        bluetoothClient = dataLoadBtClient;
+        runnable.setBluetoothClient(dataLoadBtClient);
+        runningThread = new Thread(runnable);
+        runningThread.start();
+    }
+
+    public void loadDebugFromLogger() {
+        runLoggerDataLoadBtClientMethod(new BluetoothClientRunnable<LoggerDataLoadBluetoothClient>() {
+            @Override
+            public void run() {
+                bluetoothClient.loadErrorsData();
+            }
+        }, new LoadDataBtHandler());
     }
 
     private class SendSettingsBtHandler extends Handler {
@@ -173,11 +221,24 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }
     }
 
-    private abstract class SettingsRunnable implements Runnable {
-        protected LoggerSettingsBluetoothClient settingsBtClient;
+    private class LoadDataBtHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == ThreadMessageTypes.MSG_CONSOLE) {
+                consoleAppender.appendMessage((String) msg.obj);
+            } else {
+                // no matter was error or not
+                runningThread = null;
+                setControlsEnabled(true);
+            }
+        }
+    }
 
-        public void setSettingsBtClient(LoggerSettingsBluetoothClient settingsBtClient) {
-            this.settingsBtClient = settingsBtClient;
+    private abstract class BluetoothClientRunnable<T> implements Runnable {
+        protected T bluetoothClient;
+
+        public void setBluetoothClient(T bluetoothClient) {
+            this.bluetoothClient = bluetoothClient;
         }
     }
 }

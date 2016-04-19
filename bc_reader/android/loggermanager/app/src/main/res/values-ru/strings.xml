@@ -19,4 +19,15 @@
     <string name="main_get_debug_line">Получить строку debug</string>
     <string name="main_two_digits_error">Ошибка в числе из двух цифр: ${value}</string>
     <string name="main_pattern_error">Ошибка в шаблоне штрих-кода: ${value}</string>
+    <string name="main_save_dir_error">Ошибка выбора директории: ${value}</string>
+
+    <string name="file_dialog_location">Расположение</string>
+    <string name="file_dialog_cant_read_folder">нельзя прочитать директорию!</string>
+    <string name="file_dialog_new">Новый</string>
+    <string name="file_dialog_select">Выбрать</string>
+    <string name="file_dialog_file_name">Имя файла:</string>
+    <string name="file_dialog_cancel">Отмена</string>
+    <string name="file_dialog_create">Сохранить</string>
+    <string name="file_dialog_no_data">Нет данных</string>
+    <string name="file_dialog_err">Ошибка</string>
 </resources>

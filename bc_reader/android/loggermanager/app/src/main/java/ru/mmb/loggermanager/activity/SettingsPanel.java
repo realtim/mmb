@@ -8,6 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import ru.mmb.loggermanager.R;
+import ru.mmb.loggermanager.activity.settings.LoggerSettings;
 
 public class SettingsPanel {
 

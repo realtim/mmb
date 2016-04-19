@@ -20,4 +20,15 @@
     <string name="main_clear_device">Clear device</string>
     <string name="main_two_digits_error">Two digits number wrong: ${value}</string>
     <string name="main_pattern_error">Wrong pattern: ${value}</string>
+    <string name="main_save_dir_error">Wrong directory: ${value}</string>
+
+    <string name="file_dialog_location">Location</string>
+    <string name="file_dialog_cant_read_folder">folder can\'t be read!</string>
+    <string name="file_dialog_new">New</string>
+    <string name="file_dialog_select">Select</string>
+    <string name="file_dialog_file_name">File name:</string>
+    <string name="file_dialog_cancel">Cancel</string>
+    <string name="file_dialog_create">Save</string>
+    <string name="file_dialog_no_data">No Data</string>
+    <string name="file_dialog_err">Error</string>
 </resources>

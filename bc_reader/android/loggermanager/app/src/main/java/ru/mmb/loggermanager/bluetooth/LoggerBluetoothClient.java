@@ -87,7 +87,7 @@ public abstract class LoggerBluetoothClient extends BluetoothClient {
     }
 
     protected void updateLoggerTime() {
-        sendRequestWaitForReply("SETT1\n");
+        sendRequestWaitForReply("SETT\n");
         Date currentTime = new Date();
         String timeString =
                 loggerDateFormat.format(currentTime) + " " + loggerTimeFormat.format(currentTime);
