@@ -522,7 +522,7 @@ if (!isset($MyPHPScript)) return;
 	  if ($viewmode <> 'Add' and !empty($UserId))
 	  {
 		// Выводим спсиок устройств, которые относятся к данному пользователю 
-	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Cообщение для пользователя '.$UserName.':</div>'."\r\n");
+	        print('<div style = "margin-top: 20px; margin-bottom: 5px; text-align: left">Cообщение для пользователя '.$UserName.':</div>'."\r\n");
 		print('<form  name = "UserSendMessageForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
 		print('<input type = "hidden" name = "action" value = "">'."\r\n");
 		print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\n");
@@ -532,9 +532,9 @@ if (!isset($MyPHPScript)) return;
 	        $DisabledText = '';
 		print('<div class="team_res"><textarea name="MessageText"  rows="4" cols="50" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.'
 	        title = "Текст сообщения">Текст сообщения</textarea></div>'."\r\n");
-    	        print('</br>Включит в копию автора собщения <input type="checkbox" name="SendMessageCopyToAuthor" tabindex = "'.(++$TabIndex).'"  
-	        title = "Защита от случайного удаления" /> '."\r\n");
-    	        print('</br>Обратите внимание: при  установленно отмтке получатель будет видеть адрес электронной почты автора'."\r\n");
+    	        print('</br>Включить в копию автора собщения <input type="checkbox" name="SendMessageCopyToAuthor" tabindex = "'.(++$TabIndex).'"  
+	        title = "Письмо будет отправлено вместе с копией автору" /> '."\r\n");
+    	        print('<div style = "margin-top: 10px; margin-bottom: 10px; font-size: 80%; text-align: left">Обратите внимание: при установленной отметке получатель будет видеть адрес электронной почты автора</div>'."\r\n");
     	        print('</br><input type="button" onClick = "javascript: SendMessage();"  name="SendMessageButton" value="Отправить" tabindex = "'.(++$TabIndex).'">'."\r\n");
                    
 	        print('</form>'."\r\n");
