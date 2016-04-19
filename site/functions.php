@@ -1187,8 +1187,15 @@ send_mime_mail('Автор письма',
                         $html = FALSE // письмо в виде html или обычного текста
                         ) 
     {
-      $to = mime_header_encode($name_to, $data_charset, $send_charset)
+
+//      if () {
+	 $to = mime_header_encode($name_to, $data_charset, $send_charset)
 		  . " <$email_to>";
+  //    } else {
+//	 $to = $email_to;	
+  //    }
+      
+      echo 'to '.$to;
       $subject = mime_header_encode($subject, $data_charset, $send_charset);
 
       $from =  mime_header_encode($name_from, $data_charset, $send_charset)
