@@ -887,7 +887,7 @@ if (!isset($MyPHPScript)) return;
 		
 			    
                 // Отправляем письмо
-		SendMail(trim($UserEmail).','.trim($UserEmail), $Msg, $UserName);
+		SendMail(trim($UserEmail), $Msg, $UserName);
    }
    // ============ Добавить пользователя в слияние ====================================
    
