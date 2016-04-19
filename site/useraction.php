@@ -856,7 +856,7 @@ if (!isset($MyPHPScript)) return;
 		$row = CSql::fullUser($pUserId);
                 $UserEmail = $row['user_email'];
 		$UserName = $row['user_name'];
-echo 'pSendMessageCopyToAuthor' .$pSendMessageCopyToAuthor;
+		//echo 'pSendMessageCopyToAuthor' .$pSendMessageCopyToAuthor;
 
 		if ($pSendMessageCopyToAuthor == 1) {
 			$row = CSql::fullUser($UserId);
@@ -887,7 +887,7 @@ echo 'pSendMessageCopyToAuthor' .$pSendMessageCopyToAuthor;
 			  .$MyHttpLink.$MyLocation."?UserId=$UserId\r\n";
 		
 		
-		echo 'user mail'.$UserEmail;	    
+		//echo 'user mail'.$UserEmail;	    
                 // Отправляем письмо
 		SendMail(trim($UserEmail), $Msg, $UserName);
    }
