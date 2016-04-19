@@ -863,7 +863,7 @@ if (!isset($MyPHPScript)) return;
         	        $AuthorUserEmail = $row['user_email'];
 			$AuthorUserName = $row['user_name'];
 			if (!empty($AuthorUserEmail)) {
-				$UserEmail = trim($UserEmail).','.trim($AuthorUserEmail);
+				$UserEmail = trim($UserEmail).', '.trim($AuthorUserEmail);
 			}
 		}
 
