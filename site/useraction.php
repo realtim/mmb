@@ -891,7 +891,7 @@ if (!isset($MyPHPScript)) return;
 		// Отправляем копию
 		if (!empty($AuthorUserEmail)) {
 
-			$Msg = "Копия письма, которое Вами было отправлено $UserName\r\n ================ \r\n".$Msg;
+			$Msg = "Копия письма, которое Вами было отправлено\r\n ================ \r\n".$Msg;
 			SendMail(trim($AuthorUserEmail), $Msg, $UserName);
 		}
 
