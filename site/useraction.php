@@ -886,6 +886,7 @@ if (!isset($MyPHPScript)) return;
 		
 		//echo 'user mail'.$UserEmail;	    
                 // Отправляем письмо
+		SendMail(trim($UserEmail), $Msg, $UserName);
 
 		// Отправляем копию
 		if (!empty($AuthorUserEmail)) {
