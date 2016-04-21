@@ -386,7 +386,7 @@ elseif ($action == 'SendMessageForAll')
 	$Result = 0;
 	
 	//письмо о начале рассылки в группу
-	SendMail('mmbsitedeveloper@googlgroups.com', 'Запущена рассылка');
+	SendMail('mmbsitedeveloper@googlegroups.com', 'Запущена рассылка');
 
 	$Result = SendMailForAll($RaidId, $pSubject, $pText, $pSendType);
      
