@@ -78,9 +78,32 @@ public class LogsPanel {
 
         getLogLineEdit = (EditText) owner.findViewById(R.id.main_getLogLineEditText);
         getDebugLineEdit = (EditText) owner.findViewById(R.id.main_getDebugLineEditText);
+
         getLogLineButton = (Button) owner.findViewById(R.id.main_getLogLineButton);
+        getLogLineButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String lineNumber = getLogLineEdit.getText().toString();
+                owner.sendLogsCommand("GET#L" + lineNumber + "\n");
+            }
+        });
+
         getDebugLineButton = (Button) owner.findViewById(R.id.main_getDebugLineButton);
+        getDebugLineButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String lineNumber = getDebugLineEdit.getText().toString();
+                owner.sendLogsCommand("GET#D" + lineNumber + "\n");
+            }
+        });
+
         clearDeviceButton = (Button) owner.findViewById(R.id.main_clearDeviceButton);
+        clearDeviceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                owner.sendLogsCommand("DELLOG\n");
+            }
+        });
     }
 
     private String extractStartPath() {

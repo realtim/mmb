@@ -122,15 +122,6 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }
     }
 
-    public void reloadSelectedLoggerSettings() {
-        runLoggerSettingsBtClientMethod(new BluetoothClientRunnable<LoggerSettingsBluetoothClient>() {
-            @Override
-            public void run() {
-                bluetoothClient.reloadSettings();
-            }
-        }, new ReloadSettingsBtHandler());
-    }
-
     public void runLoggerSettingsBtClientMethod(BluetoothClientRunnable<LoggerSettingsBluetoothClient> runnable, Handler handler) {
         setControlsEnabled(false);
         LoggerSettingsBluetoothClient settingsBtClient =
@@ -139,6 +130,15 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         runnable.setBluetoothClient(settingsBtClient);
         runningThread = new Thread(runnable);
         runningThread.start();
+    }
+
+    public void reloadSelectedLoggerSettings() {
+        runLoggerSettingsBtClientMethod(new BluetoothClientRunnable<LoggerSettingsBluetoothClient>() {
+            @Override
+            public void run() {
+                bluetoothClient.reloadSettings();
+            }
+        }, new ReloadSettingsBtHandler());
     }
 
     public void sendLoggerSettingsCommand(final String command) {
@@ -159,15 +159,6 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }, new SendSettingsBtHandler());
     }
 
-    public void loadLogsFromLogger() {
-        runLoggerDataLoadBtClientMethod(new BluetoothClientRunnable<LoggerDataLoadBluetoothClient>() {
-            @Override
-            public void run() {
-                bluetoothClient.loadLogData();
-            }
-        }, new LoadDataBtHandler());
-    }
-
     public void runLoggerDataLoadBtClientMethod(BluetoothClientRunnable<LoggerDataLoadBluetoothClient> runnable, Handler handler) {
         setControlsEnabled(false);
         LoggerDataLoadBluetoothClient dataLoadBtClient =
@@ -178,11 +169,29 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         runningThread.start();
     }
 
+    public void loadLogsFromLogger() {
+        runLoggerDataLoadBtClientMethod(new BluetoothClientRunnable<LoggerDataLoadBluetoothClient>() {
+            @Override
+            public void run() {
+                bluetoothClient.loadLogData();
+            }
+        }, new LoadDataBtHandler());
+    }
+
     public void loadDebugFromLogger() {
         runLoggerDataLoadBtClientMethod(new BluetoothClientRunnable<LoggerDataLoadBluetoothClient>() {
             @Override
             public void run() {
                 bluetoothClient.loadErrorsData();
+            }
+        }, new LoadDataBtHandler());
+    }
+
+    public void sendLogsCommand(final String command) {
+        runLoggerDataLoadBtClientMethod(new BluetoothClientRunnable<LoggerDataLoadBluetoothClient>() {
+            @Override
+            public void run() {
+                bluetoothClient.sendCommand(command);
             }
         }, new LoadDataBtHandler());
     }

@@ -20,11 +20,10 @@ public class LoggerDataLoadBluetoothClient extends LoggerBluetoothClient {
         super(context, deviceInfo, handler);
     }
 
-    public void clearDevice() {
+    public void sendCommand(String command) {
         boolean connected = connect();
         if (connected) {
-            writeToConsole("sending: DELLOG");
-            sendRequestWaitForReplySilent("DELLOG\n");
+            sendRequestWaitForReply(command);
             disconnectImmediately();
             sendFinishedSuccessNotification();
         } else {
