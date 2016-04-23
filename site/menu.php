@@ -115,7 +115,7 @@ if (!isset($MyPHPScript)) return;
 		print('<tr><td class="input"><input type="password" name="Password" style="width:101px;" size="10" value="" tabindex="102">
 			<input type="submit" name="RegisterButton" value="Вход" tabindex="103" style="margin-left: 25px; width: 55px;"></td></tr>'."\r\n");
 		print('<tr><td><a href="javascript:RestorePassword();" title="Будет выслан запрос о сменен пароля на указанный выше e-mail">Забыли пароль?</a></td></tr>'."\r\n");
-		print('<tr><td><a href="javascript:NewUser();" title="Переход к форме регистрации нового пользователя">Новый пользователь</a></td></tr>'."\r\n");
+		print('<tr><td><a href="javascript:NewUser();" title="Переход к форме регистрации нового пользователя">Зарегистрироваться</a></td></tr>'."\r\n");
 		print('</table>'."\r\n");
 		print('</form>'."\r\n");
 	} else {
@@ -300,7 +300,7 @@ echo CSql::raidStage($RaidId);
 echo '4 ';
 */
 	if ($UserId and $RaidId and CRights::canCreateTeam($UserId, $RaidId))
-		print('<tr><td><a href="javascript:NewTeam();" title="Регистрация новой команды на выбранный выше ММБ">Новая команда</a></td></tr>'."\r\n");
+		print('<tr><td><a href="javascript:NewTeam();" title="Регистрация новой команды на выбранный выше ММБ">Заявить команду</a></td></tr>'."\r\n");
 	// !! реализовать показ ссылки на свою команду, если она существует !!
 
 
@@ -309,7 +309,7 @@ echo '4 ';
 		print("<tr><td><a href=\"$MyPHPScript?TeamId=$teamId\" title=\"Просмотр карточки Вашей команды\">Моя команда</a></td></tr>\r\n");
 	
 	// Команды
-	print('<tr><td><a href="?RaidId='.$RaidId.'" title="Список зарегистрированных команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n");
+	print('<tr><td><a href="?protocol&RaidId='.$RaidId.'" title="Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n");
 
 	// Файлы
 	print('<tr><td><a href="?files&RaidId='.$RaidId.'" title="Ссылки на карты, легенды и т.п. для выбранного выше ММБ">Файлы</a></td></tr>'."\r\n");
