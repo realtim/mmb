@@ -76,6 +76,8 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 		$action = "UserInfo";
 	else if (mmb_validateInt($_GET, 'TeamId', '') !== false)
 		$action = "TeamInfo";
+	else if (isset($_GET['protocol']))
+		$action = "ViewRaidTeams";
 	else if (isset($_GET['rating']))
 		$action = "ViewRankPage";
 	else if (isset($_GET['logs']))
