@@ -470,7 +470,8 @@
 	{
 		print('<a style="font-size:80%; margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($StartLink).'" title="Информация о месте и порядке старта ММБ" target = "_blank">Старт</a>'."\r\n");
 	}
-	print('<a style="font-size:80%; margin-right: 15px;" href="?files&RaidId='.$RaidId.'" title="Все материалы ММБ: положение, карты, легенды и т.п.">Файлы</a>'."\r\n");
+	print('<a style="font-size:80%; margin-right: 15px;" href="?links&RaidId='.$RaidId.'" title="Страница впечатлений: отчеты, фотографии, треки...">Впечатления</a>'."\r\n");
+	print('<a style="font-size:80%; margin-right: 15px;" href="?files&RaidId='.$RaidId.'" title="Все материалы ММБ: положение, карты, легенды...">Материалы</a>'."\r\n");
 	print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
 	//print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
 	print('</div>'."\r\n");
