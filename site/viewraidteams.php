@@ -503,7 +503,7 @@
 	                from RaidFiles
 	                        where raid_id = $RaidId and filetype_id = 4 
 	                        	and raidfile_hide = 0
-	     			order by raidfile_id desc";
+	     			order by raidfile_id asc";
 
 		$Result = MySqlQuery($sql);
 		while ($Row = mysql_fetch_assoc($Result))
