@@ -68,7 +68,14 @@ if (!isset($MyPHPScript)) return;
 
 	$SessionId = StartSession($UserId);
 
-	$view = "MainPage";
+	// Если есть откртытй марш-бросок, то открываем список команд, а не список всех ММБ
+	if  (isset($RaidId) and CSql::raidStage($RaidId) < 7 and CSql::raidStage($RaidId) > 0)
+	{
+		CSql::raidStage($RaidId) < 7
+	} else {
+		$view = "MainPage";
+	}
+
 	//$statustext = "ua Пользователь: ".$UserId.", сессия: ".$SessionId;
 		
 
