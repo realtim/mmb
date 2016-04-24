@@ -68,6 +68,8 @@ if (!isset($MyPHPScript)) return;
 
 	$SessionId = StartSession($UserId);
 
+	echo  cSql::raidStage($RaidId);
+
 	// Если есть откртытй марш-бросок, то открываем список команд, а не список всех ММБ
 	if  (isset($RaidId) and CSql::raidStage($RaidId) < 7 and CSql::raidStage($RaidId) > 0)
 	{
