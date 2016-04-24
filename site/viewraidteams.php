@@ -473,8 +473,35 @@
 	print('<a style="font-size:80%; margin-right: 15px;" href="?links&RaidId='.$RaidId.'" title="Страница впечатлений: отчеты, фотографии, треки...">Впечатления</a>'."\r\n");
 	print('<a style="font-size:80%; margin-right: 15px;" href="?files&RaidId='.$RaidId.'" title="Все материалы ММБ: положение, карты, легенды...">Материалы</a>'."\r\n");
 	print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
-	//print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
+
+	$showMapImages = 0;
+	if (mmb_validateInt($_GET, 'showMap', '') !== false and isset($_GET['showMap']) and $_GET['showMap']) == 1)
+	{
+		// передали, что нужно показать карты
+		$showMapImages = 1;
+	}
+	// Конец  проверки на аывод ссылки для карт и самих картинок	
+
+	if (canShowImages($RaidId))
+	{
+		if ($showMapImages) 
+		{
+			print('<a style="font-size:80%; margin-right: 15px;" href="?protocol&RaidId='.$RaidId.'" title="Не отображать карты в протоколе - можно смотреть на странцие материалов">Скрыть карты</a> '."\r\n");
+		} else {
+			print('<a style="font-size:80%; margin-right: 15px;" href="?protocol&RaidId='.$RaidId.'&showMap=0" title="Отображать карты на этой странице - время загрзуки может заметно вырасти!">Показать карты</a> '."\r\n");
+		}
+	}
+
 	print('</div>'."\r\n");
+
+	// собственно вывод карт
+	if (canShowImages($RaidId) and $showMapImages)
+	{
+		print('<div align="left" style="margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
+		print('133123123<br/>'."\r\n");
+		print('</div>'."\r\n");
+	}
+
 	print("\r\n</form>\r\n");
 
     // Информация о дистанции(ях)
