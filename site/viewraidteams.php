@@ -482,7 +482,7 @@
 	}
 	// Конец  проверки на аывод ссылки для карт и самих картинок	
 
-	if (canShowImages($RaidId))
+	if (CRights::canShowImages($RaidId))
 	{
 		if ($showMapImages) 
 		{
