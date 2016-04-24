@@ -498,7 +498,21 @@
 	if (CRights::canShowImages($RaidId) and $showMapImages)
 	{
 		print('<div align="left" style="margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
-		print('133123123<br/>'."\r\n");
+
+		$sql = "select raidfile_name, raidfile_comment
+	                from RaidFiles
+	                        where raid_id = $RaidId and filetype_id = 4 
+	                        	and raidfile_hide = 0
+	     			order by raidfile_id desc";
+
+		$Result = MySqlQuery($sql);
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+		        $ImageLink = $Row['raidfile_name'];
+		        $ImageComment = $Row['raidfile_comment'];
+			print('<a style="margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ImageLink).'" title="'.trim($ImageComment).'" target = "_blank"><img src = "'.trim($MyStoreHttpLink).trim($ImageLink).'"  alt = "'.trim($ImageComment).'" height = "100"></a>'."\r\n");
+		}
+  		mysql_free_result($Result);
 		print('</div>'."\r\n");
 	}
 
