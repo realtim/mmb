@@ -484,11 +484,11 @@
 
 	if (CRights::canShowImages($RaidId))
 	{
-		if ($showMapImages) 
+		if ($showMapImages == 1) 
 		{
-			print('<a style="font-size:80%; margin-right: 15px;" href="?protocol&RaidId='.$RaidId.'" title="Не отображать карты в протоколе - можно смотреть на странцие материалов">Скрыть карты</a> '."\r\n");
+			print('<a style="font-size:80%; margin-right: 15px;" href="?protocol&RaidId='.$RaidId.'&showMap=0" title="Не отображать карты в протоколе - можно смотреть на странцие материалов">Скрыть карты</a> '."\r\n");
 		} else {
-			print('<a style="font-size:80%; margin-right: 15px;" href="?protocol&RaidId='.$RaidId.'&showMap=0" title="Отображать карты на этой странице - время загрзуки может заметно вырасти!">Показать карты</a> '."\r\n");
+			print('<a style="font-size:80%; margin-right: 15px;" href="?protocol&RaidId='.$RaidId.'&showMap=1" title="Отображать карты на этой странице - время загрзуки может заметно вырасти!">Показать карты</a> '."\r\n");
 		}
 	}
 
