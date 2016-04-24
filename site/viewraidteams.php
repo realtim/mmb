@@ -446,12 +446,21 @@
 	$ReglamentLink = cSql::raidFileName($RaidId, 1, true);
 	if (!empty($ReglamentLink))
 	{
-		print('<a style="font-size:80%; margin-right: 15px;" href="'.trim($ReglamentLink).'" title="Основные правила ММБ">Положение</a>'."\r\n");
+		print('<a style="font-size:80%; margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ReglamentLink).'" title="Основные правила ММБ">Положение</a>'."\r\n");
+	}
+	if ($UserId and $RaidId and CRights::canCreateTeam($UserId, $RaidId))
+	{
+		print('<a  style="font-size:80%; margin-right: 15px;"  href="javascript:NewTeam();" title="Регистрация команды на ММБ">Заявить команду</a>'."\r\n");
+	}
+	$teamId = CSql::userTeamId($UserId, $RaidId);
+	if ($teamId)
+	{
+		print("<a href=\"#$teamId\" title=\"Переход к строке Вашей команды\">Моя команда</a>\r\n");
 	}
 	$StartLink = cSql::raidFileName($RaidId, 10, true);
 	if (!empty($StartLink))
 	{
-		print('<a style="font-size:80%; margin-right: 15px;" href="'.trim($StartLink).'" title="Основные правила ММБ">Старт</a>'."\r\n");
+		print('<a style="font-size:80%; margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($StartLink).'" title="Основные правила ММБ">Старт</a>'."\r\n");
 	}
 	print('<a style="font-size:80%; margin-right: 15px;" href="?files&RaidId='.$RaidId.'" title="Все материалы ММБ: положение, карты, легенды и т.п.">Файлы</a>'."\r\n");
 	print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
