@@ -18,7 +18,7 @@ class CRights
     public static function canCreateTeam($userId, $raidId)
     {
         // уже есть команда, но не админ / мод
-        if (CSql::userTeamId($userId, $raidId) and CSql::userAdmin($userId) and !CSql::userModerator($userId, $raidId))
+        if (CSql::userTeamId($userId, $raidId) and !CSql::userAdmin($userId) and !CSql::userModerator($userId, $raidId))
             return false;
 
         $raidStage = CSql::raidStage($raidId);
