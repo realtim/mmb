@@ -495,7 +495,7 @@
 	print('</div>'."\r\n");
 
 	// собственно вывод карт
-	if (canShowImages($RaidId) and $showMapImages)
+	if (CRights::canShowImages($RaidId) and $showMapImages)
 	{
 		print('<div align="left" style="margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
 		print('133123123<br/>'."\r\n");
