@@ -24,6 +24,17 @@ class CRights
         $raidStage = CSql::raidStage($raidId);
         return $raidStage >= 1 and $raidStage < 7;
     }
+
+    // когда отображать карты в протоколе
+    public static function canShowImages($raidId)
+    {
+        $raidStage = CSql::raidStage($raidId);
+        // по идее можно показывать и с 5, но обычно карты загружают позже
+        return ($raidStage >= 6);
+    }
+
+    
+    
 }
 
      
