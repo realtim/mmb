@@ -442,8 +442,20 @@
 
 	print('</div>'."\r\n");
 	print('<div align="left" style="margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
-	print('<a style="font-size:80%; margin-right: 15px;" href="?files&RaidId='.$RaidId.'" title="Список файлов для выбранного выше ММБ">Файлы</a>'."\r\n");
+
+	$ReglamentLink = cSql::raidFileName($RaidId, 1, true);
+	if (!empty($ReglamentLink))
+	{
+		print('<a style="font-size:80%; margin-right: 15px;" href="'.trim($ReglamentLink).'" title="Основные правила ММБ">Положение</a>'."\r\n");
+	}
+	$StartLink = cSql::raidFileName($RaidId, 10, true);
+	if (!empty($StartLink))
+	{
+		print('<a style="font-size:80%; margin-right: 15px;" href="'.trim($StartLink).'" title="Основные правила ММБ">Старт</a>'."\r\n");
+	}
+	print('<a style="font-size:80%; margin-right: 15px;" href="?files&RaidId='.$RaidId.'" title="Все материалы ММБ: положение, карты, легенды и т.п.">Файлы</a>'."\r\n");
 	print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
+	//print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
 	print('</div>'."\r\n");
 	print("\r\n</form>\r\n");
 
