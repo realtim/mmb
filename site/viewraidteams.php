@@ -475,7 +475,7 @@
 	print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
 
 	$showMapImages = 0;
-	if (mmb_validateInt($_GET, 'showMap', '') !== false and isset($_GET['showMap']) and $_GET['showMap']) == 1)
+	if (mmb_validateInt($_GET, 'showMap', '') !== false and isset($_GET['showMap']) and $_GET['showMap'] == 1)
 	{
 		// передали, что нужно показать карты
 		$showMapImages = 1;
