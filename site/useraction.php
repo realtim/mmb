@@ -71,9 +71,9 @@ if (!isset($MyPHPScript)) return;
 	// Если есть откртытй марш-бросок, то открываем список команд, а не список всех ММБ
 	if  (isset($RaidId) and CSql::raidStage($RaidId) < 7 and CSql::raidStage($RaidId) > 0)
 	{
-		CSql::raidStage($RaidId) < 7
+		CMmb::setViews('ViewRaidTeams', '');
 	} else {
-		$view = "MainPage";
+		CMmb::setViews('MainPage', '');
 	}
 
 	//$statustext = "ua Пользователь: ".$UserId.", сессия: ".$SessionId;
