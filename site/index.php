@@ -90,6 +90,8 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 		$action = "ViewRaidFilesPage";
 	else if (isset($_GET['links']))
 		$action = "ViewUsersLinksPage";
+	else if (isset($_GET['raids']))
+		$action = "";
 	else if (isset($_GET['changepasswordsessionid']))
 		$action = "sendpasswordafterrequest";
 	else if (mmb_validateInt($_GET, 'RaidId', '') !== false)        // должно идти предпоследним
