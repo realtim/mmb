@@ -462,7 +462,7 @@
 
 		if ($teamNum)
 		{
-			print("<a style="font-size:80%; margin-right: 15px;" href=\"#$teamNum\" title=\"Переход к строке Вашей команды\">Моя команда</a>\r\n");
+			print("<a style="font-size:80%; margin-right: 15px;" href=\"\#$teamNum\" title=\"Переход к строке Вашей команды\">Моя команда</a>\r\n");
 		}
 	}
 	$StartLink = cSql::raidFileName($RaidId, 10, true);
