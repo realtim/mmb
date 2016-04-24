@@ -455,7 +455,15 @@
 	$teamId = CSql::userTeamId($UserId, $RaidId);
 	if ($teamId)
 	{
-		print("<a href=\"#$teamId\" title=\"Переход к строке Вашей команды\">Моя команда</a>\r\n");
+		$sql = "select COALESCE(t.team_num, 0) as team_num
+			from  Teams t
+			where t.team_hide = 0 and t.team_id = $teamId";
+		$teamNum = (int)CSql::singleValue($sql, 'team_num');
+
+		if ($teamNum)
+		{
+			print("<a style="font-size:80%; margin-right: 15px;" href=\"#$teamNum\" title=\"Переход к строке Вашей команды\">Моя команда</a>\r\n");
+		}
 	}
 	$StartLink = cSql::raidFileName($RaidId, 10, true);
 	if (!empty($StartLink))
