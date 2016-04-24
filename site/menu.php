@@ -229,7 +229,7 @@ if (!isset($MyPHPScript)) return;
 
 	function ChangeRaid()
 	{
-		document.FindTeamForm.action.value = "";
+		document.FindTeamForm.action.value = "ViewRaidTeams";
 		document.FindTeamForm.submit();
 	}
 
@@ -261,7 +261,7 @@ if (!isset($MyPHPScript)) return;
 	print('<input type="hidden" name="DistanceId" value="0">'."\r\n");
 	print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
 	print('<tr><td class="input">ММБ'."\r\n");
-	print('<select name="RaidId" style="width: 141px; margin-left: 5px;" tabindex="201" title="Список марш-бросков" onClick="/* ChangeLogo(this.value); */" onchange="ChangeLogo(this.value); ChangeRaid();">'."\r\n");
+	print('<select name="RaidId" style="width: 141px; margin-left: 5px;" tabindex="201" title="Список марш-бросков"  onchange="ChangeLogo(this.value); ChangeRaid();">'."\r\n");
 		$notAdmin = $Administrator ? "true" : "raid_registrationenddate is not null";
 		$sql = "select raid_id, raid_name from Raids where $notAdmin order by raid_id desc ";
 		$Result = MySqlQuery($sql);
@@ -312,10 +312,14 @@ echo '4 ';
 	print('<tr><td><a href="?protocol&RaidId='.$RaidId.'" title="Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n");
 
 	// Файлы
-	print('<tr><td><a href="?files&RaidId='.$RaidId.'" title="Ссылки на карты, легенды и т.п. для выбранного выше ММБ">Файлы</a></td></tr>'."\r\n");
+	print('<tr><td><a href="?files&RaidId='.$RaidId.'" title="Карты, легенды, описания и т.п. для выбранного выше ММБ">Материалы</a></td></tr>'."\r\n");
 
 	// Впечатления
 	print('<tr><td><a href="?links&RaidId='.$RaidId.'" title="Список впечатлений для выбранного выше ММБ">Впечатления</a></td></tr>'."\r\n");
+
+	// Все ММБ
+	print('<tr><td><a href="?raids" title="Список всех ММБ">Все марш-броски</a></td></tr>'."\r\n");
+
 
 	// Ввод/Правка марш-броска
 	if ($Administrator)
