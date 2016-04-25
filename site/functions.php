@@ -95,7 +95,7 @@ class CMmb
 	if (!$rs)
 	{
 		$err = mysql_error();
-		CMmbLogger::e(null, 'MySqlQuery', "sql error: '$err' \r\non query: '$SqlString'");
+		CMmbLogger::e('MySqlQuery', "sql error: '$err' \r\non query: '$SqlString'");
 		echo $err;
 
 		CSql::closeConnection();
@@ -206,7 +206,7 @@ class CSql {
 		mysql_free_result($result);
 
 		if (!isset($row[$key]) && $strict == true)
-			CMmbLogger::e(null, 'singleValue', "Field '$key' doesn't exist, query:\n$query");
+			CMmbLogger::e('singleValue', "Field '$key' doesn't exist, query:\n$query");
 		return $row[$key];
 	}
 
@@ -3337,6 +3337,7 @@ class CMmbLogger
 	const Trace = 	'trace';
 	const Debug = 	'debug';
 	const Info = 	'info';
+	const Warn = 	'warning';
 	const Error = 	'error';
 	const Critical = 'critical';
 
@@ -3371,23 +3372,23 @@ class CMmbLogger
 		return $res;
 	}
 
-	public static function t($user, $operation, $message)
+	public static function t($operation, $message, $user = null)
 	{
 		self::addLogRecord($user, self::Trace, $operation, $message);
 	}
-	public static function d($user, $operation, $message)
+	public static function d($operation, $message, $user = null)
 	{
 		self::addLogRecord($user, self::Debug, $operation, $message);
 	}
-	public static function i($user, $operation, $message)
+	public static function i($operation, $message, $user = null)
 	{
 		self::addLogRecord($user, self::Info, $operation, $message);
 	}
-	public static function e($user, $operation, $message)
+	public static function e($operation, $message, $user = null)
 	{
 		self::addLogRecord($user, self::Error, $operation, $message);
 	}
-	public static function c($user, $operation, $message)
+	public static function c($operation, $message, $user = null)
 	{
 		self::addLogRecord($user, self::Critical, $operation, $message);
 	}
@@ -3413,17 +3414,6 @@ class CMmbLogger
 		SendMail(trim($mail),  $msg, 'Админы и программисты',  'Критическая ошибка на сайте');
 	}
 	
-	protected static function getConnection()
-	{
-		if (self::$sqlConn === null)
-		{
-			self::initVars();
-			self::$sqlConn = CSql::createConnection();
-		}
-		
-		return self::$sqlConn;
-	}
-	
 	private static function addLogRecord($user, $level, $operation, $message)
 	{
 		if (self::$minLevelCode === null)
@@ -3432,6 +3422,9 @@ class CMmbLogger
 			return;
 
 		$conn = self::getConnection();
+
+		if ($user === null)
+			$user = self::tryGetUser();
 
 		$uid = ($user == null || !is_numeric($user)) ? 'null' : $user;
 
@@ -3453,6 +3446,22 @@ class CMmbLogger
 		}
 	}
 
+	protected static function tryGetUser()
+	{
+		global $UserId;
+	}
+
+	protected static function getConnection()
+	{
+		if (self::$sqlConn === null)
+		{
+			self::initVars();
+			self::$sqlConn = CSql::createConnection();
+		}
+
+		return self::$sqlConn;
+	}
+
 	private static function levelCode($level)
 	{
 		switch($level)
@@ -3460,8 +3469,9 @@ class CMmbLogger
 			case self::Trace: return 0;
 			case self::Debug: return 1;
 			case self::Info: return 2;
-			case self::Error: return 3;
-			case self::Critical: return 4;
+			case self::Warn: return 3;
+			case self::Error: return 4;
+			case self::Critical: return 5;
 			default: return -1;
 		}
 	}
