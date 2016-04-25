@@ -43,12 +43,41 @@
                 android:textOn="settings" />
         </LinearLayout>
 
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_small_margin"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/main_settingsRadioButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_small_margin"
+                android:checked="true"
+                android:text="@string/main_radio_settings" />
+
+            <RadioButton
+                android:id="@+id/main_logsRadioButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:text="@string/main_radio_logs" />
+
+            <RadioButton
+                android:id="@+id/main_autoTimeRadioButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:text="@string/main_radio_auto_time" />
+        </RadioGroup>
+
+
         <ViewFlipper
             android:id="@+id/main_panelsFlipper"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="@dimen/activity_small_margin"
-            android:layout_marginTop="@dimen/activity_small_margin">
+            android:layout_marginLeft="@dimen/activity_small_margin">
 
             <LinearLayout
                 android:id="@+id/main_settingsPanel"
@@ -345,6 +374,28 @@
                         android:layout_height="wrap_content"
                         android:text="@string/main_clear_device" />
                 </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_small_margin"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/main_autoUpdateTimeCheckBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/main_auto_update_time" />
+
+                <ProgressBar
+                    android:id="@+id/main_timeUpdaterProgress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:visibility="invisible" />
             </LinearLayout>
 
         </ViewFlipper>

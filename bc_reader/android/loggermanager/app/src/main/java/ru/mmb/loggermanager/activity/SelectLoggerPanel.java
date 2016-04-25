@@ -34,13 +34,13 @@ public class SelectLoggerPanel {
 
     private void initialize() {
         selectLoggerSpinner = (Spinner) owner.findViewById(R.id.main_selectLoggerSpinner);
-        loadPairedDevicesList();
+        loadPairedDevices();
         buildDeviceNamesArray();
         setSelectLoggerAdapter();
         selectLoggerSpinner.setOnItemSelectedListener(new SelectLoggerOnItemSelectedListener(owner));
     }
 
-    private void loadPairedDevicesList() {
+    private void loadPairedDevices() {
         pairedDevices = new TreeMap<String, DeviceInfo>();
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> devices = btAdapter.getBondedDevices();

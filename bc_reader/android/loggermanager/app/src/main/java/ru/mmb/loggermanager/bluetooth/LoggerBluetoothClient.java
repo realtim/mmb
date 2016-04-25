@@ -91,6 +91,6 @@ public abstract class LoggerBluetoothClient extends BluetoothClient {
         Date currentTime = new Date();
         String timeString =
                 loggerDateFormat.format(currentTime) + " " + loggerTimeFormat.format(currentTime);
-        sendRequestWaitForReply(timeString + "\n", 200, true);
+        sendRequestWaitForReply(timeString + "\n", 100, true);
     }
 }

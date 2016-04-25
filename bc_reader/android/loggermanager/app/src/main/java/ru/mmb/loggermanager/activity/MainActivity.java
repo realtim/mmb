@@ -5,9 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.View;
+import android.util.Log;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 import android.widget.ViewFlipper;
 
 import com.filedialog.FileDialog;
@@ -16,6 +19,7 @@ import ru.mmb.loggermanager.R;
 import ru.mmb.loggermanager.activity.dataload.LoggerDataLoadBluetoothClient;
 import ru.mmb.loggermanager.activity.settings.LoggerSettings;
 import ru.mmb.loggermanager.activity.settings.LoggerSettingsBluetoothClient;
+import ru.mmb.loggermanager.activity.timeupdater.TimeUpdaterThread;
 import ru.mmb.loggermanager.bluetooth.BluetoothAdapterEnableActivity;
 import ru.mmb.loggermanager.bluetooth.BluetoothClient;
 import ru.mmb.loggermanager.bluetooth.DeviceInfo;
@@ -30,8 +34,11 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private boolean adapterActive = false;
     private DeviceInfo selectedLogger = null;
 
-    private ToggleButton panelsToggle;
+    private RadioButton settingsRadio;
+    private RadioButton logsRadio;
+    private RadioButton autoTimeRadio;
     private ViewFlipper panelsFlipper;
+    private int currentRadioTag = 0;
 
     private LoggerSettings loggerSettings = new LoggerSettings();
     private SettingsPanel settingsPanel;
@@ -41,6 +48,14 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private BluetoothClient bluetoothClient;
     private Thread runningThread = null;
 
+    private TimeUpdaterThread timeUpdaterThread = null;
+    private ProgressBar timeUpdaterProgress = null;
+    private CheckBox autoUpdateTimeCheck;
+
+    public ProgressBar getTimeUpdaterProgress() {
+        return timeUpdaterProgress;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,17 +64,14 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         Configuration.getInstance().loadConfiguration(this);
 
         panelsFlipper = (ViewFlipper) findViewById(R.id.main_panelsFlipper);
-        panelsToggle = (ToggleButton) findViewById(R.id.main_switchPanelsToggle);
-        panelsToggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (panelsToggle.isChecked()) {
-                    panelsFlipper.showNext();
-                } else {
-                    panelsFlipper.showPrevious();
-                }
-            }
-        });
+
+        RadioCheckListener radioCheckListener = new RadioCheckListener();
+        settingsRadio = (RadioButton) findViewById(R.id.main_settingsRadioButton);
+        settingsRadio.setOnCheckedChangeListener(radioCheckListener);
+        logsRadio = (RadioButton) findViewById(R.id.main_logsRadioButton);
+        logsRadio.setOnCheckedChangeListener(radioCheckListener);
+        autoTimeRadio = (RadioButton) findViewById(R.id.main_autoTimeRadioButton);
+        autoTimeRadio.setOnCheckedChangeListener(radioCheckListener);
 
         new SelectLoggerPanel(this);
         settingsPanel = new SettingsPanel(this);
@@ -67,6 +79,20 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
         TextView consoleTextView = (TextView) findViewById(R.id.main_consoleTextView);
         consoleAppender = new ConsoleMessagesAppender(consoleTextView);
+
+        timeUpdaterProgress = (ProgressBar) findViewById(R.id.main_timeUpdaterProgress);
+
+        autoUpdateTimeCheck = (CheckBox) findViewById(R.id.main_autoUpdateTimeCheckBox);
+        autoUpdateTimeCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (autoUpdateTimeCheck.isChecked()) {
+                    startTimeUpdaterThread();
+                } else if (timeUpdaterThread != null) {
+                    stopTimeUpdaterThread();
+                }
+            }
+        });
     }
 
     @Override
@@ -77,6 +103,10 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
             bluetoothClient.terminate();
             runningThread.interrupt();
             runningThread = null;
+        }
+
+        if (timeUpdaterThread != null) {
+            stopTimeUpdaterThread();
         }
     }
 
@@ -94,8 +124,6 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     }
 
     private void setControlsEnabled(boolean value) {
-        panelsToggle.setEnabled(value);
-        panelsFlipper.setEnabled(value);
         settingsPanel.setControlsEnabled(value);
         logsPanel.setControlsEnabled(value);
     }
@@ -112,6 +140,21 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
             adapterActive = isAdapterEnabled();
             refreshState();
         }
+    }
+
+    private void startTimeUpdaterThread() {
+        if (timeUpdaterThread != null) {
+            stopTimeUpdaterThread();
+        }
+        if (isAdapterEnabled()) {
+            timeUpdaterThread = new TimeUpdaterThread(this, new TimeUpdateHandler());
+            timeUpdaterThread.start();
+        }
+    }
+
+    private void stopTimeUpdaterThread() {
+        timeUpdaterThread.terminate();
+        timeUpdaterThread.interrupt();
     }
 
     private void refreshState() {
@@ -196,6 +239,36 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }, new LoadDataBtHandler());
     }
 
+    private class RadioCheckListener implements CompoundButton.OnCheckedChangeListener {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if (isChecked) {
+                int checkedRadioTag = 0;
+                if (buttonView == logsRadio) {
+                    checkedRadioTag = 1;
+                } else if (buttonView == autoTimeRadio) {
+                    checkedRadioTag = 2;
+                }
+                if (checkedRadioTag == currentRadioTag) {
+                    return;
+                }
+                int diff = checkedRadioTag - currentRadioTag;
+                int directionSign = (int) Math.signum(diff);
+                diff = Math.abs(diff);
+                if (directionSign < 0) {
+                    for (int i = 0; i < diff; i++) {
+                        panelsFlipper.showPrevious();
+                    }
+                } else {
+                    for (int i = 0; i < diff; i++) {
+                        panelsFlipper.showNext();
+                    }
+                }
+                currentRadioTag = checkedRadioTag;
+            }
+        }
+    }
+
     private class SendSettingsBtHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
@@ -248,6 +321,19 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
         public void setBluetoothClient(T bluetoothClient) {
             this.bluetoothClient = bluetoothClient;
+        }
+    }
+
+    private class TimeUpdateHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == ThreadMessageTypes.MSG_CONSOLE) {
+                Log.d("TIME_UPDATER", (String) msg.obj);
+            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
+                Log.d("TIME_UPDATER", "time update SUCCESS");
+            } else {
+                Log.d("TIME_UPDATER", "time update ERROR");
+            }
         }
     }
 }
