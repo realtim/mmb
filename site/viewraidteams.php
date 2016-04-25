@@ -443,10 +443,10 @@
 	print('</div>'."\r\n");
 	print('<div align="left" style="margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
 
-	$ReglamentLink = cSql::raidFileName($RaidId, 1, true);
+	$ReglamentLink = cSql::raidFileLink($RaidId, 1, true);
 	if (!empty($ReglamentLink))
 	{
-		print('<a style="font-size:80%; margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ReglamentLink).'" title="Основные правила ММБ" target = "_blank">Положение</a>'."\r\n");
+		print('<a style="font-size:80%; margin-right: 15px;" href="'.$ReglamentLink.'" title="Основные правила ММБ" target = "_blank">Положение</a>'."\r\n");
 	}
 	if ($UserId and $RaidId and CRights::canCreateTeam($UserId, $RaidId))
 	{
@@ -465,10 +465,10 @@
 			print("<a style=\"font-size:80%; margin-right: 15px;\" href=\"#$teamNum\" title=\"Переход к строке Вашей команды\">Моя команда</a>\r\n");
 		}
 	}
-	$StartLink = cSql::raidFileName($RaidId, 10, true);
+	$StartLink = cSql::raidFileLink($RaidId, 10, true);
 	if (!empty($StartLink))
 	{
-		print('<a style="font-size:80%; margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($StartLink).'" title="Информация о месте и порядке старта ММБ" target = "_blank">Старт</a>'."\r\n");
+		print('<a style="font-size:80%; margin-right: 15px;" href="'.$StartLink.'" title="Информация о месте и порядке старта ММБ" target = "_blank">Старт</a>'."\r\n");
 	}
 	print('<a style="font-size:80%; margin-right: 15px;" href="?links&RaidId='.$RaidId.'" title="Страница впечатлений: отчеты, фотографии, треки...">Впечатления</a>'."\r\n");
 	print('<a style="font-size:80%; margin-right: 15px;" href="?files&RaidId='.$RaidId.'" title="Все материалы ММБ: положение, карты, легенды...">Материалы</a>'."\r\n");

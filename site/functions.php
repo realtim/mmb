@@ -230,11 +230,7 @@ class CSql {
 		return self::singleRow($sql);
 	}
 
-	// types:
-	// 1 - ссылка на положение
-	// 2 - ссылка на логотип
-	// 10 - информация о старте
-	public static function raidFileName($raidId, $fileType, $justVisible = false)
+	protected static function raidFileName($raidId, $fileType, $justVisible)
 	{
 		$condition = $justVisible ? "raidfile_hide = 0" : "true";
 		$sql = "select raidfile_name
@@ -242,7 +238,28 @@ class CSql {
 	                        where raid_id = $raidId and filetype_id = $fileType and $condition
 	     			order by raidfile_id desc";
 
-		return trim(self::singleValue($sql, 'raidfile_name'));
+		return trim(self::singleValue($sql, 'raidfile_name', false));
+	}
+
+	// types:
+	// 1 - ссылка на положение
+	// 2 - ссылка на логотип
+	// 10 - информация о старте
+	public static function raidFileLink($raidId, $fileType, $justVisible = false)
+	{
+		global $MyStoreFileLink, $MyStoreHttpLink;
+
+		$name = self::raidFileName($raidId, $fileType, $justVisible);
+		if (empty($name))
+			return '';
+
+		if (!file_exists($MyStoreFileLink.$name))
+		{
+			CMmbLogger::e('raidFileLink', "File '$name' doesn't exist");
+			return '';
+		}
+
+		return trim($MyStoreHttpLink).$name;
 	}
 
 
@@ -1335,11 +1352,11 @@ send_mime_mail('Автор письма',
      // функция получает ссылку на  логотип
     function GetMmbLogo($raidid)
     {
-        // Данные берём из settings
-	include("settings.php");
-    
-	if (empty($raidid))
-	{
+		if (!empty($raidid))
+			return CSql::raidFileLink($raidid, 2, false);
+
+		// Данные берём из settings
+		include("settings.php");
 
         // 08.12.2013 Ищем ссылку на логотип  
         $sqlFile = "select rf.raidfile_name
@@ -1350,19 +1367,6 @@ send_mime_mail('Автор письма',
 	     order by r.raid_registrationenddate desc, rf.raidfile_id desc
 	     LIMIT 0,1";
 
-
-	} else {
-
-
-
-	    // 08.12.2013 Ищем ссылку на логотип  
-        $sqlFile = "select rf.raidfile_name
-	     from RaidFiles rf
-	     where rf.raid_id = $raidid and rf.filetype_id = 2
-	     order by rf.raidfile_id desc
-	     LIMIT 0,1";
-
-	}
 
         $LogoFile = trim(CSql::singleValue($sqlFile, 'raidfile_name'));
 

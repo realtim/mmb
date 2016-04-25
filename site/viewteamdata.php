@@ -165,9 +165,7 @@ $sql = "select count(*) as waitcount from Raids r, Distances d, Teams t
 $WaitCount = CSql::singleValue($sql, 'waitcount');
 
 // 21.03.2014 Ищем ссылку на положение в загруженных файлах
-$RulesFile = CSql::raidFileName($RaidId, 1, false);
-$RaidRulesLink = '';
-if ($RulesFile <> '' && file_exists($MyStoreFileLink.$RulesFile)) $RaidRulesLink = $MyStoreHttpLink.$RulesFile;
+$RaidRulesLink = CSql::raidFileLink($RaidId, 1, false);
 
 // Выводим javascrpit
 ?>

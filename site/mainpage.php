@@ -36,48 +36,22 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	$nextRaidId = $rowRaids['raid_id'];
 	$RaidName = trim($rowRaids['raid_name']);
 	$RaidPeriod = trim($rowRaids['raid_period']);
-	$RaidRulesLink = '';
-	$RaidStartLink = '';
 	$RaidStartPoint = $rowRaids['raid_startpoint'];
 	$RaidFinishPoint = $rowRaids['raid_finishpoint'];
- 
- 
-        // 08.12.2013 Ищем ссылку на положение в загруженных файлах 
-        $RulesFile = CSql::raidFileName($nextRaidId, 1, true);
-        if ($RulesFile <> '' && file_exists($MyStoreFileLink.$RulesFile))
-	{
-          $RaidRulesLink = $MyStoreHttpLink.$RulesFile;
-        }
-        //  Конец получения ссылки на положение
- 
-        // 08.12.2013 Ищем ссылку на информацию о старте  
-        $StartInfoFile =  CSql::raidFileName($nextRaidId, 10, true);
-        if ($StartInfoFile <> '' && file_exists($MyStoreFileLink.$StartInfoFile))
-	{
-          $RaidStartLink = $MyStoreHttpLink.$StartInfoFile;
-        }
-        //  Конец получения ссылки на информацию о старте
- 
- 
- 
-        if ($RaidsCount%2 == 0) {
-	
-	  $TrClass = 'yellow';
-	
-	} else {
-	  
-	  $TrClass = 'green';
-	
-	} 
-	
-	$RaidsCount--;
-	
+
+
+	$RaidRulesLink = CSql::raidFileLink($nextRaidId, 1, true);	// Cсылка на положение в загруженных файлах
+	$RaidStartLink = CSql::raidFileLink($nextRaidId, 10, true); // Информация о старте
+
 	//echo $i;
-	print('<tr class="'.$TrClass.'">'."\r\n");
+	$TrClass = $RaidsCount%2 == 0 ? 'yellow' : 'green';
+	print("<tr class=\"$TrClass\">\r\n");
+
+	$RaidsCount--;
 
  
 	//class = "yellow"
-        print('<td><a href="?RaidId='.$nextRaidId.'">'.$RaidName.'</a></td>'."\r\n");
+	print('<td><a href="?RaidId='.$nextRaidId.'">'.$RaidName.'</a></td>'."\r\n");
 
 	print('<td><a href="'.$RaidRulesLink.'" target="_blank">'.$RaidPeriod.'</a></td>'."\r\n");
         
@@ -168,6 +142,3 @@ print('<a name="help">Обычно за месяц до проведения М�
 print("</p>\r\n");
 
 ?>
-
-
-
