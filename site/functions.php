@@ -3449,6 +3449,7 @@ class CMmbLogger
 	protected static function tryGetUser()
 	{
 		global $UserId;
+		return isset($UserId) ? $UserId : null;
 	}
 
 	protected static function getConnection()
