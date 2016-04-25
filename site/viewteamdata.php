@@ -340,8 +340,7 @@ print('Дистанция '."\n");
 // для команд вне зачета до закрытия проткола
 	if (
 		($viewmode == 'Add' and CSql::raidStage($RaidId) < 7)
-		or ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or  CSql::userModerator($UserId, $RaidId)) and !CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 2)
-		or ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or  CSql::userModerator($UserId, $RaidId)) and CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
+		or ($viewmode <> 'Add' and CRights::canEditTeam($UserId, $RaidId, $TeamId))
 	   )
 	{
 		$DisabledDistance =  0;
@@ -507,11 +506,10 @@ if ($viewmode <> "Add")
 
 
 // 21.03.2016 Определяем, когда можно добавлять нового пользователя
-// при добавлении команды можно только можераторам или администраторам
+// при добавлении команды можно только модераторам или администраторам
 // при правке - в зависимости от типа команды
 
-if (       ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and !CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 2)
-    	or ($viewmode <> 'Add' and ($TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and  CSql::teamOutOfRange($TeamId) and CSql::raidStage($RaidId) < 7)
+if (       ($viewmode <> 'Add' and CRights::canEditTeam($UserId, $RaidId, $TeamId))
     	or ($viewmode == 'Add' and (CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and CSql::raidStage($RaidId) < 7)
     )
 {

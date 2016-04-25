@@ -25,6 +25,19 @@ class CRights
         return $raidStage >= 1 and $raidStage < 7;
     }
 
+    public static function canEditTeam($UserId, $RaidId, $TeamId)
+    {
+        $TeamMemberOrSuper = $TeamId == CSql::userTeamId($UserId, $RaidId) or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId);
+        if (!$TeamMemberOrSuper)
+            return false;
+
+        $RaidStage = CSql::raidStage($RaidId);
+        $TeamOutOfRange = CSql::teamOutOfRange($TeamId);
+
+        return !$TeamOutOfRange and $RaidStage < 2 
+             or $TeamOutOfRange and $RaidStage < 7;
+    }
+
     // когда отображать карты в протоколе
     public static function canShowImages($raidId)
     {
@@ -32,9 +45,6 @@ class CRights
         // по идее можно показывать и с 5, но обычно карты загружают позже
         return ($raidStage >= 6);
     }
-
-    
-    
 }
 
      
