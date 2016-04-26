@@ -44,8 +44,8 @@ if ($action == "RegisterNewTeam")
 		from TeamUsers tu
 			inner join Teams t on tu.team_id = t.team_id
 			inner join Distances d on t.distance_id = d.distance_id
-		where d.raid_id = '.$RaidId.' and tu.teamuser_hide = 0 and tu.user_id = $UserId";
-	$TeamNum = CSql::singleValue($sql, 'team_num');
+		where d.raid_id = $RaidId and tu.teamuser_hide = 0 and tu.user_id = $UserId";
+	$TeamNum = CSql::singleValue($sql, 'team_num', false);
 	if ($TeamNum > 0)
 	{
 		CMmb::setMessage("Уже есть команда c Вашим участием (N $TeamNum)");
