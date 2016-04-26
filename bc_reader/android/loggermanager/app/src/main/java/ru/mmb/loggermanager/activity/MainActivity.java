@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -43,18 +41,13 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private LoggerSettings loggerSettings = new LoggerSettings();
     private SettingsPanel settingsPanel;
     private LogsPanel logsPanel;
+    private AutoUpdatePanel autoUpdatePanel;
 
     private ConsoleMessagesAppender consoleAppender;
     private BluetoothClient bluetoothClient;
     private Thread runningThread = null;
 
     private TimeUpdaterThread timeUpdaterThread = null;
-    private ProgressBar timeUpdaterProgress = null;
-    private CheckBox autoUpdateTimeCheck;
-
-    public ProgressBar getTimeUpdaterProgress() {
-        return timeUpdaterProgress;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,23 +69,10 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         new SelectLoggerPanel(this);
         settingsPanel = new SettingsPanel(this);
         logsPanel = new LogsPanel(this);
+        autoUpdatePanel = new AutoUpdatePanel(this);
 
         TextView consoleTextView = (TextView) findViewById(R.id.main_consoleTextView);
         consoleAppender = new ConsoleMessagesAppender(consoleTextView);
-
-        timeUpdaterProgress = (ProgressBar) findViewById(R.id.main_timeUpdaterProgress);
-
-        autoUpdateTimeCheck = (CheckBox) findViewById(R.id.main_autoUpdateTimeCheckBox);
-        autoUpdateTimeCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (autoUpdateTimeCheck.isChecked()) {
-                    startTimeUpdaterThread();
-                } else if (timeUpdaterThread != null) {
-                    stopTimeUpdaterThread();
-                }
-            }
-        });
     }
 
     @Override
@@ -105,9 +85,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
             runningThread = null;
         }
 
-        if (timeUpdaterThread != null) {
-            stopTimeUpdaterThread();
-        }
+        stopTimeUpdaterThread();
     }
 
     @Override
@@ -142,19 +120,19 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }
     }
 
-    private void startTimeUpdaterThread() {
-        if (timeUpdaterThread != null) {
-            stopTimeUpdaterThread();
-        }
+    public void startTimeUpdaterThread() {
+        stopTimeUpdaterThread();
         if (isAdapterEnabled()) {
             timeUpdaterThread = new TimeUpdaterThread(this, new TimeUpdateHandler());
             timeUpdaterThread.start();
         }
     }
 
-    private void stopTimeUpdaterThread() {
-        timeUpdaterThread.terminate();
-        timeUpdaterThread.interrupt();
+    public void stopTimeUpdaterThread() {
+        if (timeUpdaterThread != null) {
+            timeUpdaterThread.terminate();
+            timeUpdaterThread.interrupt();
+        }
     }
 
     private void refreshState() {
@@ -237,6 +215,14 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
                 bluetoothClient.sendCommand(command);
             }
         }, new LoadDataBtHandler());
+    }
+
+    public ProgressBar getTimeUpdaterProgress() {
+        return autoUpdatePanel.getTimeUpdaterProgress();
+    }
+
+    public void writeToConsole(String message) {
+        consoleAppender.appendMessage(message);
     }
 
     private class RadioCheckListener implements CompoundButton.OnCheckedChangeListener {
@@ -328,11 +314,11 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == ThreadMessageTypes.MSG_CONSOLE) {
-                Log.d("TIME_UPDATER", (String) msg.obj);
+                consoleAppender.appendMessage((String) msg.obj);
             } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
-                Log.d("TIME_UPDATER", "time update SUCCESS");
+                consoleAppender.appendMessage("time update SUCCESS");
             } else {
-                Log.d("TIME_UPDATER", "time update ERROR");
+                consoleAppender.appendMessage("time update FAILED");
             }
         }
     }

@@ -23,9 +23,10 @@
     <string name="main_get_debug">Get debug</string>
     <string name="main_get_log_line">Get log line</string>
     <string name="main_get_debug_line">Get debug line</string>
-
     <string name="main_clear_device">Clear device</string>
+
     <string name="main_auto_update_time">Auto update time</string>
+    <string name="main_update_period">Update period (min)</string>
 
     <string name="main_two_digits_error">Two digits number wrong: ${value}</string>
     <string name="main_pattern_error">Wrong pattern: ${value}</string>

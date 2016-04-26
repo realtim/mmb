@@ -3,7 +3,8 @@
     android:id="@+id/main_globalContainerPanel"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:theme="@style/AppTheme">
 
     <LinearLayout
         android:layout_width="500dp"
@@ -377,27 +378,60 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/main_autoUpdatePanel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/activity_small_margin"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:theme="@style/AppTheme">
 
-                <CheckBox
-                    android:id="@+id/main_autoUpdateTimeCheckBox"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/main_auto_update_time" />
+                    android:orientation="horizontal">
 
-                <ProgressBar
-                    android:id="@+id/main_timeUpdaterProgress"
-                    android:layout_width="wrap_content"
+                    <CheckBox
+                        android:id="@+id/main_autoUpdateTimeCheckBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/main_auto_update_time" />
+
+                    <ProgressBar
+                        android:id="@+id/main_timeUpdaterProgress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:visibility="invisible" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:visibility="invisible" />
+                    android:layout_marginTop="@dimen/activity_small_margin">
+
+                    <TextView
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/main_update_period" />
+
+                    <EditText
+                        android:id="@+id/main_updatePeriodEditText"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:ems="10"
+                        android:inputType="number"
+                        android:maxLength="2" />
+                </LinearLayout>
+
+                <TableLayout
+                    android:id="@+id/main_loggersSelectPanel"
+                    android:layout_width="match_parent"
+                    android:layout_height="270dp" />
             </LinearLayout>
-
         </ViewFlipper>
     </LinearLayout>
 

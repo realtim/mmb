@@ -26,6 +26,7 @@
     <string name="main_clear_device">Очистить все логи</string>
 
     <string name="main_auto_update_time">Авто-обновление времени</string>
+    <string name="main_update_period">Пероид обновления (мин)</string>
 
     <string name="main_two_digits_error">Ошибка в числе из двух цифр: ${value}</string>
     <string name="main_pattern_error">Ошибка в шаблоне штрих-кода: ${value}</string>
