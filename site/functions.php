@@ -3415,8 +3415,9 @@ class CMmbLogger
 
 		$conn = self::getConnection();
 
-		if ($user === null)
-			$user = self::tryGetUser();
+		global $UserId;
+		if ($user == null && isset($UserId))
+			$user = $UserId;
 
 		$uid = ($user == null || !is_numeric($user)) ? 'null' : $user;
 
@@ -3436,12 +3437,6 @@ class CMmbLogger
 			self::$sqlConn = null;
 			CSql::dieOnSqlError($user, 'addLogRecord', "adding record: '$query'", $err);
 		}
-	}
-
-	protected static function tryGetUser()
-	{
-		global $UserId;
-		return isset($UserId) ? $UserId : null;
 	}
 
 	protected static function getConnection()
