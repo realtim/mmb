@@ -25,17 +25,17 @@ class CRights
         return $raidStage >= 1 and $raidStage < 7;
     }
 
-    public static function canEditTeam($UserId, $RaidId, $TeamId)
+    public static function canEditTeam($userId, $raidId, $teamId)
     {
-        $teamMemberOrSuper = $TeamId == CSql::userTeamId($UserId, $RaidId) || CSql::userAdmin($UserId) || CSql::userModerator($UserId, $RaidId);
+        $teamMemberOrSuper = $teamId == CSql::userTeamId($userId, $raidId) || CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
         if (!$teamMemberOrSuper)
             return false;
 
-        $raidStage = CSql::raidStage($RaidId);
-        $teamOutOfRange = CSql::teamOutOfRange($TeamId);
+        $raidStage = CSql::raidStage($raidId);
+        $teamOutOfRange = CSql::teamOutOfRange($teamId);
 
-        return !$teamOutOfRange && $raidStage < 2 
-             || $teamOutOfRange && $raidStage < 7;
+        return (!$teamOutOfRange && $raidStage < 2)
+             || ($teamOutOfRange && $raidStage < 7);
     }
 
     // когда отображать карты в протоколе
