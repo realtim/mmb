@@ -206,7 +206,7 @@ class CSql {
 		mysql_free_result($result);
 
 		if (!isset($row[$key]) && $strict == true)
-			CMmbLogger::e('singleValue', "Field '$key' doesn't exist, query:\n$query");
+			CMmbLogger::w('singleValue', "Field '$key' doesn't exist, query:\n" . trim($query));
 		return $row[$key];
 	}
 
@@ -230,13 +230,18 @@ class CSql {
 		return self::singleRow($sql);
 	}
 
-	protected static function raidFileName($raidId, $fileType, $justVisible)
+	// пустой $raidId ищет последний доступный файл такого типа
+	public static function raidFileName($raidId, $fileType, $justVisible)
 	{
 		$condition = $justVisible ? "raidfile_hide = 0" : "true";
+
+		$raidCond = empty($raidId) ? 'true' :  "raid_id = $raidId";
+		$raidOrder = empty($raidId) ? 'raid_id desc, ': '';
+
 		$sql = "select raidfile_name
 	                        from RaidFiles
-	                        where raid_id = $raidId and filetype_id = $fileType and $condition
-	     			order by raidfile_id desc";
+	                        where $raidCond and filetype_id = $fileType and $condition
+	     			order by $raidOrder raidfile_id desc";
 
 		return trim(self::singleValue($sql, 'raidfile_name', false));
 	}
@@ -244,6 +249,7 @@ class CSql {
 	// types:
 	// 1 - ссылка на положение
 	// 2 - ссылка на логотип
+	// 8 - пользовательское соглашение
 	// 10 - информация о старте
 	public static function raidFileLink($raidId, $fileType, $justVisible = false)
 	{
@@ -304,7 +310,7 @@ class CSql {
 			from UserUnionLogs uul
 			where uul.union_status in (1,2) and (uul.user_id = $userId or uul.user_parentid = $userId)";
 
-		return self::singleValue($sql, 'userunionlog_id');
+		return self::singleValue($sql, 'userunionlog_id', false);
 	}
 
 	// 21.03.2016 возвращает teamId команды для заданного пользователя и ММБ
@@ -1352,30 +1358,8 @@ send_mime_mail('Автор письма',
      // функция получает ссылку на  логотип
     function GetMmbLogo($raidid)
     {
-		if (!empty($raidid))
-			return CSql::raidFileLink($raidid, 2, false);
-
-		// Данные берём из settings
-		include("settings.php");
-
-        // 08.12.2013 Ищем ссылку на логотип  
-        $sqlFile = "select rf.raidfile_name
-	     from RaidFiles rf
-	          inner join Raids r
-		  on rf.raid_id = r.raid_id
-	     where rf.filetype_id = 2 
-	     order by r.raid_registrationenddate desc, rf.raidfile_id desc
-	     LIMIT 0,1";
-
-
-        $LogoFile = trim(CSql::singleValue($sqlFile, 'raidfile_name'));
-
-        if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
-	        return $MyStoreHttpLink.$LogoFile;
-
-        return '';
+		return CSql::raidFileLink($raidid, 2, false);
     }
-      // Конец получения логотипа
 
 
      // 26/12/2013 
@@ -3387,6 +3371,10 @@ class CMmbLogger
 	public static function i($operation, $message, $user = null)
 	{
 		self::addLogRecord($user, self::Info, $operation, $message);
+	}
+	public static function w($operation, $message, $user = null)
+	{
+		self::addLogRecord($user, self::Warn, $operation, $message);
 	}
 	public static function e($operation, $message, $user = null)
 	{

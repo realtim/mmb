@@ -532,12 +532,7 @@ if (($viewmode == "Add") && ($AllowEdit == 1) )
 	print('<b>Условия участия (выдержка из <a href="'.$RaidRulesLink.'">положения</a>):</b><br/>'."\n");
 
 	// Ищем последнее пользовательское соглашение
-	$sql = "select rf.raidfile_id, rf.raidfile_name
-		from RaidFiles rf
-		where rf.raidfile_hide = 0 and rf.filetype_id = 8
-		order by rf.raid_id DESC, rf.raidfile_id DESC
-		LIMIT 0,1";
-	$ConfirmFile = trim($MyStoreHttpLink).trim(CSql::singleValue($sql, 'raidfile_name'));
+	$ConfirmFile = trim($MyStoreHttpLink).CSql::raidFileName(null, 8, true); 
 
 	$Fp = fopen($ConfirmFile, "r");
 	while ((!feof($Fp)) && (!strpos(trim(fgets($Fp, 4096)),'body')));

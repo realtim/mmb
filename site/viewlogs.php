@@ -21,7 +21,7 @@ if (!CRights::canViewLogs($UserId))     // нет прав -- вываливае
 <?php
 
     // фильтруем типы ошибок и печатаем селект
-    $allLevels = array(CMmbLogger::Trace, CMmbLogger::Debug, CMmbLogger::Info, CMmbLogger::Error, CMmbLogger::Critical);
+    $allLevels = array(CMmbLogger::Trace, CMmbLogger::Debug, CMmbLogger::Info, CMmbLogger::Warn, CMmbLogger::Error, CMmbLogger::Critical);
     $levels = array();
     $rawLevels = mmb_validate($_POST, 'levels', array());
     if (!is_array($rawLevels))
@@ -31,7 +31,7 @@ if (!CRights::canViewLogs($UserId))     // нет прав -- вываливае
         if (in_array($lev, $rawLevels))
             $levels[] = $lev;
 
-    print("Типы сообщений: <select name=\"levels[]\" size=\"5\" multiple style=\"margin-left: 10px; margin-right: 5px; vertical-align: top;\"
+    print("Типы сообщений: <select name=\"levels[]\" size=\"6\" multiple style=\"margin-left: 10px; margin-right: 5px; vertical-align: top;\"
             onchange=\"document.LogsForm.submit();\">");
     foreach ($allLevels as $lev)
     {
@@ -43,7 +43,7 @@ if (!CRights::canViewLogs($UserId))     // нет прав -- вываливае
     // фильтруем кол-во ошибок и печатаем селект
     $limit = mmb_validateInt($_REQUEST, 'num_rec', 100);
     print('Количество: <select name="num_rec" style="margin-left: 10px; margin-right: 5px;" onchange="document.LogsForm.submit();">');
-    foreach (array(100, 500, 1000) as $lim)
+    foreach (array(100, 500, 1000, 5000) as $lim)
     {
         $sel = $lim == $limit ? ' selected="selected"' : '';
         print("<option value=\"$lim\"$sel>$lim</option>\n");

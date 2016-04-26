@@ -179,7 +179,7 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 	$LogoFile = trim($Row['logo_file']);
         if ($LogoFile <> '' && file_exists($MyStoreFileLink.$LogoFile))
         {
-         $link = $MyStoreHttpLink.$LogoFile;
+         $link = trim($MyStoreHttpLink).$LogoFile;
 	 $mmbLogos[] = "                {$Row['raid_id']}: '$link'";
         }
  }
