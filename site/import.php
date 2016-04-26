@@ -55,6 +55,7 @@ if (isset($_FILES['android']))
 	$valid_devices = array();
 	$saved_team_time = array();
 	$saved_teamuser_id = array();
+	$saved_levelpoint_order = array();
 	foreach ($lines as $line_num => $line)
 	{
 		// Проверка существования пользователя, от имени которого загружаем
@@ -172,9 +173,10 @@ if (isset($_FILES['android']))
 			$Result = mysql_query($sql);
 			if (!$Result || mysql_num_rows($Result) <> 1)
 				die("Сошедший участник $user_id отсутствует или удален в его команде $team_id в строке #".$line_num." - ".$line);
-			// Сохраняем teamuser_id для второго прохода скрипта
+			// Сохраняем teamuser_id и levelpoint_order для второго прохода скрипта
 			$Row = mysql_fetch_assoc($Result);
 			$saved_teamuser_id[$line_num] = $Row['teamuser_id'];
+			$saved_levelpoint_order[$line_num] = $levelpoint_order;
 			mysql_free_result($Result);
 			// Проверяем, что сход зарегистрирован на точке с судьями, а не на обычной точке с компостером
 			if ($pointtype_id == 5)
@@ -259,40 +261,39 @@ if (isset($_FILES['android']))
 		// Данные о сходе участников на контрольной точке
 		if ($type == "TeamLevelDismiss")
 		{
-			// Используем teamuser_id из первого прохода скрипта
+			// Используем teamuser_id и levelpoint_order из первого прохода скрипта
 			$teamuser_id = $saved_teamuser_id[$line_num];
-			// Выясняем, есть ли уже запись о сходе участника в этой точке
-			$sql = "SELECT teamleveldismiss_date FROM TeamLevelDismiss
-				WHERE levelpoint_id = $point_id AND teamuser_id = $teamuser_id";
+			$levelpoint_order = $saved_levelpoint_order[$line_num];
+			// Выясняем, есть ли уже запись о сходе этого участника
+			$sql = "SELECT levelpoint_order FROM TeamLevelDismiss, LevelPoints".
+				" WHERE LevelPoints.levelpoint_id = TeamLevelDismiss.levelpoint_id AND teamuser_id = $teamuser_id".
+				" ORDER BY levelpoint_order ASC LIMIT 1";
 			$Result = mysql_query($sql);
 			unset($Old);
 			$Old = mysql_fetch_assoc($Result);
-			if (isset($Old['teamleveldismiss_date']) && $Old['teamleveldismiss_date'])
+			if (isset($Old['levelpoint_order']))
 			{
-				// обновляем запись в базе только если дата ввода данных в файле больше, чем в базе
-				if ($Old['teamleveldismiss_date'] >= $edit_time) $Record = "unchanged";
+				// обновляем запись в базе только если точка схода из файла раньше, чем в базе
+				if ($Old['levelpoint_order'] <= $levelpoint_order) $Record = "unchanged";
 				else $Record = "updated";
 			}
 			else $Record = "new";
 			mysql_free_result($Result);
-			// Если записи раньше не было - вставляем ее в таблицу
-			if ($Record == "new")
+			if ($Record == "updated")
 			{
-				// Новая запись о сходе участника
-				$d_new++;
-				$sql = "INSERT INTO TeamLevelDismiss (teamleveldismiss_date, user_id, device_id, levelpoint_id, teamuser_id)
-					VALUES ('$edit_time', $operator_id, $device_id, $point_id, $teamuser_id)";
+				// Участник сошел раньше, чем было известно до этого
+				// Удаляем все старые записи о сходе участника (теоретически это всего одна запись)
+				$d_updated++;
+				$sql = "DELETE FROM TeamLevelDismiss WHERE teamuser_id = $teamuser_id";
 				mysql_query($sql);
 				if (mysql_error()) die($sql.": ".mysql_error());
 			}
-			elseif ($Record == "updated")
+			if (($Record == "new") || ($Record == "updated"))
 			{
-				// Измененная запись о сходе участника
-				// Реально может поменяться только оператор, планшет и время ввода на планшете: отменить сход нельзя
-				$d_updated++;
-				$sql = "UPDATE TeamLevelDismiss SET
-					teamleveldismiss_date = '$edit_time', user_id = $operator_id, device_id = $device_id
-					WHERE levelpoint_id = $point_id AND teamuser_id = $teamuser_id";
+				// Вставляем новую/обновленную запись о сходе участника
+				if ($Record == "new") $d_new++;
+				$sql = "INSERT INTO TeamLevelDismiss (teamleveldismiss_date, user_id, device_id, levelpoint_id, teamuser_id)
+					VALUES ('$edit_time', $operator_id, $device_id, $point_id, $teamuser_id)";
 				mysql_query($sql);
 				if (mysql_error()) die($sql.": ".mysql_error());
 			}
