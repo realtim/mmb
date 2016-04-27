@@ -501,7 +501,9 @@
 
 		$sql = "select raidfile_name, raidfile_comment
 	                from RaidFiles
-	                        where raid_id = $RaidId and filetype_id = 4 
+	                        where raid_id = $RaidId 
+	                        	and filetype_id = 4 
+	                        	and substr(lower(raidfile_name), -4)  in ('.png','.gif','.jpg','jpeg')
 	                        	and raidfile_hide = 0
 	     			order by raidfile_id asc";
 
@@ -510,7 +512,7 @@
 		{
 		        $ImageLink = $Row['raidfile_name'];
 		        $ImageComment = $Row['raidfile_comment'];
-			print('<a style="margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ImageLink).'" title="'.trim($ImageComment).'" target = "_blank"><img src = "'.trim($MyStoreHttpLink).trim($ImageLink).'"  alt = "'.trim($ImageComment).'" height = "100"></a>'."\r\n");
+			print('<a style="margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ImageLink).'" title="'.trim($ImageComment).'" target = "_blank"><img src = "'.image_resize(trim($MyStoreHttpLink).trim($ImageLink), '', 1000, 100, 0).'"  alt = "'.trim($ImageComment).'" height = "100"></a>'."\r\n");
 		}
   		mysql_free_result($Result);
 		print('</div>'."\r\n");
