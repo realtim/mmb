@@ -516,8 +516,8 @@
 		        $point = strrpos($ImageLink, '.');
 		        if  ($point > 0) 
 		        {
-		          $tumbImg = substr($ImageLink, 0, $point - 1) + '_tumb' + substr($ImageLink, $point);
-				echo $point, $ImageLink, $tumbImg;
+		          $tumbImg = substr($ImageLink, 0, $point - 1).'_tumb'.substr($ImageLink, $point);
+				echo $point.' '.$ImageLink.' '.$tumbImg;
 		          if (!is_file($tumbImg))
 		          {
 			    // image_resize(trim($MyStoreHttpLink).trim($ImageLink), trim($MyStoreHttpLink).trim($tumbImg), 1000, 100, 0);
