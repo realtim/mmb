@@ -516,11 +516,11 @@
 		        $point = strrpos($ImageLink, '.');
 		        if  ($point > 0) 
 		        {
-		          $tumbImg = substr($ImageLink, 0, $point - 1).'_tumb'.substr($ImageLink, $point);
+		          $tumbImg = substr($ImageLink, 0, $point).'_tumb'.substr($ImageLink, $point);
 			//	echo $point.' '.$ImageLink.' '.$tumbImg;
 		          if (!is_file(trim($MyStoreFileLink).$tumbImg))
 		          {
-				echo '1111';
+			//	echo '1111';
 			     image_resize(trim($MyStoreFileLink).trim($ImageLink), trim($MyStoreFileLink).trim($tumbImg), 1000, 100, 0);
 		          }
 			  print('<a style="margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ImageLink).'" title="'.trim($ImageComment).'" target = "_blank"><img src = "'.trim($MyStoreHttpLink).trim($tumbImg).'"  alt = "'.trim($ImageComment).'" height = "100"></a>'."\r\n");
