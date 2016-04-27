@@ -517,12 +517,12 @@
 		        if  ($point > 0) 
 		        {
 		          $tumbImg = substr($ImageLink, 0, $point - 1).'_tumb'.substr($ImageLink, $point);
-				echo $point.' '.$ImageLink.' '.$tumbImg;
+			//	echo $point.' '.$ImageLink.' '.$tumbImg;
 		          if (!is_file($tumbImg))
 		          {
-			    // image_resize(trim($MyStoreHttpLink).trim($ImageLink), trim($MyStoreHttpLink).trim($tumbImg), 1000, 100, 0);
+			     image_resize(trim($MyStoreHttpLink).trim($ImageLink), trim($MyStoreHttpLink).trim($tumbImg), 1000, 100, 0);
 		          }
-			  //print('<a style="margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ImageLink).'" title="'.trim($ImageComment).'" target = "_blank"><img src = "'.trim($MyStoreHttpLink).trim($tumbImg).'"  alt = "'.trim($ImageComment).'" height = "100"></a>'."\r\n");
+			  print('<a style="margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ImageLink).'" title="'.trim($ImageComment).'" target = "_blank"><img src = "'.trim($MyStoreHttpLink).trim($tumbImg).'"  alt = "'.trim($ImageComment).'" height = "100"></a>'."\r\n");
 		        }
 		}
   		mysql_free_result($Result);
