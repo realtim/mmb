@@ -492,6 +492,22 @@ elseif ($action == 'AddRaidFile')
 			CMmb::setErrorSm('Ошибка записи нового файла.');
 			return;
 	        }
+
+		// делаем preview
+	        $point = strrpos($pRaidFileName, '.');
+	        if  ($point > 0 and (substr($pRaidFileName, $point) == '.png' or substr($pRaidFileName, $point) == '.gif')) 
+	        {
+		          $tumbImg = substr($pRaidFileName, 0, $point).'_tumb'.substr($pRaidFileName, $point);
+			//	echo $point.' '.$ImageLink.' '.$tumbImg;
+		          if (!is_file(trim($MyStoreFileLink).$tumbImg))
+		          {
+			//	echo '1111';
+			     image_resize(trim($MyStoreFileLink).trim($pRaidFileName), trim($MyStoreFileLink).trim($tumbImg), 1000, 100, 0);
+		          }
+	        }
+		// конец проверки на необходимость делать картинку preview
+
+
        }
        // Конец проверки, что файл был загружен	
  }
