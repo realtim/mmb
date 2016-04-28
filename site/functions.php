@@ -1677,7 +1677,7 @@ send_mime_mail('Автор письма',
 
   
 	$TeamNotStartPayment = 0;
-	$sql = " select SUM(r.raid_nostartprice) as notstartpayment
+	$sql = " select COALESCE(SUM(r.raid_nostartprice), 0.) as notstartpayment
 	         from  TeamUsers tu
 		       inner join Raids r
 		       on tu.teamuser_notstartraidid = r.raid_id
