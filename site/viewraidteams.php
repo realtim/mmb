@@ -572,7 +572,7 @@
     	$mapsInRangeCount =  CSql::singleValue($sql, 'inrangecount');
 
 
-    	$sql = "  select sum(COALESCE(team_mapscount, 0))  as outofrangecount
+    	$sql = "  select COALESCE(sum(COALESCE(team_mapscount, 0)), 0)  as outofrangecount
 		 from  Teams t 
 		 where t.distance_id = $whereDistanceId
 		       and t.team_hide = 0
