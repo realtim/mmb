@@ -3488,6 +3488,8 @@ class CMmbLogger
 			fwrite($f, $log ? $message : ' ');
 			fclose($f);
 		}
+		else
+			die("error opening file. log = '$log', file: " . ($log ? self::$fatalLogFile : self::$timestampFile))
 		// syslog otherwise ???
 	}
 
