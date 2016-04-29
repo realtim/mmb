@@ -3311,7 +3311,7 @@ class CMmbUI
 
 class CMmbLogger
 {
-	const MailingInterval = 5 * 60; // seconds. i.e. 5 minutes
+	const MailingInterval = 300; // seconds. i.e. 5 minutes
 
 	protected static $enabled = false;
 	protected static $records = array();
