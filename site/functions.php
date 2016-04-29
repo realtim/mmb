@@ -571,7 +571,7 @@ class CSql {
    //
    
     // 20.01.2012 Заменил штатную функцию на более удобную  send_mime_mail (см. ниже)
-    send_mime_mail('mmbsite',
+    return send_mime_mail('mmbsite',
  		   'mmb@progressor.ru',
 		    $ToName,
 		    $Email,
@@ -579,10 +579,6 @@ class CSql {
 		    'UTF-8', // кодировка, в которой будет отправлено письмо
 		    $Subject,
 		    $Message."\r\n".'Используйте для вопросов адрес mmbsite@googlegroups.com'."\r\n".'Ответ на это письмо будет проигнорирован.'."\r\n");
-		    
-
-
-    return ;
     }
 
 
@@ -714,7 +710,7 @@ class CSql {
 			// добавляем комментарий	
 			if ($sendingType == 1 or $sendingType == 3)
 			{
-			   $Msg .= "\r\n Если Вы не хотите получать информационные письма, то снимите соответсвующую отметку в карточке пользователя на сайте ММБ \r\n \r\n";
+			   $Msg .= "\r\n Если Вы не хотите получать информационные письма, то снимите соответствующую отметку в карточке пользователя на сайте ММБ \r\n \r\n";
 			}
 		
 		        //echo $sendingType." ".
@@ -3315,12 +3311,16 @@ class CMmbUI
 
 class CMmbLogger
 {
+	protected const MailingInterval = 5 * 60; // seconds. i.e. 5 minutes
+
 	protected static $enabled = false;
 	protected static $records = array();
 	
 	protected static $sqlConn = null;
 	protected static $minLevelCode = null;
 	protected static $fatalErrorMail = null;
+	protected static $fatalLogFile = null;
+	protected static $timestampFile = null;
 
 	const Trace = 	'trace';
 	const Debug = 	'debug';
@@ -3391,19 +3391,52 @@ class CMmbLogger
 		if (self::$fatalErrorMail == null)
 			self::initVars();
 
-		$mail = self::$fatalErrorMail == null ? 'mmbsite@googlegroups.com' : self::$fatalErrorMail; 
+		global $DBName;
+		$dbname = (isset($DBName) && $DBName != null) ? $DBName : '<неизвестна>';
+		$user = self::tryGuessUser($user);
 
+		self::updateLogFile(true, self::makeFatalMessage($dbname, $user, $operation, $message));
+
+		$mtime = !empty(self::$timestampFile) ? filemtime(self::$timestampFile) : false;
+		if (empty(self::$timestampFile) || $mtime != false && time() > $mtime + self::MailingInterval)		// при массовом сбое отправится столько писем, сколько будет ошибок между этим if и отработкой первого SendMail - updateLogFile
+		{
+			$mail = self::$fatalErrorMail == null ? 'mmbsite@googlegroups.com' : self::$fatalErrorMail;
+			$msg = self::makeFatalMessage($dbname, $user, $operation, $message, true);
+			
+			if (SendMail(trim($mail), $msg, 'Админы и разработчики', "Критическая ошибка на сайте с базой $dbname"))
+				self::updateLogFile(false);
+		}
+	}
+
+	private static function makeFatalMessage($dbname, $user, $operation, $message, $forMail = false)
+	{
 		if ($user === null)
 			$user = '<неизвестен>';
 		if ($operation === null)
 			$operation = '<не указана>';
 		if ($message === null)
 			$message = '<неизвестна>';
+		
+		$time = date("Y-m-d H:i:s");
 
-		$msg = "Критическая ошибка!\r\n\r\nid пользователя: $user\r\n"
+		$stack = debug_print_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 0);  // think of depth limit. 0 means infinity
+
+		if (!$forMail)
+		{
+			$re = '/[\r\n\t]+/gmu';
+			$msg = preg_replace($re, ' ', $message);
+			$stack = preg_replace($re, ' ', $stack);
+
+			return "$time\t$dbname\t$user\t$operation\t$msg\t$stack\r\n";
+		}
+		
+		return "Критическая ошибка при работе с базой '$dbname'!\r\n\r\n"
+			."$time\r\n"
+			."id пользователя: $user\r\n"
 			."Операция: $operation\r\n"
-			."Текст ошибки: $message\r\n";
-		SendMail(trim($mail),  $msg, 'Админы и программисты',  'Критическая ошибка на сайте');
+			."Текст ошибки: $message\r\n"
+			."\r\nСтек: $stack\r\n\r\n"
+			."Cообщения о других критических ошибках ищите в логе: ".self::$fatalLogFile;
 	}
 	
 	private static function addLogRecord($user, $level, $operation, $message)
@@ -3415,10 +3448,7 @@ class CMmbLogger
 
 		$conn = self::getConnection();
 
-		global $UserId;
-		if ($user == null && isset($UserId))
-			$user = $UserId;
-
+		$user = self::tryGuessUser($user);
 		$uid = ($user == null || !is_numeric($user)) ? 'null' : $user;
 
 		$level = CSql::quote($level);
@@ -3437,6 +3467,28 @@ class CMmbLogger
 			self::$sqlConn = null;
 			CSql::dieOnSqlError($user, 'addLogRecord', "adding record: '$query'", $err);
 		}
+	}
+
+	protected static function tryGuessUser($user)
+	{
+		global $UserId;
+		return ($user == null && isset($UserId)) ? $UserId : $user;
+	}
+
+	// add record for log, update modification time for timestamp
+	private static function updateLogFile($log, $message = null)
+	{
+		if ($log)
+			$f = fopen(self::$fatalLogFile, "a");
+		else
+			$f = fopen(self::$timestampFile, "w");
+
+		if ($f != FALSE)
+		{
+			fwrite($f, $log ? $message : ' ');
+			fclose($f);
+		}
+		// syslog otherwise ???
 	}
 
 	protected static function getConnection()
@@ -3474,6 +3526,10 @@ class CMmbLogger
 
 		self::$minLevelCode = self::levelCode($MinLogLevel);
 		self::$fatalErrorMail = $FatalErrorMail;
+
+		$catalog = trim($MyLogCatalog);
+		self::$fatalLogFile = isset($MyLogDefaultFileName) ? $catalog.trim($MyLogDefaultFileName) : '';	// todo генерировать. например 1 числа текущего месяца
+		self::$timestampFile = isset($MyLogTimestampFileName) ? $catalog.trim($MyLogTimestampFileName) : '';
 	}
 }
 
@@ -3523,6 +3579,9 @@ function image_resize($src, $dst, $width, $height, $crop=0)
 		imagesavealpha($new, true);
 	}
 
+	$src_image = $image['create']($src);		// а если не откроется?
+	imagecopyresampled($new, $src_image, 0, 0, $x, 0, $width, $height, $w, $h);
+	imagedestroy($src_image);
 
 	if  (!empty($dst))
 		$image['write']($new, $dst);
