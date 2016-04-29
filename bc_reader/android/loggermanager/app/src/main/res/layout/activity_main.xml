@@ -66,302 +66,314 @@
         android:layout_height="360dp"
         android:layout_marginLeft="@dimen/activity_small_margin">
 
-        <LinearLayout
-            android:id="@+id/main_settingsPanel"
+        <ScrollView
+            android:id="@+id/main_logsScrollView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
             <LinearLayout
+                android:id="@+id/main_logsPanel"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_small_margin">
-
-                <TextView
-                    android:layout_width="125dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/main_logger_id_label" />
-
-                <EditText
-                    android:id="@+id/main_loggerIdEditText"
-                    android:layout_width="150dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:ems="10"
-                    android:inputType="number"
-                    android:maxLength="2" />
-
-                <Button
-                    android:id="@+id/main_updateLoggerIdButton"
-                    android:layout_width="50dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="@string/main_update_setting" />
-
-                <Button
-                    android:id="@+id/main_reloadSettingsButton"
-                    android:layout_width="100dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="@string/main_reload_settings" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_small_margin">
-
-                <TextView
-                    android:layout_width="125dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/main_scanpoint_label" />
-
-                <EditText
-                    android:id="@+id/main_scanpointEditText"
-                    android:layout_width="150dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:ems="10"
-                    android:inputType="number"
-                    android:maxLength="2" />
-
-                <Button
-                    android:id="@+id/main_updateScanpointButton"
-                    android:layout_width="50dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="@string/main_update_setting" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_small_margin">
-
-                <TextView
-                    android:layout_width="125dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/main_pattern_label" />
-
-                <EditText
-                    android:id="@+id/main_patternEditText"
-                    android:layout_width="150dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:maxLength="8" />
-
-                <Button
-                    android:id="@+id/main_updatePatternButton"
-                    android:layout_width="50dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="@string/main_update_setting" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_small_margin">
-
-                <TextView
-                    android:layout_width="125dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/main_check_length_label" />
-
-                <LinearLayout
-                    android:layout_width="150dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:orientation="vertical">
-
-                    <CheckBox
-                        android:id="@+id/main_checkLengthCheckBox"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:text="" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/main_updateCheckLengthButton"
-                    android:layout_width="50dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="@string/main_update_setting" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_small_margin">
-
-                <TextView
-                    android:layout_width="125dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/main_only_digits_label" />
-
-                <LinearLayout
-                    android:layout_width="150dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:orientation="vertical">
-
-                    <CheckBox
-                        android:id="@+id/main_onlyDigitsCheckBox"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:text="" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/main_updateOnlyDigitsButton"
-                    android:layout_width="50dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="@string/main_update_setting" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_small_margin">
-
-                <TextView
-                    android:layout_width="125dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/main_time_label" />
-
-                <TextView
-                    android:id="@+id/main_loggerTimeLabel"
-                    android:layout_width="150dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="2016-05-13 22:22:11" />
-
-                <Button
-                    android:id="@+id/main_updateLoggerTimeButton"
-                    android:layout_width="50dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="@string/main_update_setting" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/main_logsPanel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/main_selectSaveDirButton"
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/main_select_save_dir" />
-
-                <TextView
-                    android:id="@+id/main_saveDirLabel"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/activity_small_margin"
-                    android:gravity="right"
-                    android:text="@string/main_no_save_dir" />
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/main_selectSaveDirButton"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/main_select_save_dir" />
+
+                    <TextView
+                        android:id="@+id/main_saveDirLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/activity_small_margin"
+                        android:gravity="right"
+                        android:text="@string/main_no_save_dir" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_small_margin">
+
+                    <Button
+                        android:id="@+id/main_getLogButton"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/main_get_log" />
+
+                    <Button
+                        android:id="@+id/main_getDebugButton"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/activity_small_margin"
+                        android:text="@string/main_get_debug" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_small_margin">
+
+                    <Button
+                        android:id="@+id/main_getLogLineButton"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/main_get_log_line" />
+
+                    <EditText
+                        android:id="@+id/main_getLogLineEditText"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_small_margin"
+                        android:ems="10"
+                        android:inputType="number"
+                        android:maxLength="4" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_small_margin">
+
+                    <Button
+                        android:id="@+id/main_getDebugLineButton"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/main_get_debug_line" />
+
+                    <EditText
+                        android:id="@+id/main_getDebugLineEditText"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_small_margin"
+                        android:ems="10"
+                        android:inputType="number"
+                        android:maxLength="4" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_small_margin">
+
+                    <Button
+                        android:id="@+id/main_clearDeviceButton"
+                        android:layout_width="200dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/main_clear_device" />
+                </LinearLayout>
             </LinearLayout>
+        </ScrollView>
+
+        <ScrollView
+            android:id="@+id/main_settingsScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
             <LinearLayout
+                android:id="@+id/main_settingsPanel"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_small_margin">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/main_getLogButton"
-                    android:layout_width="200dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/main_get_log" />
+                    android:layout_marginTop="@dimen/activity_small_margin">
 
-                <Button
-                    android:id="@+id/main_getDebugButton"
-                    android:layout_width="200dp"
+                    <TextView
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/main_logger_id_label" />
+
+                    <EditText
+                        android:id="@+id/main_loggerIdEditText"
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:ems="10"
+                        android:inputType="number"
+                        android:maxLength="2" />
+
+                    <Button
+                        android:id="@+id/main_updateLoggerIdButton"
+                        android:layout_width="40dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:text="@string/main_update_setting" />
+
+                    <Button
+                        android:id="@+id/main_reloadSettingsButton"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:text="@string/main_reload_settings" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/activity_small_margin"
-                    android:text="@string/main_get_debug" />
+                    android:layout_marginTop="@dimen/activity_small_margin">
+
+                    <TextView
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/main_scanpoint_label" />
+
+                    <EditText
+                        android:id="@+id/main_scanpointEditText"
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:ems="10"
+                        android:inputType="number"
+                        android:maxLength="2" />
+
+                    <Button
+                        android:id="@+id/main_updateScanpointButton"
+                        android:layout_width="40dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:text="@string/main_update_setting" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_small_margin">
+
+                    <TextView
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/main_pattern_label" />
+
+                    <EditText
+                        android:id="@+id/main_patternEditText"
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:maxLength="8" />
+
+                    <Button
+                        android:id="@+id/main_updatePatternButton"
+                        android:layout_width="40dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:text="@string/main_update_setting" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_small_margin">
+
+                    <TextView
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/main_check_length_label" />
+
+                    <LinearLayout
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:orientation="vertical">
+
+                        <CheckBox
+                            android:id="@+id/main_checkLengthCheckBox"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:text="" />
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/main_updateCheckLengthButton"
+                        android:layout_width="40dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:text="@string/main_update_setting" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_small_margin">
+
+                    <TextView
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/main_only_digits_label" />
+
+                    <LinearLayout
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:orientation="vertical">
+
+                        <CheckBox
+                            android:id="@+id/main_onlyDigitsCheckBox"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:text="" />
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/main_updateOnlyDigitsButton"
+                        android:layout_width="40dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:text="@string/main_update_setting" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_small_margin">
+
+                    <TextView
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/main_time_label" />
+
+                    <TextView
+                        android:id="@+id/main_loggerTimeLabel"
+                        android:layout_width="75dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="13-05-16 22:22:11" />
+
+                    <Button
+                        android:id="@+id/main_updateLoggerTimeButton"
+                        android:layout_width="40dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:text="@string/main_update_setting" />
+                </LinearLayout>
             </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_small_margin">
-
-                <Button
-                    android:id="@+id/main_getLogLineButton"
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/main_get_log_line" />
-
-                <EditText
-                    android:id="@+id/main_getLogLineEditText"
-                    android:layout_width="100dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_small_margin"
-                    android:ems="10"
-                    android:inputType="number"
-                    android:maxLength="4" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_small_margin">
-
-                <Button
-                    android:id="@+id/main_getDebugLineButton"
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/main_get_debug_line" />
-
-                <EditText
-                    android:id="@+id/main_getDebugLineEditText"
-                    android:layout_width="100dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="@dimen/activity_small_margin"
-                    android:ems="10"
-                    android:inputType="number"
-                    android:maxLength="4" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_small_margin">
-
-                <Button
-                    android:id="@+id/main_clearDeviceButton"
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/main_clear_device" />
-            </LinearLayout>
-        </LinearLayout>
+        </ScrollView>
 
         <LinearLayout
             android:id="@+id/main_autoUpdatePanel"

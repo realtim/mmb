@@ -11,6 +11,7 @@ import java.util.Set;
 import ru.mmb.loggermanager.activity.MainActivity;
 import ru.mmb.loggermanager.activity.settings.LoggerSettingsBluetoothClient;
 import ru.mmb.loggermanager.bluetooth.DeviceInfo;
+import ru.mmb.loggermanager.bluetooth.DevicesLoader;
 import ru.mmb.loggermanager.conf.Configuration;
 
 public class TimeUpdaterThread extends Thread {

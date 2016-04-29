@@ -8,21 +8,21 @@
     <string name="main_radio_logs">Logs</string>
     <string name="main_radio_auto_time">Auto time</string>
 
-    <string name="main_logger_id_label">Logger ID</string>
-    <string name="main_scanpoint_label">Scanpoint №</string>
+    <string name="main_logger_id_label">LoggerID</string>
+    <string name="main_scanpoint_label">Point№</string>
     <string name="main_pattern_label">Pattern</string>
-    <string name="main_check_length_label">Check length</string>
-    <string name="main_only_digits_label">Only digits</string>
+    <string name="main_check_length_label">Длина</string>
+    <string name="main_only_digits_label">Цифры</string>
     <string name="main_time_label">Time</string>
     <string name="main_update_setting">&gt;</string>
     <string name="main_reload_settings">Обновить</string>
 
-    <string name="main_select_save_dir">Директория сохранения</string>
+    <string name="main_select_save_dir">Хранилище</string>
     <string name="main_no_save_dir">Директория сохранения не выбрана</string>
-    <string name="main_get_log">Получить log</string>
-    <string name="main_get_debug">Получить debug</string>
-    <string name="main_get_log_line">Получить строку log</string>
-    <string name="main_get_debug_line">Получить строку debug</string>
+    <string name="main_get_log">GETL</string>
+    <string name="main_get_debug">GETD</string>
+    <string name="main_get_log_line">GETL line</string>
+    <string name="main_get_debug_line">GETD line</string>
     <string name="main_clear_device">Очистить все логи</string>
 
     <string name="main_auto_update_time">Авто-обновление времени</string>

@@ -54,19 +54,19 @@ public abstract class BluetoothClient {
     }
 
     public synchronized void writeToConsole(String message) {
-        if (!isTerminated()) {
+        if (!isTerminated() && handler != null) {
             handler.sendMessage(Message.obtain(handler, ThreadMessageTypes.MSG_CONSOLE, message));
         }
     }
 
     protected void sendFinishedSuccessNotification() {
-        if (!isTerminated()) {
+        if (!isTerminated() && handler != null) {
             handler.sendMessage(Message.obtain(handler, ThreadMessageTypes.MSG_FINISHED_SUCCESS));
         }
     }
 
     protected void sendFinishedErrorNotification() {
-        if (!isTerminated()) {
+        if (!isTerminated() && handler != null) {
             handler.sendMessage(Message.obtain(handler, ThreadMessageTypes.MSG_FINISHED_ERROR));
         }
     }

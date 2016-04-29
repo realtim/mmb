@@ -1,0 +1,1 @@
+<WakefulIntentService listener="ru.mmb.loggermanager.service.UpdateTimeAlarmListener" />

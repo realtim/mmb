@@ -1,4 +1,4 @@
-package ru.mmb.loggermanager.activity.timeupdater;
+package ru.mmb.loggermanager.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

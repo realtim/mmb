@@ -4,7 +4,6 @@ import android.view.KeyEvent;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -15,14 +14,13 @@ import java.util.List;
 import java.util.Map;
 
 import ru.mmb.loggermanager.R;
-import ru.mmb.loggermanager.activity.timeupdater.DevicesLoader;
 import ru.mmb.loggermanager.bluetooth.DeviceInfo;
+import ru.mmb.loggermanager.bluetooth.DevicesLoader;
 import ru.mmb.loggermanager.conf.Configuration;
 
 public class AutoUpdatePanel {
     private final MainActivity owner;
 
-    private ProgressBar timeUpdaterProgress = null;
     private CheckBox autoUpdateTimeCheck;
     private EditText updatePeriodEdit;
     private TableLayout loggersSelectPanel;
@@ -31,18 +29,12 @@ public class AutoUpdatePanel {
     private Map<CheckBox, DeviceInfo> checkBoxLoggers = new HashMap<CheckBox, DeviceInfo>();
     private Map<DeviceInfo, CheckBox> loggerCheckBoxes = new HashMap<DeviceInfo, CheckBox>();
 
-    public ProgressBar getTimeUpdaterProgress() {
-        return timeUpdaterProgress;
-    }
-
     public AutoUpdatePanel(MainActivity owner) {
         this.owner = owner;
         initialize();
     }
 
     private void initialize() {
-        timeUpdaterProgress = (ProgressBar) owner.findViewById(R.id.main_timeUpdaterProgress);
-
         autoUpdateTimeCheck = (CheckBox) owner.findViewById(R.id.main_autoUpdateTimeCheckBox);
         autoUpdateTimeCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

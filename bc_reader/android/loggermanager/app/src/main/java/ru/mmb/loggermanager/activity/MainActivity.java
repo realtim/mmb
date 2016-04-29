@@ -11,18 +11,19 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.filedialog.FileDialog;
 
 import ru.mmb.loggermanager.R;
 import ru.mmb.loggermanager.activity.dataload.LoggerDataLoadBluetoothClient;
 import ru.mmb.loggermanager.activity.settings.LoggerSettings;
 import ru.mmb.loggermanager.activity.settings.LoggerSettingsBluetoothClient;
-import ru.mmb.loggermanager.activity.timeupdater.TimeUpdaterThread;
 import ru.mmb.loggermanager.bluetooth.BluetoothAdapterEnableActivity;
 import ru.mmb.loggermanager.bluetooth.BluetoothClient;
 import ru.mmb.loggermanager.bluetooth.DeviceInfo;
 import ru.mmb.loggermanager.bluetooth.ThreadMessageTypes;
 import ru.mmb.loggermanager.conf.Configuration;
+import ru.mmb.loggermanager.service.UpdateTimeAlarmListener;
 import ru.mmb.loggermanager.widget.ConsoleMessagesAppender;
 
 import static ru.mmb.loggermanager.activity.Constants.REQUEST_CODE_SAVE_DIR_DIALOG;
@@ -46,8 +47,6 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private ConsoleMessagesAppender consoleAppender;
     private BluetoothClient bluetoothClient;
     private Thread runningThread = null;
-
-    private TimeUpdaterThread timeUpdaterThread = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,16 +122,12 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     public void startTimeUpdaterThread() {
         stopTimeUpdaterThread();
         if (isAdapterEnabled()) {
-            timeUpdaterThread = new TimeUpdaterThread(this, new TimeUpdateHandler());
-            timeUpdaterThread.start();
+            WakefulIntentService.scheduleAlarms(new UpdateTimeAlarmListener(), this, false);
         }
     }
 
     public void stopTimeUpdaterThread() {
-        if (timeUpdaterThread != null) {
-            timeUpdaterThread.terminate();
-            timeUpdaterThread.interrupt();
-        }
+        WakefulIntentService.cancelAlarms(this);
     }
 
     private void refreshState() {
@@ -217,12 +212,13 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }, new LoadDataBtHandler());
     }
 
-    public ProgressBar getTimeUpdaterProgress() {
-        return autoUpdatePanel.getTimeUpdaterProgress();
-    }
-
     public void writeToConsole(String message) {
         consoleAppender.appendMessage(message);
+    }
+
+    public ProgressBar getTimeUpdaterProgress() {
+        // TODO remove after TimeUpdaterThread deletion
+        return null;
     }
 
     private class RadioCheckListener implements CompoundButton.OnCheckedChangeListener {
@@ -307,19 +303,6 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
         public void setBluetoothClient(T bluetoothClient) {
             this.bluetoothClient = bluetoothClient;
-        }
-    }
-
-    private class TimeUpdateHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            if (msg.what == ThreadMessageTypes.MSG_CONSOLE) {
-                consoleAppender.appendMessage((String) msg.obj);
-            } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
-                consoleAppender.appendMessage("time update SUCCESS");
-            } else {
-                consoleAppender.appendMessage("time update FAILED");
-            }
         }
     }
 }
