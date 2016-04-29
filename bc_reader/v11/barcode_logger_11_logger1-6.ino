@@ -284,7 +284,7 @@ void loop()
   else if (bt_data == true && BTStrSize > 0)
   {
     bt_data = false;
-    Alarm(GLed, 4000, 200);
+    Alarm(GLed, 4000, 50);
     digitalWrite(RLed, HIGH);
     digitalWrite(GLed, HIGH);
     Serial.print(F("Command received: "));
