@@ -36,6 +36,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private RadioButton settingsRadio;
     private RadioButton logsRadio;
     private RadioButton autoTimeRadio;
+    private RadioButton consoleRadio;
     private ViewFlipper panelsFlipper;
     private int currentRadioTag = 0;
 
@@ -43,6 +44,8 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private SettingsPanel settingsPanel;
     private LogsPanel logsPanel;
     private AutoUpdatePanel autoUpdatePanel;
+
+    private TextView btStatusLabel = null;
 
     private ConsoleMessagesAppender consoleAppender;
     private BluetoothClient bluetoothClient;
@@ -64,6 +67,10 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         logsRadio.setOnCheckedChangeListener(radioCheckListener);
         autoTimeRadio = (RadioButton) findViewById(R.id.main_autoTimeRadioButton);
         autoTimeRadio.setOnCheckedChangeListener(radioCheckListener);
+        consoleRadio = (RadioButton) findViewById(R.id.main_autoTimeRadioButton);
+        if (consoleRadio != null) {
+            consoleRadio.setOnCheckedChangeListener(radioCheckListener);
+        }
 
         new SelectLoggerPanel(this);
         settingsPanel = new SettingsPanel(this);
@@ -72,6 +79,9 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
         TextView consoleTextView = (TextView) findViewById(R.id.main_consoleTextView);
         consoleAppender = new ConsoleMessagesAppender(consoleTextView);
+
+        btStatusLabel = (TextView) findViewById(R.id.main_btStatusTextView);
+        updateBtStatusLabel("");
     }
 
     @Override
@@ -84,7 +94,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
             runningThread = null;
         }
 
-        stopTimeUpdaterThread();
+        stopTimeUpdaterAlarms();
     }
 
     @Override
@@ -103,6 +113,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private void setControlsEnabled(boolean value) {
         settingsPanel.setControlsEnabled(value);
         logsPanel.setControlsEnabled(value);
+        autoUpdatePanel.setControlsEnabled(value);
     }
 
     public void selectedLoggerChanged(DeviceInfo selectedLogger) {
@@ -119,14 +130,14 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }
     }
 
-    public void startTimeUpdaterThread() {
-        stopTimeUpdaterThread();
+    public void startTimeUpdaterAlarms() {
+        stopTimeUpdaterAlarms();
         if (isAdapterEnabled()) {
             WakefulIntentService.scheduleAlarms(new UpdateTimeAlarmListener(), this, false);
         }
     }
 
-    public void stopTimeUpdaterThread() {
+    public void stopTimeUpdaterAlarms() {
         WakefulIntentService.cancelAlarms(this);
     }
 
@@ -135,11 +146,15 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         settingsPanel.clearControls();
         if (isAdapterEnabled() && selectedLogger != null) {
             reloadSelectedLoggerSettings();
+        } else if (!isAdapterEnabled()) {
+            writeToConsole("TURN ON BT ADAPTER!");
+            updateBtStatusLabel("TURN ON BT ADAPTER!");
         }
     }
 
     public void runLoggerSettingsBtClientMethod(BluetoothClientRunnable<LoggerSettingsBluetoothClient> runnable, Handler handler) {
         setControlsEnabled(false);
+        updateBtStatusLabel("bluetooth STARTED");
         LoggerSettingsBluetoothClient settingsBtClient =
                 new LoggerSettingsBluetoothClient(this, selectedLogger, handler, loggerSettings);
         bluetoothClient = settingsBtClient;
@@ -177,6 +192,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
     public void runLoggerDataLoadBtClientMethod(BluetoothClientRunnable<LoggerDataLoadBluetoothClient> runnable, Handler handler) {
         setControlsEnabled(false);
+        updateBtStatusLabel("bluetooth STARTED");
         LoggerDataLoadBluetoothClient dataLoadBtClient =
                 new LoggerDataLoadBluetoothClient(this, selectedLogger, handler);
         bluetoothClient = dataLoadBtClient;
@@ -221,17 +237,27 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         return null;
     }
 
+    private void updateBtStatusLabel(String message) {
+        if (btStatusLabel != null) {
+            btStatusLabel.setText(message);
+        }
+    }
+
     private class RadioCheckListener implements CompoundButton.OnCheckedChangeListener {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (isChecked) {
-                int checkedRadioTag = 0;
-                if (buttonView == logsRadio) {
+                int checkedRadioTag = -1;
+                if (buttonView == settingsRadio) {
+                    checkedRadioTag = 0;
+                } else if (buttonView == logsRadio) {
                     checkedRadioTag = 1;
                 } else if (buttonView == autoTimeRadio) {
                     checkedRadioTag = 2;
+                } else if (buttonView == consoleRadio) {
+                    checkedRadioTag = 3;
                 }
-                if (checkedRadioTag == currentRadioTag) {
+                if (checkedRadioTag == -1 || checkedRadioTag == currentRadioTag) {
                     return;
                 }
                 int diff = checkedRadioTag - currentRadioTag;
@@ -260,10 +286,12 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
                 runningThread = null;
                 setControlsEnabled(true);
                 reloadSelectedLoggerSettings();
+                updateBtStatusLabel("bluetooth OK");
             } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_ERROR) {
                 runningThread = null;
                 settingsPanel.clearControls();
                 setControlsEnabled(false);
+                updateBtStatusLabel("bluetooth ERROR");
             }
         }
     }

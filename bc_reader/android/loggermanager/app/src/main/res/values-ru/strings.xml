@@ -4,9 +4,10 @@
     <string name="main_select_logger_label">Logger</string>
     <string name="main_no_logger_selected">&lt;Logger не выбран&gt;</string>
 
-    <string name="main_radio_settings">Settings</string>
-    <string name="main_radio_logs">Logs</string>
-    <string name="main_radio_auto_time">Auto time</string>
+    <string name="main_radio_settings">Настройки</string>
+    <string name="main_radio_logs">Данные</string>
+    <string name="main_radio_auto_time">Авто время</string>
+    <string name="main_radio_console">Консоль</string>
 
     <string name="main_logger_id_label">LoggerID</string>
     <string name="main_scanpoint_label">Point№</string>

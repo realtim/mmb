@@ -17,6 +17,7 @@ public class LoggerSettingsBluetoothClient extends LoggerBluetoothClient {
     public void reloadSettings() {
         boolean connected = connect();
         if (connected) {
+            receiveData(50, false);
             String loggerReply = requestSettings();
             if (loggerReply != null) {
                 parseReplyToCurrentState(loggerReply);
@@ -51,6 +52,7 @@ public class LoggerSettingsBluetoothClient extends LoggerBluetoothClient {
     public void sendCommand(String command) {
         boolean connected = connect();
         if (connected) {
+            receiveData(50, false);
             sendRequestWaitForReply(command);
             disconnectImmediately();
             sendFinishedSuccessNotification();
@@ -62,6 +64,7 @@ public class LoggerSettingsBluetoothClient extends LoggerBluetoothClient {
     public void updateLoggerTime() {
         boolean connected = connect();
         if (connected) {
+            receiveData(50, false);
             super.updateLoggerTime();
             disconnectImmediately();
             sendFinishedSuccessNotification();

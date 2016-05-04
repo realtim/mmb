@@ -40,9 +40,9 @@ public class AutoUpdatePanel {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (autoUpdateTimeCheck.isChecked()) {
-                    owner.startTimeUpdaterThread();
+                    owner.startTimeUpdaterAlarms();
                 } else {
-                    owner.stopTimeUpdaterThread();
+                    owner.stopTimeUpdaterAlarms();
                 }
             }
         });
@@ -120,5 +120,13 @@ public class AutoUpdatePanel {
 
     public boolean isUpdateLogger(DeviceInfo logger) {
         return Configuration.getInstance().getUpdateLoggers().contains(logger.getDeviceName());
+    }
+
+    public void setControlsEnabled(boolean value) {
+        autoUpdateTimeCheck.setEnabled(value);
+        updatePeriodEdit.setEnabled(value);
+        for (CheckBox loggerCheckBox : checkBoxLoggers.keySet()) {
+            loggerCheckBox.setEnabled(value);
+        }
     }
 }

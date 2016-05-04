@@ -8,12 +8,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import ru.mmb.loggermanager.bluetooth.DeviceInfo;
-
 public class DevicesLoader {
     public static List<DeviceInfo> loadPairedDevices() {
         List<DeviceInfo> result = new ArrayList<DeviceInfo>();
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (btAdapter == null) {
+            return result;
+        }
         Set<BluetoothDevice> devices = btAdapter.getBondedDevices();
         for (BluetoothDevice device : devices) {
             if (device.getName().contains("LOGGER")) {

@@ -23,6 +23,7 @@ public class LoggerDataLoadBluetoothClient extends LoggerBluetoothClient {
     public void sendCommand(String command) {
         boolean connected = connect();
         if (connected) {
+            receiveData(50, false);
             sendRequestWaitForReply(command);
             disconnectImmediately();
             sendFinishedSuccessNotification();
@@ -34,6 +35,7 @@ public class LoggerDataLoadBluetoothClient extends LoggerBluetoothClient {
     public void loadErrorsData() {
         boolean connected = connect();
         if (connected) {
+            receiveData(50, false);
             writeToConsole("sending: GETD");
             String loggerReply = sendRequestWaitForReplySilent("GETD\n");
             if (loggerReply != null) {
@@ -49,6 +51,7 @@ public class LoggerDataLoadBluetoothClient extends LoggerBluetoothClient {
     public void loadLogData() {
         boolean connected = connect();
         if (connected) {
+            receiveData(50, false);
             writeToConsole("sending: GETL");
             String loggerReply = sendRequestWaitForReply("GETL\n");
             if (loggerReply != null) {
@@ -69,16 +72,32 @@ public class LoggerDataLoadBluetoothClient extends LoggerBluetoothClient {
                 Configuration.getInstance().getSaveDir() + "/bclogger_" + logFileName + "_" +
                         currTimeFormat.format(new Date()) + ".txt";
         try {
+            PureDataExtractor extractor = new PureDataExtractor();
+            extractor.processLogData(loggerReply);
+            String pureData = extractor.getProcessingResult().toString();
             File outputFile = new File(fileName);
             if (!outputFile.exists()) outputFile.createNewFile();
             PrintWriter writer = new PrintWriter(new FileOutputStream(fileName, false));
-            writer.write(loggerReply);
+            writer.write(pureData);
             writer.flush();
             writer.close();
             writeToConsole(logFileName + " save to file SUCCESS");
         } catch (IOException e) {
             writeToConsole(logFileName + " save to file FAILED");
             writeToConsole("error: " + e.getMessage());
+        }
+    }
+
+    private class PureDataExtractor extends LoggerReplyProcessor {
+        private StringBuilder processingResult = new StringBuilder();
+
+        public StringBuilder getProcessingResult() {
+            return processingResult;
+        }
+
+        @Override
+        protected void processLogLine(String logLine) {
+            processingResult.append(logLine).append("\n");
         }
     }
 }
