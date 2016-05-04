@@ -33,50 +33,39 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/activity_small_margin"
         android:layout_marginTop="@dimen/activity_small_margin"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <RadioButton
+            android:id="@+id/main_settingsRadioButton"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:checked="true"
+            android:tag="0"
+            android:text="@string/main_radio_settings" />
 
-            <RadioButton
-                android:id="@+id/main_settingsRadioButton"
-                android:layout_width="125dp"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:tag="0"
-                android:text="@string/main_radio_settings" />
-
-            <RadioButton
-                android:id="@+id/main_logsRadioButton"
-                android:layout_width="125dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:tag="1"
-                android:text="@string/main_radio_logs" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <RadioButton
+            android:id="@+id/main_logsRadioButton"
+            android:layout_width="75dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_marginLeft="@dimen/activity_small_margin"
+            android:tag="1"
+            android:text="@string/main_radio_logs" />
 
-            <RadioButton
-                android:id="@+id/main_autoTimeRadioButton"
-                android:layout_width="125dp"
-                android:layout_height="wrap_content"
-                android:tag="2"
-                android:text="@string/main_radio_auto_time" />
+        <RadioButton
+            android:id="@+id/main_autoTimeRadioButton"
+            android:layout_width="75dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_small_margin"
+            android:tag="2"
+            android:text="@string/main_radio_auto_time" />
 
-            <RadioButton
-                android:id="@+id/main_consoleRadioButton"
-                android:layout_width="125dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:tag="3"
-                android:text="@string/main_radio_console" />
-        </LinearLayout>
+        <RadioButton
+            android:id="@+id/main_consoleRadioButton"
+            android:layout_width="75dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/activity_small_margin"
+            android:tag="3"
+            android:text="@string/main_radio_console" />
     </RadioGroup>
 
     <ViewFlipper
