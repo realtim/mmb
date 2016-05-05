@@ -94,6 +94,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         Intent updateTimeIntent = new Intent(this, UpdateTimeAlarmReceiver.class);
         pendingIntent = PendingIntent.getBroadcast(this, 0, updateTimeIntent, 0);
         WakeLocker.init(this);
+        UpdateTimeAlarmReceiver.init(this);
     }
 
     @Override
@@ -149,7 +150,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         if (isAdapterEnabled() && alarmManager != null) {
             int alarmInterval = Configuration.getInstance().getUpdatePeriodMinutes();
             // FIXME restore pauseDuration to minutes (60000)
-            long pauseDuration = 60000L;
+            long pauseDuration = 20000L;
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
                     System.currentTimeMillis() + pauseDuration,
                     alarmInterval * pauseDuration, pendingIntent);

@@ -2,9 +2,13 @@ package ru.mmb.loggermanager.widget;
 
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 
 public class ConsoleMessagesAppender {
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+
     private final int MAX_CAPACITY = 200;
 
     private final TextView console;
@@ -16,10 +20,10 @@ public class ConsoleMessagesAppender {
 
     public void appendMessage(String message) {
         if (messages.size() < MAX_CAPACITY) {
-            messages.addFirst(message);
+            messages.addFirst(sdf.format(new Date()) + " " + message);
         } else {
             messages.removeLast();
-            messages.addFirst(message);
+            messages.addFirst(sdf.format(new Date()) + " " + message);
         }
         console.setText(buildMessagesText());
     }

@@ -61,7 +61,7 @@ public class LoggerSettingsBluetoothClient extends LoggerBluetoothClient {
         }
     }
 
-    public void updateLoggerTime() {
+    public boolean updateLoggerTime() {
         boolean connected = connect();
         if (connected) {
             receiveData(50, false);
@@ -71,5 +71,6 @@ public class LoggerSettingsBluetoothClient extends LoggerBluetoothClient {
         } else {
             sendFinishedErrorNotification();
         }
+        return connected;
     }
 }
