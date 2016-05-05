@@ -130,7 +130,7 @@ public class SettingsPanel {
     }
 
     private boolean validateTwoDigitsNumber(String value) {
-        if (value == null) {
+        if (value == null || value.trim().length() == 0) {
             return false;
         }
         if (value.length() > 2) {
