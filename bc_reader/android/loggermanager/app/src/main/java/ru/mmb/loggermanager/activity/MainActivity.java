@@ -67,7 +67,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         logsRadio.setOnCheckedChangeListener(radioCheckListener);
         autoTimeRadio = (RadioButton) findViewById(R.id.main_autoTimeRadioButton);
         autoTimeRadio.setOnCheckedChangeListener(radioCheckListener);
-        consoleRadio = (RadioButton) findViewById(R.id.main_autoTimeRadioButton);
+        consoleRadio = (RadioButton) findViewById(R.id.main_consoleRadioButton);
         if (consoleRadio != null) {
             consoleRadio.setOnCheckedChangeListener(radioCheckListener);
         }
@@ -305,10 +305,12 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
                 runningThread = null;
                 settingsPanel.updateLoggerSettings(loggerSettings);
                 setControlsEnabled(true);
+                updateBtStatusLabel("bluetooth OK");
             } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_ERROR) {
                 runningThread = null;
                 settingsPanel.clearControls();
                 setControlsEnabled(false);
+                updateBtStatusLabel("bluetooth ERROR");
             }
         }
     }
@@ -322,6 +324,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
                 // no matter was error or not
                 runningThread = null;
                 setControlsEnabled(true);
+                updateBtStatusLabel("bluetooth DATALOAD FINISHED");
             }
         }
     }

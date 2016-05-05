@@ -13,10 +13,11 @@ public class UpdateTimeAlarmListener implements WakefulIntentService.AlarmListen
     @Override
     public void scheduleAlarms(AlarmManager alarmManager, PendingIntent pendingIntent, Context context) {
         int alarmInterval = Configuration.getInstance().getUpdatePeriodMinutes();
-        // FIXME restore alarm interval to minutes (60000)
+        // FIXME restore pauseDuration to minutes (60000)
+        long pauseDuration = 10000L;
         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + 60000,
-                alarmInterval * 10000L, pendingIntent);
+                SystemClock.elapsedRealtime() + pauseDuration,
+                alarmInterval * pauseDuration, pendingIntent);
     }
 
     @Override
