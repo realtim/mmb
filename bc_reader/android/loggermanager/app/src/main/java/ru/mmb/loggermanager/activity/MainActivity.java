@@ -10,7 +10,6 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.util.Log;
 import android.widget.CompoundButton;
-import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
@@ -150,7 +149,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         if (isAdapterEnabled() && alarmManager != null) {
             int alarmInterval = Configuration.getInstance().getUpdatePeriodMinutes();
             // FIXME restore pauseDuration to minutes (60000)
-            long pauseDuration = 20000L;
+            long pauseDuration = 60000L;
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
                     System.currentTimeMillis() + pauseDuration,
                     alarmInterval * pauseDuration, pendingIntent);
