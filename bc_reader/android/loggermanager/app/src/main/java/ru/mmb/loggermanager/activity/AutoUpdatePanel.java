@@ -1,5 +1,6 @@
 package ru.mmb.loggermanager.activity;
 
+import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -49,6 +50,7 @@ public class AutoUpdatePanel {
 
         updatePeriodEdit = (EditText) owner.findViewById(R.id.main_updatePeriodEditText);
         int updatePeriod = Configuration.getInstance().getUpdatePeriodMinutes();
+        Log.d("TIME_UPDATER", "update period minutes: " + updatePeriod);
         updatePeriodEdit.setText(Integer.toString(updatePeriod));
 
         updatePeriodEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {

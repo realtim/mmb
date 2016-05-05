@@ -1,17 +1,20 @@
 package ru.mmb.loggermanager.activity;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
+import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
-import com.commonsware.cwac.wakeful.WakefulIntentService;
 import com.filedialog.FileDialog;
 
 import ru.mmb.loggermanager.R;
@@ -23,7 +26,8 @@ import ru.mmb.loggermanager.bluetooth.BluetoothClient;
 import ru.mmb.loggermanager.bluetooth.DeviceInfo;
 import ru.mmb.loggermanager.bluetooth.ThreadMessageTypes;
 import ru.mmb.loggermanager.conf.Configuration;
-import ru.mmb.loggermanager.service.UpdateTimeAlarmListener;
+import ru.mmb.loggermanager.service.UpdateTimeAlarmReceiver;
+import ru.mmb.loggermanager.service.WakeLocker;
 import ru.mmb.loggermanager.widget.ConsoleMessagesAppender;
 
 import static ru.mmb.loggermanager.activity.Constants.REQUEST_CODE_SAVE_DIR_DIALOG;
@@ -50,6 +54,10 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private ConsoleMessagesAppender consoleAppender;
     private BluetoothClient bluetoothClient;
     private Thread runningThread = null;
+
+    private AlarmManager alarmManager = null;
+    private PendingIntent pendingIntent = null;
+    private PowerManager.WakeLock wakeLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,19 +90,27 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
         btStatusLabel = (TextView) findViewById(R.id.main_btStatusTextView);
         updateBtStatusLabel("");
+
+        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        Intent updateTimeIntent = new Intent(this, UpdateTimeAlarmReceiver.class);
+        pendingIntent = PendingIntent.getBroadcast(this, 0, updateTimeIntent, 0);
+        WakeLocker.init(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
         if (runningThread != null) {
             bluetoothClient.terminate();
             runningThread.interrupt();
             runningThread = null;
         }
+    }
 
+    @Override
+    protected void onDestroy() {
         stopTimeUpdaterAlarms();
+        super.onDestroy();
     }
 
     @Override
@@ -113,7 +129,6 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private void setControlsEnabled(boolean value) {
         settingsPanel.setControlsEnabled(value);
         logsPanel.setControlsEnabled(value);
-        autoUpdatePanel.setControlsEnabled(value);
     }
 
     public void selectedLoggerChanged(DeviceInfo selectedLogger) {
@@ -132,21 +147,34 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
     public void startTimeUpdaterAlarms() {
         stopTimeUpdaterAlarms();
-        if (isAdapterEnabled()) {
-            WakefulIntentService.scheduleAlarms(new UpdateTimeAlarmListener(), this, false);
+        if (isAdapterEnabled() && alarmManager != null) {
+            int alarmInterval = Configuration.getInstance().getUpdatePeriodMinutes();
+            // FIXME restore pauseDuration to minutes (60000)
+            long pauseDuration = 20000L;
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+                    System.currentTimeMillis() + pauseDuration,
+                    alarmInterval * pauseDuration, pendingIntent);
+            Log.d("TIME_UPDATER", "alarm scheduled");
         }
     }
 
     public void stopTimeUpdaterAlarms() {
-        WakefulIntentService.cancelAlarms(this);
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+            Log.d("TIME_UPDATER", "alarm cancelled");
+        }
     }
 
     private void refreshState() {
         setControlsEnabled(false);
+        autoUpdatePanel.setControlsEnabled(false);
         settingsPanel.clearControls();
-        if (isAdapterEnabled() && selectedLogger != null) {
-            reloadSelectedLoggerSettings();
-        } else if (!isAdapterEnabled()) {
+        if (isAdapterEnabled()) {
+            autoUpdatePanel.setControlsEnabled(true);
+            if (selectedLogger != null) {
+                reloadSelectedLoggerSettings();
+            }
+        } else {
             writeToConsole("TURN ON BT ADAPTER!");
             updateBtStatusLabel("TURN ON BT ADAPTER!");
         }
@@ -232,11 +260,6 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         consoleAppender.appendMessage(message);
     }
 
-    public ProgressBar getTimeUpdaterProgress() {
-        // TODO remove after TimeUpdaterThread deletion
-        return null;
-    }
-
     private void updateBtStatusLabel(String message) {
         if (btStatusLabel != null) {
             btStatusLabel.setText(message);
@@ -285,7 +308,6 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
             } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_SUCCESS) {
                 runningThread = null;
                 setControlsEnabled(true);
-                reloadSelectedLoggerSettings();
                 updateBtStatusLabel("bluetooth OK");
             } else if (msg.what == ThreadMessageTypes.MSG_FINISHED_ERROR) {
                 runningThread = null;

@@ -91,7 +91,7 @@
 
                     <EditText
                         android:id="@+id/main_loggerIdEditText"
-                        android:layout_width="75dp"
+                        android:layout_width="125dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:ems="10"
@@ -128,7 +128,7 @@
 
                     <EditText
                         android:id="@+id/main_scanpointEditText"
-                        android:layout_width="75dp"
+                        android:layout_width="125dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:ems="10"
@@ -157,7 +157,7 @@
 
                     <EditText
                         android:id="@+id/main_patternEditText"
-                        android:layout_width="75dp"
+                        android:layout_width="125dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:maxLength="8" />
@@ -183,7 +183,7 @@
                         android:text="@string/main_check_length_label" />
 
                     <LinearLayout
-                        android:layout_width="75dp"
+                        android:layout_width="125dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:orientation="vertical">
@@ -217,7 +217,7 @@
                         android:text="@string/main_only_digits_label" />
 
                     <LinearLayout
-                        android:layout_width="75dp"
+                        android:layout_width="125dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:orientation="vertical">
@@ -252,7 +252,7 @@
 
                     <TextView
                         android:id="@+id/main_loggerTimeLabel"
-                        android:layout_width="75dp"
+                        android:layout_width="125dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:text="13-05-16 22:22:11" />

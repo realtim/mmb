@@ -4,8 +4,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LoggerReplyParser {
-    public static final Pattern REGEXP_LOG_DATA = Pattern.compile("#(\\d+), (\\d{2}), (\\d{2}), (\\d{8}), (\\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), CRC8=(\\d+)");
-    public static final Pattern REGEXP_TO_CHECK_CRC = Pattern.compile("(#\\d+, \\d{2}, \\d{2}, \\d{8}, \\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), CRC8=\\d+");
+    public static final Pattern REGEXP_LOG_DATA = Pattern.compile("(\\d{2}), (\\d{2}), (\\d{8}), (\\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), CRC8=(\\d+)");
+    public static final Pattern REGEXP_TO_CHECK_CRC = Pattern.compile("(\\d{2}, \\d{2}, \\d{8}, \\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), CRC8=\\d+");
 
     private final LoggerDataLoadBluetoothClient owner;
 
@@ -40,7 +40,7 @@ public class LoggerReplyParser {
             Matcher matcher = REGEXP_LOG_DATA.matcher(replyString);
             if (matcher.find()) {
                 result.setRegexpMatches(true);
-                int crc = Integer.parseInt(matcher.group(6));
+                int crc = Integer.parseInt(matcher.group(5));
                 if (!checkCRC(replyString, crc)) {
                     result.setCrcFailed(true);
                 }

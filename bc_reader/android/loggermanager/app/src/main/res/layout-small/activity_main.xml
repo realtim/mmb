@@ -39,6 +39,7 @@
             android:id="@+id/main_settingsRadioButton"
             android:layout_width="75dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:checked="true"
             android:tag="0"
             android:text="@string/main_radio_settings" />
@@ -47,6 +48,7 @@
             android:id="@+id/main_logsRadioButton"
             android:layout_width="75dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="@dimen/activity_small_margin"
             android:tag="1"
             android:text="@string/main_radio_logs" />
@@ -55,6 +57,7 @@
             android:id="@+id/main_autoTimeRadioButton"
             android:layout_width="75dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="@dimen/activity_small_margin"
             android:tag="2"
             android:text="@string/main_radio_auto_time" />
@@ -63,6 +66,7 @@
             android:id="@+id/main_consoleRadioButton"
             android:layout_width="75dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_marginLeft="@dimen/activity_small_margin"
             android:tag="3"
             android:text="@string/main_radio_console" />
@@ -433,23 +437,19 @@
                 android:layout_height="200dp">
 
             </TableLayout>
+
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/main_consolePanel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="@dimen/activity_small_margin"
-            android:orientation="vertical"
-            android:theme="@style/AppTheme">
+            android:orientation="vertical">
 
             <ScrollView
                 android:id="@+id/main_consoleScrollView"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginTop="@dimen/activity_small_margin"
-                android:layout_weight="1"
-                android:fillViewport="true">
+                android:layout_height="match_parent">
 
                 <TextView
                     android:id="@+id/main_consoleTextView"
@@ -458,6 +458,7 @@
                     android:inputType="textMultiLine" />
             </ScrollView>
         </LinearLayout>
+
     </ViewFlipper>
 
     <TextView

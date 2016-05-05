@@ -37,6 +37,7 @@
                 android:id="@+id/main_settingsRadioButton"
                 android:layout_width="75dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:checked="true"
                 android:tag="0"
                 android:text="@string/main_radio_settings" />
@@ -45,6 +46,7 @@
                 android:id="@+id/main_logsRadioButton"
                 android:layout_width="75dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
                 android:tag="1"
                 android:text="@string/main_radio_logs" />
@@ -53,6 +55,7 @@
                 android:id="@+id/main_autoTimeRadioButton"
                 android:layout_width="75dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:tag="2"
                 android:text="@string/main_radio_auto_time" />
         </RadioGroup>
