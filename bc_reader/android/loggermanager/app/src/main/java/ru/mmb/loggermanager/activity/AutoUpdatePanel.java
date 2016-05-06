@@ -41,9 +41,9 @@ public class AutoUpdatePanel {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (autoUpdateTimeCheck.isChecked()) {
-                    owner.startTimeUpdaterAlarms();
+                    owner.startTimeUpdate();
                 } else {
-                    owner.stopTimeUpdaterAlarms();
+                    owner.stopTimeUpdate();
                 }
             }
         });

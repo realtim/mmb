@@ -1,4 +1,4 @@
-package ru.mmb.loggermanager.service;
+package ru.mmb.loggermanager.activity.timeupdater;
 
 import android.content.Context;
 import android.os.PowerManager;

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.PowerManager;
 import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
@@ -20,13 +19,14 @@ import ru.mmb.loggermanager.R;
 import ru.mmb.loggermanager.activity.dataload.LoggerDataLoadBluetoothClient;
 import ru.mmb.loggermanager.activity.settings.LoggerSettings;
 import ru.mmb.loggermanager.activity.settings.LoggerSettingsBluetoothClient;
+import ru.mmb.loggermanager.activity.timeupdater.TimeUpdaterThread;
+import ru.mmb.loggermanager.activity.timeupdater.UpdateTimeAlarmReceiver;
+import ru.mmb.loggermanager.activity.timeupdater.WakeLocker;
 import ru.mmb.loggermanager.bluetooth.BluetoothAdapterEnableActivity;
 import ru.mmb.loggermanager.bluetooth.BluetoothClient;
 import ru.mmb.loggermanager.bluetooth.DeviceInfo;
 import ru.mmb.loggermanager.bluetooth.ThreadMessageTypes;
 import ru.mmb.loggermanager.conf.Configuration;
-import ru.mmb.loggermanager.service.UpdateTimeAlarmReceiver;
-import ru.mmb.loggermanager.service.WakeLocker;
 import ru.mmb.loggermanager.widget.ConsoleMessagesAppender;
 
 import static ru.mmb.loggermanager.activity.Constants.REQUEST_CODE_SAVE_DIR_DIALOG;
@@ -56,7 +56,6 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
     private AlarmManager alarmManager = null;
     private PendingIntent pendingIntent = null;
-    private PowerManager.WakeLock wakeLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +93,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         Intent updateTimeIntent = new Intent(this, UpdateTimeAlarmReceiver.class);
         pendingIntent = PendingIntent.getBroadcast(this, 0, updateTimeIntent, 0);
         WakeLocker.init(this);
-        UpdateTimeAlarmReceiver.init(this);
+        TimeUpdaterThread.init(this, new TimeUpdateHandler());
     }
 
     @Override
@@ -109,7 +108,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
     @Override
     protected void onDestroy() {
-        stopTimeUpdaterAlarms();
+        stopTimeUpdate();
         super.onDestroy();
     }
 
@@ -145,12 +144,12 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }
     }
 
-    public void startTimeUpdaterAlarms() {
-        stopTimeUpdaterAlarms();
+    public void startTimeUpdate() {
+        stopTimeUpdate();
         if (isAdapterEnabled() && alarmManager != null) {
             int alarmInterval = Configuration.getInstance().getUpdatePeriodMinutes();
             // FIXME restore pauseDuration to minutes (60000)
-            long pauseDuration = 20000L;
+            long pauseDuration = 60000L;
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
                     System.currentTimeMillis() + pauseDuration,
                     alarmInterval * pauseDuration, pendingIntent);
@@ -158,7 +157,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }
     }
 
-    public void stopTimeUpdaterAlarms() {
+    public void stopTimeUpdate() {
         if (alarmManager != null) {
             alarmManager.cancel(pendingIntent);
             Log.d("TIME_UPDATER", "alarm cancelled");
@@ -356,6 +355,15 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
         public void setBluetoothClient(T bluetoothClient) {
             this.bluetoothClient = bluetoothClient;
+        }
+    }
+
+    private class TimeUpdateHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == ThreadMessageTypes.MSG_CONSOLE) {
+                consoleAppender.appendMessage((String) msg.obj);
+            }
         }
     }
 }

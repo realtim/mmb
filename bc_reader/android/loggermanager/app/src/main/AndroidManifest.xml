@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        
+
         <activity
             android:name=".activity.MainActivity"
             android:windowSoftInputMode="stateHidden">
@@ -25,7 +25,7 @@
         </activity>
         <activity android:name="com.filedialog.FileDialog" />
 
-        <receiver android:name=".service.UpdateTimeAlarmReceiver" />
+        <receiver android:name=".activity.timeupdater.UpdateTimeAlarmReceiver" />
     </application>
 
 </manifest>
