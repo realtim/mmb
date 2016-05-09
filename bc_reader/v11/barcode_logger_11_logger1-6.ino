@@ -139,21 +139,22 @@ void setup()
     }
     else // if the file isn't open, pop up an error
     {
-      errOpen(cfgFile);
+        confUpdate();
     }
-
-    dataFile = SD.open(logFile, FILE_WRITE);
-    if (dataFile)  // check if the file is available
-    {
+    /*
+      dataFile = SD.open(logFile, FILE_WRITE);
+      if (dataFile)  // check if the file is available
+      {
       Serial.print(logFile);
       Serial.println(F(" accessible"));
       dataFile.close();
       Alarm(GLed, 4000, 200);
-    }
-    else  // if the file isn't open, pop up an error
-    {
+      }
+      else  // if the file isn't open, pop up an error
+      {
       errOpen(logFile);
-    }
+      }
+    */
   }
 
   ScannerSerial.begin(9600);  //Initializing scanner serial port
@@ -172,7 +173,6 @@ void setup()
     Serial.println(F("running."));
     Alarm(GLed, 4000, 200);
   }
-  //Serial.println(GetDateTime());
   confPrint();
 }
 
@@ -180,7 +180,7 @@ void loop()
 {
   char key = 0;
 
-  while (bt_data==false && bc_data==false)
+  while (bt_data == false && bc_data == false)
   {
     //reading BarcodeScanner
     if (ScannerSerial.available())
@@ -228,7 +228,7 @@ void loop()
     ScannerData = cfgID + F(", ") + cfgCP + F(", ") + ScannerData + F(", ") + GetDateTime();
     Serial.println(ScannerData);
     //Command barcode found
-    if (ScannerStrSize>=9 && ScannerData[8] == 'C' && ScannerData[9] == 'O' && ScannerData[10] == 'N' && ScannerData[11] == 'F' && ScannerData[12] == 'I' && ScannerData[13] == 'G' && ScannerData[14] == 'C') //Set control point
+    if (ScannerStrSize >= 9 && ScannerData[8] == 'C' && ScannerData[9] == 'O' && ScannerData[10] == 'N' && ScannerData[11] == 'F' && ScannerData[12] == 'I' && ScannerData[13] == 'G' && ScannerData[14] == 'C') //Set control point
     {
       stringToFile(errFile, ScannerData);
       cfgCP = "";
@@ -283,151 +283,156 @@ void loop()
   // if it's a BT command
   else if (bt_data == true && BTStrSize > 0)
   {
+    //Alarm(GLed, 4000, 50);
     bt_data = false;
-    Alarm(GLed, 4000, 50);
-    digitalWrite(RLed, HIGH);
-    digitalWrite(GLed, HIGH);
     Serial.print(F("Command received: "));
     Serial.println(BTData);
-    if (BTStrSize>=4 && BTData[0] == 'S' && BTData[1] == 'E' && BTData[2] == 'T') //SETTINGS
+    if (BTStrSize >= 4 && BTData[0] == 'S' && BTData[1] == 'E' && BTData[2] == 'T') //SETTINGS
     {
       switch (BTData[3])
       {
-      case 'I':  //change scanner ID
-        cfgID = "";
-        cfgID += char(BTData[4]);
-        cfgID += char(BTData[5]);
-        Serial.print(F("Scanner ID set to: "));
-        Serial.println(cfgID);
-        confUpdate();
-        break;
+        case 'I':  //change scanner ID
+          cfgID = "";
+          cfgID += char(BTData[4]);
+          cfgID += char(BTData[5]);
+          Serial.print(F("Scanner ID set to: "));
+          Serial.println(cfgID);
+          confUpdate();
+          break;
 
-      case 'C':  //change control point
-        cfgCP = "";
-        cfgCP += char(BTData[4]);
-        cfgCP += char(BTData[5]);
-        Serial.print(F("Control Point # set to: "));
-        Serial.println(cfgCP);
-        confUpdate();
-        break;
+        case 'C':  //change control point
+          cfgCP = "";
+          cfgCP += char(BTData[4]);
+          cfgCP += char(BTData[5]);
+          Serial.print(F("Control Point # set to: "));
+          Serial.println(cfgCP);
+          confUpdate();
+          break;
 
-      case 'L':  //Set Barcode length checking
-        cfgStrLCheck = char(BTData[4]);
-        Serial.print(F("String length check set to: "));
-        Serial.println(cfgStrLCheck);
-        confUpdate();
-        break;
+        case 'L':  //Set Barcode length checking
+          cfgStrLCheck = char(BTData[4]);
+          Serial.print(F("String length check set to: "));
+          Serial.println(cfgStrLCheck);
+          confUpdate();
+          break;
 
-      case 'N':  //Set char presence checking
-        cfgNumOnly = char(BTData[4]);
-        Serial.print(F("Numbers only set to: "));
-        Serial.println(cfgNumOnly);
-        confUpdate();
-        break;
+        case 'N':  //Set char presence checking
+          cfgNumOnly = char(BTData[4]);
+          Serial.print(F("Numbers only set to: "));
+          Serial.println(cfgNumOnly);
+          confUpdate();
+          break;
 
-      case 'P':  //Set Barcode pattern
-        //i=0;
-        cfgStrLength = 0;
-        cfgPattern = "";
-        while (BTData[4 + cfgStrLength] != 0x0D && BTData[4 + cfgStrLength] != 0x0A && BTData[4 + cfgStrLength] != 0x00)
-        {
-          cfgPattern += char(BTData[4 + cfgStrLength]);
-          cfgStrLength++;
-        }
-        Serial.print(F("Barcode pattern set to: "));
-        Serial.println(cfgPattern);
-        Serial.print(F("Barcode length: "));
-        Serial.println(cfgStrLength, DEC);
-        confUpdate();
-        break;
-
-      case 'T':  //change current time
-        char tm[9], dt[13];
-        Serial.println(F("Input current date and time \"Mon dd yyyy hh:mm:ss\" (example: \"Dec 06 2014 12:04:00\")"));
-        key = 0;
-        BTData = "";
-        //while (ScannerSerial.available()) ScannerSerial.read();  // clear the BlueTooth buffer
-        while (key != 0x0D && key != 0x0A)
-        {
-          if (Serial.available())
+        case 'P':  //Set Barcode pattern
+          //i=0;
+          cfgStrLength = 0;
+          cfgPattern = "";
+          while (BTData[4 + cfgStrLength] != 0x0D && BTData[4 + cfgStrLength] != 0x0A && BTData[4 + cfgStrLength] != 0x00)
           {
-            key = Serial.read();
-            if (key > 31 && key < 128) BTData += char(key);
+            cfgPattern += char(BTData[4 + cfgStrLength]);
+            cfgStrLength++;
           }
-        }
-        for (key = 0; key < 12; key++)
-        {
-          dt[key] = BTData[key];
-        }
-        dt[12] = 0;
+          Serial.print(F("Barcode pattern set to: "));
+          Serial.println(cfgPattern);
+          Serial.print(F("Barcode length: "));
+          Serial.println(cfgStrLength, DEC);
+          confUpdate();
+          break;
 
-        for (key = 0; key < 8; key++)
-        {
-          tm[key] = BTData[key + 12];
-        }
-        tm[8] = 0;
-        rtc.adjust(DateTime(dt, tm));
-        break;
+        case 'T':  //change current time
+          char tm[9], dt[13];
+          Serial.println(F("Input current date and time \"Mon dd yyyy hh:mm:ss\" (example: \"Dec 06 2014 12:04:00\")"));
+          key = 0;
+          BTData = "";
+          //while (ScannerSerial.available()) ScannerSerial.read();  // clear the BlueTooth buffer
+          while (key != 0x0D && key != 0x0A)
+          {
+            if (Serial.available())
+            {
+              key = Serial.read();
+              if (key > 31 && key < 128) BTData += char(key);
+            }
+          }
+          for (key = 0; key < 12; key++)
+          {
+            dt[key] = BTData[key];
+          }
+          dt[12] = 0;
+
+          for (key = 0; key < 8; key++)
+          {
+            tm[key] = BTData[key + 12];
+          }
+          tm[8] = 0;
+          rtc.adjust(DateTime(dt, tm));
+          break;
       }
     }
-    else if (BTStrSize>=4 && BTData[0] == 'G' && BTData[1] == 'E' && BTData[2] == 'T') //DOWNLOAD data
+    else if (BTStrSize >= 4 && BTData[0] == 'G' && BTData[1] == 'E' && BTData[2] == 'T') //DOWNLOAD data
     {
       switch (BTData[3])
       {
-      case 'T':  //get current time
-        Serial.print(F("Current time is: "));
-        Serial.println(GetDateTime());
-        break;
+        case 'T':  //get current time
+          Serial.print(F("Current time is: "));
+          Serial.println(GetDateTime());
+          break;
 
-      case 'S':  //get current settings
-        confPrint();
+        case 'S':  //get current settings
+          confPrint();
 
-        dataFile = SD.open(logFile, FILE_READ);
-        if (dataFile)
-        {
-          Serial.print(F("datalog.txt size: "));
-          Serial.println(dataFile.size());
-          dataFile.close();
-        }
-        else errOpen(logFile);
-
-        dataFile = SD.open(errFile, FILE_READ);
-        if (dataFile)
-        {
-          Serial.print(F("errors.txt size: "));
-          Serial.println(dataFile.size());
-          dataFile.close();
-        }
-        else errOpen(errFile);
-        break;
-
-      case 'L':  //get all barcode log
-        getLog(logFile);
-        break;
-
-      case 'D':  //get all errors log
-        getLog(errFile);
-        break;
-
-      case '#':  //get selected string by number
-        long int linenum;
-        String numString = "";
-        if (BTStrSize>=5)
-        {
-          BTStrSize = 5;
-          while (BTData[BTStrSize] >= '0' && BTData[BTStrSize] <= '9')
+          if (SD.exists(logFile))
           {
-            numString += BTData[BTStrSize];
-            BTStrSize++;
+            dataFile = SD.open(logFile, FILE_READ);
+
+            if (dataFile)
+            {
+              Serial.print(F("datalog.txt size: "));
+              Serial.println(dataFile.size());
+              dataFile.close();
+            }
+            else errOpen(logFile);
           }
-          linenum = numString.toInt();
-          if (BTData[4] == 'L') getLogLine(logFile, linenum); //from LOG file
-          else if (BTData[4] == 'D') getLogLine(errFile, linenum); //from DEBUG file
-        }
-        break;
+
+          if (SD.exists(errFile))
+          {
+            dataFile = SD.open(errFile, FILE_READ);
+            if (dataFile)
+            {
+              Serial.print(F("errors.txt size: "));
+              Serial.println(dataFile.size());
+              dataFile.close();
+            }
+            else errOpen(errFile);
+          }
+          break;
+
+        case 'L':  //get all barcode log
+          getLog(logFile);
+          break;
+
+        case 'D':  //get all errors log
+          getLog(errFile);
+          break;
+
+        case '#':  //get selected string by number
+          long int linenum;
+          String numString = "";
+          if (BTStrSize >= 5)
+          {
+            BTStrSize = 5;
+            while (BTData[BTStrSize] >= '0' && BTData[BTStrSize] <= '9')
+            {
+              numString += BTData[BTStrSize];
+              BTStrSize++;
+            }
+            linenum = numString.toInt();
+            if (BTData[4] == 'L') getLogLine(logFile, linenum); //from LOG file
+            else if (BTData[4] == 'D') getLogLine(errFile, linenum); //from DEBUG file
+          }
+          break;
       }
     }
-    else if (BTStrSize>=6 && BTData[0] == 'D' && BTData[1] == 'E' && BTData[2] == 'L' && BTData[3] == 'L' && BTData[4] == 'O' && BTData[5] == 'G') //Remove datalog.txt and errors.txt
+    else if (BTStrSize >= 6 && BTData[0] == 'D' && BTData[1] == 'E' && BTData[2] == 'L' && BTData[3] == 'L' && BTData[4] == 'O' && BTData[5] == 'G') //Remove datalog.txt and errors.txt
     {
       if (SD.remove("datalog.txt") == true) Serial.println(F("datalog.txt deleted"));
       else Serial.println(F("Error deleting datalog.txt!"));
@@ -437,8 +442,6 @@ void loop()
     else Serial.println(F("Unknown command!"));
     BTData = "";
     BTStrSize = 0;
-    digitalWrite(RLed, LOW);
-    digitalWrite(GLed, LOW);
   } //end of BT section
 }
 
@@ -659,7 +662,4 @@ byte crcCalc(String inString)
   }
   return (crc);
 }
-
-
-
 
