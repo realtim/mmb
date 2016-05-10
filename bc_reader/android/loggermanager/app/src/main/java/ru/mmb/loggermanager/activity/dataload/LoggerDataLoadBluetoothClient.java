@@ -23,7 +23,7 @@ public class LoggerDataLoadBluetoothClient extends LoggerBluetoothClient {
     public void sendCommand(String command) {
         boolean connected = connect();
         if (connected) {
-            receiveData(50, false);
+            receiveData(200, false);
             sendRequestWaitForReply(command);
             disconnectImmediately();
             sendFinishedSuccessNotification();
@@ -35,7 +35,7 @@ public class LoggerDataLoadBluetoothClient extends LoggerBluetoothClient {
     public void loadErrorsData() {
         boolean connected = connect();
         if (connected) {
-            receiveData(50, false);
+            receiveData(200, false);
             writeToConsole("sending: GETD");
             String loggerReply = sendRequestWaitForReplySilent("GETD\n");
             if (loggerReply != null) {
@@ -51,9 +51,9 @@ public class LoggerDataLoadBluetoothClient extends LoggerBluetoothClient {
     public void loadLogData() {
         boolean connected = connect();
         if (connected) {
-            receiveData(50, false);
+            receiveData(200, false);
             writeToConsole("sending: GETL");
-            String loggerReply = sendRequestWaitForReply("GETL\n");
+            String loggerReply = sendRequestWaitForReplySilent("GETL\n");
             if (loggerReply != null) {
                 saveLoggerReplyToLogFile(loggerReply, "datalog");
                 LoggerReplyParser parser = new LoggerReplyParser(this);
@@ -69,7 +69,8 @@ public class LoggerDataLoadBluetoothClient extends LoggerBluetoothClient {
     private void saveLoggerReplyToLogFile(String loggerReply, String logFileName) {
         SimpleDateFormat currTimeFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
         String fileName =
-                Configuration.getInstance().getSaveDir() + "/bclogger_" + logFileName + "_" +
+                Configuration.getInstance().getSaveDir() + "/" + logFileName + "_" +
+                        getDeviceInfo().getDeviceName() + "_" +
                         currTimeFormat.format(new Date()) + ".txt";
         try {
             PureDataExtractor extractor = new PureDataExtractor();

@@ -36,6 +36,10 @@ public abstract class LoggerBluetoothClient extends BluetoothClient {
         this.deviceInfo = deviceInfo;
     }
 
+    public DeviceInfo getDeviceInfo() {
+        return deviceInfo;
+    }
+
     public boolean connect() {
         // create socket
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
