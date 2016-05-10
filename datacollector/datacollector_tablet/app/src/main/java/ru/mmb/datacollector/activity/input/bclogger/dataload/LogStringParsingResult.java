@@ -31,7 +31,6 @@ public class LogStringParsingResult {
     private String scanpointOrder;
     private String teamInfo;
     private String recordDateTime;
-    private String lineNumber;
 
     public LogStringParsingResult(String source) {
         this.source = source;
@@ -115,14 +114,6 @@ public class LogStringParsingResult {
 
     public void setRecordDateTime(String recordDateTime) {
         this.recordDateTime = recordDateTime;
-    }
-
-    public String getLineNumber() {
-        return lineNumber;
-    }
-
-    public void setLineNumber(String lineNumber) {
-        this.lineNumber = lineNumber;
     }
 
     public boolean isFatalError() {

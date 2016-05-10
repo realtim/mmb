@@ -4,8 +4,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LoggerReplyParser {
-    public static final Pattern REGEXP_LOG_DATA = Pattern.compile("#(\\d+), (\\d{2}), (\\d{2}), (\\d{8}), (\\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), CRC8=(\\d+)");
-    public static final Pattern REGEXP_TO_CHECK_CRC = Pattern.compile("(#\\d+, \\d{2}, \\d{2}, \\d{8}, \\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), CRC8=\\d+");
+    public static final Pattern REGEXP_LOG_DATA = Pattern.compile("(\\d{2}), (\\d{2}), (\\d{8}), (\\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), CRC8=(\\d+)");
+    public static final Pattern REGEXP_TO_CHECK_CRC = Pattern.compile("(\\d{2}, \\d{2}, \\d{8}, \\d{2}:\\d{2}:\\d{2}, \\d{4}/\\d{2}/\\d{2}), CRC8=\\d+");
 
     private final LoggerDataProcessor owner;
     private final String confLoggerId;
@@ -46,7 +46,7 @@ public class LoggerReplyParser {
 
                 LogStringParsingResult parsingResult = parseReplyString(replyString);
                 if (parsingResult.isRegexpMatches() && parsingResult.isCrcFailed()) {
-                    if (owner.needRepeatLineRequest()) {
+                    /*if (owner.needRepeatLineRequest()) {
                         parsingResult = owner.repeatLineRequest(parsingResult.getLineNumber());
                         if (parsingResult == null) {
                             owner.writeError("ERROR repeating on bad CRC was not successful");
@@ -55,7 +55,10 @@ public class LoggerReplyParser {
                     } else {
                         owner.writeError("ERROR repeating on bad CRC was not successful");
                         continue;
-                    }
+                    }*/
+                    // FIXME now line numbers are lost, repeating cancelled
+                    owner.writeError("ERROR bad CRC, no repeating line request implemented");
+                    continue;
                 }
 
                 parsingResult.checkConsistencyErrors(confLoggerId);
@@ -83,12 +86,11 @@ public class LoggerReplyParser {
         Matcher matcher = REGEXP_LOG_DATA.matcher(replyString);
         if (matcher.find()) {
             result.setRegexpMatches(true);
-            result.setLineNumber(matcher.group(1));
-            result.setLoggerId(matcher.group(2));
-            result.setScanpointOrder(matcher.group(3));
-            result.setTeamInfo(matcher.group(4));
-            result.setRecordDateTime(matcher.group(5));
-            int crc = Integer.parseInt(matcher.group(6));
+            result.setLoggerId(matcher.group(1));
+            result.setScanpointOrder(matcher.group(2));
+            result.setTeamInfo(matcher.group(3));
+            result.setRecordDateTime(matcher.group(4));
+            int crc = Integer.parseInt(matcher.group(5));
             if (!checkCRC(replyString, crc)) {
                 result.setCrcFailed(true);
             }

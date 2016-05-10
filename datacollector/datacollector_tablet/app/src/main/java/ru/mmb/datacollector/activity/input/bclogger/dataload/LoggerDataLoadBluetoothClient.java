@@ -24,17 +24,6 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
         super(context, deviceInfo, handler);
     }
 
-    /*
-    public void clearDevice() {
-        boolean connected = connect();
-        if (connected) {
-            sendRequestWaitForReply("DELLOG\n");
-            disconnectImmediately();
-        }
-        sendFinishedSuccessNotification();
-    }
-    */
-
     public void loadErrorsData() {
         boolean connected = connect();
         if (connected) {
