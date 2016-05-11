@@ -45,6 +45,16 @@ class CRights
         // по идее можно показывать и с 5, но обычно карты загружают позже
         return ($raidStage >= 6);
     }
+    
+    // когда отображать фильтр точек в протоколе
+    public static function canShowPointsFilter($raidId)
+    {
+        $raidStage = CSql::raidStage($raidId);
+        // по идее можно показывать и с 5, но обычно карты загружают позже
+        return ($raidStage >= 5);
+    }
+    
+    
 }
 
      
