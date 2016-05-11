@@ -374,55 +374,64 @@
 // вместо этого просто фильтруем по типам  - не показываем только КП
 // если потом появятся новые типы точек - нужно проверить условие where
 
-        $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name,
-        		tlp1.teamscount, tlp2.teamuserscount
-                from  LevelPoints lp
- 	  		inner join Distances d
-			on lp.distance_id = d.distance_id
-			left outer join
-			     (select tlp.levelpoint_id, count(t.team_id) as teamscount
-			     from TeamLevelPoints tlp
-			          inner join Teams t on t.team_id = tlp.team_id
-				  inner join Distances d on t.distance_id = d.distance_id
-			     where d.raid_id = $RaidId and $DistanceCondition
-			     		and t.team_hide = 0
-			     		and t.team_outofrange = 0
-			     group by tlp.levelpoint_id
-			     ) tlp1
-		     	on lp.levelpoint_id = tlp1.levelpoint_id
-		     	left outer join
-		     		(select tlp.levelpoint_id, count(tu.teamuser_id) as teamuserscount
-		     		from TeamLevelPoints tlp
-			     		inner join Teams t on t.team_id = tlp.team_id
-				        inner join TeamUsers tu on t.team_id = tu.team_id
-					inner join Distances d on t.distance_id = d.distance_id
-			        where d.raid_id = $RaidId and $DistanceCondition
-			     		and t.team_hide = 0
-			     		and t.team_outofrange = 0
-			     		and tu.teamuser_hide = 0
-				group by tlp.levelpoint_id
-			     	) tlp2
-		     	on lp.levelpoint_id = tlp2.levelpoint_id					  
-		where d.raid_id = $RaidId and $DistanceCondition and lp.pointtype_id <> 5 and lp.pointtype_id <> 3
-		order by lp.levelpoint_order ";
-
-	//echo 'sql '.$sql;
-	$Result = MySqlQuery($sql);
-                
-	print('<select name="LevelPointId" style = "margin-left: 10px; margin-right: 5px;" 
-                       onchange = "LevelPointIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-        $levelpointselected =  (0 == $_REQUEST['LevelPointId'] ? 'selected' : '');
-	print("<option value = '0' $levelpointselected>точку</option>\r\n");
-
-	if (!isset($_REQUEST['LevelPointId'])) $_REQUEST['LevelPointId'] = "";
-
-        while ($Row = mysql_fetch_assoc($Result))
+	if (CRights::canShowPointsFilter($RaidId))
 	{
-		$levelpointselected = ($Row['levelpoint_id'] == $_REQUEST['LevelPointId']  ? 'selected' : '');
-		print("<option value = '{$Row['levelpoint_id']}' $levelpointselected>{$Row['distance_name']} {$Row['levelpoint_name']} ({$Row['teamscount']}/{$Row['teamuserscount']})</option>\r\n");
+
+	        $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name,
+        		tlp1.teamscount, tlp2.teamuserscount
+        	        from  LevelPoints lp
+ 	  			inner join Distances d
+				on lp.distance_id = d.distance_id
+				left outer join
+				     (select tlp.levelpoint_id, count(t.team_id) as teamscount
+				     from TeamLevelPoints tlp
+				          inner join Teams t on t.team_id = tlp.team_id
+					  inner join Distances d on t.distance_id = d.distance_id
+				     where d.raid_id = $RaidId and $DistanceCondition
+			     		and t.team_hide = 0
+			     		and t.team_outofrange = 0
+				     group by tlp.levelpoint_id
+				     ) tlp1
+			     	on lp.levelpoint_id = tlp1.levelpoint_id
+			     	left outer join
+			     		(select tlp.levelpoint_id, count(tu.teamuser_id) as teamuserscount
+			     		from TeamLevelPoints tlp
+				     		inner join Teams t on t.team_id = tlp.team_id
+					        inner join TeamUsers tu on t.team_id = tu.team_id
+						inner join Distances d on t.distance_id = d.distance_id
+				        where d.raid_id = $RaidId and $DistanceCondition
+				     		and t.team_hide = 0
+				     		and t.team_outofrange = 0
+				     		and tu.teamuser_hide = 0
+					group by tlp.levelpoint_id
+				     	) tlp2
+			     	on lp.levelpoint_id = tlp2.levelpoint_id					  
+			where d.raid_id = $RaidId and $DistanceCondition and lp.pointtype_id <> 5
+			order by lp.levelpoint_order ";
+
+		//echo 'sql '.$sql;
+		$Result = MySqlQuery($sql);
+                
+		print('<select name="LevelPointId" style = "margin-left: 10px; margin-right: 5px;" 
+                       onchange = "LevelPointIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
+        	$levelpointselected =  (0 == $_REQUEST['LevelPointId'] ? 'selected' : '');
+		print("<option value = '0' $levelpointselected>точку</option>\r\n");
+
+		if (!isset($_REQUEST['LevelPointId'])) $_REQUEST['LevelPointId'] = "";
+
+	        while ($Row = mysql_fetch_assoc($Result))
+		{
+			$levelpointselected = ($Row['levelpoint_id'] == $_REQUEST['LevelPointId']  ? 'selected' : '');
+			print("<option value = '{$Row['levelpoint_id']}' $levelpointselected>{$Row['distance_name']} {$Row['levelpoint_name']} ({$Row['teamscount']}/{$Row['teamuserscount']})</option>\r\n");
+		}
+		print('</select>'."\r\n");  
+		mysql_free_result($Result);		
+
+	} else {
+         
+		print('<input type = "hidden" name = "LevelPointId" value = "0">'."\r\n");  
+
 	}
-	print('</select>'."\r\n");  
-	mysql_free_result($Result);		
 
 /*
 ======================  GPS  ====================
