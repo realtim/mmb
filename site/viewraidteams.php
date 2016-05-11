@@ -403,7 +403,7 @@
 				group by tlp.levelpoint_id
 			     	) tlp2
 		     	on lp.levelpoint_id = tlp2.levelpoint_id					  
-		where d.raid_id = $RaidId and $DistanceCondition and lp.pointtype_id <> 5
+		where d.raid_id = $RaidId and $DistanceCondition and lp.pointtype_id <> 5 and lp.pointtype_id <> 3
 		order by lp.levelpoint_order ";
 
 	//echo 'sql '.$sql;
