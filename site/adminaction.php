@@ -285,7 +285,7 @@ elseif ($action == 'RecalcRaidResults')
 */
 	CMmb::setShortResult('Результаты марш-броска пересчитаны', 'ViewAdminDataPage');
 }
-// =============== Поиск ошибок и обновление штрафного и общего времени =======
+// =============== Поиск ошибок =======
 elseif ($action == 'FindRaidErrors')
 {
 	if ($RaidId <= 0)
@@ -297,7 +297,7 @@ elseif ($action == 'FindRaidErrors')
 
 	$total_errors = FindErrors($RaidId, 0);
 
-	$view = "ViewAdminDataPage";
+	CMmb::setShortResult("Результаты марш-броска проверены, найдено $total_errors ошибок", 'ViewAdminDataPage');
 }
 // =============== Показываем страницу модераторов ===================
 if ($action == "ViewAdminModeratorsPage")  {
@@ -344,7 +344,7 @@ elseif ($action == 'RecalcRaidRank')
 	$Result = 0;
 	$Result =  RecalcTeamUsersRank($RaidId); 
 
-	CMmb::setShortResult('Рейтинг участников марш-броска пересчитан, найдено '.$total_errors.' ошибок', 'ViewAdminDataPage');
+	CMmb::setShortResult('Рейтинг участников марш-броска пересчитан', 'ViewAdminDataPage');
 }
 // =============== Рассылка всем участникам ММБ ===================
 elseif ($action == 'SendMessageForAll')
@@ -459,6 +459,7 @@ else
 }
 
 // Сохранение флага ошибки в базе
+// функция больше не используется
 function LogError($teamlevel_id, $error)
 {
 	$sql = "update TeamLevels set error_id = $error where teamlevel_id = $teamlevel_id";
@@ -467,6 +468,7 @@ function LogError($teamlevel_id, $error)
 }
 
 // Проверка конкретной команды
+// функция больше не используется
 function ValidateTeam($Team, $Levels)
 {
 	// Получаем список записей результатов из TeamLevels

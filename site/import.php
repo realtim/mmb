@@ -229,7 +229,7 @@ if (isset($_FILES['android']))
 	// Повторно сканируем файл и берем из него данные с минимумом проверок
 	$n_new = $n_updated = $n_unchanged = 0;
 	$d_new = $d_updated = $d_unchanged = 0;
-	$d_dismiss = 0;
+//	$d_dismiss = 0;
 	foreach ($lines as $line_num => $line)
 	{
 		// Логин и пароль уже не проверяем
@@ -306,7 +306,7 @@ if (isset($_FILES['android']))
 			// =============== Данные импортировали, теперь обновляем другие таблицы на основе импортированной записи
 			// В будущем этот блок можно будет удалить
 			//
-			// Выясняем порядковый номер контрольной точки, на которой зарегистрирован сход
+/*			// Выясняем порядковый номер контрольной точки, на которой зарегистрирован сход
 			$sql = "SELECT levelpoint_order FROM LevelPoints WHERE levelpoint_id = $point_id";
 			$Result = mysql_query($sql);
 			$Row = mysql_fetch_assoc($Result);
@@ -326,7 +326,7 @@ if (isset($_FILES['android']))
 				mysql_query($sql);
 				if (mysql_error()) die($sql.": ".mysql_error());
 				$d_dismiss++;
-			}
+			}*/
 		}
 
 		// Данные о командах на контрольной точке
@@ -377,7 +377,7 @@ if (isset($_FILES['android']))
 	}
 	echo "Команды: $n_new результатов добавлено, $n_updated изменено, $n_unchanged являются дубликатами<br>\n";
 	echo "Данные о сходах: $d_new добавлено, $d_updated изменено, $d_unchanged являются дубликатами<br>\n";
-	echo "У $d_dismiss участников изменена информация о первой точке схода<br>\n";
+//	echo "У $d_dismiss участников изменена информация о первой точке схода<br>\n";
 	// Определяем id марш-броска по последней обработанной команде
 /*	$sql = "SELECT raid_id FROM Teams, Distances WHERE team_id = $team_id AND Teams.distance_id = Distances.distance_id";
 	$Result = mysql_query($sql);
