@@ -21,7 +21,7 @@ else
   print('<body>');
 
   print('<form enctype="multipart/form-data" action="import.php" method="POST">');
-  print('<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />');
+  print('<input type="hidden" name="MAX_FILE_SIZE" value="2000000" />');
   print('Файл с данными: <input name="android" type="file" /> &nbsp;');
   print('<input type="submit" value="Загрузить" />');
   print('</form>');
@@ -44,7 +44,7 @@ else
 // Обработка загруженного файла
 if (isset($_FILES['android']))
 {
-	if ($_FILES["android"]["error"] > 0) die("Ошибка загрузки: ".$_FILES["android"]["error"]);
+	if ($_FILES["android"]["error"] > 0) die("Загрузка файла на сервер не удалась, код ошибки php: ".$_FILES["android"]["error"]);
 	echo "<br>Загружено ".$_FILES["android"]["size"] . " байт<br>\n";
 	$lines = file($_FILES['android']['tmp_name'], FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
