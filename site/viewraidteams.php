@@ -484,10 +484,21 @@
 	print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
 
 
+	// можем / нужно ли показывать карты?
+	$mapQuery = "select raidfile_name, raidfile_comment
+	                from RaidFiles
+	                        where raid_id = $RaidId 
+	                        	and filetype_id = 4 
+	                        	and substr(lower(raidfile_name), -4)  in ('.png','.gif','.jpg','jpeg')
+	                        	and raidfile_hide = 0
+	     			order by raidfile_id asc";
+
+	$canShowMaps = CRights::canShowImages($RaidId) && CSql::rowCount($mapQuery) > 0;
+
 	$showMapImages = mmb_validateInt($_GET, 'showMap', '0');
-	if (CRights::canShowImages($RaidId))
+	if ($canShowMaps)
 	{
-		if ($showMapImages == 1) 
+		if ($showMapImages == 1)
 		{
 			print('<a style="font-size:80%; margin-right: 15px;" href="?protocol&RaidId='.$RaidId.'&showMap=0" title="Не отображать карты в протоколе - можно смотреть на странцие материалов">Скрыть карты</a> '."\r\n");
 		} else {
@@ -498,36 +509,28 @@
 	print('</div>'."\r\n");
 
 	// собственно вывод карт
-	if (CRights::canShowImages($RaidId) and $showMapImages)
+	if ($canShowMaps and $showMapImages)
 	{
 		print('<div align="left" style="margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
 
-		$sql = "select raidfile_name, raidfile_comment
-	                from RaidFiles
-	                        where raid_id = $RaidId 
-	                        	and filetype_id = 4 
-	                        	and substr(lower(raidfile_name), -4)  in ('.png','.gif','.jpg','jpeg')
-	                        	and raidfile_hide = 0
-	     			order by raidfile_id asc";
-
-		$Result = MySqlQuery($sql);
+		$Result = MySqlQuery($mapQuery);
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-		        $ImageLink = $Row['raidfile_name'];
-		        $ImageComment = $Row['raidfile_comment'];
-		        
-		        $point = strrpos($ImageLink, '.');
-		        if  ($point > 0) 
-		        {
-		          $tumbImg = substr($ImageLink, 0, $point).'_tumb'.substr($ImageLink, $point);
-			//	echo $point.' '.$ImageLink.' '.$tumbImg;
-		          if (!is_file(trim($MyStoreFileLink).$tumbImg))
-		          {
-			//	echo '1111';
-			     image_resize(trim($MyStoreFileLink).trim($ImageLink), trim($MyStoreFileLink).trim($tumbImg), 1000, 100, 0);
-		          }
-			  print('<a style="margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ImageLink).'" title="'.trim($ImageComment).'" target = "_blank"><img src = "'.trim($MyStoreHttpLink).trim($tumbImg).'"  alt = "'.trim($ImageComment).'" height = "100"></a>'."\r\n");
-		        }
+			$ImageLink = $Row['raidfile_name'];
+			$ImageComment = $Row['raidfile_comment'];
+
+			$point = strrpos($ImageLink, '.');
+			if  ($point <= 0)
+				continue;
+
+			$tumbImg = substr($ImageLink, 0, $point).'_tumb'.substr($ImageLink, $point);
+		//	echo $point.' '.$ImageLink.' '.$tumbImg;
+			if (!is_file(trim($MyStoreFileLink).$tumbImg))
+			{
+		//	echo '1111';
+				image_resize(trim($MyStoreFileLink).trim($ImageLink), trim($MyStoreFileLink).trim($tumbImg), 1000, 100, 0);
+			}
+			print('<a style="margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ImageLink).'" title="'.trim($ImageComment).'" target = "_blank"><img src = "'.trim($MyStoreHttpLink).trim($tumbImg).'"  alt = "'.trim($ImageComment).'" height = "100"></a>'."\r\n");
 		}
   		mysql_free_result($Result);
 		print('</div>'."\r\n");
