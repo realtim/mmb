@@ -2344,6 +2344,26 @@ echo $sql.";";
 			";
      echo $sql.";";
 
+	$sql = " select t1.team_id, lp1.levelpoint_order 
+                                  from TeamLevelPoints tlp1 
+                                           inner join LevelPoints lp1 on tlp1.levelpoint_id = lp1.levelpoint_id 
+                                           inner join Teams t1 on t1.team_id = tlp1.team_id 
+                                           inner join Distances d1 on t1.distance_id = d1.distance_id 
+                                  where lp1.pointtype_id <> 1 
+								         and $teamRaidCondition ";
+	echo $sql.";";
+
+
+	 $sqlRes = MySqlQuery($sql);
+	 $RowCount = 0;
+        while ($row = mysql_fetch_assoc($sqlRes))
+        {
+              echo  '<br/>'.$row['team_id'].'  '.$row['levelpoint_order'];
+              $RowCount++;
+        }
+        mysql_free_result($sqlRes);
+        echo ' $RowCount'.$RowCount;
+
 			
 	 $rs = MySqlQuery($sql);
 			 
