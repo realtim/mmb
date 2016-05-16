@@ -2353,16 +2353,7 @@ echo $sql.";";
 								         and $teamRaidCondition ";
 	echo $sql.";";
 
-
-	 $sqlRes = MySqlQuery($sql);
-	 $RowCount = 0;
-        while ($row = mysql_fetch_assoc($sqlRes))
-        {
-              echo  '<br/>'.$row['team_id'].'  '.$row['levelpoint_order'];
-              $RowCount++;
-        }
-        mysql_free_result($sqlRes);
-        echo ' $RowCount'.$RowCount;
+	 $rs = MySqlQuery($sql);
 
 			
 	 $rs = MySqlQuery($sql);
@@ -2397,7 +2388,18 @@ echo $sql.";";
 	
 	echo $sql.";";
 
-	$rs = MySqlQuery($sql);
+//	$rs = MySqlQuery($sql);
+
+	 $sqlRes = MySqlQuery($sql);
+	 $RowCount = 0;
+        while ($row = mysql_fetch_assoc($sqlRes))
+        {
+              echo  '<br/>'.$row['team_id'].'  '.$row['levelpoint_order'];
+              $RowCount++;
+        }
+        mysql_free_result($sqlRes);
+        echo ' $RowCount'.$RowCount;
+
 	
 	
 
