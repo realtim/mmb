@@ -2672,6 +2672,7 @@ function FindErrors($raid_id, $team_id)
 		mysql_free_result($Result);
 	}
 	if (!count($distances)) die('Отсутствуют дистанции для проверки');
+	$teamRaidCondition = (!empty($team_id)) ? "t.team_id = $team_id" : "d.raid_id = $raid_id";
 
 	// Проверяем в цикле все дистанции (для всех команд с данной дистанции или для конкретной команды
 	$total_errors = 0;
@@ -2891,6 +2892,20 @@ function FindErrors($raid_id, $team_id)
 			}
 		}
 	}
+
+	// Обновление поля team_minlevelpointorderwitherror, используемого для быстрого показа результатов команд
+	$sql = "UPDATE Teams t
+			INNER JOIN
+			(SELECT tlp.team_id, MIN(COALESCE(lp.levelpoint_order, 0)) AS error FROM TeamLevelPoints tlp
+				INNER JOIN Teams t ON tlp.team_id = t.team_id
+				INNER JOIN Distances d ON t.distance_id = d.distance_id
+				INNER JOIN LevelPoints lp ON tlp.levelpoint_id = lp.levelpoint_id
+				WHERE COALESCE(tlp.error_id, 0) > 0 AND $teamRaidCondition
+				GROUP BY tlp.team_id
+			) a
+			ON t.team_id = a.team_id
+		SET team_minlevelpointorderwitherror = COALESCE(a.error, 0)";
+	MySqlQuery($sql);
 
 	// Результат поиска ошибок
 	// if ($raid_id) echo "Проверка данных завершена, найдено ошибок: $total_errors<br>\n";
