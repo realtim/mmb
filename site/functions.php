@@ -2463,7 +2463,8 @@ echo $sql.";";
                     group by a.team_id, a.levelpoint_order 
 			";
 	echo $sql.";";
-	
+	$rs = MySqlQuery($sql);
+
 /*
 	$sql = "  select a.team_id as team_id, 
 			        a.levelpoint_order as up, 
