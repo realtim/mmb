@@ -719,7 +719,7 @@
 								(
 								select tlp.team_id
 				  				from TeamLevelPoints tlp
-								where error_id is not null
+								where COALESCE(error_id, 0) <> 0
 				  				group by tlp.team_id
 								) err
 							on t.team_id = err.team_id
