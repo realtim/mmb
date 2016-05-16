@@ -2483,7 +2483,7 @@ echo $sql.";";
 	 $RowCount = 0;
         while ($row = mysql_fetch_assoc($sqlRes))
         {
-              echo  '<br/>'.$row['team_id'].'  '.$row['up'].'  '.$row['totaldurationinsec'];
+              echo  '<br/>'.$row['team_id'].'  '.$row['up'].'  '.$row['totaldurationinsec'].'  '.$row['totalpenaltyinsec'];
               $RowCount++;
         }
         mysql_free_result($sqlRes);
