@@ -2338,7 +2338,7 @@ send_mime_mail('Автор письма',
                                   where lp1.pointtype_id <> 1 
 								         and $teamRaidCondition
 			";
-     //echo $sql.";";
+     echo $sql.";";
 
 			
 	 $rs = MySqlQuery($sql);
@@ -2442,7 +2442,7 @@ send_mime_mail('Автор письма',
 			set  tlp0.teamlevelpoint_result = d.result
 			";
 
-	//echo $sql.";";
+	echo $sql.";";
 	 
 	$rs = MySqlQuery($sql);
 
@@ -2940,12 +2940,14 @@ function FindErrors($raid_id, $team_id)
 
 		 $tm4 = CMmbLogger::addInterval(' 4', $tm3);
 
+ echo 'RecalcTeamLevelPointsResult '.$raidid.','.$teamid;
 
 	RecalcTeamLevelPointsResult($raidid, $teamid);
 
 		 $tm5 = CMmbLogger::addInterval(' 5', $tm4);
 
-
+	return;
+	
 		 // Находим ключ ММБ, если указана только команда
 	if (empty($raidid)) 
 	{
