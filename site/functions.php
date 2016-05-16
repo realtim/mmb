@@ -2327,7 +2327,11 @@ echo $sql.";";
 	$rs = MySqlQuery($sql);
 				
 	$sql = " DELETE FROM tmp_rtlpr1  ";
+echo $sql.";";
+
+
 	$rs = MySqlQuery($sql);
+
 	
 	$sql = " INSERT INTO tmp_rtlpr1 (team_id, levelpoint_order)
 			 select t1.team_id, lp1.levelpoint_order 
@@ -2355,6 +2359,8 @@ echo $sql.";";
 	$rs = MySqlQuery($sql);
 				
 	$sql = " DELETE FROM tmp_rtlpr2  ";
+echo $sql.";";
+
 	$rs = MySqlQuery($sql);
 	
 	$sql = " INSERT INTO tmp_rtlpr2 (team_id, levelpoint_order, durationinsec, penaltyinmin)
@@ -2388,6 +2394,8 @@ echo $sql.";";
 	$rs = MySqlQuery($sql);
 				
 	$sql = " DELETE FROM tmp_rtlpr3  ";
+echo $sql.";";
+
 	$rs = MySqlQuery($sql);
 	
 	$sql = " INSERT INTO tmp_rtlpr3 (team_id, up, totaldurationinsec, totalpenaltyinsec)
@@ -2418,6 +2426,7 @@ echo $sql.";";
 	$rs = MySqlQuery($sql);
 				
 	$sql = " DELETE FROM tmp_rtlpr4  ";
+echo $sql.";";
 	$rs = MySqlQuery($sql);
 	
 	$sql = " INSERT INTO tmp_rtlpr4 (team_id, levelpoint_id, result)
@@ -2446,6 +2455,17 @@ echo $sql.";";
 	echo $sql.";";
 	 
 	$rs = MySqlQuery($sql);
+
+	$sql = "select  * from  tmp_rtlpr4 d ";
+	echo $sql.";";
+
+	 $sqlRes = MySqlQuery($sql);
+        while ($row = mysql_fetch_assoc($sqlRes))
+        {
+              echo  '<br/>'.$row['team_id'].'  '.$row['result'];
+        }
+        mysql_free_result($sqlRes);
+
 
 
 
