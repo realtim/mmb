@@ -2464,7 +2464,7 @@ echo $sql.";";
 			";
 	echo $sql.";";
 	
-/*
+
 	$sql = "  select a.team_id as team_id, 
 			        a.levelpoint_order as up, 
 			        SUM(b.durationinsec) as totaldurationinsec,
@@ -2488,7 +2488,7 @@ echo $sql.";";
         }
         mysql_free_result($sqlRes);
         echo ' $RowCount'.$RowCount;
-*/
+
 
 	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
 				tmp_rtlpr4 (
