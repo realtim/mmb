@@ -2464,7 +2464,7 @@ echo $sql.";";
 			";
 	echo $sql.";";
 	
-
+/*
 	$sql = "  select a.team_id as team_id, 
 			        a.levelpoint_order as up, 
 			        SUM(b.durationinsec) as totaldurationinsec,
@@ -2488,7 +2488,7 @@ echo $sql.";";
         }
         mysql_free_result($sqlRes);
         echo ' $RowCount'.$RowCount;
-
+*/
 
 	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
 				tmp_rtlpr4 (
@@ -2500,7 +2500,8 @@ echo $sql.";";
 
 	echo $sql.";";
 	$rs = MySqlQuery($sql);
-				
+
+
 	$sql = " DELETE FROM tmp_rtlpr4  ";
 echo $sql.";";
 	$rs = MySqlQuery($sql);
@@ -2520,6 +2521,33 @@ echo $sql.";";
      echo $sql.";";
 	 
 	$rs = MySqlQuery($sql);
+
+
+	$sql = " 	 select c.team_id as team_id, 
+			        lp0.levelpoint_id as levelpoint_id, 
+					SEC_TO_TIME(c.totaldurationinsec + c.totalpenaltyinsec) as result
+    		 from tmp_rtlpr3  c
+                  inner join Teams t1 on t1.team_id = c.team_id 
+			      inner join LevelPoints lp0
+				  on t1.distance_id = lp0.distance_id 
+				     and lp0.levelpoint_order = c.up
+			";
+
+	echo $sql.";";
+
+	 $sqlRes = MySqlQuery($sql);
+	 $RowCount = 0;
+        while ($row = mysql_fetch_assoc($sqlRes))
+        {
+              echo  '<br/>'.$row['team_id'].'  '.$row['levelpoint_id'].'  '.$row['result'];
+              $RowCount++;
+        }
+        mysql_free_result($sqlRes);
+        echo ' $RowCount'.$RowCount;
+
+
+
+
 
 	$sql = "update TeamLevelPoints tlp0
 				 inner join tmp_rtlpr4 d
