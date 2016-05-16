@@ -2414,7 +2414,7 @@ echo $sql.";";
 				        ) 
 				ENGINE=MEMORY";
 
-	//echo $sql.";";
+	echo $sql.";";
 	$rs = MySqlQuery($sql);
 				
 	$sql = " DELETE FROM tmp_rtlpr4  ";
