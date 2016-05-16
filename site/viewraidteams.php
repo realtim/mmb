@@ -713,16 +713,21 @@
                             TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 							COALESCE(t.team_outofrange, 0) as  team_outofrange,
 			       			COALESCE(lp.levelpoint_name, '') as levelpoint_name,
-			       			COALESCE(t.team_comment, '') as team_comment
+			       			CONCAT_WS(' Комментарий: ', COALESCE(errt.errcomment, ''), COALESCE(t.team_comment, '')) as team_comment
 			  		from  Teams t
 							inner join
 								(
-								select tlp.team_id
+								select tlp.team_id,
+								GROUP_CONCAT(CONCAT_WS(' - ', lp.levelpoint_name, err.error_name) ORDER BY lp.levelpoint_order, ' ') as errcomment
 				  				from TeamLevelPoints tlp
-								where COALESCE(error_id, 0) <> 0
+				  				     inner join LevelPoints lp
+				  				     on tlp.levelpoint_id = lp.levelpoint_id
+				  				     inner join Errors err
+				  				     on tlp.error_id = err.error_id
+								where COALESCE(tlp.error_id, 0) <> 0
 				  				group by tlp.team_id
-								) err
-							on t.team_id = err.team_id
+								) errt
+							on t.team_id = errt.team_id
 							inner join  Distances d
 							on t.distance_id = d.distance_id
 							left outer join LevelPoints lp
