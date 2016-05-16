@@ -2344,6 +2344,9 @@ echo $sql.";";
 			";
      echo $sql.";";
 
+	 $rs = MySqlQuery($sql);
+
+/*
 	$sql = " select t1.team_id, lp1.levelpoint_order 
                                   from TeamLevelPoints tlp1 
                                            inner join LevelPoints lp1 on tlp1.levelpoint_id = lp1.levelpoint_id 
@@ -2353,11 +2356,21 @@ echo $sql.";";
 								         and $teamRaidCondition ";
 	echo $sql.";";
 
-	 $rs = MySqlQuery($sql);
+	 $sqlRes = MySqlQuery($sql);
+	 $RowCount = 0;
+        while ($row = mysql_fetch_assoc($sqlRes))
+        {
+              echo  '<br/>'.$row['team_id'].'  '.$row['levelpoint_order'];
+              $RowCount++;
+        }
+        mysql_free_result($sqlRes);
+        echo ' $RowCount'.$RowCount;
+
+
+*/
 
 			
-	 $rs = MySqlQuery($sql);
-			 
+
 	 $sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
 				tmp_rtlpr2 (
 		              team_id INT, INDEX (team_id),
@@ -2388,7 +2401,22 @@ echo $sql.";";
 	
 	echo $sql.";";
 
-//	$rs = MySqlQuery($sql);
+	$rs = MySqlQuery($sql);
+
+
+	$sql = " 
+			 select t1.team_id, lp1.levelpoint_order,  
+				    TIME_TO_SEC(COALESCE(tlp1.teamlevelpoint_duration, 0)) as durationinsec, 
+					COALESCE(tlp1.teamlevelpoint_penalty, 0) as penaltyinmin  
+                                  from TeamLevelPoints tlp1 
+                                           inner join LevelPoints lp1 on tlp1.levelpoint_id = lp1.levelpoint_id 
+                                           inner join Teams t1 on t1.team_id = tlp1.team_id 
+                                           inner join Distances d1 on t1.distance_id = d1.distance_id 
+                                  where lp1.pointtype_id <> 1 
+								         and $teamRaidCondition
+			";
+
+	echo $sql.";";
 
 	 $sqlRes = MySqlQuery($sql);
 	 $RowCount = 0;
@@ -2399,6 +2427,8 @@ echo $sql.";";
         }
         mysql_free_result($sqlRes);
         echo ' $RowCount'.$RowCount;
+
+
 
 	
 	
