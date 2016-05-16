@@ -108,7 +108,6 @@ if (!isset($MyPHPScript)) return;
 	 print('<form  name = "AdminForm" enctype="multipart/form-data"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
          print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
          print('<input type = "hidden" name = "action" value = "">'."\r\n");
-         print('<input type="hidden" name="MAX_FILE_SIZE" value="1000000" />'."\r\n");
 	 
          print('<table  border = "0" cellpadding = "0" cellspacing = "0" width = "100%">'."\r\n");
 
