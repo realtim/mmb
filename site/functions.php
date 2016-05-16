@@ -2322,7 +2322,7 @@ send_mime_mail('Автор письма',
 			     ) 
 				ENGINE=MEMORY ";
 
-//echo $sql.";";
+echo $sql.";";
 
 	$rs = MySqlQuery($sql);
 				
@@ -2351,7 +2351,7 @@ send_mime_mail('Автор письма',
 					  penaltyinmin INT
 			     ) 
 				ENGINE=MEMORY ";
-	//echo $sql.";";
+	echo $sql.";";
 	$rs = MySqlQuery($sql);
 				
 	$sql = " DELETE FROM tmp_rtlpr2  ";
@@ -2369,7 +2369,7 @@ send_mime_mail('Автор письма',
 								         and $teamRaidCondition
 			";
 	
-	//echo $sql.";";
+	echo $sql.";";
 
 	$rs = MySqlQuery($sql);
 	
@@ -2402,7 +2402,8 @@ send_mime_mail('Автор письма',
                         on a.team_id = b.team_id and a.levelpoint_order >= b.levelpoint_order 
                     group by a.team_id, a.levelpoint_order 
 			";
-
+	echo $sql.";";
+	
 
 
 	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
@@ -2431,7 +2432,7 @@ send_mime_mail('Автор письма',
 			";
     
 
-     //echo $sql.";";
+     echo $sql.";";
 	 
 	$rs = MySqlQuery($sql);
 
