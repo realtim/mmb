@@ -2322,12 +2322,12 @@ send_mime_mail('Автор письма',
 			     ) 
 				ENGINE=MEMORY ";
 
-echo $sql.";";
+//echo $sql.";";
 
 	$rs = MySqlQuery($sql);
 				
 	$sql = " DELETE FROM tmp_rtlpr1  ";
-echo $sql.";";
+//echo $sql.";";
 
 
 	$rs = MySqlQuery($sql);
@@ -2342,7 +2342,7 @@ echo $sql.";";
                                   where lp1.pointtype_id <> 1 
 								         and $teamRaidCondition
 			";
-     echo $sql.";";
+  //   echo $sql.";";
 
 	 $rs = MySqlQuery($sql);
 
@@ -2379,11 +2379,11 @@ echo $sql.";";
 					  penaltyinmin INT
 			     ) 
 				ENGINE=MEMORY ";
-	echo $sql.";";
+//	echo $sql.";";
 	$rs = MySqlQuery($sql);
 				
 	$sql = " DELETE FROM tmp_rtlpr2  ";
-echo $sql.";";
+//echo $sql.";";
 
 	$rs = MySqlQuery($sql);
 	
@@ -2399,7 +2399,7 @@ echo $sql.";";
 								         and $teamRaidCondition
 			";
 	
-	echo $sql.";";
+//	echo $sql.";";
 
 	$rs = MySqlQuery($sql);
 
@@ -2442,11 +2442,11 @@ echo $sql.";";
 				        ) 
 				ENGINE=MEMORY";
 
-	echo $sql.";";
+//	echo $sql.";";
 	$rs = MySqlQuery($sql);
 				
 	$sql = " DELETE FROM tmp_rtlpr3  ";
-echo $sql.";";
+//echo $sql.";";
 
 	$rs = MySqlQuery($sql);
 	
@@ -2462,7 +2462,7 @@ echo $sql.";";
                         on a.team_id = b.team_id and a.levelpoint_order >= b.levelpoint_order 
                     group by a.team_id, a.levelpoint_order 
 			";
-	echo $sql.";";
+//	echo $sql.";";
 	$rs = MySqlQuery($sql);
 
 /*
@@ -2478,6 +2478,8 @@ echo $sql.";";
                     group by a.team_id, a.levelpoint_order 
 			";
 */
+
+/*
 	$sql = "  select * FROM  tmp_rtlpr3";
 
 	echo $sql.";";
@@ -2491,7 +2493,7 @@ echo $sql.";";
         }
         mysql_free_result($sqlRes);
         echo ' $RowCount'.$RowCount;
-
+*/
 
 	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
 				tmp_rtlpr4 (
@@ -2501,12 +2503,12 @@ echo $sql.";";
 				        ) 
 				ENGINE=MEMORY";
 
-	echo $sql.";";
+//	echo $sql.";";
 	$rs = MySqlQuery($sql);
 
 
 	$sql = " DELETE FROM tmp_rtlpr4  ";
-echo $sql.";";
+//echo $sql.";";
 	$rs = MySqlQuery($sql);
 	
 	$sql = " INSERT INTO tmp_rtlpr4 (team_id, levelpoint_id, result)
@@ -2521,11 +2523,11 @@ echo $sql.";";
 			";
     
 
-     echo $sql.";";
+  //   echo $sql.";";
 	 
 	$rs = MySqlQuery($sql);
 
-
+/*
 	$sql = " 	 select c.team_id as team_id, 
 			        lp0.levelpoint_id as levelpoint_id, 
 					SEC_TO_TIME(c.totaldurationinsec + c.totalpenaltyinsec) as result
@@ -2547,7 +2549,7 @@ echo $sql.";";
         }
         mysql_free_result($sqlRes);
         echo ' $RowCount'.$RowCount;
-
+*/
 
 
 
@@ -2559,10 +2561,11 @@ echo $sql.";";
 			set  tlp0.teamlevelpoint_result = d.result
 			";
 
-	echo $sql.";";
+//	echo $sql.";";
 	 
 	$rs = MySqlQuery($sql);
 
+/*
 	$sql = "select  * from  tmp_rtlpr4 d ";
 	echo $sql.";";
 
@@ -2573,7 +2576,7 @@ echo $sql.";";
         }
         mysql_free_result($sqlRes);
 
-
+*/
 
 
 // Правильно сдлеать удаление, но нет прав
@@ -3068,13 +3071,13 @@ function FindErrors($raid_id, $team_id)
 
 		 $tm4 = CMmbLogger::addInterval(' 4', $tm3);
 
- echo 'RecalcTeamLevelPointsResult '.$raidid.','.$teamid;
+// echo 'RecalcTeamLevelPointsResult '.$raidid.','.$teamid;
 
 	RecalcTeamLevelPointsResult($raidid, $teamid);
 
 		 $tm5 = CMmbLogger::addInterval(' 5', $tm4);
 
-	return;
+//	return;
 	
 		 // Находим ключ ММБ, если указана только команда
 	if (empty($raidid)) 
