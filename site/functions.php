@@ -2403,7 +2403,7 @@ echo $sql.";";
 
 	$rs = MySqlQuery($sql);
 
-
+/*
 	$sql = " 
 			 select t1.team_id, lp1.levelpoint_order,  
 				    TIME_TO_SEC(COALESCE(tlp1.teamlevelpoint_duration, 0)) as durationinsec, 
@@ -2428,7 +2428,7 @@ echo $sql.";";
         mysql_free_result($sqlRes);
         echo ' $RowCount'.$RowCount;
 
-
+*/
 
 	
 	
@@ -2464,6 +2464,30 @@ echo $sql.";";
 			";
 	echo $sql.";";
 	
+
+	$sql = "  select a.team_id as team_id, 
+			        a.levelpoint_order as up, 
+			        SUM(b.durationinsec) as totaldurationinsec,
+					SUM(b.penaltyinmin)*60 as totalpenaltyinsec 
+         			from
+		         		(select team_id, levelpoint_order from tmp_rtlpr1) a 
+                        inner join
+						(select team_id, levelpoint_order, durationinsec, penaltyinmin from tmp_rtlpr2) b 
+                        on a.team_id = b.team_id and a.levelpoint_order >= b.levelpoint_order 
+                    group by a.team_id, a.levelpoint_order 
+			";
+
+	echo $sql.";";
+
+	 $sqlRes = MySqlQuery($sql);
+	 $RowCount = 0;
+        while ($row = mysql_fetch_assoc($sqlRes))
+        {
+              echo  '<br/>'.$row['team_id'].'  '.$row['up'].'  '.$row['totaldurationinsec'];
+              $RowCount++;
+        }
+        mysql_free_result($sqlRes);
+        echo ' $RowCount'.$RowCount;
 
 
 	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
