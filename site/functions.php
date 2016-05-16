@@ -2464,7 +2464,7 @@ echo $sql.";";
 			";
 	echo $sql.";";
 	
-
+/*
 	$sql = "  select a.team_id as team_id, 
 			        a.levelpoint_order as up, 
 			        SUM(b.durationinsec) as totaldurationinsec,
@@ -2476,6 +2476,8 @@ echo $sql.";";
                         on a.team_id = b.team_id and a.levelpoint_order >= b.levelpoint_order 
                     group by a.team_id, a.levelpoint_order 
 			";
+*/
+	$sql = "  select * FROM  tmp_rtlpr3";
 
 	echo $sql.";";
 
