@@ -483,14 +483,8 @@
 	print('<a style="font-size:80%; margin-right: 15px;" href="?files&RaidId='.$RaidId.'" title="Все материалы ММБ: положение, карты, легенды...">Материалы</a>'."\r\n");
 	print('<a style="font-size:80%; margin-right: 15px;" href="javascript: JsonExport();">Json</a> '."\r\n");
 
-	$showMapImages = 0;
-	if (mmb_validateInt($_GET, 'showMap', '') !== false and isset($_GET['showMap']) and $_GET['showMap'] == 1)
-	{
-		// передали, что нужно показать карты
-		$showMapImages = 1;
-	}
-	// Конец  проверки на аывод ссылки для карт и самих картинок	
 
+	$showMapImages = mmb_validateInt($_GET, 'showMap', '0');
 	if (CRights::canShowImages($RaidId))
 	{
 		if ($showMapImages == 1) 
