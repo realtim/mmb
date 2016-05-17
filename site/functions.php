@@ -3584,7 +3584,7 @@ class CMmbLogger
 			."Операция: $operation\r\n"
 			."Текст ошибки: $message\r\n"
 			."\r\nСтек: $stack\r\n\r\n"
-			."Cообщения о других критических ошибках ищите в логе: ".self::$fatalLogFile;
+			."Cообщения о других критических ошибках ищите в логе: ".self::$fatalLogFile."\r\n\r\n";
 	}
 	
 	private static function addLogRecord($user, $level, $operation, $message)
