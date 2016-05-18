@@ -54,6 +54,30 @@ class CRights
         return ($raidStage >= 5);
     }
     
+    // ВОзможность вводит и править данные в точке 
+    public static function canEditPointResult($userId, $raidId)
+    {
+        $Super = CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
+        $raidStage = CSql::raidStage($raidId);
+
+        // Администратору или модератору можно всегда до закрытия протокола
+        if ($Super)
+        {
+            return ($raidStage < 7);
+        }
+
+        // Не участнику команды вводить нельзя
+        $teamId == CSql::userTeamId($userId, $raidId) 
+        if (!$teamId)
+        {
+            return false;
+        }
+
+        // Можно править только команде вне зачета
+        $teamOutOfRange = CSql::teamOutOfRange($teamId);
+        return ($teamOutOfRange && $raidStage > 5 && $raidStage < 7);
+    }
+
     
 }
 
