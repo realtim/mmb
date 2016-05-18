@@ -277,7 +277,7 @@ class CSql {
 		$tTime = trim($time);
 		
 		// Если передали без секунд, то устанавдливаем принудительно флаг
-		if (!$noSeconds && strlen($Time) < 6)
+		if (!$noSeconds && strlen($tTime) <> 6)
 		{
 		   $noSeconds = true;
 		}
