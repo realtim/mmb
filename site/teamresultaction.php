@@ -179,7 +179,7 @@ elseif ($action == 'AddTlp')
 	// Общая проверка возможности редактирования
 //	if (!$Administrator && !$Moderator)
 
-	if (!CRights::canEditPointResult($UserId, $RaidId))
+	if (!CRights::canEditPointResult($UserId, $RaidId, $TeamId))
 	{
 		CMmb::setMessage('Нет прав на ввод  результата для точки');
 		return;
@@ -281,7 +281,7 @@ elseif ($action == 'AddTlp')
 elseif ($action == 'ChangeTlp')
 {
 //	if (!$Administrator && !$Moderator)
-	if (!CRights::canEditPointResult(UserId, $RaidId))
+	if (!CRights::canEditPointResult($UserId, $RaidId, $TeamId))
 	{
 		CMmb::setMessage('Нет прав на правку результата для точки');
 		return;
@@ -373,7 +373,7 @@ elseif ($action == 'ChangeTlp')
 elseif ($action == 'HideTlp')
 {
 //	if (!$Administrator && !$Moderator)
-	if (!CRights::canEditPointResult($UserId, $RaidId))
+	if (!CRights::canEditPointResult($UserId, $RaidId, $TeamId))
 	{
 		CMmb::setMessage('Нет прав на правку результата для точки');
 		return;
