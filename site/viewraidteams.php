@@ -615,7 +615,7 @@
 
         // Если идёт регистрацию время окончания выделяем жирным
         $bStyle = $RaidStage == 1 ? 'style="font-weight: bold;"': '';
-        print("<td $bStyle>Регистрация до: $RaidRegisterEndDt</td>\r\n");
+        print("<td $bStyle>заявка команды до: $RaidRegisterEndDt</td>\r\n");
         print("<td>команд: $teamInRangeCount/$teamOutOfRangeCount, карт: $mapsInRangeCount/$mapsOutOfRangeCount, участников: $teamUserInRangeCount/$teamUserOutOfRangeCount</td>\r\n");
 
 	if (!empty($RaidCloseDt))
