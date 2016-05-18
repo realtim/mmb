@@ -55,7 +55,7 @@ class CRights
     }
     
     // ВОзможность вводит и править данные в точке 
-    public static function canEditPointResult($userId, $raidId)
+    public static function canEditPointResult($userId, $raidId, $teamId)
     {
         $Super = CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
         $raidStage = CSql::raidStage($raidId);
@@ -67,8 +67,7 @@ class CRights
         }
 
         // Не участнику команды вводить нельзя
-        $teamId == CSql::userTeamId($userId, $raidId); 
-        if (!$teamId)
+        if ($teamId != CSql::userTeamId($userId, $raidId))
         {
             return (false);
         }
