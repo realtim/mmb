@@ -67,10 +67,10 @@ class CRights
         }
 
         // Не участнику команды вводить нельзя
-        $teamId == CSql::userTeamId($userId, $raidId) 
+        $teamId == CSql::userTeamId($userId, $raidId); 
         if (!$teamId)
         {
-            return false;
+            return (false);
         }
 
         // Можно править только команде вне зачета
