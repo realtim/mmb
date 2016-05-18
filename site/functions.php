@@ -275,6 +275,12 @@ class CSql {
 	{
 		$tDate = trim($date);
 		$tTime = trim($time);
+		
+		// Если передали без секунд, то устанавдливаем принудительно флаг
+		if (!$noSeconds && strlen($Time) < 6)
+		{
+		   $noSeconds = true;
+		}
 		$seconds = $noSeconds ? '00' : substr($tTime, -2);
 
 		return  "'$year-".substr($tDate, -2)."-".substr($tDate, 0, 2)." ".substr($tTime, 0, 2).":".substr($tTime, 2, 2).":$seconds'";
