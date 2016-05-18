@@ -620,7 +620,7 @@
 
 	if (!empty($RaidCloseDt))
 	{
-                print("<td>Протокол закрыт: $RaidCloseDt</td>\r\n");
+                print("<td>протокол закрыт: $RaidCloseDt</td>\r\n");
 	}
 	print("</tr>\r\n");
 
