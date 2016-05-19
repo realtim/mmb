@@ -818,11 +818,11 @@ elseif ($action == 'JsonExport')
 
 
 	// TeamLevelPoints: 
-	$Sql = "select teamlevelpoint_id, tlp.team_id, tlp.levelpoint_id, 
-					teamlevelpoint_datetime, teamlevelpoint_comment,
-					teamlevelpoint_penalty,
-					error_id, teamlevelpoint_duration,
-					teamlevelpoint_result
+	$Sql = "select teamlevelpoint_id as tlp_id, tlp.team_id, tlp.levelpoint_id , 
+					teamlevelpoint_datetime as tlp_dt, teamlevelpoint_comment as tlp_com,
+					teamlevelpoint_penalty as tlp_penalty,
+					error_id, teamlevelpoint_duration as tlp_dur,
+					teamlevelpoint_result as tlp_res
 			from TeamLevelPoints tlp
 		    	 inner join Teams t on tlp.team_id = t.team_id
 			     inner join Distances d on t.distance_id = d.distance_id
