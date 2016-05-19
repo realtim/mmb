@@ -839,27 +839,12 @@ elseif ($action == 'JsonExport')
 	              from Raids
 	              where raid_id = $RaidId";
 		$Prefix = trim(CSql::singleValue($sql, 'raid_fileprefix'));
- 	        $JsonFileName = 'mmbdata2.json';
+ 	        $JsonFileName = 'TeamLevelPoints.json';
 	        $fullJSONfileName = $MyStoreFileLink . $Prefix. $JsonFileName;
 	        $output = fopen($fullJSONfileName, 'w');
-			fwrite($output, iconv('UTF-8', 'Windows-1251', 'Дистанция;Номера карточек')."\n");
- 		fclose($output);
 
-
-
-	
-	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
-	header("Content-Type: application/octet-stream");
-	header("Content-Disposition: attachment; filename=\"mmbdata.json\"");
-
-	// Вывод json
-	print json_encode($data);
-	unset($data);
-
-	$data_tlp = array();
-
-	// TeamLevelPoints: 
-	$Sql = "select teamlevelpoint_id, tlp.team_id, tlp.levelpoint_id, 
+		// TeamLevelPoints: 
+		$Sql = "select teamlevelpoint_id, tlp.team_id, tlp.levelpoint_id, 
 					teamlevelpoint_datetime, teamlevelpoint_comment,
 					teamlevelpoint_penalty,
 					error_id, teamlevelpoint_duration,
@@ -869,21 +854,37 @@ elseif ($action == 'JsonExport')
 			     inner join Distances d on t.distance_id = d.distance_id
 			where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 
-	$Result = MySqlQuery($Sql);
-	//print ', "TeamLevelPoints":[ ';
+		$Result = MySqlQuery($Sql);
+		while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
+		{ 
+			fwrite($output, json_encode($Row)."\n");
+		}
+		mysql_free_result($Result);
+ 		fclose($output);
+
+
+		$outputData = file_get_contents($output);
+ 		$gzipData = gzencode($outputData, 9);
+//		file_put_contents($gzipFile, $gzipData);
+		$filename='TeamLevelPoints.gz';
+
+		header('Content-Type: application/x-download');
+		header('Content-Encoding: gzip'); #
+		header('Content-Length: '.strlen($gzipData)); #
+		header('Content-Disposition: attachment; filename="'.$filename.'"');
+
+		echo $gzipData;
 /*
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
-	{ 
-		//$data_tlp["TeamLevelPoints"][] = $Row; 
-		print json_encode($Row);
-	}
-	mysql_free_result($Result);
-	//print '] ';
+	
+	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
+	header("Content-Type: application/octet-stream");
+	header("Content-Disposition: attachment; filename=\"mmbdata.json\"");
+
+	// Вывод json
+	print json_encode($data);
+	unset($data);
+
 */
-//	print json_encode($data_tlp);
-	unset($data_tlp);
-
-
 	// Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
 	die();
 	return;
