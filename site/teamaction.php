@@ -836,10 +836,10 @@ elseif ($action == 'JsonExport')
 	
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
 	header("Content-Type: application/octet-stream");
-	header("Content-Disposition: attachment; filename=\"mmbdata.json.gz\"");
+	header("Content-Disposition: attachment; filename=\"mmbdata.json\"");
 
 	// Вывод json
-	print gzencode(json_encode($data));
+	print json_encode($data);
 	unset($data);
 
 	$data_tlp = array();
@@ -860,7 +860,7 @@ elseif ($action == 'JsonExport')
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data_tlp["TeamLevelPoints"][] = $Row; }
 	mysql_free_result($Result);
 
-	print gzencode(json_encode($data_tlp));
+	print json_encode($data_tlp);
 	unset($data_tlp);
 
 
