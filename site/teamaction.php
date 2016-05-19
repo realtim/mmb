@@ -866,7 +866,7 @@ elseif ($action == 'JsonExport')
  	        $JsonMainDataFileName = 'maindata.json';
 	        $fullJSONmaindatafileName = $MyStoreFileLink . $Prefix. $JsonMainDataFileName;
 
-	        $output2 = fopen($fullJSONfileName, 'w');
+	        $output2 = fopen($fullJSONmaindatafileName, 'w');
 		fwrite($output2, json_encode($data)."\n");
  		fclose($output2);
 		unset($data);
