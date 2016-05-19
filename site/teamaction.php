@@ -840,7 +840,6 @@ elseif ($action == 'JsonExport')
  	        $JsonFileName = 'TeamLevelPoints.json';
 	        $fullJSONfileName = $MyStoreFileLink . $Prefix. $JsonFileName;
 	        $zipfileName = $MyStoreFileLink . $Prefix. 'mmbdata.zip';
-	        $gzfileName = $MyStoreFileLink . $Prefix. 'mmbdata.gz';
 
 	        $output = fopen($fullJSONfileName, 'w');
 
@@ -867,10 +866,9 @@ elseif ($action == 'JsonExport')
  	        $JsonMainDataFileName = 'maindata.json';
 	        $fullJSONmaindatafileName = $MyStoreFileLink . $Prefix. $JsonMainDataFileName;
 
-	        $output = fopen($fullJSONfileName, 'w');
-		fwrite($output, json_encode($data)."\n");
-		mysql_free_result($Result);
- 		fclose($output);
+	        $output2 = fopen($fullJSONfileName, 'w');
+		fwrite($output2, json_encode($data)."\n");
+ 		fclose($output2);
 		unset($data);
 
 		$zip = new ZipArchive; //Создаём объект для работы с ZIP-архивами
