@@ -842,6 +842,7 @@ elseif ($action == 'JsonExport')
  	        $JsonFileName = 'TeamLevelPoints.json';
 	        $fullJSONfileName = $MyStoreFileLink . $Prefix. $JsonFileName;
 	        $zipfileName = $MyStoreFileLink . $Prefix. 'mmbdata.zip';
+	        $gzfileName = $MyStoreFileLink . $Prefix. 'mmbdata.gz';
 
 
 
@@ -866,27 +867,39 @@ elseif ($action == 'JsonExport')
 		mysql_free_result($Result);
  		fclose($output);
 
-		$zip = new ZipArchive(); //Создаём объект для работы с ZIP-архивами
-		echo $zipfileName;
+
+		$zip = new ZipArchive; //Создаём объект для работы с ZIP-архивами
   		$zip->open($zipfileName, ZIPARCHIVE::CREATE); //Открываем (создаём) архив archive.zip
   		$zip->addFile($fullJSONfileName); //Добавляем в архив файл index.php
   		$zip->close(); 
 
+		$zip = new ZipArchive;
+		$res = $zip->open('test.zip', ZipArchive::CREATE);
+		if ($res === TRUE) {
+		    $zip->addFile($fullJSONfileName);
+    		    $zip->close();
+		} 
+
+
+		$originalData = file_get_contents($fullJSONfileName);
+ 		$gzipData = gzencode($originalData, 9);
+		file_put_contents($gzipFile, $gzipData);
+
 		header('Content-Type: application/octet-stream');
-		header('Content-Disposition: attachment; filename="mmbdata.json"');
+		header('Content-Disposition: attachment; filename="mmbdata.gz"');
+//		header('Content-Disposition: attachment; filename="mmbdata.json"');
 //		header('Content-Disposition: attachment; filename="'.$zipfileName.'"');
 		// create a file pointer connected to the output stream
 		$output2 = fopen('php://output', 'w');
 //		$fileData = file_get_contents($zipfileName);
-		$fileData = file_get_contents($fullJSONfileName);
+//		$fileData = file_get_contents($fullJSONfileName);
+		$fileData = file_get_contents($gzipFile);
+
 		fwrite($output2, $fileData);
 		fclose($output2);
 
 
 /*
- $f = fopen ( $file, 'w' );
-    fwrite ( $f, gzcompress ( $content, 9 ) );
-    fclose ( $f );
 */
 
 /*
