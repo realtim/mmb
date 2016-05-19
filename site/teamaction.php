@@ -875,7 +875,7 @@ elseif ($action == 'JsonExport')
 		header('Content-Disposition: attachment; filename="'.$zipfileName.'"');
 		// create a file pointer connected to the output stream
 		$output2 = fopen('php://output', 'w');
-		$zipData = file_get_contents($zipfileName)
+		$zipData = file_get_contents($zipfileName);
 		fwrite($output2, $zipData);
 		fclose($output2);
 
