@@ -873,34 +873,14 @@ elseif ($action == 'JsonExport')
   		$zip->addFile($fullJSONfileName); //Добавляем в архив файл index.php
   		$zip->close(); 
 
-		$zip = new ZipArchive;
-		$res = $zip->open('test.zip', ZipArchive::CREATE);
-		if ($res === TRUE) {
-		    $zip->addFile($fullJSONfileName);
-    		    $zip->close();
-		} 
+	
+	 	if (file_exists($zipfileName)) {
+	                header("Content-Type: application/zip");
+        	        header("Content-Disposition: attachment; filename=".$zipfileName);
+                	readfile($zipfilename);
+        	}
 
 
-		$originalData = file_get_contents($fullJSONfileName);
- 		$gzipData = gzencode($originalData, 9);
-		file_put_contents($gzipFile, $gzipData);
-
-		header('Content-Type: application/octet-stream');
-		header('Content-Disposition: attachment; filename="mmbdata.gz"');
-//		header('Content-Disposition: attachment; filename="mmbdata.json"');
-//		header('Content-Disposition: attachment; filename="'.$zipfileName.'"');
-		// create a file pointer connected to the output stream
-		$output2 = fopen('php://output', 'w');
-//		$fileData = file_get_contents($zipfileName);
-//		$fileData = file_get_contents($fullJSONfileName);
-		$fileData = file_get_contents($gzipFile);
-
-		fwrite($output2, $fileData);
-		fclose($output2);
-
-
-/*
-*/
 
 /*
 		$outputData = file_get_contents($fullJSONfileName);
