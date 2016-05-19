@@ -863,7 +863,7 @@ elseif ($action == 'JsonExport')
  		fclose($output);
 
 
-		$outputData = file_get_contents($output);
+		$outputData = file_get_contents($fullJSONfileName);
  		$gzipData = gzencode($outputData, 9);
 //		file_put_contents($gzipFile, $gzipData);
 		$filename='TeamLevelPoints.gz';
