@@ -872,12 +872,12 @@ elseif ($action == 'JsonExport')
   		$zip->close(); 
 
 		header('Content-Type: application/octet-stream');
-		header('Content-Disposition: attachment; filename="'.$fullJSONfileName.'"');
+		header('Content-Disposition: attachment; filename="mmbdata.json"');
 //		header('Content-Disposition: attachment; filename="'.$zipfileName.'"');
 		// create a file pointer connected to the output stream
 		$output2 = fopen('php://output', 'w');
 //		$fileData = file_get_contents($zipfileName);
-		$fileDate = file_get_contents($fullJSONfileName);
+		$fileData = file_get_contents($fullJSONfileName);
 		fwrite($output2, $fileData);
 		fclose($output2);
 
