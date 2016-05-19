@@ -867,6 +867,7 @@ elseif ($action == 'JsonExport')
  		fclose($output);
 
 		$zip = new ZipArchive(); //Создаём объект для работы с ZIP-архивами
+		echo '1111 '.$zip.' '.$zipfileName;
   		$zip->open($zipfileName, ZIPARCHIVE::CREATE); //Открываем (создаём) архив archive.zip
   		$zip->addFile($fullJSONfileName); //Добавляем в архив файл index.php
   		$zip->close(); 
