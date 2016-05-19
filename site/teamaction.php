@@ -816,7 +816,7 @@ elseif ($action == 'JsonExport')
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
 	mysql_free_result($Result);
 
-
+/*
 	// TeamLevelPoints: 
 	$Sql = "select teamlevelpoint_id as id, tlp.team_id, tlp.levelpoint_id  as lp_id, 
 					teamlevelpoint_datetime as dt, teamlevelpoint_comment as com,
@@ -833,7 +833,7 @@ elseif ($action == 'JsonExport')
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelPoints"][] = $Row; }
 	mysql_free_result($Result);
 
-
+*/
 	// TeamLevelDismiss: 
 	$Sql = "select teamleveldismiss_id, tld.levelpoint_id, 
 					teamleveldismiss_date, teamuser_id
