@@ -876,7 +876,7 @@ elseif ($action == 'JsonExport')
 	
 	 	if (file_exists($zipfileName)) {
 	                header("Content-Type: application/zip");
-        	        header("Content-Disposition: attachment; filename=".$zipfileName);
+        	        header("Content-Disposition: attachment; filename=mmbdata.zip");
                 	readfile($zipfileName);
         	}
 
