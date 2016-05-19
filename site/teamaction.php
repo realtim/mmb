@@ -829,8 +829,6 @@ elseif ($action == 'JsonExport')
 
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelDismiss"][] = $Row; }
 	mysql_free_result($Result);
-
-
 	}
 	// Конец проверки, что можно экспортировать данные по этапам
 
@@ -843,8 +841,6 @@ elseif ($action == 'JsonExport')
 	        $fullJSONfileName = $MyStoreFileLink . $Prefix. $JsonFileName;
 	        $zipfileName = $MyStoreFileLink . $Prefix. 'mmbdata.zip';
 	        $gzfileName = $MyStoreFileLink . $Prefix. 'mmbdata.gz';
-
-
 
 	        $output = fopen($fullJSONfileName, 'w');
 
@@ -868,9 +864,19 @@ elseif ($action == 'JsonExport')
  		fclose($output);
 
 
+ 	        $JsonMainDataFileName = 'maindata.json';
+	        $fullJSONmaindatafileName = $MyStoreFileLink . $Prefix. $JsonMainDataFileName;
+
+	        $output = fopen($fullJSONfileName, 'w');
+		fwrite($output, json_encode($data)."\n");
+		mysql_free_result($Result);
+ 		fclose($output);
+		unset($data);
+
 		$zip = new ZipArchive; //Создаём объект для работы с ZIP-архивами
   		$zip->open($zipfileName, ZIPARCHIVE::CREATE); //Открываем (создаём) архив archive.zip
-  		$zip->addFile($fullJSONfileName); //Добавляем в архив файл index.php
+  		$zip->addFile($fullJSONfileName, $JsonFileName); 
+  		$zip->addFile($fullJSONmaindatafileName, $JsonMainDataFileName); 
   		$zip->close(); 
 
 	
