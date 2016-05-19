@@ -868,15 +868,17 @@ elseif ($action == 'JsonExport')
 
 		$zip = new ZipArchive(); //Создаём объект для работы с ZIP-архивами
   		$zip->open($zipfileName, ZIPARCHIVE::CREATE); //Открываем (создаём) архив archive.zip
-  		$zip->addFile($fullJSONfileNam); //Добавляем в архив файл index.php
+  		$zip->addFile($fullJSONfileName); //Добавляем в архив файл index.php
   		$zip->close(); 
 
 		header('Content-Type: application/octet-stream');
-		header('Content-Disposition: attachment; filename="'.$zipfileName.'"');
+		header('Content-Disposition: attachment; filename="'.$fullJSONfileName.'"');
+//		header('Content-Disposition: attachment; filename="'.$zipfileName.'"');
 		// create a file pointer connected to the output stream
 		$output2 = fopen('php://output', 'w');
-		$zipData = file_get_contents($zipfileName);
-		fwrite($output2, $zipData);
+//		$fileData = file_get_contents($zipfileName);
+		$fileDate = file_get_contents($fullJSONfileName);
+		fwrite($output2, $fileData);
 		fclose($output2);
 
 
