@@ -833,6 +833,20 @@ elseif ($action == 'JsonExport')
 
 	}
 	// Конец проверки, что можно экспортировать данные по этапам
+
+
+		$sql = "select  raid_fileprefix
+	              from Raids
+	              where raid_id = $RaidId";
+		$Prefix = trim(CSql::singleValue($sql, 'raid_fileprefix'));
+ 	        $JsonFileName = 'mmbdata2.json';
+	        $fullJSONfileName = $MyStoreFileLink . $Prefix. $JsonFileName;
+	        $output = fopen($fullJSONfileName, 'w');
+			fwrite($output, iconv('UTF-8', 'Windows-1251', 'Дистанция;Номера карточек')."\n");
+ 		fclose($output);
+
+
+
 	
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
 	header("Content-Type: application/octet-stream");
@@ -857,6 +871,7 @@ elseif ($action == 'JsonExport')
 
 	$Result = MySqlQuery($Sql);
 	//print ', "TeamLevelPoints":[ ';
+/*
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
 	{ 
 		//$data_tlp["TeamLevelPoints"][] = $Row; 
@@ -864,7 +879,7 @@ elseif ($action == 'JsonExport')
 	}
 	mysql_free_result($Result);
 	//print '] ';
-
+*/
 //	print json_encode($data_tlp);
 	unset($data_tlp);
 
