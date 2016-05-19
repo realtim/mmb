@@ -856,11 +856,16 @@ elseif ($action == 'JsonExport')
 			where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
-
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data_tlp["TeamLevelPoints"][] = $Row; }
+	//print ', "TeamLevelPoints":[ ';
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
+	{ 
+		//$data_tlp["TeamLevelPoints"][] = $Row; 
+		print json_encode($Row);
+	}
 	mysql_free_result($Result);
+	//print '] ';
 
-	print json_encode($data_tlp);
+//	print json_encode($data_tlp);
 	unset($data_tlp);
 
 
