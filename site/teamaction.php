@@ -816,24 +816,7 @@ elseif ($action == 'JsonExport')
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
 	mysql_free_result($Result);
 
-/*
-	// TeamLevelPoints: 
-	$Sql = "select teamlevelpoint_id as id, tlp.team_id, tlp.levelpoint_id  as lp_id, 
-					teamlevelpoint_datetime as dt, teamlevelpoint_comment as com,
-					teamlevelpoint_penalty as penalty,
-					error_id, teamlevelpoint_duration as dur,
-					teamlevelpoint_result as res
-			from TeamLevelPoints tlp
-		    	 inner join Teams t on tlp.team_id = t.team_id
-			     inner join Distances d on t.distance_id = d.distance_id
-			where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 
-	$Result = MySqlQuery($Sql);
-
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelPoints"][] = $Row; }
-	mysql_free_result($Result);
-
-*/
 	// TeamLevelDismiss: 
 	$Sql = "select teamleveldismiss_id, tld.levelpoint_id, 
 					teamleveldismiss_date, teamuser_id
@@ -857,6 +840,28 @@ elseif ($action == 'JsonExport')
 
 	// Вывод json
 	print json_encode( $data );
+	unset($data);
+
+	$data_tlp = array();
+
+	// TeamLevelPoints: 
+	$Sql = "select teamlevelpoint_id as id, tlp.team_id, tlp.levelpoint_id  as lp_id, 
+					teamlevelpoint_datetime as dt, teamlevelpoint_comment as com,
+					teamlevelpoint_penalty as penalty,
+					error_id, teamlevelpoint_duration as dur,
+					teamlevelpoint_result as res
+			from TeamLevelPoints tlp
+		    	 inner join Teams t on tlp.team_id = t.team_id
+			     inner join Distances d on t.distance_id = d.distance_id
+			where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
+
+	$Result = MySqlQuery($Sql);
+
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data_tlp["TeamLevelPoints"][] = $Row; }
+	mysql_free_result($Result);
+
+	print json_encode( $data_tlp );
+	unset($data_tlp);
 
 
 	// Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
