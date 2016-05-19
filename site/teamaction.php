@@ -836,20 +836,20 @@ elseif ($action == 'JsonExport')
 	
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
 	header("Content-Type: application/octet-stream");
-	header("Content-Disposition: attachment; filename=\"mmbdata.json\"");
+	header("Content-Disposition: attachment; filename=\"mmbdata.json.gz\"");
 
 	// Вывод json
-	print json_encode( $data );
+	print gzencode(json_encode($data));
 	unset($data);
 
 	$data_tlp = array();
 
 	// TeamLevelPoints: 
-	$Sql = "select teamlevelpoint_id as id, tlp.team_id, tlp.levelpoint_id  as lp_id, 
-					teamlevelpoint_datetime as dt, teamlevelpoint_comment as com,
-					teamlevelpoint_penalty as penalty,
-					error_id, teamlevelpoint_duration as dur,
-					teamlevelpoint_result as res
+	$Sql = "select teamlevelpoint_id, tlp.team_id, tlp.levelpoint_id, 
+					teamlevelpoint_datetime, teamlevelpoint_comment,
+					teamlevelpoint_penalty,
+					error_id, teamlevelpoint_duration,
+					teamlevelpoint_result
 			from TeamLevelPoints tlp
 		    	 inner join Teams t on tlp.team_id = t.team_id
 			     inner join Distances d on t.distance_id = d.distance_id
@@ -860,7 +860,7 @@ elseif ($action == 'JsonExport')
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data_tlp["TeamLevelPoints"][] = $Row; }
 	mysql_free_result($Result);
 
-	print json_encode( $data_tlp );
+	print gzencode(json_encode($data_tlp));
 	unset($data_tlp);
 
 
