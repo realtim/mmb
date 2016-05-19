@@ -841,6 +841,10 @@ elseif ($action == 'JsonExport')
 		$Prefix = trim(CSql::singleValue($sql, 'raid_fileprefix'));
  	        $JsonFileName = 'TeamLevelPoints.json';
 	        $fullJSONfileName = $MyStoreFileLink . $Prefix. $JsonFileName;
+	        $zipfileName = $MyStoreFileLink . $Prefix. 'mmbdata.zip';
+
+
+
 	        $output = fopen($fullJSONfileName, 'w');
 
 		// TeamLevelPoints: 
@@ -862,7 +866,27 @@ elseif ($action == 'JsonExport')
 		mysql_free_result($Result);
  		fclose($output);
 
+		$zip = new ZipArchive(); //Создаём объект для работы с ZIP-архивами
+  		$zip->open($zipfileName, ZIPARCHIVE::CREATE); //Открываем (создаём) архив archive.zip
+  		$zip->addFile($fullJSONfileNam); //Добавляем в архив файл index.php
+  		$zip->close(); 
 
+		header('Content-Type: application/octet-stream');
+		header('Content-Disposition: attachment; filename="'.$zipfileName.'"');
+		// create a file pointer connected to the output stream
+		$output2 = fopen('php://output', 'w');
+		$zipData = file_get_contents($zipfileName)
+		fwrite($output2, $zipData);
+		fclose($output2);
+
+
+/*
+ $f = fopen ( $file, 'w' );
+    fwrite ( $f, gzcompress ( $content, 9 ) );
+    fclose ( $f );
+*/
+
+/*
 		$outputData = file_get_contents($fullJSONfileName);
  		$gzipData = gzencode($outputData, 9);
 //		file_put_contents($gzipFile, $gzipData);
@@ -874,6 +898,7 @@ elseif ($action == 'JsonExport')
 		header('Content-Disposition: attachment; filename="'.$filename.'"');
 
 		echo $gzipData;
+*/
 /*
 	
 	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
