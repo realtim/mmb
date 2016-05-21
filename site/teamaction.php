@@ -139,13 +139,6 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	}
 
 
-	if ($OldMmb and $pTeamNum <= 0)
-	{
-		setViewError("Для ММБ до 2012 года нужно указывать номер команды.");
-		return;
-	}
-
-
 	// Проверяем email нового участника команды
 	if (!empty($pNewTeamUserEmail) and trim($pNewTeamUserEmail) <> 'Email нового участника')
 	{
