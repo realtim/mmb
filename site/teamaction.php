@@ -193,7 +193,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 
 
 	// 21.05.2016 Проверка на права праки и добавления команды
-	if ($action == 'AddTeam' and !CRights::canCreateTeam($UerId, $RaidId))
+	if ($action == 'AddTeam' and !CRights::canCreateTeam($UserId, $RaidId))
 	{
 		setViewError('Регистрация команды запрещена');
 		return;
