@@ -178,21 +178,6 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			return;
 		}
 
-               // 19.05.2013 внёс изменения, чтобы разрешить регистрацию вне зачета
-               //
-		//if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
-		// Проверка на право добавить нового пользователя пользователя
-		// флаг вне зачета не проверяется для добавления команды, так как он устанавливается позже при записи
-		if ( !(    ($action == 'TeamChangeData' and CRights::canEditTeam($UserId, $RaidId, $TeamId))
-      			or ($action == 'AddTeam' and ($NewUserId == $UserId or CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and CSql::raidStage($RaidId) < 7)
-    	  	       )
-    	  	    )
-		{
-	  
-			$NewUserId = 0;
-			setViewError('Добавление новых участников закрыто');
-			return;
-		}
 	}
 	else
 	{
@@ -206,8 +191,35 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$NewUserId = 0;
 	} // Конец проверки на корректную передачу email
 
+
+	// 21.05.2016 Проверка на права праки и добавления команды
+	if ($action == 'AddTeam' and !CRights::canCreateTeam($userId, $raidId))
+	{
+		setViewError('Регистрация команды запрещена');
+		return;
+	}
+
+
+	if ($action == 'TeamChangeData' and !CRights::canEditTeam($UserId, $RaidId, $TeamId))
+	{
+		setViewError('Правка команды запрещена');
+		return;
+	}
+
+	// Проверка на возможность вставки ещё одного участника ( ограничени в 10 участников)
+	if ($action == 'TeamChangeData' and !CRights::canAddTeamUser($UserId, $RaidId, $TeamId))
+	{
+		setViewError('Добавление участника запрещено');
+		return;
+	}
+
+
+
+
          // 19.05.2013 внёс изменения, чтобы разрешить регистрацию вне зачета
 	// Общая проверка возможности редактирования
+
+/*
 	if (($viewmode == "Add") && !CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
 	{
 		CMmb::setMessage('Регистрация на марш-бросок закрыта');
@@ -219,7 +231,9 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		CMmb::setMessage('Изменения в команде запрещены');
 		return;
 	}
-	
+*/
+
+
 	// Определяем ключ предыдущего марш-броска, в который данный пользователь заявлялся, но не участвовал
 	$NotStartPreviousRaidId = 0;
 	if  ($NewUserId > 0) {
