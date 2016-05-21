@@ -427,7 +427,7 @@ class CSql {
 	}
 
 	// 21.05.2016 возвращает число участников в команде
-	public static function teamUserCount($teamrId)
+	public static function teamUserCount($teamId)
 	{
 		$sql = "select count(*) as tucount
 			from TeamUsers tu
