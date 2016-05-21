@@ -426,6 +426,18 @@ class CSql {
 		return self::singleValue($sql, 'admin');
 	}
 
+	// 21.05.2016 возвращает число участников в команде
+	public static function teamUserCount($teamrId)
+	{
+		$sql = "select count(*) as tucount
+			from TeamUsers tu
+			where tu.teamuser_hide = 0 and tu.team_id = $teamId";
+
+	//	echo $sql; 
+		return self::singleValue($sql, 'tucount', false);
+	}
+
+
 	
 }
 // Конец описания класса cSql
