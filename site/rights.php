@@ -42,7 +42,7 @@ class CRights
     public static function canAddTeamUser($userId, $raidId, $teamId)
     {
         $teamUserCount = CSql::teamUserCount($teamId);
-        return (canEditTeam($userId, $raidId, $teamId) && $teamUserCount < 10);
+        return (self::canEditTeam($userId, $raidId, $teamId) && $teamUserCount < 10);
     }
 
 
