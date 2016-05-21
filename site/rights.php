@@ -38,6 +38,16 @@ class CRights
              || ($teamOutOfRange && $raidStage < 7);
     }
 
+    // 21/05/2016 Проверка на число участников
+    public static function canAddTeamUser($userId, $raidId, $teamId)
+    {
+        $teamUserCount = CSql::teamUserCount($teamId);
+        return (canEditTeam($userId, $raidId, $teamId) && $teamUserCount < 10);
+    }
+
+
+
+
     // когда отображать карты в протоколе
     public static function canShowImages($raidId)
     {
