@@ -53,14 +53,15 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	//class = "yellow"
 	print('<td><a href="?RaidId='.$nextRaidId.'">'.$RaidName.'</a></td>'."\r\n");
 
-	print('<td><a href="'.$RaidRulesLink.'" target="_blank">'.$RaidPeriod.'</a></td>'."\r\n");
+	//print('<td><a href="'.$RaidRulesLink.'" target="_blank">'.$RaidPeriod.'</a></td>'."\r\n");
+	print('<td>'.$RaidPeriod.'</td>'."\r\n");
         
-	if (empty($RaidStartLink))
-	{
+//	if (empty($RaidStartLink))
+//	{
 		print("<td>$RaidStartPoint - $RaidFinishPoint</td>\r\n");
-	} else {
-		print('<td><a href="'.$RaidStartLink.'" target="_blank">'.$RaidStartPoint."</a> - $RaidFinishPoint</td>\r\n");
-	}
+//	} else {
+//		print('<td><a href="'.$RaidStartLink.'" target="_blank">'.$RaidStartPoint."</a> - $RaidFinishPoint</td>\r\n");
+//	}
         
 	print("<td>\r\n");
 	 
@@ -113,13 +114,15 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 		$DistanceCounters = '('.$rowDistance['teamscount'].'/<span style = "color:#007700;">'.$rowDistance['teamsgreencount'].'</span> / '.$rowDistance['teammapscount'].' / '.$rowDistance['teamuserscount'].')';
 	
 	        // Если ссылка пустая - заменяем на сгенерированную
-	        if (trim($DistanceLink) == '')
+	        if (trim($DistanceLink) != '')
 		{
 		  //$DistanceLink = '?action=ViewRaidTeams&RaidId='.$nextRaidId;
-		  $DistanceLink = "?RaidId=$nextRaidId";
+//		  $DistanceLink = "?RaidId=$nextRaidId";
+			print('<a href="'.$DistanceLink.'">'."$DistanceName</a>: $DistanceCounters $DistanceData\r\n");
+		} else {
+			print("$DistanceName: $DistanceCounters $DistanceData\r\n");
 		}
-	
-	        print('<a href="'.$DistanceLink.'">'."$DistanceName</a>: $DistanceCounters $DistanceData\r\n");
+
 	
 	}
 	mysql_free_result($resultDistance);
