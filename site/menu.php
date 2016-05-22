@@ -363,6 +363,7 @@ echo '4 ';
 
 	// Внешние сылки
 	print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
+	print('<tr><td><a href="https://github.com/realtim/mmb/wiki/%D0%92%D0%BE%D0%BF%D1%80%D0%BE%D1%81%D1%8B-%D0%B8-%D0%BE%D1%82%D0%B2%D0%B5%D1%82%D1%8B">Вопросы и ответы</a></td></tr>'."\r\n");
 	print('<tr><td><a href="http://www.livejournal.com/community/_mmb_" title="Сообщество ММБ в Живом Журнале" target = "_blank">ЖЖ</a></td></tr>'."\r\n");
 	print('<tr><td><a href="http://slazav.mccme.ru/maps/" title="Карты ММБ для просмотра и загрузки в GPS" target = "_blank">Карты</a></td></tr>'."\r\n");
 	print('<tr><td><a href="?badges" title="Значки со всех ММБ">Все значки</a></td></tr>'."\r\n");
@@ -379,8 +380,6 @@ echo '4 ';
 	// Почта
 	print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
 	print('<tr><td><a style="font-family: Times New Roman, Serif; font-size: 100%;" href="javascript: ShowEmail();" title="Адрес латинскими буквами или кликните мышкой">ммбсайт@googlegroups.com</a></td></tr>'."\r\n");
-	print('<tr><td><a href="https://github.com/realtim/mmb/wiki/%D0%A1%D0%B2%D0%B5%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F-%D0%BE-%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%B5-%D0%9C%D0%9C%D0%91">О сервисе</a>,
-		<a href="https://github.com/realtim/mmb/wiki/%D0%90%D0%B2%D1%82%D0%BE%D1%80%D1%8B">Авторы</a></td></tr>'."\r\n");
-	print('<tr><td><a href="https://github.com/realtim/mmb/wiki/%D0%92%D0%BE%D0%BF%D1%80%D0%BE%D1%81%D1%8B-%D0%B8-%D0%BE%D1%82%D0%B2%D0%B5%D1%82%D1%8B">Вопросы и ответы</a></td></tr>'."\r\n");
+	print('<tr><td><a href="https://github.com/realtim/mmb/wiki/%D0%90%D0%B2%D1%82%D0%BE%D1%80%D1%8B">Авторы</a></td></tr>'."\r\n");
 	print('</table>'."\r\n");
 ?>
