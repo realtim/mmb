@@ -23,7 +23,7 @@ print('<table cellpadding = "10" border = "0" width = "100%">'."\r\n");
 print('<tr class="gray">'."\r\n");
 print('<td>Марш-бросок</td>'."\r\n");
 print('<td colspan="2">Время и место</td>'."\r\n");
-print('<td>Результаты и карты, параметры дистанции (<a href = "#help">?</a>)</td>'."\r\n");
+print('<td>Параметры дистанции (<a href = "#help">?</a>)</td>'."\r\n");
 print("</tr>\r\n");
 
 // Вытаскиваем информацию о марш-бросках
