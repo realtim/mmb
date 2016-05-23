@@ -1296,6 +1296,28 @@ elseif ($action == "UnionTeams")  {
   
 		MySqlQuery($sql);
 
+		// вставка неявки для новой команды
+		// user_id  в таблице TeamLevelDismiss - это автор записи, а не ключ пользователя-участника
+		$sql = "insert into TeamLevelDismiss (device_id, user_id, teamuser_id, levelpoint_id) 
+                        select 1, 0, tu2.teamuser_id, tld.levelpoint_id
+		        from  TeamUnionLogs tul
+			      inner join Teams t
+			      on t.team_id = tul.team_id
+			      inner join TeamUsers tu
+			      on tu.team_id = t.team_id
+			      inner join TeamUsers tu2
+			      on tu2.team_id = $TeamId
+			         and tu2.user_id = tu.user_id
+			      inner join TeamLevelDismiss tld
+			      on tld.teamuser_id = tu.teamuser_id
+			where tul.teamunionlog_hide = 0 
+	                      and tul.union_status = 1
+	                      and tu.teamuser_hide = 0 ";
+			 
+		MySqlQuery($sql);
+
+
+
 
 		$sql = " update TeamUnionLogs set team_parentid = $TeamId
 			 where teamunionlog_hide = 0 
