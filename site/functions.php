@@ -2427,11 +2427,6 @@ send_mime_mail('Автор письма',
 	$sql = " DELETE FROM tmp_rtlpr4  ";
 	$rs = MySqlQuery($sql);
 
-/*
-
-
-
-	
      }
      // Конец функции расчета результата в точке		
  
