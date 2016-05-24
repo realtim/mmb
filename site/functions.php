@@ -2237,82 +2237,6 @@ send_mime_mail('Автор письма',
 	$rs = MySqlQuery($sql);
 
 
-/*
-старый  вариант 
-
-	 $sql = " update TeamLevelPoints tlp0
-			 inner join LevelPoints lp0
-			 on tlp0.levelpoint_id = lp0.levelpoint_id
-			 inner join 
-			(
-			select c.team_id, c.up, SUM(COALESCE(lp.levelpoint_penalty, 0)) as penalty
-			from
-				(select a.team_id, a.levelpoint_order as up, MAX(b.levelpoint_order) as down
-				from
-					(select t1.team_id, lp1.levelpoint_order
-					from TeamLevelPoints tlp1
-					     inner join LevelPoints lp1
-					     on tlp1.levelpoint_id = lp1.levelpoint_id
-					     inner join Teams t1
-					     on t1.team_id = tlp1.team_id
-					     inner join Distances d1
-					     on t1.distance_id = d1.distance_id
-					where  $teamRaidCondition1
-					) a
-					inner join 
-					(select t2.team_id, lp2.levelpoint_order
-					from TeamLevelPoints tlp2
-					     inner join LevelPoints lp2
-					     on tlp2.levelpoint_id = lp2.levelpoint_id
-					     inner join Teams t2
-					     on t2.team_id = tlp2.team_id
-					     inner join Distances d2
-					     on t2.distance_id = d2.distance_id
-					where $teamRaidCondition2
-	 				) b
-				on a.team_id = b.team_id
-				   and a.levelpoint_order > b.levelpoint_order
-				group by a.team_id, a.levelpoint_order
-				having  a.levelpoint_order > MAX(b.levelpoint_order) + 1
-				) c
-				inner join Teams t
-				on c.team_id = t.team_id
-				inner join LevelPoints lp
-				on t.distance_id = lp.distance_id
-				   and lp.levelpoint_order < c.up
-				   and  lp.levelpoint_order > c.down
-				left outer join LevelPointDiscounts lpd
-				on t.distance_id = lpd.distance_id 
-				   and lp.levelpoint_order <= lpd.levelpointdiscount_finish
-				   and  lp.levelpoint_order >= lpd.levelpointdiscount_start
-				where lpd.levelpointdiscount_id is null
-				group by c.team_id, c.up
-			) d
-			on tlp0.team_id = d.team_id
-			   and lp0.levelpoint_order = d.up
-		set tlp0.teamlevelpoint_penalty = COALESCE(tlp0.teamlevelpoint_penalty, 0) + COALESCE(d.penalty, 0)";
-
-*/
-/*
-
-          select  tlp0.teamlevelpoint_penalty = COALESCE(tlp0.teamlevelpoint_penalty, 0) + COALESCE(d.penalty, 0) 
-	  from  TeamLevelPoints tlp0
-			 inner join LevelPoints lp0
-			 on tlp0.levelpoint_id = lp0.levelpoint_id
-			 inner join tmp_tlp3 d
-			on tlp0.team_id = d.team_id
-			   and lp0.levelpoint_order = d.up
-
-
-  update TeamLevelPoints tlp0
-			 inner join LevelPoints lp0
-			 on tlp0.levelpoint_id = lp0.levelpoint_id
-			 inner join tmp_tlp3 d
-			on tlp0.team_id = d.team_id
-			   and lp0.levelpoint_order = d.up
-          set  tlp0.teamlevelpoint_penalty = COALESCE(tlp0.teamlevelpoint_penalty, 0) + COALESCE(d.penalty, 0) 
-
-*/
 
 	
      }
@@ -2364,28 +2288,6 @@ send_mime_mail('Автор письма',
 
 	 $rs = MySqlQuery($sql);
 
-/*
-	$sql = " select t1.team_id, lp1.levelpoint_order 
-                                  from TeamLevelPoints tlp1 
-                                           inner join LevelPoints lp1 on tlp1.levelpoint_id = lp1.levelpoint_id 
-                                           inner join Teams t1 on t1.team_id = tlp1.team_id 
-                                           inner join Distances d1 on t1.distance_id = d1.distance_id 
-                                  where lp1.pointtype_id <> 1 
-								         and $teamRaidCondition ";
-	echo $sql.";";
-
-	 $sqlRes = MySqlQuery($sql);
-	 $RowCount = 0;
-        while ($row = mysql_fetch_assoc($sqlRes))
-        {
-              echo  '<br/>'.$row['team_id'].'  '.$row['levelpoint_order'];
-              $RowCount++;
-        }
-        mysql_free_result($sqlRes);
-        echo ' $RowCount'.$RowCount;
-
-
-*/
 
 			
 
@@ -2421,32 +2323,6 @@ send_mime_mail('Автор письма',
 
 	$rs = MySqlQuery($sql);
 
-/*
-	$sql = " 
-			 select t1.team_id, lp1.levelpoint_order,  
-				    TIME_TO_SEC(COALESCE(tlp1.teamlevelpoint_duration, 0)) as durationinsec, 
-					COALESCE(tlp1.teamlevelpoint_penalty, 0) as penaltyinmin  
-                                  from TeamLevelPoints tlp1 
-                                           inner join LevelPoints lp1 on tlp1.levelpoint_id = lp1.levelpoint_id 
-                                           inner join Teams t1 on t1.team_id = tlp1.team_id 
-                                           inner join Distances d1 on t1.distance_id = d1.distance_id 
-                                  where lp1.pointtype_id <> 1 
-								         and $teamRaidCondition
-			";
-
-	echo $sql.";";
-
-	 $sqlRes = MySqlQuery($sql);
-	 $RowCount = 0;
-        while ($row = mysql_fetch_assoc($sqlRes))
-        {
-              echo  '<br/>'.$row['team_id'].'  '.$row['levelpoint_order'];
-              $RowCount++;
-        }
-        mysql_free_result($sqlRes);
-        echo ' $RowCount'.$RowCount;
-
-*/
 
 	
 	
@@ -2483,35 +2359,8 @@ send_mime_mail('Автор письма',
 //	echo $sql.";";
 	$rs = MySqlQuery($sql);
 
-/*
-	$sql = "  select a.team_id as team_id, 
-			        a.levelpoint_order as up, 
-			        SUM(b.durationinsec) as totaldurationinsec,
-					SUM(b.penaltyinmin)*60 as totalpenaltyinsec 
-         			from
-		         		(select team_id, levelpoint_order from tmp_rtlpr1) a 
-                        inner join
-						(select team_id, levelpoint_order, durationinsec, penaltyinmin from tmp_rtlpr2) b 
-                        on a.team_id = b.team_id and a.levelpoint_order >= b.levelpoint_order 
-                    group by a.team_id, a.levelpoint_order 
-			";
-*/
 
-/*
-	$sql = "  select * FROM  tmp_rtlpr3";
 
-	echo $sql.";";
-
-	 $sqlRes = MySqlQuery($sql);
-	 $RowCount = 0;
-        while ($row = mysql_fetch_assoc($sqlRes))
-        {
-              echo  '<br/>'.$row['team_id'].'  '.$row['up'].'  '.$row['totaldurationinsec'].'  '.$row['totalpenaltyinsec'];
-              $RowCount++;
-        }
-        mysql_free_result($sqlRes);
-        echo ' $RowCount'.$RowCount;
-*/
 
 	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
 				tmp_rtlpr4 (
@@ -2545,29 +2394,7 @@ send_mime_mail('Автор письма',
 	 
 	$rs = MySqlQuery($sql);
 
-/*
-	$sql = " 	 select c.team_id as team_id, 
-			        lp0.levelpoint_id as levelpoint_id, 
-					SEC_TO_TIME(c.totaldurationinsec + c.totalpenaltyinsec) as result
-    		 from tmp_rtlpr3  c
-                  inner join Teams t1 on t1.team_id = c.team_id 
-			      inner join LevelPoints lp0
-				  on t1.distance_id = lp0.distance_id 
-				     and lp0.levelpoint_order = c.up
-			";
 
-	echo $sql.";";
-
-	 $sqlRes = MySqlQuery($sql);
-	 $RowCount = 0;
-        while ($row = mysql_fetch_assoc($sqlRes))
-        {
-              echo  '<br/>'.$row['team_id'].'  '.$row['levelpoint_id'].'  '.$row['result'];
-              $RowCount++;
-        }
-        mysql_free_result($sqlRes);
-        echo ' $RowCount'.$RowCount;
-*/
 
 
 
@@ -2583,18 +2410,7 @@ send_mime_mail('Автор письма',
 	 
 	$rs = MySqlQuery($sql);
 
-/*
-	$sql = "select  * from  tmp_rtlpr4 d ";
-	echo $sql.";";
 
-	 $sqlRes = MySqlQuery($sql);
-        while ($row = mysql_fetch_assoc($sqlRes))
-        {
-              echo  '<br/>'.$row['team_id'].'  '.$row['result'];
-        }
-        mysql_free_result($sqlRes);
-
-*/
 
 
 // Правильно сдлеать удаление, но нет прав
@@ -2614,54 +2430,7 @@ send_mime_mail('Автор письма',
 /*
 
 
-	 $teamRaidCondition1 = (!empty($teamid)) ? " t1.team_id = $teamid" : "d1.raid_id = $raidid";
-	 $teamRaidCondition2 = (!empty($teamid)) ? " t2.team_id = $teamid" : "d2.raid_id = $raidid";
 
-
-	 $sql = " update TeamLevelPoints tlp0
-			 inner join LevelPoints lp0
-			 on tlp0.levelpoint_id = lp0.levelpoint_id
-			 inner join 
-				(select a.team_id, a.levelpoint_order as up, 
-					SEC_TO_TIME(SUM(COALESCE(b.teamlevelpoint_penalty, 0))*60 + SUM(TIME_TO_SEC(COALESCE(b.teamlevelpoint_duration, 0)))) as result
-				from
-					(select t1.team_id, lp1.levelpoint_order
-					from TeamLevelPoints tlp1
-					     inner join LevelPoints lp1
-					     on tlp1.levelpoint_id = lp1.levelpoint_id
-					     inner join Teams t1
-					     on t1.team_id = tlp1.team_id
-					     inner join Distances d1
-					     on t1.distance_id = d1.distance_id
-					where  lp1.pointtype_id <> 1
-							and $teamRaidCondition1
-					) a
-					inner join 
-					(select t2.team_id, lp2.levelpoint_order,
-					        tlp2.teamlevelpoint_duration,
-						tlp2.teamlevelpoint_penalty  
-					from TeamLevelPoints tlp2
-					     inner join LevelPoints lp2
-					     on tlp2.levelpoint_id = lp2.levelpoint_id
-					     inner join Teams t2
-					     on t2.team_id = tlp2.team_id
-					     inner join Distances d2
-					     on t2.distance_id = d2.distance_id
-					where $teamRaidCondition2
-					) b
-				on a.team_id = b.team_id
-				   and a.levelpoint_order >= b.levelpoint_order
-				group by a.team_id, a.levelpoint_order
-				) c
-			on tlp0.team_id = c.team_id
-			   and lp0.levelpoint_order = c.up
-		set tlp0.teamlevelpoint_result = c.result ";
-
-
-        //   echo $sql;
-	 
-	  $rs = MySqlQuery($sql);
-*/
 	
      }
      // Конец функции расчета результата в точке		
@@ -2932,7 +2701,8 @@ function FindErrors($raid_id, $team_id)
 // Конец функции поиска ошибок для марш-броска/команды
 
 
-	// функция проверяет ошибки
+	// функция проверяет ошибки SQL запросами.
+	// Не используется, аналогичный функционал дожен быть в валидаторе.
 	function RecalcErrors($raidid, $teamid)
 	{
 
@@ -2964,29 +2734,6 @@ function FindErrors($raid_id, $team_id)
 	// Устанавливаем невзятие обязательных КП
 
 
-/*
-	 // Высчитываем число обязательных точек
-	 if (!empty($teamid)) {     	 
-
-		 $sql = "   select count(*) as result
-			    from LevelPoints lp
-				   inner join Teams t
-				   on lp.distance_id = t.distance_id
-			    where  t.team_id = $teamid
-                                    and lp.pointtype_id = 3 ";
-
-	 } elseif (!empty($raidid)) {     	 
-
-		 $sql = "   select count(*) as result
-			    from LevelPoints lp
-				   inner join Distances d
-				   on lp.distance_id = d.distance_id
-			    where  d.raid_id = $raidid
-                                    and lp.pointtype_id = 3 ";
-	 }				 
-
-	$ObligatoryCount = CSql::singleValue($sql, 'result');
-*/
 
 	//Ставим ощибку на следующую точку за невзятым обязательным КП
 	$sql = " update TeamLevelPoints tlp0
@@ -3084,8 +2831,7 @@ function FindErrors($raid_id, $team_id)
 		       t.team_maxlevelpointorderdone = NULL,
 		       t.team_minlevelpointorderwitherror = NULL,
 		       t.team_donelevelpoint = NULL,
-		       t.team_comment = NULL,
-		       tlp.error_id = NULL
+		       t.team_comment = NULL
  		  where $teamRaidCondition" ;
 				 
 	$rs = MySqlQuery($sql);
