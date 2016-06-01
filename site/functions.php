@@ -3135,6 +3135,8 @@ function FindErrors($raid_id, $team_id)
 	// Функция находит первую команду в спсике ожидания	
 	function FindFirstTeamInWaitList($RaidId)
 	{
+		return(0);
+/*
 		 // Получаем информацию о лимите и о зарегистированных командах
 		$sql = "select t.team_id
 			from Raids r 
@@ -3151,6 +3153,7 @@ function FindErrors($raid_id, $team_id)
 			";
 		$Row = CSql::singleRow($sql);
 		return $Row['team_id'];
+		*/
 	}
 	// Конец поиска первой командлы в списке ожидания
 	
@@ -3158,6 +3161,7 @@ function FindErrors($raid_id, $team_id)
 	// Функция перводит все команды из списка ожидания вне зачета
 	function ClearWaitList($RaidId)
 	{
+/*
 		$sql = " update  Teams t
                 	inner join
 				(
@@ -3176,7 +3180,7 @@ function FindErrors($raid_id, $team_id)
 			set  t.team_waitdt = NULL, t.team_outofrange = 1
 			";
 		$rs = MySqlQuery($sql);
-
+*/
 		return;
 	}
 	// Конец поиска первой командлы в списке ожидания
