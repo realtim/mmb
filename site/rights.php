@@ -22,7 +22,7 @@ class CRights
             return false;
 
         $raidStage = CSql::raidStage($raidId);
-        return $raidStage >= 1 and $raidStage < 7;
+        return ($raidStage >= 1 and $raidStage < 2);
     }
 
     public static function canEditTeam($userId, $raidId, $teamId)
@@ -32,10 +32,9 @@ class CRights
             return false;
 
         $raidStage = CSql::raidStage($raidId);
-        $teamOutOfRange = CSql::teamOutOfRange($teamId);
+        //$teamOutOfRange = CSql::teamOutOfRange($teamId);
 
-        return (!$teamOutOfRange && $raidStage < 2)
-             || ($teamOutOfRange && $raidStage < 7);
+        return ($raidStage < 2);
     }
 
     // 21/05/2016 Проверка на число участников
@@ -76,15 +75,7 @@ class CRights
             return ($raidStage < 7);
         }
 
-        // Не участнику команды вводить нельзя
-        if ($teamId != CSql::userTeamId($userId, $raidId))
-        {
-            return (false);
-        }
-
-        // Можно править только команде вне зачета
-        $teamOutOfRange = CSql::teamOutOfRange($teamId);
-        return ($teamOutOfRange && $raidStage > 5 && $raidStage < 7);
+        return (false);
     }
 
     
