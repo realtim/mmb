@@ -234,8 +234,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	}
 	
 	
-	$OutOfRaidLimit =  IsOutOfRaidLimit($RaidId);
-	$WaitTeamId = FindFirstTeamInWaitList($RaidId);
+//	$OutOfRaidLimit =  IsOutOfRaidLimit($RaidId);
+//	$WaitTeamId = FindFirstTeamInWaitList($RaidId);
 	
 	
 
@@ -245,12 +245,17 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	// Новая команда
 	{
 
+/*
 		// Дополнительная проверка на флаг.  Если регистрация закончена, то 
 		if (CSql::raidStage($RaidId) >= 2 OR $OutOfRaidLimit > 0 OR $WaitTeamId > 0)  {
 			$TeamOutOfRange = 1;
 		} else {
 			$TeamOutOfRange = 0;
 		}
+*/
+
+		// 01.06.2016 все команды вне зачета
+		$TeamOutOfRange = 1;
 
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
 			team_registerdt, team_greenpeace, team_outofrange, team_waitdt)
@@ -266,14 +271,15 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		}
 		// Все остальное
 		$sql .= ", '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(),
-			$pTeamGreenPeace, $TeamOutOfRange";
+			$pTeamGreenPeace, $TeamOutOfRange, NULL";
+/*
 		// Если превышен лимит команл или есть команда в списке ожидания, то не регистрируем в зачет			
 		if ($OutOfRaidLimit > 0 OR $WaitTeamId > 0) {
 			$sql .= ", NOW())";
 		} else {
 			$sql .= ", NULL)";
 		}
-			
+*/			
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
 		$TeamId = MySqlQuery($sql);
 		if ($TeamId <= 0)
@@ -516,7 +522,9 @@ elseif ($action == 'HideTeamUser')
 	{
 		$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 		$rs = MySqlQuery($sql);
+/*
 
+// 01.06.2016 отмена электронной очереди
 		// Ищем первую команду в листе ожидания
 		$WaitTeamId = FindFirstTeamInWaitList($RaidId);
 		$RaidOutOffLimit = IsOutOfRaidLimit($RaidId);
@@ -524,7 +532,7 @@ elseif ($action == 'HideTeamUser')
 			$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
 			$rs = MySqlQuery($sql);
 		}
-
+*/
 		$view = "";
 
 	} else {
@@ -702,7 +710,8 @@ elseif ($action == 'HideTeam')
 	$sql = "update Teams set team_hide = 1 where team_id = $TeamId";
 	$rs = MySqlQuery($sql);
 
-
+/*
+// 01/06/2016 Отмена электронной очереди
 	// Ищем первую команду в листе ожидания
 	$WaitTeamId = FindFirstTeamInWaitList($RaidId);
 	$RaidOutOffLimit = IsOutOfRaidLimit($RaidId);
@@ -710,7 +719,7 @@ elseif ($action == 'HideTeam')
 		$sql = "update Teams set team_outofrange = 0, team_waitdt = NULL where team_id = $WaitTeamId";
 		$rs = MySqlQuery($sql);
 	}
-
+*/
 
 	$view = "ViewRaidTeams";
 }
