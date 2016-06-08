@@ -1631,7 +1631,10 @@ send_mime_mail('Автор письма',
 
  
         // Обнуляем рейтинг  по всем пользовтелям
-  	$sql = " update Users u	SET user_rank = NULL ";
+  	$sql = " update Users u	SET user_rank = NULL, user_r6 = NULL, 
+  				user_minraidid = NULL,  user_maxraidid = NULL,
+  				user_noinvitation = NULL
+  		";
 
 	 $rs = MySqlQuery($sql);
 
@@ -1701,10 +1704,9 @@ send_mime_mail('Автор письма',
 	//	 $rs = MySqlQuery($sql);
 
 
-		// теперь считаем показатели для выдачи приглашений
-		
+		// теперь считаем флаг у тех кто не вышел (?!) или дисквалифицирован 
 	$sql = "
-update Users u
+		update Users u
 		inner join 
 		(select tu.user_id, COALESCE(dismiss.minorder, 0) as minorder, 
 			COALESCE(disq.disqualification, 0) as disqualification, 
@@ -1746,16 +1748,24 @@ update Users u
 		group by tu.user_id
 		) a
 		on a.user_id = u.user_id
-		SET u.user_noinvitation = CASE WHEN  (($maxRaidId - 8 >= u.user_maxraidid) or 
-		 					(a.minorder = 1) or 
-		 					(a.disqualification > 1) or 
-		 					(a.pointscount = 0) )
-		 				THEN  1 
-		 				ELSE 0
-		 			   END
+		SET u.user_noinvitation = 1
+		WHERE a.minorder = 1 
+			or a.disqualification > 1 
+			or a.pointscount = 0
                 ";
 
 		 $rs = MySqlQuery($sql);
+
+  
+		// теперь ставим флаг у тех кто не участоввал в последних 8 ммб
+	$sql = "
+		update Users u
+		SET u.user_noinvitation = 1
+		WHERE $maxRaidId - 8 >= COALESCE(u.user_maxraidid, 0)
+                ";
+
+		 $rs = MySqlQuery($sql);
+
 
          return (1);
      }
