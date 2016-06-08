@@ -162,7 +162,7 @@ class CTeamPlaces
 
 	$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name,  
 	         COALESCE(u.user_r6, 0.00) as userrank,
-	         CASE WHEN COALESCE(u.user_noinvitation, 0) = 1 THEN '!!' ELSE '&nbsp;' END as usernoinvitation,
+	         CASE WHEN COALESCE(u.user_noinvitation, 0) = 1 THEN '!!' ELSE '&nbsp;' END as noinvitation,
 	         COALESCE(u.user_rank, 0.00) as slazavrank,
 	         0 as userrankcount,
 		 0 as distance_id, '&nbsp;' as distance_name,  'Итог' as raid_name,
