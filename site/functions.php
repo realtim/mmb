@@ -1657,8 +1657,7 @@ send_mime_mail('Автор письма',
 			 group by tld.teamuser_id
                         ) c
 			on tu.teamuser_id = c.teamuser_id
-		group by tu.user_id
- 		where d.distance_hide = 0 
+		where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
@@ -1666,36 +1665,36 @@ send_mime_mail('Автор письма',
 		       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
 		       and  COALESCE(c.minorder, 0) = 0
 		       and  d.raid_id <= $maxRaidId
-		 ) a
-		 on a.user_id = u.user_id
-		 SET u.user_rank = a.rank, u.user_r6 = a.r6
+		group by tu.user_id
+ 		) a
+		on a.user_id = u.user_id
+		SET u.user_rank = a.rank, u.user_r6 = a.r6
                 ";
-echo $sql;
-		 
-	//	 $rs = MySqlQuery($sql);
+
+		$rs = MySqlQuery($sql);
 
 
-	// теперь считаем  минимальный и максимальный ключ ММБ по всем пользователям
+		// теперь считаем  минимальный и максимальный ключ ММБ по всем пользователям
 	
 	$sql = "
 		update Users u
 		inner join 
 		(select tu.user_id, MIN(d.raid_id) as minraidid, 
-			MAX(d.raid_id) as maxraidid, 
+			MAX(d.raid_id) as maxraidid 
 	        from TeamUsers tu 
 			inner join Teams t
 			on tu.team_id = t.team_id	
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
-		group by tu.user_id
  		where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
 		       and  d.raid_id <= $maxRaidId
-		 ) a
-		 on a.user_id = u.user_id
-		 SET u.user_minraidid = a.minraidid, u.user_maxraidid = a.maxraidid
+		group by tu.user_id
+		) a
+		on a.user_id = u.user_id
+		SET u.user_minraidid = a.minraidid, u.user_maxraidid = a.maxraidid
                 ";
 
 	echo $sql;		
@@ -1705,11 +1704,11 @@ echo $sql;
 		// теперь считаем показатели для выдачи приглашений
 		
 	$sql = "
-		update Users u
+update Users u
 		inner join 
 		(select tu.user_id, COALESCE(dismiss.minorder, 0) as minorder, 
 			COALESCE(disq.disqualification, 0) as disqualification, 
-			COALESCE(points.points, 0) as pointscount
+			COALESCE(points.pointscount, 0) as pointscount
 	        from TeamUsers tu 
 			inner join Teams t
 			on tu.team_id = t.team_id	
@@ -1739,25 +1738,24 @@ echo $sql;
 			 group by tld.teamuser_id
                         ) dismiss
                         on tu.teamuser_id = dismiss.teamuser_id
-		group by tu.user_id
  		where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
 		       and  d.raid_id = $maxRaidId
-		 ) a
-		 on a.user_id = u.user_id
-		 SET u.user_noinvitation = CASE WHEN  ($maxRaidId - 8 >= u.maxraidid) or 
+		group by tu.user_id
+		) a
+		on a.user_id = u.user_id
+		SET u.user_noinvitation = CASE WHEN  (($maxRaidId - 8 >= u.user_maxraidid) or 
 		 					(a.minorder = 1) or 
 		 					(a.disqualification > 1) or 
-		 					(a.pointscount = 0) or 
-		 				THEN = 1 
+		 					(a.pointscount = 0) )
+		 				THEN  1 
 		 				ELSE 0
 		 			   END
                 ";
 
-	echo $sql;		
-	//	 $rs = MySqlQuery($sql);
+		 $rs = MySqlQuery($sql);
 
          return (1);
      }
@@ -3249,6 +3247,13 @@ function FindErrors($raid_id, $team_id)
 	$rs = MySqlQuery($sql);
 
 		 $tm14 = CMmbLogger::addInterval(' 14', $tm13);
+
+
+	 // теперь можно посчитать рейтинг
+	RecalcUsersRank($raidid);
+
+
+		 $tm14 = CMmbLogger::addInterval(' 15', $tm13);
 
 
 		 $msg = CMmbLogger::getText();
