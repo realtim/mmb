@@ -113,13 +113,27 @@ class CTeamPlaces
 
 	/*print('<form  name="RankUsersForm"  action="'.$MyPHPScript.'" method="post">'."\r\n");
 	print('<input type="hidden" name="action" value="">'."\r\n");*/
+         
+         
+         $sql = " select MAX(r.raid_id) as maxraidid
+	         from Raids r 
+	         ";
+	$maxRaidId = CSql::singleValue($sql, 'maxraidid');
+         
+        $raidStage = CSql::raidStage($maxRaidId);
+        
+        $ShowAllRaids = 0;
+        if ($raidStage > 6) {
 
+		$ShowAllRaids = mmb_validate($_GET, 'rating', '') == 'all';
 
-	$ShowAllRaids = mmb_validate($_GET, 'rating', '') == 'all';
-
-	$js = "window.location.search = '?rating' + (this.checked ? '=all' : ''); ";
-	print('Отображать все марш-броски (долгая загрузка) <input type="checkbox"  autocomplete="off" name="ShowAllRaids" '.($ShowAllRaids ? 'checked="checked"' : '').' tabindex="'.(++$TabIndex).'"
-		title="Отображать все марш-броски" onchange="'. $js .'" />'."\r\n");
+		$js = "window.location.search = '?rating' + (this.checked ? '=all' : ''); ";
+		print('Отображать все марш-броски (долгая загрузка) <input type="checkbox"  autocomplete="off" name="ShowAllRaids" '.($ShowAllRaids ? 'checked="checked"' : '').' tabindex="'.(++$TabIndex).'"
+			title="Отображать все марш-броски" onchange="'. $js .'" />'."\r\n");
+        	
+        	
+        } 
+        
 
 
 	//print('</form>'."\r\n");
@@ -130,8 +144,8 @@ class CTeamPlaces
 	        Рейтинг участника марш-броска не рассчитывается в следующих случаях: 1) команда вне зачёта; 2) команда не финишировала; 3) участник сошёл с дистанции.
 	        Для марш-бросков до 2012 года сход участников не отражён в данных - можно сообщать о неточностях на общий адрес или в сообщество (ЖЖ)
 	        R6 считается с уценкой каждого предыдущего ММБ на 0.9: последний марш-броосок берётся с весом 1, следующий 0.9, затем 0.9*0.9 и так далее.
-	        Рейтинг пересчитывается при пересчете результатов очередного марш-броска. Колонка !! означает, что участнику не будет выслано приглашение на следующий марш-бросок. 
-	        Признак ставится, если участник не вышел на старт, был дисквалифицирован или не принимал участия ни в одном из 8 последних марш-бросков.
+	        Рейтинг пересчитывается при пересчете результатов очередного марш-броска.  
+	        Знак !! ставится, если участник не вышел на старт, был дисквалифицирован или не принимал участия ни в одном из 8 последних марш-бросков.
 	       </div>'."\r\n");
 	print('<br/>'."\r\n");
 
