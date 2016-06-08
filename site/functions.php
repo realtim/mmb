@@ -1700,8 +1700,7 @@ send_mime_mail('Автор письма',
 		SET u.user_minraidid = a.minraidid, u.user_maxraidid = a.maxraidid
                 ";
 
-	echo $sql;		
-	//	 $rs = MySqlQuery($sql);
+	$rs = MySqlQuery($sql);
 
 
 		// теперь считаем флаг у тех кто не вышел (?!) или дисквалифицирован 
@@ -1762,6 +1761,7 @@ send_mime_mail('Автор письма',
 		update Users u
 		SET u.user_noinvitation = 1
 		WHERE $maxRaidId - 8 >= COALESCE(u.user_maxraidid, 0)
+		      and  u.user_maxraidid is not null
                 ";
 
 		 $rs = MySqlQuery($sql);
