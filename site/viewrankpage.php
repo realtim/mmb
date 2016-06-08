@@ -162,7 +162,7 @@ class CTeamPlaces
 
 	$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name,  
 	         COALESCE(u.user_r6, 0.00) as userrank,
-	         COALESCE(u.user_noinvitation, 0) as usernoinvitation,
+	         CASE WHEN COALESCE(u.user_noinvitation, 0) = 1 THEN '!!' ELSE '&nbsp;' END as usernoinvitation,
 	         COALESCE(u.user_rank, 0.00) as slazavrank,
 	         0 as userrankcount,
 		 0 as distance_id, '&nbsp;' as distance_name,  'Итог' as raid_name,
@@ -229,7 +229,7 @@ $t5 = microtime(true);
 		print("<tr>\r\n");
 		print("<td>$LineNum</td>\r\n");
 		print("<td><a href=\"?UserId={$Row['user_id']}\">" . CMmbUI::toHtml($Row['user_name']). "</a></td>\r\n");
-		print("<td align=\"center\">{$Row['userrank']}</td>\r\n");
+		print("<td align=\"center\">{$Row['userrank']}</td><td align=\"center\">{$Row['noinvitation']}</td><td align=\"center\">{$Row['slazavrank']}</td>\r\n");
 
                 if ($ShowAllRaids)
 	        {
