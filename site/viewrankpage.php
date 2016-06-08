@@ -129,13 +129,14 @@ class CTeamPlaces
 	       <br/>Для марш-бросков с несколькими дистанциями это отношение дополнительно умножается на отношение  длины текущей дистанции к максимальной  из длин дистанций.
 	        Рейтинг участника марш-броска не рассчитывается в следующих случаях: 1) команда вне зачёта; 2) команда не финишировала; 3) участник сошёл с дистанции.
 	        Для марш-бросков до 2012 года сход участников не отражён в данных - можно сообщать о неточностях на общий адрес или в сообщество (ЖЖ)
+	        R6 считается с уценкой каждого предыдущего ММБ на 0.9: последний марш-броосок берётся с весом 1, следующий 0.9, затем 0.9*0.9 и так далее.
+	        Рейтинг пересчитывается при пересчете результатов очередного марш-броска. Колонка !! означает, что участнику не будет выслано приглашение на следующий марш-бросок. 
+	        Признак ставится, если участник не вышео на старт или был дисквалифицирован. Также знак ставится, если не было участия ни в одном из 8 последних марш-бросков.
 	       </div>'."\r\n");
 	print('<br/>'."\r\n");
 
+/*
 
-	// Возможно здесь нужно вызвать пересчёт рейтинга по всем ММБ и это не долго
-	// RecalcTeamUsersRank(0);
-	  
 
 	$sql = "select tu.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name,  SUM(tu.teamuser_rank) as userrank,
 	                   COUNT(tu.teamuser_id) as userrankcount,
@@ -157,33 +158,21 @@ class CTeamPlaces
 		    order by userrank DESC
 		  ";
 
+*/
 
-/*
+	$sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name,  
+	         COALESCE(u.user_r6, 0.00) as userrank,
+	         COALESCE(u.user_noinvitation, 0) as usernoinvitation,
+	         COALESCE(u.user_rank, 0.00) as slazavrank,
+	         0 as userrankcount,
+		 0 as distance_id, '&nbsp;' as distance_name,  'Итог' as raid_name,
+		 '&nbsp;' as team_num, '&nbsp;' as team_name
+	         from  Users u
+		 where COALESCE(u.user_hide, 0) = 0
+		 order by user_r6 DESC
+		";
 
-		    ) a
-		    inner join 
-		    (
-                    select tu.user_id, u.user_name,  tu.teamuser_rank as userrank, null as  userrankcount,
-		           d.distance_id, d.distance_name, r.raid_name,
-			   t.team_num, t.team_name
-	            from  Raids r
-		          inner join Distances d
-			  on r.raid_id = d.distance_id 
-		          left outer join Teams t
-			  on t.distance_id = d.distance_id
-			     and t.team_hide = 0 
-		             and  COALESCE(t.team_outofrange, 0) = 0
-		             and  COALESCE(t.team_result, 0) > 0
-                          left outer join TeamUsers tu
-			  on t.team_id = tu.team_id			   
-		          left outer join Users u
-			  on u.user_id = tu.user_id
-		    where d.distance_hide = 0 
-		    ) b
-		    on a.user_id = b.user_id
 
-*/	
-	  	//echo 'sql '.$sql;
 
 CMmbLogger::addRecord('rank query: ');
 	$Result = MySqlQuery($sql);
@@ -195,14 +184,14 @@ CMmbLogger::addRecord('rank query: ');
 		                order by r.raid_id  desc, d.distance_id desc ";
 		$ResultRaids = MySqlQuery($sqlRaids);
 		$RowCount = mysql_num_rows($ResultRaids);
-		$TableWidth =  $RowCount*100 + 550;
+		$TableWidth =  $RowCount*100 + 660;
 
 		$ctp = microtime(true);
 		$teamPlaces = new CTeamPlaces();
 		CMmbLogger::addInterval('team-places', $ctp);
 
 	} else {
-		$TableWidth = 550;
+		$TableWidth = 660;
 	}
 
 $t5 = microtime(true);
@@ -211,7 +200,9 @@ $t5 = microtime(true);
 	print('<tr class="gray head">
                  <td width="100">N строки</td>
                  <td width="350">Пользователь</td>
-	         <td width="100" align="center">Рейтинг</td>'."\r\n");
+	         <td width="100" align="center">R6</td>
+	         <td width="10" align="center">!!</td>
+	         <td width="100" align="center">Рейтинг slazav</td>'."\r\n");
 
 	if ($ShowAllRaids)
 	{
