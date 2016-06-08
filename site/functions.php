@@ -1611,6 +1611,159 @@ send_mime_mail('Автор письма',
      // конец функции получения вклада в рейтинг
 
 
+
+     // функция получения общего рейтинга пользователя
+	// параметр нужен только для того, чтобы указать текцщий ММБ
+	// по умолчанию рейтинг считается только по закрытым.
+	// считаем, что передан можеть быть только последний ММБ
+     function RecalcUsersRank($raidid)
+     {
+
+	  // Находим 
+	$sql = " select MAX(r.raid_id) as maxraidid
+	         from Raids r 
+	         where  COALESCE(r.raid_closedate , '2001-01-01') < NOW()";
+	$maxRaidId = CSql::singleValue($sql, 'maxraidid');
+	
+	if ($raidid > $maxRaidId) {
+		$maxRaidId = $raidid;
+	}
+
+ 
+        // Обнуляем рейтинг  по всем пользовтелям
+  	$sql = " update Users u	SET user_rank = NULL ";
+
+	 $rs = MySqlQuery($sql);
+
+  	// Добавил проверку на сход
+  	// проверка на ошибки идёт по полю, посчитанному в пересчете результатов
+ 
+	$sql = "
+		update Users u
+		inner join 
+		(select tu.user_id, SUM(COALESCE(tu.teamuser_rank, 0.00)) as rank, 
+			SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId - d.raid_id)) as r6
+	        from TeamUsers tu 
+			inner join Teams t
+			on tu.team_id = t.team_id	
+			inner join Distances d
+	        	on t.distance_id = d.distance_id
+			left outer join 
+			(
+		 	select tld.teamuser_id,  MIN(lp.levelpoint_order) as minorder
+		 	from TeamLevelDismiss tld
+			 	inner join LevelPoints lp
+			 	on tld.levelpoint_id = lp.levelpoint_id
+			 group by tld.teamuser_id
+                        ) c
+			on tu.teamuser_id = c.teamuser_id
+		group by tu.user_id
+ 		where d.distance_hide = 0 
+		       and tu.teamuser_hide = 0
+		       and t.team_hide = 0 
+		       and  COALESCE(t.team_outofrange, 0) = 0
+		       and  COALESCE(t.team_result, 0) > 0
+		       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
+		       and  COALESCE(c.minorder, 0) = 0
+		       and  d.raid_id <= $maxRaidId
+		 ) a
+		 on a.user_id = u.user_id
+		 SET u.user_rank = a.rank, u.user_r6 = a.r6
+                ";
+echo $sql;
+		 
+	//	 $rs = MySqlQuery($sql);
+
+
+	// теперь считаем  минимальный и максимальный ключ ММБ по всем пользователям
+	
+	$sql = "
+		update Users u
+		inner join 
+		(select tu.user_id, MIN(d.raid_id) as minraidid, 
+			MAX(d.raid_id) as maxraidid, 
+	        from TeamUsers tu 
+			inner join Teams t
+			on tu.team_id = t.team_id	
+			inner join Distances d
+	        	on t.distance_id = d.distance_id
+		group by tu.user_id
+ 		where d.distance_hide = 0 
+		       and tu.teamuser_hide = 0
+		       and t.team_hide = 0 
+		       and  COALESCE(t.team_outofrange, 0) = 0
+		       and  d.raid_id <= $maxRaidId
+		 ) a
+		 on a.user_id = u.user_id
+		 SET u.user_minraidid = a.minraidid, u.user_maxraidid = a.maxraidid
+                ";
+
+	echo $sql;		
+	//	 $rs = MySqlQuery($sql);
+
+
+		// теперь считаем показатели для выдачи приглашений
+		
+	$sql = "
+		update Users u
+		inner join 
+		(select tu.user_id, COALESCE(dismiss.minorder, 0) as minorder, 
+			COALESCE(disq.disqualification, 0) as disqualification, 
+			COALESCE(points.points, 0) as pointscount
+	        from TeamUsers tu 
+			inner join Teams t
+			on tu.team_id = t.team_id	
+			inner join Distances d
+	        	on t.distance_id = d.distance_id
+			left outer join 
+			(
+		 	select tlp.team_id,  count(*) as disqualification
+		 	from TeamLevelPoints tlp
+			where COALESCE(tlp.error_id, 0) = 15 
+			group by tlp.team_id
+                        ) disq
+                        on t.team_id = disq.team_id
+			left outer join 
+			(
+		 	select tlp.team_id,  count(*) as pointscount
+		 	from TeamLevelPoints tlp
+			group by tlp.team_id
+                        ) points
+                        on t.team_id = points.team_id
+			left outer join 
+			(
+			select tld.teamuser_id,  MIN(lp.levelpoint_order) as minorder
+		 	from TeamLevelDismiss tld
+			 	inner join LevelPoints lp
+			 	on tld.levelpoint_id = lp.levelpoint_id
+			 group by tld.teamuser_id
+                        ) dismiss
+                        on tu.teamuser_id = dismiss.teamuser_id
+		group by tu.user_id
+ 		where d.distance_hide = 0 
+		       and tu.teamuser_hide = 0
+		       and t.team_hide = 0 
+		       and  COALESCE(t.team_outofrange, 0) = 0
+		       and  d.raid_id = $maxRaidId
+		 ) a
+		 on a.user_id = u.user_id
+		 SET u.user_noinvitation = CASE WHEN  ($maxRaidId - 8 >= u.maxraidid) or 
+		 					(a.minorder = 1) or 
+		 					(a.disqualification > 1) or 
+		 					(a.pointscount = 0) or 
+		 				THEN = 1 
+		 				ELSE 0
+		 			   END
+                ";
+
+	echo $sql;		
+	//	 $rs = MySqlQuery($sql);
+
+         return (1);
+     }
+     // конец функции получения общего рейтинга пользователя
+
+
       // Получить предыдущий ММБ (по отношению к заданному), когда пользователь регистрировался
      function GetPredRaidForUser($userid, $raidid)
      {
