@@ -437,6 +437,46 @@ class CSql {
 		return self::singleValue($sql, 'tucount', false);
 	}
 
+	// 09.06.2016 возвращает число доступных приглашений на текущий момент
+	public static function  availableInvitationsCount($raidId)
+	{
+		$sql = "select count(*) as teamsinrangecount
+			from Teams t
+				inner join Distances d
+				on t.distance_id = d.distance_id
+			where t.team_hide = 0
+				and t.team_outofrange = 0 
+				and d.distance_hide = 0 
+				and d.raid_id = $raidId";
+
+	//	echo $sql; 
+		$teamsInRangeCount =  self::singleValue($sql, 'teamsinrangecount', false);
+
+		$sql = "select COALESCE(r.raid_teamslimit) as teamslimit
+			from Raids r
+			where r.raid_id = $raidId";
+		
+		$raidTeamsLimit =  self::singleValue($sql, 'teamslimit', false);
+
+		// считаем число неиспользованных приглашений, которые активны
+		// если команда удалена, то приглашение можно активироватьснова
+		$sql = "select count(*) as activeinvitationscount
+			from Invitations inv
+				inner join InvitationDeliveries idev
+				on inv.invitationdelivery_id = idev.invitationdelivery_id
+				left outer join Teams t
+				on inv.invitation_id = t.invitation_id
+				   and t.team_hide = 0
+			where idev.raid_id = $raidId
+				and inv.invitation_begindt <= NOW()
+				and inv.invitation_enddt >= NOW()
+				and t.team_id is null
+				";
+	//	echo $sql; 
+		$activeInvitationsCount =  self::singleValue($sql, 'activeinvitationscount', false);
+
+		return ($raidTeamsLimit - $teamsInRangeCount - $activeInvitationsCount);
+	}
 
 	
 }
