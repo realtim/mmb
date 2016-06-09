@@ -1281,6 +1281,65 @@ if (!isset($MyPHPScript)) return;
 
 	CMmb::setResult('Впечатление удалено', "ViewUserData", "");
 
+  } elseif ($action == "SendInvitation")  {
+    // Действие вызывается нажатием кнопки "Выдать приглашение"
+
+	$pUserId = $_POST['UserId']; 
+
+        if ($pUserId <= 0 or $UserId <= 0 or !canDeliveryInvitation($UserId, $RaidId, 1))
+	{
+		CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
+		return;
+	} 
+
+	// вставляем запись о розадче
+	
+
+	$sql = "select ADDTIME(r.raid_registrationenddate, '23:59:59') as invenddt
+    			from Raids r
+	    		where  r.raid_id = $RaidId
+	    			and r.raid_registrationenddate is not null
+	    	";
+	$invEndDt = CSql::singleValue($sql, 'invenddt', false);
+	
+	if (empty($invEndDt)) {
+                    CMmb::setErrorSm('Не определена дата окончания действия приглашения.');
+			return;
+	}
+
+	
+		
+	$Sql = "INSERT INTO InvitationDeliveries (raid_id, invitationdelivery_type, invitationdelivery_dt, user_id, invitationdelivery_amount)
+					VALUES ($RaidId, 3, NOW(), $UserId, 1)
+		";
+ 	$newInvDeliveryId = MySqlQuery($sql);
+	if ($newInvDeliveryId <= 0)
+	{
+                       CMmb::setErrorSm('Ошибка записи раздачи приглашения.');
+			return;
+	} 
+
+	if ($pUserId <= 0 or $UserId <= 0 or !canDeliveryInvitation($UserId, $RaidId, 1))
+	{
+		CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
+		return;
+	} 
+	
+	$Sql = "INSERT INTO Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
+				VALUES ($pUserId, NOW(), $invEndDt, $newInvDeliveryId)
+		";
+
+ 	$newInvId = MySqlQuery($sql);
+	if ($newInvId <= 0)
+	{
+                       CMmb::setErrorSm('Ошибка записи приглашения.');
+			return;
+	} 
+
+	CMmb::setResult('Приглашение выдано', "ViewUserData", "");
+
+
+   
    }  else {
    // если никаких действий не требуется
 
