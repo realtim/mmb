@@ -96,6 +96,26 @@ if (!isset($MyPHPScript)) return;
 	}
 
 
+	// Функция выдачи приглашений по рейтингу
+	function RaidRankInvitations()
+	{ 
+		document.AdminForm.action.value = "RankInvitations";
+                document.AdminForm.RaidId.value = document.FindTeamForm.RaidId.value;
+                document.AdminForm.InvitationsCount.value = document.AdminForm.RankInvitationsCount.value;
+		document.AdminForm.submit();
+	}
+
+	// Функция выдачи приглашений по рейтингу
+	function RaidLottoInvitations()
+	{ 
+		document.AdminForm.action.value = "LottoInvitations";
+                document.AdminForm.RaidId.value = document.FindTeamForm.RaidId.value;
+                document.AdminForm.InvitationsCount.value = document.AdminForm.LottoInvitationsCount.value;
+		document.AdminForm.submit();
+	}
+
+
+
 </script>
 <!-- Конец вывода javascrpit -->
 
@@ -108,15 +128,50 @@ if (!isset($MyPHPScript)) return;
 	 print('<form  name = "AdminForm" enctype="multipart/form-data"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
          print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\r\n");
          print('<input type = "hidden" name = "action" value = "">'."\r\n");
+         print('<input type = "hidden" name = "InvitationsCount" value = "0">'."\r\n");
 	 
          print('<table  border = "0" cellpadding = "0" cellspacing = "0" width = "100%">'."\r\n");
 
 
-          print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><a href = "?action=PrintRaidTeams&RaidId='.$RaidId.'" target = "_blank">Список для печати</a></td></tr>'."\r\n");
+     //     print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><a href = "?action=PrintRaidTeams&RaidId='.$RaidId.'" target = "_blank">Список для печати</a></td></tr>'."\r\n");
 
 
           //print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><a href = "?action=JSON&sessionid='.$SessionId.'" target = "_blank">JSON dump</a></td></tr>'."\r\n");
 
+	if (CRights::canDeliveryInvitation($UserId, $RaidId, 1))
+	{
+
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RankInvitations" value="Пригласить по рейтингу"
+                          onclick = "javascript: RaidRankInvitations();"
+                          tabindex = "'.(++$TabIndex).'">
+                          
+                          </td>'."\r\n");
+                          
+                   print('<td class="input">Число приглашений <input type="text" name="RankInvitationsCount" size="4" maxlength="3" value="0" tabindex="'.(++$TabIndex)	.'"'
+	                          .' title="Число приглашений">  не больше: '.CSql::availableInvitationsCount($RaidId).' </i></td>
+            </tr>'."\r\n");
+
+                          
+
+	}
+
+
+	if (CRights::canDeliveryInvitation($UserId, $RaidId, 2))
+	{
+
+
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Пригласить по лотерее"
+                          onclick = "javascript: RaidLottoInvitations();"
+                          tabindex = "'.(++$TabIndex).'"></td>'."\r\n");
+                   print('<td class="input">Число приглашений <input type="text" name="LottoInvitationsCount" size="4" maxlength="3" value="0" tabindex="'.(++$TabIndex).'"'
+	                          .' title="Число приглашений">  не больше: '.CSql::availableInvitationsCount($RaidId).' </i></td>
+            </tr>'."\r\n");
+
+
+
+	}
+	
+	
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Получить карточки"
                           onclick = "javascript: RaidCardsExport();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
