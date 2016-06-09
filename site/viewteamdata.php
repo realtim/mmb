@@ -566,7 +566,7 @@ if (       ($viewmode <> 'Add' and CRights::canEditTeam($UserId, $RaidId, $TeamI
 	if ($TeamUser and !$TeamOutOfRange)
 	{
 		print('Добавление новых участников в команду разрешено до '.$RegistrationEnd.".<br/>\n");
-		print('После этой даты они могут участвовать в ММБ только в виде самостоятельной команды вне зачета.<br/>'."\n");
+		//print('После этой даты они могут участвовать в ММБ только в виде самостоятельной команды вне зачета.<br/>'."\n");
 	}
 
 	print('<input type="text" name="NewTeamUserEmail" size="50" value="Email нового участника" tabindex="'.(++$TabIndex) .'"'
