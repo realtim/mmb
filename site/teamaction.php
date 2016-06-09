@@ -233,7 +233,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$TeamUserNew = 0;
 	if  ($NewUserId > 0) {
 		$NotStartPreviousRaidId = CheckNotStart($NewUserId, $RaidId);	
-		$TeamUserNew = (CSql::userRaidsCount($NewUserId) > 0) ? 1 : 0;
+		$TeamUserNew = (CSql::userRaidsCount($NewUserId) > 0) ? 0 : 1;
 	}
 	
 	
