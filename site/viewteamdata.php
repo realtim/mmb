@@ -427,7 +427,8 @@ if ($RaidId <=27) {
 	}	
 }
 
-
+print('</td></tr>'."\n\n");
+print('<tr><td class="input">'."\n");
 
 // ============ Использование GPS
 print('GPS <input type="checkbox" name="TeamUseGPS" value="on"'.(($TeamUseGPS == 1) ? ' checked="checked"' : '')
