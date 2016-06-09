@@ -1286,7 +1286,7 @@ if (!isset($MyPHPScript)) return;
 
 	$pUserId = $_POST['UserId']; 
 
-        if ($pUserId <= 0 or $UserId <= 0 or !canDeliveryInvitation($UserId, $RaidId, 1))
+        if ($pUserId <= 0 or $UserId <= 0 or !CRights::canDeliveryInvitation($UserId, $RaidId, 1))
 	{
 		CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
 		return;
@@ -1319,7 +1319,7 @@ if (!isset($MyPHPScript)) return;
 			return;
 	} 
 
-	if ($pUserId <= 0 or $UserId <= 0 or !canDeliveryInvitation($UserId, $RaidId, 1))
+	if ($pUserId <= 0 or $UserId <= 0 or !CRights::canDeliveryInvitation($UserId, $RaidId, 1))
 	{
 		CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
 		return;
