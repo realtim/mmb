@@ -478,6 +478,20 @@ class CSql {
 		return ($raidTeamsLimit - $teamsInRangeCount - $activeInvitationsCount);
 	}
 
+
+	// 09.06.2016 возвращает число участий
+	public static function userRaidsCount($userId)
+	{
+		$sql = "select count(*) as tucount
+			from TeamUsers tu
+				inner join Teams t
+				on tu.team_id = t.team_id
+			where t.team_hide = 0 and tu.teamuser_hide = 0 and tu.user_id = $userId";
+
+		return self::singleValue($sql, 'tucount', false);
+	}
+
+
 	
 }
 // Конец описания класса cSql
