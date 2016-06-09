@@ -1309,7 +1309,7 @@ if (!isset($MyPHPScript)) return;
 
 	
 		
-	$Sql = "INSERT INTO InvitationDeliveries (raid_id, invitationdelivery_type, invitationdelivery_dt, user_id, invitationdelivery_amount)
+	$sql = "INSERT INTO InvitationDeliveries (raid_id, invitationdelivery_type, invitationdelivery_dt, user_id, invitationdelivery_amount)
 					VALUES ($RaidId, 3, NOW(), $UserId, 1)
 		";
  	$newInvDeliveryId = MySqlQuery($sql);
@@ -1325,7 +1325,7 @@ if (!isset($MyPHPScript)) return;
 		return;
 	} 
 	
-	$Sql = "INSERT INTO Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
+	$sql = "INSERT INTO Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
 				VALUES ($pUserId, NOW(), $invEndDt, $newInvDeliveryId)
 		";
 
