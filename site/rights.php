@@ -121,7 +121,7 @@ class CRights
   
     // проверка на возможность перевода кманды вне зачета 
     // возвращает идентификатор приглашения
-    public static function canTransferTeamInRange($userId, $teamId)
+    public static function canInviteTeam($userId, $teamId)
     {
 
       // проверяем, что команда не в зачете и узнаем ключ ММБ
