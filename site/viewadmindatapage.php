@@ -143,13 +143,11 @@ if (!isset($MyPHPScript)) return;
 
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RankInvitations" value="Пригласить по рейтингу"
                           onclick = "javascript: RaidRankInvitations();"
-                          tabindex = "'.(++$TabIndex).'">
+                          tabindex = "'.(++$TabIndex).'">'."\r\n");
                           
-                          </td>'."\r\n");
-                          
-                   print('<td class="input">Число приглашений <input type="text" name="RankInvitationsCount" size="4" maxlength="3" value="0" tabindex="'.(++$TabIndex)	.'"'
-	                          .' title="Число приглашений">  не больше: '.CSql::availableInvitationsCount($RaidId).' </i></td>
-            </tr>'."\r\n");
+                   print(' приглашений <input type="text" name="RankInvitationsCount" size="4" maxlength="3" value="0" tabindex="'.(++$TabIndex)	.'"'
+	                          .' title=" приглашений">  не больше: '.CSql::availableInvitationsCount($RaidId).
+	       '</td></tr>'."\r\n");
 
                           
 
@@ -162,10 +160,10 @@ if (!isset($MyPHPScript)) return;
 
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Пригласить по лотерее"
                           onclick = "javascript: RaidLottoInvitations();"
-                          tabindex = "'.(++$TabIndex).'"></td>'."\r\n");
-                   print('<td class="input">Число приглашений <input type="text" name="LottoInvitationsCount" size="4" maxlength="3" value="0" tabindex="'.(++$TabIndex).'"'
-	                          .' title="Число приглашений">  не больше: '.CSql::availableInvitationsCount($RaidId).' </i></td>
-            </tr>'."\r\n");
+                          tabindex = "'.(++$TabIndex).'">'."\r\n");
+                   print(' приглашений <input type="text" name="LottoInvitationsCount" size="4" maxlength="3" value="0" tabindex="'.(++$TabIndex).'"'
+	                          .' title="Число приглашений">  не больше: '.CSql::availableInvitationsCount($RaidId).
+	    '</td></tr>'."\r\n");
 
 
 
