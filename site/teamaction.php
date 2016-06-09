@@ -719,6 +719,42 @@ elseif ($action == 'HideTeam')
 	$view = "ViewRaidTeams";
 }
 
+// ============ Перевод команды в зачет ====================================
+elseif ($action == 'InviteTeam')
+{
+	if ($TeamId <= 0)
+	{
+		CMmb::setErrorMessage('Команда не найдена');
+		return;
+	}
+	if ($RaidId <= 0)
+	{
+		CMmb::setErrorMessage('Марш-бросок не найден');
+		return;
+	}
+	if ($SessionId <= 0)
+	{
+		CMmb::setErrorMessage('Сессия не найдена');
+		return;
+	}
+
+	// Проверка возможности пригласить команду
+	$inviteId = CRights::canInviteTeam($UserId, $TeamId)
+	
+	if (!$inviteId)
+	{
+		CMmb::setErrorMessage('Приглашение команды невозможно');
+		return;
+	} else {
+
+		$sql = "update Teams set team_outofrange = 0, invitation_id = $inviteId where team_id = $TeamId";
+		$rs = MySqlQuery($sql);
+	}
+
+	$view = "ViewRaidTeams";
+}
+
+
 // ============ Отмена изменений в команде ====================================
 elseif ($action == "CancelChangeTeamData")
 {
