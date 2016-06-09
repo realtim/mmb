@@ -191,7 +191,13 @@ class CRights
     }
     // конец функции - проверки на возможность выдать приглашение 
   
-  
+     // Возможность видеть приглашения  пользователя
+    public static function canViewUserInvitations($userId, $raidId)
+    {
+        return (CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId));
+
+    }
+
     
 }
 
