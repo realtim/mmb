@@ -259,19 +259,14 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
 			team_registerdt, team_greenpeace, team_outofrange, team_waitdt)
-			values (";
-		// Номер команды
-		if ($OldMmb) $sql = $sql.$pTeamNum;
-		else
-		{
-			$sql = $sql."(select COALESCE(MAX(t.team_num), 0) + 1
+			values ((select COALESCE(MAX(t.team_num), 0) + 1
 				from Teams t
 					inner join Distances d on t.distance_id = d.distance_id
-				where d.raid_id = $RaidId)";
-		}
-		// Все остальное
-		$sql .= ", '$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(),
-			$pTeamGreenPeace, $TeamOutOfRange, NULL";
+				where d.raid_id = $RaidId), 
+				'$pTeamName', $pTeamUseGPS, $pTeamMapsCount, $pDistanceId, NOW(),
+				$pTeamGreenPeace, $TeamOutOfRange, NULL)
+			
+			";
 /*
 		// Если превышен лимит команл или есть команда в списке ожидания, то не регистрируем в зачет			
 		if ($OutOfRaidLimit > 0 OR $WaitTeamId > 0) {
