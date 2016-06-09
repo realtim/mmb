@@ -1312,7 +1312,11 @@ if (!isset($MyPHPScript)) return;
 	$sql = "INSERT INTO InvitationDeliveries (raid_id, invitationdelivery_type, invitationdelivery_dt, user_id, invitationdelivery_amount)
 					VALUES ($RaidId, 3, NOW(), $UserId, 1)
 		";
+
+echo $sql;
  	$newInvDeliveryId = MySqlQuery($sql);
+ 	
+ 	echo "newInvDeliveryId=  $newInvDeliveryId ";
 	if ($newInvDeliveryId <= 0)
 	{
                        CMmb::setErrorSm('Ошибка записи раздачи приглашения.');
@@ -1329,7 +1333,7 @@ if (!isset($MyPHPScript)) return;
 				VALUES ($pUserId, NOW(), '$invEndDt', $newInvDeliveryId)
 		";
 
-//echo $sql;
+echo $sql;
  	$newInvId = MySqlQuery($sql);
 	if ($newInvId <= 0)
 	{
