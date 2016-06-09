@@ -1326,9 +1326,10 @@ if (!isset($MyPHPScript)) return;
 	} 
 	
 	$sql = "INSERT INTO Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
-				VALUES ($pUserId, NOW(), $invEndDt, $newInvDeliveryId)
+				VALUES ($pUserId, NOW(), '$invEndDt', $newInvDeliveryId)
 		";
 
+echo $sql;
  	$newInvId = MySqlQuery($sql);
 	if ($newInvId <= 0)
 	{
