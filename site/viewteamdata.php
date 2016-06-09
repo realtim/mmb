@@ -420,7 +420,7 @@ if ($RaidId <=27) {
 
 
 	// 09/06/2016 Покащзываем кнопку активации
-	if (canInviteTeam($UserId, $TeamId))
+	if (CRights::canInviteTeam($UserId, $TeamId))
 	{
 		print('<input type="button" onClick="javascript: InviteTeam();" name="InviteTeamButton" value="Пригласить команду" tabindex="'.(++$TabIndex).'">'."\r\n");
 	
