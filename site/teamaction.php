@@ -227,12 +227,17 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 */
 
 
+	// 09/06/2016 Добавил определение нового пользователя
 	// Определяем ключ предыдущего марш-броска, в который данный пользователь заявлялся, но не участвовал
 	$NotStartPreviousRaidId = 0;
+	$TeamUserNew = 0;
 	if  ($NewUserId > 0) {
 		$NotStartPreviousRaidId = CheckNotStart($NewUserId, $RaidId);	
+		$TeamUserNew = !CSql::userRaidsCount($NewUserId);
 	}
 	
+	
+
 	
 //	$OutOfRaidLimit =  IsOutOfRaidLimit($RaidId);
 //	$WaitTeamId = FindFirstTeamInWaitList($RaidId);
@@ -244,6 +249,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	if ($action == "AddTeam")
 	// Новая команда
 	{
+
+
 
 /*
 		// Дополнительная проверка на флаг.  Если регистрация закончена, то 
@@ -282,7 +289,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			setViewError('Ошибка записи новой команды.');
 			return;
 		}
-		$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid) values ($TeamId, $NewUserId, $NotStartPreviousRaidId)";
+		$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid, teamuser_new) values ($TeamId, $NewUserId, $NotStartPreviousRaidId, $TeamUserNew)";
 		MySqlQuery($sql);
 
 		// Поменялся TeamId, заново определяем права доступа
@@ -325,7 +332,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		// Если добавляли участника
 		if ($NewUserId > 0)
 		{
-			$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid) values ($TeamId, $NewUserId, $NotStartPreviousRaidId)";
+			$sql = "insert into TeamUsers (team_id, user_id, teamuser_notstartraidid, teamuser_new) values ($TeamId, $NewUserId, $NotStartPreviousRaidId, $TeamUserNew)";
 			MySqlQuery($sql);
 			$TeamActionTextForEmail = "добавлен участник ". CSql::userName($NewUserId);
 		}
