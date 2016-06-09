@@ -475,14 +475,26 @@ elseif ($action == 'RankInvitations')
 	}
 
 
-        $pInvitationsEndDate = $_POST['InvitationsEndDate'];
+        $pInvitationsEndDate = trim($_POST['InvitationsEndDate']);
 	if (empty($pInvitationsEndDate))
 	{
         	CMmb::setError('Не указана дата окончания действия приглашений.', $view, '');
 		return;
 	}
 
-	// проверки на дату больше текущей меньше закрытия регистрации
+	// проверки на дату 
+	$sql = "select count(*) enddtcheck
+    			from Raids r
+	    		where  r.raid_id = $RaidId
+	    			and r.raid_registrationenddate >=  '$pInvitationsEndDate'
+	    			and NOW() < '$pInvitationsEndDate'
+	    	";
+	$endDtCheck = CSql::singleValue($sql, 'enddtcheck', false);
+	
+	if (!$endDtCheck) {
+               CMmb::setErrorSm('Дата окончания действия приглашений не прошла проверку.');
+		return;
+	}
 
 
 
