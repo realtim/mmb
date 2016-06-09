@@ -233,6 +233,15 @@ $RaidRulesLink = CSql::raidFileLink($RaidId, 1, false);
 		document.TeamDataForm.action.value = "AddTeamInUnion";
 		document.TeamDataForm.submit();
 	}
+
+	// Функция перевода команды в зачет
+	function InviteTeam()
+	{
+		document.TeamDataForm.action.value = "InviteTeam";
+		document.TeamDataForm.submit();
+	}
+
+
 </script>
 
 <?php
@@ -388,15 +397,37 @@ print('<tr><td class="input"><input type="text" name="TeamName" size="50" value=
 
 print('<tr><td class="input">'."\n");
 
+
+
+
 // ============ Вне зачета
-// Если регистрация команды, то атрибут "вне зачёта" не может изменить даже администратор - этот параметр рассчитывается по времени
-// администратор может поменять флаг при правке
-if ($viewmode <> "Add" and CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
-	$DisabledTextOutOfRange = '';
-else
-	$DisabledTextOutOfRange = 'disabled';
-print('Вне зачета! <input type="checkbox" name="TeamOutOfRange" value="on"'.(($TeamOutOfRange == 1) ? ' checked="checked"' : '')
-	.' tabindex="'.(++$TabIndex).'" '.$DisabledTextOutOfRange.' title="Команда вне зачета"/> &nbsp;'."\n");
+
+if ($RaidId <=27) {
+	// Если регистрация команды, то атрибут "вне зачёта" не может изменить даже администратор - этот параметр рассчитывается по времени
+	// администратор может поменять флаг при правке
+	if ($viewmode <> "Add" and CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
+		$DisabledTextOutOfRange = '';
+	else
+		$DisabledTextOutOfRange = 'disabled';
+
+	print('Вне зачета! <input type="checkbox" name="TeamOutOfRange" value="on"'.(($TeamOutOfRange == 1) ? ' checked="checked"' : '')
+		.' tabindex="'.(++$TabIndex).'" '.$DisabledTextOutOfRange.' title="Команда вне зачета"/> &nbsp;'."\n");
+} else {
+
+ 	if ($TeamOutOfRange) {
+		print('Ожидает приглашения!&nbsp;'."\n");
+ 	}
+
+
+	// 09/06/2016 Покащзываем кнопку активации
+	if (canInviteTeam($UserId, $TeamId))
+	{
+		print('<input type="button" onClick="javascript: InviteTeam();" name="InviteTeamButton" value="Пригласить команду" tabindex="'.(++$TabIndex).'">'."\r\n");
+	
+	}	
+}
+
+
 
 // ============ Использование GPS
 print('GPS <input type="checkbox" name="TeamUseGPS" value="on"'.(($TeamUseGPS == 1) ? ' checked="checked"' : '')
