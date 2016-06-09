@@ -131,7 +131,7 @@ class CRights
     			        on t.distance_id = d.distance_id
 	    		where  t.team_id = $teamId";
 
-        $Row = self::singleRow($sql);
+        $Row = CSql::singleRow($sql);
         $outOfRange = $Row['team_outofrange'];
         $hideTeam = $Row['team_hide'];
         $raidId = $Row['raid_id'];
