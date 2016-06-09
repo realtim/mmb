@@ -170,7 +170,7 @@ if (!isset($MyPHPScript)) return;
 	}
 	
 	
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Получить карточки"
+	  print('<tr><td style = "padding-top: 25px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Получить карточки"
                           onclick = "javascript: RaidCardsExport();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
