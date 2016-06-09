@@ -107,8 +107,8 @@ class CRights
         if ($deliveryTypeId == 3)  {
             return (true);
         } elseif ($deliveryTypeId == 1  or $deliveryTypeId == 2) {
-            return ($raidStage == 1)
-        } else    {
+            return ($raidStage == 1);
+        } else {
             return (false);
         }
 
