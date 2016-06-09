@@ -482,7 +482,12 @@ elseif ($action == 'RankInvitations')
 		return;
 	}
 
-	// проверки на дату
+	// проверки на дату больше текущей меньше закрытия регистрации
+
+
+
+	// пересчитываем рейтинг на всякий случай
+	RecalcUsersRank($RaidId);
 
 
 	// проверяем
@@ -532,14 +537,8 @@ elseif ($action == 'RankInvitations')
 		LIMIT 0, $pInvitationsCount
 		";
 
-	echo  $sql;
+	//echo  $sql;
 	MySqlQuery($sql);
-
-
-
-	/*
-	тут код запроса, который выдает по R6
-	*/
 
 	CMmb::setShortResult('Приглашения по рейтингу выданы', '');
 	//CMmb::setResult('', "ViewAdminDataPage", "");
@@ -567,6 +566,11 @@ elseif ($action == 'LottoInvitations')
         	CMmb::setError('Не указано число приглашений.', $view, '');
 		return;
 	}
+
+
+	// пересчитываем рейтинг на всякий случай
+	RecalcUsersRank($RaidId);
+
 
 
 	// проверяем
