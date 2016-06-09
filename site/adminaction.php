@@ -467,12 +467,22 @@ elseif ($action == 'RankInvitations')
 		return;
 	}
 
-     	$pInvitationsCount = $_POST['InvitationsCount'];
+     	$pInvitationsCount = $_POST['RankInvitationsCount'];
 	if ($pInvitationsCount <= 0)
 	{
         	CMmb::setError('Не указано число приглашений.', $view, '');
 		return;
 	}
+
+
+        $pInvitationsEndDate = $_POST['InvitationsEndDate'];
+	if (empty($pInvitationsEndDate))
+	{
+        	CMmb::setError('Не указана дата окончания действия приглашений.', $view, '');
+		return;
+	}
+
+	// проверки на дату
 
 
 	// проверяем
@@ -512,6 +522,20 @@ elseif ($action == 'RankInvitations')
 
 
 	// можно добавить ещё проверку на то, что выдача по рангу не проводилась или, что лотерея не проводилась
+	$pInvitationsEndDate = trim($pInvitationsEndDate).' 23:59:59';
+
+	$sql = "insert into Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
+		SELECT 	u.user_id, NOW(), '$pInvitationsEndDate', $newInvDeliveryId
+		FROM Users u
+		WHERE COALESCE(u.user_noinvitation, 0) = 0
+		ORDER BY u.user_r6 DESC
+		LIMIT 0, $pInvitationsCount
+		";
+
+	echo  $sql;
+	MySqlQuery($sql);
+
+
 
 	/*
 	тут код запроса, который выдает по R6
@@ -537,7 +561,7 @@ elseif ($action == 'LottoInvitations')
 		return;
 	}
 
-     	$pInvitationsCount = $_POST['InvitationsCount'];
+     	$pInvitationsCount = $_POST['LottoInvitationsCount'];
 	if ($pInvitationsCount <= 0)
 	{
         	CMmb::setError('Не указано число приглашений.', $view, '');
