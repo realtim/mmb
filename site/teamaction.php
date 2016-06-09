@@ -739,7 +739,7 @@ elseif ($action == 'InviteTeam')
 	}
 
 	// Проверка возможности пригласить команду
-	$inviteId = CRights::canInviteTeam($UserId, $TeamId)
+	$inviteId = CRights::canInviteTeam($UserId, $TeamId);
 	
 	if (!$inviteId)
 	{
