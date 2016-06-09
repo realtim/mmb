@@ -666,7 +666,7 @@ if (!isset($MyPHPScript)) return;
     				left outer join Teams t
     				on inv.invitation_id = t.invitation_id
 	    			   and t.team_hide = 0
-		    	where  inv.user_id = $puserId
+		    	where  inv.user_id = $pUserId
 			order by r.raid_id desc, inv.invitation_id asc
                  	";
                  	
