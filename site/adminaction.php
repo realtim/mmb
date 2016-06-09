@@ -463,14 +463,14 @@ elseif ($action == 'RankInvitations')
 
 	if ($RaidId <= 0)
 	{
-		CMmb::setShortResult('Марш-бросок не найден', '');
+        	CMmb::setError('Марш-бросок не найден.', $view, '');
 		return;
 	}
 
      	$pInvitationsCount = $_POST['InvitationsCount'];
 	if ($pInvitationsCount <= 0)
 	{
-		CMmb::setShortResult('Не указано число приглашений', '');
+        	CMmb::setError('Не указано число приглашений.', $view, '');
 		return;
 	}
 
@@ -478,13 +478,13 @@ elseif ($action == 'RankInvitations')
 	// проверяем
 	if (!CRights::canDeliveryInvitation($UserId, $RaidId, 1))
 	{
-		CMmb::setShortResult('Невозможно провести выдачу по рангу.', '');
+        	CMmb::setError('Невозможно провести выдачу по рейтингу.', $view, '');
 		return;
 	}
 
 	if ($pInvitationsCount > CSql::availableInvitationsCount($RaidId))
 	{
-		CMmb::setShortResult('Заявок указано больше, чем доступно.', '');
+        	CMmb::setError('Заявок указано больше, чем доступно.', $view, '');
 		return;
 	}
 
@@ -507,18 +507,18 @@ elseif ($action == 'RankInvitations')
 elseif ($action == 'LottoInvitations')
 {
 
- 	CMmb::setViews('ViewAdminDataPage', '');
+	CMmb::setViews('ViewAdminDataPage', '');
 
 	if ($RaidId <= 0)
 	{
-		CMmb::setShortResult('Марш-бросок не найден', '');
+        	CMmb::setError('Марш-бросок не найден.', $view, '');
 		return;
 	}
 
      	$pInvitationsCount = $_POST['InvitationsCount'];
 	if ($pInvitationsCount <= 0)
 	{
-		CMmb::setShortResult('Не указано число приглашений', '');
+        	CMmb::setError('Не указано число приглашений.', $view, '');
 		return;
 	}
 
@@ -526,13 +526,13 @@ elseif ($action == 'LottoInvitations')
 	// проверяем
 	if (!CRights::canDeliveryInvitation($UserId, $RaidId, 2))
 	{
-		CMmb::setShortResult('Невозможно провести лотерею.', '');
+        	CMmb::setError('Невозможно провести лотерею.', $view, '');
 		return;
 	}
 
 	if ($pInvitationsCount > CSql::availableInvitationsCount($RaidId))
 	{
-		CMmb::setShortResult('Заявок указано больше, чем доступно.', '');
+        	CMmb::setError('Заявок указано больше, чем доступно.', $view, '');
 		return;
 	}
 
