@@ -149,11 +149,13 @@ class CRights
         }
 
         // проверяем, что пользователь включен в команду, которая не активирована
+        // и пытается активировать другую команду
           $sql = "select count(*) selfoutofrange
     			from  Teams t 
     			        inner join TeamUsers tu 
     			        on t.team_id = tu.team_id
 	    		where  tu.user_id = $userId
+	    		    and t.team_id <> $TeamId
 	    		    and t.team_hide = 0
 	    		    and tu.teamuser_hide = 0
 	    		    and t.team_outofrange = 1
