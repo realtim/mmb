@@ -459,6 +459,8 @@ elseif ($action == 'RaidTeamUsersExport')
 elseif ($action == 'RankInvitations')
 {
 
+ 	CMmb::setViews('ViewAdminDataPage', '');
+
 	if ($RaidId <= 0)
 	{
 		CMmb::setShortResult('Марш-бросок не найден', '');
@@ -493,7 +495,8 @@ elseif ($action == 'RankInvitations')
 	тут код запроса, который выдает по R6
 	*/
 
-	CMmb::setResult('Приглашения по рангу выданы', "ViewAdminDataPage", "");
+	CMmb::setShortResult('Приглашения по рейтингу выданы', '');
+	//CMmb::setResult('', "ViewAdminDataPage", "");
 	return;
 
  	
@@ -503,6 +506,8 @@ elseif ($action == 'RankInvitations')
 // =============== Розыгрыш лотереи  ===================
 elseif ($action == 'LottoInvitations')
 {
+
+ 	CMmb::setViews('ViewAdminDataPage', '');
 
 	if ($RaidId <= 0)
 	{
@@ -539,7 +544,8 @@ elseif ($action == 'LottoInvitations')
 	
 	*/
 
-	CMmb::setResult('Лотерея проведена', "ViewAdminDataPage", "");
+	CMmb::setShortResult('Лотерея проведена', '');
+	//CMmb::setResult('Лотерея проведена', "ViewAdminDataPage", "");
 	return;
 
  	
