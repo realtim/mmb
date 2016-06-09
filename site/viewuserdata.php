@@ -670,7 +670,7 @@ if (!isset($MyPHPScript)) return;
 			order by r.raid_id desc, inv.invitation_id asc
                  	";
                  	
-                echo 'sql '.$sql;
+              //  echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
 
 		while ($Row = mysql_fetch_assoc($Result))
