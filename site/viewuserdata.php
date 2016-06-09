@@ -646,7 +646,55 @@ if (!isset($MyPHPScript)) return;
 
 	   }
 	   // Конец блока ссылок на впечатления
-	  
+
+	  // 08.06.2016  Блок приглашений 
+	  if ($viewmode <> 'Add' and  CRights::canViewUserInvitations($pUserId, $RaidId, $UserId))
+	  {
+		// Выводим спсиок 
+	        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Приглашения:</div>'."\r\n");
+
+		$sql = "select inv.invitation_id, inv.invitation_begindt as begindt, inv.invitation_enddt as enddt,
+		       idt.invitationdeliverytype_name as type_name, t.team_id, t.team_name, t.team_num,
+		       r.raid_id, r.raid_name
+    			from Invitations inv
+	    			inner join InvitationDeliveries idev
+    				on inv.invitationdelivery_id = idev.invitationdelivery_id
+	    			inner join InvitationDeliveryTypes idt
+    				on idev.invitationdeliverytype_id  = idt.invitationdeliverytype_id
+    				inner join Raids r
+    				on idev.raid_id = r.raid_id
+    				left outer join Teams t
+    				on inv.invitation_id = t.invitation_id
+	    			   and t.team_hide = 0
+		    	where  inv.user_id = $puserId
+			order by r.raid_id desc, inv.invitation_id asc
+                 	";
+                 	
+                echo 'sql '.$sql;
+		$Result = MySqlQuery($sql);
+
+		while ($Row = mysql_fetch_assoc($Result))
+		{
+
+		  print('<div class="team_res">'.$Row['raid_name'].' '.$Row['type_name'].' '.$Row['begindt'].' '.$Row['enddt']."\r\n");
+
+			if (!empty($Row['team_id']))
+			{
+			print(' <a href = "?TeamId='.$Row['team_id'].'">'.$Row['team_name'].' (N'.$Row['team_num'].')</a>'."\r\n");
+			}
+			
+
+                  print('</div>'."\r\n");
+			  
+		}
+
+                mysql_free_result($Result);
+	   }
+	   // Конец блока ссылок на впечатления
+
+
+
+
 	// оступ 
 	print('<div align = "left" style = "padding-top: 5px;"><br/></div>'."\r\n");
 
