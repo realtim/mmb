@@ -660,7 +660,7 @@ if (!isset($MyPHPScript)) return;
 	    			inner join InvitationDeliveries idev
     				on inv.invitationdelivery_id = idev.invitationdelivery_id
 	    			inner join InvitationDeliveryTypes idt
-    				on idev.invitationdeliverytype_id  = idt.invitationdeliverytype_id
+    				on idev.invitationdelivery_type  = idt.invitationdeliverytype_id
     				inner join Raids r
     				on idev.raid_id = r.raid_id
     				left outer join Teams t
