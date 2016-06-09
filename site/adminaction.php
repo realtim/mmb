@@ -453,6 +453,98 @@ elseif ($action == 'RaidTeamUsersExport')
 
  	
 }
+
+
+// =============== Выдача приглашений по рангу  ===================
+elseif ($action == 'RankInvitations')
+{
+
+	if ($RaidId <= 0)
+	{
+		CMmb::setShortResult('Марш-бросок не найден', '');
+		return;
+	}
+
+     	$pInvitationsCount = $_POST['InvitationsCount'];
+	if ($pInvitationsCount <= 0)
+	{
+		CMmb::setShortResult('Не указано число приглашений', '');
+		return;
+	}
+
+
+	// проверяем
+	if (!CRights::canDeliveryInvitation($UserId, $RaidId, 1))
+	{
+		CMmb::setShortResult('Невозможно провести выдачу по рангу.', '');
+		return;
+	}
+
+	if ($pInvitationsCount > CSql::availableInvitationsCount($RaidId))
+	{
+		CMmb::setShortResult('Заявок указано больше, чем доступно.', '');
+		return;
+	}
+
+
+	// можно добавить ещё проверку на то, что выдача по рангу не проводилась или, что лотерея не проводилась
+
+	/*
+	тут код запроса, который выдает по R6
+	*/
+
+	CMmb::setResult('Приглашения по рангу выданы', "ViewAdminDataPage", "");
+	return;
+
+ 	
+}
+
+
+// =============== Розыгрыш лотереи  ===================
+elseif ($action == 'LottoInvitations')
+{
+
+	if ($RaidId <= 0)
+	{
+		CMmb::setShortResult('Марш-бросок не найден', '');
+		return;
+	}
+
+     	$pInvitationsCount = $_POST['InvitationsCount'];
+	if ($pInvitationsCount <= 0)
+	{
+		CMmb::setShortResult('Не указано число приглашений', '');
+		return;
+	}
+
+
+	// проверяем
+	if (!CRights::canDeliveryInvitation($UserId, $RaidId, 2))
+	{
+		CMmb::setShortResult('Невозможно провести лотерею.', '');
+		return;
+	}
+
+	if ($pInvitationsCount > CSql::availableInvitationsCount($RaidId))
+	{
+		CMmb::setShortResult('Заявок указано больше, чем доступно.', '');
+		return;
+	}
+
+	// можно добавить ещё проверку на то, что выдача по рангу не проводилась или, что лотерея не проводилась
+
+
+	/*
+	тут код Саши, который проводит лотерею с числом $pInvitationsCount
+	
+	*/
+
+	CMmb::setResult('Лотерея проведена', "ViewAdminDataPage", "");
+	return;
+
+ 	
+}
+
 // =============== Никаких действий не требуется ==============================
 else
 {
