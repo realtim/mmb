@@ -101,7 +101,6 @@ if (!isset($MyPHPScript)) return;
 	{ 
 		document.AdminForm.action.value = "RankInvitations";
                 document.AdminForm.RaidId.value = document.FindTeamForm.RaidId.value;
-                document.AdminForm.InvitationsCount.value = document.AdminForm.RankInvitationsCount.value;
 		document.AdminForm.submit();
 	}
 
@@ -110,7 +109,6 @@ if (!isset($MyPHPScript)) return;
 	{ 
 		document.AdminForm.action.value = "LottoInvitations";
                 document.AdminForm.RaidId.value = document.FindTeamForm.RaidId.value;
-                document.AdminForm.InvitationsCount.value = document.AdminForm.LottoInvitationsCount.value;
 		document.AdminForm.submit();
 	}
 
@@ -146,8 +144,13 @@ if (!isset($MyPHPScript)) return;
                           tabindex = "'.(++$TabIndex).'">'."\r\n");
                           
                    print(' приглашений <input type="text" name="RankInvitationsCount" size="4" maxlength="3" value="0" tabindex="'.(++$TabIndex)	.'"'
-	                          .' title=" приглашений">  не больше: '.CSql::availableInvitationsCount($RaidId).
-	       '</td></tr>'."\r\n");
+	                          .' title=" приглашений">  не больше: '.CSql::availableInvitationsCount($RaidId)."\r\n");
+
+			// ============ Дата окончания 
+		print(' действуют до  (гггг-мм-дд): <input type="text" name="InvitationsEndDate" size="10" value="" tabindex="'.(++$TabIndex)
+				.' title="Дата окончания действия приглашений по рейтингу">'."\r\n");
+
+	      print('</td></tr>'."\r\n");
 
                           
 
