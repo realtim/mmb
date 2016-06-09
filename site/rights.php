@@ -67,6 +67,7 @@ class CRights
     public static function canEditPointResult($userId, $raidId, $teamId)
     {
         $Super = CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
+
         $raidStage = CSql::raidStage($raidId);
 
         // Администратору или модератору можно всегда до закрытия протокола
@@ -78,6 +79,117 @@ class CRights
         return (false);
     }
 
+  
+    // возможность выдавать приглашения
+    public static function canDeliveryInvitation($userId, $raidId, $deliveryTypeId)
+    {
+
+        $Super = CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
+
+        if (!$Super)
+        {
+            return (false);
+        }
+
+        $raidStage = CSql::raidStage($raidId);
+        // по идее можно показывать и с 5, но обычно карты загружают позже
+
+        // до открытия регистрации (до задания даты окончания регистрации) нельяз выдавать
+        if ($raidStage > 2 or $raidStage < 1)  {
+           return (false);
+        }
+
+        if (CSql::availableInvitationsCount($raidId) <= 0) {
+            return (false);
+        }
+
+        // здесь можно делеть ещё проверки на то, что приглашения уже раздавали и что лотерею уже проводили
+        if ($deliveryTypeId == 3)  {
+            return (true);
+        } elseif ($deliveryTypeId == 1  or $deliveryTypeId == 2) {
+            return ($raidStage == 1)
+        } else    {
+            return (false);
+        }
+
+        return (false);
+
+    }
+    // конец функции - проверки на возможность выдать приглашение 
+  
+  
+  
+    // проверка на возможность перевода кманды вне зачета 
+    // возвращает идентификатор приглашения
+    public static function canTransferTeamInRange($userId, $teamId)
+    {
+
+      // проверяем, что команда не в зачете и узнаем ключ ММБ
+        $sql = "select t.team_outofrange, d.raid_id, t.team_hide
+    			from  Teams t 
+    			        inner join Distances d
+    			        on t.distance_id = d.distance_id
+	    		where  t.team_id = $teamId";
+
+        $Row = self::singleRow($sql);
+        $outOfRange = $Row['team_outofrange'];
+        $hideTeam = $Row['team_hide'];
+        $raidId = $Row['raid_id'];
+
+	    if (!$outOfRange or $hideTeam)  {
+           return (false);
+        }
+
+        $raidStage = CSql::raidStage($raidId);
+        // по идее можно показывать и с 5, но обычно карты загружают позже
+
+        // до открытия регистрации (до задания даты окончания регистрации) нельяз выдавать
+        if ($raidStage > 2 or $raidStage < 1)  {
+           return (false);
+        }
+
+        // проверяем, что пользователь включен в команду, которая не активирована
+          $sql = "select count(*) selfoutofrange
+    			from  Teams t 
+    			        inner join TeamUsers tu 
+    			        on t.team_id = tu.team_id
+	    		where  tu.user_id = $userId
+	    		    and t.team_hide = 0
+	    		    and tu.teamuser_hide = 0
+	    		    and t.team_outofrange = 1
+	    		";
+	    $selfoutofrange = CSql::singleValue($sql, 'selfoutofrange', false);
+
+	    if ($selfoutofrange)  {
+           return (false);
+        }
+
+
+        // проверяем, что у пользователя есть приглашение, оо активно и не активировано
+        $sql = "select inv.invitation_id
+    			from Invitations inv
+	    			inner join InvitationDeliveries idev
+    				on inv.invitationdelivery_id = idev.invitationdelivery_id
+    				left outer join Teams t
+    				on inv.invitation_id = t.invitation_id
+	    			   and t.team_hide = 0
+		    	where idev.raid_id = $raidId
+		    	    and inv.user_id = $userId
+			    	and inv.invitation_begindt <= NOW()
+    				and inv.invitation_enddt >= NOW()
+				    and t.team_id is null
+				order by inv.invitation_id asc
+				LIMIT 0,1
+				";
+		//	echo $sql; 
+		$invitationId = CSql::singleValue($sql, 'invitation_id', false);
+
+        return ($invitationId);
+
+    }
+    // конец функции - проверки на возможность выдать приглашение 
+  
+  
     
 }
 
