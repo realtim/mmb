@@ -489,6 +489,28 @@ elseif ($action == 'RankInvitations')
 	}
 
 
+	$sql = "insert into InvitationDeliveries (raid_id, invitationdelivery_type, invitationdelivery_dt, user_id, invitationdelivery_amount)
+					VALUES ($RaidId, 1, NOW(), $UserId, $pInvitationsCount)
+		";
+	//echo $sql;
+ 	$newInvDeliveryId = MySqlQuery($sql);
+ 	
+ 	//echo "newInvDeliveryId=  $newInvDeliveryId ";
+	if ($newInvDeliveryId <= 0)
+	{
+                       CMmb::setErrorSm('Ошибка записи раздачи приглашения.');
+			return;
+	} 
+
+	// на всякий случай ещё раз проверяем
+	if (!CRights::canDeliveryInvitation($UserId, $RaidId, 1) or $pInvitationsCount > CSql::availableInvitationsCount($RaidId))
+	{
+		CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
+		return;
+	} 
+
+
+
 	// можно добавить ещё проверку на то, что выдача по рангу не проводилась или, что лотерея не проводилась
 
 	/*
@@ -539,10 +561,45 @@ elseif ($action == 'LottoInvitations')
 	// можно добавить ещё проверку на то, что выдача по рангу не проводилась или, что лотерея не проводилась
 
 
-	/*
-	тут код Саши, который проводит лотерею с числом $pInvitationsCount
+
+		
+	$sql = "insert into InvitationDeliveries (raid_id, invitationdelivery_type, invitationdelivery_dt, user_id, invitationdelivery_amount)
+					VALUES ($RaidId, 2, NOW(), $UserId, $pInvitationsCount)
+		";
+	//echo $sql;
+ 	$newInvDeliveryId = MySqlQuery($sql);
+ 	
+ 	//echo "newInvDeliveryId=  $newInvDeliveryId ";
+	if ($newInvDeliveryId <= 0)
+	{
+                       CMmb::setErrorSm('Ошибка записи раздачи приглашения.');
+			return;
+	} 
+
+	// на всякий случай ещё раз проверяем
+	if (!CRights::canDeliveryInvitation($UserId, $RaidId, 1) or $pInvitationsCount > CSql::availableInvitationsCount($RaidId))
+	{
+		CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
+		return;
+	} 
+
+	// А вот дальше собственно вставка приглашений на основании лотереи
+	// и их привязка к команде 
+	// $pUserId  - или можно переименовать -  в данном случае это один из участников команды, которая выиграла в лотерею
+	// $TeamId  та команда, что выиграла в лотерею.
 	
+	/*
+	$sql = "insert into Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
+				VALUES ($pUserId, NOW(), NOW(), $newInvDeliveryId)
+		";
+
+
+		$newInvId = MySqlQuery($sql);
+		
+		$sql = "update Teams set team_outofrange = 0, invitation_id = $newInvId where team_id = $TeamId";
+		$rs = MySqlQuery($sql);
 	*/
+
 
 	CMmb::setShortResult('Лотерея проведена', '');
 	//CMmb::setResult('Лотерея проведена', "ViewAdminDataPage", "");
