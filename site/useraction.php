@@ -1329,7 +1329,7 @@ if (!isset($MyPHPScript)) return;
 				VALUES ($pUserId, NOW(), '$invEndDt', $newInvDeliveryId)
 		";
 
-echo $sql;
+//echo $sql;
  	$newInvId = MySqlQuery($sql);
 	if ($newInvId <= 0)
 	{
