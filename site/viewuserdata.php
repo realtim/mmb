@@ -215,6 +215,16 @@ if (!isset($MyPHPScript)) return;
 		document.UserDataForm.action.value = "MakeModerator";
 		document.UserDataForm.submit();
 	}
+
+
+	// Функция создания приглашения
+	function SendInvitation()
+	{ 
+		document.UserDataForm.action.value = "SendInvitation";
+		document.UserDataForm.submit();
+	}
+
+
 	// 
 
 	// Функция создания запроса на объединение
@@ -385,6 +395,11 @@ if (!isset($MyPHPScript)) return;
 	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите сделать этого пользователя модератором текущего марш-броска? \')) { MakeModerator(); }"  name="ModeratorButton" value="'.$ModeratorButtonText.'" tabindex = "'.(++$TabIndex).'">';
          }
 	 
+	 if (canDeliveryInvitation($UserId, $RaidId, 1)) 
+	 {
+	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите выдать этому пользователю приглашение? \')) { SendInvitation(); }"  name="InvitationButton" value="Выдать приглашение" tabindex = "'.(++$TabIndex).'">';
+         }
+
 
 	 if (CanRequestUserUnion($Administrator, $UserId, $pUserId)) {
 
