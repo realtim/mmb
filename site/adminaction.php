@@ -621,7 +621,7 @@ elseif ($action == 'LottoInvitations')
 	
 	$sql = "update TeamUsers tu
 			inner join Teams t
-			om tu.team_id = t.team_id
+			on tu.team_id = t.team_id
 			inner join Distances d
 			on t.distance_id = d.distance_id
 		set tu.invitationdelivery_id = $newInvDeliveryId
@@ -630,7 +630,7 @@ elseif ($action == 'LottoInvitations')
 			and t.teamuser_hide = 0
 			and d.raid_id = $RaidId
 		";
-	echo $sql;
+	// echo $sql;
  	MySqlQuery($sql);
  	
 
