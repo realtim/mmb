@@ -630,7 +630,7 @@ elseif ($action == 'LottoInvitations')
 			and t.teamuser_hide = 0
 			and d.raid_id = $RaidId
 		";
-	//echo $sql;
+	echo $sql;
  	MySqlQuery($sql);
  	
 
