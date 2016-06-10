@@ -627,7 +627,7 @@ elseif ($action == 'LottoInvitations')
 		set tu.invitationdelivery_id = $newInvDeliveryId
 		where t.team_hide = 0
 			and t.team_outofrange = 1
-			and t.teamuser_hide = 0
+			and tu.teamuser_hide = 0
 			and d.raid_id = $RaidId
 		";
 	// echo $sql;
