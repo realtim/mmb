@@ -616,6 +616,25 @@ elseif ($action == 'LottoInvitations')
 			return;
 	} 
 
+
+	// Здесь нужна фиксация всех пользователей, которые участвуют в этом розыгрыше
+	
+	$sql = "update TeamUsers tu
+			inner join Teams t
+			om tu.team_id = t.team_id
+			inner join Distances d
+			on t.distance_id = d.distance_id
+		set tu.invitationdelivery_id = $newInvDeliveryId
+		where t.team_hide = 0
+			and t.team_outofrange = 1
+			and t.teamuser_hide = 1
+			and d.raid_id = $RaidId
+		";
+	//echo $sql;
+ 	MySqlQuery($sql);
+ 	
+
+
 	// на всякий случай ещё раз проверяем
 	if (!CRights::canDeliveryInvitation($UserId, $RaidId, 1) or $pInvitationsCount > CSql::availableInvitationsCount($RaidId))
 	{
