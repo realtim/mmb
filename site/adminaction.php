@@ -15,7 +15,7 @@ if ($action == "ViewAdminDataPage")  {
 // =============== Печать карточек ===================
 elseif ($action == 'PrintRaidTeams')
 {
-
+  
 // Проверяем, что передали идентификатор ММБ
 if (!isset($_REQUEST['RaidId'])) $_REQUEST['RaidId'] = "";
 $RaidId = $_REQUEST['RaidId'];
