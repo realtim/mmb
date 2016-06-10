@@ -1294,7 +1294,7 @@ if (!isset($MyPHPScript)) return;
 
 	// вставляем запись о розадче
 	
-
+	// Нахождим дату окончания регистрации
 	$sql = "select ADDTIME(r.raid_registrationenddate, '23:59:59') as invenddt
     			from Raids r
 	    		where  r.raid_id = $RaidId
@@ -1306,6 +1306,24 @@ if (!isset($MyPHPScript)) return;
                     CMmb::setErrorSm('Не определена дата окончания действия приглашения.');
 			return;
 	}
+
+	// смотрим максимальную дату приглашений по рейтингу
+	// если нашли, то ставим её, а не дату окончания ММБ
+	$sql = "select MAX(inv.invitation_enddt) as maxinvdt
+    			from InvitationDeliveries invd
+    				inner join Invitations inv
+    				on invd.invitationdelivery_id = inv.invitationdelivery_id
+    			where  invd.raid_id = $RaidId
+    				and inv.invitation_enddt > NOW()
+	    			and invd.invitationdelivery_type = 1 
+	    	";
+	$maxinvdt = CSql::singleValue($sql, 'maxinvdt', false);
+	
+	if (!empty($maxinvdt)) {
+		$invEndDt = $maxinvdt;
+	}
+
+
 
 	
 		
