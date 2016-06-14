@@ -66,7 +66,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 	$pTeamName = $_POST['TeamName'];
 	$pTeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
         // Ниже  доп. проверка на права и определение этого флага при записи данных
-	$pTeamOutOfRange = mmb_isOn($_POST, 'TeamOutOfRange');
+//	$pTeamOutOfRange = mmb_isOn($_POST, 'TeamOutOfRange');
 	$pTeamMapsCount = (int)$_POST['TeamMapsCount'];
 	$pTeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
 	$pNewTeamUserEmail = mmb_validate($_POST, 'NewTeamUserEmail', '');
@@ -314,7 +314,8 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 
 		$rs = MySqlQuery($sql);
 		
-
+// 14/06/2016 Убрал обработку поля "вне зачета"	 - перевод в зачет только через приглашения
+/*
                 // Провыерка, на правку поля "Вне зачета"
                 if (CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 		{
@@ -328,7 +329,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 
 		}
 		// Конец проверки на право правки "Вне зачета"
-		
+*/		
 		// Если добавляли участника
 		if ($NewUserId > 0)
 		{
