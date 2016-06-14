@@ -815,7 +815,7 @@
 
 			$useGps = $Row['team_usegps'] == 1 ? 'gps, ' : '';
 			$teamGP = $Row['team_greenpeace'] == 1 ? ', <a title="Нет сломанным унитазам!" href="#comment">ну!</a>' : '';
-			$outOfRange = $Row['team_outofrange'] == 1 ? ', Вне зачета!' : '';
+			$outOfRange = $Row['team_outofrange'] == 1 ? ($RaidId > 27 ? ', Ожидает приглашения!' : ', Вне зачета!') : '';
 
  			print('<tr class="'.$TrClass.'">
 			       <td style="'.$tdstyle.'"><a name="'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
