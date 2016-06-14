@@ -297,6 +297,10 @@ class CSql {
 	// 21.03.2016 возвращает teamId команды для заданного пользователя и ММБ
 	public static function userTeamId($userId, $raidId)
 	{
+
+	 	$userId = mmb_validate($userId, 0, 0);
+	 	$raidId = mmb_validate($raidId, 0, 0);
+
 		$sql = "select tu.team_id
 			from TeamUsers tu
 				inner join Teams t on tu.team_id = t.team_id
