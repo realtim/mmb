@@ -204,7 +204,7 @@ print('<br/>'."\n");
 
 
 // ============ Общее время команды
-$sql = "select COALESCE(TIME_FORMAT(t.team_result, '%H:%i'), '') as team_result from Teams t where t.team_id = $TeamId";
+$sql = "select COALESCE(TIME_FORMAT(t.team_result, '%H:%i'), '00:00') as team_result from Teams t where t.team_id = $TeamId";
 $TeamResult = CSql::singleValue($sql, 'team_result');
 
 $TeamPlace = GetTeamPlace($TeamId);
