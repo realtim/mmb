@@ -298,8 +298,11 @@ class CSql {
 	public static function userTeamId($userId, $raidId)
 	{
 
-	 	$userId = mmb_validate($userId, 0, 0);
-	 	$raidId = mmb_validate($raidId, 0, 0);
+	 	//$userId = mmb_validate($userId, 0, 0);
+	 	//$raidId = mmb_validate($raidId, 0, 0);
+	 	
+	 	$userId  = !isset($userId) ? 0 : $userId;
+	 	$raidId  = !isset($raidId) ? 0 : $raidId;
 
 		$sql = "select tu.team_id
 			from TeamUsers tu
