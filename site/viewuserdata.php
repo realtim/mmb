@@ -34,6 +34,9 @@ if (!isset($MyPHPScript)) return;
 	      $UserPhone = CMmbUI::toHtml($_POST['UserPhone']);           // а что нам вообще пришло?
               // 03/07/2014  Добавляем анонмиов
 	      $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');
+	      $UserAllowOrgMessages =  mmb_isOn($_POST, 'UserAllowOrgMessages');
+//	      $UserAllowChangeInfo =  mmb_isOn($_POST, 'UserAllowChangeInfo');
+
 
              } else {
 
@@ -44,6 +47,8 @@ if (!isset($MyPHPScript)) return;
 	      $UserCity =  $UserCityPlaceHolder;
 	      $UserPhone =  $UserPhonePlaceHolder;
 	      $UserNoShow = 0;
+	      $UserAllowOrgMessages = 0;
+	      //$UserAllowChangeInfo =  1;
 
              }
             
@@ -91,7 +96,7 @@ if (!isset($MyPHPScript)) return;
 		  $UserCity = $_POST['UserCity'];
 		  $UserPhone = $_POST['UserPhone'];
 		  $UserNoShow =  mmb_isOn($_POST, 'UserNoShow');
-		  $UserAllowChangeInfo =  mmb_isOn($_POST, 'UserAllowChangeInfo');
+	//	  $UserAllowChangeInfo =  mmb_isOn($_POST, 'UserAllowChangeInfo');
 		  $UserAllowOrgMessages =  mmb_isOn($_POST, 'UserAllowOrgMessages');
 
                 } else {
@@ -103,7 +108,7 @@ if (!isset($MyPHPScript)) return;
 		  $UserCity = $row['user_city'];
 		  $UserPhone = $row['user_phone'];
 		  $UserNoShow = $row['user_noshow'];  
-		  $UserAllowChangeInfo = (int)$row['user_allowsendchangeinfo'];  
+	//	  $UserAllowChangeInfo = (int)$row['user_allowsendchangeinfo'];  
 		  $UserAllowOrgMessages =  (int)$row['user_allowsendorgmessages'];  
 
                 }
