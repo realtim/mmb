@@ -644,20 +644,6 @@ elseif ($action == 'LottoInvitations')
 
 	// А вот дальше собственно вставка приглашений на основании лотереи
 	// и их привязка к команде 
-	// $pUserId  - или можно переименовать -  в данном случае это один из участников команды, которая выиграла в лотерею
-	// $TeamId  та команда, что выиграла в лотерею.
-	
-	/*
-	$sql = "insert into Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
-				VALUES ($pUserId, NOW(), NOW(), $newInvDeliveryId)
-		";
-
-
-		$newInvId = MySqlQuery($sql);
-		
-		$sql = "update Teams set team_outofrange = 0, invitation_id = $newInvId where team_id = $TeamId";
-		$rs = MySqlQuery($sql);
-	*/
 
 
 	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
@@ -702,12 +688,12 @@ elseif ($action == 'LottoInvitations')
 	// вставляем приглешния
 	
 	$sql = " insert into Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
-		 select user_id, NOW(), NOW(), $newInvDeliveryId)
+		 select user_id, NOW(), NOW(), $newInvDeliveryId
 		 from tmp_lottoteams
  		 ORDER BY RAND()
-		 LIMIT 0, $pInvitationsCount
+		 LIMIT $pInvitationsCount
 		  	          ";
-     //     echo $sql;
+          echo $sql;
 	 
 	$rs = MySqlQuery($sql);
 
