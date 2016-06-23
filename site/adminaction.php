@@ -693,7 +693,7 @@ elseif ($action == 'LottoInvitations')
  		 ORDER BY RAND()
 		 LIMIT $pInvitationsCount
 		  	          ";
-          echo $sql;
+       //   echo $sql;
 	 
 	$rs = MySqlQuery($sql);
 
