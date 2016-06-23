@@ -660,6 +660,75 @@ elseif ($action == 'LottoInvitations')
 	*/
 
 
+	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
+				tmp_lottoteams (
+				 num INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+                                 team_id INT, 
+                                 user_id  INT
+				        ) 
+				ENGINE=MEMORY ";
+	$rs = MySqlQuery($sql);
+				
+	$sql = " DELETE FROM tmp_lottoteams  ";
+	$rs = MySqlQuery($sql);
+
+	$sql = " ALTER TABLE tmp_lottoteams AUTO_INCREMENT = 0   ";
+	$rs = MySqlQuery($sql);
+
+	// отбираем в таблицу команды вне зачета с автонумерованной первой колонкой
+	$sql = " INSERT INTO tmp_lottoteams (team_id, user_id)
+			 select t.team_id, MIN(tu.user_id) as user_id 
+         			from   Teams t
+        				inner join TeamUsers tu
+				        on t.team_id = tu.team_id
+					inner join Distances d
+					on t.distance_id = d.distance_id
+           			where tu.invitationdelivery_id = $newInvDeliveryId
+				group by t.team_id, tu.user_id
+			";
+	$rs = MySqlQuery($sql);
+
+
+	// на всякий случай ещё раз проверяем
+	if (!CRights::canDeliveryInvitation($UserId, $RaidId, 1) or $pInvitationsCount > CSql::availableInvitationsCount($RaidId))
+	{
+		CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
+		return;
+	} 
+
+
+	// Если нужны разыне вероятности, то можно добавить стоьлко раз строчку команды, сколько "веса"  она должна получить
+	//  находим случайно нужное число команд
+	// вставляем приглешния
+	
+	$sql = " insert into Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
+		 select user_id, NOW(), NOW(), $newInvDeliveryId)
+		 from tmp_lottoteams
+ 		 ORDER BY RAND()
+		 LIMIT 0, $pInvitationsCount
+		  	          ";
+     //     echo $sql;
+	 
+	$rs = MySqlQuery($sql);
+
+	// активируем команды , которые связаны с одной стороны с временой таблицы а через неё с приглашениями
+	$sql = " update  Teams t
+		  	 inner join  tmp_lottoteams tmp
+			 on t.team_id = tmp.team_id
+			 inner join Invitations inv
+			 on inv.user_id = tmp.user_id
+		 set t.team_outofrange = 0, t.invitation_id = inv.invitation_id
+		 where inv.invitationdelivery_id = $newInvDeliveryId
+		";
+
+	// echo $sql
+	$rs = MySqlQuery($sql);
+	
+
+
+//	$sql = " DELETE FROM tmp_lottoteams  ";
+//	$rs = MySqlQuery($sql);
+
 	CMmb::setShortResult('Лотерея проведена', '');
 	//CMmb::setResult('Лотерея проведена', "ViewAdminDataPage", "");
 	return;
