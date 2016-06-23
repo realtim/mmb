@@ -246,7 +246,7 @@ $RaidRulesLink = CSql::raidFileLink($RaidId, 1, false);
 
 <?php
 // Выводим начало формы с командой
-print('<form name="TeamDataForm" action="'.$MyPHPScript.'#'.$TeamNum.'" method="post" onSubmit="'.$OnSubmitFunction.'">'."\n");
+print('<form name="TeamDataForm" action="'.$MyPHPScript.'?RaidId='.$RaidId.'#'.$TeamNum.'" method="post" onSubmit="'.$OnSubmitFunction.'">'."\n");
 print('<input type="hidden" name="action" value="">'."\n");
 print('<input type="hidden" name="TeamId" value="'.$TeamId.'">'."\n");
 print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
