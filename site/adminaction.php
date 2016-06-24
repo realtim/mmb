@@ -618,6 +618,8 @@ elseif ($action == 'LottoInvitations')
 
 
 	// Здесь нужна фиксация всех пользователей, которые участвуют в этом розыгрыше
+	// не допускаем к лотерее новых пользователей 
+	// Если нужно не пускать тех, кто не вышел на старт или дисквалифицирован, то  нужно дополнительно смотреть таблицу Users
 	
 	$sql = "update TeamUsers tu
 			inner join Teams t
@@ -627,6 +629,7 @@ elseif ($action == 'LottoInvitations')
 		set tu.invitationdelivery_id = $newInvDeliveryId
 		where t.team_hide = 0
 			and t.team_outofrange = 1
+			and COALESCE(t.teamuser_new, 0) = 0
 			and tu.teamuser_hide = 0
 			and d.raid_id = $RaidId
 		";
