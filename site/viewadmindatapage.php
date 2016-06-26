@@ -112,7 +112,21 @@ if (!isset($MyPHPScript)) return;
 		document.AdminForm.submit();
 	}
 
+	// Функция пересчета рейтинга
+	function RaidUserRankRecalc()
+	{ 
+		document.AdminForm.action.value = "RankRecalc";
+                document.AdminForm.RaidId.value = document.FindTeamForm.RaidId.value;
+		document.AdminForm.submit();
+	}
 
+	// Функция удаления команд
+	function RaidDeleteOutOfRangeTeams()
+	{ 
+		document.AdminForm.action.value = "DeleteOutOfRangeTeams";
+                document.AdminForm.RaidId.value = document.FindTeamForm.RaidId.value;
+		document.AdminForm.submit();
+	}
 
 </script>
 <!-- Конец вывода javascrpit -->
@@ -135,6 +149,13 @@ if (!isset($MyPHPScript)) return;
 
 
           //print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><a href = "?action=JSON&sessionid='.$SessionId.'" target = "_blank">JSON dump</a></td></tr>'."\r\n");
+
+	// убрать потом  нужно только для лета 2016
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RankRecalc" value="Пересчитать рейтинг"
+                          onclick = "javascript: RaidUserRankRecalc();"
+                          tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
+
+
 
 	if (CRights::canDeliveryInvitation($UserId, $RaidId, 1))
 	{
@@ -161,7 +182,7 @@ if (!isset($MyPHPScript)) return;
 	{
 
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Пригласить по лотерее"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="LottoInvitations" value="Пригласить по лотерее"
                           onclick = "javascript: RaidLottoInvitations();"
                           tabindex = "'.(++$TabIndex).'">'."\r\n");
                    print(' приглашений <input type="text" name="LottoInvitationsCount" size="4" maxlength="3" value="0" tabindex="'.(++$TabIndex).'"'
@@ -172,6 +193,19 @@ if (!isset($MyPHPScript)) return;
 
 	}
 	
+
+	if (CRights::canDeleteOutOfRangeTeams($UserId, $RaidId))
+	{
+
+
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="OutOfRangeTeamsDelete" value="Пригласить по лотерее"
+                          onclick = "javascript: RaidDeleteOutOfRangeTeams();"
+                          tabindex = "'.(++$TabIndex).'">'."\r\n");
+	    '</td></tr>'."\r\n");
+
+
+
+	}
 	
 	  print('<tr><td style = "padding-top: 25px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Получить карточки"
                           onclick = "javascript: RaidCardsExport();"
@@ -198,6 +232,7 @@ if (!isset($MyPHPScript)) return;
 	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="FindRaidErrorsButton" value="Найти ошибки"
                           onclick = "javascript: FindRaidErrors();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
+
 
 	 print('</table></form>'."\r\n"); 
 	 // Конец вывода формы с данными пользователя
