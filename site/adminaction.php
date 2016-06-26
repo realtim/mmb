@@ -741,7 +741,7 @@ elseif ($action == 'RankRecalc')
 }
 
 // =============== Удаление команд вне зачета   ===================
-elseif ($action == 'RankInvitations')
+elseif ($action == 'DeleteOutOfRangeTeams')
 {
 
  	CMmb::setViews('ViewAdminDataPage', '');
