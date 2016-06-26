@@ -724,6 +724,59 @@ elseif ($action == 'LottoInvitations')
 
  	
 }
+// =============== Пересчет рейтинга пользователей администратором ===================
+elseif ($action == 'RankRecalc')
+{
+	if ($RaidId <= 0)
+	{
+		CMmb::setShortResult('Марш-бросок не найден', '');
+		return;
+	}
+
+	if (!$Administrator && !$Moderator) return;
+
+	RecalcUsersRank($RaidId);
+
+	CMmb::setShortResult('Рейтинг пересчитан', 'ViewAdminDataPage');
+}
+
+// =============== Удаление команд вне зачета   ===================
+elseif ($action == 'RankInvitations')
+{
+
+ 	CMmb::setViews('ViewAdminDataPage', '');
+
+	if ($RaidId <= 0)
+	{
+        	CMmb::setError('Марш-бросок не найден.', $view, '');
+		return;
+	}
+
+     
+
+	// проверяем
+	if (!CRights::canDeleteOutOfRangeTeams($UserId, $RaidId))
+	{
+        	CMmb::setError('Невозможно удалить команды вне зачета.', $view, '');
+		return;
+	}
+
+
+
+	$sql = "UPDATE Teams t INNER JOIN Distances d on t.distance_id = d.distance_id 
+		SET t.team_hide = 1  
+		WHERE d.raid_id = $RaidId and t.team_outofrange = 1
+		";
+
+	//echo  $sql;
+	MySqlQuery($sql);
+
+	CMmb::setShortResult('Команды вне зачета удалены', '');
+	//CMmb::setResult('', "ViewAdminDataPage", "");
+	return;
+
+ 	
+}
 
 // =============== Никаких действий не требуется ==============================
 else
