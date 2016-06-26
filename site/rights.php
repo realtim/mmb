@@ -201,6 +201,22 @@ class CRights
         return ($puserId == $userId || CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId));
     }
 
+
+    public static function canDeleteOutOfRangeTeams($userId, $raidId)
+    {
+        $Super = CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
+
+        $raidStage = CSql::raidStage($raidId);
+
+        // Администратору или модератору можно всегда после закрытия заявки и до закрытия протокола
+        if ($Super)
+        {
+            return ($raidStage >= 2 and $raidStage < 7);
+        }
+
+        return (false);
+    }
+
     
 }
 
