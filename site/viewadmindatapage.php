@@ -198,7 +198,7 @@ if (!isset($MyPHPScript)) return;
 	{
 
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="OutOfRangeTeamsDelete" value="Пригласить по лотерее"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="OutOfRangeTeamsDelete" value="Удалить вне зачета"
                           onclick = "javascript: RaidDeleteOutOfRangeTeams();"
                           tabindex = "'.(++$TabIndex).'">'."\r\n");
 
