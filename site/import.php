@@ -134,7 +134,7 @@ if (isset($_FILES['android']))
 				$valid_devices[] = $device_id;
 			}
 			// Проверяем наличие активной точки в базе
-			$sql = "SELECT pointtype_id, levelpoint_order, distance_id, levelpoint_mindatetime, levelpoint_maxdatetime
+			$sql = "SELECT pointtype_id, levelpoint_order, distance_id, levelpoint_mindatetime, levelpoint_maxdatetime, scanpoint_id
 				FROM LevelPoints WHERE levelpoint_id = $point_id AND levelpoint_hide = 0";
 			$Result = mysql_query($sql);
 			if (!$Result || mysql_num_rows($Result) <> 1)
@@ -145,6 +145,7 @@ if (isset($_FILES['android']))
 			$distance_id = $Row['distance_id'];
 			$begtime = $Row['levelpoint_mindatetime'];
 			$endtime = $Row['levelpoint_maxdatetime'];
+			$scanpoint_id = $Row['scanpoint_id'];
 			mysql_free_result($Result);
 			// Проверяем, что данные зарегистрированы на точке с известным скрипту типом
 			if (($pointtype_id < 1) || ($pointtype_id > 5))
@@ -199,6 +200,8 @@ if (isset($_FILES['android']))
 				case 2:
 				case 3:
 				case 4:
+					if (!$scanpoint_id)
+						die("Для активной точки без сканера (scanpoint_id=0) не должно быть отметки времени в строке #".$line_num." - ".$line);
 					if ($team_time == "NULL")
 						die("У команды $team_id отсутствует время на активной точке $point_id (pointtype_id=$pointtype_id) в строке #".$line_num." - ".$line);
 					if ($team_time < $begtime)
