@@ -2656,10 +2656,18 @@ send_mime_mail('Автор письма',
 // Функция поиска ошибок для марш-броска/команды
 function FindErrors($raid_id, $team_id)
 {
+	// Получаем список команд с ошибками, выставленными вручную (дисквалификации и т.д.)
+	$teams_with_manualerrors = array();
+	$sql = "SELECT DISTINCT team_id FROM TeamLevelPoints, Errors WHERE TeamLevelPoints.error_id <> 0 AND TeamLevelPoints.error_id = Errors.error_id AND Errors.error_manual = 1";
+	$Result = MySqlQuery($sql);
+	while ($Row = mysql_fetch_assoc($Result)) $teams_with_manualerrors[] = $Row['team_id'];
+	mysql_free_result($Result);
+
 	$distances = array();
 	// Если нужно проверить отдельную команду, то находим дистанцию, по которой она бежала
 	if ($team_id)
 	{
+		if (in_array($team_id, $teams_with_manualerrors)) return(0);
 		$sql = "SELECT distance_id FROM Teams WHERE team_id = $team_id AND team_hide = 0";
 		$Result = MySqlQuery($sql);
 		if (mysql_num_rows($Result) <> 1) die('Команда $team_id отсутствует или удалена, проверка невозможна');
@@ -2689,7 +2697,9 @@ function FindErrors($raid_id, $team_id)
 		{
 			$sql = "SELECT DISTINCT TeamLevelPoints.team_id FROM TeamLevelPoints, Teams WHERE TeamLevelPoints.team_id = Teams.team_id AND Teams.distance_id = $distance_id";
 			$Result = MySqlQuery($sql);
-			while ($Row = mysql_fetch_assoc($Result)) $teams[] = $Row['team_id'];
+			while ($Row = mysql_fetch_assoc($Result))
+				if (!in_array($Row['team_id'], $teams_with_manualerrors))
+					$teams[] = $Row['team_id'];
 			mysql_free_result($Result);
 		}
 		if (!count($teams)) continue;
