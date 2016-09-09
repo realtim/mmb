@@ -239,9 +239,9 @@ elseif ($action == 'AddTlp')
 	     
 	$sql = "insert into TeamLevelPoints (team_id, levelpoint_id,
                 device_id,
-		teamlevelpoint_datetime, teamlevelpoint_comment, error_id)
+		teamlevelpoint_datetime, teamlevelpoint_comment, error_id, teamlevelpoint_date)
 		values ($pTeamId, $pLevelPointId, 1,
-		        $TlpYDTs, '$pTlpComment', $pErrorId)";
+		        $TlpYDTs, '$pTlpComment', $pErrorId, NOW())";
 
 
 	//  echo $sql;
@@ -350,6 +350,7 @@ elseif ($action == 'ChangeTlp')
 	                                ,error_id = $pErrorId
 	                                ,teamlevelpoint_comment = '$pTlpComment'
 	                                ,teamlevelpoint_datetime = $TlpYDTs
+	                                ,teamlevelpoint_date = NOW()
 	        where teamlevelpoint_id = $pTeamLevelPointId";
 			
 	//echo $sql;
