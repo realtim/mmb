@@ -498,8 +498,40 @@ class CSql {
 		return self::singleValue($sql, 'tucount', false);
 	}
 
+	// 15.09.2016 возвращает дедлайн для активирования приглашений
+	public static function invitationDeadline($RaidId)
+	{
+		// получаем дату окончания регистрации
+		$sql = "select ADDTIME(r.raid_registrationenddate, '23:59:59') as regenddt, NOW() as currentdt
+				from Raids r
+				where r.raid_id = $RaidId
+					and r.raid_registrationenddate is not null";
+		$regenddt = self::singleValue($sql, 'regenddt', false);
+		$currentdt = self::singleValue($sql, 'currentdt', false);
+		// если она наступила, то проверять дедлайн для приглашений нет смысла
+		if (!empty($regenddt) && ($regenddt < $currentdt)) return "REG_END";
 
-	
+		// смотрим максимальное время завершения действия приглашений по рейтингу, выданных на указанный ммб
+		$sql = "select MAX(inv.invitation_enddt) as maxinvdt, NOW() as currentdt
+				from InvitationDeliveries invd
+					inner join Invitations inv
+					on invd.invitationdelivery_id = inv.invitationdelivery_id
+				where invd.raid_id = $RaidId
+					and invd.invitationdelivery_type = 1";
+		$maxinvdt = self::singleValue($sql, 'maxinvdt', false);
+		$currentdt = self::singleValue($sql, 'currentdt', false);
+		if (empty($maxinvdt)) return "NO_RATING";		// приглашения по рейтингу еще не выдавались
+		if ($maxinvdt > $currentdt) return $maxinvdt;		// приглашения по рейтингу выданы и еще активны
+
+		// дедлайн для приглашений по рейтингу наступил, проверяем, проводилась ли лотерея
+		$sql = "select MAX(invitationdelivery_dt) as lotterydt
+				from InvitationDeliveries
+				where invd.raid_id = $RaidId
+					and invd.invitationdelivery_type = 2";
+		$lotterydt = self::singleValue($sql, 'lotterydt', false);
+		if (empty($lotterydt)) return "NO_LOTTERY";		// приглашения по итогам лотереи еще не выдавались
+		else return "LOT_END";					// приглашения по итогам лотереи выданы
+	}
 }
 // Конец описания класса cSql
 
