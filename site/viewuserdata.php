@@ -684,7 +684,7 @@ if (!isset($MyPHPScript)) return;
 			if (!empty($Row['team_id']))
 				print('использовано для команды: <a href = "?TeamId='.$Row['team_id'].'">'.$Row['team_name'].' (N'.$Row['team_num'].')</a>');
 			else
-				print('действительно до: '.$Row['enddt'].);
+				print('действительно до: '.$Row['enddt']);
 			print("\r\n</div>\r\n");
 		}
 
