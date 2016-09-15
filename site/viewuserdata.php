@@ -680,22 +680,17 @@ if (!isset($MyPHPScript)) return;
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
-
-		  print('<div class="team_res">'.$Row['raid_name'].' '.$Row['type_name'].' '.$Row['begindt'].' '.$Row['enddt']."\r\n");
-
+			print('<div class="team_res">'.$Row['raid_name'].'; '.$Row['type_name'].'; выдано: '.$Row['begindt'].'; ');
 			if (!empty($Row['team_id']))
-			{
-			print(' <a href = "?TeamId='.$Row['team_id'].'">'.$Row['team_name'].' (N'.$Row['team_num'].')</a>'."\r\n");
-			}
-			
-
-                  print('</div>'."\r\n");
-			  
+				print('использовано для команды: <a href = "?TeamId='.$Row['team_id'].'">'.$Row['team_name'].' (N'.$Row['team_num'].')</a>');
+			else
+				print('действительно до: '.$Row['enddt'].);
+			print("\r\n</div>\r\n");
 		}
 
                 mysql_free_result($Result);
 	   }
-	   // Конец блока ссылок на впечатления
+	   // Конец блока приглашений
 
 
 
