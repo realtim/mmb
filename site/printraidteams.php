@@ -5,9 +5,8 @@ include("settings.php");
 include("functions.php");
 
 // Проверяем, что передали идентификатор ММБ
-if (!isset($_REQUEST['RaidId'])) $_REQUEST['RaidId'] = "";
-$RaidId = $_REQUEST['RaidId'];
-if (empty($RaidId))
+$RaidId = (int) mmb_validateInt($_REQUEST, 'RaidId', -1);
+if ($RaidId < 0)
 {
 	echo 'Не указан ММБ';
 	return;
