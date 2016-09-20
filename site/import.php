@@ -3,42 +3,41 @@
 // Проверка, как именно используем скрипт: из интерфейса или отдельно
 if (isset($MyPHPScript) and $action == 'LoadRaidDataFile')
 {
-  if (!$Administrator && !$Moderator) return;
+	if (!$Administrator && !$Moderator) return;
 }
 else 
 {
-  // Общие настройки
-  include("settings.php");
-  // Библиотека функций
-  include("functions.php");
-  
-  print('<html>');
-  print('<head>');
-  print('<title>Импорт данных с Android</title>');
-  print('<link rel="Stylesheet" type="text/css"  href="styles/mmb.css" />');
-  print('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">');
-  print('</head>');
-  print('<body>');
+	// Общие настройки
+	include("settings.php");
+	// Библиотека функций
+	include("functions.php");
 
-  print('<form enctype="multipart/form-data" action="import.php" method="POST">');
-  print('<input type="hidden" name="MAX_FILE_SIZE" value="2000000" />');
-  print('Файл с данными: <input name="android" type="file" /> &nbsp;');
-  print('<input type="submit" value="Загрузить" />');
-  print('</form>');
+	print('<html>');
+	print('<head>');
+	print('<title>Импорт данных с Android</title>');
+	print('<link rel="Stylesheet" type="text/css" href="styles/mmb.css" />');
+	print('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">');
+	print('</head>');
+	print('<body>');
 
+	print('<form enctype="multipart/form-data" action="import.php" method="POST">');
+	print('<input type="hidden" name="MAX_FILE_SIZE" value="2000000" />');
+	print('Файл с данными: <input name="android" type="file" /> &nbsp;');
+	print('<input type="submit" value="Загрузить" />');
+	print('</form>');
 }
 // Конец проверки, как именно используем скрипт: из интерфейса или отдельно
 
 
-  // Устанавливаем часовой пояс по умолчанию
-  date_default_timezone_set("Europe/Moscow");
-  // Подключаемся к базе
-  $ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
-  if ($ConnectionId <= 0) die(mysql_error());
-  // Устанавливаем кодировку для взаимодействия
-  mysql_query('set names \'utf8\'', $ConnectionId);
-  // Выбираем БД ММБ
-  if (mysql_select_db($DBName, $ConnectionId) == "") die(mysql_error());
+// Устанавливаем часовой пояс по умолчанию
+date_default_timezone_set("Europe/Moscow");
+// Подключаемся к базе
+$ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+if ($ConnectionId <= 0) die(mysql_error());
+// Устанавливаем кодировку для взаимодействия
+mysql_query('set names \'utf8\'', $ConnectionId);
+// Выбираем БД ММБ
+if (mysql_select_db($DBName, $ConnectionId) == "") die(mysql_error());
 
 
 // Обработка загруженного файла
@@ -61,7 +60,9 @@ if (isset($_FILES['android']))
 		// Проверка существования пользователя, от имени которого загружаем
 		if ($line_num == 0)
 		{
-			$sql = "SELECT user_password FROM Users WHERE user_id = ".mysql_real_escape_string($line)." AND user_hide = 0";
+			if (is_numeric($line)) $author_id = intval($line); else $author_id = -1;
+			if ($author_id <= 0) die("Некорректный автор файла данных $line");
+			$sql = "SELECT user_password FROM Users WHERE user_id = $author_id AND user_hide = 0";
 			$Result = mysql_query($sql);
 			if (!$Result) die("Автор файла данных $line отсутствует в базе");
 			$Row = mysql_fetch_assoc($Result);
@@ -105,13 +106,15 @@ if (isset($_FILES['android']))
 			$values = explode(';', $line);
 			if (count($values) <> 6) die("Некорректное число параметров в строке #".$line_num." - ".$line);
 			foreach ($values as &$value) $value = mysql_real_escape_string(trim($value, '"'));
-			$operator_id = $values[0];
+			if (is_numeric($values[0])) $operator_id = intval($values[0]); else $operator_id = -1;
 			if ($type == "TeamLevelPoints") $device_id = $values[4]; else $device_id = $values[5];
-			$point_id = $values[1];
-			$team_id = $values[2];
+			if (is_numeric($device_id)) $device_id = intval($device_id); else $device_id = -1;
+			if (is_numeric($values[1])) $point_id = intval($values[1]); else $point_id = -1;
+			if (is_numeric($values[2])) $team_id = intval($values[2]); else $team_id = -1;
 			if ($type == "TeamLevelPoints") $edit_time = $values[3]; else $edit_time = $values[4];
 			if ($type == "TeamLevelPoints") $team_time = $values[5]; else $team_time = "";
-			if ($type == "TeamLevelPoints") $user_id = ""; else $user_id = $values[3];
+			if ($type == "TeamLevelPoints") $user_id = -1; else $user_id = $values[3];
+			if (is_numeric($user_id)) $user_id = intval($user_id); else $user_id = -1;
 
 			// Проверяем наличие в базе оператора данных
 			if (!in_array($operator_id, $valid_operators))
@@ -126,7 +129,7 @@ if (isset($_FILES['android']))
 			// Проверяем наличие в базе устройства для ввода данных
 			if (!in_array($device_id, $valid_devices))
 			{
-				$sql = "SELECT device_id FROM Devices WHERE device_id = ".mysql_real_escape_string($device_id);
+				$sql = "SELECT device_id FROM Devices WHERE device_id = $device_id";
 				$Result = mysql_query($sql);
 				if (!$Result || mysql_num_rows($Result) <> 1)
 					die("Несуществующее устройство ввода данных $device_id в строке #".$line_num." - ".$line);
@@ -150,6 +153,7 @@ if (isset($_FILES['android']))
 			// Проверяем, что данные зарегистрированы на точке с известным скрипту типом
 			if (($pointtype_id < 1) || ($pointtype_id > 5))
 				die("Неподдерживаемый тип точки $pointtype_id в строке #".$line_num." - ".$line);
+
 			// Проверяем наличие неудаленной команды в базе
 			$sql = "SELECT distance_id, team_outofrange FROM Teams WHERE team_id = $team_id AND team_hide = 0";
 			$Result = mysql_query($sql);
@@ -163,6 +167,15 @@ if (isset($_FILES['android']))
 			if ($Row['team_outofrange'] >= 1)
 				die("Команда $team_id вне зачета в строке #".$line_num." - ".$line);
 			mysql_free_result($Result);
+
+			// проверяем на корректность время редактирования данных
+			$timestamp = strtotime($edit_time);
+			if ($timestamp === false)
+				die("Некорректное время редактирования данных '$edit_time' в строке #".$line_num." - ".$line);
+			if ($edit_time <> date("Y-m-d H:i:s", $timestamp))
+				die("Нестандартный формат времени редактирования данных '$edit_time' в строке #".$line_num." - ".$line);
+			if ($timestamp > time())
+				die("Время редактирования данных '$edit_time' из будущего в строке #".$line_num." - ".$line);
 		}
 		else die("Неизвестный тип данных '".$type."' в строке #".$line_num." - ".$line);
 
@@ -205,15 +218,26 @@ if (isset($_FILES['android']))
 					if ($team_time == "NULL")
 						die("У команды $team_id отсутствует время на активной точке $point_id (pointtype_id=$pointtype_id) в строке #".$line_num." - ".$line);
 					if ($team_time < $begtime)
-						die("Команда $team_id  отметилась на точке $point_id до начала ее работы в строке #".$line_num." - ".$line);
+						die("Команда $team_id отметилась на точке $point_id до начала ее работы в строке #".$line_num." - ".$line);
 					if ($team_time > $endtime)
-						die("Команда $team_id  отметилась на точке $point_id после окончания ее работы в строке #".$line_num." - ".$line);
+						die("Команда $team_id отметилась на точке $point_id после окончания ее работы в строке #".$line_num." - ".$line);
 					break;
 				// На обычной точке без сканера время прихода команды может быть только NULL
 				case 5:
 					if ($team_time != "NULL")
 						die("Для КП с компостером (pointtype_id=5) не должно быть отметки времени в строке #".$line_num." - ".$line);
 					break;
+			}
+			// проверяем на корректность формат времени команды
+			if ($team_time != "NULL")
+			{
+				$timestamp = strtotime($team_time);
+				if ($timestamp === false)
+					die("Некорректное время команды '$team_time' в строке #".$line_num." - ".$line);
+				if ($team_time <> date("Y-m-d H:i:s", $timestamp))
+					die("Нестандартный формат времени команды '$team_time' в строке #".$line_num." - ".$line);
+				if ($timestamp > time())
+					die("Время команды '$team_time' из будущего в строке #".$line_num." - ".$line);
 			}
 			// Проверяем, что время обработки результата на планшете >= времени прихода команды
 			if (($team_time <> "NULL") && ($edit_time < $team_time))
@@ -253,13 +277,13 @@ if (isset($_FILES['android']))
 		// Получаем переменные
 		$values = explode(';', $line);
 		foreach ($values as &$value) $value = mysql_real_escape_string(trim($value, '"'));
-		$operator_id = $values[0];
-		if ($type == "TeamLevelPoints") $device_id = $values[4]; else $device_id = $values[5];
-		$point_id = $values[1];
-		$team_id = $values[2];
+		$operator_id = intval($values[0]);
+		if ($type == "TeamLevelPoints") $device_id = intval($values[4]); else $device_id = intval($values[5]);
+		$point_id = intval($values[1]);
+		$team_id = intval($values[2]);
 		if ($type == "TeamLevelPoints") $edit_time = $values[3]; else $edit_time = $values[4];
 		if ($type == "TeamLevelPoints") $team_time = $values[5]; else $team_time = "";
-		if ($type == "TeamLevelPoints") $user_id = ""; else $user_id = $values[3];
+		if ($type == "TeamLevelPoints") $user_id = -1; else $user_id = intval($values[3]);
 
 		// Данные о сходе участников на контрольной точке
 		if ($type == "TeamLevelDismiss")
@@ -397,8 +421,7 @@ if (isset($_FILES['android']))
 
 if (!isset($MyPHPScript) or $action <> 'LoadRaidDataFile')
 {
-   print('</body>');
-   print('</html>');
+	print('</body>');
+	print('</html>');
 }
-
 ?>
