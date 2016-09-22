@@ -55,12 +55,14 @@ if (!isset($MyPHPScript)) return;
 		
 	$Row = CSql::singleRow($Sql);
 	$UserId = $Row['user_id'];
+
+	CMmbLogger::i('Login', "'".$_POST['Login']."';".$_SERVER['REMOTE_ADDR'].";$UserId");
 		
 	if ($UserId <= 0) 
 	{
 		  //.$login." не найден!";
 		$password = "";
-		CSql::closeConnection();
+//		CSql::closeConnection();
 		CMmb::setErrorMessage('Неверный email или пароль.');
 		return;
 	} 
