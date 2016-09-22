@@ -1,5 +1,5 @@
 <?php
-return;
+// Экспорт марш-броска в JSON для планшетов
 
 // Проверка, как именно используем скрипт: из интерфейса или отдельно
 if (isset($MyPHPScript) and $action == 'JSON')
@@ -9,12 +9,8 @@ if (isset($MyPHPScript) and $action == 'JSON')
     CMmb::setShortResult('Нет прав на экспорт', '');
     return;
    }
-  
-   
-  if (!isset($_REQUEST['RaidId'])) {$_REQUEST['RaidId'] = "";}
-  $RaidId = $_REQUEST['RaidId'];
 
-
+  if (isset($_REQUEST['RaidId']) && is_numeric($_REQUEST['RaidId'])) $RaidId = intval($_REQUEST['RaidId']); else $RaidId = -1;
 }
 else 
 {
@@ -35,7 +31,7 @@ else
     return;
   } 
 
-  $RaidId = $_GET['RaidId'];
+  if (isset($_GET['RaidId']) && is_numeric($_GET['RaidId'])) $RaidId = intval($_GET['RaidId']); else $RaidId = -1;
 
   // Аутентификация и авторизация -- проверка прав на получение дампа (администратор)
   $Sql = "select user_id, user_admin from Users where user_hide = 0 and trim(user_email) = trim('{$_GET['Login']}') and user_password = '".md5(trim($_GET['Password']))."'";
@@ -61,7 +57,7 @@ else
 // Проверяем, что передали идентификатор ММБ
 
 
-if (empty($RaidId))
+if ($RaidId <= 0)
 {
 	CMmb::setShortResult('Не указан ММБ', '');
 	return;
