@@ -1,4 +1,5 @@
 <?php
+return;
 
 // Проверка, как именно используем скрипт: из интерфейса или отдельно
 if (isset($MyPHPScript) and $action == 'JSON')

@@ -1,4 +1,6 @@
 <?php
+return;
+
 // Общие настройки
 include("settings.php");
 // Библиотека функций

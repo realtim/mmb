@@ -779,10 +779,8 @@ if (!isset($MyPHPScript)) return;
    // ============ Получение конфигурации ====================================
    elseif ($action == 'GetDeviceId')
    {
-   
-   
-	$pUserId = $_POST['UserId']; 
-	$pDeviceId = $_POST['DeviceId']; 
+	if (isset($_POST['UserId']) && is_numeric($_POST['UserId'])) $pUserId = intval($_POST['UserId']); else $pUserId = -1;
+	if (isset($_POST['DeviceId']) && is_numeric($_POST['DeviceId'])) $pDeviceId = intval($_POST['DeviceId']); else $pDeviceId = -1;
 
 	if ($pUserId <= 0)
 	{
@@ -795,8 +793,6 @@ if (!isset($MyPHPScript)) return;
 		CMmb::setErrorMessage('Устройство не найден');
 		return;
 	}
-
-
 
 	if ($SessionId <= 0)
 	{
