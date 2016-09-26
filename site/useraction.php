@@ -20,12 +20,12 @@ function UACanLinkEdit($pUserId, $raidId, $userId)
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
-  //echo $action;
+    //echo $action;
    
-   // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении, 
-        //но и при правке, если не былди заполнены поля при добавлении
-     $UserCityPlaceHolder = 'Город';
-     $UserPhonePlaceHolder = 'Телефон';
+    // 03/04/2014  Добавил значения по умолчанию, чтобы подсказки в полях были не только при добавлении,
+    //но и при правке, если не былди заполнены поля при добавлении
+    $UserCityPlaceHolder = 'Город';
+    $UserPhonePlaceHolder = 'Телефон';
 
     if ($action == "")
     {
@@ -35,9 +35,9 @@ if (!isset($MyPHPScript)) return;
     } elseif ($action == "UserLogin")  {
         // обработка регистрации
          
-        // первичная проверка данных 
-        if ($_POST['Login'] == "")
-        {
+        // первичная проверка данных
+        $Login = trim(mmb_validate($_POST, 'Login'));
+        if ($Login == "") {
             CMmb::setErrorMessage('Не указан e-mail.');
             return;
 
@@ -47,15 +47,16 @@ if (!isset($MyPHPScript)) return;
         } 
          // конец первичной проверки входных данных
 
+        $qLogin = CSql::quote($Login);
         $Sql = "select user_id, user_name from  Users
-                where trim(user_email) = trim('".$_POST['Login']."') and user_password = '".md5(trim($_POST['Password']))."'";
+                where trim(user_email) = $qLogin and user_password = '".md5(trim($_POST['Password']))."'";
 
         //echo $Sql;
 
         $Row = CSql::singleRow($Sql);
         $UserId = $Row['user_id'];
 
-        CMmbLogger::i('Login', "'".$_POST['Login']."';".$_SERVER['REMOTE_ADDR'].";$UserId");
+        CMmbLogger::i('Login', "'$Login';".$_SERVER['REMOTE_ADDR'].";$UserId");
 
         if ($UserId <= 0)
         {
@@ -72,8 +73,7 @@ if (!isset($MyPHPScript)) return;
     //	echo  cSql::raidStage($RaidId);
 
         // Если есть откртытй марш-бросок, то открываем список команд, а не список всех ММБ
-        if  (isset($RaidId) and CSql::raidStage($RaidId) < 7 and CSql::raidStage($RaidId) > 0)
-        {
+        if  (isset($RaidId) and CSql::raidStage($RaidId) < 7 and CSql::raidStage($RaidId) > 0) {
             CMmb::setViews('ViewRaidTeams', '');
         } else {
             CMmb::setViews('MainPage', '');
@@ -95,27 +95,25 @@ if (!isset($MyPHPScript)) return;
 
         $view = "ViewUserData";
            
-        $pUserEmail = $_POST['UserEmail'];
-        $pUserName = $_POST['UserName'];
-        $pUserCity = $_POST['UserCity'];
-        $pUserPhone = $_POST['UserPhone'];
-        $pUserBirthYear = $_POST['UserBirthYear'];
+        $pUserEmail = trim(mmb_validate($_POST, 'UserEmail'));
+        $pUserName = trim(mmb_validate($_POST, 'UserName'));
+        $pUserCity = trim(mmb_validate($_POST, 'UserCity'));
+        $pUserPhone = trim(mmb_validate($_POST, 'UserPhone'));
+        $pUserBirthYear = mmb_validateInt($POST, 'UserBirthYear');
         $pUserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
-        $pUserId = $_POST['UserId'];
+        $pUserId = mmb_validateInt($_POST, 'UserId', -1);
         // флаги разрешения получать письма передаем только при правке (см. ниже)
 
 
         $pUserNewPassword = mmb_validate($_POST, 'UserNewPassword', '');
         $pUserConfirmNewPassword = mmb_validate($_POST, 'UserConfirmNewPassword', '');
-         
-        if ($pUserCity == $UserCityPlaceHolder) { $pUserCity = ''; }
-        if ($pUserPhone == $UserPhonePlaceHolder) { $pUserPhone = ''; }
 
-           // 03/07/2014  Скрываем ФИО	 
-           $pUserNoShow = mmb_isOn($_POST, 'UserNoShow');
+        $qUserCity = CSql::quote($pUserCity == $UserCityPlaceHolder ? '' : $pUserCity);
+        $qUserPhone = CSql::quote($pUserPhone == $UserPhonePlaceHolder ? '' : $pUserPhone);
 
+        // 03/07/2014  Скрываем ФИО
+        $pUserNoShow = mmb_isOn($_POST, 'UserNoShow');
 
-   
         if ($action == 'AddUser') {
             // Новый пользователь
             $pUserId = 0;
@@ -124,12 +122,12 @@ if (!isset($MyPHPScript)) return;
             $viewmode = "";
         }
  
-        if (trim($pUserEmail) == '') {
+        if ($pUserEmail == '') {
             CMmb::setErrorSm('Не указан e-mail.');
             return;
         }
 
-        if (trim($pUserName) == '') {
+        if ($pUserName == '') {
             CMmb::setErrorSm('Не указано ФИО.');
             return;
         }
@@ -146,7 +144,8 @@ if (!isset($MyPHPScript)) return;
         }
 
         // Прверяем, что нет активной учетной записи с таким e-mail
-        $sql = "select count(*) as resultcount from  Users where COALESCE(user_password, '') <> '' and trim(user_email) = '$pUserEmail' and user_id <> $pUserId";
+        $qUserEmail = CSql::quote($pUserEmail);
+        $sql = "select count(*) as resultcount from  Users where COALESCE(user_password, '') <> '' and trim(user_email) = $qUserEmail and user_id <> $pUserId";
         //     echo $sql;
         if (CSql::singleValue($sql, 'resultcount') > 0) {
             CMmb::setErrorSm('Уже есть пользователь с таким email.');
@@ -154,9 +153,10 @@ if (!isset($MyPHPScript)) return;
         }
 
 
+        $qUserName = CSql::quote($pUserName);
         $sql = "select count(*) as resultcount
                from  Users 
-           where  trim(user_name) = '$pUserName'
+           where  trim(user_name) = $qUserName
                   and user_birthyear = $pUserBirthYear
               and user_id <> $pUserId
               and userunionlog_id is null ";
@@ -167,7 +167,7 @@ if (!isset($MyPHPScript)) return;
         }
 
         // Если есть неактивная учетная запись - высылаем на почту ссылку с активацией
-        $sql = "select user_id from  Users where COALESCE(user_password, '') = '' and trim(user_email) = '$pUserEmail' and user_id <> $pUserId";
+        $sql = "select user_id from  Users where COALESCE(user_password, '') = '' and trim(user_email) = $qUserEmail and user_id <> $pUserId";
         //echo $sql;
         $Row = CSql::singleRow($sql);
         if ($Row['user_id'] > 0) {
@@ -189,7 +189,7 @@ if (!isset($MyPHPScript)) return;
                 //$Msg =  $Msg."P.S. Если Вас зарегистрировали без Вашего желания - просто проигнорируйте письмо - приносим извинения за доставленные неудобства."."\r\n";
 
                    // Отправляем письмо
-                SendMail(trim($pUserEmail), $Msg, $pUserName);
+                SendMail($pUserEmail, $Msg, $pUserName);
 
                 CMmb::setShortResult('Повторная ссылка для активации пользователя и получения пароля выслана на указанный адрес.
                           Если письмо не пришло - проверьте спам. Учетные записи без активации могут быть удалены.', 'MainPage');
@@ -199,7 +199,6 @@ if (!isset($MyPHPScript)) return;
                 return;
             }
         }
-
 
         if ($action == 'AddUser') {
             // Новый пользователь
@@ -223,9 +222,9 @@ if (!isset($MyPHPScript)) return;
             $sql = "insert into  Users (user_email, user_name, user_birthyear, user_password, user_registerdt,
                                      user_sessionfornewpassword, user_sendnewpasswordrequestdt, 
                          user_prohibitadd, user_city, user_phone, user_noshow)
-                             values ('$pUserEmail', '$pUserName', $pUserBirthYear, '', now(),
+                             values ($qUserEmail, $qUserName, $pUserBirthYear, '', now(),
                              '$ChangePasswordSessionId', now(),
-                          $pUserProhibitAdd, '$pUserCity', '$pUserPhone', $pUserNoShow)";
+                          $pUserProhibitAdd, $qUserCity, $qUserPhone, $pUserNoShow)";
 //                 echo $sql;  
             // При insert должен вернуться послений id - это реализовано в  MySqlQuery
             $newUserId = MySqlQuery($sql);
@@ -245,7 +244,7 @@ if (!isset($MyPHPScript)) return;
                 $Msg =  $Msg."P.S. Если Вас зарегистрировали без Вашего желания - просто проигнорируйте письмо - приносим извинения за доставленные неудобства.\r\n";
 
                 // Отправляем письмо
-                SendMail(trim($pUserEmail), $Msg, $pUserName);
+                SendMail($pUserEmail, $Msg, $pUserName);
 
                 CMmb::setShortResult('Ссылка для активации пользователя и получения пароля выслана на указанный адрес.
                           Если письмо не пришло - проверьте спам. Учетные записи без активации могут быть удалены.', 'MainPage');
@@ -274,10 +273,10 @@ if (!isset($MyPHPScript)) return;
             // 03/07/2014  Добавляем признак анонимности (скрывать ФИО)
             // user_allowsendchangeinfo = $pUserAllowChangeInfo,
 
-            $sql = "update  Users set   user_email = trim('$pUserEmail'),
-                             user_name = trim('$pUserName'),
-                             user_city = trim('$pUserCity'),
-                             user_phone = trim('$pUserPhone'),
+            $sql = "update  Users set   user_email = $qUserEmail,
+                             user_name = $qUserName,
+                             user_city = $qUserCity,
+                             user_phone = $qUserPhone,
                              user_prohibitadd = $pUserProhibitAdd,
                              user_allowsendorgmessages = $pUserAllowOrgMessages,
                              user_noshow = $pUserNoShow,
@@ -308,7 +307,7 @@ if (!isset($MyPHPScript)) return;
 
 
             // Отправляем письмо
-            SendMail(trim($pUserEmail), $Msg, $pUserName);
+            SendMail($pUserEmail, $Msg, $pUserName);
 
          // Конец сохранений изменений текущего пользователя
         } else {
@@ -324,7 +323,7 @@ if (!isset($MyPHPScript)) return;
   
         $view = "ViewUserData";
 
-        $pUserId = $_POST['UserId'];
+        $pUserId = mmb_validateInt($_POST, 'UserId');
 
         //     echo 'pUserId '.$pUserId.'now  '.$NowUserId;
 
@@ -370,10 +369,10 @@ if (!isset($MyPHPScript)) return;
   
         $view = "";
 
-        $pUserEmail = $_POST['Login'];
+        $pUserEmail = trim(mmb_validate($_POST, 'Login'));
 
         //echo $pUserEmail;
-        if (trim($pUserEmail) == '' or trim($pUserEmail) == 'E-mail') {
+        if ($pUserEmail == '' or $pUserEmail == 'E-mail') {
             CMmb::setErrorMessage('Не указан e-mail.');
             return;
         }
@@ -381,7 +380,7 @@ if (!isset($MyPHPScript)) return;
 
         $sql = "select user_id 
                 from  Users 
-                where user_hide = 0 and user_email = '$pUserEmail'";
+                where user_hide = 0 and user_email = ". CSql::quote($pUserEmail);
 
         //  echo $sql;
         $pUserId = CSql::singleValue($sql, 'user_id');
@@ -478,17 +477,17 @@ if (!isset($MyPHPScript)) return;
     } elseif ($action == "FindUser")  {
         // Действие вызывается поиском участника
 
-        $FindString = mmb_validate($_POST, 'FindString', '');
-        if (trim($FindString) == '' or trim($FindString) == 'Часть ФИО') {
+        $FindString = trim(mmb_validate($_POST, 'FindString', ''));
+        if ($FindString == '' or $FindString == 'Часть ФИО') {
             CMmb::setShortResult('Не указан критерий поиска.', '');
             return;
         }
 
 
-        if (trim($FindString) == 'все-все' or trim($FindString) == 'все-все-все') {
+        if ($FindString == 'все-все' or $FindString == 'все-все-все') {
             $sqlFindString = '';
         } else {
-            $sqlFindString = trim($FindString);
+            $sqlFindString = mysql_real_escape_string($FindString);
         }
 
          
@@ -504,14 +503,14 @@ if (!isset($MyPHPScript)) return;
         if (CSql::singleValue($sql, 'FindUsersCount') > 0) {
             $view = "ViewUsers";
         } else {
-            CMmb::setShortResult('Не найдено пользователей, чьи ФИО содержат '.trim($FindString), '');
+            CMmb::setShortResult('Не найдено пользователей, чьи ФИО содержат '.$FindString, '');
         }
 
 
     } elseif ($action == "MakeModerator")  {
         // Действие вызывается нажатием кнопки "Сделать модератором"
 
-        $pUserId = $_POST['UserId'];
+        $pUserId = mmb_validateInt($_POST, 'UserId');
 
         // Если вызвали с таким действием, должны быть определны оба пользователя
         if ($pUserId <= 0 or $UserId <= 0) {
@@ -585,40 +584,40 @@ if (!isset($MyPHPScript)) return;
     } elseif ($action == "HideModerator")  {
         // Действие вызывается нажатием кнопки "Удалить" на странице со списком модераторов
 
-        $RaidModeratorId = $_POST['RaidModeratorId'];
-        $pUserId = $_POST['UserId'];
+        $RaidModeratorId = mmb_validateInt($_POST, 'RaidModeratorId', -1);
+        $pUserId = mmb_validateInt($_POST, 'UserId', -1);
 
              // Если вызвали с таким действием, должны быть определны оба пользователя
         if ($RaidModeratorId <= 0 or !$Administrator) {
             return;
         }
 
-            $Sql = "update RaidModerators set raidmoderator_hide = 1 where raidmoderator_id = $RaidModeratorId";
-            MySqlQuery($Sql);
+        $Sql = "update RaidModerators set raidmoderator_hide = 1 where raidmoderator_id = $RaidModeratorId";
+        MySqlQuery($Sql);
 
-            $ChangeDataUserName = CSql::userName($UserId);
-            $Row = CSql::fullUser($pUserId);
-            $pUserName = $Row['user_name'];
-            $pUserEmail = $Row['user_email'];
+        $ChangeDataUserName = CSql::userName($UserId);
+        $Row = CSql::fullUser($pUserId);
+        $pUserName = $Row['user_name'];
+        $pUserEmail = $Row['user_email'];
 
-            $Sql = "select raid_name from  Raids where raid_id = $RaidId";
-            $RaidName = CSql::singleValue($Sql, 'raid_name');
+        $Sql = "select raid_name from  Raids where raid_id = $RaidId";
+        $RaidName = CSql::singleValue($Sql, 'raid_name');
 
 
-            $Msg =  "Уважаемый пользователь $pUserName!\r\n\r\n";
-            $Msg .= "Вы потеряли статус модератора марш-броска $RaidName.\r\n";
-            $Msg .= "Автор изменений: $ChangeDataUserName.\r\n\r\n";
+        $Msg =  "Уважаемый пользователь $pUserName!\r\n\r\n";
+        $Msg .= "Вы потеряли статус модератора марш-броска $RaidName.\r\n";
+        $Msg .= "Автор изменений: $ChangeDataUserName.\r\n\r\n";
 
-            // Отправляем письмо
-            SendMail(trim($pUserEmail), $Msg, $pUserName);
+        // Отправляем письмо
+        SendMail(trim($pUserEmail), $Msg, $pUserName);
 
-            // Остаемся на той же странице
-            CMmb::setResult('Удален модератор', 'ViewAdminModeratorsPage');
+        // Остаемся на той же странице
+        CMmb::setResult('Удален модератор', 'ViewAdminModeratorsPage');
     }
    // ============ Обратимое удаление пользователя ====================================
     elseif ($action == 'HideUser') {
 
-        $pUserId = $_POST['UserId'];
+        $pUserId = mmb_validateInt($_POST, 'UserId', -1);
 
         if ($pUserId <= 0)  {
             CMmb::setErrorMessage('Пользователь не найден');
@@ -670,8 +669,8 @@ if (!isset($MyPHPScript)) return;
     }
    // ============ Добавление устройства ====================================
     elseif ($action == 'AddDevice') {
-   
-        $pUserId = $_POST['UserId'];
+
+        $pUserId = mmb_validateInt($_POST, 'UserId', -1);
 
         if ($pUserId <= 0) {
             CMmb::setErrorMessage('Пользователь не найден');
@@ -688,11 +687,6 @@ if (!isset($MyPHPScript)) return;
             return;              // выходим
 
         $pNewDeviceName = trim($_POST['NewDeviceName']);
-
-        if (!isset($pNewDeviceName)) {
-            $pNewDeviceName  = '';
-        }
-
         if (empty($pNewDeviceName) or $pNewDeviceName == 'Название нового устройства')
         {
             $alert = 1;
@@ -701,122 +695,115 @@ if (!isset($MyPHPScript)) return;
         }
 
         // Прверяем, что нет устройства с таким именем
-        $sql = "select count(*) as resultcount from  Devices where trim(device_name) = '$pNewDeviceName'";
+        $qDeviceName = CSql::quote($pNewDeviceName);
+        $sql = "select count(*) as resultcount from  Devices where trim(device_name) = $qDeviceName";
         //     echo $sql;
         if (CSql::singleValue($sql, 'resultcount') > 0) {
             CMmb::setErrorSm('Уже есть устройство с таким именем.');
             return;
         }
 
-        $Sql = "insert into Devices (device_name, user_id) values ('$pNewDeviceName', $pUserId)";
+        $Sql = "insert into Devices (device_name, user_id) values ($qDeviceName, $pUserId)";
         MySqlQuery($Sql);
 
         CMmb::setResult('Добавлено устройство', 'ViewUserData');
     }
    // ============ Получение конфигурации ====================================
     elseif ($action == 'GetDeviceId') {
-    if (isset($_POST['UserId']) && is_numeric($_POST['UserId'])) $pUserId = intval($_POST['UserId']); else $pUserId = -1;
-    if (isset($_POST['DeviceId']) && is_numeric($_POST['DeviceId'])) $pDeviceId = intval($_POST['DeviceId']); else $pDeviceId = -1;
+        $pUserId = intval(mmb_validateInt($_POST, 'UserId', -1));
+        $pDeviceId = intval(mmb_validateInt($_POST, 'DeviceId', -1));
 
-    if ($pUserId <= 0)
-    {
-        CMmb::setErrorMessage('Пользователь не найден');
+        if ($pUserId <= 0) {
+            CMmb::setErrorMessage('Пользователь не найден');
+            return;
+        }
+
+        if ($pDeviceId <= 0) {
+            CMmb::setErrorMessage('Устройство не найден');
+            return;
+        }
+
+        if ($SessionId <= 0) {
+            CMmb::setErrorMessage('Сессия не найдена');
+            return;
+        }
+
+        // Права на редактирование
+        if (!UACanEdit($pUserId))
+            return;              // выходим
+
+        // Прверяем, что есть устройство для пользователя
+        $sql = "select count(*) as resultcount from  Devices where user_id  = $pUserId and device_id = $pDeviceId";
+        //     echo $sql;
+        if (CSql::singleValue($sql, 'resultcount') <> 1) {
+            CMmb::setErrorSm('Нет устройства.');
+            return;
+        }
+
+        // Сбор данных для конфигурации
+        $data = array();
+
+        // Raids: raid_id, raid_name, raid_registrationenddate
+        $Sql = "select d.device_id, d.device_name, d.user_id, u.user_name, u.user_password from Devices d inner join Users u on d.user_id = u.user_id  where d.device_id = $pDeviceId";
+        $Result = MySqlQuery($Sql);
+        while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Devices"][] = $Row; }
+        mysql_free_result($Result);
+
+        // Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
+        header("Content-Type: application/octet-stream");
+        header("Content-Disposition: attachment; filename=\"device.json\"");
+
+        // Вывод json
+        print json_encode( $data );
+
+        // Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
+        die();
         return;
+
     }
-
-    if ($pDeviceId <= 0)
-    {
-        CMmb::setErrorMessage('Устройство не найден');
-        return;
-    }
-
-    if ($SessionId <= 0)
-    {
-        CMmb::setErrorMessage('Сессия не найдена');
-        return;
-    }
-
-    // Права на редактирование
-    if (!UACanEdit($pUserId))
-        return;              // выходим
-
-    // Прверяем, что есть устройство для пользователя
-    $sql = "select count(*) as resultcount from  Devices where user_id  = $pUserId and device_id = $pDeviceId";
-    //     echo $sql;
-    if (CSql::singleValue($sql, 'resultcount') <> 1)
-    {
-        CMmb::setErrorSm('Нет устройства.');
-        return;
-    }
-
-    // Сбор данных для конфигурации
-    $data = array();
-
-    // Raids: raid_id, raid_name, raid_registrationenddate
-    $Sql = "select d.device_id, d.device_name, d.user_id, u.user_name, u.user_password from Devices d inner join Users u on d.user_id = u.user_id  where d.device_id = $pDeviceId";
-    $Result = MySqlQuery($Sql);
-    while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Devices"][] = $Row; }
-    mysql_free_result($Result);
-
-    // Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
-    header("Content-Type: application/octet-stream");
-    header("Content-Disposition: attachment; filename=\"device.json\"");
-
-    // Вывод json
-    print json_encode( $data );
- 
-    // Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
-    die();
-    return;
-
-     } 
-     // ============ Отправка сообщения другому пользователю ====================================
-     elseif ($action == "SendMessage")  {
+    // ============ Отправка сообщения другому пользователю ====================================
+    elseif ($action == "SendMessage")  {
     // 
   
-         CMmb::setViews('ViewUserData', '');
+        CMmb::setViews('ViewUserData', '');
 
-             $pUserId = $_POST['UserId'];
-             $pText = $_POST['MessageText'];
-             $pSendMessageCopyToAuthor = mmb_isOn($_POST, 'SendMessageCopyToAuthor'); 
+        $pUserId = mmb_validateInt($_POST, 'UserId', -1);
+        $pText = $_POST['MessageText'];
+        $pSendMessageCopyToAuthor = mmb_isOn($_POST, 'SendMessageCopyToAuthor');
 
-         if (empty($pText) or trim($pText) == 'Текст сообщения')
-         {
-        CMmb::setError('Укажите текст сообщения.', $view, '');
-                return; 
-         }
+        if (empty($pText) or trim($pText) == 'Текст сообщения') {
+            CMmb::setError('Укажите текст сообщения.', $view, '');
+            return;
+        }
 
         //     echo 'pUserId '.$pUserId.'now  '.$NowUserId;
 
              // Если вызвали с таким действием, должны быть определны оба пользователя
-             if ($pUserId <= 0 or $UserId <= 0)
-         {
-          return;
-         }
+        if ($pUserId <= 0 or $UserId <= 0) {
+            return;
+        }
 
         $row = CSql::fullUser($pUserId);
-                $UserEmail = $row['user_email'];
+        $UserEmail = $row['user_email'];
         $UserName = $row['user_name'];
         //echo 'pSendMessageCopyToAuthor' .$pSendMessageCopyToAuthor;
 
         if ($pSendMessageCopyToAuthor == 1) {
             $row = CSql::fullUser($UserId);
-                    $AuthorUserEmail = $row['user_email'];
+            $AuthorUserEmail = $row['user_email'];
             $AuthorUserName = $row['user_name'];
         }
-
-
 
         CMmb::setShortResult('Сообщение выслано.', '');
 
         $SendMessageUserName = CSql::userName($UserId);
 
-                $pTextArr = explode('\r\n', $pText); 
+        $pTextArr = explode('\r\n', $pText);
 
         $Msg = "Уважаемый пользователь $UserName!\r\n"
             ."Через сайт ММБ пользователь $SendMessageUserName отправил Вам следующее сообщение:\r\n\r\n";
 
-                foreach ($pTextArr as $NowString) {
+        foreach ($pTextArr as $NowString) {
            $Msg .= $NowString."\r\n";
         }
 
@@ -831,417 +818,365 @@ if (!isset($MyPHPScript)) return;
 
         // Отправляем копию
         if (!empty($AuthorUserEmail)) {
-
             $Msg = "Копия письма, которое Вами было отправлено\r\n ================ \r\n".$Msg;
             SendMail(trim($AuthorUserEmail), $Msg, $UserName);
         }
-
-
-
-   }
-   // ============ Добавить пользователя в слияние ====================================
+    }
+    // ============ Добавить пользователя в слияние ====================================
    
-   elseif ($action == "AddUserInUnion")  {
-    // Действие вызывается нажатием кнопки "Запросить слияние"
+    elseif ($action == "AddUserInUnion")  {
+        // Действие вызывается нажатием кнопки "Запросить слияние"
 
-    if ($UserId <= 0)
-    {
-        CMmb::setErrorMessage('Пользователь не найден');
-        return;
-    }
-    if ($SessionId <= 0)
-    {
-        CMmb::setErrorMessage('Сессия не найдена');
-        return;
-    }
+        if ($UserId <= 0) {
+            CMmb::setErrorMessage('Пользователь не найден');
+            return;
+        }
+        if ($SessionId <= 0) {
+            CMmb::setErrorMessage('Сессия не найдена');
+            return;
+        }
 
-        $pUserId = $_POST['UserId']; 
+        $pUserId = mmb_validateInt($_POST, 'UserId', -1);
 
         if ($UserId == $pUserId) {
-        CMmb::setErrorMessage('Нельзя сделать слияние с самим собой');
-        return;
-    }
+            CMmb::setErrorMessage('Нельзя сделать слияние с самим собой');
+            return;
+        }
 
      
         // Проверяем, что пользователя нет в слиянии
-    $sql = " select userunionlog_id
-             from UserUnionLogs 
-         where union_status <> 0
-               and union_status <> 3
-               and user_id = $UserId";
+        $sql = " select userunionlog_id
+                 from UserUnionLogs 
+             where union_status <> 0
+                   and union_status <> 3
+                   and user_id = $UserId";
 
-    if (CSql::rowCount($sql) > 0)
-    {
-        CMmb::setResult('Пользователь уже есть в слиянии', 'ViewUserUnionPage', '');
-        $viewsubmode = "ReturnAfterError";
+        if (CSql::rowCount($sql) > 0) {
+            CMmb::setResult('Пользователь уже есть в слиянии', 'ViewUserUnionPage', '');
+            $viewsubmode = "ReturnAfterError";
 
-           return;
-    }
+            return;
+        }
 
 
-    // Проверяем, что пользователь не скрыт
-    // здесь можно ещё проверить, что пользователь импортирован или любое другое условие
-    $sql = " select user_id 
+        // Проверяем, что пользователь не скрыт
+        // здесь можно ещё проверить, что пользователь импортирован или любое другое условие
+        $sql = " select user_id 
              from Users 
          where user_hide = 0 
                and user_id = $pUserId";
 
-    if (CSql::rowCount($sql) <= 0)
-    {
-        CMmb::setResult('Пользователь скрыт', 'ViewAdminUnionPage');
-        $viewsubmode = "ReturnAfterError";
+        if (CSql::rowCount($sql) <= 0) {
+            CMmb::setResult('Пользователь скрыт', 'ViewAdminUnionPage');
+            $viewsubmode = "ReturnAfterError";
 
-           return;
-    }
+            return;
+        }
 
         $UnionRequestId = 0;
-    $Sql = "insert into UserUnionLogs (user_id, userunionlog_dt, 
+        $Sql = "insert into UserUnionLogs (user_id, userunionlog_dt, 
                  user_parentid, union_status)
               values ($UserId, now(), $pUserId,  1)";
-    $UnionRequestId = MySqlQuery($Sql);
+        $UnionRequestId = MySqlQuery($Sql);
 
-        if ($UnionRequestId)
-        {
-         $Row = CSql::fullUser($pUserId);
-         $pUserName = $Row['user_name'];
-         $pUserEmail = $Row['user_email'];
-         $Import = $Row['user_importattempt'];
+        if ($UnionRequestId) {
+            $Row = CSql::fullUser($pUserId);
+            $pUserName = $Row['user_name'];
+            $pUserEmail = $Row['user_email'];
+            $Import = $Row['user_importattempt'];
 
                  // Проверяем, что пользовтельский email не является автогенерированным
-                 if (substr(trim($pUserEmail), -7) <> '@mmb.ru' && !empty($pUserName))
-         {
-            $pRequestUserName = CSql::userName($UserId);
+            if (substr(trim($pUserEmail), -7) <> '@mmb.ru' && !empty($pUserName)) {
+                $pRequestUserName = CSql::userName($UserId);
 
-            $Msg = "Уважаемый пользователь $pUserName!\r\n\r\n"
-                  ."Сделан запрос на слияние Вас с пользователем $pRequestUserName\r\n"
-                  ."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил слияние, а Ваша учетная запись скрыта"."\r\n"
-                  ."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на страницу 'Запросы на слияние' и отклонить запрос."."\r\n\r\n";
+                $Msg = "Уважаемый пользователь $pUserName!\r\n\r\n"
+                      ."Сделан запрос на слияние Вас с пользователем $pRequestUserName\r\n"
+                      ."После подтверждения запроса администраторм сервиса, все ваши участия в командах буду перенесены на пользователя, который запросил слияние, а Ваша учетная запись скрыта"."\r\n"
+                      ."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на страницу 'Запросы на слияние' и отклонить запрос."."\r\n\r\n";
 
-            // Отправляем письмо
-            SendMail(trim($pUserEmail), $Msg, $pUserName);
+                // Отправляем письмо
+                SendMail(trim($pUserEmail), $Msg, $pUserName);
+            }
+            // Конец проверки, что пользователь не импортирован
         }
-        // Конец проверки, что пользователь не импортирован
 
-           }
+        // Конец проверки на успешное добавление запроса
+        CMmb::setResult('Создан запрос на слияние пользователей', 'ViewUserUnionPage', '');
 
-       // Конец проверки на успешное добавление запроса
-       CMmb::setResult('Создан запрос на слияние пользователей', 'ViewUserUnionPage', '');
-
-  } elseif ($action == "RejectUnion")  {
-    // Действие вызывается нажатием кнопки "Отклонить"
+    } elseif ($action == "RejectUnion")  {
+        // Действие вызывается нажатием кнопки "Отклонить"
     
-       $UserUnionLogId = $_POST['UserUnionLogId']; 
+        $UserUnionLogId = mmb_validateInt($_POST, 'UserUnionLogId', -1);
 
-       if (!CanRejectUserUnion($Administrator, $UserUnionLogId, $UserId)) {  
-
-        CMmb::setErrorMessage('Нет прав на отклонение запроса');
-          return;
-       }
+        if (!CanRejectUserUnion($Administrator, $UserUnionLogId, $UserId)) {
+            CMmb::setErrorMessage('Нет прав на отклонение запроса');
+            return;
+        }
        
-       // Просто ставим статус в журнале - ничего больше делать не надол
-       $sql = " update UserUnionLogs set union_status = 0 
+        // Просто ставим статус в журнале - ничего больше делать не надол
+        $sql = " update UserUnionLogs set union_status = 0 
              where userunionlog_id = $UserUnionLogId";
 
-    MySqlQuery($sql);
+        MySqlQuery($sql);
 
-    CMmb::setViews('ViewUserUnionPage', '');
+        CMmb::setViews('ViewUserUnionPage', '');
 
-  } elseif ($action == "ApproveUnion")  {
+    } elseif ($action == "ApproveUnion")  {
 
-
-       $UserUnionLogId = $_POST['UserUnionLogId']; 
-
-       if (!CanApproveUserUnion($Administrator, $UserUnionLogId, $UserId)) {  
-
-        CMmb::setErrorMessage('Нет прав на подтверждение запроса');
-        return;
-       }
+        $UserUnionLogId = mmb_validateInt($_POST, 'UserUnionLogId', -1);
+        if (!CanApproveUserUnion($Administrator, $UserUnionLogId, $UserId)) {
+            CMmb::setErrorMessage('Нет прав на подтверждение запроса');
+            return;
+        }
 
 
-    $Sql = "select user_id, user_parentid  from  UserUnionLogs where userunionlog_id = $UserUnionLogId";
-    $Row = CSql::singleRow($Sql);
-    $pUserId = $Row['user_id'];
-    $pUserParentId = $Row['user_parentid'];
+        $Sql = "select user_id, user_parentid  from  UserUnionLogs where userunionlog_id = $UserUnionLogId";
+        $Row = CSql::singleRow($Sql);
+        $pUserId = $Row['user_id'];
+        $pUserParentId = $Row['user_parentid'];
 
-//echo $Sql;
-       // Перебрасываем ссылки, ставим признак скрытия пользователя
+        //echo $Sql;
+        // Перебрасываем ссылки, ставим признак скрытия пользователя
 
         
-       // Скрываем старого пользователя
-       // Ключ журнала нужен исключительно для возможности потом переименовать пользователя - сделан уникальный ключ, который не допускаетодинаковое ФИО и год, но теперь я туда добавил ещё поле userunionlog_id
-       // Тонкость в том, что при отмене объеддинения наод проверять, что польщзователь не свопадает, иначе будет ошибка ключа
+        // Скрываем старого пользователя
+        // Ключ журнала нужен исключительно для возможности потом переименовать пользователя - сделан уникальный ключ, который не допускаетодинаковое ФИО и год, но теперь я туда добавил ещё поле userunionlog_id
+        // Тонкость в том, что при отмене объеддинения наод проверять, что польщзователь не свопадает, иначе будет ошибка ключа
         $sql = " update Users set user_hide = 1, userunionlog_id = $UserUnionLogId
          where user_id = $pUserParentId";
 
 
-//echo $sql;
+        //echo $sql;
 
-    MySqlQuery($sql);
+        MySqlQuery($sql);
 
-       // Меняем ссылку в комнадах 
+        // Меняем ссылку в комнадах
         $sql = " update TeamUsers set user_id = $pUserId, userunionlog_id = $UserUnionLogId
          where user_id = $pUserParentId";
 
-    MySqlQuery($sql);
+        MySqlQuery($sql);
          
 
-       // Меняем статус в журнале 
-       $sql = " update UserUnionLogs set union_status = 2 
+        // Меняем статус в журнале
+        $sql = " update UserUnionLogs set union_status = 2 
              where userunionlog_id = $UserUnionLogId";
 
-    MySqlQuery($sql);
-
-    CMmb::setViews('ViewUserUnionPage', '');
-
-  } elseif ($action == "RollBackUnion")  {
-
-
-    $UserUnionLogId = $_POST['UserUnionLogId'];
-
-    if (!CanRollBackUserUnion($Administrator, $UserUnionLogId, $UserId)) {
-
-        CMmb::setErrorMessage('Нет прав на отмену слияния');
-          return;
-    }
-
-
-    $Sql = "select user_id, user_parentid  from  UserUnionLogs where userunionlog_id = $UserUnionLogId";
-    $Row = CSql::singleRow($Sql);
-    $pUserId = $Row['user_id'];
-    $pUserParentId = $Row['user_parentid'];
-
-
-    // Проверяем что новый пользователь не успел переименоваться в старого
-    $UserName = CSql::userName($pUserId);
-    $ParentUserName = CSql::userName($pUserParentId);
-
-    // если успел - нового переименовываем
-    if (trim($UserName) == trim($ParentUserName)) {
-            $sql = " update Users set user_name =  '".trim($UserName)."_$UserUnionLogId'
-             where user_id = $pUserId";
-    //echo $sql;
         MySqlQuery($sql);
 
-    }
+        CMmb::setViews('ViewUserUnionPage', '');
 
-       // Перебрасываем ссылки, ставим признак скрытия пользователя
+    } elseif ($action == "RollBackUnion")  {
+
+        $UserUnionLogId = mmb_validateInt($_POST, 'UserUnionLogId', -1);
+
+        if (!CanRollBackUserUnion($Administrator, $UserUnionLogId, $UserId)) {
+            CMmb::setErrorMessage('Нет прав на отмену слияния');
+            return;
+        }
+
+
+        $Sql = "select user_id, user_parentid  from  UserUnionLogs where userunionlog_id = $UserUnionLogId";
+        $Row = CSql::singleRow($Sql);
+        $pUserId = $Row['user_id'];
+        $pUserParentId = $Row['user_parentid'];
+
+
+        // Проверяем что новый пользователь не успел переименоваться в старого
+        $UserName = CSql::userName($pUserId);
+        $ParentUserName = CSql::userName($pUserParentId);
+
+        // если успел - нового переименовываем
+        if (trim($UserName) == trim($ParentUserName)) {
+                $sql = " update Users set user_name =  '".trim($UserName)."_$UserUnionLogId'
+                 where user_id = $pUserId";
+        //echo $sql;
+        MySqlQuery($sql);
+
+        }
+
+        // Перебрасываем ссылки, ставим признак скрытия пользователя
 
         
-       // Скрываем старого пользователя
-       // Ключ журнала нужен исключительно для возможности потом переименовать пользователя - сделан уникальный ключ, который не допускаетодинаковое ФИО и год, но теперь я туда добавил ещё поле userunionlog_id
-       // Тонкость в том, что при отмене объеддинения наод проверять, что польщзователь не свопадает, иначе будет ошибка ключа
+        // Скрываем старого пользователя
+        // Ключ журнала нужен исключительно для возможности потом переименовать пользователя - сделан уникальный ключ, который не допускаетодинаковое ФИО и год, но теперь я туда добавил ещё поле userunionlog_id
+        // Тонкость в том, что при отмене объеддинения наод проверять, что польщзователь не свопадает, иначе будет ошибка ключа
         $sql = " update Users set user_hide = 0, userunionlog_id = NULL 
-         where userunionlog_id = $UserUnionLogId";
+            where userunionlog_id = $UserUnionLogId";
 
-    MySqlQuery($sql);
+        MySqlQuery($sql);
 
-       // Меняем ссылку в комнадах 
+        // Меняем ссылку в комнадах
         $sql = " update TeamUsers set user_id = $pUserParentId, userunionlog_id = NULL
          where userunionlog_id = $UserUnionLogId";
 
-    MySqlQuery($sql);
+        MySqlQuery($sql);
          
 
-       // Меняем статус в журнале 
-       $sql = " update UserUnionLogs set union_status = 3 
+        // Меняем статус в журнале
+        $sql = " update UserUnionLogs set union_status = 3 
              where userunionlog_id = $UserUnionLogId";
 
-
-    MySqlQuery($sql);
-
-    CMmb::setViews('ViewUserUnionPage', '');
-   }
-
-   // ============ Добавление впечатления ====================================
-   elseif ($action == 'AddLink')
-   {
-   
-   
-    $pUserId = $_POST['UserId'];
-
-    if ($pUserId <= 0)
-    {
-        CMmb::setErrorMessage('Пользователь не найден');
-        return;
+        MySqlQuery($sql);
+        CMmb::setViews('ViewUserUnionPage', '');
     }
-
-    if ($SessionId <= 0)
+    // ============ Добавление впечатления ====================================
+    elseif ($action == 'AddLink')
     {
-        CMmb::setErrorMessage('Сессия не найдена');
-        return;
-    }
+        $pUserId = mmb_validateInt($_POST, 'UserId');
+        if ($pUserId <= 0) {
+            CMmb::setErrorMessage('Пользователь не найден');
+            return;
+        }
+
+        if ($SessionId <= 0) {
+            CMmb::setErrorMessage('Сессия не найдена');
+            return;
+        }
 
 
 
-    $pLinkName = trim($_POST['NewLinkName']);
-    $pLinkUrl = trim($_POST['NewLinkUrl']);
-    $pLinkTypeId = $_POST['LinkTypeId'];
-        $pLinkRaidId = $_POST['LinkRaidId'];
+        $pLinkName = trim(mmb_validate($_POST, 'NewLinkName'));
+        $pLinkUrl = trim(mmb_validate($_POST, 'NewLinkUrl'));
+        $pLinkTypeId = mmb_validateInt($_POST, 'LinkTypeId');
+        $pLinkRaidId = mmb_validateInt($_POST, 'LinkRaidId');
+
+        if ($pLinkRaidId <= 0)  {
+            CMmb::setErrorMessage('ММБ не найден');
+            return;
+        }
+
+        if (empty($pLinkUrl) or $pLinkUrl == 'Адрес ссылки на впечатление') {
+            $alert = 1;
+            CMmb::setResult('Не указан адрес ссылки', 'ViewUserData');
+            return;
+        }
 
 
-        if (!isset($pLinkRaidId)) {$pLinkRaidId = 0;}
-        if (!isset($pLinkTypeId)) {$pLinkTypeId = 0;}
-        if (!isset($pLinkUrl)) {$pLinkUrl = '';}
-        if (!isset($pLinkName)) {$pLinkName = '';}
+        if (empty($pLinkTypeId)) {
+            $alert = 1;
+            CMmb::setResult('Не указан тип ссылки', 'ViewUserData');
+            return;
+        }
+
+        if ($pLinkName == 'Название (можно не заполнять)') {
+            $pLinkName = '';
+        }
+
+        $userId = CSql::userId($SessionId);
+
+        // Права на редактирование
+        if (!UACanLinkEdit($pUserId, $pLinkRaidId, $userId))
+            return;              // выходим
 
 
-    if ($pLinkRaidId <= 0)
-    {
-        CMmb::setErrorMessage('ММБ не найден');
-        return;
-    }
-
-
-
-    if (empty($pLinkUrl) or $pLinkUrl == 'Адрес ссылки на впечатление')
-    {
-        $alert = 1;
-        CMmb::setResult('Не указан адрес ссылки', 'ViewUserData');
-        return;
-    }
-
-
-    if (empty($pLinkTypeId))
-    {
-        $alert = 1;
-        CMmb::setResult('Не указан тип ссылки', 'ViewUserData');
-        return;
-    }
-
-    if ($pLinkName == 'Название (можно не заполнять)')
-    {
-        $pLinkName = '';
-    }
-
-     $userId = CSql::userId($SessionId);
-
-    // Права на редактирование
-    if (!UACanLinkEdit($pUserId, $pLinkRaidId, $userId))
-        return;              // выходим
-
-
-
-
-
-    // Прверяем, что нет ссылки с таким адресом
-           $sql = "select count(*) as resultcount 
+        $qLinkUrl = CSql::quote($pLinkUrl);
+        // Прверяем, что нет ссылки с таким адресом
+        $sql = "select count(*) as resultcount 
                from  UserLinks 
-               where trim(userlink_url) = '".trim($pLinkUrl)."'
+               where trim(userlink_url) = $qLinkUrl
                  and linktype_id = $pLinkTypeId
                  and raid_id = $pLinkRaidId
                  and user_id = $pUserId
-                 and userlink_hide = 0
-           ";
-      //     echo $sql;
-       if (CSql::singleValue($sql, 'resultcount') > 0)
-       {
-        CMmb::setErrorSm('Уже есть впечатление  с таким адресом.');
-                return; 
-       }
+                 and userlink_hide = 0 ";
+        //     echo $sql;
+        if (CSql::singleValue($sql, 'resultcount') > 0) {
+            CMmb::setErrorSm('Уже есть впечатление  с таким адресом.');
+            return;
+        }
 
-    // Прверяем, что не более трёх ссылок на ММБ
-           $sql = "select count(*) as resultcount 
+        // Прверяем, что не более трёх ссылок на ММБ
+        $sql = "select count(*) as resultcount 
                from  UserLinks 
            where raid_id = $pLinkRaidId
              and userlink_hide = 0
              and user_id = $pUserId";
            //echo $sql;
 
-       if (CSql::singleValue($sql, 'resultcount') >= 4)
-       {
-        CMmb::setErrorSm('Уже есть 4 впечатления на этот ММБ.');
-                return; 
-       }
+        if (CSql::singleValue($sql, 'resultcount') >= 4) {
+            CMmb::setErrorSm('Уже есть 4 впечатления на этот ММБ.');
+            return;
+        }
 
 
-             $Sql = "insert into UserLinks (userlink_name, userlink_url, linktype_id, userlink_hide, raid_id, user_id) 
-                 values ('$pLinkName', '$pLinkUrl', $pLinkTypeId, 0, $pLinkRaidId, $pUserId)";
+        $qLinkName = CSql::quote($pLinkName);
+        $Sql = "insert into UserLinks (userlink_name, userlink_url, linktype_id, userlink_hide, raid_id, user_id) 
+                 values ($qLinkName, $qLinkUrl, $pLinkTypeId, 0, $pLinkRaidId, $pUserId)";
 
               //    echo $sql;
-         MySqlQuery($Sql);
+        MySqlQuery($Sql);
 
          CMmb::setResult('Добавлено новое впечатление', 'ViewUserData', "");
- }
-
-   // ============ Удаление впечатления ====================================
-   elseif ($action == 'DelLink')
-   {
-   
-   
-    $pUserId = $_POST['UserId'];
-
-    if ($pUserId <= 0)
-    {
-        CMmb::setErrorMessage('Пользователь не найден');
-        return;
     }
 
-    if ($SessionId <= 0)
-    {
-        CMmb::setErrorMessage('Сессия не найдена');
-        return;
-    }
+    // ============ Удаление впечатления ====================================
+    elseif ($action == 'DelLink') {
+        $pUserId = mmb_validateInt($_POST, 'UserId');
+
+        if ($pUserId <= 0) {
+            CMmb::setErrorMessage('Пользователь не найден');
+            return;
+        }
+
+        if ($SessionId <= 0) {
+            CMmb::setErrorMessage('Сессия не найдена');
+            return;
+        }
 
 
-    $pUserLinkId = trim($_POST['UserLinkId']);
-        if (!isset($pUserLinkId)) {$pUserLinkId = 0;}
-
-    if ($pUserLinkId <= 0)
-    {
-        CMmb::setErrorMessage('Ссылка не найдена');
-        return;
-    }
+        $pUserLinkId = mmb_validateInt($_POST, 'UserLinkId');
+        if ($pUserLinkId <= 0) {
+            CMmb::setErrorMessage('Ссылка не найдена');
+            return;
+        }
 
 
-     $sql = "select raid_id 
+        $sql = "select raid_id 
                from  UserLinks 
-               where userlink_id = $pUserLinkId
-           ";
-      //     echo $sql;
-     $raidId = CSql::singleValue($sql, 'raid_id');
-     $userId = CSql::userId($SessionId);
+               where userlink_id = $pUserLinkId";
+        //     echo $sql;
+        $raidId = CSql::singleValue($sql, 'raid_id');
+        $userId = CSql::userId($SessionId);
 
-    // Права на редактирование
-    if (!UACanLinkEdit($pUserId, $raidId, $userId))
-        return;              // выходим
+        // Права на редактирование
+        if (!UACanLinkEdit($pUserId, $raidId, $userId))
+            return;              // выходим
 
 
-    $Sql = "update  UserLinks set userlink_hide = 1 where userlink_id = $pUserLinkId";
+        $Sql = "update  UserLinks set userlink_hide = 1 where userlink_id = $pUserLinkId";
 
-    //    echo $sql;
-    MySqlQuery($Sql);
+        //    echo $sql;
+        MySqlQuery($Sql);
 
-    CMmb::setResult('Впечатление удалено', "ViewUserData", "");
+        CMmb::setResult('Впечатление удалено', "ViewUserData", "");
 
-  } elseif ($action == "SendInvitation")  {
-    // Действие вызывается нажатием кнопки "Выдать приглашение"
+    } elseif ($action == "SendInvitation")  {
+        // Действие вызывается нажатием кнопки "Выдать приглашение"
 
-    $pUserId = $_POST['UserId'];
+        $pUserId = mmb_validateInt($_POST, 'UserId');
 
-        if ($pUserId <= 0 or $UserId <= 0 or !CRights::canDeliveryInvitation($UserId, $RaidId, 1))
-    {
-        CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
-        return;
-    }
+        if ($pUserId <= 0 or $UserId <= 0 or !CRights::canDeliveryInvitation($UserId, $RaidId, 1)) {
+            CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
+            return;
+        }
 
-    // вставляем запись о розадче
+        // вставляем запись о розадче
 
-    // Нахождим дату окончания регистрации
-    $sql = "select ADDTIME(r.raid_registrationenddate, '23:59:59') as invenddt
+        // Нахождим дату окончания регистрации
+        $sql = "select ADDTIME(r.raid_registrationenddate, '23:59:59') as invenddt
                 from Raids r
                 where  r.raid_id = $RaidId
                     and r.raid_registrationenddate is not null
             ";
-    $invEndDt = CSql::singleValue($sql, 'invenddt', false);
+        $invEndDt = CSql::singleValue($sql, 'invenddt', false);
 
-    if (empty($invEndDt)) {
-                    CMmb::setErrorSm('Не определена дата окончания действия приглашения.');
+        if (empty($invEndDt)) {
+            CMmb::setErrorSm('Не определена дата окончания действия приглашения.');
             return;
-    }
+        }
 
-    // смотрим максимальную дату приглашений по рейтингу
-    // если нашли, то ставим её, а не дату окончания ММБ
-    $sql = "select MAX(inv.invitation_enddt) as maxinvdt
+        // смотрим максимальную дату приглашений по рейтингу
+        // если нашли, то ставим её, а не дату окончания ММБ
+        $sql = "select MAX(inv.invitation_enddt) as maxinvdt
                 from InvitationDeliveries invd
                     inner join Invitations inv
                     on invd.invitationdelivery_id = inv.invitationdelivery_id
@@ -1249,58 +1184,48 @@ if (!isset($MyPHPScript)) return;
                     and inv.invitation_enddt > NOW()
                     and invd.invitationdelivery_type = 1 
             ";
-    $maxinvdt = CSql::singleValue($sql, 'maxinvdt', false);
+        $maxinvdt = CSql::singleValue($sql, 'maxinvdt', false);
 
-    if (!empty($maxinvdt)) {
-        $invEndDt = $maxinvdt;
-    }
-
-
+        if (!empty($maxinvdt)) {
+            $invEndDt = $maxinvdt;
+        }
 
 
+        $sql = "insert into InvitationDeliveries (raid_id, invitationdelivery_type, invitationdelivery_dt, user_id, invitationdelivery_amount)
+                    VALUES ($RaidId, 3, NOW(), $UserId, 1)";
 
-    $sql = "insert into InvitationDeliveries (raid_id, invitationdelivery_type, invitationdelivery_dt, user_id, invitationdelivery_amount)
-                    VALUES ($RaidId, 3, NOW(), $UserId, 1)
-        ";
+        //echo $sql;
+        $newInvDeliveryId = MySqlQuery($sql);
 
-    //echo $sql;
-    $newInvDeliveryId = MySqlQuery($sql);
-
-    //echo "newInvDeliveryId=  $newInvDeliveryId ";
-    if ($newInvDeliveryId <= 0)
-    {
-                       CMmb::setErrorSm('Ошибка записи раздачи приглашения.');
+        //echo "newInvDeliveryId=  $newInvDeliveryId ";
+        if ($newInvDeliveryId <= 0) {
+            CMmb::setErrorSm('Ошибка записи раздачи приглашения.');
             return;
-    }
+        }
 
-    if ($pUserId <= 0 or $UserId <= 0 or !CRights::canDeliveryInvitation($UserId, $RaidId, 1))
-    {
-        CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
-        return;
-    }
-
-    $sql = "insert into Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
-                VALUES ($pUserId, NOW(), '$invEndDt', $newInvDeliveryId)
-        ";
-
-//echo $sql;
-    $newInvId = MySqlQuery($sql);
-    if ($newInvId <= 0)
-    {
-                       CMmb::setErrorSm('Ошибка записи приглашения.');
+        if ($pUserId <= 0 or $UserId <= 0 or !CRights::canDeliveryInvitation($UserId, $RaidId, 1)) {
+            CMmb::setErrorMessage('Не хватает прав или нет доступных приглашений');
             return;
+        }
+
+        $sql = "insert into Invitations (user_id, invitation_begindt, invitation_enddt, invitationdelivery_id)
+                VALUES ($pUserId, NOW(), '$invEndDt', $newInvDeliveryId)";
+
+        //echo $sql;
+        $newInvId = MySqlQuery($sql);
+        if ($newInvId <= 0) {
+            CMmb::setErrorSm('Ошибка записи приглашения.');
+            return;
+        }
+
+        CMmb::setResult('Приглашение выдано', "ViewUserData", "");
+
+    }  else {
+    // если никаких действий не требуется
+
+    //  $statustext = "<br/>";
     }
 
-    CMmb::setResult('Приглашение выдано', "ViewUserData", "");
-
-
-   
-   }  else {
-   // если никаких действий не требуется
-
-   //  $statustext = "<br/>";
-   }
-
-//	print('view = '.$view.' action = '.$action);
-   
+    //	print('view = '.$view.' action = '.$action);
 ?>
+
