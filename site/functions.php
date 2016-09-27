@@ -739,7 +739,7 @@ class CMmbAuth {
 
 		// Создаём пароль.
 		while ($PasswordLength--) {
-			$Password .= $CharsArr[rand(0, $CharsArrLen)];
+			$Password .= $CharsArr[rand(0, $CharsArrLen)];		// todo think on random_int
 		}
 
 		// echo $Password;
