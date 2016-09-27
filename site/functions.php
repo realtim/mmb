@@ -77,13 +77,13 @@ class CMmb
 };
 
 
- function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "")
- {
- // Можно передавать соединение по ссылке &$ConnectionId  MySqlQuery($SqlString,&$ConnectionId, $SessionId,$NonSecure);
- //
- // вызов  MySqlQuery('...',&$ConnectionId, ...);
+function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "")
+{
+	// Можно передавать соединение по ссылке &$ConnectionId  MySqlQuery($SqlString,&$ConnectionId, $SessionId,$NonSecure);
+ 	//
+ 	// вызов  MySqlQuery('...',&$ConnectionId, ...);
 
-  // echo $ConnectionId;
+  	// echo $ConnectionId;
 
 	$ConnectionId = CSql::getConnection();
 
@@ -276,7 +276,7 @@ class CSql {
 		$tDate = trim($date);
 		$tTime = trim($time);
 		
-		// Если передали без секунд, то устанавдливаем принудительно флаг
+		// Если передали без секунд, то устанавливаем принудительно флаг
 		if (!$noSeconds && strlen($tTime) <> 6)
 		{
 		   $noSeconds = true;
@@ -286,10 +286,10 @@ class CSql {
 		return  "'$year-".substr($tDate, -2)."-".substr($tDate, 0, 2)." ".substr($tTime, 0, 2).":".substr($tTime, 2, 2).":$seconds'";
 	}
 
-	// 21.03.2016 Добавляю сервисные функции в этот класс, хотя может нужно  потом разбивать на  отдельеные классы
+	// 21.03.2016 Добавляю сервисные функции в этот класс, хотя может нужно  потом разбивать на  отдельные классы
 	public static function userId($sessionId)
 	{
-		$sql = "select user_id from Sessions where session_id = '$sessionId'";
+		$sql = "select user_id from Sessions where session_id = " . CSql::quote($sessionId);
 
 		return self::singleValue($sql, 'user_id', false);
 	}
@@ -655,25 +655,105 @@ class CSql {
     }
 
 
+class CMmbAuth {
+	const MinPasswordLen = 8;
 
-    // Гененрируем пароль
-    function GeneratePassword($PasswordLength) {
-   // Количество символов в пароле.$PasswordLength
-	
-	 $CharsArr="qazxswnhyujmedcvfrtgbkiolp1234567890QAZCVFXSWEDRTGBNHYUJMKIOLP";
+	public static function setAutoPassword($userId)
+	{
+		// пишем в базу пароль и время отправки письма с паролем
+		//  обнуляем сессию для восстановления и её время
+		$password = self::generatePassword();
 
-		 // Определяем количество символов в $chars
-		 $CharsArrLen = StrLen($CharsArr) - 1;
+		$sql = "update   Users  set user_password = ". self::hashAndQuote($password).",
+                                     user_sendnewpassworddt = now(),
+                         user_sessionfornewpassword = null,
+                         user_sendnewpasswordrequestdt = null
+                 where user_id = $userId";
+		//   echo $sql;
+		$rs = MySqlQuery($sql);
 
-		 // Определяем пустую переменную, в которую и будем записывать символы.
- 		 $Password = '';
+		return $password;
+	}
 
-		 // Создаём пароль.
-		 while($PasswordLength--) {  $Password.=$CharsArr[rand(0, $CharsArrLen)]; }
+	/// returns: description on error, true on success
+	public static function setPassword($userId, $pwd)
+	{
+		$err = self::isValidPassword($pwd);
+		if ($err !== true)
+			return $err;
 
-       // echo $Password;
-      return $Password;
-    }
+		$sql = "update Users set user_password = ".self::hashAndQuote(trim($pwd))."
+			  		where user_id = $userId";
+
+		$rs = MySqlQuery($sql);
+		return true;
+	}
+
+	/// returns: description on error, true on success
+	public static function isValidPassword($pwd)
+	{
+		$err = array();
+
+		if ($pwd === null || !is_string($pwd) || strlen($pwd) < self::MinPasswordLen)
+			$err[] = "пароль должен быть не короче "  . self::MinPasswordLen . " символов";
+
+		// todo добавить проверку на  low letter, caps letters, non-letter
+
+
+		return count($err) == 0 ? true : implode(", ", $err);
+	}
+
+	// returns: userId on success, -1 on error
+	public static function getUserId($login, $pwd)
+	{
+		$qLogin = CSql::quote(trim($login));		// todo а как насчет user_hide ???
+		$sql = "select user_id, user_password from  Users
+                	where trim(user_email) = $qLogin";
+		$row = CSql::singleRow($sql);
+
+		if (!isset($row['user_id']))
+			return -1;
+
+		// return password_verify($pwd, $row['user_password']) ? $row['user_id'] : -1; // todo uncomment on migration
+
+		if ($row['user_password'] === md5(trim($pwd)))
+			return $row['user_id'];
+
+		return -1;
+	}
+
+	// Гененрируем пароль
+	private static function generatePassword()
+	{
+		$PasswordLength = self::MinPasswordLen;
+		// Количество символов в пароле.$PasswordLength
+		// todo проверка обязательности low letter, caps letter, non-letter
+
+		$CharsArr = "qazxswnhyujmedcvfrtgbkiolp1234567890QAZCVFXSWEDRTGBNHYUJMKIOLP";
+
+		// Определяем количество символов в $chars
+		$CharsArrLen = StrLen($CharsArr) - 1;
+
+		// Определяем пустую переменную, в которую и будем записывать символы.
+		$Password = '';
+
+		// Создаём пароль.
+		while ($PasswordLength--) {
+			$Password .= $CharsArr[rand(0, $CharsArrLen)];
+		}
+
+		// echo $Password;
+		return $Password;
+	}
+
+	private static function hashAndQuote($pwd)
+	{
+		$hash = md5($pwd);
+		//$hash = password_hash($hash);  // todo uncomment on migration
+
+		return CSql::quote($hash);
+	}
+}
 
 
 

@@ -47,21 +47,23 @@ if (!isset($MyPHPScript)) return;
         } 
          // конец первичной проверки входных данных
 
-        $qLogin = CSql::quote($Login);
+        /*$qLogin = CSql::quote($Login);
         $Sql = "select user_id, user_name from  Users
                 where trim(user_email) = $qLogin and user_password = '".md5(trim($_POST['Password']))."'";
 
         //echo $Sql;
 
         $Row = CSql::singleRow($Sql);
-        $UserId = $Row['user_id'];
+        $UserId = $Row['user_id'];*/
+
+
+        $UserId = CMmbAuth::getUserId($Login, mmb_validate($_POST, 'Password'));
 
         CMmbLogger::i('Login', "'$Login';".$_SERVER['REMOTE_ADDR'].";$UserId");
 
         if ($UserId <= 0)
         {
               //.$login." не найден!";
-            $password = "";
     //		CSql::closeConnection();
             CMmb::setErrorMessage('Неверный email или пароль.');
             return;
@@ -105,8 +107,8 @@ if (!isset($MyPHPScript)) return;
         // флаги разрешения получать письма передаем только при правке (см. ниже)
 
 
-        $pUserNewPassword = mmb_validate($_POST, 'UserNewPassword', '');
-        $pUserConfirmNewPassword = mmb_validate($_POST, 'UserConfirmNewPassword', '');
+        $pUserNewPassword = trim(mmb_validate($_POST, 'UserNewPassword', ''));
+        $pUserConfirmNewPassword = trim(mmb_validate($_POST, 'UserConfirmNewPassword', ''));
 
         $qUserCity = CSql::quote($pUserCity == $UserCityPlaceHolder ? '' : $pUserCity);
         $qUserPhone = CSql::quote($pUserPhone == $UserPhonePlaceHolder ? '' : $pUserPhone);
@@ -138,9 +140,18 @@ if (!isset($MyPHPScript)) return;
         }
 
 
-        if ((trim($pUserNewPassword) <> '' or trim($pUserConfirmNewPassword) <> '') and trim($pUserNewPassword) <> trim($pUserConfirmNewPassword)) {
+        if (($pUserNewPassword <> '' or $pUserConfirmNewPassword <> '') and $pUserNewPassword <> $pUserConfirmNewPassword) {
             CMmb::setErrorSm('Не совпадает новый пароль и его подтверждение.');
             return;
+        }
+
+
+        if ($pUserNewPassword <> '') {
+            $err = CMmbAuth::isValidPassword($pUserNewPassword);
+            if ($err !== true) {
+                CMmb::setErrorSm($err);
+                return;
+            }
         }
 
         // Прверяем, что нет активной учетной записи с таким e-mail
@@ -286,13 +297,14 @@ if (!isset($MyPHPScript)) return;
             // echo $sql;
             $rs = MySqlQuery($sql);
 
-                  // Обновление пароля джелаем только, когда просят
-            if (trim($pUserNewPassword) <> '' and trim($pUserConfirmNewPassword) <> '' and trim($pUserNewPassword) == trim($pUserConfirmNewPassword)) {
-                $sql = "update  Users set user_password = md5('".trim($pUserNewPassword)."')
-                          where user_id = $pUserId";
-                 
-                // echo $sql;
-                $rs = MySqlQuery($sql);
+            // Обновление пароля делаем только, когда просят
+            if ($pUserNewPassword <> '' and $pUserConfirmNewPassword <> '' and $pUserNewPassword == $pUserConfirmNewPassword) {
+                $err = CMmbAuth::setPassword($pUserId, $pUserNewPassword);
+                if ($err !== true) {
+                    CMmb::setErrorSm($err);
+                    return;
+                }
+
                 $statustext = 'Сохранён новый пароль.';
             }
 
@@ -340,17 +352,7 @@ if (!isset($MyPHPScript)) return;
         $UserEmail = $row['user_email'];
         $UserName = $row['user_name'];
 
-        $NewPassword = GeneratePassword(6);
-
-        // пишем в базу пароль и время отправки письма с паролем
-        //  обнуляем сессию для восстановления и её время
-        $sql = "update   Users  set user_password = '".md5($NewPassword)."',
-                                    user_sendnewpassworddt = now(),
-                         user_sessionfornewpassword = null,
-                         user_sendnewpasswordrequestdt = null
-                 where user_id = $pUserId";
-            //   echo $sql;
-        $rs = MySqlQuery($sql);
+        $NewPassword = CMmbAuth::setAutoPassword($pUserId);
 
         CMmb::setShortResult("Пароль $NewPassword выслан.", '');
 
@@ -433,17 +435,7 @@ if (!isset($MyPHPScript)) return;
         // Если идентификаторы совпали - меняем пароль
         // Возможно здесь стоит сразу стартовать сессию...
         if ($UserId > 0) {
-            $NewPassword = GeneratePassword(6);
-
-            // пишем в базу пароль и время отправки письма с паролем
-            //  обнуляем сессию для восстановления и её время
-            $sql = "update   Users  set user_password = '".md5($NewPassword)."',
-                                     user_sendnewpassworddt = now(),
-                         user_sessionfornewpassword = null,
-                         user_sendnewpasswordrequestdt = null
-                 where user_id = $UserId";
-                //   echo $sql;
-            $rs = MySqlQuery($sql);
+            $NewPassword = CMmbAuth::setAutoPassword($UserId);
 
             $Msg =  "Уважаемый пользователь $UserName!\r\n\r\n";
             $Msg .= "Согласно подтверждённому запросу с Вашего адреса e-mail,\r\n";
