@@ -101,7 +101,7 @@ if (!isset($MyPHPScript)) return;
         $pUserName = trim(mmb_validate($_POST, 'UserName'));
         $pUserCity = trim(mmb_validate($_POST, 'UserCity'));
         $pUserPhone = trim(mmb_validate($_POST, 'UserPhone'));
-        $pUserBirthYear = mmb_validateInt($POST, 'UserBirthYear');
+        $pUserBirthYear = mmb_validateInt($_POST, 'UserBirthYear');
         $pUserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
         $pUserId = mmb_validateInt($_POST, 'UserId', -1);
         // флаги разрешения получать письма передаем только при правке (см. ниже)
