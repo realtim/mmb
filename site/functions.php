@@ -703,7 +703,7 @@ class CMmbAuth {
 		return count($err) == 0 ? true : implode(", ", $err);
 	}
 
-	// returns: userId on success, -1 on error
+	// returns: userId on success, 0 on error
 	public static function getUserId($login, $pwd)
 	{
 		$qLogin = CSql::quote(trim($login));		// todo а как насчет user_hide ???
@@ -712,14 +712,14 @@ class CMmbAuth {
 		$row = CSql::singleRow($sql);
 
 		if (!isset($row['user_id']))
-			return -1;
+			return 0;
 
-		// return password_verify($pwd, $row['user_password']) ? $row['user_id'] : -1; // todo uncomment on migration
+		// return password_verify($pwd, $row['user_password']) ? $row['user_id'] : 0; // todo uncomment on migration
 
 		if ($row['user_password'] === md5(trim($pwd)))
 			return $row['user_id'];
 
-		return -1;
+		return 0;
 	}
 
 	// Гененрируем пароль
@@ -3681,11 +3681,11 @@ class CMmbLogger
 		
 		$time = date("Y-m-d H:i:s");
 
-		$stack = debug_print_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 0);  // think of depth limit. 0 means infinity
+		$stack = debug_print_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);  // think of depth limit. 0 means infinity -- no limits so far. We still run on php 5.3
 
 		if (!$forMail)
 		{
-			$re = '/[\r\n\t]+/gmu';
+			$re = '/[\r\n\t]+/mu';  // gmu worked on test machines
 			$msg = preg_replace($re, ' ', $message);
 			$stack = preg_replace($re, ' ', $stack);
 
