@@ -48,20 +48,8 @@ if (!isset($MyPHPScript)) return;
         } 
          // конец первичной проверки входных данных
 
-        /*$qLogin = CSql::quote($Login);
-        $Sql = "select user_id, user_name from  Users
-                where trim(user_email) = $qLogin and user_password = '".md5(trim($_POST['Password']))."'";
-
-        //echo $Sql;
-
-        $Row = CSql::singleRow($Sql);
-        $UserId = $Row['user_id'];*/
-
-
         $UserId = CMmbAuth::getUserId($Login, $Password);
-
         CMmbLogger::i('Login', "'$Login';".$_SERVER['REMOTE_ADDR'].";$UserId");
-
         if ($UserId <= 0)
         {
               //.$login." не найден!";
@@ -287,7 +275,7 @@ if (!isset($MyPHPScript)) return;
             $sql = "update  Users set   user_email = '$pUserEmail',
                              user_name = '$pUserName',
                              user_city = '$pUserCity',
-                             user_phone = '$qUserPhone',
+                             user_phone = '$pUserPhone',
                              user_prohibitadd = $pUserProhibitAdd,
                              user_allowsendorgmessages = $pUserAllowOrgMessages,
                              user_noshow = $pUserNoShow,
