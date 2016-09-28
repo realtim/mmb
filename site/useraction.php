@@ -37,11 +37,12 @@ if (!isset($MyPHPScript)) return;
          
         // первичная проверка данных
         $Login = trim(mmb_validate($_POST, 'Login'));
+        $Password = trim(mmb_validate($_POST, 'Password'));
         if ($Login == "") {
             CMmb::setErrorMessage('Не указан e-mail.');
             return;
 
-        } elseif ($_POST['Password']== "") {
+        } elseif ($Password == "") {
             CMmb::setErrorMessage('Не указан пароль.');
             return;
         } 
@@ -57,7 +58,7 @@ if (!isset($MyPHPScript)) return;
         $UserId = $Row['user_id'];*/
 
 
-        $UserId = CMmbAuth::getUserId($Login, mmb_validate($_POST, 'Password'));
+        $UserId = CMmbAuth::getUserId($Login, $Password);
 
         CMmbLogger::i('Login', "'$Login';".$_SERVER['REMOTE_ADDR'].";$UserId");
 
@@ -110,8 +111,10 @@ if (!isset($MyPHPScript)) return;
         $pUserNewPassword = trim(mmb_validate($_POST, 'UserNewPassword', ''));
         $pUserConfirmNewPassword = trim(mmb_validate($_POST, 'UserConfirmNewPassword', ''));
 
-        $qUserCity = CSql::quote($pUserCity == $UserCityPlaceHolder ? '' : $pUserCity);
-        $qUserPhone = CSql::quote($pUserPhone == $UserPhonePlaceHolder ? '' : $pUserPhone);
+        if ($pUserCity == $UserCityPlaceHolder)
+            $pUserCity = '';
+        if ($pUserPhone == $UserPhonePlaceHolder)
+            $pUserPhone = '';
 
         // 03/07/2014  Скрываем ФИО
         $pUserNoShow = mmb_isOn($_POST, 'UserNoShow');
@@ -155,19 +158,16 @@ if (!isset($MyPHPScript)) return;
         }
 
         // Прверяем, что нет активной учетной записи с таким e-mail
-        $qUserEmail = CSql::quote($pUserEmail);
-        $sql = "select count(*) as resultcount from  Users where COALESCE(user_password, '') <> '' and trim(user_email) = $qUserEmail and user_id <> $pUserId";
+        $sql = "select count(*) as resultcount from  Users where COALESCE(user_password, '') <> '' and trim(user_email) = '$pUserEmail' and user_id <> $pUserId";
         //     echo $sql;
         if (CSql::singleValue($sql, 'resultcount') > 0) {
             CMmb::setErrorSm('Уже есть пользователь с таким email.');
             return;
         }
 
-
-        $qUserName = CSql::quote($pUserName);
         $sql = "select count(*) as resultcount
                from  Users 
-           where  trim(user_name) = $qUserName
+           where  trim(user_name) = '$pUserName'
                   and user_birthyear = $pUserBirthYear
               and user_id <> $pUserId
               and userunionlog_id is null ";
@@ -178,7 +178,7 @@ if (!isset($MyPHPScript)) return;
         }
 
         // Если есть неактивная учетная запись - высылаем на почту ссылку с активацией
-        $sql = "select user_id from  Users where COALESCE(user_password, '') = '' and trim(user_email) = $qUserEmail and user_id <> $pUserId";
+        $sql = "select user_id from  Users where COALESCE(user_password, '') = '' and trim(user_email) = '$pUserEmail' and user_id <> $pUserId";
         //echo $sql;
         $Row = CSql::singleRow($sql);
         if ($Row['user_id'] > 0) {
@@ -233,9 +233,9 @@ if (!isset($MyPHPScript)) return;
             $sql = "insert into  Users (user_email, user_name, user_birthyear, user_password, user_registerdt,
                                      user_sessionfornewpassword, user_sendnewpasswordrequestdt, 
                          user_prohibitadd, user_city, user_phone, user_noshow)
-                             values ($qUserEmail, $qUserName, $pUserBirthYear, '', now(),
+                             values ('$pUserEmail', '$pUserName', $pUserBirthYear, '', now(),
                              '$ChangePasswordSessionId', now(),
-                          $pUserProhibitAdd, $qUserCity, $qUserPhone, $pUserNoShow)";
+                          $pUserProhibitAdd, '$pUserCity', '$pUserPhone', $pUserNoShow)";
 //                 echo $sql;  
             // При insert должен вернуться послений id - это реализовано в  MySqlQuery
             $newUserId = MySqlQuery($sql);
@@ -284,10 +284,10 @@ if (!isset($MyPHPScript)) return;
             // 03/07/2014  Добавляем признак анонимности (скрывать ФИО)
             // user_allowsendchangeinfo = $pUserAllowChangeInfo,
 
-            $sql = "update  Users set   user_email = $qUserEmail,
-                             user_name = $qUserName,
-                             user_city = $qUserCity,
-                             user_phone = $qUserPhone,
+            $sql = "update  Users set   user_email = '$pUserEmail',
+                             user_name = '$pUserName',
+                             user_city = '$pUserCity',
+                             user_phone = '$qUserPhone',
                              user_prohibitadd = $pUserProhibitAdd,
                              user_allowsendorgmessages = $pUserAllowOrgMessages,
                              user_noshow = $pUserNoShow,
@@ -382,7 +382,7 @@ if (!isset($MyPHPScript)) return;
 
         $sql = "select user_id 
                 from  Users 
-                where user_hide = 0 and user_email = ". CSql::quote($pUserEmail);
+                where user_hide = 0 and user_email = '$pUserEmail'";
 
         //  echo $sql;
         $pUserId = CSql::singleValue($sql, 'user_id');
@@ -678,7 +678,7 @@ if (!isset($MyPHPScript)) return;
         if (!UACanEdit($pUserId))
             return;              // выходим
 
-        $pNewDeviceName = trim($_POST['NewDeviceName']);
+        $pNewDeviceName = trim(mmb_validate($_POST, 'NewDeviceName'));
         if (empty($pNewDeviceName) or $pNewDeviceName == 'Название нового устройства')
         {
             $alert = 1;
@@ -687,15 +687,14 @@ if (!isset($MyPHPScript)) return;
         }
 
         // Прверяем, что нет устройства с таким именем
-        $qDeviceName = CSql::quote($pNewDeviceName);
-        $sql = "select count(*) as resultcount from  Devices where trim(device_name) = $qDeviceName";
+        $sql = "select count(*) as resultcount from  Devices where trim(device_name) = '$pNewDeviceName'";
         //     echo $sql;
         if (CSql::singleValue($sql, 'resultcount') > 0) {
             CMmb::setErrorSm('Уже есть устройство с таким именем.');
             return;
         }
 
-        $Sql = "insert into Devices (device_name, user_id) values ($qDeviceName, $pUserId)";
+        $Sql = "insert into Devices (device_name, user_id) values ('$pNewDeviceName', $pUserId)";
         MySqlQuery($Sql);
 
         CMmb::setResult('Добавлено устройство', 'ViewUserData');
@@ -1061,11 +1060,10 @@ if (!isset($MyPHPScript)) return;
             return;              // выходим
 
 
-        $qLinkUrl = CSql::quote($pLinkUrl);
         // Прверяем, что нет ссылки с таким адресом
         $sql = "select count(*) as resultcount 
                from  UserLinks 
-               where trim(userlink_url) = $qLinkUrl
+               where trim(userlink_url) = '$pLinkUrl'
                  and linktype_id = $pLinkTypeId
                  and raid_id = $pLinkRaidId
                  and user_id = $pUserId
@@ -1090,9 +1088,8 @@ if (!isset($MyPHPScript)) return;
         }
 
 
-        $qLinkName = CSql::quote($pLinkName);
         $Sql = "insert into UserLinks (userlink_name, userlink_url, linktype_id, userlink_hide, raid_id, user_id) 
-                 values ($qLinkName, $qLinkUrl, $pLinkTypeId, 0, $pLinkRaidId, $pUserId)";
+                 values ('$pLinkName', '$pLinkUrl', $pLinkTypeId, 0, $pLinkRaidId, $pUserId)";
 
               //    echo $sql;
         MySqlQuery($Sql);
