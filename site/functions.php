@@ -289,7 +289,7 @@ class CSql {
 	// 21.03.2016 Добавляю сервисные функции в этот класс, хотя может нужно  потом разбивать на  отдельные классы
 	public static function userId($sessionId)
 	{
-		$sql = "select user_id from Sessions where session_id = " . CSql::quote($sessionId);
+		$sql = "select user_id from Sessions where session_id = " . CSql::quote($sessionId);	// см комментарий про эскейпинг к CMmbAuth::getUserId
 
 		return self::singleValue($sql, 'user_id', false);
 	}
@@ -706,9 +706,9 @@ class CMmbAuth {
 	// returns: userId on success, 0 on error
 	public static function getUserId($login, $pwd)
 	{
-		$qLogin = CSql::quote(trim($login));		// todo а как насчет user_hide ???
+		$qLogin = CSql::quote(trim($login));		// а откуда приходят логин и пароль? они уже заэскейплены или нет?
 		$sql = "select user_id, user_password from  Users
-                	where trim(user_email) = $qLogin";
+                	where user_hide = 0 and trim(user_email) = $qLogin";
 		$row = CSql::singleRow($sql);
 
 		if (!isset($row['user_id']))
@@ -3546,7 +3546,7 @@ function FindErrors($raid_id, $team_id)
 	function mmb_validateInt($var, $key, $default = 0)
 	{
 		$val = mmb_validate($var, $key, $default);
-		return is_numeric($val) ? $val : false;
+		return is_numeric($val) ? ((int)$val) : false;
 	}
 
 	function mmb_isOn($var, $key)
@@ -3681,7 +3681,9 @@ class CMmbLogger
 		
 		$time = date("Y-m-d H:i:s");
 
-		$stack = debug_print_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);  // think of depth limit. 0 means infinity -- no limits so far. We still run on php 5.3
+		// $stack = debug_print_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);  // think of depth limit. 0 means infinity -- no limits so far. We still run on php 5.3
+		$e = new Exception();
+		$stack = $e->getTraceAsString();
 
 		if (!$forMail)
 		{
