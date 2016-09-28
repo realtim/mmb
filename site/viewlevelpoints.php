@@ -96,7 +96,7 @@ else
 {
 
 
-        $pLevelPointId = $_POST['LevelPointId'];
+        $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
 
 	if ($pLevelPointId <= 0)
 	{
@@ -127,17 +127,17 @@ else
 	if ($viewsubmode == "ReturnAfterError")
 	{
 		ReverseClearArrays();
-		$PointTypeId = $_POST['PointTypeId'];
-		$DistanceId = $_POST['DistanceId'];
+		$PointTypeId = mmb_validateInt($_POST, 'PointTypeId');
+		$DistanceId = mmb_validateInt($_POST, 'DistanceId');
                 $PointName = $_POST['PointName'];
-                $PointPenalty = $_POST['PointPenalty'];
+                $PointPenalty = mmb_validateInt($_POST, 'PointPenalty');
                 $LevelPointMinYear = $_POST['MinYear'];
                 $LevelPointMinDate = $_POST['MinDate'];
                 $LevelPointMinTime = $_POST['MinTime'];
                 $LevelPointMaxYear = $_POST['MaxYear'];
                 $LevelPointMaxDate = $_POST['MaxDate'];
                 $LevelPointMaxTime = $_POST['MaxTime'];
-		$ScanPointId = $_POST['ScanPointId'];
+		$ScanPointId = mmb_validateInt($_POST, 'ScanPointId');
 	//	$LevelId = $_POST['LevelId'];
 
 

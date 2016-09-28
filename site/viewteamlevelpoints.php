@@ -91,7 +91,7 @@ else
 {
 
  
-        $pTeamLevelPointId = $_POST['TeamLevelPointId'];
+        $pTeamLevelPointId = mmb_validateInt($_POST, 'TeamLevelPointId');
 
 	if ($pTeamLevelPointId <= 0)
 	{
@@ -124,13 +124,13 @@ else
 	if ($viewsubmode == "ReturnAfterErrorTlp")
 	{
 		ReverseClearArrays();
-		$LevelPointId = $_POST['LevelPointId'];
+		$LevelPointId = mmb_validateInt($_POST, 'LevelPointId');
                 $TlpComment = $_POST['TlpComment'];
                 $TlpYear = $_POST['TlpYear'];
                 $TlpDate = $_POST['TlpDate'];
                 $TlpTime = $_POST['TlpTime'];
 		$PointName = '';
-		$ErrorId = $_POST['ErrorId'];
+		$ErrorId = mmb_validateInt($_POST, 'ErrorId');
 	}
 	else
 	{

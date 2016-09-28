@@ -77,7 +77,7 @@ else
 {
 
 
-        $pRaidFileId = $_POST['RaidFileId'];
+        $pRaidFileId = mmb_validateInt($_POST, 'RaidFileId');
 
 	if ($pRaidFileId <= 0)
 	{

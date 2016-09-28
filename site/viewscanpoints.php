@@ -72,7 +72,7 @@ else
 	if ($viewsubmode == "ReturnAfterError")
 	{
 		ReverseClearArrays();
-                $ScanPointName = $_POST['ScanPointName'];
+                $ScanPointName = mmb_validateInt($_POST, 'ScanPointName');
 
 	}
 	else

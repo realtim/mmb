@@ -779,13 +779,11 @@ elseif ($action == "ViewRaidTeams")
 elseif ($action == 'JsonExport')
 {
 
-	if (isset($_REQUEST['RaidId']) && is_numeric($_REQUEST['RaidId'])) $RaidId = intval($_REQUEST['RaidId']); else $RaidId = -1;
-
+	$RaidId = mmb_validateInt($_REQUEST, 'RaidId', -1);
 	if ($RaidId <= 0)
 	{
 		CMmb::setMessage('Не выбран марш-бросок');
 		return;
-
 	}
 
 

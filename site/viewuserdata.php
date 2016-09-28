@@ -70,8 +70,7 @@ if (!isset($MyPHPScript)) return;
                 //echo $viewsubmode;
 		//
 
-		$pUserId = $_REQUEST['UserId'];
-
+		$pUserId = mmb_validateInt($_REQUEST, 'UserId', -1);
 		if ($pUserId <= 0)
 		{
 		// должен быть определен пользователь, которого смотрят
