@@ -188,15 +188,15 @@ elseif ($action == 'AddTlp')
 
 
 
-	$pTeamId = $_POST['TeamId'];
-	$pLevelPointId = $_POST['LevelPointId'];
+	$pTeamId = mmb_validateInt($_POST, 'TeamId');
+	$pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
         //$pPointName = $_POST['PointName'];
 
         $pTlpYear = $_POST['TlpYear'];
         $pTlpDate = $_POST['TlpDate'];
         $pTlpTime = $_POST['TlpTime'];
         $pTlpComment = $_POST['TlpComment'];
-	$pErrorId = $_POST['ErrorId'];
+	$pErrorId = mmb_validateInt($_POST, 'ErrorId', -1);
 
 
          // тут по-хорошему нужны проверки
@@ -289,7 +289,7 @@ elseif ($action == 'ChangeTlp')
 
   
 
-        $pTeamLevelPointId = $_POST['TeamLevelPointId'];
+        $pTeamLevelPointId = mmb_validateInt($_POST, 'TeamLevelPointId');
 
 
 	if ($pTeamLevelPointId <= 0)
@@ -300,14 +300,14 @@ elseif ($action == 'ChangeTlp')
 
 
 
-	$pLevelPointId = $_POST['LevelPointId'];
-	$pTeamId = $_POST['TeamId'];
+	$pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
+	$pTeamId = mmb_validateInt($_POST, 'TeamId');
 
 	$pTlpYear = $_POST['TlpYear'];
         $pTlpDate = $_POST['TlpDate'];
         $pTlpTime = $_POST['TlpTime'];
         $pTlpComment = $_POST['TlpComment'];
-	$pErrorId = $_POST['ErrorId'];
+	$pErrorId = mmb_validateInt($_POST, 'ErrorId', -1);
 
 
 	$TlpYDTs = CSql::timeString($pTlpYear, $pTlpDate, $pTlpTime, false);
@@ -380,8 +380,8 @@ elseif ($action == 'HideTlp')
 		return;
 	}
 
-        $pTeamLevelPointId = $_POST['TeamLevelPointId'];
-        $pTeamId = $_POST['TeamId'];
+        $pTeamLevelPointId = mmb_validateInt($_POST, 'TeamLevelPointId');
+        $pTeamId = mmb_validateInt($_POST, 'TeamId');
 
 	
 	if ($pTeamId <= 0)

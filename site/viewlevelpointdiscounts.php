@@ -80,7 +80,7 @@ else
 {
 
 
-        $pLevelPointDiscountId = $_POST['LevelPointDiscountId'];
+        $pLevelPointDiscountId = mmb_validateInt($_POST, 'LevelPointDiscountId');
 
 	if ($pLevelPointDiscountId <= 0)
 	{

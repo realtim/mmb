@@ -364,7 +364,7 @@ elseif ($action == 'HideDistance')
 		return;
 	}
 
-        $pDistanceId = $_POST['DistanceId'];
+        $pDistanceId = mmb_validateInt($_POST, 'DistanceId');
 
 	if ($pDistanceId <= 0)
 	{
@@ -429,7 +429,7 @@ elseif ($action == 'AddRaidFile')
 		return;
 	}
 
-	$pFileTypeId = $_POST['FileTypeId'];
+	$pFileTypeId = mmb_validateInt($_POST, 'FileTypeId', -1);
 	//$pLevelPointId = $_POST['LevelPointId'];
 	$pRaidFileComment = $_POST['RaidFileComment'];
 
@@ -525,14 +525,14 @@ elseif ($action == 'RaidFileChange')
 		return;
 	}
 
-        $pRaidFileId = $_POST['RaidFileId'];
+        $pRaidFileId = mmb_validateInt($_POST, 'RaidFileId');
 	if ($pRaidFileId <= 0)
 	{
 		CMmb::setErrorSm('Не определён ключ файла.');
 		return;
 	}
 	
-	$pFileTypeId = $_POST['FileTypeId'];
+	$pFileTypeId = mmb_validateInt($_POST, 'FileTypeId');
 	//$pLevelPointId = $_POST['LevelPointId'];
 	$pRaidFileComment = $_POST['RaidFileComment'];
 
@@ -554,7 +554,7 @@ elseif ($action == 'HideFile')
 		return;
 	}
 
-        $pRaidFileId = $_POST['RaidFileId'];
+        $pRaidFileId = mmb_validateInt($_POST, 'RaidFileId');
 	if ($pRaidFileId <= 0)
 	{
 		CMmb::setErrorSm('Не определён ключ файла.');
@@ -669,7 +669,7 @@ elseif ($action == 'ScanPointChange')
 
 	CMmb::setViews('ViewScanPoints', 'Add');
 
-        $pScanPointId = $_POST['ScanPointId'];
+        $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
         $pScanPointName = $_POST['ScanPointName'];
 	if ($pScanPointId <= 0)
 	{
@@ -711,7 +711,7 @@ elseif ($action == 'HideScanPoint')
 
 	CMmb::setViews('ViewScanPoints', 'Add');
 
-        $pScanPointId = $_POST['ScanPointId'];
+        $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
 	if ($pScanPointId <= 0)
 	{
 		raidError('Не определён ключ скан-точки.');
@@ -766,7 +766,7 @@ elseif ($action == 'ScanPointOrderDown')
 		return;
 	}
 
-        $pScanPointId = $_POST['ScanPointId'];
+        $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
 	if ($pScanPointId <= 0)
 	{
 		raidError('Не определён ключ скан-точки.');
@@ -821,7 +821,7 @@ elseif ($action == 'ScanPointOrderUp')
 		return;
 	}
 
-        $pScanPointId = $_POST['ScanPointId'];
+        $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
 	if ($pScanPointId <= 0)
 	{
 		raidError('Не определён ключ скан-точки.');
@@ -877,15 +877,14 @@ elseif ($action == 'ViewLevelPointsPage')
 		CMmb::setErrorMessage('Id ММБ не указан');
 		return;
 	}
-	
+
+	$DistanceId = mmb_validateInt($_POST, 'DistanceId');
 	// Есди дистанция не указана  - берём первую
-        if (empty($_POST['DistanceId']))
+        if ($DistanceId <= 0)
 	{
 		$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = $RaidId order by distance_id ";
 	        $DistanceId = CSql::singleValue($sql, 'distance_id');
-	} else {
-	  $DistanceId =	$_POST['DistanceId'];
-        }
+	}
 	// Конец инициализации дистанции 
 
 	CMmb::setViews('ViewLevelPoints', 'Add');
@@ -902,10 +901,10 @@ elseif ($action == 'AddLevelPoint')
 		return;
 	}
 
-	$pPointTypeId = $_POST['PointTypeId'];
-	$pDistanceId = $_POST['DistanceId'];
+	$pPointTypeId = mmb_validateInt($_POST, 'PointTypeId');
+	$pDistanceId = mmb_validateInt($_POST, 'DistanceId');
         $pPointName = $_POST['PointName'];
-        $pPointPenalty = $_POST['PointPenalty'];
+        $pPointPenalty = mmb_validateInt($_POST, 'PointPenalty');
 
         $pLevelPointMinYear = $_POST['MinYear'];
         $pLevelPointMinDate = $_POST['MinDate'];
@@ -914,7 +913,7 @@ elseif ($action == 'AddLevelPoint')
         $pLevelPointMaxDate = $_POST['MaxDate'];
         $pLevelPointMaxTime = $_POST['MaxTime'];
 
-	$pScanPointId = $_POST['ScanPointId'];
+	$pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
 //	$pLevelId = $_POST['LevelId'];
 
          // тут по-хорошему нужны проверки
@@ -1005,7 +1004,7 @@ elseif ($action == 'LevelPointChange')
   	CMmb::setViews('ViewLevelPoints', 'Add');
 
 
-        $pLevelPointId = $_POST['LevelPointId'];
+        $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
 	if ($pLevelPointId <= 0)
 	{
 		raidError('Не определён ключ точки.');
@@ -1017,10 +1016,10 @@ elseif ($action == 'LevelPointChange')
 	$NowYear = (int)CSql::singleValue($sql, 'nowyear');     // вроде есть способы и попроще :)
 
 
-	$pPointTypeId = $_POST['PointTypeId'];
-	$pDistanceId = $_POST['DistanceId'];
+	$pPointTypeId = mmb_validateInt($_POST, 'PointTypeId');
+	$pDistanceId = mmb_validateInt($_POST, 'DistanceId');
         $pPointName = trim($_POST['PointName']);
-        $pPointPenalty = $_POST['PointPenalty'];
+        $pPointPenalty = mmb_validateInt($_POST, 'PointPenalty');
 
 
 	$pLevelPointMinYear = $_POST['MinYear'];
@@ -1030,7 +1029,7 @@ elseif ($action == 'LevelPointChange')
         $pLevelPointMaxDate = $_POST['MaxDate'];
         $pLevelPointMaxTime = $_POST['MaxTime'];
 
-	$pScanPointId = $_POST['ScanPointId'];
+	$pScanPointId = $_POST['ScanPointId'];		// todo почему где-то оно -- int, а где-то -- строка
 //	$pLevelId = $_POST['LevelId'];
 
         // тут надо поставить проверки
@@ -1097,9 +1096,7 @@ elseif ($action == 'HideLevelPoint')
 		return;
 	}
 
-        $pLevelPointId = $_POST['LevelPointId'];
-
-
+        $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
 	if ($pLevelPointId <= 0)
 	{
 		raidError('Не определён ключ точки.');
@@ -1151,9 +1148,7 @@ elseif ($action == 'LevelPointOrderDown')
 		return;
 	}
 
-        $pLevelPointId = $_POST['LevelPointId'];
-
-
+        $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
 	if ($pLevelPointId <= 0)
 	{
 		raidError('Не определён ключ точки.');
@@ -1217,7 +1212,7 @@ elseif ($action == 'LevelPointOrderUp')
 		return;
 	}
 
-        $pLevelPointId = $_POST['LevelPointId'];
+        $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
 	if ($pLevelPointId <= 0)
 	{
 		raidError('Не определён ключ точки.');
@@ -1275,14 +1270,12 @@ elseif ($action == 'ViewLevelPointDiscountsPage')
 	}
 	
 	// Есди дистанция не указана  - берём первую
-        if (empty($_POST['DistanceId']))
+	$DistanceId = mmb_validateInt($_POST, 'DistanceId');
+        if ($DistanceId <= 0)
 	{
 		$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = $RaidId order by distance_id ";
 	        $DistanceId = CSql::singleValue($sql, 'distance_id');
-
-	} else {
-		$DistanceId =	$_POST['DistanceId'];
-        }
+	}
 	// Конец инициализации дистанции 
 	CMmb::setViews('ViewLevelPointDiscounts', 'Add');
 }
@@ -1376,7 +1369,7 @@ elseif ($action == 'LevelPointDiscountChange')
 
 	CMmb::setViews('ViewLevelPointDiscounts', 'Add');
 	
-        $pLevelPointDiscountId = $_POST['LevelPointDiscountId'];
+        $pLevelPointDiscountId = mmb_validateInt($_POST, 'LevelPointDiscountId');
 	if ($pLevelPointDiscountId <= 0)
 	{
 		raidError('Не определён ключ интервала.');
@@ -1455,7 +1448,7 @@ elseif ($action == 'HideLevelPointDiscount')
 		return;
 	}
 
-        $pLevelPointDiscountId = $_POST['LevelPointDiscountId'];
+        $pLevelPointDiscountId = mmb_validateInt($_POST, 'LevelPointDiscountId');
 	if ($pLevelPointDiscountId <= 0)
 	{
 		raidError('Не определён ключ интервала.');

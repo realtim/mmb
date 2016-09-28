@@ -422,7 +422,7 @@ elseif ($action == 'TeamInfo' or $action == 'TlpInfo'  or $action == 'AddTlp' or
 // ============ Удаление участника команды ====================================
 elseif ($action == 'HideTeamUser')
 {
-	$HideTeamUserId = $_POST['HideTeamUserId'];
+	$HideTeamUserId = mmb_validateInt($_POST, 'HideTeamUserId');
 	if ($HideTeamUserId <= 0)
 	{
 		CMmb::setErrorMessage('Участник не найден');
@@ -553,14 +553,14 @@ elseif ($action == 'HideTeamUser')
 elseif ($action == 'TeamUserNotInPoint')
 {
   
-	$HideTeamUserId = $_POST['HideTeamUserId'];
+	$HideTeamUserId = mmb_validateInt($_POST, 'HideTeamUserId');
 	if ($HideTeamUserId <= 0)
 	{
 		CMmb::setErrorMessage('Участник не найден');
 		return;
 	}
 	// Здесь может быть 0 точка - значит, что участник везде явился
-	$LevelPointId = $_POST['UserNotInLevelPointId'];
+	$LevelPointId = mmb_validateInt($_POST, 'UserNotInLevelPointId');
 	if ($LevelPointId < 0)
 	{
 		CMmb::setErrorMessage('Точка не найдена');
@@ -1099,7 +1099,7 @@ elseif ($action == "HideTeamInUnion")  {
 	} 
 
 
-             $TeamUnionLogId = $_POST['TeamUnionLogId']; 
+             $TeamUnionLogId = mmb_validateInt($_POST, 'TeamUnionLogId');
 
              // Если вызвали с таким действием, должны быть определны оба пользователя
              if ($TeamUnionLogId <= 0 or (!$Administrator and !$Moderator))
@@ -1193,7 +1193,7 @@ elseif ($action == "UnionTeams")  {
     if ($Row['deltaresult'] > 15*60)
     {
         setUnionError('Результат команд отличается больше чем на 15 минут');
-       return;
+        return;
     }
 
 
@@ -1208,19 +1208,19 @@ elseif ($action == "UnionTeams")  {
     if ($Row['maxdistanceid'] <> $Row['mindistanceid'])
     {
         setUnionError('Разные дистанции у объединяемых команд');
-       return;
+        return;
     }
 
     if ($Row['teamcount'] < 2)
     {
 	    setUnionError('Объединить можно две команды или больше');
-       return;
+        return;
     }
     
 
     $pDistanceId = $Row['maxdistanceid'];
     $pTeamMapsCount  = $Row['mapscount'];
-        // Проверяем одинкаовое число взятых КП
+        // Проверяем одинаковое число взятых КП
 	$sql = "select  tlp.levelpoint_id
 		        from  TeamUnionLogs tul
 			      inner join Teams t
@@ -1435,7 +1435,7 @@ elseif ($action == "CancelUnionTeams")  {
 	      return;
 	} 
     
-    	$pParentTeamId = $_POST['TeamId'];
+    	$pParentTeamId = mmb_validateInt($_POST, 'TeamId');
  
     
 
