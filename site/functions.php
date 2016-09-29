@@ -286,6 +286,19 @@ class CSql {
 		return  "'$year-".substr($tDate, -2)."-".substr($tDate, 0, 2)." ".substr($tTime, 0, 2).":".substr($tTime, 2, 2).":$seconds'";
 	}
 
+	public static function timeString2($arr, $yearKey, $dateKey, $timeKey, $noSeconds = true)
+	{
+		$year = $arr[$yearKey];
+		$date = $arr[$dateKey];
+		$time = $arr[$timeKey];
+
+		// Если день и время пустые, то и год пустой считаем
+		if (((int)$date) == 0 and ((int)$time) == 0)
+			return "'0000-00-00 00:00:00'";
+
+		return self::timeString($year, $date, $time, $noSeconds);
+	}
+
 	// 21.03.2016 Добавляю сервисные функции в этот класс, хотя может нужно  потом разбивать на  отдельные классы
 	public static function userId($sessionId)
 	{

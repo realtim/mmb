@@ -192,12 +192,10 @@ elseif ($action == 'AddTlp')
 	$pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
         //$pPointName = $_POST['PointName'];
 
-        $pTlpYear = $_POST['TlpYear'];
-        $pTlpDate = $_POST['TlpDate'];
-        $pTlpTime = $_POST['TlpTime'];
         $pTlpComment = $_POST['TlpComment'];
 	$pErrorId = mmb_validateInt($_POST, 'ErrorId', -1);
 
+	$TlpYDTs = CSql::timeString2($_POST, 'TlpYear', 'TlpDate', 'TlpTime', false);
 
          // тут по-хорошему нужны проверки
 	if ($pTeamId <= 0 or $pLevelPointId <= 0)
@@ -207,21 +205,6 @@ elseif ($action == 'AddTlp')
 		return;
 	}
 
-
-	
-        // год всегда пишем текущий. если надо - можно добавить поле для года
-
-	$TlpYDTs = CSql::timeString($pTlpYear, $pTlpDate, $pTlpTime, false);
-
-	// Если день и время пустые, то и год пустой считаем
-	if ((int)$pTlpDate == 0 and (int)$pTlpTime == 0)
-	{
-		$TlpYDTs = "'0000-00-00 00:00:00'";
-	}
-
-
-                
-	//echo 	$TlpYDTs;
 
         $sql = " select count(*) as countresult
 	          from TeamLevelPoints
@@ -302,32 +285,18 @@ elseif ($action == 'ChangeTlp')
 
 	$pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
 	$pTeamId = mmb_validateInt($_POST, 'TeamId');
-
-	$pTlpYear = $_POST['TlpYear'];
-        $pTlpDate = $_POST['TlpDate'];
-        $pTlpTime = $_POST['TlpTime'];
         $pTlpComment = $_POST['TlpComment'];
 	$pErrorId = mmb_validateInt($_POST, 'ErrorId', -1);
 
+	$TlpYDTs = CSql::timeString2($_POST, 'TlpYear', 'TlpDate', 'TlpTime', false);
 
-	$TlpYDTs = CSql::timeString($pTlpYear, $pTlpDate, $pTlpTime, false);
-
-	// Если день и время пустые, то и год пустой считаем
-	if ((int)$pTlpDate == 0 and (int)$pTlpTime == 0)
-	{
-		$TlpYDTs = "'0000-00-00 00:00:00'";
-	}
-
-	
 	if ($pTeamId <= 0 or $pLevelPointId <= 0)
 	{
 		teamEditError('Не определён ключ команды или ключ точки для результата.');
 		return;
 	}
 
-	
-	
-	
+
 	$sql = " select count(*) as countresult
 	          from TeamLevelPoints
 	          where team_id = $pTeamId

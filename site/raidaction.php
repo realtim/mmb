@@ -906,15 +906,11 @@ elseif ($action == 'AddLevelPoint')
         $pPointName = $_POST['PointName'];
         $pPointPenalty = mmb_validateInt($_POST, 'PointPenalty');
 
-        $pLevelPointMinYear = $_POST['MinYear'];
-        $pLevelPointMinDate = $_POST['MinDate'];
-        $pLevelPointMinTime = $_POST['MinTime'];
-        $pLevelPointMaxYear = $_POST['MaxYear'];
-        $pLevelPointMaxDate = $_POST['MaxDate'];
-        $pLevelPointMaxTime = $_POST['MaxTime'];
-
 	$pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
 //	$pLevelId = $_POST['LevelId'];
+
+	$MinYDTs = CSql::timeString2($_POST, 'MinYear', 'MinDate', 'MinTime');
+	$MaxYDTs = CSql::timeString2($_POST, 'MaxYear', 'MaxDate', 'MaxTime');
 
          // тут по-хорошему нужны проверки
 
@@ -928,25 +924,6 @@ elseif ($action == 'AddLevelPoint')
 	{
 		CMmb::setErrorSm('Не указано название точки.');
 		return;
-	}
-
-                // год всегда пишем текущий. если надо - можно добавить поле для года
-
-	$MinYDTs = CSql::timeString($pLevelPointMinYear, $pLevelPointMinDate, $pLevelPointMinTime);
-	$MinYDT = strtotime(substr(trim($MinYDTs), 1, -1));
-	$MaxYDTs = CSql::timeString($pLevelPointMaxYear, $pLevelPointMaxDate, $pLevelPointMaxTime);
-	$MaxYDT = strtotime(substr(trim($MaxYDTs), 1, -1));
-
-	// Если день и время пустые, то и год пустой считаем
-	if ((int)$pLevelPointMinDate == 0 and (int)$pLevelPointMinTime == 0)
-	{
-		$MinYDTs = "'0000-00-00 00:00:00'";
-	}
-
-	// Если день и время пустые, то и год пустой считаем
-	if ((int)$pLevelPointMaxDate == 0 and (int)$pLevelPointMaxTime == 0)
-	{
-		$MaxYDTs = "'0000-00-00 00:00:00'";
 	}
 
 
@@ -1021,38 +998,13 @@ elseif ($action == 'LevelPointChange')
         $pPointName = trim($_POST['PointName']);
         $pPointPenalty = mmb_validateInt($_POST, 'PointPenalty');
 
-
-	$pLevelPointMinYear = $_POST['MinYear'];
-        $pLevelPointMinDate = $_POST['MinDate'];
-        $pLevelPointMinTime = $_POST['MinTime'];
-        $pLevelPointMaxYear = $_POST['MaxYear'];
-        $pLevelPointMaxDate = $_POST['MaxDate'];
-        $pLevelPointMaxTime = $_POST['MaxTime'];
-
 	$pScanPointId = $_POST['ScanPointId'];		// todo почему где-то оно -- int, а где-то -- строка
 //	$pLevelId = $_POST['LevelId'];
 
-        // тут надо поставить проверки
-        // год всегда пишем текущий. если надо - можно добавить поле для года
+	$MinYDTs = CSql::timeString2($_POST, 'MinYear', 'MinDate', 'MinTime');
+	$MaxYDTs = CSql::timeString2($_POST, 'MaxYear', 'MaxDate', 'MaxTime');
 
-	
-	$MinYDTs = CSql::timeString($pLevelPointMinYear, $pLevelPointMinDate, $pLevelPointMinTime);
-	$MinYDT = strtotime(substr(trim($MinYDTs), 1, -1));
-        $MaxYDTs = CSql::timeString($pLevelPointMaxYear, $pLevelPointMaxDate, $pLevelPointMaxTime);
-	$MaxYDT = strtotime(substr(trim($MaxYDTs), 1, -1));
-
-	// Если день и время пустые, то и год пустой считаем
-	if ((int)$pLevelPointMinDate == 0 and (int)$pLevelPointMinTime == 0)
-	{
-		$MinYDTs = "'0000-00-00 00:00:00'";
-	}
-
-	// Если день и время пустые, то и год пустой считаем
-	if ((int)$pLevelPointMaxDate == 0 and (int)$pLevelPointMaxTime == 0)
-	{
-		$MaxYDTs = "'0000-00-00 00:00:00'";
-	}
-
+	// тут надо поставить проверки
 
 	$sql = " select count(*) as countresult
 	  from LevelPoints
