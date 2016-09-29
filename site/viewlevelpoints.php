@@ -42,7 +42,7 @@ if ($viewmode == 'Add')
 		ReverseClearArrays();
 
 		$PointTypeId = $_POST['PointTypeId'];
-		$DistanceId = $_POST['DistanceId'];
+		$DistanceId = mmb_validateInt($_POST, 'DistanceId');
                 $PointName = $_POST['PointName'];
                 $PointPenalty = $_POST['PointPenalty'];
                 $LevelPointMinYear = $_POST['MinYear'];
