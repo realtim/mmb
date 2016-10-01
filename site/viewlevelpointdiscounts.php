@@ -41,7 +41,7 @@ if ($viewmode == 'Add')
 	{
 		ReverseClearArrays();
 
-		$DistanceId = $_POST['DistanceId'];
+		$DistanceId = mmb_validateInt($_POST, 'DistanceId');
 		$LevelPointId = $_POST['LevelPointId'];
                 $DiscountValue = $_POST['DiscountValue'];
                 $DiscountStart = $_POST['DiscountStart'];
@@ -80,7 +80,7 @@ else
 {
 
 
-        $pLevelPointDiscountId = $_POST['LevelPointDiscountId'];
+        $pLevelPointDiscountId = mmb_validateInt($_POST, 'LevelPointDiscountId');
 
 	if ($pLevelPointDiscountId <= 0)
 	{
@@ -102,7 +102,7 @@ else
 	{
 		ReverseClearArrays();
 
-		$DistanceId = $_POST['DistanceId'];
+		$DistanceId = mmb_validateInt($_POST, 'DistanceId');
 		$LevelPointId = $_POST['LevelPointId'];
                 $DiscountValue = $_POST['DiscountValue'];
                 $DiscountStart = $_POST['DiscountStart'];
@@ -233,7 +233,7 @@ if ($AllowEdit == 1)
 	print('<tr><td class="input">'."\n");
 	print('Точка зачёта амнистии: </span>'."\n");
 	// Показываем выпадающий список точек
-	// ограничыиваем пока Сменой карт и Финишем
+	// ограничиваем пока Сменой карт и Финишем
 	print('<select name="LevelPointId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
 	$sql = "select levelpoint_id, levelpoint_name from LevelPoints where pointtype_id in (2,4) and distance_id = ".$DistanceId." order by levelpoint_order ";
 	$Result = MySqlQuery($sql);

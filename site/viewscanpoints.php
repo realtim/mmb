@@ -61,7 +61,7 @@ if ($viewmode == 'Add')
 else
 // ================ Редактируем/смотрим существующую точкусканирования  =================
 {
-        $pScanPointId = $_POST['ScanPointId'];
+        $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
 
 	if ($pScanPointId <= 0)
 	{

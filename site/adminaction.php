@@ -361,7 +361,7 @@ elseif ($action == 'SendMessageForAll')
 
              $pText = $_POST['MessageText'];
              $pSubject = $_POST['MessageSubject'];
-             $pSendType = (int)$_POST['SendForAllTypeId'];
+             $pSendType = mmb_validateInt($_POST, 'SendForAllTypeId');
 
 	     if (empty($pSubject) or trim($pSubject) == 'Тема рассылки')
 	     {
@@ -466,7 +466,7 @@ elseif ($action == 'RankInvitations')
 		return;
 	}
 
-     	$pInvitationsCount = $_POST['RankInvitationsCount'];
+     	$pInvitationsCount = mmb_validateInt($_POST, 'RankInvitationsCount');
 	if ($pInvitationsCount <= 0)
 	{
         	CMmb::setError('Не указано число приглашений.', $view, '');
@@ -571,7 +571,7 @@ elseif ($action == 'LottoInvitations')
 		return;
 	}
 
-     	$pInvitationsCount = $_POST['LottoInvitationsCount'];
+     	$pInvitationsCount = mmb_validateInt($_POST, 'LottoInvitationsCount');
 	if ($pInvitationsCount <= 0)
 	{
         	CMmb::setError('Не указано число приглашений.', $view, '');

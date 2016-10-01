@@ -452,7 +452,7 @@
 	print('</div>'."\r\n");
 	print('<div align="left" style="margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
 
-	$ReglamentLink = cSql::raidFileLink($RaidId, 1, true);
+	$ReglamentLink = CSql::raidFileLink($RaidId, 1, true);
 	if (!empty($ReglamentLink))
 	{
 		print('<a style="font-size:80%; margin-right: 15px;" href="'.$ReglamentLink.'" title="Основные правила ММБ" target = "_blank">Положение</a>'."\r\n");
@@ -474,7 +474,7 @@
 			print("<a style=\"font-size:80%; margin-right: 15px;\" href=\"#$teamNum\" title=\"Переход к строке Вашей команды\">Моя команда</a>\r\n");
 		}
 	}
-	$StartLink = cSql::raidFileLink($RaidId, 10, true);
+	$StartLink = CSql::raidFileLink($RaidId, 10, true);
 	if (!empty($StartLink))
 	{
 		print('<a style="font-size:80%; margin-right: 15px;" href="'.$StartLink.'" title="Информация о месте и порядке старта ММБ" target = "_blank">Старт</a>'."\r\n");

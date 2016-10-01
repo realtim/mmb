@@ -10,7 +10,7 @@ if (isset($MyPHPScript) and $action == 'JSON')
     return;
    }
 
-  if (isset($_REQUEST['RaidId']) && is_numeric($_REQUEST['RaidId'])) $RaidId = intval($_REQUEST['RaidId']); else $RaidId = -1;
+  $RaidId = intval(mmb_validateInt($_REQUEST, 'RaidId', -1));
 }
 else 
 {
@@ -31,20 +31,19 @@ else
     return;
   } 
 
-  if (isset($_GET['RaidId']) && is_numeric($_GET['RaidId'])) $RaidId = intval($_GET['RaidId']); else $RaidId = -1;
+  $RaidId = intval(mmb_validateInt($_GET, 'RaidId', -1));
 
   // Аутентификация и авторизация -- проверка прав на получение дампа (администратор)
-  $Sql = "select user_id, user_admin from Users where user_hide = 0 and trim(user_email) = trim('{$_GET['Login']}') and user_password = '".md5(trim($_GET['Password']))."'";
-  $Result = MySqlQuery($Sql);  
-  $Row = mysql_fetch_assoc($Result);
 
-  if ($Row['user_id'] <= 0) 
+  $UserId = CMmbAuth::getUserId(trim(mmb_validate($_GET, 'Login')), trim(mmb_validate($_GET, 'Password')));
+  if ($UserId <= 0)
   {
     print("Autenthication failed");
     return;  
   } 
 
-  if ($Row['user_admin'] == 0)
+  $sql = "select count(*) from Users where user_hide = 0 and user_admin <> 0 and user_id = $UserId"; // или user_admin == 1 ?
+  if (CSql::rowCount($sql) == 0)
   {
     print("Authorization failed");
     return;
@@ -82,13 +81,13 @@ if ($RaidId <= 0)
 $data = array();
 
 // Raids: raid_id, raid_name, raid_registrationenddate
-$Sql = "select raid_id, raid_name, raid_registrationenddate from Raids where raid_id = ".$RaidId;
+$Sql = "select raid_id, raid_name, raid_registrationenddate from Raids where raid_id = $RaidId";
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Raids"][] = $Row; }
 mysql_free_result($Result);
 
 // Distances: distance_id, raid_id, distance_name
-$Sql = "select distance_id, raid_id, distance_name from Distances d where d.distance_hide = 0 and d.raid_id = ".$RaidId;
+$Sql = "select distance_id, raid_id, distance_name from Distances d where d.distance_hide = 0 and d.raid_id = $RaidId";
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
 mysql_free_result($Result);
@@ -104,7 +103,7 @@ mysql_free_result($Result);
 
 // 18/02/2014 добавил 'экспорт scanpoints
 // ScanPoints: 
-$Sql = "select sp.scanpoint_id, sp.raid_id, sp.scanpoint_name, sp.scanpoint_order  from ScanPoints sp where sp.scanpoint_hide = 0 and sp.raid_id = ".$RaidId;
+$Sql = "select sp.scanpoint_id, sp.raid_id, sp.scanpoint_name, sp.scanpoint_order  from ScanPoints sp where sp.scanpoint_hide = 0 and sp.raid_id = $RaidId";
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["ScanPoints"][] = $Row; }
 mysql_free_result($Result);
@@ -112,20 +111,20 @@ mysql_free_result($Result);
 
 // 18/02/2014 добавил scanpoint_id
 // LevelPoints: levelpoint_id, level_id, pointtype_id
-$Sql = "select lp.levelpoint_id, lp.pointtype_id, lp.distance_id, lp.levelpoint_name, lp.levelpoint_order, lp.levelpoint_penalty, lp.levelpoint_mindatetime, lp.levelpoint_maxdatetime, scanpoint_id from LevelPoints lp inner join Distances d on lp.distance_id = d.distance_id where lp.levelpoint_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+$Sql = "select lp.levelpoint_id, lp.pointtype_id, lp.distance_id, lp.levelpoint_name, lp.levelpoint_order, lp.levelpoint_penalty, lp.levelpoint_mindatetime, lp.levelpoint_maxdatetime, scanpoint_id from LevelPoints lp inner join Distances d on lp.distance_id = d.distance_id where lp.levelpoint_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row; }
 mysql_free_result($Result);
 
 // LevelPointDiscounts: 
-$Sql = "select lpd.levelpointdiscount_id, lpd.distance_id, lpd.levelpointdiscount_value, lpd.levelpointdiscount_start, lpd.levelpointdiscount_finish from LevelPointDiscounts lpd inner join Distances d on lpd.distance_id = d.distance_id where lpd.levelpointdiscount_hide = 0 and d.distance_hide = 0 and d.raid_id = ".$RaidId;
+$Sql = "select lpd.levelpointdiscount_id, lpd.distance_id, lpd.levelpointdiscount_value, lpd.levelpointdiscount_start, lpd.levelpointdiscount_finish from LevelPointDiscounts lpd inner join Distances d on lpd.distance_id = d.distance_id where lpd.levelpointdiscount_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPointDiscounts"][] = $Row; }
 mysql_free_result($Result);
 
 
 // Teams: team_id, distance_id, team_name, team_num // *
-$Sql = "select team_id, t.distance_id, team_name, team_num from Teams t inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0 and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = ".$RaidId;
+$Sql = "select team_id, t.distance_id, team_name, team_num from Teams t inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0 and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = $RaidId";
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
 mysql_free_result($Result);
@@ -137,7 +136,7 @@ while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Users"][] = $Row; }
 mysql_free_result($Result);
 
 // TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
-$Sql = "select teamuser_id, tu.team_id, user_id, teamuser_hide from TeamUsers tu inner join Teams t on tu.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and COALESCE(t.team_outofrange, 0) = 0  and d.raid_id = ".$RaidId;
+$Sql = "select teamuser_id, tu.team_id, user_id, teamuser_hide from TeamUsers tu inner join Teams t on tu.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and COALESCE(t.team_outofrange, 0) = 0  and d.raid_id = $RaidId";
 $Result = MySqlQuery($Sql);
 while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
 mysql_free_result($Result);

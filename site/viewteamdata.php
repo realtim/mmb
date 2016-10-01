@@ -31,7 +31,7 @@ if ($viewmode == 'Add')
 		ReverseClearArrays();
 		$TeamNum = (int) $_POST['TeamNum'];
 		$TeamName = CMmbUi::toHtml($_POST['TeamName']);
-		$DistanceId = $_POST['DistanceId'];
+		$DistanceId = mmb_validateInt($_POST, 'DistanceId');
 		$TeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
 		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
 		$TeamRegisterDt = 0;
@@ -96,7 +96,7 @@ else
 		ReverseClearArrays();
 		$TeamNum = (int) $_POST['TeamNum'];
 		$TeamName = $_POST['TeamName'];
-		$DistanceId = $_POST['DistanceId'];
+		$DistanceId = mmb_validateInt($_POST, 'DistanceId', -1);
 		$TeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
 		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
 		$TeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');

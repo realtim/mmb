@@ -70,11 +70,10 @@ if (!isset($MyPHPScript)) return;
                 //echo $viewsubmode;
 		//
 
-		$pUserId = $_REQUEST['UserId'];
-
+		$pUserId = mmb_validateInt($_REQUEST, 'UserId', -1);
 		if ($pUserId <= 0)
 		{
-		// должны быть определены пользоатель, которого смотрят
+		// должен быть определен пользователь, которого смотрят
 		     return;
 		}
            
@@ -360,10 +359,10 @@ if (!isset($MyPHPScript)) return;
 	 if (($AllowEdit == 1) and  ($viewmode <> 'Add'))
         {
 
-	  print('<tr><td class = "input" style =  "padding-top: 15px;">Новый пароль: <input type="password" autocomplete = "off" name="UserNewPassword" size="30" value="" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
+	  print('<tr><td class = "input" style =  "padding-top: 15px;">Новый пароль: <input type="password" autocomplete = "off" name="UserNewPassword" size="30" value="" tabindex="'.(++$TabIndex).'"   '.$DisabledText.'
                   title = "Новый пароль"></td></tr>'."\r\n");
 
-	  print('<tr><td class = "input">Подтверждение: <input type="password" autocomplete = "off" name="UserConfirmNewPassword" size="30" value="" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.'
+	  print('<tr><td class = "input">Подтверждение: <input type="password" autocomplete = "off" name="UserConfirmNewPassword" size="30" value="" tabindex="'.(++$TabIndex).'"   '.$DisabledText.'
                   title = "Подтверждение нового пароля"></td></tr>'."\r\n");
 
         }
@@ -373,18 +372,18 @@ if (!isset($MyPHPScript)) return;
 	 if ($AllowEdit == 1) 
 	 {
 	  print('<tr><td class = "input"  style =  "padding-top: 10px;">'."\r\n");
-	  print('<input type="button" onClick = "javascript: if (ValidateUserDataForm()) submit();"  name="RegisterButton" value="'.$SaveButtonText.'" tabindex = "7">'."\r\n");
+	  print('<input type="button" onClick = "javascript: if (ValidateUserDataForm()) submit();"  name="RegisterButton" value="'.$SaveButtonText.'" tabindex="'.(++$TabIndex).'">'."\r\n");
 
            // Если регистрация нового пользователя - не нужны кнопки "Отмена" и "Сменить пароль"
           if ($viewmode <> 'Add')
 	  {
-            print('<input type="button" onClick = "javascript: Cancel();"  name="CancelButton" value="Отмена" tabindex = "8" title = "Заново считывает данные из базы">'."\r\n");		
+            print('<input type="button" onClick = "javascript: Cancel();"  name="CancelButton" value="Отмена" tabindex = "'.(++$TabIndex).'" title = "Заново считывает данные из базы">'."\r\n");
 
 	    // 15,01,2012 убрал проверку
 	    // М.б. проверка лишняя и нужно разрешить и администратору высылать запрос о смене пароля
 	    //if ($UserId > 0 and $UserId == $NowUserId)
 	    //{
-             print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите выслать на адрес '.trim($UserEmail).' новый пароль для '.trim($UserName).' будет создан новый пароль и ? \')) { NewPassword(); }"  name="ChangePasswordButton" value="Создать и выслать новый пароль" tabindex = "9">'."\r\n");		
+             print('<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите выслать на адрес '.trim($UserEmail).' новый пароль для '.trim($UserName).' будет создан новый пароль и ? \')) { NewPassword(); }"  name="ChangePasswordButton" value="Создать и выслать новый пароль" tabindex="'.(++$TabIndex).'">'."\r\n");
 	    //}
           }
 
