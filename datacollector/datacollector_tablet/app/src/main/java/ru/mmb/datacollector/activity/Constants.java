@@ -16,6 +16,7 @@ public class Constants {
     public static final String KEY_CURRENT_INPUT_LOGGER_DATA_EXISTS = "current.input.logger.data.exists";
     public static final String KEY_CURRENT_INPUT_WITHDRAWN_CHECKED =
             "current.input.withdrawn.checked";
+    public static final String KEY_CURRENT_INPUT_WITHDRAW_SCAN_POINT = "current.input.withdraw.scanpoint";
     public static final String KEY_EXPORT_RESULT_MESSAGE = "export.result.message";
     public static final String KEY_TEAM_FILTER_STATE = "team.filter.state";
     public static final String KEY_TEAM_FILTER_NUMBER_EXACT = "team.filter.number.exact";

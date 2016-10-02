@@ -6,16 +6,16 @@
     android:paddingBottom="@dimen/global_padding"
     android:paddingLeft="@dimen/global_padding"
     android:paddingRight="@dimen/global_padding"
-    android:paddingTop="@dimen/global_padding" >
+    android:paddingTop="@dimen/global_padding">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/inputWithdraw_teamNumberTextView"
@@ -32,12 +32,18 @@
                 android:text="@string/input_data_no_team"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@color/Tan" />
+
+            <Spinner
+                android:id="@+id/inputWithdraw_scanPointSpinner"
+                android:layout_width="350dip"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/global_padding" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/global_padding" >
+            android:layout_marginTop="@dimen/global_padding">
 
             <TextView
                 android:id="@+id/inputWithdraw_memberColumnTextView"
@@ -72,13 +78,12 @@
             android:id="@+id/inputWithdraw_withdrawList"
             android:layout_width="match_parent"
             android:layout_height="0dip"
-            android:layout_weight="1" >
-        </ListView>
+            android:layout_weight="1"></ListView>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/global_padding" >
+            android:layout_marginTop="@dimen/global_padding">
 
             <TextView
                 android:id="@+id/inputWithdraw_resultTextView"

@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static ru.mmb.datacollector.activity.Constants.REQUEST_CODE_DEFAULT_ACTIVITY;
@@ -15,6 +16,7 @@ public abstract class CurrentState {
     private final List<StateChangeListener> listeners = new ArrayList<StateChangeListener>();
 
     private final String prefix;
+
     private Context context;
 
     public CurrentState(String prefix) {
@@ -57,10 +59,6 @@ public abstract class CurrentState {
         if (!listeners.contains(listener)) listeners.add(listener);
     }
 
-    public void removeStateChangeListener(StateChangeListener listener) {
-        listeners.remove(listener);
-    }
-
     protected void fireStateChanged() {
         for (StateChangeListener listener : listeners) {
             listener.onStateChange();
@@ -85,5 +83,9 @@ public abstract class CurrentState {
             load(savedInstanceState);
             update(Constants.UPDATE_FROM_SAVED_BUNDLE);
         }
+    }
+
+    protected List<StateChangeListener> getListeners() {
+        return Collections.unmodifiableList(listeners);
     }
 }

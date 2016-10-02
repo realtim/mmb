@@ -1,92 +1,144 @@
 package ru.mmb.datacollector.activity.input.data.withdraw;
 
-import java.util.Date;
-import java.util.List;
-
-import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.activity.StateChangeListener;
-import ru.mmb.datacollector.activity.input.data.withdraw.list.MembersAdapter;
-import ru.mmb.datacollector.activity.input.data.withdraw.list.TeamMemberRecord;
-import ru.mmb.datacollector.model.registry.Settings;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
-public class WithdrawMemberActivity extends Activity implements StateChangeListener
-{
-	private WithdrawMemberActivityState currentState;
-	private TextView labTeamName;
-	private TextView labTeamNumber;
-	private TextView labResult;
-	private Button btnOk;
-	private ListView lvMembers;
+import java.util.Date;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
+import ru.mmb.datacollector.R;
+import ru.mmb.datacollector.activity.input.data.withdraw.list.MembersAdapter;
+import ru.mmb.datacollector.model.ScanPoint;
+import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
+import ru.mmb.datacollector.model.registry.Settings;
 
-		Settings.getInstance().setCurrentContext(this);
+public class WithdrawMemberActivity extends Activity implements WithdrawStateChangeListener {
+    private WithdrawMemberActivityState currentState;
+    private TextView labTeamName;
+    private TextView labTeamNumber;
+    private Spinner withdrawScanPoint;
+    private TextView labResult;
+    private Button btnOk;
+    private ListView lvMembers;
 
-		currentState = new WithdrawMemberActivityState();
-		currentState.initialize(this, savedInstanceState);
+    MembersAdapter lvMembersAdapter;
 
-		setContentView(R.layout.input_data_withdraw);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		lvMembers = (ListView) findViewById(R.id.inputWithdraw_withdrawList);
-		initListAdapter();
+        Settings.getInstance().setCurrentContext(this);
 
-		labTeamName = (TextView) findViewById(R.id.inputWithdraw_teamNameTextView);
-		labTeamNumber = (TextView) findViewById(R.id.inputWithdraw_teamNumberTextView);
-		labResult = (TextView) findViewById(R.id.inputWithdraw_resultTextView);
-		btnOk = (Button) findViewById(R.id.inputWithdraw_okButton);
+        currentState = new WithdrawMemberActivityState();
+        currentState.initialize(this, savedInstanceState);
 
-		setTitle(currentState.getScanPointText(this));
+        setContentView(R.layout.input_data_withdraw);
 
-		labTeamName.setText(currentState.getCurrentTeam().getTeamName());
-		labTeamNumber.setText(Integer.toString(currentState.getCurrentTeam().getTeamNum()));
-		labResult.setText(currentState.getResultText(this));
+        lvMembers = (ListView) findViewById(R.id.inputWithdraw_withdrawList);
+        initListAdapter();
 
-		btnOk.setOnClickListener(new OkBtnClickListener());
+        labTeamName = (TextView) findViewById(R.id.inputWithdraw_teamNameTextView);
+        labTeamNumber = (TextView) findViewById(R.id.inputWithdraw_teamNumberTextView);
+        withdrawScanPoint = (Spinner) findViewById(R.id.inputWithdraw_scanPointSpinner);
+        labResult = (TextView) findViewById(R.id.inputWithdraw_resultTextView);
+        btnOk = (Button) findViewById(R.id.inputWithdraw_okButton);
 
-		currentState.addStateChangeListener(this);
-	}
+        setTitle(currentState.getScanPointText(this));
 
-	private void initListAdapter()
-	{
-		List<TeamMemberRecord> items = currentState.getMemberRecords();
-		MembersAdapter adapter =
-		    new MembersAdapter(this, R.layout.input_data_withdraw_row, items, currentState);
-		lvMembers.setAdapter(adapter);
-	}
+        setWithdrawScanPointAdapter();
+        refreshWithdrawScanPointState();
 
-	@Override
-	public void onStateChange()
-	{
-		labResult.setText(currentState.getResultText(this));
-	}
+        labTeamName.setText(currentState.getCurrentTeam().getTeamName());
+        labTeamNumber.setText(Integer.toString(currentState.getCurrentTeam().getTeamNum()));
+        labResult.setText(currentState.getResultText(this));
 
-	@Override
-	protected void onSaveInstanceState(Bundle outState)
-	{
-		super.onSaveInstanceState(outState);
-		currentState.save(outState);
-	}
+        withdrawScanPoint.setOnItemSelectedListener(new WithdrawScanPointOnItemSelectedListener());
+        btnOk.setOnClickListener(new OkBtnClickListener());
 
-	private class OkBtnClickListener implements OnClickListener
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Date recordDateTime = new Date();
-			currentState.saveCurrWithdrawnToDB(recordDateTime);
-			currentState.putCurrWithdrawnToDataStorage(recordDateTime);
-			setResult(RESULT_OK);
-			finish();
-		}
-	}
+        currentState.addStateChangeListener(this);
+    }
+
+    private void initListAdapter() {
+        lvMembersAdapter = new MembersAdapter(this, R.layout.input_data_withdraw_row, currentState.getMemberRecords(), currentState);
+        lvMembers.setAdapter(lvMembersAdapter);
+    }
+
+    private void setWithdrawScanPointAdapter() {
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, ScanPointsRegistry.getInstance().getScanPointNamesArray());
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        withdrawScanPoint.setAdapter(adapter);
+    }
+
+    private void refreshWithdrawScanPointState() {
+        if (currentState.getWithdrawScanPoint() == null) {
+            if (currentState.getCurrentScanPoint() == null) {
+                withdrawScanPoint.setSelection(0);
+            } else {
+                updateWithdrawScanPointSelection(currentState.getCurrentScanPoint());
+            }
+        } else {
+            updateWithdrawScanPointSelection(currentState.getWithdrawScanPoint());
+        }
+    }
+
+    private void updateWithdrawScanPointSelection(ScanPoint scanPoint) {
+        int pos = ScanPointsRegistry.getInstance().getScanPointIndex(scanPoint);
+        if (pos == -1) {
+            pos = 0;
+        }
+        withdrawScanPoint.setSelection(pos);
+    }
+
+    @Override
+    public void onStateChange() {
+        labResult.setText(currentState.getResultText(this));
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        currentState.save(outState);
+    }
+
+    @Override
+    public void onStateReload() {
+        lvMembersAdapter.refresh();
+    }
+
+    private class OkBtnClickListener implements OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Date recordDateTime = new Date();
+            currentState.saveCurrWithdrawnToDB(recordDateTime);
+            currentState.putCurrWithdrawnToDataStorage(recordDateTime);
+            setResult(RESULT_OK);
+            finish();
+        }
+    }
+
+    private class WithdrawScanPointOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
+
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            ScanPoint newScanPoint = ScanPointsRegistry.getInstance().getScanPointByIndex(position);
+            if (!currentState.getWithdrawScanPoint().equals(newScanPoint)) {
+                if (currentState.isNothingToSave()) {
+                    currentState.setWithdrawScanPoint(newScanPoint);
+                }
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            // do nothing
+        }
+    }
 }

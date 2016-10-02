@@ -11,30 +11,51 @@ import java.util.List;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.ActivityStateWithTeamAndScanPoint;
+import ru.mmb.datacollector.activity.StateChangeListener;
 import ru.mmb.datacollector.activity.input.data.withdraw.list.TeamMemberRecord;
 import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.Participant;
 import ru.mmb.datacollector.model.RawTeamLevelDismiss;
+import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.history.DataStorage;
+import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.model.registry.UsersRegistry;
 
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_WITHDRAWN_CHECKED;
+import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_WITHDRAW_SCAN_POINT;
 
 public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoint {
     private final List<Participant> prevWithdrawnMembers = new ArrayList<Participant>();
     private final List<Participant> currWithdrawnMembers = new ArrayList<Participant>();
 
+    private ScanPoint withdrawScanPoint;
+
     public WithdrawMemberActivityState() {
         super("input.withdraw");
     }
 
-    public List<Participant> getAllWithdrawnMembers() {
-        List<Participant> result = new ArrayList<Participant>();
-        result.addAll(prevWithdrawnMembers);
-        result.addAll(currWithdrawnMembers);
-        return result;
+    public void setWithdrawScanPoint(ScanPoint withdrawScanPoint) {
+        if (isNothingToSave()) {
+            this.withdrawScanPoint = withdrawScanPoint;
+            reloadState();
+            fireStateReloaded();
+        }
+    }
+
+    private void reloadState() {
+        updatePrevWithdrawnMembers();
+    }
+
+    protected void fireStateReloaded() {
+        for (StateChangeListener listener : getListeners()) {
+            ((WithdrawStateChangeListener) listener).onStateReload();
+        }
+    }
+
+    public ScanPoint getWithdrawScanPoint() {
+        return withdrawScanPoint;
     }
 
     public boolean isPrevWithdrawn(Participant member) {
@@ -60,16 +81,25 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
         }
     }
 
+    public boolean isNothingToSave() {
+        return currWithdrawnMembers.isEmpty();
+    }
+
     @Override
     protected void update(boolean fromSavedBundle) {
         super.update(fromSavedBundle);
+        if (withdrawScanPoint != null) {
+            withdrawScanPoint = ScanPointsRegistry.getInstance().getScanPointById(withdrawScanPoint.getScanPointId());
+        } else {
+            withdrawScanPoint = getCurrentScanPoint();
+        }
         updatePrevWithdrawnMembers();
     }
 
     private void updatePrevWithdrawnMembers() {
-        if (getCurrentScanPoint() != null && getCurrentTeam() != null) {
+        if (getWithdrawScanPoint() != null && getCurrentTeam() != null) {
             prevWithdrawnMembers.clear();
-            prevWithdrawnMembers.addAll(SQLiteDatabaseAdapter.getConnectedInstance().getDismissedMembers(getCurrentScanPoint(), getCurrentTeam()));
+            prevWithdrawnMembers.addAll(SQLiteDatabaseAdapter.getConnectedInstance().getDismissedMembers(getWithdrawScanPoint(), getCurrentTeam()));
         }
     }
 
@@ -90,7 +120,7 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     }
 
     public List<TeamMemberRecord> getMemberRecords() {
-        List<TeamMemberRecord> result = new ArrayList<TeamMemberRecord>();
+        List<TeamMemberRecord> result = new ArrayList<>();
         for (Participant member : getCurrentTeam().getMembers()) {
             result.add(new TeamMemberRecord(member, isPrevWithdrawn(member)));
         }
@@ -101,6 +131,7 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     @Override
     public void save(Bundle savedInstanceState) {
         super.save(savedInstanceState);
+        savedInstanceState.putSerializable(KEY_CURRENT_INPUT_WITHDRAW_SCAN_POINT, withdrawScanPoint);
         savedInstanceState.putSerializable(KEY_CURRENT_INPUT_WITHDRAWN_CHECKED, (Serializable) getCurrWithdrawnIds());
     }
 
@@ -115,6 +146,9 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     @Override
     public void load(Bundle savedInstanceState) {
         super.load(savedInstanceState);
+        if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_WITHDRAW_SCAN_POINT)) {
+            withdrawScanPoint = (ScanPoint) savedInstanceState.getSerializable(KEY_CURRENT_INPUT_WITHDRAW_SCAN_POINT);
+        }
         currWithdrawnMembers.clear();
         if (savedInstanceState.containsKey(KEY_CURRENT_INPUT_WITHDRAWN_CHECKED)) {
             @SuppressWarnings("unchecked")

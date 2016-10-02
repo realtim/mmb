@@ -63,7 +63,7 @@ public class SelectScanPointActivity extends Activity implements StateChangeList
 	private void setInputScanPointAdapter()
 	{
 		ArrayAdapter<String> adapter =
-		    new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, scanPoints.getScanPointNamesArray());
+				new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, scanPoints.getScanPointNamesArray());
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		inputScanPoint.setAdapter(adapter);
 	}

@@ -71,4 +71,12 @@ public class MembersAdapter extends ArrayAdapter<TeamMemberRecord> {
             currentState.setCurrWithdrawn(member, !currentState.isCurrWithdrawn(member));
         }
     }
+
+    public void refresh() {
+        clear();
+        for (TeamMemberRecord member : currentState.getMemberRecords()) {
+            add(member);
+        }
+        notifyDataSetChanged();
+    }
 }

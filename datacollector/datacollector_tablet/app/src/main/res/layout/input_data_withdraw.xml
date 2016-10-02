@@ -6,17 +6,17 @@
     android:paddingBottom="@dimen/global_padding"
     android:paddingLeft="@dimen/global_padding"
     android:paddingRight="@dimen/global_padding"
-    android:paddingTop="@dimen/global_padding" >
+    android:paddingTop="@dimen/global_padding">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="left" >
+            android:layout_gravity="left">
 
             <TextView
                 android:id="@+id/inputWithdraw_teamNumberTextView"
@@ -38,7 +38,18 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/global_padding" >
+            android:layout_marginTop="@dimen/global_padding">
+
+            <Spinner
+                android:id="@+id/inputWithdraw_scanPointSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/global_padding">
 
 
             <TextView
@@ -75,8 +86,7 @@
             android:id="@+id/inputWithdraw_withdrawList"
             android:layout_width="match_parent"
             android:layout_height="0dip"
-            android:layout_weight="1" >
-        </ListView>
+            android:layout_weight="1"></ListView>
 
 
         <TextView
@@ -92,7 +102,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:layout_marginTop="@dimen/global_padding" >
+            android:layout_marginTop="@dimen/global_padding">
 
             <Button
                 android:id="@+id/inputWithdraw_okButton"
