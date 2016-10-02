@@ -163,6 +163,24 @@
 	return $res;
     }
 
+
+    // Получить список команд, ожидающих приглашения, которые имеют приглашения, но не спешат их активировать
+    function GetTeamsWithUnusedInvitation($raidId)
+    {
+		$sql = "SELECT TeamUsers.team_id FROM Invitations, InvitationDeliveries, TeamUsers, Teams, Distances
+				WHERE TeamUsers.team_id = Teams.team_id AND Teams.distance_id = Distances.distance_id AND Distances.raid_id = $raidId AND team_hide = 0 AND teamuser_hide = 0
+				AND Teams.invitation_id IS NULL AND  Invitations.user_id = TeamUsers.user_id AND InvitationDeliveries.raid_id = Distances.raid_id AND Invitations.invitationdelivery_id = InvitationDeliveries.invitationdelivery_id
+				AND Invitations.invitation_begindt <= NOW() AND Invitations.invitation_enddt >= NOW()
+			GROUP BY TeamUsers.team_id";
+		$TeamResult = MySqlQuery($sql);
+
+		$forgetful = array();
+		while ($row = mysql_fetch_assoc($TeamResult))
+			array_push($forgetful, $row['team_id']);
+		mysql_free_result($TeamResult);
+		return $forgetful;
+    }
+
 	//Эта функция не нужна, если используется поле team_skippedlevelpoint
     function GetDistancePoints($raidId, $checkPointId)
     {
@@ -746,7 +764,7 @@
     	$TeamMembers  = GetAllTeamMembers($RaidId, $distanceId);
     	$allUsers = microtime(true) - $t2;
     
-
+        $forgetful = GetTeamsWithUnusedInvitation($RaidId);
     	
 	
     $tdstyle = 'padding: 5px 0px 2px 5px;';
@@ -815,7 +833,9 @@
 
 			$useGps = $Row['team_usegps'] == 1 ? 'gps, ' : '';
 			$teamGP = $Row['team_greenpeace'] == 1 ? ', <a title="Нет сломанным унитазам!" href="#comment">ну!</a>' : '';
-			$outOfRange = $Row['team_outofrange'] == 1 ? ($RaidId > 27 ? ', Ожидает приглашения!' : ', Вне зачета!') : '';
+			$outOfRange = $Row['team_outofrange'] == 1 ? ($RaidId > 27 ? 'Ожидает приглашения!' : 'Вне зачета!') : '';
+			if ($outOfRange && in_array($Row['team_id'], $forgetful)) $outOfRange = '<span style="color:red">' . $outOfRange . '</span>';
+			if ($outOfRange) $outOfRange = ', ' . $outOfRange;
 
  			print('<tr class="'.$TrClass.'">
 			       <td style="'.$tdstyle.'"><a name="'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>

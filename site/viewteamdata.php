@@ -317,11 +317,12 @@ else
 		print('Первая команда из листа ожидания будет переведена в зачет, если одна из команд в зачете решит удалить себя до '.$RegistrationEnd.".<br/>\n");
 	}
 */
+/*	// теперь в зачет вручную не переводим, а выдаем приглашения
 	if ($TeamOutOfRange and $TeamsLimit and CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 	// Сообщаем администратору/модератору, стоит ли команду переводить в зачет
 	{
 		print('Всего зарегистрировано в зачете '.$TeamsCount.' команд из '.$TeamsLimit.".\n");
-	}
+	}*/
 }
 
 print('<table border="0" cellpadding="2" cellspacing="0" style="padding-top: 10px;">'."\n\n");
