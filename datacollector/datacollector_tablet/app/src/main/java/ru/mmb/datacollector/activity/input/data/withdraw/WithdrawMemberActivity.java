@@ -2,6 +2,7 @@ package ru.mmb.datacollector.activity.input.data.withdraw;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -10,6 +11,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Date;
 
@@ -23,7 +25,7 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
     private WithdrawMemberActivityState currentState;
     private TextView labTeamName;
     private TextView labTeamNumber;
-    private Spinner withdrawScanPoint;
+    private Spinner comboWithdrawScanPoint;
     private TextView labResult;
     private Button btnOk;
     private ListView lvMembers;
@@ -46,7 +48,7 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
 
         labTeamName = (TextView) findViewById(R.id.inputWithdraw_teamNameTextView);
         labTeamNumber = (TextView) findViewById(R.id.inputWithdraw_teamNumberTextView);
-        withdrawScanPoint = (Spinner) findViewById(R.id.inputWithdraw_scanPointSpinner);
+        comboWithdrawScanPoint = (Spinner) findViewById(R.id.inputWithdraw_scanPointSpinner);
         labResult = (TextView) findViewById(R.id.inputWithdraw_resultTextView);
         btnOk = (Button) findViewById(R.id.inputWithdraw_okButton);
 
@@ -59,7 +61,7 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
         labTeamNumber.setText(Integer.toString(currentState.getCurrentTeam().getTeamNum()));
         labResult.setText(currentState.getResultText(this));
 
-        withdrawScanPoint.setOnItemSelectedListener(new WithdrawScanPointOnItemSelectedListener());
+        comboWithdrawScanPoint.setOnItemSelectedListener(new WithdrawScanPointOnItemSelectedListener());
         btnOk.setOnClickListener(new OkBtnClickListener());
 
         currentState.addStateChangeListener(this);
@@ -71,16 +73,16 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
     }
 
     private void setWithdrawScanPointAdapter() {
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, ScanPointsRegistry.getInstance().getScanPointNamesArray());
+        String[] limitedScanPointNames = ScanPointsRegistry.getInstance().getScanPointNamesArray(currentState.getCurrentScanPoint());
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, limitedScanPointNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        withdrawScanPoint.setAdapter(adapter);
+        comboWithdrawScanPoint.setAdapter(adapter);
     }
 
     private void refreshWithdrawScanPointState() {
         if (currentState.getWithdrawScanPoint() == null) {
             if (currentState.getCurrentScanPoint() == null) {
-                withdrawScanPoint.setSelection(0);
+                comboWithdrawScanPoint.setSelection(0);
             } else {
                 updateWithdrawScanPointSelection(currentState.getCurrentScanPoint());
             }
@@ -94,7 +96,13 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
         if (pos == -1) {
             pos = 0;
         }
-        withdrawScanPoint.setSelection(pos);
+        comboWithdrawScanPoint.setSelection(pos);
+    }
+
+    private void setControlsEnabled(boolean enabled) {
+        comboWithdrawScanPoint.setEnabled(enabled);
+        lvMembers.setEnabled(enabled);
+        btnOk.setEnabled(enabled);
     }
 
     @Override
@@ -110,6 +118,7 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
 
     @Override
     public void onStateReload() {
+        Log.d("WITHDRAW", "refresh members list");
         lvMembersAdapter.refresh();
     }
 
@@ -129,11 +138,24 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             ScanPoint newScanPoint = ScanPointsRegistry.getInstance().getScanPointByIndex(position);
+            Log.d("WITHDRAW", "withdraw scan point: " + currentState.getWithdrawScanPoint().getScanPointName());
+            Log.d("WITHDRAW", "selected scan point: " + newScanPoint.getScanPointName());
             if (!currentState.getWithdrawScanPoint().equals(newScanPoint)) {
-                if (currentState.isNothingToSave()) {
-                    currentState.setWithdrawScanPoint(newScanPoint);
+                setControlsEnabled(false);
+                if (currentState.hasItemsToSave()) {
+                    Log.d("WITHDRAW", "saving data");
+                    showSavingMessage();
+                    Date recordDateTime = new Date();
+                    currentState.saveCurrWithdrawnToDB(recordDateTime);
                 }
+                currentState.setWithdrawScanPoint(newScanPoint);
+                setControlsEnabled(true);
             }
+        }
+
+        private void showSavingMessage() {
+            String message = WithdrawMemberActivity.this.getResources().getString(R.string.input_withdraw_saving);
+            Toast.makeText(WithdrawMemberActivity.this, message, Toast.LENGTH_SHORT);
         }
 
         @Override

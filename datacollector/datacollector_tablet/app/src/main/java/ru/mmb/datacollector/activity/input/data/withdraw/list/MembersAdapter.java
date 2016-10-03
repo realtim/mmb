@@ -7,6 +7,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -78,5 +79,18 @@ public class MembersAdapter extends ArrayAdapter<TeamMemberRecord> {
             add(member);
         }
         notifyDataSetChanged();
+    }
+
+    public void setEnabled(boolean enabled, ListView parent) {
+        int firstListItemPosition = parent.getFirstVisiblePosition();
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            int pos = firstListItemPosition + i;
+            View rowView = parent.getChildAt(i);
+            // TODO finish
+            /*
+            if ()
+            CheckBox
+            */
+        }
     }
 }

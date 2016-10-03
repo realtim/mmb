@@ -89,6 +89,7 @@
     <string name="input_data_res_start_time">Время старта:</string>
     <string name="input_data_res_finish_time">Время финиша:</string>
     <string name="input_data_withdraw_member">Сход</string>
+    <string name="input_withdraw_saving">Сохранение отмеченных участников.</string>
 
     <string name="input_withdraw_no_team_number">333</string>
     <string name="input_withdraw_no_team">&lt;Команда не выбрана></string>

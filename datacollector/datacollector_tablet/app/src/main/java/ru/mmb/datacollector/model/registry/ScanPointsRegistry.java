@@ -139,12 +139,12 @@ public class ScanPointsRegistry {
         return null;
     }
 
-    public ScanPoint getScanPointByLevelPointId(int levelPointId) {
-        for (LevelPoint levelPoint : levelPoints) {
-            if (levelPoint.getLevelPointId() == levelPointId) {
-                return levelPoint.getScanPoint();
-            }
+    public String[] getScanPointNamesArray(ScanPoint lastScanPoint) {
+        int lastIndex = scanPoints.indexOf(lastScanPoint);
+        String[] result = new String[lastIndex + 1];
+        for (int i = 0; i <= lastIndex; i++) {
+            result[i] = scanPoints.get(i).getScanPointName();
         }
-        return null;
+        return result;
     }
 }

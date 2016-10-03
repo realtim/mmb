@@ -37,11 +37,9 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     }
 
     public void setWithdrawScanPoint(ScanPoint withdrawScanPoint) {
-        if (isNothingToSave()) {
-            this.withdrawScanPoint = withdrawScanPoint;
-            reloadState();
-            fireStateReloaded();
-        }
+        this.withdrawScanPoint = withdrawScanPoint;
+        reloadState();
+        fireStateReloaded();
     }
 
     private void reloadState() {
@@ -81,8 +79,8 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
         }
     }
 
-    public boolean isNothingToSave() {
-        return currWithdrawnMembers.isEmpty();
+    public boolean hasItemsToSave() {
+        return !currWithdrawnMembers.isEmpty();
     }
 
     @Override
@@ -173,10 +171,13 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     }
 
     public void saveCurrWithdrawnToDB(Date recordDateTime) {
-        SQLiteDatabaseAdapter.getConnectedInstance().saveDismissedMembers(getCurrentScanPoint(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
+        if (hasItemsToSave()) {
+            SQLiteDatabaseAdapter.getConnectedInstance().saveDismissedMembers(getWithdrawScanPoint(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
+        }
     }
 
     public void putCurrWithdrawnToDataStorage(Date recordDateTime) {
+        // TODO refactor
         for (Participant withdrawn : currWithdrawnMembers) {
             RawTeamLevelDismiss rawTeamLevelDismiss =
                     new RawTeamLevelDismiss(getCurrentScanPoint().getScanPointId(), getCurrentTeam().getTeamId(), withdrawn.getUserId(), recordDateTime);
