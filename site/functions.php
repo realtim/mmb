@@ -538,7 +538,7 @@ class CSql {
 
 		// дедлайн для приглашений по рейтингу наступил, проверяем, проводилась ли лотерея
 		$sql = "select MAX(invitationdelivery_dt) as lotterydt
-				from InvitationDeliveries
+				from InvitationDeliveries invd
 				where invd.raid_id = $RaidId
 					and invd.invitationdelivery_type = 2";
 		$lotterydt = self::singleValue($sql, 'lotterydt', false);
