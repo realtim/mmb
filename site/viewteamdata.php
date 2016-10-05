@@ -77,6 +77,7 @@ else
 			THEN 1
 			ELSE 0
 		END as team_late,
+		t.invitation_id,
 		d.distance_resultlink
 		from Teams t
 			inner join Distances d on t.distance_id = d.distance_id
@@ -88,6 +89,7 @@ else
 	$TeamResult = $Row['team_result'];
 	$TeamWait = $Row['team_waitdt'];
 	$TeamLate = (int)$Row['team_late'];
+	$TeamInvitation = (int)$Row['invitation_id'];
 	$DistanceResultLink = $Row['distance_resultlink'];
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
@@ -293,7 +295,7 @@ else
 {
 	print('Команда N <b>'.$TeamNum.'</b> на ММБ '.$RaidName.' <input type="hidden" name="TeamNum" value="'.$TeamNum.'"><br/>'."\n");
 	$RegisterDtFontColor = ($TeamLate == 1) ? '#BB0000' : '#000000';
-	print('Создана <span style="color: '.$RegisterDtFontColor.';">'.$TeamRegisterDt.'</span>'."\n\n");
+	print('Создана <span style="color: '.$RegisterDtFontColor.';">'.$TeamRegisterDt.'</span><br/>'."\n\n");
 
 	if ($TeamUser and $TeamOutOfRange)
 	// Пользователь смотрит свою команду. Предупредим его, если команда вне зачета.
@@ -304,6 +306,22 @@ else
 		print('Подробнее смотрите в <a href="'.$RaidRulesLink.'">Положении</a>.'."\n");
 	}
 
+	// Ссылка на пригласившего команду участника
+	if ($TeamInvitation)
+	{
+		$sql = "SELECT Invitations.user_id,
+				CASE WHEN COALESCE(Users.user_noshow, 0) = 1 THEN '$Anonimus' ELSE Users.user_name END as user_name,
+				invitationdelivery_type FROM Users, Invitations, InvitationDeliveries
+				WHERE invitation_id = $TeamInvitation
+					AND Invitations.invitationdelivery_id = InvitationDeliveries.invitationdelivery_id
+					AND Invitations.user_id = Users.user_id";
+		$Result = MySqlQuery($sql);
+		$Row = CSql::singleRow($sql);
+		if ($Row['invitationdelivery_type'] == 1)
+			echo 'Команду пригласил(а) <a href="?UserId=' . $Row['user_id'] . '">' . CMmbUI::toHtml($Row['user_name']) . '</a><br/>'."\n";
+		else if ($Row['invitationdelivery_type'] == 2)
+			echo 'Команда выиграла приглашение в лотерею<br/>'."\n";
+	}
 
 /*
 	if ($TeamsLimit and ($TeamWait <> '') and ($RaidStage <= 1))

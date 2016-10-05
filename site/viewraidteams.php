@@ -764,7 +764,7 @@
     	$TeamMembers  = GetAllTeamMembers($RaidId, $distanceId);
     	$allUsers = microtime(true) - $t2;
     
-        $forgetful = GetTeamsWithUnusedInvitation($RaidId);
+        if ($Administrator) $forgetful = GetTeamsWithUnusedInvitation($RaidId);
     	
 	
     $tdstyle = 'padding: 5px 0px 2px 5px;';
@@ -834,7 +834,7 @@
 			$useGps = $Row['team_usegps'] == 1 ? 'gps, ' : '';
 			$teamGP = $Row['team_greenpeace'] == 1 ? ', <a title="Нет сломанным унитазам!" href="#comment">ну!</a>' : '';
 			$outOfRange = $Row['team_outofrange'] == 1 ? ($RaidId > 27 ? 'Ожидает приглашения!' : 'Вне зачета!') : '';
-			if ($outOfRange && in_array($Row['team_id'], $forgetful)) $outOfRange = '<span style="color:red">' . $outOfRange . '</span>';
+			if ($Administrator && $outOfRange && in_array($Row['team_id'], $forgetful)) $outOfRange = '<span style="color:red">' . $outOfRange . '</span>';
 			if ($outOfRange) $outOfRange = ', ' . $outOfRange;
 
  			print('<tr class="'.$TrClass.'">
