@@ -7,10 +7,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.ListView;
 import android.widget.TextView;
-
-import java.util.List;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.input.data.withdraw.WithdrawMemberActivityState;
@@ -19,8 +16,8 @@ import ru.mmb.datacollector.model.Participant;
 public class MembersAdapter extends ArrayAdapter<TeamMemberRecord> {
     private final WithdrawMemberActivityState currentState;
 
-    public MembersAdapter(Context context, int textViewResourceId, List<TeamMemberRecord> items, WithdrawMemberActivityState currentState) {
-        super(context, textViewResourceId, items);
+    public MembersAdapter(Context context, int textViewResourceId, WithdrawMemberActivityState currentState) {
+        super(context, textViewResourceId, currentState.getMemberRecords());
         this.currentState = currentState;
     }
 
@@ -78,19 +75,7 @@ public class MembersAdapter extends ArrayAdapter<TeamMemberRecord> {
         for (TeamMemberRecord member : currentState.getMemberRecords()) {
             add(member);
         }
-        notifyDataSetChanged();
-    }
-
-    public void setEnabled(boolean enabled, ListView parent) {
-        int firstListItemPosition = parent.getFirstVisiblePosition();
-        for (int i = 0; i < parent.getChildCount(); i++) {
-            int pos = firstListItemPosition + i;
-            View rowView = parent.getChildAt(i);
-            // TODO finish
-            /*
-            if ()
-            CheckBox
-            */
-        }
+        notifyDataSetInvalidated();
+        // notifyDataSetChanged();
     }
 }

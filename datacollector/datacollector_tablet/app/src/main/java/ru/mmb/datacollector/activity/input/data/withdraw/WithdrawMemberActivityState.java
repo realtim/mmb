@@ -43,6 +43,7 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     }
 
     private void reloadState() {
+        currWithdrawnMembers.clear();
         updatePrevWithdrawnMembers();
     }
 

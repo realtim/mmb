@@ -8,7 +8,6 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,7 +15,6 @@ import android.widget.Toast;
 import java.util.Date;
 
 import ru.mmb.datacollector.R;
-import ru.mmb.datacollector.activity.input.data.withdraw.list.MembersAdapter;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.Settings;
@@ -28,9 +26,8 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
     private Spinner comboWithdrawScanPoint;
     private TextView labResult;
     private Button btnOk;
-    private ListView lvMembers;
 
-    MembersAdapter lvMembersAdapter;
+    private MembersListViewWrapper lvMembersWrapper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +40,7 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
 
         setContentView(R.layout.input_data_withdraw);
 
-        lvMembers = (ListView) findViewById(R.id.inputWithdraw_withdrawList);
-        initListAdapter();
+        lvMembersWrapper = new MembersListViewWrapper(this, currentState);
 
         labTeamName = (TextView) findViewById(R.id.inputWithdraw_teamNameTextView);
         labTeamNumber = (TextView) findViewById(R.id.inputWithdraw_teamNumberTextView);
@@ -65,11 +61,6 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
         btnOk.setOnClickListener(new OkBtnClickListener());
 
         currentState.addStateChangeListener(this);
-    }
-
-    private void initListAdapter() {
-        lvMembersAdapter = new MembersAdapter(this, R.layout.input_data_withdraw_row, currentState.getMemberRecords(), currentState);
-        lvMembers.setAdapter(lvMembersAdapter);
     }
 
     private void setWithdrawScanPointAdapter() {
@@ -101,8 +92,10 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
 
     private void setControlsEnabled(boolean enabled) {
         comboWithdrawScanPoint.setEnabled(enabled);
-        lvMembers.setEnabled(enabled);
         btnOk.setEnabled(enabled);
+        if (!enabled) {
+            lvMembersWrapper.disableCheckboxes();
+        }
     }
 
     @Override
@@ -119,7 +112,8 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
     @Override
     public void onStateReload() {
         Log.d("WITHDRAW", "refresh members list");
-        lvMembersAdapter.refresh();
+        lvMembersWrapper.onStateReloaded();
+        labResult.setText(currentState.getResultText(this));
     }
 
     private class OkBtnClickListener implements OnClickListener {
@@ -146,7 +140,7 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
                     Log.d("WITHDRAW", "saving data");
                     showSavingMessage();
                     Date recordDateTime = new Date();
-                    currentState.saveCurrWithdrawnToDB(recordDateTime);
+                    //currentState.saveCurrWithdrawnToDB(recordDateTime);
                 }
                 currentState.setWithdrawScanPoint(newScanPoint);
                 setControlsEnabled(true);
