@@ -538,9 +538,9 @@ class CSql {
 
 		// дедлайн для приглашений по рейтингу наступил, проверяем, проводилась ли лотерея
 		$sql = "select MAX(invitationdelivery_dt) as lotterydt
-				from InvitationDeliveries
-				where raid_id = $RaidId
-					and invitationdelivery_type = 2";
+				from InvitationDeliveries invd
+				where invd.raid_id = $RaidId
+					and invd.invitationdelivery_type = 2";
 		$lotterydt = self::singleValue($sql, 'lotterydt', false);
 		if (empty($lotterydt)) return "NO_LOTTERY";		// приглашения по итогам лотереи еще не выдавались
 		else return "LOT_END";					// приглашения по итогам лотереи выданы
