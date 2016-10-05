@@ -672,7 +672,7 @@ elseif ($action == 'LottoInvitations')
 					inner join Distances d
 					on t.distance_id = d.distance_id
            			where tu.invitationdelivery_id = $newInvDeliveryId
-				group by t.team_id, tu.user_id
+				group by t.team_id
 			";
 	$rs = MySqlQuery($sql);
 
