@@ -2,7 +2,6 @@ package ru.mmb.datacollector.activity.input.data.withdraw;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -111,8 +110,7 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
 
     @Override
     public void onStateReload() {
-        Log.d("WITHDRAW", "refresh members list");
-        lvMembersWrapper.onStateReloaded();
+        lvMembersWrapper.resetListAdapter();
         labResult.setText(currentState.getResultText(this));
     }
 
@@ -121,7 +119,6 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
         public void onClick(View v) {
             Date recordDateTime = new Date();
             currentState.saveCurrWithdrawnToDB(recordDateTime);
-            currentState.putCurrWithdrawnToDataStorage(recordDateTime);
             setResult(RESULT_OK);
             finish();
         }
@@ -132,15 +129,12 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             ScanPoint newScanPoint = ScanPointsRegistry.getInstance().getScanPointByIndex(position);
-            Log.d("WITHDRAW", "withdraw scan point: " + currentState.getWithdrawScanPoint().getScanPointName());
-            Log.d("WITHDRAW", "selected scan point: " + newScanPoint.getScanPointName());
             if (!currentState.getWithdrawScanPoint().equals(newScanPoint)) {
                 setControlsEnabled(false);
                 if (currentState.hasItemsToSave()) {
-                    Log.d("WITHDRAW", "saving data");
                     showSavingMessage();
                     Date recordDateTime = new Date();
-                    //currentState.saveCurrWithdrawnToDB(recordDateTime);
+                    currentState.saveCurrWithdrawnToDB(recordDateTime);
                 }
                 currentState.setWithdrawScanPoint(newScanPoint);
                 setControlsEnabled(true);
@@ -149,7 +143,7 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
 
         private void showSavingMessage() {
             String message = WithdrawMemberActivity.this.getResources().getString(R.string.input_withdraw_saving);
-            Toast.makeText(WithdrawMemberActivity.this, message, Toast.LENGTH_SHORT);
+            Toast.makeText(WithdrawMemberActivity.this, message, Toast.LENGTH_SHORT).show();
         }
 
         @Override

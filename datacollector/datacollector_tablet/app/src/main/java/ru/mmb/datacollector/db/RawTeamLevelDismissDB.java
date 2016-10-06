@@ -104,13 +104,27 @@ public class RawTeamLevelDismissDB {
     }
 
     public List<RawTeamLevelDismiss> loadDismissedMembers(ScanPoint scanPoint) {
-        List<RawTeamLevelDismiss> result = new ArrayList<RawTeamLevelDismiss>();
         String sql =
                 "select distinct d." + DISMISS_DATE + ", d." + TEAM_ID + ", d." + TEAMUSER_ID +
                         ", sp." + SCANPOINT_ORDER + " from " + TABLE_RAW_TEAM_LEVEL_DISMISS +
                         " as d join " + TABLE_SCANPOINTS + " as sp on (d." + SCANPOINT_ID + " = sp." +
                         SCANPOINT_ID + ") where sp." + SCANPOINT_ORDER + " <= " +
                         scanPoint.getScanPointOrder();
+        return doLoadDismissedMembers(sql, scanPoint);
+    }
+
+    public List<RawTeamLevelDismiss> loadDismissedMembers(ScanPoint scanPoint, Team team) {
+        String sql =
+                "select distinct d." + DISMISS_DATE + ", d." + TEAM_ID + ", d." + TEAMUSER_ID +
+                        ", sp." + SCANPOINT_ORDER + " from " + TABLE_RAW_TEAM_LEVEL_DISMISS +
+                        " as d join " + TABLE_SCANPOINTS + " as sp on (d." + SCANPOINT_ID + " = sp." +
+                        SCANPOINT_ID + ") where sp." + SCANPOINT_ORDER + " <= " +
+                        scanPoint.getScanPointOrder() + " and d." + TEAM_ID + " = " + team.getTeamId();
+        return doLoadDismissedMembers(sql, scanPoint);
+    }
+
+    public List<RawTeamLevelDismiss> doLoadDismissedMembers(String sql, ScanPoint scanPoint) {
+        List<RawTeamLevelDismiss> result = new ArrayList<RawTeamLevelDismiss>();
         Cursor resultCursor = db.rawQuery(sql, null);
 
         resultCursor.moveToFirst();
@@ -134,6 +148,7 @@ public class RawTeamLevelDismissDB {
 
         return result;
     }
+
 
     public void appendScanPointTeams(ScanPoint scanPoint, Set<Integer> teams) {
         String sql =

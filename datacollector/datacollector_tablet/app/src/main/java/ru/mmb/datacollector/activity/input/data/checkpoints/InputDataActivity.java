@@ -99,6 +99,17 @@ public class InputDataActivity extends Activity implements StateChangeListener {
         datePanel.refreshDateControls();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY:
+                currentState.updateTeamLevelDismissStorage();
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
     private class OkBtnClickListener implements OnClickListener {
         @Override
         public void onClick(View v) {
@@ -119,7 +130,7 @@ public class InputDataActivity extends Activity implements StateChangeListener {
         public void onClick(View v) {
             Intent intent = new Intent(getApplicationContext(), WithdrawMemberActivity.class);
             currentState.prepareStartActivityIntent(intent, REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY);
-            startActivity(intent);
+            startActivityForResult(intent, REQUEST_CODE_WITHDRAW_MEMBER_ACTIVITY);
         }
     }
 }

@@ -27,7 +27,7 @@ public class DataStorage {
      */
     public static DataStorage getInstance(ScanPoint scanPoint) {
         if (instance == null
-            || instance.getScanPoint().getScanPointId() != scanPoint.getScanPointId()) {
+                || instance.getScanPoint().getScanPointId() != scanPoint.getScanPointId()) {
             instance = new DataStorage(scanPoint);
         }
         return instance;
@@ -130,22 +130,14 @@ public class DataStorage {
         } else {
             String message =
                     "Fatal error." + "\n" + "Current HISTORY data storage scan point ["
-                    + instance.getScanPoint() + "]" + "\n" + "Putting new team result to ["
-                    + rawTeamLevelPoints.getScanPoint() + "]";
+                            + instance.getScanPoint() + "]" + "\n" + "Putting new team result to ["
+                            + rawTeamLevelPoints.getScanPoint() + "]";
             throw new DataStorageException(message);
         }
     }
 
     public static void putRawTeamDismiss(RawTeamLevelDismiss rawTeamLevelDismiss) {
-        if (instance.getScanPoint().getScanPointId() == rawTeamLevelDismiss.getScanPointId()) {
-            instance.getTeamDismissedStorage().put(rawTeamLevelDismiss);
-            instance.getScanPointTeams().add(rawTeamLevelDismiss.getTeamId());
-        } else {
-            String message =
-                    "Fatal error." + "\n" + "Current data storage scan point ["
-                    + instance.getScanPoint() + "]" + "\n" + "Putting new team dismiss to ["
-                    + rawTeamLevelDismiss.getScanPoint() + "]";
-            throw new DataStorageException(message);
-        }
+        instance.getTeamDismissedStorage().put(rawTeamLevelDismiss);
+        instance.getScanPointTeams().add(rawTeamLevelDismiss.getTeamId());
     }
 }

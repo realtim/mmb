@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import java.util.Date;
+import java.util.List;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.ActivityStateWithTeamAndScanPoint;
@@ -13,6 +14,7 @@ import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.Checkpoint;
 import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.RawLoggerData;
+import ru.mmb.datacollector.model.RawTeamLevelDismiss;
 import ru.mmb.datacollector.model.RawTeamLevelPoints;
 import ru.mmb.datacollector.model.checkpoints.CheckedState;
 import ru.mmb.datacollector.model.history.DataStorage;
@@ -202,5 +204,13 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
 
     public boolean isLoggerDataExists() {
         return loggerDataExists;
+    }
+
+    public void updateTeamLevelDismissStorage() {
+        List<RawTeamLevelDismiss> dismissed =
+                SQLiteDatabaseAdapter.getConnectedInstance().loadDismissedMembers(getCurrentScanPoint(), getCurrentTeam());
+        for (RawTeamLevelDismiss rawTeamLevelDismiss : dismissed) {
+            DataStorage.putRawTeamDismiss(rawTeamLevelDismiss);
+        }
     }
 }

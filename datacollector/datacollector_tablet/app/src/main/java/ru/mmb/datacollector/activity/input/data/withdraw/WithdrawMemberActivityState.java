@@ -15,13 +15,10 @@ import ru.mmb.datacollector.activity.StateChangeListener;
 import ru.mmb.datacollector.activity.input.data.withdraw.list.TeamMemberRecord;
 import ru.mmb.datacollector.db.SQLiteDatabaseAdapter;
 import ru.mmb.datacollector.model.Participant;
-import ru.mmb.datacollector.model.RawTeamLevelDismiss;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
-import ru.mmb.datacollector.model.history.DataStorage;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
-import ru.mmb.datacollector.model.registry.UsersRegistry;
 
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_WITHDRAWN_CHECKED;
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_WITHDRAW_SCAN_POINT;
@@ -174,19 +171,6 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     public void saveCurrWithdrawnToDB(Date recordDateTime) {
         if (hasItemsToSave()) {
             SQLiteDatabaseAdapter.getConnectedInstance().saveDismissedMembers(getWithdrawScanPoint(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
-        }
-    }
-
-    public void putCurrWithdrawnToDataStorage(Date recordDateTime) {
-        // TODO refactor
-        for (Participant withdrawn : currWithdrawnMembers) {
-            RawTeamLevelDismiss rawTeamLevelDismiss =
-                    new RawTeamLevelDismiss(getCurrentScanPoint().getScanPointId(), getCurrentTeam().getTeamId(), withdrawn.getUserId(), recordDateTime);
-            // init reference fields
-            rawTeamLevelDismiss.setScanPoint(getCurrentScanPoint());
-            rawTeamLevelDismiss.setTeam(getCurrentTeam());
-            rawTeamLevelDismiss.setTeamUser(UsersRegistry.getInstance().getUserById(withdrawn.getUserId()));
-            DataStorage.putRawTeamDismiss(rawTeamLevelDismiss);
         }
     }
 }

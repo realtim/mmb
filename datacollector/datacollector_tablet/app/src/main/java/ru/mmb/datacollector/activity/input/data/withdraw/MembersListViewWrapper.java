@@ -6,7 +6,6 @@ import android.widget.ListView;
 
 import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.activity.input.data.withdraw.list.MembersAdapter;
-import ru.mmb.datacollector.activity.input.data.withdraw.list.TeamMemberRecord;
 
 public class MembersListViewWrapper {
 
@@ -24,27 +23,19 @@ public class MembersListViewWrapper {
 
     private void initListView() {
         lvMembers = (ListView) owner.findViewById(R.id.inputWithdraw_withdrawList);
-        initListAdapter();
+        resetListAdapter();
     }
 
-    private void initListAdapter() {
+    public void resetListAdapter() {
         lvMembersAdapter = new MembersAdapter(owner, R.layout.input_data_withdraw_row, currentState);
         lvMembers.setAdapter(lvMembersAdapter);
     }
 
     public void disableCheckboxes() {
-        int firstListItemPosition = lvMembers.getFirstVisiblePosition();
         for (int i = 0; i < lvMembers.getChildCount(); i++) {
-            int pos = firstListItemPosition + i;
             View rowView = lvMembers.getChildAt(i);
-            TeamMemberRecord item = lvMembersAdapter.getItem(pos);
             CheckBox checkBox = (CheckBox) rowView.findViewById(R.id.inputWithdrawRow_withdrawCheckBox);
             checkBox.setEnabled(false);
         }
-    }
-
-    public void onStateReloaded() {
-        lvMembersAdapter = new MembersAdapter(owner, R.layout.input_data_withdraw_row, currentState);
-        lvMembers.setAdapter(lvMembersAdapter);
     }
 }

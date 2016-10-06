@@ -155,6 +155,10 @@ public class SQLiteDatabaseAdapter {
         return rawTeamLevelDismissDB.loadDismissedMembers(scanPoint);
     }
 
+    public List<RawTeamLevelDismiss> loadDismissedMembers(ScanPoint scanPoint, Team team) {
+        return rawTeamLevelDismissDB.loadDismissedMembers(scanPoint, team);
+    }
+
     public List<RawTeamLevelDismiss> loadAllDismissedMembersForDevice() {
         return rawTeamLevelDismissDB.loadAllDismissedMembersForDevice();
     }
