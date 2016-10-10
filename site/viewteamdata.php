@@ -579,15 +579,23 @@ if (($viewmode == "Add") && ($AllowEdit == 1) )
 	// Ищем последнее пользовательское соглашение
 	$ConfirmFile = trim($MyStoreHttpLink).CSql::raidFileName(null, 8, true); 
 
-	$Fp = fopen($ConfirmFile, "r");
-	while ((!feof($Fp)) && (!strpos(trim(fgets($Fp, 4096)),'body')));
-	$NowStr = '';
-	while ((!feof($Fp)) && (!strpos(trim($NowStr),'/body')))
+	$Fp = @fopen($ConfirmFile, "r");
+	if ($Fp === false)
 	{
-		print(trim($NowStr)."\r\n");
-		$NowStr = fgets($Fp, 4096);
+		print("Файл с положением на сайт не загружен\n");
+		CMmbLogger::e('raidFileLink', "File '$ConfirmFile' doesn't exist");
 	}
-	fclose($Fp);
+	else
+	{
+		while ((!feof($Fp)) && (!strpos(trim(fgets($Fp, 4096)),'body')));
+		$NowStr = '';
+		while ((!feof($Fp)) && (!strpos(trim($NowStr),'/body')))
+		{
+			print(trim($NowStr)."\r\n");
+			$NowStr = fgets($Fp, 4096);
+		}
+		fclose($Fp);
+	}
 
 	print("</td></tr>\r\n");
 
