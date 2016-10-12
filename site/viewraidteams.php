@@ -282,6 +282,34 @@
 	return $result;
     }
 
+
+function ShowDistanceHeader($DistanceId, $DistanceName, $DistanceData, $colspan)
+{
+	$DistanceTeams = "t.distance_id = $DistanceId AND t.team_hide = 0";
+
+	$sql = "SELECT COUNT(team_id) AS inrangecount FROM Teams t WHERE $DistanceTeams AND t.team_outofrange = 0";
+	$teamInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+	$sql = "SELECT COUNT(team_id) AS outofrangecount FROM Teams t WHERE $DistanceTeams AND t.team_outofrange = 1";
+	$teamOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+
+	$sql = "SELECT COALESCE(SUM(COALESCE(team_mapscount, 0)), 0) AS inrangecount FROM Teams t WHERE $DistanceTeams AND t.team_outofrange = 0";
+	$mapsInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+	$sql = "SELECT COALESCE(SUM(COALESCE(team_mapscount, 0)), 0) AS outofrangecount FROM Teams t WHERE $DistanceTeams AND t.team_outofrange = 1";
+	$mapsOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+
+	$sql = "SELECT COUNT(tu.teamuser_id) AS inrangecount FROM Teams t INNER JOIN TeamUsers tu ON t.team_id = tu.team_id WHERE $DistanceTeams AND tu.teamuser_hide = 0 AND t.team_outofrange = 0";
+	$teamUserInRangeCount =  CSql::singleValue($sql, 'inrangecount');
+	$sql = "SELECT COUNT(tu.teamuser_id) AS outofrangecount FROM Teams t INNER JOIN TeamUsers tu ON t.team_id = tu.team_id WHERE $DistanceTeams AND tu.teamuser_hide = 0 AND t.team_outofrange = 1";
+	$teamUserOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+
+	$distanceDescription = $DistanceName;
+	if ($DistanceData) $distanceDescription .= ', ' . $DistanceData;
+	print("<tr class=yellow>\n <td colspan=2>Дистанция $distanceDescription</td>\n");
+
+	print(" <td colspan=$colspan>Команд $teamInRangeCount/$teamOutOfRangeCount, карт $mapsInRangeCount/$mapsOutOfRangeCount, участников $teamUserInRangeCount/$teamUserOutOfRangeCount</td>\n</tr>\n");
+}
+
+
     // Проверяем, что передали  идентификатор ММБ
     if ($RaidId <= 0)
 	{
@@ -556,98 +584,38 @@
 
 	print("\r\n</form>\r\n");
 
-    // Информация о дистанции(ях)
-    print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");
 
-    $sql = "select  d.distance_name, d.distance_data, d.distance_id
-            from Distances d
-            where d.distance_hide = 0 and  d.raid_id = $RaidId";
-				
-    $Result = MySqlQuery($sql);
+       // Заголовок общей таблицы
+       $tdstyle = ' style="padding: 5px 0px 2px 5px;"';
+       $tdstyle = '';
+       $thstyle = ' style="border-color: #000000; border-style: solid; border-width: 1px 1px 1px 1px; padding: 5px 0px 2px 5px"';
+       $thstyle = '';
+       $colspan = 1;
+       if ($OrderType == 'Num') $colspan = 1;
+       elseif ($OrderType == 'Place') $colspan = 6;
+       elseif ($OrderType == 'Errors') $colspan = 5;
 
-    // теперь цикл обработки данных по дистанциям
-    while ($Row = mysql_fetch_assoc($Result))
-    {
+       print("<table border=0 cellpadding=10 style=\"font-size: 80%\">\n");
 
-	$whereDistanceId = (int)$Row['distance_id'];
+       // Общая информация о марш-броске
+       print("<tr class=green><td colspan=".($colspan + 2).">");
+       if (!empty($RaidCloseDt))
+           print("Протокол закрыт $RaidCloseDt");
+       else
+       {
+           // Если идёт регистрацию время окончания выделяем жирным
+           $bStyle = ($RaidStage == 1) ? ' style="font-weight:bold"' : '';
+           print("<span$bStyle>Заявка команд до $RaidRegisterEndDt</span>");
+       }
+       print("</td></tr>\n");
 
-	$sql = "  select count(team_id)  as inrangecount
-		 from  Teams t 
-		 where t.distance_id = $whereDistanceId
-		       and t.team_hide = 0
-		       and t.team_outofrange = 0
-		  ";
-    	$teamInRangeCount =  CSql::singleValue($sql, 'inrangecount');
-	  
-    	$sql = "  select count(team_id)  as outofrangecount
-		 from  Teams t 
-		 where t.distance_id = $whereDistanceId
-		       and t.team_hide = 0
-		       and t.team_outofrange = 1
-		  ";
-    	$teamOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
+      // Информация о дистанции(ях)
+      $sql = "SELECT d.distance_name, d.distance_data, d.distance_id FROM Distances d WHERE d.distance_hide = 0 AND d.raid_id = $RaidId";
+      $Result = MySqlQuery($sql);
+      while ($Row = mysql_fetch_assoc($Result))
+          ShowDistanceHeader($Row['distance_id'], $Row['distance_name'], $Row['distance_data'], $colspan);
+      mysql_free_result($Result);
 
-    	$sql = "  select sum(COALESCE(team_mapscount, 0))  as inrangecount
-		 from  Teams t 
-		 where t.distance_id = $whereDistanceId
-		       and t.team_hide = 0
-		       and t.team_outofrange = 0
-		  ";
-    	$mapsInRangeCount =  CSql::singleValue($sql, 'inrangecount');
-
-
-    	$sql = "  select COALESCE(sum(COALESCE(team_mapscount, 0)), 0)  as outofrangecount
-		 from  Teams t 
-		 where t.distance_id = $whereDistanceId
-		       and t.team_hide = 0
-		       and t.team_outofrange = 1
-		  ";
-    	$mapsOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
-		  
-    	$sql = "  select count(tu.teamuser_id)   as inrangecount
-		 from  Teams t 
-		 	inner join  TeamUsers tu
-		        on t.team_id = tu.team_id
-		 where t.distance_id = $whereDistanceId
-		       and t.team_hide = 0
-		       and tu.teamuser_hide = 0
-		       and t.team_outofrange = 0
-		  ";
-    	$teamUserInRangeCount =  CSql::singleValue($sql, 'inrangecount');
-
-    	$sql = "  select count(tu.teamuser_id)   as outofrangecount
-		 from  Teams t 
-		 	inner join  TeamUsers tu
-		        on t.team_id = tu.team_id
-		 where t.distance_id = $whereDistanceId
-		       and t.team_hide = 0
-		       and tu.teamuser_hide = 0
-		       and t.team_outofrange = 1
-		  ";
-    	$teamUserOutOfRangeCount =  CSql::singleValue($sql, 'outofrangecount');
-
-    
-
-       	print('<tr><td width="100">'.$Row['distance_name'].'</td>
-        <td width="300">'.$Row['distance_data']."</td>\r\n");
-
-        // Если идёт регистрацию время окончания выделяем жирным
-        $bStyle = $RaidStage == 1 ? 'style="font-weight: bold;"': '';
-        print("<td $bStyle>заявка команды до: $RaidRegisterEndDt</td>\r\n");
-        print("<td>команд: $teamInRangeCount/$teamOutOfRangeCount, карт: $mapsInRangeCount/$mapsOutOfRangeCount, участников: $teamUserInRangeCount/$teamUserOutOfRangeCount</td>\r\n");
-
-	if (!empty($RaidCloseDt))
-	{
-                print("<td>протокол закрыт: $RaidCloseDt</td>\r\n");
-	}
-	print("</tr>\r\n");
-
-    }
-		    
-    // конец цикла по дистанциям
-    mysql_free_result($Result);
-
-    print("</table>\r\n");
 
 	// ============ Вывод списка команд ===========================
 
@@ -767,36 +735,28 @@
         if ($Administrator) $forgetful = GetTeamsWithUnusedInvitation($RaidId);
     	
 	
-    $tdstyle = 'padding: 5px 0px 2px 5px;';
-    $tdstyle = '';
-    $thstyle = 'border-color: #000000; border-style: solid; border-width: 1px 1px 1px 1px; padding: 5px 0px 2px 5px;';
-    $thstyle = '';
-
-
-
-	print('<table border = "0" cellpadding = "10" style = "font-size: 80%">'."\r\n");
 	print('<tr class = "gray">'."\r\n");
 
 	if ($OrderType == 'Num') {
 
 		$ColumnWidth = 350;
 		$ColumnSmallWidth = 50;
-			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
+			print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Номер</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Команда</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Участники</td>'."\r\n");
 		
 	} elseif ($OrderType == 'Place') {
 
         	$ColumnWidth = 350;
 		$ColumnSmallWidth = 50;
-			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Отсечки времени</td>'."\r\n");  
-                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
-                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Комментарий</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Не пройдены точки</td>'."\r\n");
+			print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Номер</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Команда</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Участники</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Отсечки времени</td>'."\r\n");
+                        print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Результат</td>'."\r\n");
+                        print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Место</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Комментарий</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Не пройдены точки</td>'."\r\n");
 
 
 	} elseif ($OrderType == 'Errors') {
@@ -805,13 +765,13 @@
             $ColumnWidth = 350;
 	    $ColumnSmallWidth = 50;
 
-			print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Номер</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Команда</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Участники</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Отсечки времени</td>'."\r\n");  
-                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Результат</td>'."\r\n");  
-                        print('<td width = "'.$ColumnSmallWidth.'" style = "'.$thstyle.'">Место</td>'."\r\n");  
-                        print('<td width = "'.$ColumnWidth.'" style = "'.$thstyle.'">Комментарий</td>'."\r\n");  
+			print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Номер</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Команда</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Участники</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Отсечки времени</td>'."\r\n");
+                        print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Результат</td>'."\r\n");
+                        print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Место</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Комментарий</td>'."\r\n");
 
 		
 	}
@@ -838,9 +798,9 @@
 			if ($outOfRange) $outOfRange = ', ' . $outOfRange;
 
  			print('<tr class="'.$TrClass.'">
-			       <td style="'.$tdstyle.'"><a name="'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
-			       <td style="'.$tdstyle.'"><a href="?TeamId='.$Row['team_id'].'&RaidId=' . $RaidId .'">'.
-			          CMmbUI::toHtml($Row['team_name'])."</a> ($useGps{$Row['distance_name']}, {$Row['team_mapscount']}$teamGP$outOfRange)</td><td style=\"$tdstyle\">\r\n");
+			       <td'.$tdstyle.'><a name="'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
+			       <td'.$tdstyle.'><a href="?TeamId='.$Row['team_id'].'&RaidId=' . $RaidId .'">'.
+			          CMmbUI::toHtml($Row['team_name'])."</a> ($useGps{$Row['distance_name']}, {$Row['team_mapscount']}$teamGP$outOfRange)</td><td$tdstyle>\r\n");
 
 
                         // Формируем колонку Участники			
