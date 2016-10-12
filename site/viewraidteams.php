@@ -283,7 +283,7 @@
     }
 
 
-function ShowDistanceHeader($DistanceId, $DistanceName, $DistanceData, $colspan)
+function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, $lottery_count, $colspan)
 {
 	$DistanceTeams = "t.distance_id = $DistanceId AND t.team_hide = 0";
 
@@ -306,7 +306,52 @@ function ShowDistanceHeader($DistanceId, $DistanceName, $DistanceData, $colspan)
 	if ($DistanceData) $distanceDescription .= ', ' . $DistanceData;
 	print("<tr class=yellow>\n <td colspan=2>Дистанция $distanceDescription</td>\n");
 
-	print(" <td colspan=$colspan>Команд $teamInRangeCount/$teamOutOfRangeCount, карт $mapsInRangeCount/$mapsOutOfRangeCount, участников $teamUserInRangeCount/$teamUserOutOfRangeCount</td>\n</tr>\n");
+	// для марш-бросков без приглашений оставляем старый вариант вывода
+	if ($RaidId < 28)
+	{
+		print(" <td colspan=$colspan>Команд <span title=\"в зачете\">$teamInRangeCount</span>/<span title=\"вне зачета\">$teamOutOfRangeCount</span>,".
+			" карт <span title=\"у команд в зачете\">$mapsInRangeCount</span>/<span title=\"у команд вне зачета\">$mapsOutOfRangeCount</span>,".
+			" участников <span title=\"в командах в зачете\">$teamUserInRangeCount</span>/<span title=\"в командах вне зачета\">$teamUserOutOfRangeCount</span></td>\n</tr>\n");
+		return;
+	}
+
+	// получаем количество команд с приглашениями каждого типа
+	$invited = array();
+	for ($inv_type = 1; $inv_type <= 3; $inv_type++)
+	{
+		$sql = "SELECT COUNT(*) AS invited_count FROM
+			(SELECT DISTINCT t.team_id FROM Teams t
+				INNER JOIN Invitations inv ON inv.invitation_id = t.invitation_id
+				INNER JOIN TeamUsers tu ON tu.team_id = t.team_id AND tu.teamuser_hide = 0
+				INNER JOIN InvitationDeliveries invd ON invd.invitationdelivery_id = inv.invitationdelivery_id
+				WHERE $DistanceTeams AND invd.invitationdelivery_type = $inv_type) AS TeamsInvited";
+		$invited[$inv_type] =  CSql::singleValue($sql, 'invited_count');
+	}
+	// отдельно считаем количество команд, приглашенных по рейтингу своими участниками
+	$sql = "SELECT COUNT(*) AS invited_count FROM
+		(SELECT DISTINCT t.team_id FROM Teams t
+			INNER JOIN Invitations inv ON inv.invitation_id = t.invitation_id
+			INNER JOIN TeamUsers tu ON tu.team_id = t.team_id AND tu.teamuser_hide = 0
+			INNER JOIN InvitationDeliveries invd ON invd.invitationdelivery_id = inv.invitationdelivery_id
+			WHERE $DistanceTeams AND invd.invitationdelivery_type = 1 AND tu.user_id = inv.user_id) AS TeamsInvited";
+	$invited_self =  CSql::singleValue($sql, 'invited_count');
+
+	// выводим статистику
+	print(" <td colspan=$colspan>Участвует команд <span title=\"всего команд с приглашениями\">$teamInRangeCount</span> ".
+		"(<span title=\"пригласившие сами себя\">$invited_self</span>".
+		"/<span title=\"приглашенные другими участниками\">".($invited[1] - $invited_self)."</span>".
+		"/<span title=\"выгравшие в лотерею\">".$invited[2]."</span>".
+		"/<span title=\"с приглашениями, выданными вручную\">".$invited[3]."</span>), ");
+	/*if ($lottery_count)
+	{
+		print("участников <span title=\"в приглашенных командах\">$teamUserInRangeCount</span>, карт <span title=\"в приглашенных командах\">$mapsInRangeCount</span>");
+	}
+	else*/
+	{
+		print("ожидают приглашения <span title=\"всего команд без приглашений\">$teamOutOfRangeCount</span>, ");
+		print("участников <span title=\"в приглашенных командах\">$teamUserInRangeCount</span>/<span title=\"в командах, ожидающих приглашение\">$teamUserOutOfRangeCount</span>, ");
+		print("карт <span title=\"в приглашенных командах\">$mapsInRangeCount</span>/<span title=\"в командах, ожидающих приглашение\">$mapsOutOfRangeCount</span></td>\n</tr>\n");
+	}
 }
 
 
@@ -609,11 +654,15 @@ function ShowDistanceHeader($DistanceId, $DistanceName, $DistanceData, $colspan)
        }
        print("</td></tr>\n");
 
+       // определяем, проводилась ли лотерея, чтобы после нее не показывать статистику по ожидающим приглашения - они их не дождутся
+       $sql = "SELECT COUNT(invitationdelivery_id) AS lottery_count FROM InvitationDeliveries invd WHERE invd.raid_id = $RaidId AND invd.invitationdelivery_type = 2";
+       $lottery_count =  CSql::singleValue($sql, 'lottery_count');
+
       // Информация о дистанции(ях)
       $sql = "SELECT d.distance_name, d.distance_data, d.distance_id FROM Distances d WHERE d.distance_hide = 0 AND d.raid_id = $RaidId";
       $Result = MySqlQuery($sql);
       while ($Row = mysql_fetch_assoc($Result))
-          ShowDistanceHeader($Row['distance_id'], $Row['distance_name'], $Row['distance_data'], $colspan);
+          ShowDistanceHeader($RaidId, $Row['distance_id'], $Row['distance_name'], $Row['distance_data'], $lottery_count, $colspan);
       mysql_free_result($Result);
 
 
