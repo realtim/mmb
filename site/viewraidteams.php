@@ -388,7 +388,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 
 
 		$sql = "select raid_registrationenddate,  raid_closedate,
-				 COALESCE(r.raid_noshowresult, 0) as raid_noshowresult
+				 COALESCE(r.raid_noshowresult, 0) as raid_noshowresult, raid_readonlyhoursbeforestart
 			  from  Raids r
 			  where r.raid_id = $RaidId"; 
             
@@ -396,6 +396,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
                 $RaidRegisterEndDt = $Row['raid_registrationenddate'];
                 $RaidCloseDt = $Row['raid_closedate'];
                 $RaidNoShowResult = $Row['raid_noshowresult'];
+		$RaidReadonlyHoursBeforeStart = $Row['raid_readonlyhoursbeforestart'];
    
         // 03/05/2014 Исправил порядок сортировки - раньше независимо от установленного  $OrderType могло сбрасываться
         // если порядок не задан смотрим на соотношение временени публикации и текущего
@@ -642,21 +643,30 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 
        print("<table border=0 cellpadding=10 style=\"font-size: 80%\">\n");
 
+       // определяем, проводилась ли лотерея, чтобы сообщить о том, что новые команды создавать не стоит
+       $sql = "SELECT COUNT(invitationdelivery_id) AS lottery_count FROM InvitationDeliveries invd WHERE invd.raid_id = $RaidId AND invd.invitationdelivery_type = 2";
+       $lottery_count =  CSql::singleValue($sql, 'lottery_count');
+
        // Общая информация о марш-броске
        print("<tr class=green><td colspan=".($colspan + 2).">");
        if (!empty($RaidCloseDt))
            print("Протокол закрыт $RaidCloseDt");
        else
        {
-           // Если идёт регистрацию время окончания выделяем жирным
-           $bStyle = ($RaidStage == 1) ? ' style="font-weight:bold"' : '';
-           print("<span$bStyle>Заявка команд до $RaidRegisterEndDt</span>");
+           // определяем дату, до которой активны приглашения по рейтингу (if any)
+           $sql = "SELECT MAX(inv.invitation_enddt) AS maxinvdt FROM InvitationDeliveries invd INNER JOIN Invitations inv ON invd.invitationdelivery_id = inv.invitationdelivery_id WHERE invd.raid_id = $RaidId AND invd.invitationdelivery_type = 1";
+           $maxinvdt =  CSql::singleValue($sql, 'maxinvdt', false);
+
+           // выводим текущий статус марш-броска
+           if ($maxinvdt) $message = "Заявка команд до $maxinvdt"; else $message = "";
+           if ($lottery_count) $message = "Заявка новых команд закрыта, добавление участников в существующие команды до $RaidRegisterEndDt";
+           if ($RaidStage == 2) $message = "Добавление команд и участников уже невозможны, удаление закрывается за $RaidReadonlyHoursBeforeStart часов до старта";
+           if ($RaidStage == 3) $message = "Любые измения в командах уже невозможны, ждем вас на старте";
+           if (($RaidStage == 4) || ($RaidStage == 5)) $message = "Результаты марш-броска обычно появляются через сутки после закрытия финиша";
+           if ($RaidStage > 5) $message = "Об ошибках в результатах сообщайте в соответствующей теме в ЖЖ";
+           print($message);
        }
        print("</td></tr>\n");
-
-       // определяем, проводилась ли лотерея, чтобы после нее не показывать статистику по ожидающим приглашения - они их не дождутся
-       $sql = "SELECT COUNT(invitationdelivery_id) AS lottery_count FROM InvitationDeliveries invd WHERE invd.raid_id = $RaidId AND invd.invitationdelivery_type = 2";
-       $lottery_count =  CSql::singleValue($sql, 'lottery_count');
 
       // Информация о дистанции(ях)
       $sql = "SELECT d.distance_name, d.distance_data, d.distance_id FROM Distances d WHERE d.distance_hide = 0 AND d.raid_id = $RaidId";
