@@ -648,21 +648,15 @@ elseif ($action == 'LottoInvitations')
 	// и их привязка к команде 
 
 
-	$sql = " CREATE TEMPORARY TABLE IF NOT EXISTS 
+	$sql = " CREATE TEMPORARY TABLE
 				tmp_lottoteams (
 				 num INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
                                  team_id INT, 
                                  user_id  INT
 				        ) 
-				ENGINE=MEMORY ";
+				ENGINE=MEMORY, AUTO_INCREMENT = 0";
 	$rs = MySqlQuery($sql);
 				
-	$sql = " DELETE FROM tmp_lottoteams  ";
-	$rs = MySqlQuery($sql);
-
-	$sql = " ALTER TABLE tmp_lottoteams AUTO_INCREMENT = 0   ";
-	$rs = MySqlQuery($sql);
-
 	// отбираем в таблицу команды вне зачета с автонумерованной первой колонкой
 	$sql = " INSERT INTO tmp_lottoteams (team_id, user_id)
 			 select t.team_id, MIN(tu.user_id) as user_id 

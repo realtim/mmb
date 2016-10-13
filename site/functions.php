@@ -1808,14 +1808,9 @@ send_mime_mail('Автор письма',
 	  // Находим 
 	$sql = " select MAX(r.raid_id) as maxraidid
 	         from Raids r 
-	         where  COALESCE(r.raid_closedate , '2001-01-01') < NOW()";
+	         where r.raid_closedate IS NOT NULL";
 	$maxRaidId = CSql::singleValue($sql, 'maxraidid');
 	
-	if ($raidid > $maxRaidId) {
-		$maxRaidId = $raidid;
-	}
-
- 
         // Обнуляем рейтинг  по всем пользовтелям
   	$sql = " update Users u	SET user_rank = NULL, user_r6 = NULL, 
   				user_minraidid = NULL,  user_maxraidid = NULL,
