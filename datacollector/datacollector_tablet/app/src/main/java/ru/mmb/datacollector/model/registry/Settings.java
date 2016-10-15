@@ -22,6 +22,7 @@ public class Settings {
     private static final String CAN_EDIT_SCANTIME = "can_edit_scantime";
     private static final String TRANSP_USER_ID = "transp_user_id";
     private static final String TRANSP_USER_PASSWORD = "transp_user_password";
+    private static final String NEED_CHECK_CRC = "need_check_crc";
 
     private static Settings instance = null;
 
@@ -228,5 +229,13 @@ public class Settings {
             return -1;
         }
         return Integer.parseInt(valueString);
+    }
+
+    public boolean isNeedCheckCrc() {
+        return Boolean.parseBoolean(settings.getProperty(NEED_CHECK_CRC, Boolean.TRUE.toString()));
+    }
+
+    public void setNeedCheckCrc(boolean needCheckCrc) {
+        setValue(NEED_CHECK_CRC, Boolean.toString(needCheckCrc));
     }
 }

@@ -39,6 +39,7 @@ public class SettingsActivity extends FragmentActivity {
     private EditText editTranspUserId;
     private EditText editTranspUserPassword;
     private CheckBox checkCanEditScantime;
+    private CheckBox checkNeedCheckCrc;
     private TextEditorActionListener textEditorActionListener;
     private TextEditorFocusChangeListener textEditorFocusChangeListener;
 
@@ -46,10 +47,6 @@ public class SettingsActivity extends FragmentActivity {
 
     private DeviceJsonImporter deviceJsonImporter = null;
     private boolean needStartDeviceDialog = false;
-
-    /**
-     * Called when the activity is first created.
-     */
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,6 +79,8 @@ public class SettingsActivity extends FragmentActivity {
 
         checkCanEditScantime = (CheckBox) findViewById(R.id.settings_canEditScantimeCheck);
         checkCanEditScantime.setOnCheckedChangeListener(new CanEditScantimeCheckListener());
+        checkNeedCheckCrc = (CheckBox) findViewById(R.id.settings_needCheckCrcCheck);
+        checkNeedCheckCrc.setOnCheckedChangeListener(new NeedCheckCrcCheckListener());
 
         refreshState();
     }
@@ -102,6 +101,7 @@ public class SettingsActivity extends FragmentActivity {
         editTranspUserId.setText(Integer.toString(Settings.getInstance().getTranspUserId()));
         editTranspUserPassword.setText(Settings.getInstance().getTranspUserPassword());
         checkCanEditScantime.setChecked(Settings.getInstance().isCanEditScantime());
+        checkNeedCheckCrc.setChecked(Settings.getInstance().isNeedCheckCrc());
     }
 
     @Override
@@ -238,6 +238,13 @@ public class SettingsActivity extends FragmentActivity {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             Settings.getInstance().setCanEditScantime(isChecked);
+        }
+    }
+
+    private class NeedCheckCrcCheckListener implements CompoundButton.OnCheckedChangeListener {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            Settings.getInstance().setNeedCheckCrc(isChecked);
         }
     }
 }

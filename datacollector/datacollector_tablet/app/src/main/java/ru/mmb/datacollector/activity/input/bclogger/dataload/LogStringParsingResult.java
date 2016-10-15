@@ -12,6 +12,7 @@ import ru.mmb.datacollector.model.PointType;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
 import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
+import ru.mmb.datacollector.model.registry.Settings;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.util.DateUtils;
 
@@ -45,7 +46,11 @@ public class LogStringParsingResult {
     }
 
     public boolean isCrcFailed() {
-        return crcFailed;
+        if (Settings.getInstance().isNeedCheckCrc()) {
+            return crcFailed;
+        } else {
+            return false;
+        }
     }
 
     public void setCrcFailed(boolean crcFailed) {

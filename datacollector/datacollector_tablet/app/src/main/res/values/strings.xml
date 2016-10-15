@@ -32,6 +32,7 @@
     <string name="settings_applied">Settings applied</string>
     <string name="settings_json_dialog_title">Select device</string>
     <string name="settings_can_edit_scantime">Can edit scan time:</string>
+    <string name="settings_need_check_crc">Check CRC from loggers:</string>
 
     <string name="input_global_no_selected_scan_point">&lt;No input point selected></string>
     <string name="input_start_no_scan_point">&lt;No input point selected></string>

@@ -33,6 +33,7 @@
     <string name="settings_applied">Настройки сохранены</string>
     <string name="settings_json_dialog_title">Выбор планшета</string>
     <string name="settings_can_edit_scantime">Разрешить менять время:</string>
+    <string name="settings_need_check_crc">Проверять CRC с логгеров:</string>
 
     <string name="input_global_no_selected_scan_point">&lt;Точка ввода не выбрана></string>
     <string name="input_start_no_scan_point">&lt;Точка ввода не выбрана></string>
