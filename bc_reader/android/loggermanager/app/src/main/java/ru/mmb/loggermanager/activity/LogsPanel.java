@@ -104,6 +104,7 @@ public class LogsPanel {
                 owner.sendLogsCommand("DELLOG\n");
             }
         });
+        clearDeviceButton.setEnabled(false);
     }
 
     private String extractStartPath() {
@@ -122,7 +123,11 @@ public class LogsPanel {
     public void setControlsEnabled(boolean value) {
         selectSaveDirButton.setEnabled(value);
         saveDirLabel.setEnabled(value);
-        clearDeviceButton.setEnabled(value);
+        if (Configuration.getInstance().isAdminMode()) {
+            clearDeviceButton.setEnabled(value);
+        } else {
+            clearDeviceButton.setEnabled(false);
+        }
         getLogLineEdit.setEnabled(value);
         getDebugLineEdit.setEnabled(value);
         getLogLineButton.setEnabled(value);

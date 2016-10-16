@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -35,6 +36,8 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
 
     private boolean adapterActive = false;
     private DeviceInfo selectedLogger = null;
+
+    private TextView labLogger;
 
     private RadioButton settingsRadio;
     private RadioButton logsRadio;
@@ -77,6 +80,18 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         if (consoleRadio != null) {
             consoleRadio.setOnCheckedChangeListener(radioCheckListener);
         }
+
+        labLogger = (TextView) findViewById(R.id.main_selectLoggerLabel);
+        labLogger.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Configuration.getInstance().setAdminMode(true);
+                refreshState();
+                writeToConsole("ADMIN ENABLED");
+                updateBtStatusLabel("ADMIN ENABLED");
+                return false;
+            }
+        });
 
         new SelectLoggerPanel(this);
         settingsPanel = new SettingsPanel(this);

@@ -24,6 +24,8 @@ public class Configuration {
     private Properties configuration = new Properties();
     private SharedPreferences preferences;
 
+    private boolean adminMode = false;
+
     public static Configuration getInstance() {
         if (instance == null) {
             instance = new Configuration();
@@ -124,5 +126,13 @@ public class Configuration {
 
     public void setBluetoothMode(Context context, BluetoothMode value) {
         setValue(context, BLUETOOTH_MODE, value.toString());
+    }
+
+    public boolean isAdminMode() {
+        return adminMode;
+    }
+
+    public void setAdminMode(boolean adminMode) {
+        this.adminMode = adminMode;
     }
 }
