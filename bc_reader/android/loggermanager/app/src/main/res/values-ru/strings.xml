@@ -17,6 +17,8 @@
     <string name="main_time_label">Time</string>
     <string name="main_update_setting">&gt;</string>
     <string name="main_reload_settings">Обновить</string>
+    <string name="main_bluetooth_mode_old">Старый</string>
+    <string name="main_bluetooth_mode_new">Новый</string>
 
     <string name="main_select_save_dir">Хранилище</string>
     <string name="main_no_save_dir">Директория сохранения не выбрана</string>

@@ -3,12 +3,16 @@ package ru.mmb.loggermanager.activity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import ru.mmb.loggermanager.R;
 import ru.mmb.loggermanager.activity.settings.LoggerSettings;
+import ru.mmb.loggermanager.bluetooth.BluetoothMode;
+import ru.mmb.loggermanager.conf.Configuration;
 
 public class SettingsPanel {
 
@@ -21,6 +25,7 @@ public class SettingsPanel {
     private CheckBox onlyDigitsCheckBox;
     private TextView loggerTimeLabel;
 
+    private ToggleButton bluetoothModeToggle;
     private Button reloadSettingsButton;
 
     private Button updateLoggerIdButton;
@@ -42,6 +47,19 @@ public class SettingsPanel {
         checkLengthCheckBox = (CheckBox) owner.findViewById(R.id.main_checkLengthCheckBox);
         onlyDigitsCheckBox = (CheckBox) owner.findViewById(R.id.main_onlyDigitsCheckBox);
         loggerTimeLabel = (TextView) owner.findViewById(R.id.main_loggerTimeLabel);
+
+        bluetoothModeToggle = (ToggleButton) owner.findViewById(R.id.main_bluetoothModeToggle);
+        bluetoothModeToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                BluetoothMode bluetoothMode = isChecked ? BluetoothMode.NEW : BluetoothMode.OLD;
+                Configuration.getInstance().setBluetoothMode(owner, bluetoothMode);
+                refreshToggleText();
+            }
+        });
+        boolean bluetoothModeChecked = Configuration.getInstance().getBluetoothMode() == BluetoothMode.NEW;
+        bluetoothModeToggle.setChecked(bluetoothModeChecked);
+        refreshToggleText();
 
         reloadSettingsButton = (Button) owner.findViewById(R.id.main_reloadSettingsButton);
         reloadSettingsButton.setOnClickListener(new View.OnClickListener() {
@@ -178,5 +196,13 @@ public class SettingsPanel {
         checkLengthCheckBox.setChecked(loggerSettings.isCheckLength());
         onlyDigitsCheckBox.setChecked(loggerSettings.isOnlyDigits());
         loggerTimeLabel.setText(loggerSettings.getLoggerTime());
+    }
+
+    public void refreshToggleText() {
+        if (Configuration.getInstance().getBluetoothMode() == BluetoothMode.OLD) {
+            bluetoothModeToggle.setText(owner.getResources().getText(R.string.main_bluetooth_mode_old));
+        } else {
+            bluetoothModeToggle.setText(owner.getResources().getText(R.string.main_bluetooth_mode_new));
+        }
     }
 }

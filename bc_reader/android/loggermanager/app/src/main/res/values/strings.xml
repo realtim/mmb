@@ -17,6 +17,8 @@
     <string name="main_time_label">Time</string>
     <string name="main_update_setting">&gt;</string>
     <string name="main_reload_settings">Reload</string>
+    <string name="main_bluetooth_mode_old">Old</string>
+    <string name="main_bluetooth_mode_new">New</string>
 
     <string name="main_select_save_dir">Save dir</string>
     <string name="main_no_save_dir">Save dir not defined</string>

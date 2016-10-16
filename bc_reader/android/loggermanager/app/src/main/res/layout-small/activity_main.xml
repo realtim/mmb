@@ -119,13 +119,12 @@
                         android:layout_marginLeft="@dimen/activity_horizontal_margin"
                         android:text="@string/main_update_setting" />
 
-                    <Button
-                        android:id="@+id/main_reloadSettingsButton"
+                    <ToggleButton
+                        android:id="@+id/main_bluetoothModeToggle"
                         android:layout_width="100dp"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
                         android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:text="@string/main_reload_settings" />
+                        android:text="@string/main_update_setting" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -155,6 +154,14 @@
                         android:layout_gravity="center_vertical"
                         android:layout_marginLeft="@dimen/activity_horizontal_margin"
                         android:text="@string/main_update_setting" />
+
+                    <Button
+                        android:id="@+id/main_reloadSettingsButton"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                        android:text="@string/main_reload_settings" />
                 </LinearLayout>
 
                 <LinearLayout

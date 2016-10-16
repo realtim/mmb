@@ -16,6 +16,8 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.mmb.loggermanager.conf.Configuration;
+
 public abstract class LoggerBluetoothClient extends BluetoothClient {
     public static final Pattern REGEXP_SCANNER_ID = Pattern.compile("-Scanner ID: (\\d{2})");
     public static final Pattern REGEXP_SCANPOINT_ORDER = Pattern.compile("-Control Point: (\\d{2})");
@@ -45,10 +47,13 @@ public abstract class LoggerBluetoothClient extends BluetoothClient {
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
         BluetoothDevice device = btAdapter.getRemoteDevice(deviceInfo.getDeviceBTAddress());
         try {
-            // !!! On HTC standard variant is not working.
-            // btSocket = device.createRfcommSocketToServiceRecord(LOGGER_SERVICE_UUID);
-            Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
-            BluetoothSocket btSocket = (BluetoothSocket) m.invoke(device, 1);
+            BluetoothSocket btSocket;
+            if (Configuration.getInstance().getBluetoothMode() == BluetoothMode.OLD) {
+                Method m = device.getClass().getMethod("createRfcommSocket", new Class[]{int.class});
+                btSocket = (BluetoothSocket) m.invoke(device, 1);
+            } else {
+                btSocket = device.createRfcommSocketToServiceRecord(LOGGER_SERVICE_UUID);
+            }
             setSocket(btSocket);
         } catch (Exception e) {
             writeToConsole("socket create failed: " + e.getMessage());

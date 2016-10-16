@@ -7,6 +7,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import ru.mmb.loggermanager.bluetooth.BluetoothMode;
+
 import static android.content.Context.MODE_PRIVATE;
 
 public class Configuration {
@@ -15,6 +17,7 @@ public class Configuration {
     private static final String SAVE_DIR = "save.dir";
     private static final String UPDATE_LOGGERS = "update.loggers";
     private static final String UPDATE_PERIOD_MINUTES = "update.period.minutes";
+    private static final String BLUETOOTH_MODE = "bluetooth.mode";
 
     private static Configuration instance = null;
 
@@ -35,6 +38,8 @@ public class Configuration {
         preferences = context.getSharedPreferences(CONFIG_PREFIX, MODE_PRIVATE);
         loadProperty(SAVE_DIR);
         loadProperty(UPDATE_LOGGERS);
+        loadProperty(UPDATE_PERIOD_MINUTES);
+        loadProperty(BLUETOOTH_MODE);
     }
 
     private void loadProperty(String propertyName) {
@@ -110,5 +115,14 @@ public class Configuration {
 
     public void setUpdatePeriodMinutes(Context context, int value) {
         setValue(context, UPDATE_PERIOD_MINUTES, Integer.toString(value));
+    }
+
+    public BluetoothMode getBluetoothMode() {
+        String modeString = configuration.getProperty(BLUETOOTH_MODE, "OLD");
+        return BluetoothMode.valueOf(modeString);
+    }
+
+    public void setBluetoothMode(Context context, BluetoothMode value) {
+        setValue(context, BLUETOOTH_MODE, value.toString());
     }
 }
