@@ -211,7 +211,7 @@ class CRights
         // Администратору или модератору можно всегда после закрытия заявки и до закрытия протокола
         if ($Super)
         {
-            return ($raidStage >= 2 and $raidStage < 7);
+            return ($raidStage >= 1 and $raidStage < 7);
         }
 
         return (false);
