@@ -119,7 +119,8 @@
                             android:layout_width="100dp"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                            android:text="@string/main_update_setting" />
+                            android:textOff="@string/main_bluetooth_mode_old"
+                            android:textOn="@string/main_bluetooth_mode_new" />
                     </LinearLayout>
 
                     <LinearLayout

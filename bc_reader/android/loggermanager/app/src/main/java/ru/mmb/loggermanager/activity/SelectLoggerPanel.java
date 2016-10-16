@@ -48,9 +48,10 @@ public class SelectLoggerPanel {
         }
         Set<BluetoothDevice> devices = btAdapter.getBondedDevices();
         for (BluetoothDevice device : devices) {
-            if (device.getName().contains("LOGGER")) {
+            /*if (device.getName().contains("LOGGER")) {
                 pairedDevices.put(device.getName(), new DeviceInfo(device.getName(), device.getAddress()));
-            }
+            }*/
+            pairedDevices.put(device.getName(), new DeviceInfo(device.getName(), device.getAddress()));
         }
     }
 
