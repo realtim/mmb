@@ -40,6 +40,7 @@ public class SettingsActivity extends FragmentActivity {
     private EditText editTranspUserPassword;
     private CheckBox checkCanEditScantime;
     private CheckBox checkNeedCheckCrc;
+    private CheckBox checkBluetoothMode;
     private TextEditorActionListener textEditorActionListener;
     private TextEditorFocusChangeListener textEditorFocusChangeListener;
 
@@ -78,9 +79,28 @@ public class SettingsActivity extends FragmentActivity {
         hookTextEditor(editTranspUserId, EditorInfo.IME_ACTION_NEXT);
 
         checkCanEditScantime = (CheckBox) findViewById(R.id.settings_canEditScantimeCheck);
-        checkCanEditScantime.setOnCheckedChangeListener(new CanEditScantimeCheckListener());
+        checkCanEditScantime.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Settings.getInstance().setCanEditScantime(isChecked);
+            }
+        });
+
         checkNeedCheckCrc = (CheckBox) findViewById(R.id.settings_needCheckCrcCheck);
-        checkNeedCheckCrc.setOnCheckedChangeListener(new NeedCheckCrcCheckListener());
+        checkNeedCheckCrc.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Settings.getInstance().setNeedCheckCrc(isChecked);
+            }
+        });
+
+        checkBluetoothMode = (CheckBox) findViewById(R.id.settings_bluetoothModeCheck);
+        checkBluetoothMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Settings.getInstance().setBluetoothMode(isChecked);
+            }
+        });
 
         refreshState();
     }
@@ -102,6 +122,7 @@ public class SettingsActivity extends FragmentActivity {
         editTranspUserPassword.setText(Settings.getInstance().getTranspUserPassword());
         checkCanEditScantime.setChecked(Settings.getInstance().isCanEditScantime());
         checkNeedCheckCrc.setChecked(Settings.getInstance().isNeedCheckCrc());
+        checkBluetoothMode.setChecked(Settings.getInstance().isNewBluetoothMode());
     }
 
     @Override
@@ -231,20 +252,6 @@ public class SettingsActivity extends FragmentActivity {
             intent.putExtra(FileDialog.SELECTION_MODE, SelectionMode.MODE_OPEN);
             intent.putExtra(FileDialog.FORMAT_FILTER, new String[]{".json"});
             startActivityForResult(intent, REQUEST_CODE_SETTINGS_DEVICE_JSON_DIALOG);
-        }
-    }
-
-    private class CanEditScantimeCheckListener implements CompoundButton.OnCheckedChangeListener {
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            Settings.getInstance().setCanEditScantime(isChecked);
-        }
-    }
-
-    private class NeedCheckCrcCheckListener implements CompoundButton.OnCheckedChangeListener {
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            Settings.getInstance().setNeedCheckCrc(isChecked);
         }
     }
 }

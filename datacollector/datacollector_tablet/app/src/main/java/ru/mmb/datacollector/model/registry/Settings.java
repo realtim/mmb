@@ -23,6 +23,7 @@ public class Settings {
     private static final String TRANSP_USER_ID = "transp_user_id";
     private static final String TRANSP_USER_PASSWORD = "transp_user_password";
     private static final String NEED_CHECK_CRC = "need_check_crc";
+    private static final String BLUETOOTH_MODE = "bluetooth_mode";
 
     private static Settings instance = null;
 
@@ -72,6 +73,8 @@ public class Settings {
         loadProperty(CAN_EDIT_SCANTIME);
         loadProperty(TRANSP_USER_ID);
         loadProperty(TRANSP_USER_PASSWORD);
+        loadProperty(NEED_CHECK_CRC);
+        loadProperty(BLUETOOTH_MODE);
     }
 
     private void loadProperty(String propertyName) {
@@ -237,5 +240,13 @@ public class Settings {
 
     public void setNeedCheckCrc(boolean needCheckCrc) {
         setValue(NEED_CHECK_CRC, Boolean.toString(needCheckCrc));
+    }
+
+    public boolean isNewBluetoothMode() {
+        return Boolean.parseBoolean(settings.getProperty(BLUETOOTH_MODE, Boolean.TRUE.toString()));
+    }
+
+    public void setBluetoothMode(boolean bluetoothMode) {
+        setValue(BLUETOOTH_MODE, Boolean.toString(bluetoothMode));
     }
 }
