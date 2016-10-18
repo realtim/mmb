@@ -54,12 +54,10 @@ public class SettingsPanel {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 BluetoothMode bluetoothMode = isChecked ? BluetoothMode.NEW : BluetoothMode.OLD;
                 Configuration.getInstance().setBluetoothMode(owner, bluetoothMode);
-                refreshToggleText();
             }
         });
         boolean bluetoothModeChecked = Configuration.getInstance().getBluetoothMode() == BluetoothMode.NEW;
         bluetoothModeToggle.setChecked(bluetoothModeChecked);
-        refreshToggleText();
 
         reloadSettingsButton = (Button) owner.findViewById(R.id.main_reloadSettingsButton);
         reloadSettingsButton.setOnClickListener(new View.OnClickListener() {
@@ -196,13 +194,5 @@ public class SettingsPanel {
         checkLengthCheckBox.setChecked(loggerSettings.isCheckLength());
         onlyDigitsCheckBox.setChecked(loggerSettings.isOnlyDigits());
         loggerTimeLabel.setText(loggerSettings.getLoggerTime());
-    }
-
-    public void refreshToggleText() {
-        if (Configuration.getInstance().getBluetoothMode() == BluetoothMode.OLD) {
-            bluetoothModeToggle.setText(owner.getResources().getText(R.string.main_bluetooth_mode_old));
-        } else {
-            bluetoothModeToggle.setText(owner.getResources().getText(R.string.main_bluetooth_mode_new));
-        }
     }
 }
