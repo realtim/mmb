@@ -54,6 +54,7 @@ public class SettingsPanel {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 BluetoothMode bluetoothMode = isChecked ? BluetoothMode.NEW : BluetoothMode.OLD;
                 Configuration.getInstance().setBluetoothMode(owner, bluetoothMode);
+                owner.refreshState();
             }
         });
         boolean bluetoothModeChecked = Configuration.getInstance().getBluetoothMode() == BluetoothMode.NEW;

@@ -8,8 +8,8 @@ android {
         applicationId "ru.mmb.loggermanager"
         minSdkVersion 10
         targetSdkVersion 23
-        versionCode 11001
-        versionName "1.1.001"
+        versionCode 11002
+        versionName "1.1.002"
     }
 
     buildTypes {

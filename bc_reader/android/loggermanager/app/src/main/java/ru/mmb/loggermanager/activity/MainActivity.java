@@ -60,11 +60,14 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     private AlarmManager alarmManager = null;
     private PendingIntent pendingIntent = null;
 
+    private boolean initialized = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initialized = false;
         Configuration.getInstance().loadConfiguration(this);
 
         panelsFlipper = (ViewFlipper) findViewById(R.id.main_panelsFlipper);
@@ -109,6 +112,7 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         pendingIntent = PendingIntent.getBroadcast(this, 0, updateTimeIntent, 0);
         WakeLocker.init(this);
         TimeUpdaterThread.init(this, new TimeUpdateHandler());
+        initialized = true;
     }
 
     @Override
@@ -141,8 +145,12 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
     }
 
     private void setControlsEnabled(boolean value) {
-        settingsPanel.setControlsEnabled(value);
-        logsPanel.setControlsEnabled(value);
+        if (settingsPanel != null) {
+            settingsPanel.setControlsEnabled(value);
+        }
+        if (logsPanel != null) {
+            logsPanel.setControlsEnabled(value);
+        }
     }
 
     public void selectedLoggerChanged(DeviceInfo selectedLogger) {
@@ -179,7 +187,9 @@ public class MainActivity extends BluetoothAdapterEnableActivity {
         }
     }
 
-    private void refreshState() {
+    public void refreshState() {
+        if (!initialized) return;
+
         setControlsEnabled(false);
         autoUpdatePanel.setControlsEnabled(false);
         settingsPanel.clearControls();
