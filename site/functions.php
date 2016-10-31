@@ -2848,8 +2848,8 @@ function FindErrors($raid_id, $team_id)
 			if ($Row['levelpoint_maxdatetime'] && ($Row['levelpoint_maxdatetime'] != "0000-00-00 00:00:00"))
 				$points[$id]['max_time'] = $Row['levelpoint_maxdatetime'];
 			if ($Row['scanpoint_id']) $points[$id]['scanpoint'] = $Row['scanpoint_id'];
-			// У точек С, Ф, ОКП и СК должно быть корретное время работы
-			if (($points[$id]['pointtype'] == 1) || ($points[$id]['pointtype'] == 2) || ($points[$id]['pointtype'] == 3) || ($points[$id]['pointtype'] == 4))
+			// У точек С, Ф, ОКП (со сканерами) и СК должно быть корретное время работы
+			if (($points[$id]['pointtype'] == 1) || ($points[$id]['pointtype'] == 2) || (($points[$id]['pointtype'] == 3) && isset($points[$id]['scanpoint'])) || ($points[$id]['pointtype'] == 4))
 			{
 				if (!isset($points[$id]['min_time'])) die("У точки $id не указано время начала работы");
 				if (!isset($points[$id]['max_time'])) die("У точки $id не указано время окончания работы");
