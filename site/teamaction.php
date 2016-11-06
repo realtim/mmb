@@ -893,6 +893,7 @@ elseif ($action == 'JsonExport')
 	        $zipfileName = $MyStoreFileLink . $Prefix. 'mmbdata.zip';
 
 	        $output = fopen($fullJSONfileName, 'w');
+		fwrite($output, '{"TeamLevelPoints":[');
 
 		// TeamLevelPoints: 
 		$Sql = "select teamlevelpoint_id, tlp.team_id, tlp.levelpoint_id, 
@@ -908,8 +909,9 @@ elseif ($action == 'JsonExport')
 		$Result = MySqlQuery($Sql);
 		while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
 		{ 
-			fwrite($output, json_encode($Row)."\n");
+			fwrite($output, json_encode($Row).",");
 		}
+		fwrite($output, ']}');
 		mysql_free_result($Result);
  		fclose($output);
 
