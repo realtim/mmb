@@ -934,35 +934,20 @@ elseif ($action == 'JsonExport')
 	 	if (file_exists($zipfileName)) {
 	                header("Content-Type: application/zip");
         	        header("Content-Disposition: attachment; filename=mmbdata.zip");
-                	readfile($zipfileName);
+			 ob_clean();
+        		 flush();
+		 	 readfile($zipfileName);
+			
+			// create a file pointer connected to the output stream
+			//$output = fopen('php://output', 'w');
+//			while ( ( $Row = mysql_fetch_assoc($Result) ) )
+//			{  
+//			fwrite($output, $zipfileName); 
+//			}
+//		 	fclose($output);
         	}
 
 
-
-/*
-		$outputData = file_get_contents($fullJSONfileName);
- 		$gzipData = gzencode($outputData, 9);
-//		file_put_contents($gzipFile, $gzipData);
-		$filename='TeamLevelPoints.gz';
-
-		header('Content-Type: application/x-download');
-		header('Content-Encoding: gzip'); #
-		header('Content-Length: '.strlen($gzipData)); #
-		header('Content-Disposition: attachment; filename="'.$filename.'"');
-
-		echo $gzipData;
-*/
-/*
-	
-	// Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
-	header("Content-Type: application/octet-stream");
-	header("Content-Disposition: attachment; filename=\"mmbdata.json\"");
-
-	// Вывод json
-	print json_encode($data);
-	unset($data);
-
-*/
 	// Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
 	die();
 	return;
