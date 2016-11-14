@@ -1973,7 +1973,7 @@ send_mime_mail('Автор письма',
 		       and tu.teamuser_hide = 0 
 		 order  by d.raid_id DESC
 		 LIMIT 0,1";
-	$PredRaidId = CSql::singleValue($sql, 'raid_id');
+	$PredRaidId = CSql::singleValue($sql, 'raid_id', false);
 
         return ($PredRaidId);
      }
