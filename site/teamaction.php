@@ -396,7 +396,7 @@ elseif ($action == 'FindTeam')
 			inner join Distances d on t.distance_id = d.distance_id
 		where d.raid_id = $RaidId and t.team_hide = 0 and t.team_num = ".(int)$TeamNum;
 
-	$TeamId = CSql::singleValue($sql, 'team_id');
+	$TeamId = CSql::singleValue($sql, 'team_id', false);
 	// Поменялся TeamId, заново определяем права доступа
 	GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 	if ($TeamId <= 0)
