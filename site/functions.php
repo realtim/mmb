@@ -1903,7 +1903,7 @@ send_mime_mail('Автор письма',
 		update Users u
 		inner join 
 		(select tu.user_id, 
-			MAX(d.raid_id) as maxnonstartraidid 
+			MAX(d.raid_id) as maxnotstartraidid 
 	        from TeamUsers tu 
 			inner join Teams t
 			on tu.team_id = t.team_id	
@@ -1927,7 +1927,7 @@ send_mime_mail('Автор письма',
 		group by tu.user_id
 		) a
 		on a.user_id = u.user_id
-		SET u.user_maxnotstartraidid = a.maxnonstartraidid
+		SET u.user_maxnotstartraidid = a.maxnotstartraidid
                 ";
 
 	
