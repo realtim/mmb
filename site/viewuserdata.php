@@ -485,10 +485,10 @@ if (!isset($MyPHPScript)) return;
                
 
 			$TeamUserOff = "";
-			// Есть место команды, но сход участника
-			if ($TeamPlace > 0 and $LevelPointId > 0) $TeamUserOff = "не явка в точку <b>{$Row['levelpoint_name']}</b>";
+			//  сход участника
+			if ($LevelPointId > 0) $TeamUserOff = "не явка в точку <b>{$Row['levelpoint_name']}</b>";
 
-			$comma = ($TeamPlace > 0 and $LevelPointId >= 0) ? ',' : '';
+			$comma = ($TeamPlace > 0 or $LevelPointId > 0) ? ',' : '';
 
 
 		  print('<div class="team_res"><span><a href="?TeamId='.$Row['team_id'].'&RaidId='.$Row['raid_id'].'"  title = "Переход к карточке команды">'.CMmbUI::toHtml($Row['team_name'])."</a>
