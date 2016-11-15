@@ -1802,14 +1802,23 @@ send_mime_mail('Автор письма',
 	// параметр нужен только для того, чтобы указать текцщий ММБ
 	// по умолчанию рейтинг считается только по закрытым.
 	// считаем, что передан можеть быть только последний ММБ
-     function RecalcUsersRank($raidid)
+     function RecalcUsersRank($raidId)
      {
+	
+      // Смотрим статус переданного
+       $raidStage = CSql::raidStage($raidId);
 
-	  // Находим 
-	$sql = " select MAX(r.raid_id) as maxraidid
-	         from Raids r 
-	         where r.raid_closedate IS NOT NULL";
-	$maxRaidId = CSql::singleValue($sql, 'maxraidid');
+	// Если финиш не закрылся, то пересчитывать нужно по предыдудщему	     
+        if ($raidStage < 5) {
+		// Находим предыдущий закрытый
+		$sql = " select MAX(r.raid_id) as maxraidid
+		         from Raids r 
+	        	 where r.raid_closedate IS NOT NULL";
+		$maxRaidId = CSql::singleValue($sql, 'maxraidid');
+	} else {
+		$maxRaidId = $raidId;       
+	}
+	     
 	
         // Обнуляем рейтинг  по всем пользовтелям
   	$sql = " update Users u	SET user_rank = NULL, user_r6 = NULL, 
