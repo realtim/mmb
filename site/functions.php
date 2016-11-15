@@ -1859,6 +1859,7 @@ send_mime_mail('Автор письма',
 
 
 		// теперь считаем  минимальный и максимальный ключ ММБ по всем пользователям
+	     	// добавил учет невыходов на старт
 	
 	$sql = "
 		update Users u
@@ -1870,7 +1871,18 @@ send_mime_mail('Автор письма',
 			on tu.team_id = t.team_id	
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
+			left outer join 
+			(
+				select tld.teamuser_id
+				from TeamLevelDismiss tld
+					inner join LevelPoints lp
+				 	on tld.levelpoint_id = lp.levelpoint_id
+				group by tld.teamuser_id
+				having MIN(lp.levelpoint_order) = 1
+			) dismiss
+			on  tu.teamuser_id = dismiss.teamuser_id
  		where d.distance_hide = 0 
+		       and dismiss.teamuser_id is null
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
