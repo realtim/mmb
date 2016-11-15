@@ -1895,6 +1895,44 @@ send_mime_mail('Автор письма',
 
 	$rs = MySqlQuery($sql);
 
+	     
+	     	// теперь считаем  максимальный ключ ММБ по всем пользователям по невыходу на старт
+
+	
+	$sql = "
+		update Users u
+		inner join 
+		(select tu.user_id, 
+			MAX(d.raid_id) as maxnonstartraidid 
+	        from TeamUsers tu 
+			inner join Teams t
+			on tu.team_id = t.team_id	
+			inner join Distances d
+	        	on t.distance_id = d.distance_id
+			inner join 
+			(
+				select tld.teamuser_id
+				from TeamLevelDismiss tld
+					inner join LevelPoints lp
+				 	on tld.levelpoint_id = lp.levelpoint_id
+				group by tld.teamuser_id
+				having MIN(lp.levelpoint_order) = 1
+			) dismiss
+			on  tu.teamuser_id = dismiss.teamuser_id
+ 		where d.distance_hide = 0 
+		       and tu.teamuser_hide = 0
+		       and t.team_hide = 0 
+		       and  COALESCE(t.team_outofrange, 0) = 0
+		       and  d.raid_id <= $maxRaidId
+		group by tu.user_id
+		) a
+		on a.user_id = u.user_id
+		SET u.user_maxnotstartraidid = a.maxnonstartraidid
+                ";
+
+	
+	     
+	     
 
 		// теперь считаем флаг у тех кто не вышел (?!) или дисквалифицирован 
 	$sql = "
