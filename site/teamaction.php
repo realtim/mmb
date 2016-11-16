@@ -208,41 +208,31 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 
 
 
-
-         // 19.05.2013 внёс изменения, чтобы разрешить регистрацию вне зачета
-	// Общая проверка возможности редактирования
-
-/*
-	if (($viewmode == "Add") && !CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange))
-	{
-		CMmb::setMessage('Регистрация на марш-бросок закрыта');
-		return;
-	}
-
-	if (($viewmode <> "Add") && !CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)) 
-	{
-		CMmb::setMessage('Изменения в команде запрещены');
-		return;
-	}
-*/
-
-
 	// 09/06/2016 Добавил определение нового пользователя
 	// Определяем ключ предыдущего марш-броска, в который данный пользователь заявлялся, но не участвовал
 	$NotStartPreviousRaidId = 0;
 	$TeamUserNew = 0;
 	if  ($NewUserId > 0) {
-		$NotStartPreviousRaidId = CheckNotStart($NewUserId, $RaidId);	
-		$TeamUserNew = (CSql::userRaidsCount($NewUserId) > 0) ? 0 : 1;
+
+		// смотрим минимальный, максимальный ммб, в котором пользователь участвовал и максимальный, в котором он регистрировалсчя, но не вышел на старт
+		// эти поля обновляются при пересечте рейтинга
+		// Если пользователь иммет минимальный - значит не новичок
+		// Если ммбб не участия больше чем максимальный - его и заносим, как последний неучастия (не переркытый участием)
+		$sqlUser = "select COALESCE(u.user_minraidid, 0) as minraidid,  
+				COALESCE(u.user_maxraidid, 0) as maxraidid,  
+				COALESCE(u.user_maxnotstartraidid, 0) as maxnotstartraidid
+			from Users u
+			where u.user_id = $NewUserId";
+
+		$RowUser = CSql::singleRow($sqlUser);
+
+		$NotStartPreviousRaidId = ($RowUser['maxnotstartraidid'] > $RowUser['maxraidid']) ? $RowUser['maxnotstartraidid'] : 0;
+		$TeamUserNew = ($RowUser['minraidid'] > 0) ? 0 : 1;
 	}
 	
 	
-
-	
 //	$OutOfRaidLimit =  IsOutOfRaidLimit($RaidId);
 //	$WaitTeamId = FindFirstTeamInWaitList($RaidId);
-	
-	
 
 	// Добавляем/изменяем команду в базе
 	$TeamActionTextForEmail = "";
