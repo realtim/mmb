@@ -745,7 +745,7 @@ elseif ($action == 'InviteTeam')
 		return;
 	} else {
 
-		$sql = "update Teams set team_outofrange = 0, invitation_id = $inviteId where team_id = $TeamId";
+		$sql = "update Teams set team_outofrange = 0, invitation_id = $inviteId, invitation_usedt = NOW()  where team_id = $TeamId";
 		$rs = MySqlQuery($sql);
 	}
 
