@@ -1823,7 +1823,7 @@ send_mime_mail('Автор письма',
         // Обнуляем рейтинг  по всем пользовтелям
   	$sql = " update Users u	SET user_rank = NULL, user_r6 = NULL, 
   				user_minraidid = NULL,  user_maxraidid = NULL,
-  				user_noinvitation = NULL
+  				user_noinvitation = NULL, user_maxnotstartraidid = NULL
   		";
 
 	 $rs = MySqlQuery($sql);
