@@ -230,7 +230,7 @@ class CRights
 
 	
    // возможность добавить в волонтёры
-    public static function canAddToDevelopers($userId, $raidId)
+    public static function canAddToDevelopers($userId, $raidId, $puserId)
     {
 
         $Super = CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
@@ -247,7 +247,7 @@ class CRights
     			        on t.team_id = tu.team_id
     			        inner join Distances d
     			        on t.distance_id = d.distance_id
-	    		where  tu.user_id = $userId
+	    		where  tu.user_id = $puserId
 	    		       and t.team_hide = 0
 	    		       and d.raid_id = $raidId
 	    		       and tu.teamuser_hide = 0
@@ -264,7 +264,7 @@ class CRights
 	    // проверяем, что не волонтёр уже
 	    $sql = "select count(*) as raiddeveloper
     			from  RaidDevelopers rd 
-	    		where  rd.user_id = $userId
+	    		where  rd.user_id = $puserId
 	    		       and rd.raiddeveloper_hide = 0
 	    		       and rd.raid_id = $raidId
 	    		";
