@@ -1828,6 +1828,44 @@ send_mime_mail('Автор письма',
 
 	 $rs = MySqlQuery($sql);
 
+	     
+        // Сбрасываем признак неявки команды
+  	$sql = " update Teams t 
+			inner join Distances d
+	        	on t.distance_id = d.distance_id
+		 SET t.team_dismiss = NULL 
+		 where d.distance_hide = 0 
+		       and t.team_hide = 0 
+		       and  COALESCE(t.team_outofrange, 0) = 0
+		       and  d.raid_id = $maxRaidId
+  		";
+
+	 $rs = MySqlQuery($sql);
+
+	$sql = "
+		update  Teams t
+			inner join Distances d
+	        	on t.distance_id = d.distance_id
+			left outer join 
+			(
+			 	select tlp.team_id, count(*) as points
+			 	from TeamLevelPoints tlp
+				group by tlp.team_id
+        		) teamdismiss
+            		on t.team_id = teamdismiss.team_id
+		SET t.team_dismiss = 1
+		where d.distance_hide = 0 
+		       and t.team_hide = 0 
+		       and  COALESCE(t.team_outofrange, 0) = 0
+		       and  d.raid_id = $maxRaidId
+		       and  d.raid_id >= 19
+	       	       and  COALESCE(teamdismiss.points, 0) = 0
+                ";
+	
+	$rs = MySqlQuery($sql);
+	     
+	     
+	     
   	// Добавил проверку на сход
   	// проверка на ошибки идёт по полю, посчитанному в пересчете результатов
  
@@ -1954,8 +1992,8 @@ send_mime_mail('Автор письма',
 		on a.user_id = u.user_id
 		SET u.user_maxnotstartraidid = a.maxnotstartraidid
                 ";
-
 	
+	$rs = MySqlQuery($sql);
 	     
 	     
 
