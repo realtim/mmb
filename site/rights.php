@@ -225,12 +225,7 @@ class CRights
         $raidStage = CSql::raidStage($raidId);
 
         // Администратору или модератору можно всегда или после снятия флага "не показывать результаты"
-        if ($Super)
-        {
-            return ($raidStage > 5);
-        }
-
-        return (false);
+        return ($Super or $raidStage > 5);
     }
 	
     
