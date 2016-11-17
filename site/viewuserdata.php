@@ -492,7 +492,7 @@ if (!isset($MyPHPScript)) return;
 			$comma = ($TeamPlace > 0 or $LevelPointId > 0) ? ',' : '';
 
 			// Проверка, что можно показывать место и рейтинг
-			if (CSql::raidStage($Row['raid_id']) > 5) 
+			if (CRights::canViewRaidResult($UserId, $Row['raid_id'])) 
 			{
 			  print('<div class="team_res"><span><a href="?TeamId='.$Row['team_id'].'&RaidId='.$Row['raid_id'].'"  title = "Переход к карточке команды">'.CMmbUI::toHtml($Row['team_name'])."</a>
 		         N {$Row['team_num']}$comma</span> $TeamPlaceResult$TeamUserOff ({$Row['teamuser_rank']}), дистанция: {$Row['distance_name']}, ммб: {$Row['raid_name']}</div>\r\n");
