@@ -120,7 +120,7 @@ if (!isset($MyPHPScript)) return;
             return;
         }
 
-        if ($pUserName == '') {
+        if ($pUserName == ''  or trim($pUserName) == 'Фамилия Имя'  or (trim($pUserName)  == $Anonimus and !$pUserNoShow)) {
             CMmb::setErrorSm('Не указано ФИО.');
             return;
         }
