@@ -1903,8 +1903,9 @@ send_mime_mail('Автор письма',
 		$rs = MySqlQuery($sql);
 
 
-		// теперь считаем  минимальный и максимальный ключ ММБ по всем пользователям
-	     	// добавил учет невыходов на старт
+	// теперь считаем  минимальный и максимальный ключ ММБ по всем пользователям
+     	// добавил учет невыходов на старт
+     	// добавил учет невыходов на старт для команды
 	
 	$sql = "
 		update Users u
@@ -1926,16 +1927,9 @@ send_mime_mail('Автор письма',
 				having MIN(lp.levelpoint_order) = 1
 			) dismiss
 			on  tu.teamuser_id = dismiss.teamuser_id
-			left outer join 
-			(
-			 	select tlp.team_id, count(*) as points
-			 	from TeamLevelPoints tlp
-				group by tlp.team_id
-        		) teamdismiss
-            		on t.team_id = teamdismiss.team_id
 		where d.distance_hide = 0 
 		       and dismiss.teamuser_id is null
-		       and (d.raid_id < 19 or COALESCE(teamdismiss.points, 0) > 0)
+		       and COALESCE(t.team_dismiss, 0) = 0
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
@@ -1972,19 +1966,12 @@ send_mime_mail('Автор письма',
 				having MIN(lp.levelpoint_order) = 1
 			) dismiss
 			on  tu.teamuser_id = dismiss.teamuser_id
-			left outer join 
-			(
-			 	select tlp.team_id, count(*) as points
-			 	from TeamLevelPoints tlp
-				group by tlp.team_id
-        		) teamdismiss
-            		on t.team_id = teamdismiss.team_id
 		where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  d.raid_id <= $maxRaidId
-	       	       and (dismiss.teamuser_id is not null or (d.raid_id >= 19 and COALESCE(teamdismiss.points, 0) = 0))
+		       and COALESCE(t.team_outofrange, 0) = 0
+		       and d.raid_id <= $maxRaidId
+	       	       and (dismiss.teamuser_id is not null or COALESCE(t.team_dismiss, 0) = 1)
 		group by tu.user_id
 		) a
 		on a.user_id = u.user_id
@@ -2009,28 +1996,22 @@ send_mime_mail('Автор письма',
 	        	on t.distance_id = d.distance_id
 			left outer join 
 			(
-		 	select tlp.team_id,  count(*) as disqualification
-		 	from TeamLevelPoints tlp
-			where COALESCE(tlp.error_id, 0) = 15 
-			group by tlp.team_id
+		 		select tlp.team_id,  count(*) as disqualification
+		 		from TeamLevelPoints tlp
+				where COALESCE(tlp.error_id, 0) = 15 
+				group by tlp.team_id
                         ) disq
                         on t.team_id = disq.team_id
 			left outer join 
 			(
-		 	select tlp.team_id,  count(*) as pointscount
-		 	from TeamLevelPoints tlp
-			group by tlp.team_id
-                        ) points
-                        on t.team_id = points.team_id
-			left outer join 
-			(
-			select tld.teamuser_id,  MIN(lp.levelpoint_order) as minorder
-		 	from TeamLevelDismiss tld
-			 	inner join LevelPoints lp
-			 	on tld.levelpoint_id = lp.levelpoint_id
-			 group by tld.teamuser_id
-                        ) dismiss
-                        on tu.teamuser_id = dismiss.teamuser_id
+				select tld.teamuser_id
+				from TeamLevelDismiss tld
+					inner join LevelPoints lp
+				 	on tld.levelpoint_id = lp.levelpoint_id
+				group by tld.teamuser_id
+				having MIN(lp.levelpoint_order) = 1
+			) dismiss
+			on  tu.teamuser_id = dismiss.teamuser_id
  		where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
@@ -2040,9 +2021,9 @@ send_mime_mail('Автор письма',
 		) a
 		on a.user_id = u.user_id
 		SET u.user_noinvitation = 1
-		WHERE a.minorder = 1 
-			or a.disqualification > 1 
-			or a.pointscount = 0
+		WHERE   dismiss.teamuser_id is not null
+			or COALESCE(a.disqualification, 0) > 1 
+			or COALESCE(t.team_dismiss, 0) = 1
                 ";
 
 		 $rs = MySqlQuery($sql);
