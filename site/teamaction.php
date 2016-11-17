@@ -171,6 +171,17 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			return;
 		}
 
+		// Проверка на наличие пользователя в судьях
+		$sql = "select count(*) as result
+			from RaidDevelopers rd
+			where rd.raiddeveloper_hide = 0 and rd.raid_id = $RaidId and rd.user_id = $NewUserId";
+		if (CSql::singleValue($sql, 'result') > 0)
+		{
+			$NewUserId = 0;
+			setViewError('Пользователь с таким email включен в судьи и не может быть участником');
+			return;
+		}
+
 	}
 	else
 	{
