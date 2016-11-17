@@ -94,6 +94,8 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 		$action = "";
 	else if (isset($_GET['changepasswordsessionid']))
 		$action = "sendpasswordafterrequest";
+	else if (isset($_GET['developers']))
+		$action = "ViewRaidDevelopersPage";
 	else if (mmb_validateInt($_GET, 'RaidId', '') !== false)        // должно идти предпоследним
 		$action = "ViewRaidTeams";
 	else
