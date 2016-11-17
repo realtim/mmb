@@ -217,6 +217,22 @@ class CRights
         return (false);
     }
 
+    // Возмжность видеть результаты (места, рейтинг, данные по точкам) ММБ
+    public static function canViewRaidResult($userId, $raidId)
+    {
+        $Super = CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
+
+        $raidStage = CSql::raidStage($raidId);
+
+        // Администратору или модератору можно всегда или после снятия флага "не показывать результаты"
+        if ($Super)
+        {
+            return ($raidStage > 5);
+        }
+
+        return (false);
+    }
+	
     
 }
 
