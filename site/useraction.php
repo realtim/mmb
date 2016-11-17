@@ -593,8 +593,136 @@ if (!isset($MyPHPScript)) return;
 
         // Остаемся на той же странице
         CMmb::setResult('Удален модератор', 'ViewAdminModeratorsPage');
-    }
-   // ============ Обратимое удаление пользователя ====================================
+
+    } elseif ($action == "MakeDeveloper")  {
+        // Действие вызывается нажатием кнопки "Сделать волонтёром"
+
+        $pUserId = mmb_validateInt($_POST, 'UserId');
+
+        // Если вызвали с таким действием, должны быть определны оба пользователя
+        if ($pUserId <= 0 or $UserId <= 0) {
+            return;
+        }
+
+        // Права на редактирование
+        if (!$Administrator) {
+            return;
+        }
+
+        $Sql = "select tu.teamuser_id
+                        from TeamUsers tu 
+                                inner join Teams t
+                                on tu.team_id = t.team_id
+                                inner join Distances d
+                                on t.distance_id = d.distance_id
+                    where d.raid_id = $RaidId
+                            and t.team_hide = 0
+                            and tu.teamuser_hide = 0
+                            and tu.user_id = $pUserId
+                    LIMIT 0,1 "  ;
+
+        $Row = CSql::singleRow($Sql);
+        $teamuserId =  $Row['teamuser_id'];
+        
+         if ($teamuserId > 0)  {
+            CMmb::setErrorMessage('Пользователь уже является участником');
+            return;
+        }
+
+
+        $Sql = "select raiddeveloper_id,  raiddeveloper_hide
+                        from RaidDevelopers 
+                    where raid_id = $RaidId
+                          and user_id = $pUserId
+                    LIMIT 0,1 "  ;
+
+        $Row = CSql::singleRow($Sql);
+        $RaidDeveloperId =  $Row['raiddeveloper_id'];
+        $RaidDeveloperHide =  $Row['raiddeveloper_hide'];
+
+        $DeveloperAdd = 0;
+
+        if (empty($RaidDeveloperId)) {
+            $Sql = "insert into RaidDevelopers (raid_id, user_id, raiddeveloper_hide) values ($RaidId, $pUserId, 0)";
+            MySqlQuery($Sql);
+            $DeveloperAdd = 1;
+        } else {
+            if ($RaidDeveloperHide == 0) {
+                $DeveloperAdd = 0;
+            } else {
+
+                // Есть и модератор скрыт -  обновляем
+                $Sql = "update RaidDevelopers set raiddeveloper_hide = 0 where raiddeveloper_id = $RaidDeveloperId";
+                MySqlQuery($Sql);
+                $DeveloperAdd = 1;
+            }
+
+            // Конец проверки существующей записи
+
+        }
+        // Конец разбора ситуации с модераторами
+                 
+
+        if ($DeveloperAdd) {
+            $ChangeDataUserName = CSql::userName($UserId);
+
+            $Row = CSql::fullUser($pUserId);
+            $pUserName = $Row['user_name'];
+            $pUserEmail = $Row['user_email'];
+
+
+            $Sql = "select raid_name from  Raids where raid_id = $RaidId";
+            $RaidName = CSql::singleValue($Sql, 'raid_name');
+
+            $Msg =  "Уважаемый пользователь $pUserName!\r\n\r\n";
+            $Msg .= "Вы получили добавлены в волонтёры марш-броска $RaidName\r\n";
+            $Msg .= "Автор изменений: $ChangeDataUserName.\r\n\r\n";
+
+
+            // Отправляем письмо
+            SendMail(trim($pUserEmail), $Msg, $pUserName);
+
+            CMmb::setResult('Добавлен волонтёр', 'ViewRaidDevelopersPage');
+        } else {
+            CMmb::setResult('Пользователь уже включен в волонтёры!', 'ViewUserData');
+        }
+
+
+    } elseif ($action == "HideDeveloper")  {
+        // Действие вызывается нажатием кнопки "Удалить" на странице со списком волонтёров
+
+        $RaidDeveloperId = mmb_validateInt($_POST, 'RaidDeveloperId', -1);
+        $pUserId = mmb_validateInt($_POST, 'UserId', -1);
+
+             // Если вызвали с таким действием, должны быть определны оба пользователя
+        if ($RaidDeveloperId <= 0 or !$Administrator) {
+            return;
+        }
+
+        $Sql = "update RaidDevelopers set raiddeveloper_hide = 1 where raiddeveloper_id = $RaidDeveloperId";
+        MySqlQuery($Sql);
+
+        $ChangeDataUserName = CSql::userName($UserId);
+        $Row = CSql::fullUser($pUserId);
+        $pUserName = $Row['user_name'];
+        $pUserEmail = $Row['user_email'];
+
+        $Sql = "select raid_name from  Raids where raid_id = $RaidId";
+        $RaidName = CSql::singleValue($Sql, 'raid_name');
+
+
+        $Msg =  "Уважаемый пользователь $pUserName!\r\n\r\n";
+        $Msg .= "Вы исключены из списка волонтёров марш-броска $RaidName.\r\n";
+        $Msg .= "Автор изменений: $ChangeDataUserName.\r\n\r\n";
+
+        // Отправляем письмо
+        SendMail(trim($pUserEmail), $Msg, $pUserName);
+
+        // Остаемся на той же странице
+        CMmb::setResult('Удален волонтёр', 'ViewRaidDevelopersPage');
+    }   
+
+// ============ Обратимое удаление пользователя ====================================
     elseif ($action == 'HideUser') {
 
         $pUserId = mmb_validateInt($_POST, 'UserId', -1);
