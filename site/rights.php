@@ -255,7 +255,7 @@ class CRights
 	    		";
 	    $teamuser = CSql::singleValue($sql, 'teamuser', false);
 
-	    if (teamuser) 
+	    if ($teamuser) 
 	    { 
 		    return (false);
 	    }	    
@@ -270,7 +270,7 @@ class CRights
 	    		";
 	    $raiddeveloper = CSql::singleValue($sql, 'raiddeveloper', false);
 
-	    if (raiddeveloper) 
+	    if ($raiddeveloper) 
 	    { 
 		    return (false);
 	    }	    
