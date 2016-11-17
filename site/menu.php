@@ -311,6 +311,9 @@ echo '4 ';
 	// Команды
 	print('<tr><td><a href="?protocol&RaidId='.$RaidId.'" title="Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n");
 
+	// Волонтёры
+	print('<tr><td><a href="?developers&RaidId='.$RaidId.'" title="Команда подготовки и проведения для выбранного выше ММБ">Судьи</a></td></tr>'."\r\n");
+
 	// Файлы
 	print('<tr><td><a href="?files&RaidId='.$RaidId.'" title="Карты, легенды, описания и т.п. для выбранного выше ММБ">Материалы</a></td></tr>'."\r\n");
 
