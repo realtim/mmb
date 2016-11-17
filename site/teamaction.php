@@ -1318,16 +1318,21 @@ elseif ($action == "UnionTeams")  {
 						 teamlevelpoint_result
 						)
 		         select  tlp.levelpoint_id, $TeamId,
-		                MAX(teamlevelpoint_datetime),
-		                MIN(teamlevelpoint_duration),
-		                MAX(teamlevelpoint_penalty),
-		                MAX(teamlevelpoint_comment),
-		                MAX(teamlevelpoint_result)
+		                CASE WHEN lp.pointtype_id = 1
+					THEN  MIN(tlp.teamlevelpoint_datetime)  
+					ELSE MAX(tlp.teamlevelpoint_datetime) 
+				END,
+		                MIN(tlp.teamlevelpoint_duration),
+		                MAX(tlp.teamlevelpoint_penalty),
+		                MAX(tlp.teamlevelpoint_comment),
+		                MAX(tlp.eamlevelpoint_result)
  		         from  TeamUnionLogs tul
 			       inner join Teams t
 			       on t.team_id = tul.team_id
-                   inner join TeamLevelPoints tlp
+                   	       inner join TeamLevelPoints tlp
 			       on t.team_id = tlp.team_id 
+			       inner join LevelPoints lp
+			       on tlp.levelpoint_id = lp.levelpoint_id
 			 where tul.teamunionlog_hide = 0 
                                and tul.union_status = 1
               group by tlp.levelpoint_id ";
