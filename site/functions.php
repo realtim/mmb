@@ -1890,8 +1890,16 @@ send_mime_mail('Автор письма',
 				having MIN(lp.levelpoint_order) = 1
 			) dismiss
 			on  tu.teamuser_id = dismiss.teamuser_id
- 		where d.distance_hide = 0 
+			left outer join 
+			(
+			 	select tlp.team_id, count(*) as points
+			 	from TeamLevelPoints tlp
+				group by tlp.team_id
+        		) teamdismiss
+            		on t.team_id = teamdismiss.team_id
+		where d.distance_hide = 0 
 		       and dismiss.teamuser_id is null
+		       and (d.raid_id < 19 or COALESCE(teamdismiss.points, 0) > 0)
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
@@ -1918,7 +1926,7 @@ send_mime_mail('Автор письма',
 			on tu.team_id = t.team_id	
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
-			inner join 
+			left outer join 
 			(
 				select tld.teamuser_id
 				from TeamLevelDismiss tld
@@ -1928,11 +1936,19 @@ send_mime_mail('Автор письма',
 				having MIN(lp.levelpoint_order) = 1
 			) dismiss
 			on  tu.teamuser_id = dismiss.teamuser_id
- 		where d.distance_hide = 0 
+			left outer join 
+			(
+			 	select tlp.team_id, count(*) as points
+			 	from TeamLevelPoints tlp
+				group by tlp.team_id
+        		) teamdismiss
+            		on t.team_id = teamdismiss.team_id
+		where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
 		       and  d.raid_id <= $maxRaidId
+	       	       and (dismiss.teamuser_id is not null or (d.raid_id >= 19 and COALESCE(teamdismiss.points, 0) = 0))
 		group by tu.user_id
 		) a
 		on a.user_id = u.user_id
