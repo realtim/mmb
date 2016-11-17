@@ -889,7 +889,59 @@ class CMmbAuth {
              		order by u.user_id ";
 
         }
-        else
+  	elseif ($sendingType == 4)
+        {
+
+		// рассылка тем, у кого есть приглашения, но чья команда не переведена в зачет
+	     $sql = "  select tu.user_id, u.user_name, u.user_email 
+             		from TeamUsers tu
+             			inner join Teams t
+             			on tu.team_id = t.team_id
+             			inner join Users u
+             			on tu.user_id = u.user_id
+             			inner join Distances d
+             			on t.distance_id = d.distance_id
+				inner join Invitations inv
+				on inv.user_id = inv.user_id
+				inner join InvitationDeliveries invd
+				on inv.invitationdelivery_id = invd.invitationdelivery_id
+				   and invd.raid_id = d.raid_id
+				left outer join  Teams t2
+				on inv.invitation_id = t2.invitation_id
+			where   d.raid_id = $raidId
+             			and t.team_hide = 0
+             			and tu.teamuser_hide = 0
+             			and t.team_outofrange = 1
+				and t.invitation_id is null	
+				and t2.team_id is null
+             			$debugCond
+             		order by tu.user_id ";
+			// по идее условие на t.invitation_id is null лишнее
+
+        }
+  	elseif ($sendingType == 5)
+        {
+
+		// рассылка тем, чья команда ожидает приглашения (перед удалением)
+	     $sql = "  select tu.user_id, u.user_name, u.user_email 
+             		from TeamUsers tu
+             			inner join Teams t
+             			on tu.team_id = t.team_id
+             			inner join Users u
+             			on tu.user_id = u.user_id
+             			inner join Distances d
+             			on t.distance_id = d.distance_id
+             		where d.raid_id = $raidId
+             			and t.team_hide = 0
+             			and tu.teamuser_hide = 0
+             			and t.team_outofrange = 1
+				and t.invitation_id is null  
+             			$debugCond
+             		order by tu.user_id ";
+			// по идее условие на t.invitation_id is null лишнее
+
+        }	    
+	else
         {
 	       $sql = "";
         }
