@@ -1829,7 +1829,7 @@ send_mime_mail('Автор письма',
 	 $rs = MySqlQuery($sql);
 
 	     
-        // Сбрасываем признак неявки команды
+        // Сбрасываем признак неявки команды  по всем ММБ с весны 2012
   	$sql = " update Teams t 
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
@@ -1840,6 +1840,7 @@ send_mime_mail('Автор письма',
 
 	 $rs = MySqlQuery($sql);
 
+	// Устанавливаем    признак неявки команды  по всем ММБ с весны 2012  	
 	$sql = "
 		update  Teams t
 			inner join Distances d
@@ -1855,7 +1856,7 @@ send_mime_mail('Автор письма',
 		where d.distance_hide = 0 
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  d.raid_id = $maxRaidId
+		       and  d.raid_id <= $maxRaidId
 		       and  d.raid_id >= 19
 	       	       and  COALESCE(teamdismiss.points, 0) = 0
                 ";
