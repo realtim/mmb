@@ -1834,9 +1834,7 @@ send_mime_mail('Автор письма',
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
 		 SET t.team_dismiss = NULL 
-		 where d.distance_hide = 0 
-		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
+		 where d.raid_id  >= 19
 		       and  d.raid_id = $maxRaidId
   		";
 
