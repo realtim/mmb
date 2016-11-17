@@ -406,7 +406,7 @@ if (!isset($MyPHPScript)) return;
 	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите сделать этого пользователя модератором текущего марш-броска? \')) { MakeModerator(); }"  name="ModeratorButton" value="'.$ModeratorButtonText.'" tabindex = "'.(++$TabIndex).'">';
          }
 	 
-	 if (CRights::canAddToDevelopers($UserId, $RaidId)) 
+	 if (CRights::canAddToDevelopers($UserId, $RaidId, $pUserId)) 
 	 {
 	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите добавить пользователя в волонтёры? \')) { MakeDeveloper(); }"  name="DeveloperButton" value="Добавить в волонтёры" tabindex = "'.(++$TabIndex).'">';
          }
