@@ -1986,9 +1986,9 @@ send_mime_mail('Автор письма',
 	$sql = "
 		update Users u
 		inner join 
-		(select tu.user_id, COALESCE(dismiss.minorder, 0) as minorder, 
+		(select tu.user_id, dismiss.teamuser_id as dismissteamuser, 
 			COALESCE(disq.disqualification, 0) as disqualification, 
-			COALESCE(points.pointscount, 0) as pointscount
+			COALESCE(t.team_dismiss, 0)  as dismissteam
 	        from TeamUsers tu 
 			inner join Teams t
 			on tu.team_id = t.team_id	
@@ -2021,9 +2021,9 @@ send_mime_mail('Автор письма',
 		) a
 		on a.user_id = u.user_id
 		SET u.user_noinvitation = 1
-		WHERE   dismiss.teamuser_id is not null
-			or COALESCE(a.disqualification, 0) > 1 
-			or COALESCE(t.team_dismiss, 0) = 1
+		WHERE   a.dismissteamuser is not null
+	  		or COALESCE(a.disqualification, 0) > 1 
+	 		or COALESCE(a.dismissteam, 0) = 1
                 ";
 
 		 $rs = MySqlQuery($sql);
