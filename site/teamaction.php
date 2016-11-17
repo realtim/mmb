@@ -803,7 +803,7 @@ elseif ($action == 'JsonExport')
 	$Sql = "select team_id, t.distance_id, team_name, team_num, team_usegps, team_greenpeace,
 					team_result, team_registerdt, team_outofrange,
 					team_maxlevelpointorderdone,
-					team_minlevelpointorderwitherror
+					team_minlevelpointorderwitherror, invitation_id, team_dismiss
 			from Teams t
 			     inner join Distances d on t.distance_id = d.distance_id
 			where t.team_hide = 0 and d.distance_hide = 0  and d.raid_id = $RaidId";
@@ -812,10 +812,27 @@ elseif ($action == 'JsonExport')
 	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
 	mysql_free_result($Result);
 
+	// Initations: team_id, distance_id, team_name, team_num // *
+	$Sql = "select inv.invitation_id, inv.invitation_begindt, inv.invitation_enddt,
+			inv.user_id, invd.invitationdelivery_type
+		from Teams t
+			     inner join Distances d on t.distance_id = d.distance_id
+			     inner join Invitations inv
+			     on t.invitation_id = inv.invitation_id
+			     inner join InvitationDeliveries  invd
+			     on inv.invitationdelivery_id = invd.invitationdelivery_id
+		where t.team_hide = 0 and d.distance_hide = 0  and d.raid_id = $RaidId";
+
+	$Result = MySqlQuery($Sql);
+	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Invitations"][] = $Row; }
+	mysql_free_result($Result);
+	
+	
 	// Users: user_id, user_name, user_birthyear // *
 	// Добавил ограничение - только по текущему ММБ
 	$Sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name,
-	               u.user_birthyear, u.user_city 
+	               u.user_birthyear, u.user_city, u.user_minraidid, u.user_maxraidid,
+		       u.user_maxnotstartraidid, u.user_r6, u.user_noinvitation 
 	        from Users u
 			     inner join TeamUsers tu on u.user_id = tu.user_id
 		    	 inner join Teams t on tu.team_id = t.team_id
@@ -828,7 +845,7 @@ elseif ($action == 'JsonExport')
 	mysql_free_result($Result);
 
 	// TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
-	$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.teamuser_rank 
+	$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.teamuser_rank, tu.teamuser_new, tu.teamuser_notstartraidid 
 	        from TeamUsers tu 
 		     	inner join Teams t on tu.team_id = t.team_id
 		     	inner join Distances d on t.distance_id = d.distance_id
