@@ -227,7 +227,60 @@ class CRights
         // Администратору или модератору можно всегда или после снятия флага "не показывать результаты"
         return ($Super or $raidStage > 5);
     }
+
 	
+   // возможность добавить в волонтёры
+    public static function canAddToDevelopers($userId, $raidId)
+    {
+
+        $Super = CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
+
+        if (!$Super)
+        {
+            return (false);
+        }
+
+	    // проверяем, что не участник
+ 	   $sql = "select count(*) as teamuser
+    			from  TeamUsers tu 
+    			        inner join Teams t
+    			        on t.team_id = tu.team_id
+    			        inner join Distances d
+    			        on t.distance_id = d.distance_id
+	    		where  tu.user_id = $userId
+	    		       and t.team_hide = 0
+	    		       and d.raid_id = $raidId
+	    		       and tu.teamuser_hide = 0
+	    		    
+	    		";
+	    $teamuser = CSql::singleValue($sql, 'teamuser', false);
+
+	    if (teamuser) 
+	    { 
+		    return (false);
+	    }	    
+
+	
+	    // проверяем, что не волонтёр уже
+	    $sql = "select count(*) as raiddeveloper
+    			from  RaidDevelopers rd 
+	    		where  rd.user_id = $userId
+	    		       and rd.raiddeveloper_hide = 0
+	    		       and rd.raid_id = $raidId
+	    		";
+	    $raiddeveloper = CSql::singleValue($sql, 'raiddeveloper', false);
+
+	    if (raiddeveloper) 
+	    { 
+		    return (false);
+	    }	    
+		    
+	    
+        return (true);
+
+    }
+    // конец функции - проверки на возможность добавить в волонтёры 
+  	
     
 }
 
