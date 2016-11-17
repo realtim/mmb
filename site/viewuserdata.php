@@ -220,6 +220,13 @@ if (!isset($MyPHPScript)) return;
 		document.UserDataForm.submit();
 	}
 
+	// Функция создания волонтёра
+	function MakeDeveloper()
+	{ 
+		document.UserDataForm.action.value = "MakeDeveloper";
+		document.UserDataForm.submit();
+	}
+
 
 	// Функция создания приглашения
 	function SendInvitation()
@@ -399,6 +406,11 @@ if (!isset($MyPHPScript)) return;
 	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите сделать этого пользователя модератором текущего марш-броска? \')) { MakeModerator(); }"  name="ModeratorButton" value="'.$ModeratorButtonText.'" tabindex = "'.(++$TabIndex).'">';
          }
 	 
+	 if (CRights::canAddToDevelopers($UserId, $RaidId)) 
+	 {
+	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите добавить пользователя в волонтёры? \')) { MakeDeveloper(); }"  name="DeveloperButton" value="Добавить в волонтёры" tabindex = "'.(++$TabIndex).'">';
+         }
+
 	 if (CRights::canDeliveryInvitation($UserId, $RaidId, 1)) 
 	 {
 	   $ModeratorUnionString .= '<input type="button" onClick = "javascript: if (confirm(\'Вы уверены, что хотите выдать этому пользователю приглашение? \')) { SendInvitation(); }"  name="InvitationButton" value="Выдать приглашение" tabindex = "'.(++$TabIndex).'">';
