@@ -17,7 +17,6 @@ if (!isset($MyPHPScript)) return;
 		// Данные о команде 
 		include("viewteamdata.php");
 		include("viewteamlevelpoints.php");
-//		include("viewteamresultdata.php");
 	} elseif ($view == "ViewUsers") {
 		// результаты поиска пользователя 
 		include("viewusers.php");
