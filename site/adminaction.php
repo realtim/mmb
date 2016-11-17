@@ -364,6 +364,13 @@ if ($action == "ViewAdminModeratorsPage")  {
 	CMmb::setViews('ViewAdminModeratorsPage', '');
 }
 
+
+// =============== Показываем страницу волонтёров ===================
+if ($action == "ViewRaidDevelopersPage")  {
+	// Действие вызывается ссылкой Судьи
+	CMmb::setViews('ViewRaidDevelopersPage', '');
+}
+
 // =============== Показываем страницу объединения команд ===================
 if ($action == "ViewAdminUnionPage")  {
 	// Действие вызывается ссылкой Объединение
