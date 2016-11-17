@@ -62,8 +62,10 @@ if (!isset($MyPHPScript)) return;
 	}
 	elseif ($view == "viewLogs") {			// просмотр логов
 		include("viewlogs.php");
+	} elseif ($view == "ViewRaidDevelopersPage") {
+		// Мордераторы
+		include("viewraiddevelopers.php");
 	}
-
 	// Очищаем переменную
 	$view = "";
 
