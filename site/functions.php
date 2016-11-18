@@ -1926,7 +1926,12 @@ send_mime_mail('Автор письма',
 		(select tu.user_id, SUM(COALESCE(tu.teamuser_rank, 0.00)) as rank, 
 			SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId 
 			- d.raid_id 
-			- (select count(*) from RaidDevelopers rd where rd.raiddeveloper_hide = 0 and rd.raid_id > d.raid_id))) as r6
+			- (select count(*) 
+				from RaidDevelopers rd 
+				where rd.raiddeveloper_hide = 0
+					and rd.raid_id > d.raid_id
+					and rd.user_id =  tu.user_id
+			))) as r6
 	        from TeamUsers tu 
 			inner join Teams t
 			on tu.team_id = t.team_id	
