@@ -46,7 +46,7 @@ if (!isset($MyPHPScript)) return;
 			{
 			  print('<div class="team_res">'."\r\n");
 			  print('<a href="?UserId='.$Row['user_id'].'">'.CMmbUI::toHtml($Row['user_name']).'</a>'."\r\n");
-		          if ($Administartor) 
+		          if ($Administrator) 
 			  {
 				print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите снять статус волонтёра с текущего марш-броска? \')) { HideDeveloper('.$Row['raiddeveloper_id'].','.$Row['user_id'].'); }"  name="DeveloperHideButton" value="Скрыть" tabindex="10">'."\r\n");
 			  }
