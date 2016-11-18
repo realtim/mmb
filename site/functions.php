@@ -1924,7 +1924,7 @@ send_mime_mail('Автор письма',
 		update Users u
 		inner join 
 		(select tu.user_id, SUM(COALESCE(tu.teamuser_rank, 0.00)) as rank, 
-			SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId - d.raid_id)) as r6
+			SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId - d.raid_id - (select count(*) from RaidDevelopers rd where rd.raid_id > d.raid_id))) as r6
 	        from TeamUsers tu 
 			inner join Teams t
 			on tu.team_id = t.team_id	
