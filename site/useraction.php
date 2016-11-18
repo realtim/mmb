@@ -675,7 +675,7 @@ if (!isset($MyPHPScript)) return;
             $RaidName = CSql::singleValue($Sql, 'raid_name');
 
             $Msg =  "Уважаемый пользователь $pUserName!\r\n\r\n";
-            $Msg .= "Вы получили добавлены в волонтёры марш-броска $RaidName\r\n";
+            $Msg .= "Вы добавлены в волонтёры марш-броска $RaidName\r\n";
             $Msg .= "Автор изменений: $ChangeDataUserName.\r\n\r\n";
 
 
