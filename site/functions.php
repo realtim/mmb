@@ -2093,7 +2093,12 @@ send_mime_mail('Автор письма',
 	$sql = "
 		update Users u
 		SET u.user_noinvitation = 1
-		WHERE $maxRaidId - 8 >= COALESCE(u.user_maxraidid, 0)
+		WHERE $maxRaidId - 8  
+			- (select count(*) 
+				from RaidDevelopers rd 
+				where rd.raiddeveloper_hide = 0
+					and rd.user_id =  u.user_id
+			  ) >= COALESCE(u.user_maxraidid, 0)
 		      and  u.user_maxraidid is not null
                 ";
 
