@@ -307,7 +307,8 @@ if (!isset($MyPHPScript)) return;
 	 
 	 print('<form  name = "UserDataForm"  action = "'.$MyPHPScript.'" method = "post" onSubmit = "'.$OnSubmitFunction.'">'."\r\n");
          print('<input type = "hidden" name = "UserId" value = "'.$pUserId.'">'."\r\n");
-         print('<input type = "hidden" name = "action" value = "">'."\r\n");
+	 print('<input type = "hidden" name = "RaidId" value = "'.$RaidId.'">'."\n");
+	 print('<input type = "hidden" name = "action" value = "">'."\r\n");
 
 	 if ($AllowEdit == 1) 
 	 {
