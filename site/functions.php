@@ -1931,7 +1931,9 @@ send_mime_mail('Автор письма',
 				where rd.raiddeveloper_hide = 0
 					and rd.raid_id > d.raid_id
 					and rd.user_id =  tu.user_id
-			))) as r6
+			))) as r6,
+			SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId 
+			- d.raid_id)) as r6old
 	        from TeamUsers tu 
 			inner join Teams t
 			on tu.team_id = t.team_id	
@@ -1957,7 +1959,7 @@ send_mime_mail('Автор письма',
 		group by tu.user_id
  		) a
 		on a.user_id = u.user_id
-		SET u.user_rank = a.rank, u.user_r6 = a.r6
+		SET u.user_rank = a.rank, u.user_r6 = a.r6, u.user_r6old = a.r6old
                 ";
 
 		$rs = MySqlQuery($sql);
