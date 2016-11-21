@@ -857,7 +857,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 			$useGps = $Row['team_usegps'] == 1 ? 'gps, ' : '';
 			$teamGP = $Row['team_greenpeace'] == 1 ? ', <a title="Нет сломанным унитазам!" href="#comment">ну!</a>' : '';
 			$outOfRange = $Row['team_outofrange'] == 1 ? ($RaidId > 27 ? 'Ожидает приглашения!' : 'Вне зачета!') : '';
-			$teamDismiss = $Row['team_dismiss'] == 1 ? 'Не явилась!' : '';
+			$teamDismiss = $Row['team_dismiss'] == 1 ? ': Не явилась!' : '';
 
 			if ($Administrator && $outOfRange && in_array($Row['team_id'], $forgetful)) $outOfRange = '<span style="color:red">' . $outOfRange . '</span>';
 			if ($outOfRange) $outOfRange = ', ' . $outOfRange;
