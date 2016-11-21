@@ -36,6 +36,7 @@ if ($viewmode == 'Add')
 		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
 		$TeamRegisterDt = 0;
 		$TeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
+		$TeamDismiss = 0;
 	}
 	else
 	// Пробуем создать команду первый раз
@@ -47,6 +48,7 @@ if ($viewmode == 'Add')
 		$TeamMapsCount = 0;
 		$TeamRegisterDt = 0;
 		$TeamGreenPeace = 0;
+		$TeamDismiss = 0;
 	}
 
 	// Определяем следующее действие
@@ -71,7 +73,7 @@ else
 
 	$sql = "select t.team_num, t.distance_id, t.team_usegps, t.team_name,
 		t.team_mapscount, t.team_registerdt, team_waitdt,
-		t.team_greenpeace,
+		t.team_greenpeace, COALESCE(t.team_dismiss, 0) as team_dismiss,
 		TIME_FORMAT(t.team_result, '%H:%i') as team_result,
 		CASE WHEN DATE(t.team_registerdt) > r.raid_registrationenddate
 			THEN 1
@@ -91,6 +93,7 @@ else
 	$TeamLate = (int)$Row['team_late'];
 	$TeamInvitation = (int)$Row['invitation_id'];
 	$DistanceResultLink = $Row['distance_resultlink'];
+	$TeamDismiss = (int)$Row['team_dismiss'];
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
 	if ($viewsubmode == "ReturnAfterError")
@@ -472,6 +475,17 @@ print('<tr><td class="input">'."\n");
 print('<a href="http://community.livejournal.com/_mmb_/2010/09/24/">Нет сломанным унитазам!</a> - прочитали и поддерживаем <input type="checkbox" name="TeamGreenPeace" value="on"'.(($TeamGreenPeace >= 1) ? ' checked="checked"' : '')
 	.' tabindex="'.(++$TabIndex).'"'.$DisabledText.' title="Отметьте, если команда берёт повышенные экологические обязательства"/>'."\n");
 print("</td></tr>\r\n");
+
+
+// ============ Отметка, что команда не явилась на старт
+if ($TeamDismiss)  
+{
+	print('<tr><td class="input">'."\n");
+	print('Команда в полном составе не явилась на старт'."\n");
+	print("</td></tr>\r\n");
+}
+
+
 
 // ============ Участники
 // Их еще нет при создании команды
