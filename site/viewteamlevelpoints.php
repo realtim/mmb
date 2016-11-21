@@ -203,17 +203,26 @@ if (empty($TlpYear) or (int)$TlpYear == 0) {
 print('<br/>'."\n");
 
 
-// ============ Общее время команды
-$sql = "select COALESCE(TIME_FORMAT(t.team_result, '%H:%i'), '00:00') as team_result from Teams t where t.team_id = $TeamId";
-$TeamResult = CSql::singleValue($sql, 'team_result');
-
-$TeamPlace = GetTeamPlace($TeamId);
-$TeamPlaceResult = "";
-if ($TeamResult == "00:00") $TeamResult = "-";
-if ($TeamPlace > 0) $TeamPlaceResult = " Место <b>$TeamPlace</b>";
+if ($TeamDismiss)
+{
+	print("<b>Результаты.</b> Команда в полном составе не явилась на старт.\n");	
+	print('<br/>'."\n");
+	
+} else {
 
 
-print("<b>Результаты.</b> Общее время с учетом штрафов и бонусов: <b title=\"Обновляется после сохранения результатов\">$TeamResult</b>$TeamPlaceResult\n");
+	// ============ Общее время команды
+	$sql = "select COALESCE(TIME_FORMAT(t.team_result, '%H:%i'), '00:00') as team_result from Teams t where t.team_id = $TeamId";
+	$TeamResult = CSql::singleValue($sql, 'team_result');
+
+	$TeamPlace = GetTeamPlace($TeamId);
+	$TeamPlaceResult = "";
+	if ($TeamResult == "00:00") $TeamResult = "-";
+	if ($TeamPlace > 0) $TeamPlaceResult = " Место <b>$TeamPlace</b>";
+
+
+	print("<b>Результаты.</b> Общее время с учетом штрафов и бонусов: <b title=\"Обновляется после сохранения результатов\">$TeamResult</b>$TeamPlaceResult\n");
+}
 
 print("<br/>\n");
 print("<div style=\"margin-top: 10px; font-size: 80%;\">В таблице отмечаются только взятые (пройденные) точки, а совокупный штраф за пропущенные отображается в следующей (по номеру) взятой точке. Для точек с отсечкой времени в колонке 'Время' отражается разница с предыдущей (длительность прохождения этого участка). Для точек с амнистией штраф начисляется на указанную организаторами точку, обычно это следующая за 'облаком' точка с отсечкой времени.</div>\n");
