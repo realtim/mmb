@@ -384,7 +384,7 @@ echo '4 ';
 	print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
 	print('<tr><td><a style="font-family: Times New Roman, Serif; font-size: 100%;" href="javascript: ShowEmail();" title="Адрес латинскими буквами или кликните мышкой">ммбсайт@googlegroups.com</a></td></tr>'."\r\n");
 	print('<tr><td><a href="https://github.com/realtim/mmb/wiki/%D0%90%D0%B2%D1%82%D0%BE%D1%80%D1%8B">Авторы</a></td></tr>'."\r\n");
-	print('<tr><td><a href="https://www.jetbrains.com/phpstorm/" target = "_blank"><img name = "icon_PhpStorm" style="margin-top: 10px;  margin-bottom: 15px; border: none" alt="PhpStorm" width = "64" height = "64" src="'.trim($MyStoreHttpLink).'icon_PhpStorm.png"></a></td></tr>'."\r\n");
+	print('<tr><td>исползуется <a href="https://www.jetbrains.com/phpstorm/" target = "_blank"><img name = "icon_PhpStorm" style="margin-top: 10px;  margin-bottom: 15px; border: none" alt="PhpStorm" width = "64" height = "64" src="'.trim($MyStoreHttpLink).'icon_PhpStorm.png"></a></td></tr>'."\r\n");
 
 	print('</table>'."\r\n");
 ?>
