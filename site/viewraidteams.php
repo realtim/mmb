@@ -686,7 +686,8 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
                   // Сортировка по номеру (в обратном порядке)
 		$sql = "select t.team_num, t.team_id, t.team_usegps, t.team_name, t.team_greenpeace,
  			               t.team_mapscount,  d.distance_name, d.distance_id,
-			       			COALESCE(t.team_outofrange, 0) as  team_outofrange
+			       			COALESCE(t.team_outofrange, 0) as  team_outofrange,
+						COALESCE(t.team_dismiss, 0) as  team_dismiss
 	        	from  Teams t
 		    			inner join  Distances d on t.distance_id = d.distance_id
 				where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
@@ -707,6 +708,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 					       d.distance_name, d.distance_id,
 	                       TIME_FORMAT(tlp.teamlevelpoint_result, '%H:%i') as team_sresult,
 					       COALESCE(t.team_outofrange, 0) as  team_outofrange,
+					       COALESCE(t.team_dismiss, 0) as  team_dismiss,
 					       COALESCE(t.team_donelevelpoint, COALESCE(lp.levelpoint_name, '')) as levelpoint_name,
 					       COALESCE(t.team_comment, '') as team_comment /*,
 					       COALESCE(t.team_skippedlevelpoint, '') as team_skippedlevelpoint */
@@ -725,6 +727,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 					       d.distance_name, d.distance_id,
 			               TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 					       COALESCE(t.team_outofrange, 0) as  team_outofrange,
+					       COALESCE(t.team_dismiss, 0) as  team_dismiss,
 					       COALESCE(t.team_donelevelpoint, COALESCE(lp.levelpoint_name, '')) as levelpoint_name,
 				    	   COALESCE(t.team_comment, '') as team_comment /*,
 						   COALESCE(t.team_skippedlevelpoint, '') as team_skippedlevelpoint */
@@ -757,6 +760,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 					        d.distance_name, d.distance_id,
                             TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 							COALESCE(t.team_outofrange, 0) as  team_outofrange,
+							COALESCE(t.team_dismiss, 0) as  team_dismiss,
 			       			COALESCE(lp.levelpoint_name, '') as levelpoint_name,
 			       			CONCAT_WS(' Комментарий: ', COALESCE(errt.errcomment, ''), COALESCE(t.team_comment, '')) as team_comment
 			  		from  Teams t
@@ -853,13 +857,15 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 			$useGps = $Row['team_usegps'] == 1 ? 'gps, ' : '';
 			$teamGP = $Row['team_greenpeace'] == 1 ? ', <a title="Нет сломанным унитазам!" href="#comment">ну!</a>' : '';
 			$outOfRange = $Row['team_outofrange'] == 1 ? ($RaidId > 27 ? 'Ожидает приглашения!' : 'Вне зачета!') : '';
+			$teamDismiss = $Row['team_dismiss'] == 1 ? 'Не явилась!' : '';
+
 			if ($Administrator && $outOfRange && in_array($Row['team_id'], $forgetful)) $outOfRange = '<span style="color:red">' . $outOfRange . '</span>';
 			if ($outOfRange) $outOfRange = ', ' . $outOfRange;
 
  			print('<tr class="'.$TrClass.'">
 			       <td'.$tdstyle.'><a name="'.$Row['team_num'].'"></a>'.$Row['team_num'].'</td>
 			       <td'.$tdstyle.'><a href="?TeamId='.$Row['team_id'].'&RaidId=' . $RaidId .'">'.
-			          CMmbUI::toHtml($Row['team_name'])."</a> ($useGps{$Row['distance_name']}, {$Row['team_mapscount']}$teamGP$outOfRange)</td><td$tdstyle>\r\n");
+			          CMmbUI::toHtml($Row['team_name'])."</a> ($useGps{$Row['distance_name']}, {$Row['team_mapscount']}$teamGP$outOfRange) $teamDismiss</td><td$tdstyle>\r\n");
 
 
                         // Формируем колонку Участники			
