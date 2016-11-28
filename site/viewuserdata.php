@@ -459,16 +459,28 @@ if (!isset($MyPHPScript)) return;
 
           // Выводим спсиок команд, в которых участвовал данный пользователь 
           print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Участвовал:</div>'."\r\n");
-          print('<form  name = "UserTeamsForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
+/*
+	 print('<form  name = "UserTeamsForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
           print('<input type = "hidden" name = "action" value = "">'."\r\n");
 	  print('<input type = "hidden" name = "RaidId" value = "0">'."\n");
 	  print('<input type = "hidden" name = "TeamId" value = "0">'."\n");
+*/
+	   print("<table border=0 cellpadding=10 style=\"font-size: 80%\">\n");
+	   print('<tr class = "gray">'."\r\n");
+        	$ColumnWidth = 350;
+		$ColumnSmallWidth = 50;
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Команда</td>'."\r\n");
+			print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Номер</td>'."\r\n");
+			print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Дистанция</td>'."\r\n");
+                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Результат</td>'."\r\n");
+	   print('</tr>'."\r\n");
 
-		
+
                  
-		$sql = "select tu.teamuser_id, t.team_name, t.team_id, 
+		$sql = "select tu.teamuser_id, null as raiddeveloper_id,
+			   	t.team_name, t.team_id, 
 		               d.distance_name, r.raid_name, t.team_num, 
-			       r.raid_id, lp.levelpoint_name,
+			       r.raid_id, lp.levelpoint_name, t.team_dismiss,
 			       lp.levelpoint_id, COALESCE(tu.teamuser_rank, 0.00000) as teamuser_rank  
 		        from  TeamUsers tu
 			      inner join  Teams t
@@ -482,26 +494,42 @@ if (!isset($MyPHPScript)) return;
 			      left outer join LevelPoints  lp
 			      on tld.levelpoint_id = lp.levelpoint_id
 			where tu.teamuser_hide = 0 and tu.user_id = $pUserId
-			order by r.raid_id desc "; 
+			UNION ALL 
+			select  null as teamuser_id,  rd.raiddeveloper_id,  'cудьи' as team_name,  null as team_id, 
+		               '' as distance_name, r.raid_name, '' as team_num, 
+			       r.raid_id, null as levelpoint_name, null as team_dismiss,
+			       null as levelpoint_id, null as teamuser_rank  
+		        from  Users u
+			      inner join RaidDevelopers rd
+			      on u.user_id = rd.user_id
+			      inner join  Raids r
+			      on rd.raid_id = r.raid_id
+			where rd.raiddeveloper_hide = 0 and u.user_id = $pUserId
+			order by raid_id desc "; 
                 //echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
+		$TeamsCount = mysql_num_rows($Result);
 
 		while ($Row = mysql_fetch_assoc($Result))
 		{
 
+			$TrClass = ($TeamsCount%2 == 0) ? 'yellow': 'green';
+			$TeamsCount--;
 			
 			$TeamPlace = GetTeamPlace($Row['team_id']);
 			$LevelPointId = $Row['levelpoint_id'];
+			$TeamDismiss = $Row['team_dismiss'];
 			$TeamPlaceResult = "";
 			// Есть место команды и нет схода участника
 			if ($TeamPlace > 0 and $LevelPointId == 0) $TeamPlaceResult = "место <b>$TeamPlace</b>";
-
-               
+           
 
 			$TeamUserOff = "";
 			//  сход участника
-			if ($LevelPointId > 0) $TeamUserOff = "не явка в точку <b>{$Row['levelpoint_name']}</b>";
-
+			if ($LevelPointId) $TeamUserOff = "не явился(-ась) в <b>{$Row['levelpoint_name']}</b>";
+			if ($TeamDismiss) $TeamUserOff = "команда не явилась на старт";
+/*
+			
 			$comma = ($TeamPlace > 0 or $LevelPointId > 0) ? ',' : '';
 
 			// Проверка, что можно показывать место и рейтинг
@@ -515,11 +543,34 @@ if (!isset($MyPHPScript)) return;
 			}
 			// конец проверки, что результат можно показывать
 			
+*/
+			print("<tr class=\"{$TrClass}\">
+				<td><a href=\"?TeamId={$Row['team_id']}\">
+				CMmbUI::toHtml($Row['team_name'])</a></td>");
+			print("<td>{$Row['team_num']}</td>
+			       <td>{$Row['distance_name']}, {$Row['raid_name']}</td>\r\n");
 
+			// Проверка, что можно показывать место и рейтинг
+			if (CRights::canViewRaidResult($UserId, $Row['raid_id'])) 
+			{
+			  if ($TeamUserOff)
+			  {
+			    print("<td>{$TeamUserOff}</td>\r\n");
+			  } else {
+			    print("<td>{$TeamPlaceResult} ({$Row['teamuser_rank']})</td>\r\n");
+			  }
+			} else {
+			  print("<td><br/></td>\r\n");
+			}
+			// конец проверки, что результат можно показывать
+
+			print("</tr>\r\n");
+
+		
 		}
 
                 mysql_free_result($Result);
-	        print("</form>\r\n");
+	      //  print("</form>\r\n");
 
 	  if ($viewmode <> 'Add' and $AllowEdit == 1)
 	  {
