@@ -469,7 +469,7 @@ if (!isset($MyPHPScript)) return;
 	   print('<tr class = "gray">'."\r\n");
         	$ColumnWidth = 250;
 		$ColumnSmallWidth = 50;
-		$thstyle  = ''
+		$thstyle  = '';
 		print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Команда</td>'."\r\n");
 			print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Номер</td>'."\r\n");
 			print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Дистанция</td>'."\r\n");
