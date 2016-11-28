@@ -458,7 +458,7 @@ if (!isset($MyPHPScript)) return;
 	 
 
           // Выводим спсиок команд, в которых участвовал данный пользователь 
-          print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Участвовал:</div>'."\r\n");
+  //        print('<div style = "margin-top: 20px; margin-bottom: 10px; text-align: left">Участвовал:</div>'."\r\n");
 /*
 	 print('<form  name = "UserTeamsForm"  action = "'.$MyPHPScript.'" method = "post">'."\r\n");
           print('<input type = "hidden" name = "action" value = "">'."\r\n");
@@ -507,8 +507,10 @@ if (!isset($MyPHPScript)) return;
 			      on rd.raid_id = r.raid_id
 			where rd.raiddeveloper_hide = 0 and u.user_id = $pUserId
 			order by raid_id desc "; 
-                //echo 'sql '.$sql;
+                
+		//echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
+
 		$TeamsCount = mysql_num_rows($Result);
 
 		while ($Row = mysql_fetch_assoc($Result))
@@ -516,51 +518,43 @@ if (!isset($MyPHPScript)) return;
 
 			$TrClass = ($TeamsCount%2 == 0) ? 'yellow': 'green';
 			$TeamsCount--;
+			print('<tr class="'.$TrClass.'">');
 			
-			$TeamPlace = GetTeamPlace($Row['team_id']);
-			$LevelPointId = $Row['levelpoint_id'];
-			$TeamDismiss = $Row['team_dismiss'];
-			$TeamPlaceResult = "";
-			// Есть место команды и нет схода участника
-			if ($TeamPlace > 0 and $LevelPointId == 0) $TeamPlaceResult = "место <b>$TeamPlace</b>";
-           
-
-			$TeamUserOff = "";
-			//  сход участника
-			if ($LevelPointId) $TeamUserOff = "не явился(-ась) в <b>{$Row['levelpoint_name']}</b>";
-			if ($TeamDismiss) $TeamUserOff = "команда не явилась на старт";
-/*
-			
-			$comma = ($TeamPlace > 0 or $LevelPointId > 0) ? ',' : '';
-
-			// Проверка, что можно показывать место и рейтинг
-			if (CRights::canViewRaidResult($UserId, $Row['raid_id'])) 
+			$RaidDeveloper = $Row['raiddeveloper_id']; 
+			if ($RaidDeveloper) 
 			{
-			  print('<div class="team_res"><span><a href="?TeamId='.$Row['team_id'].'&RaidId='.$Row['raid_id'].'"  title = "Переход к карточке команды">'.CMmbUI::toHtml($Row['team_name'])."</a>
-		         N {$Row['team_num']}$comma</span> $TeamPlaceResult$TeamUserOff ({$Row['teamuser_rank']}), дистанция: {$Row['distance_name']}, ммб: {$Row['raid_name']}</div>\r\n");
-			} else {
-			  print('<div class="team_res"><span><a href="?TeamId='.$Row['team_id'].'&RaidId='.$Row['raid_id'].'"  title = "Переход к карточке команды">'.CMmbUI::toHtml($Row['team_name'])."</a>
-		         N {$Row['team_num']}, дистанция: {$Row['distance_name']}, ммб: {$Row['raid_name']}</div>\r\n");
-			}
-			// конец проверки, что результат можно показывать
-			
-*/
-			print('<tr class="'.$TrClass.'"><td><a href="?TeamId='.$Row['team_id'].'">'.CMmbUI::toHtml($Row['team_name']).'</a></td>');
-			print("<td>{$Row['team_num']}</td><td>{$Row['distance_name']}, {$Row['raid_name']}</td>\r\n");
+				print('<td><a href="?developers$RaidId='.$Row['raid_id'].'">судьи</a></td>');
+				print("<td><br/></td><td>{$Row['distance_name']}, {$Row['raid_name']}</td><td><br/></td>\r\n");
 
-			// Проверка, что можно показывать место и рейтинг
-			if (CRights::canViewRaidResult($UserId, $Row['raid_id'])) 
-			{
-			  if ($TeamUserOff)
-			  {
-			    print("<td>{$TeamUserOff}</td>\r\n");
-			  } else {
-			    print("<td>{$TeamPlaceResult} ({$Row['teamuser_rank']})</td>\r\n");
-			  }
 			} else {
-			  print("<td><br/></td>\r\n");
+			
+				$TeamPlace = GetTeamPlace($Row['team_id']);
+				$LevelPointId = $Row['levelpoint_id'];
+				$TeamDismiss = $Row['team_dismiss'];
+				$TeamPlaceResult = "";
+				// Есть место команды и нет схода участника
+				if ($TeamPlace > 0 and $LevelPointId == 0) $TeamPlaceResult = "место <b>$TeamPlace</b>";
+           			$TeamUserOff = "";
+				//  сход участника
+				if ($LevelPointId) $TeamUserOff = "не явился(-ась) в <b>{$Row['levelpoint_name']}</b>";
+				if ($TeamDismiss) $TeamUserOff = "команда не явилась на старт";
+				print('<td><a href="?TeamId='.$Row['team_id'].'">'.CMmbUI::toHtml($Row['team_name']).'</a></td>');
+				print("<td>{$Row['team_num']}</td><td>{$Row['distance_name']}, {$Row['raid_name']}</td>\r\n");
+
+				// Проверка, что можно показывать место и рейтинг
+				if (CRights::canViewRaidResult($UserId, $Row['raid_id'])) 
+				{
+			  		if ($TeamUserOff)
+			  		{
+			    			print("<td>{$TeamUserOff}</td>\r\n");
+			  		} else {
+			    			print("<td>{$TeamPlaceResult} ({$Row['teamuser_rank']})</td>\r\n");
+			  		}
+				} else {
+			  		print("<td><br/></td>\r\n");
+				}
+				// конец проверки, что результат можно показывать
 			}
-			// конец проверки, что результат можно показывать
 
 			print("</tr>\r\n");
 
