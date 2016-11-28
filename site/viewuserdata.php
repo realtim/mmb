@@ -523,7 +523,7 @@ if (!isset($MyPHPScript)) return;
 			$RaidDeveloper = $Row['raiddeveloper_id']; 
 			if ($RaidDeveloper) 
 			{
-				print('<td><a href="?developers$RaidId='.$Row['raid_id'].'">судьи</a></td>');
+				print('<td><a href="?developers&RaidId='.$Row['raid_id'].'">судьи</a></td>');
 				print("<td><br/></td><td>{$Row['distance_name']}, {$Row['raid_name']}</td><td><br/></td>\r\n");
 
 			} else {
