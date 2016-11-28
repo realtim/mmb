@@ -544,7 +544,7 @@ if (!isset($MyPHPScript)) return;
 			// конец проверки, что результат можно показывать
 			
 */
-			print('<tr class="{$TrClass}"><td><a href="?TeamId={$Row['team_id']}">{CMmbUI::toHtml($Row['team_name'])}</a></td>');
+			print('<tr class="'.$TrClass.'"><td><a href="?TeamId='.$Row['team_id'].'">'.CMmbUI::toHtml($Row['team_name']).'</a></td>');
 			print("<td>{$Row['team_num']}</td><td>{$Row['distance_name']}, {$Row['raid_name']}</td>\r\n");
 
 			// Проверка, что можно показывать место и рейтинг
