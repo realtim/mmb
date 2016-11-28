@@ -467,11 +467,12 @@ if (!isset($MyPHPScript)) return;
 */
 	   print("<table border=0 cellpadding=10 style=\"font-size: 80%\">\n");
 	   print('<tr class = "gray">'."\r\n");
-        	$ColumnWidth = 350;
+        	$ColumnWidth = 250;
 		$ColumnSmallWidth = 50;
-                        print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Команда</td>'."\r\n");
-			print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Номер</td>'."\r\n");
-			print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Дистанция</td>'."\r\n");
+		$thstyle  = ''
+		print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Команда</td>'."\r\n");
+			print('<td width = "'.$ColumnSmallWidth.'"'.$thstyle.'>Номер</td>'."\r\n");
+			print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Дистанция</td>'."\r\n");
                         print('<td width = "'.$ColumnWidth.'"'.$thstyle.'>Результат</td>'."\r\n");
 	   print('</tr>'."\r\n");
 
