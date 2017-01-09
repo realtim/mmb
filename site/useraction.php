@@ -923,6 +923,11 @@ if (!isset($MyPHPScript)) return;
                 // Отправляем письмо
         SendMail(trim($UserEmail), $Msg, $UserName);
 
+         $Sql = "insert into UserMessageLogs (usermessagelog_dt, usermessagelog_fromuserid, 
+                 usermessagelog_fromuserid) values (now(), $UserId, $pUserId)";
+         =MySqlQuery($Sql);
+
+        
         // Отправляем копию
         if (!empty($AuthorUserEmail)) {
             $Msg = "Копия письма, которое Вами было отправлено\r\n ================ \r\n".$Msg;
