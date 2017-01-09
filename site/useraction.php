@@ -925,7 +925,7 @@ if (!isset($MyPHPScript)) return;
 
          $Sql = "insert into UserMessageLogs (usermessagelog_dt, usermessagelog_fromuserid, 
                  usermessagelog_fromuserid) values (now(), $UserId, $pUserId)";
-         =MySqlQuery($Sql);
+         MySqlQuery($Sql);
 
         
         // Отправляем копию
