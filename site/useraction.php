@@ -924,7 +924,7 @@ if (!isset($MyPHPScript)) return;
         SendMail(trim($UserEmail), $Msg, $UserName);
 
          $Sql = "insert into UserMessageLogs (usermessagelog_dt, usermessagelog_fromuserid, 
-                 usermessagelog_fromuserid) values (now(), $UserId, $pUserId)";
+                 usermessagelog_touserid) values (now(), $UserId, $pUserId)";
          MySqlQuery($Sql);
 
         
