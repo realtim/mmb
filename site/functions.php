@@ -784,7 +784,7 @@ class CMmbAuth {
 		    $Subject,
 		    $Message."\r\n".'Используйте для вопросов адрес mmbsite@googlegroups.com'."\r\n".'Ответ на это письмо будет проигнорирован.'."\r\n",
 		    FALSE,
-		    'no-reply@progressor.ru');
+		    'noreply@progressor.ru');
     }
 
 
