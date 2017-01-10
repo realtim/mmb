@@ -782,7 +782,8 @@ class CMmbAuth {
 		    'UTF-8',  // кодировка, в которой находятся передаваемые строки
 		    'UTF-8', // кодировка, в которой будет отправлено письмо
 		    $Subject,
-		    $Message."\r\n".'Используйте для вопросов адрес mmbsite@googlegroups.com'."\r\n".'Ответ на это письмо будет проигнорирован.'."\r\n");
+		    $Message."\r\n".'Используйте для вопросов адрес mmbsite@googlegroups.com'."\r\n".'Ответ на это письмо будет проигнорирован.'."\r\n",
+		    'no-reply@progressor.ru');
     }
 
 
@@ -1459,7 +1460,8 @@ send_mime_mail('Автор письма',
                         $send_charset, // кодировка письма
                         $subject, // тема письма
                         $body, // текст письма
-                        $html = FALSE // письмо в виде html или обычного текста
+                        $html = FALSE, // письмо в виде html или обычного текста
+			$replay = '' // отвечать на адрес    
                         ) 
     {
     	
@@ -1471,12 +1473,16 @@ send_mime_mail('Автор письма',
 
       $from =  mime_header_encode($name_from, $data_charset, $send_charset)
                      ." <$email_from>";
- 
+     
+	    
       if($data_charset != $send_charset) 
       {
 	$body = iconv($data_charset, $send_charset, $body);
       }
       $headers = "From: $from\r\n";
+      if ($replay <> '') {
+	   $headers .= "Replay-To: $replay\r\n";	
+      }
       $type = ($html) ? 'html' : 'plain';
       $headers .= "Content-type: text/$type; charset=$send_charset\r\n";
       $headers .= "Mime-Version: 1.0\r\n";
