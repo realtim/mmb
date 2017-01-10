@@ -923,9 +923,9 @@ if (!isset($MyPHPScript)) return;
                 // Отправляем письмо
         SendMail(trim($UserEmail), $Msg, $UserName);
 
-         $Sql = "insert into UserMessageLogs (usermessagelog_dt, usermessagelog_fromuserid, 
-                 usermessagelog_touserid) values (now(), $UserId, $pUserId)";
-         MySqlQuery($Sql);
+        $LogMsg = "send to $pUserId";
+        $Sql = "insert into Logs (logs_level, user_id, logs_message) values ('info', $UserId, $LogMsg)";
+        MySqlQuery($Sql);
 
         
         // Отправляем копию
