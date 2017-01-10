@@ -1462,7 +1462,7 @@ send_mime_mail('Автор письма',
                         $subject, // тема письма
                         $body, // текст письма
                         $html = FALSE, // письмо в виде html или обычного текста
-			$replay = '' // отвечать на адрес    
+			$reply = '' // отвечать на адрес    
                         ) 
     {
     	
@@ -1481,8 +1481,8 @@ send_mime_mail('Автор письма',
 	$body = iconv($data_charset, $send_charset, $body);
       }
       $headers = "From: $from\r\n";
-      if ($replay <> '') {
-	   $headers .= "Replay-To: $replay\r\n";	
+      if ($reply <> '') {
+	   $headers .= "Reply-To: $reply\r\n";	
       }
       $type = ($html) ? 'html' : 'plain';
       $headers .= "Content-type: text/$type; charset=$send_charset\r\n";
