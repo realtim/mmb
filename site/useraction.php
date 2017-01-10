@@ -925,6 +925,7 @@ if (!isset($MyPHPScript)) return;
 
         $LogMsg = "send to $pUserId";
         $Sql = "insert into Logs (logs_level, user_id, logs_message) values ('info', $UserId, $LogMsg)";
+        echo $Sql; 
         MySqlQuery($Sql);
 
         
