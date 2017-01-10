@@ -924,7 +924,7 @@ if (!isset($MyPHPScript)) return;
         SendMail(trim($UserEmail), $Msg, $UserName);
 
         $LogMsg = "send to $pUserId";
-        $Sql = "insert into Logs (logs_level, user_id, logs_message) values ('info', $UserId, $LogMsg)";
+        $Sql = "insert into Logs (logs_level, user_id, logs_message) values ('info', $UserId, '$LogMsg')";
         echo $Sql; 
         MySqlQuery($Sql);
 
