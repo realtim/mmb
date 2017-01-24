@@ -330,6 +330,11 @@ if (!isset($MyPHPScript)) return;
 		.' title = "E-mail - Используется для идентификации пользователя"></td></tr>'."\r\n");
          }
 
+  print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserName" size="50" value="'.$UserName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+ 		.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($UserName))
+ 	        .' title = "ФИО - Так будет выглядеть информация о пользователе в протоколах и на сайте"></td></tr>'."\r\n");
+ 
+
          print('<tr><td class = "input"><select name="UserSex" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
 		  .' title = "Пол">
 		<option value="0" '.($UserSex == 0 ? 'selected' : '').' >Не указан</option>
