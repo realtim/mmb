@@ -335,14 +335,10 @@ if (!isset($MyPHPScript)) return;
 		<option value="0" '.($UserSex == 0 ? 'selected' : '').' >Не указан</option>
 		<option value="1"  '.($UserSex == 1 ? 'selected' : '').' >Женский</option>
 		<option value="2"  '.($UserSex == 2 ? 'selected' : '').' >Мужской</option>
-			</td></tr>'."\r\n");
+		</select></td></tr>'."\r\n");
 
         
-         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "'.(++$TabIndex).'" '.$DisabledText.' '
-		.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($UserBirthYear))
-	        .' title = "Год рождения"></td></tr>'."\r\n");
-
-    
+      
 
 	print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "'.(++$TabIndex).'" '.$DisabledText.' '
 		.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($UserBirthYear))
