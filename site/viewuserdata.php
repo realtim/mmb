@@ -30,6 +30,7 @@ if (!isset($MyPHPScript)) return;
 	      $UserName = CMmbUI::toHtml($_POST['UserName']);
 	      $UserBirthYear = (int)$_POST['UserBirthYear'];
 	      $UserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
+	      $UserSex = mmb_isOn($_POST, 'UserSex');
 	      $UserCity = CMmbUI::toHtml($_POST['UserCity']);           // а что нам вообще пришло?
 	      $UserPhone = CMmbUI::toHtml($_POST['UserPhone']);           // а что нам вообще пришло?
               // 03/07/2014  Добавляем анонмиов
@@ -43,6 +44,7 @@ if (!isset($MyPHPScript)) return;
 	      $UserEmail = 'E-mail';
 	      $UserName = 'Фамилия Имя';
 	      $UserBirthYear = 'Год рождения';
+		$UserSex = 0;
 	      $UserProhibitAdd = 0;
 	      $UserCity =  $UserCityPlaceHolder;
 	      $UserPhone =  $UserPhonePlaceHolder;
@@ -78,7 +80,7 @@ if (!isset($MyPHPScript)) return;
 		}
            
 		$sql = "select user_email, CASE WHEN COALESCE(u.user_noshow, 0) = 1 and user_id <> $UserId THEN '$Anonimus' ELSE u.user_name END as user_name,
-		         user_birthyear, user_prohibitadd, user_city, user_phone, user_noshow, 
+		         user_birthyear, user_prohibitadd, user_city, user_phone, user_noshow, user_sex,
 		         user_allowsendchangeinfo, user_allowsendorgmessages from  Users u where user_id = $pUserId";
                 $row = CSql::singleRow($sql);
 
@@ -91,6 +93,7 @@ if (!isset($MyPHPScript)) return;
 		  $UserEmail = $_POST['UserEmail'];
 		  $UserName = $_POST['UserName'];
 		  $UserBirthYear = (int)$_POST['UserBirthYear'];
+		  $UserSex = (int)$_POST['UserSex'];
 		  $UserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
 		  $UserCity = $_POST['UserCity'];
 		  $UserPhone = $_POST['UserPhone'];
@@ -103,6 +106,7 @@ if (!isset($MyPHPScript)) return;
 		  $UserEmail = $row['user_email'];  
 		  $UserName = $row['user_name'];
 		  $UserBirthYear = (int)$row['user_birthyear'];  
+		  $UserSex = (int)$row['user_sex'];  
 		  $UserProhibitAdd = $row['user_prohibitadd'];  
 		  $UserCity = $row['user_city'];
 		  $UserPhone = $row['user_phone'];
@@ -326,11 +330,21 @@ if (!isset($MyPHPScript)) return;
 		.' title = "E-mail - Используется для идентификации пользователя"></td></tr>'."\r\n");
          }
 
-         print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserName" size="50" value="'.$UserName.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
-		.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($UserName))
-	        .' title = "ФИО - Так будет выглядеть информация о пользователе в протоколах и на сайте"></td></tr>'."\r\n");
+         print('<tr><td class = "input"><select name="UserSex" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
+		  .' title = "Пол">
+		<option value="0" '.($UserSex == 0 ? 'selected' : '').' >Не указан</option>
+		<option value="1"  '.($UserSex == 1 ? 'selected' : '').' >Женский</option>
+		<option value="2"  '.($UserSex == 2 ? 'selected' : '').' >Мужской</option>
+			</td></tr>'."\r\n");
 
+        
          print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "'.(++$TabIndex).'" '.$DisabledText.' '
+		.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($UserBirthYear))
+	        .' title = "Год рождения"></td></tr>'."\r\n");
+
+    
+
+	print('<tr><td class = "input"><input type="text" autocomplete = "off" name="UserBirthYear" maxlength = "4" size="11" value="'.$UserBirthYear.'" tabindex = "'.(++$TabIndex).'" '.$DisabledText.' '
 		.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($UserBirthYear))
 	        .' title = "Год рождения"></td></tr>'."\r\n");
 
