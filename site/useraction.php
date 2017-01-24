@@ -93,6 +93,9 @@ if (!isset($MyPHPScript)) return;
         $pUserBirthYear = mmb_validateInt($_POST, 'UserBirthYear');
         $pUserProhibitAdd = mmb_isOn($_POST, 'UserProhibitAdd');
         $pUserId = mmb_validateInt($_POST, 'UserId', -1);
+        $pUserSex = mmb_validateInt($_POST, 'UserSex', 0);
+    
+        
         // флаги разрешения получать письма передаем только при правке (см. ниже)
 
 
@@ -220,10 +223,10 @@ if (!isset($MyPHPScript)) return;
 
             $sql = "insert into  Users (user_email, user_name, user_birthyear, user_password, user_registerdt,
                                      user_sessionfornewpassword, user_sendnewpasswordrequestdt, 
-                         user_prohibitadd, user_city, user_phone, user_noshow)
+                         user_prohibitadd, user_city, user_phone, user_noshow, user_sex)
                              values ('$pUserEmail', '$pUserName', $pUserBirthYear, '', now(),
                              '$ChangePasswordSessionId', now(),
-                          $pUserProhibitAdd, '$pUserCity', '$pUserPhone', $pUserNoShow)";
+                          $pUserProhibitAdd, '$pUserCity', '$pUserPhone', $pUserNoShow, $pUserSex)";
 //                 echo $sql;  
             // При insert должен вернуться послений id - это реализовано в  MySqlQuery
             $newUserId = MySqlQuery($sql);
@@ -279,7 +282,8 @@ if (!isset($MyPHPScript)) return;
                              user_prohibitadd = $pUserProhibitAdd,
                              user_allowsendorgmessages = $pUserAllowOrgMessages,
                              user_noshow = $pUserNoShow,
-                     user_birthyear = $pUserBirthYear
+                             user_sex = $pUserSex,
+                             user_birthyear = $pUserBirthYear
                 where user_id = $pUserId";
 
             // echo $sql;
