@@ -3348,7 +3348,7 @@ function FindErrors($raid_id, $team_id)
 		       team_minage = a.minage,
 		       team_maxage = a.maxage,
 		       team_userscount = a.userscount
-
+		";
       
 	$rs = MySqlQuery($sql);	
 
