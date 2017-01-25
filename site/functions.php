@@ -3669,7 +3669,7 @@ function FindErrors($raid_id, $team_id)
 	RecalcTeamUsersStatistic($raidid, 0);
 
 
-	 $tm15= CMmbLogger::addInterval(' 16, $tm14;
+	 $tm15= CMmbLogger::addInterval(' 16', $tm14);
 
 		 $msg = CMmbLogger::getText();
 
