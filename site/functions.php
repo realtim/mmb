@@ -3310,7 +3310,50 @@ function FindErrors($raid_id, $team_id)
 	}
 	// Конец функции проверки ошибок
  
- 
+ 	// 25/01/2017
+     // функция пересчитывает данные по составу команды 
+     function RecalcTeamUsersStatistic($raidid, $teamid)
+     {
+
+
+	if (empty($teamid) and empty($raidid)) {
+	    return;
+	}
+
+	$teamRaidCondition = (!empty($teamid)) ? " t.team_id = $teamid" : "d.raid_id = $raidid";
+
+	$sql = " update  Teams t
+				inner join
+		          	(select tu.team_id, count(tu.teamuser_id) as userscount, 
+					        MAX(COALESCE(u.user_sex, 0)) as maxsex,
+					        MIN(COALESCE(u.user_sex, 0)) as minsex,
+						MAX(YEAR(COALESCE(r.raid_registrationenddate, NOW())) - COALESCE(u.user_birthyear, YEAR(NOW())) ) as maxage,
+						MIN(YEAR(COALESCE(r.raid_registrationenddate, NOW())) - COALESCE(u.user_birthyear, YEAR(NOW())) ) as minage
+					 from TeamUsers tu
+					      inner join Teams t
+					      on tu.team_id = t.team_id
+					      inner join Distances d
+					      on t.distance_id = d.distance_id
+					      inner join Raids r
+					      on d.raid_id = r.raid_id
+					      inner join Users u
+					      on tu.user_id = u.user_id
+					 where  $teamRaidCondition
+					 	and tu.teamuser_hide = 0 
+					 group by tu.team_id
+				) a
+		  		on t.team_id = a.team_id
+  	          set  team_maxsex = a.maxsex,
+		       team_minsex = a.minsex,
+		       team_minage = a.minage,
+		       team_maxage = a.maxage,
+		       team_userscount = a.userscount
+
+      
+	$rs = MySqlQuery($sql);	
+
+     }
+	// Конец функции обнослвения данных по составу команды
  
      
      // функция пересчитывает результат команды по данным в точках
@@ -3620,8 +3663,13 @@ function FindErrors($raid_id, $team_id)
 	RecalcUsersRank($raidid);
 
 
-		 $tm14 = CMmbLogger::addInterval(' 15', $tm13);
+	 $tm14 = CMmbLogger::addInterval(' 15', $tm13);
 
+	// 25/01/2017 добавил обнолвение статитстики
+	RecalcTeamUsersStatistic($raidid, 0);
+
+
+	 $tm15= CMmbLogger::addInterval(' 16, $tm14;
 
 		 $msg = CMmbLogger::getText();
 
