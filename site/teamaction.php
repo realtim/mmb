@@ -295,6 +295,10 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 
 		// Поменялся TeamId, заново определяем права доступа
 		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
+
+		// 27/01/2017 пересчет данных об участниках в команде	
+		RecalcTeamUsersStatistic(0, $TeamId);
+		
 		$TeamActionTextForEmail = "создана команда";
 		$SendEmailToAllTeamUsers = 1;
 		// Теперь нужно открыть на просмотр
@@ -338,6 +342,10 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			MySqlQuery($sql);
 			$TeamActionTextForEmail = "добавлен участник ". CSql::userName($NewUserId);
 		}
+
+		// 27/01/2017 пересчет данных об участниках в команде	
+		RecalcTeamUsersStatistic(0, $TeamId);
+
 	}
 	// Конец разных вариантов действий при создании и редактировании команды
 
@@ -516,6 +524,9 @@ elseif ($action == 'HideTeamUser')
  	//$sql = "delete from TeamUsers where teamuser_id = $HideTeamUserId";
 	$sql = "update TeamUsers set teamuser_hide = 1, teamuser_changedt = NOW() where teamuser_id = ".$HideTeamUserId;
 	$rs = MySqlQuery($sql);
+
+	// 27/01/2017 пересчет данных об участниках в команде	
+	RecalcTeamUsersStatistic(0, $TeamId);
 
 
 	// Повторная проверка  после удаления
@@ -1429,6 +1440,10 @@ elseif ($action == "UnionTeams")  {
 		MySqlQuery($sql);
 
 		RecalcTeamResultFromTeamLevelPoints(0, $TeamId);
+	
+		// 27/01/2017 пересчет данных об участниках в команде	
+		RecalcTeamUsersStatistic(0, $TeamId);
+
 
 		CMmb::setResult('Команды объединены', "ViewRaidTeams");
 }
