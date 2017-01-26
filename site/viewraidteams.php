@@ -466,7 +466,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 		$SexCondition = "t.team_maxsex = 1 and t.team_minsex = 1";
 	} elseif ($SexFilter == 2) {
 		$SexCondition = "t.team_maxsex = 2 and t.team_minsex = 2";
-	} elseif ($SexFilter == 3 {
+	} elseif ($SexFilter == 3) {
 		$SexCondition = "t.team_maxsex = 2 and t.team_minsex = 1";
 	} 
 		 
