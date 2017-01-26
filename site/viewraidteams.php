@@ -570,7 +570,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 		print('<select name="LevelPointId" style = "margin-left: 10px; margin-right: 5px;" 
                        onchange = "LevelPointIdChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
         	$levelpointselected =  (0 == $_REQUEST['LevelPointId'] ? 'selected' : '');
-		print("<option value = '0' $levelpointselected>точку</option>\r\n");
+		print("<option value = '0' $levelpointselected>не фильтровать точку</option>\r\n");
 
 		if (!isset($_REQUEST['LevelPointId'])) $_REQUEST['LevelPointId'] = "";
 
@@ -593,7 +593,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 */
 	print('<select name="GPSFilter" style = "margin-left: 10px; margin-right: 5px;"
                        onchange = "GPSChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-	print('<option value="0" '. ($GpsFilter == 0 ? 'selected' : '') ." >не фильтровать по GPS</option>\r\n");
+	print('<option value="0" '. ($GpsFilter == 0 ? 'selected' : '') ." >не фильтровать GPS</option>\r\n");
 	print('<option value="1" '. ($GpsFilter == 1 ? 'selected' : '') ." >без GPS</option>\r\n");
 	print('</select>'."\r\n");  
 
@@ -603,7 +603,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 */
 	print('<select name="SexFilter" style = "margin-left: 10px; margin-right: 5px;"
                        onchange = "SexChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-	print('<option value="0" '. ($SexFilter == 0 ? 'selected' : '') ." >не фильтровать</option>\r\n");
+	print('<option value="0" '. ($SexFilter == 0 ? 'selected' : '') ." >не фильтровать пол</option>\r\n");
 	print('<option value="1" '. ($SexFilter == 1 ? 'selected' : '') ." >Ж</option>\r\n");
 	print('<option value="2" '. ($SexFilter == 2 ? 'selected' : '') ." >М</option>\r\n");
 	print('<option value="3" '. ($SexFilter == 3 ? 'selected' : '') ." >ЖМ</option>\r\n");
@@ -614,7 +614,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 */
 	print('<select name="AgeFilter" style = "margin-left: 10px; margin-right: 5px;"
                        onchange = "AgeChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-	print('<option value="0" '. ($AgeFilter == 0 ? 'selected' : '') ." >не фильтровать</option>\r\n");
+	print('<option value="0" '. ($AgeFilter == 0 ? 'selected' : '') ." >не фильтровать возраст</option>\r\n");
 	print('<option value="1" '. ($AgeFilter == 1 ? 'selected' : '') ." >0+</option>\r\n");
 	print('<option value="2" '. ($AgeFilter == 2 ? 'selected' : '') ." >18+</option>\r\n");
 	print('<option value="3" '. ($AgeFilter == 3 ? 'selected' : '') ." >40+</option>\r\n");
@@ -627,7 +627,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 */
 	print('<select name="UsersCountFilter" style = "margin-left: 10px; margin-right: 5px;"
                        onchange = "UsersCountChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
-	print('<option value="0" '. ($UsersCountFilter == 0 ? 'selected' : '') ." >не фильтровать</option>\r\n");
+	print('<option value="0" '. ($UsersCountFilter == 0 ? 'selected' : '') ." >не фильтровать число участников</option>\r\n");
 	print('<option value="1" '. ($UsersCountFilter == 1 ? 'selected' : '') ." >1</option>\r\n");
 	print('<option value="2" '. ($UsersCountFilter == 2 ? 'selected' : '') ." >2</option>\r\n");
 	print('<option value="3" '. ($UsersCountFilter == 3 ? 'selected' : '') ." >много</option>\r\n");
