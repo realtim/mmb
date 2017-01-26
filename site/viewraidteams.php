@@ -25,17 +25,38 @@
 	// Фильтр по точке
 	function LevelPointIdChange()
 	{ 
-    	document.RaidTeamsForm.action.value = "ViewRaidTeams";
+    		document.RaidTeamsForm.action.value = "ViewRaidTeams";
 		document.RaidTeamsForm.submit();
-    }
+	}
 
 	// Фильтр по GPS
 	function GPSChange()
 	{ 
-    	document.RaidTeamsForm.action.value = "ViewRaidTeams";
+    		document.RaidTeamsForm.action.value = "ViewRaidTeams";
 		document.RaidTeamsForm.submit();
-    }
+    	}
 
+	
+	// Фильтр по полу
+	function SexChange()
+	{ 
+    		document.RaidTeamsForm.action.value = "ViewRaidTeams";
+		document.RaidTeamsForm.submit();
+    	}
+
+	function AgeChange()
+	{ 
+    		document.RaidTeamsForm.action.value = "ViewRaidTeams";
+		document.RaidTeamsForm.submit();
+    	}
+
+	function UsersCountChange()
+	{ 
+    		document.RaidTeamsForm.action.value = "ViewRaidTeams";
+		document.RaidTeamsForm.submit();
+    	}
+	
+	
 	// Формат вывода результатов
 	function ResultViewModeChange()
 	{ 
@@ -534,6 +555,44 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 	print('<option value="1" '. ($GpsFilter == 1 ? 'selected' : '') ." >без GPS</option>\r\n");
 	print('</select>'."\r\n");  
 
+		 
+/*
+======================  Пол  ====================
+*/
+	print('<select name="SexFilter" style = "margin-left: 10px; margin-right: 5px;"
+                       onchange = "SexChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
+	print('<option value="0" '. ($SexFilter == 0 ? 'selected' : '') ." >не фильтровать</option>\r\n");
+	print('<option value="1" '. ($SexFilter == 1 ? 'selected' : '') ." >Ж</option>\r\n");
+	print('<option value="2" '. ($SexFilter == 2 ? 'selected' : '') ." >М</option>\r\n");
+	print('<option value="3" '. ($SexFilter == 3 ? 'selected' : '') ." >ЖМ</option>\r\n");
+	print('</select>'."\r\n");  
+		 
+/*
+======================  Возраст  ====================
+*/
+	print('<select name="AgeFilter" style = "margin-left: 10px; margin-right: 5px;"
+                       onchange = "AgeChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
+	print('<option value="0" '. ($AgeFilter == 0 ? 'selected' : '') ." >не фильтровать</option>\r\n");
+	print('<option value="1" '. ($AgeFilter == 1 ? 'selected' : '') ." >0+</option>\r\n");
+	print('<option value="2" '. ($AgeFilter == 2 ? 'selected' : '') ." >18+</option>\r\n");
+	print('<option value="3" '. ($AgeFilter == 3 ? 'selected' : '') ." >40+</option>\r\n");
+	print('<option value="4" '. ($AgeFilter == 4 ? 'selected' : '') ." >55+</option>\r\n");
+	print('</select>'."\r\n");  
+		 
+
+/*
+======================  Число  ====================
+*/
+	print('<select name="UsersCountFilter" style = "margin-left: 10px; margin-right: 5px;"
+                       onchange = "UsersCountChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
+	print('<option value="0" '. ($UsersCountFilter == 0 ? 'selected' : '') ." >не фильтровать</option>\r\n");
+	print('<option value="1" '. ($UsersCountFilter == 1 ? 'selected' : '') ." >1</option>\r\n");
+	print('<option value="2" '. ($UsersCountFilter == 2 ? 'selected' : '') ." >2</option>\r\n");
+	print('<option value="3" '. ($UsersCountFilter == 3 ? 'selected' : '') ." >много</option>\r\n");
+	print('</select>'."\r\n");  
+		 
+
+		 
 /*
 =====================================
 */
@@ -691,7 +750,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 	        	from  Teams t
 		    			inner join  Distances d on t.distance_id = d.distance_id
 				where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
-						and $DistanceCondition and $GpsCondition
+						and $DistanceCondition and $GpsCondition and $SexCondition and $AgeCondition and $UsersCountCondition
 				order by team_num desc";
 
 	}
@@ -716,7 +775,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 							inner join  Distances d	on t.distance_id = d.distance_id
 							inner join  TeamLevelPoints tlp	on t.team_id = tlp.team_id
        						inner join LevelPoints lp on tlp.levelpoint_id = lp.levelpoint_id
-				  	where t.team_hide = 0 and $LevelCondition and $GpsCondition
+				  	where t.team_hide = 0 and $LevelCondition and $GpsCondition and $SexCondition and $AgeCondition and $UsersCountCondition
 				    order by distance_name, team_outofrange, team_progress desc, team_error asc, tlp.teamlevelpoint_result asc, team_num asc ";
 
 		} else {
@@ -737,7 +796,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 							on lp.distance_id = t.distance_id
 					   			and lp.levelpoint_order = t.team_maxlevelpointorderdone
 				  	  where d.distance_hide = 0 and t.team_hide = 0 and d.raid_id = $RaidId
-				  			and $DistanceCondition and $GpsCondition
+				  			and $DistanceCondition and $GpsCondition and $SexCondition and $AgeCondition and $UsersCountCondition
 			          order by distance_name, team_outofrange, team_progress desc, team_error asc, team_result asc, team_num asc ";
 
 
