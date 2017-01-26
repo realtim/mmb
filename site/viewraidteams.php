@@ -457,6 +457,48 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
         $GpsFilter = (mmb_validateInt($_REQUEST, 'GPSFilter', 0)) == 1 ? 1 : 0;
         $GpsCondition = $GpsFilter ? "t.team_usegps = 0" : "true";
 
+        $SexFilter = (mmb_validateInt($_REQUEST, 'SexFilter', 0));
+        
+	if ($SexFilter == 0)
+	{
+		$SexCondition = "true";
+	} elseif ($SexFilter == 1) {
+		$SexCondition = "t.team_maxsex = 1 and t.team_minsex = 1";
+	} elseif ($SexFilter == 2) {
+		$SexCondition = "t.team_maxsex = 2 and t.team_minsex = 2";
+	} elseif ($SexFilter == 3 {
+		$SexCondition = "t.team_maxsex = 2 and t.team_minsex = 1";
+	} 
+		 
+        $AgeFilter = (mmb_validateInt($_REQUEST, 'AgeFilter', 0));
+        
+	if ($AgeFilter == 0)
+	{
+		$AgeCondition = "true";
+	} elseif ($AgeFilter == 1) {
+		$AgeCondition = "t.team_maxage < 18";
+	} elseif ($AgeFilter == 2) {
+		$AgeCondition = "t.team_maxage < 40 and t.team_minage >= 18";
+	} elseif ($AgeFilter == 3) {
+		$AgeCondition = "t.team_maxage < 55 and t.team_minage >= 40";
+	} elseif ($AgeFilter == 4) {
+		$AgeCondition = "t.team_minage >= 55";
+	} 
+
+        $UsersCountFilter = (mmb_validateInt($_REQUEST, 'UsersCountFilter', 0));
+        
+	if ($UsersCountFilter == 0)
+	{
+		$UsersCountCondition = "true";
+	} elseif ($UsersCountFilter == 1) {
+		$UsersCountCondition = "t.team_userscount = 1";
+	} elseif ($UsersCountFilter == 2) {
+		$UsersCountCondition = "t.team_userscount = 2";
+	} elseif ($UsersCountFilter == 3) {
+		$UsersCountCondition = "t.team_userscount > 2";
+	} 
+		 
+		 
         $sql = "select distance_id, distance_name
                     from  Distances
                     where distance_hide = 0 and raid_id = $RaidId
