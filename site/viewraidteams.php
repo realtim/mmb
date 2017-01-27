@@ -476,9 +476,9 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 	{
 		$AgeCondition = "true";
 	} elseif ($AgeFilter == 1) {
-		$AgeCondition = "t.team_maxage < 18";
+		$AgeCondition = "t.team_maxage < 22";
 	} elseif ($AgeFilter == 2) {
-		$AgeCondition = "t.team_maxage < 40 and t.team_minage >= 18";
+		$AgeCondition = "t.team_maxage < 40 and t.team_minage >= 22";
 	} elseif ($AgeFilter == 3) {
 		$AgeCondition = "t.team_maxage < 55 and t.team_minage >= 40";
 	} elseif ($AgeFilter == 4) {
@@ -616,7 +616,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
                        onchange = "AgeChange();"  tabindex = "'.(++$TabIndex).'">'."\r\n"); 
 	print('<option value="0" '. ($AgeFilter == 0 ? 'selected' : '') ." >не фильтровать возраст</option>\r\n");
 	print('<option value="1" '. ($AgeFilter == 1 ? 'selected' : '') ." >0+</option>\r\n");
-	print('<option value="2" '. ($AgeFilter == 2 ? 'selected' : '') ." >18+</option>\r\n");
+	print('<option value="2" '. ($AgeFilter == 2 ? 'selected' : '') ." >22+</option>\r\n");
 	print('<option value="3" '. ($AgeFilter == 3 ? 'selected' : '') ." >40+</option>\r\n");
 	print('<option value="4" '. ($AgeFilter == 4 ? 'selected' : '') ." >55+</option>\r\n");
 	print('</select>'."\r\n");  
