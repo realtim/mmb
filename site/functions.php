@@ -3338,8 +3338,11 @@ function FindErrors($raid_id, $team_id)
 					      on d.raid_id = r.raid_id
 					      inner join Users u
 					      on tu.user_id = u.user_id
+					      left outer join TeamLevelDismiss tld
+					      on tu.teamuser_id = tld.teamuser_id
 					 where  $teamRaidCondition
 					 	and tu.teamuser_hide = 0 
+						and tld.teamuser_id is NULL
 					 group by tu.team_id
 				) a
 		  		on t.team_id = a.team_id
