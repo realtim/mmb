@@ -377,7 +377,7 @@ if (!isset($MyPHPScript)) return;
                 where user_hide = 0 and user_email = '$pUserEmail'";
 
         //  echo $sql;
-        $pUserId = CSql::singleValue($sql, 'user_id');
+        $pUserId = CSql::singleValue($sql, 'user_id', false);
         if ($pUserId <= 0) {
             CMmb::setErrorMessage("Пользователь с  e-mail $pUserEmail не найден");
             return;
