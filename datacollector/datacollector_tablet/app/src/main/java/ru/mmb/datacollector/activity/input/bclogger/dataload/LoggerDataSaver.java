@@ -11,7 +11,6 @@ import ru.mmb.datacollector.model.LevelPoint;
 import ru.mmb.datacollector.model.RawLoggerData;
 import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.Team;
-import ru.mmb.datacollector.model.registry.ScanPointsRegistry;
 import ru.mmb.datacollector.model.registry.TeamsRegistry;
 import ru.mmb.datacollector.transport.importer.Importer;
 import ru.mmb.datacollector.util.DateUtils;
@@ -23,6 +22,7 @@ public class LoggerDataSaver {
     private final LoggerDataProcessor owner;
     private final SQLiteDatabase db;
     private int recordsToSave;
+    private ScanPoint scanPoint;
 
     public LoggerDataSaver(LoggerDataProcessor owner) {
         this.owner = owner;
@@ -46,9 +46,8 @@ public class LoggerDataSaver {
         }
     }
 
-    public void saveToDB(LogStringParsingResult parsingResult) {
-        ScanPoint scanPoint = ScanPointsRegistry.getInstance().getScanPointByOrder(parsingResult.getScanpointOrderNumber());
-        if (scanPoint == null) return;
+    public void saveToDB(ScanPoint scanPoint, LogStringParsingResult parsingResult) {
+        this.scanPoint = scanPoint;
 
         if (recordsToSave == 0 && !db.inTransaction()) {
             db.beginTransaction();
@@ -77,10 +76,10 @@ public class LoggerDataSaver {
         // Dates in DB are saved without seconds, and before() or after() will return
         // undesired results, if seconds are present in parsed result.
         Date recordDateTime = DateUtils.trimToMinutes(sdf.parse(parsingResult.getRecordDateTime()));
-        recordDateTime = alignToLevelPointLimits(scanPoint, recordDateTime, teamId);
+        recordDateTime = alignToLevelPointLimits(recordDateTime, teamId);
         RawLoggerData existingRecord = SQLiteDatabaseAdapter.getConnectedInstance().getExistingLoggerRecord(loggerId, scanpointId, teamId);
         if (existingRecord != null) {
-            if (needUpdateExistingRecord(scanPoint, existingRecord, recordDateTime)) {
+            if (needUpdateExistingRecord(existingRecord, recordDateTime)) {
                 String sql = SQLiteDatabaseAdapter.getConnectedInstance().getUpdateExistingLoggerRecordSql(loggerId, scanpointId, teamId, recordDateTime, recordDateTime, 0);
                 db.execSQL(sql);
                 recordsToSave++;
@@ -104,7 +103,7 @@ public class LoggerDataSaver {
         return team.getTeamId();
     }
 
-    private Date alignToLevelPointLimits(ScanPoint scanPoint, Date recordDateTime, int teamId) {
+    private Date alignToLevelPointLimits(Date recordDateTime, int teamId) {
         Team team = TeamsRegistry.getInstance().getTeamById(teamId);
         LevelPoint levelPoint = scanPoint.getLevelPointByDistance(team.getDistanceId());
         if (levelPoint.isCommonStart()) {
@@ -123,7 +122,7 @@ public class LoggerDataSaver {
         return recordDateTime;
     }
 
-    private boolean needUpdateExistingRecord(ScanPoint scanPoint, RawLoggerData existingRecord, Date recordDateTime) {
+    private boolean needUpdateExistingRecord(RawLoggerData existingRecord, Date recordDateTime) {
         // if record was changed manually, then update not needed
         if (existingRecord.getChangedManual() == 1) return false;
 
