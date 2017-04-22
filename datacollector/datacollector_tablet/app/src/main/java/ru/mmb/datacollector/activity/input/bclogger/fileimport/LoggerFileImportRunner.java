@@ -12,8 +12,10 @@ import ru.mmb.datacollector.activity.input.bclogger.dataload.LogStringParsingRes
 import ru.mmb.datacollector.activity.input.bclogger.dataload.LoggerDataProcessor;
 import ru.mmb.datacollector.activity.input.bclogger.dataload.LoggerReplyParser;
 import ru.mmb.datacollector.bluetooth.ThreadMessageTypes;
+import ru.mmb.datacollector.model.ScanPoint;
 
 public class LoggerFileImportRunner implements LoggerDataProcessor {
+    private final ScanPoint currentScanPoint;
     private final String fileName;
     private final Handler handler;
 
@@ -21,7 +23,8 @@ public class LoggerFileImportRunner implements LoggerDataProcessor {
 
     private LoggerReplyParser parser;
 
-    public LoggerFileImportRunner(String fileName, Handler handler) {
+    public LoggerFileImportRunner(ScanPoint currentScanPoint, String fileName, Handler handler) {
+        this.currentScanPoint = currentScanPoint;
         this.fileName = fileName;
         this.handler = handler;
     }
@@ -73,7 +76,7 @@ public class LoggerFileImportRunner implements LoggerDataProcessor {
     public void importFile() {
         try {
             String fileContents = readFileToString();
-            parser = new LoggerReplyParser(this, null);
+            parser = new LoggerReplyParser(this, currentScanPoint, null);
             parser.parseAndSaveLogData(fileContents);
             sendFinishedSuccessNotification();
         } catch (Exception e) {

@@ -12,16 +12,19 @@ import java.util.Date;
 
 import ru.mmb.datacollector.activity.input.bclogger.InputBCLoggerBluetoothClient;
 import ru.mmb.datacollector.bluetooth.DeviceInfo;
+import ru.mmb.datacollector.model.ScanPoint;
 import ru.mmb.datacollector.model.registry.Settings;
 
 public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient implements LoggerDataProcessor {
     private String confLoggerId;
+    private ScanPoint currentScanPoint;
     private PrintWriter errorLog;
 
     private LoggerReplyParser parser;
 
-    public LoggerDataLoadBluetoothClient(Context context, DeviceInfo deviceInfo, Handler handler) {
+    public LoggerDataLoadBluetoothClient(Context context, DeviceInfo deviceInfo, ScanPoint currentScanPoint, Handler handler) {
         super(context, deviceInfo, handler);
+        this.currentScanPoint = currentScanPoint;
     }
 
     public void loadErrorsData() {
@@ -49,7 +52,7 @@ public class LoggerDataLoadBluetoothClient extends InputBCLoggerBluetoothClient 
                     errorLog = createErrorLog();
                     if (errorLog != null) {
                         try {
-                            parser = new LoggerReplyParser(this, confLoggerId);
+                            parser = new LoggerReplyParser(this, currentScanPoint, confLoggerId);
                             parser.parseAndSaveLogData(loggerReply);
                         } finally {
                             errorLog.flush();

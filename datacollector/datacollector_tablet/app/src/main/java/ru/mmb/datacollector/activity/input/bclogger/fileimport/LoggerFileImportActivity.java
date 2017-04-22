@@ -134,7 +134,7 @@ public class LoggerFileImportActivity extends Activity {
             SQLiteDatabaseAdapter dbAdapter = SQLiteDatabaseAdapter.getConnectedInstance();
             dbAdapter.backupDatabase(LoggerFileImportActivity.this);
 
-            importRunner = new LoggerFileImportRunner(currentState.getFileName(), fileImportHandler);
+            importRunner = new LoggerFileImportRunner(currentState.getCurrentScanPoint(), currentState.getFileName(), fileImportHandler);
             importThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
