@@ -107,8 +107,8 @@ public class CheckpointPanel {
     }
 
     private void addMustVisitCheckpointControls(Checkpoint checkpoint, TableRow checkRow, TableRow textRow) {
-        addEmptyCell(checkRow);
-        addCheckpointNameControl(checkpoint, textRow);
+        addCheckpointCheckBox(checkpoint, checkRow, new Integer(R.color.LightPink));
+        addCheckpointNameControl(checkpoint, textRow, new Integer(R.color.LightPink));
     }
 
     private void addOrdinaryCheckpointControls(Checkpoint checkpoint, TableRow checkRow, TableRow textRow) {
@@ -130,22 +130,36 @@ public class CheckpointPanel {
         tableRow.addView(dummy);
     }
 
-    private void addCheckpointNameControl(Checkpoint checkpoint, TableRow tableRow) {
+    private void addCheckpointNameControl(Checkpoint checkpoint, TableRow textRow) {
+        addCheckpointNameControl(checkpoint, textRow, null);
+    }
+
+    private void addCheckpointNameControl(Checkpoint checkpoint, TableRow tableRow, Integer backgroundColor) {
         TextView checkNameText = new TextView(inputDataActivity);
         checkNameText.setText(checkpoint.getCheckpointName());
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
         layoutParams.weight = 1;
         layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
         checkNameText.setLayoutParams(layoutParams);
+        if (backgroundColor != null) {
+            checkNameText.setTextColor(backgroundColor);
+        }
         tableRow.addView(checkNameText);
     }
 
-    private void addCheckpointCheckBox(Checkpoint checkpoint, TableRow tableRow) {
+    private void addCheckpointCheckBox(Checkpoint checkpoint, TableRow checkRow) {
+        addCheckpointCheckBox(checkpoint, checkRow, null);
+    }
+
+    private void addCheckpointCheckBox(Checkpoint checkpoint, TableRow tableRow, Integer backgroundColor) {
         CheckBox checkpointBox = new CheckBox(inputDataActivity);
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
         layoutParams.weight = 1;
         checkpointBox.setLayoutParams(layoutParams);
         checkpointBox.setText("");
+        if (backgroundColor != null) {
+            checkpointBox.setBackgroundColor(inputDataActivity.getResources().getColor(backgroundColor));
+        }
         checkpointBox.setChecked(false);
         checkpointBox.setOnClickListener(new CheckpointBoxClickListener());
         tableRow.addView(checkpointBox);
