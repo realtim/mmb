@@ -2,6 +2,7 @@ package ru.mmb.datacollector.activity.input.data.withdraw;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     }
 
     public void setWithdrawScanPoint(ScanPoint withdrawScanPoint) {
+        Log.d("WITHDRAW_MEMBERS", "setWithdrawScanPoint fired for scanPoint: " + withdrawScanPoint);
         this.withdrawScanPoint = withdrawScanPoint;
         reloadState();
         fireStateReloaded();
@@ -169,7 +171,9 @@ public class WithdrawMemberActivityState extends ActivityStateWithTeamAndScanPoi
     }
 
     public void saveCurrWithdrawnToDB(Date recordDateTime) {
+        Log.d("WITHDRAW_MEMBERS", "saveCurrWithdrawnToDB fired");
         if (hasItemsToSave()) {
+            Log.d("WITHDRAW_MEMBERS", "saving checked members [" + currWithdrawnMembers.size() + "]");
             SQLiteDatabaseAdapter.getConnectedInstance().saveDismissedMembers(getWithdrawScanPoint(), getCurrentTeam(), currWithdrawnMembers, recordDateTime);
         }
     }

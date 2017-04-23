@@ -1,7 +1,10 @@
 package ru.mmb.datacollector.activity.input.data.withdraw;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -9,7 +12,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Date;
 
@@ -27,6 +29,8 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
     private Button btnOk;
 
     private MembersListViewWrapper lvMembersWrapper;
+
+    private ScanPoint newScanPoint = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,24 +130,51 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
 
     private class WithdrawScanPointOnItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
+        private DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        Date recordDateTime = new Date();
+                        Log.d("WITHDRAW_MEMBER", "dialog positive button click currentState: " + currentState);
+                        currentState.saveCurrWithdrawnToDB(recordDateTime);
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+                // Change withdraw scan point only when dialog is ready to be closed.
+                setNewWithdrawScanPoint();
+            }
+        };
+
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            ScanPoint newScanPoint = ScanPointsRegistry.getInstance().getScanPointByIndex(position);
+            newScanPoint = ScanPointsRegistry.getInstance().getScanPointByIndex(position);
             if (!currentState.getWithdrawScanPoint().equals(newScanPoint)) {
                 setControlsEnabled(false);
                 if (currentState.hasItemsToSave()) {
-                    showSavingMessage();
-                    Date recordDateTime = new Date();
-                    currentState.saveCurrWithdrawnToDB(recordDateTime);
+                    // Set new withdraw scan point only after confirmation dialog exit, not here.
+                    // Otherwise current state changes scan point before dialog creation, and all checked data is lost.
+                    saveCheckedDataAfterConfirmation();
+                } else {
+                    // If no data was checked, and no dialog needed, then we must change scan point here.
+                    setNewWithdrawScanPoint();
                 }
-                currentState.setWithdrawScanPoint(newScanPoint);
-                setControlsEnabled(true);
             }
         }
 
-        private void showSavingMessage() {
-            String message = WithdrawMemberActivity.this.getResources().getString(R.string.input_withdraw_saving);
-            Toast.makeText(WithdrawMemberActivity.this, message, Toast.LENGTH_SHORT).show();
+        private void setNewWithdrawScanPoint() {
+            currentState.setWithdrawScanPoint(newScanPoint);
+            setControlsEnabled(true);
+        }
+
+        private void saveCheckedDataAfterConfirmation() {
+            Log.d("WITHDRAW_MEMBER", "saveCheckedDataAfterConfirmation fired");
+            AlertDialog.Builder builder = new AlertDialog.Builder(WithdrawMemberActivity.this);
+            builder.setMessage(getResources().getString(R.string.input_withdraw_dialog_title))
+                    .setPositiveButton(getResources().getString(R.string.input_withdraw_dialog_yes), dialogClickListener)
+                    .setNegativeButton(getResources().getString(R.string.input_withdraw_dialog_no), dialogClickListener)
+                    .show();
         }
 
         @Override

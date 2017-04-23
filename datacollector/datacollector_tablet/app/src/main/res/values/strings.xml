@@ -102,7 +102,9 @@
     <string name="input_withdraw_already_withdrawn">Already withdrawn</string>
     <string name="input_withdraw_res_members">Members to withdraw:</string>
     <string name="input_withdraw_res_no_members">&lt;Nobody selected></string>
-    <string name="input_withdraw_saving">Saving checked members.</string>
+    <string name="input_withdraw_dialog_title">Withdraw checked members?</string>
+    <string name="input_withdraw_dialog_yes">Yes</string>
+    <string name="input_withdraw_dialog_no">No</string>
 
     <string name="file_dialog_location">Location</string>
     <string name="file_dialog_cant_read_folder">folder can\'t be read!</string>
