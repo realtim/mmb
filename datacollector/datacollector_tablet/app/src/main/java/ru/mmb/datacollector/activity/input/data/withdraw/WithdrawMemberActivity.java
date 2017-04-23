@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -136,7 +135,6 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         Date recordDateTime = new Date();
-                        Log.d("WITHDRAW_MEMBER", "dialog positive button click currentState: " + currentState);
                         currentState.saveCurrWithdrawnToDB(recordDateTime);
                         break;
                     case DialogInterface.BUTTON_NEGATIVE:
@@ -169,7 +167,6 @@ public class WithdrawMemberActivity extends Activity implements WithdrawStateCha
         }
 
         private void saveCheckedDataAfterConfirmation() {
-            Log.d("WITHDRAW_MEMBER", "saveCheckedDataAfterConfirmation fired");
             AlertDialog.Builder builder = new AlertDialog.Builder(WithdrawMemberActivity.this);
             builder.setMessage(getResources().getString(R.string.input_withdraw_dialog_title))
                     .setPositiveButton(getResources().getString(R.string.input_withdraw_dialog_yes), dialogClickListener)
