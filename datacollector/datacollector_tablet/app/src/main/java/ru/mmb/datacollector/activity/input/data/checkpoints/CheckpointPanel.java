@@ -20,27 +20,28 @@ import ru.mmb.datacollector.R;
 import ru.mmb.datacollector.model.Checkpoint;
 import ru.mmb.datacollector.model.PointType;
 
-public class CheckpointPanel {
+import static ru.mmb.datacollector.model.PointType.CHECKPOINT;
+import static ru.mmb.datacollector.model.PointType.MUST_VISIT;
+
+class CheckpointPanel {
     private final InputDataActivity inputDataActivity;
     private final InputDataActivityState currentState;
 
     private final LinearLayout checkpointsTopPanel;
     private final TableLayout checkpointsPanel;
-    private final Button btnCheckAll;
-    private final Button btnCheckNothing;
 
-    private final Map<Checkpoint, CheckBox> checkpointBoxes = new HashMap<Checkpoint, CheckBox>();
-    private final Map<CheckBox, Checkpoint> boxCheckpoints = new HashMap<CheckBox, Checkpoint>();
+    private final Map<Checkpoint, CheckBox> checkpointBoxes = new HashMap<>();
+    private final Map<CheckBox, Checkpoint> boxCheckpoints = new HashMap<>();
 
-    public CheckpointPanel(InputDataActivity context, InputDataActivityState currentState) {
+    CheckpointPanel(InputDataActivity context, InputDataActivityState currentState) {
         this.inputDataActivity = context;
         this.currentState = currentState;
 
         checkpointsTopPanel =
                 (LinearLayout) context.findViewById(R.id.inputData_checkpointsTopPanel);
         checkpointsPanel = (TableLayout) context.findViewById(R.id.inputData_checkpointsPanel);
-        btnCheckAll = (Button) context.findViewById(R.id.inputData_checkAllButton);
-        btnCheckNothing = (Button) context.findViewById(R.id.inputData_checkNothingButton);
+        Button btnCheckAll = (Button) context.findViewById(R.id.inputData_checkAllButton);
+        Button btnCheckNothing = (Button) context.findViewById(R.id.inputData_checkNothingButton);
 
         init();
 
@@ -65,7 +66,7 @@ public class CheckpointPanel {
         if (checkpointsCount % 2 != 0) colCount += 1;
 
         int rowCount = 5;
-        List<TableRow> rows = new ArrayList<TableRow>();
+        List<TableRow> rows = new ArrayList<>();
         for (int i = 0; i < rowCount; i++) {
             TableRow tableRow = new TableRow(inputDataActivity);
             rows.add(tableRow);
@@ -108,7 +109,7 @@ public class CheckpointPanel {
 
     private void addMustVisitCheckpointControls(Checkpoint checkpoint, TableRow checkRow, TableRow textRow) {
         addCheckpointCheckBox(checkpoint, checkRow);
-        addCheckpointNameControl(checkpoint, textRow, new Integer(R.color.LightPink));
+        addCheckpointNameControl(checkpoint, textRow, R.color.Salmon);
     }
 
     private void addOrdinaryCheckpointControls(Checkpoint checkpoint, TableRow checkRow, TableRow textRow) {
@@ -165,7 +166,8 @@ public class CheckpointPanel {
 
         List<Checkpoint> checkpoints = currentState.getLevelPointForTeam().getCheckpoints();
         for (Checkpoint checkpoint : checkpoints) {
-            if (checkpoint.getLevelPoint().getPointType() == PointType.CHECKPOINT) {
+            PointType pointType = checkpoint.getLevelPoint().getPointType();
+            if (pointType == CHECKPOINT || pointType == MUST_VISIT) {
                 CheckBox checkBox = checkpointBoxes.get(checkpoint);
                 checkBox.setChecked(currentState.isChecked(checkpoint));
             }
