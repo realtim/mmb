@@ -174,8 +174,6 @@ if (isset($_FILES['android']))
 				die("Некорректное время редактирования данных '$edit_time' в строке #".$line_num." - ".$line);
 			if ($edit_time <> date("Y-m-d H:i:s", $timestamp))
 				die("Нестандартный формат времени редактирования данных '$edit_time' в строке #".$line_num." - ".$line);
-			if ($timestamp > time())
-				die("Время редактирования данных '$edit_time' из будущего в строке #".$line_num." - ".$line);
 		}
 		else die("Неизвестный тип данных '".$type."' в строке #".$line_num." - ".$line);
 
@@ -200,7 +198,19 @@ if (isset($_FILES['android']))
 		// Данные о командах на контрольной точке
 		if ($type == "TeamLevelPoints")
 		{
-			// Проверяем время прихода команды на точку
+			// проверяем на корректность формат времени команды
+			if ($team_time <> "NULL")
+			{
+				$timestamp = strtotime($team_time);
+				if ($timestamp === false)
+					die("Некорректное время команды '$team_time' в строке #".$line_num." - ".$line);
+				if ($team_time <> date("Y-m-d H:i:s", $timestamp))
+					die("Нестандартный формат времени команды '$team_time' в строке #".$line_num." - ".$line);
+				// Проверяем, что время обработки результата на планшете >= времени прихода команды
+				if ($edit_time < $team_time)
+					die("Время обработки результата на планшете $edit_time меньше времени посещения точки $team_time в строке #".$line_num." - ".$line);
+			}
+			// Проверяем само время прихода команды на точку
 			switch ($pointtype_id)
 			{
 				// Корректируем при необходимости время старта
@@ -213,35 +223,27 @@ if (isset($_FILES['android']))
 				case 2:
 				case 3:
 				case 4:
-					if (!$scanpoint_id)
-						die("Для активной точки без сканера (scanpoint_id=0) не должно быть отметки времени в строке #".$line_num." - ".$line);
-					if ($team_time == "NULL")
-						die("У команды $team_id отсутствует время на активной точке $point_id (pointtype_id=$pointtype_id) в строке #".$line_num." - ".$line);
-					if ($team_time < $begtime)
-						die("Команда $team_id отметилась на точке $point_id до начала ее работы в строке #".$line_num." - ".$line);
-					if ($team_time > $endtime)
-						die("Команда $team_id отметилась на точке $point_id после окончания ее работы в строке #".$line_num." - ".$line);
+					if ($team_time <> "NULL")
+					{
+						if (!$scanpoint_id)
+							die("Для активной точки без сканера (scanpoint_id=0) не должно быть отметки времени в строке #".$line_num." - ".$line);
+						if ($team_time < $begtime)
+							die("Команда $team_id отметилась на точке $point_id до начала ее работы в строке #".$line_num." - ".$line);
+						if ($team_time > $endtime)
+							die("Команда $team_id отметилась на точке $point_id после окончания ее работы в строке #".$line_num." - ".$line);
+					}
+					else
+					{
+						if ($scanpoint_id  && ($pointtype_id <> 3))
+							die("У команды $team_id отсутствует время на активной точке $point_id (pointtype_id=$pointtype_id) в строке #".$line_num." - ".$line);
+					}
 					break;
 				// На обычной точке без сканера время прихода команды может быть только NULL
 				case 5:
-					if ($team_time != "NULL")
+					if ($team_time <> "NULL")
 						die("Для КП с компостером (pointtype_id=5) не должно быть отметки времени в строке #".$line_num." - ".$line);
 					break;
 			}
-			// проверяем на корректность формат времени команды
-			if ($team_time != "NULL")
-			{
-				$timestamp = strtotime($team_time);
-				if ($timestamp === false)
-					die("Некорректное время команды '$team_time' в строке #".$line_num." - ".$line);
-				if ($team_time <> date("Y-m-d H:i:s", $timestamp))
-					die("Нестандартный формат времени команды '$team_time' в строке #".$line_num." - ".$line);
-				if ($timestamp > time())
-					die("Время команды '$team_time' из будущего в строке #".$line_num." - ".$line);
-			}
-			// Проверяем, что время обработки результата на планшете >= времени прихода команды
-			if (($team_time <> "NULL") && ($edit_time < $team_time))
-				die("Время обработки результата на планшете $edit_time меньше времени посещения точки $team_time в строке #".$line_num." - ".$line);
 			// Сохраняем проверенное и откорректированное время прихода команды для второго прохода скрипта
 			$saved_team_time[$line_num] = $team_time;
 		}
@@ -362,15 +364,17 @@ if (isset($_FILES['android']))
 			// Используем откорректированное время команды из первого прохода скрипта
 			if (isset($saved_team_time[$line_num])) $team_time = $saved_team_time[$line_num];
 			// Выясняем, есть ли уже такая запись
-			$sql = "SELECT teamlevelpoint_date FROM TeamLevelPoints WHERE levelpoint_id = $point_id AND team_id = $team_id";
+			$sql = "SELECT teamlevelpoint_date, teamlevelpoint_datetime FROM TeamLevelPoints WHERE levelpoint_id = $point_id AND team_id = $team_id";
 			$Result = mysql_query($sql);
 			unset($Old);
 			$Old = mysql_fetch_assoc($Result);
-			if (isset($Old['teamlevelpoint_date']) && $Old['teamlevelpoint_date'])
+			if (isset($Old['teamlevelpoint_date']))
 			{
 				// обновляем запись в базе только если дата ввода данных в файле больше, чем в базе
-				if ($Old['teamlevelpoint_date'] >= $edit_time) $Record = "unchanged";
+				if ($Old["teamlevelpoint_datetime"] && ($Old["teamlevelpoint_datetime"] <> "0000-00-00 00:00:00") && ($Old['teamlevelpoint_date'] >= $edit_time)) $Record = "unchanged";
 				else $Record = "updated";
+				// не заменяем реальное время команды на пустое даже если пустое время было введено позже
+				if (($Record == "updated") && $Old["teamlevelpoint_datetime"] && ($team_time == "NULL")) $Record = "unchanged";
 			}
 			else $Record = "new";
 			mysql_free_result($Result);

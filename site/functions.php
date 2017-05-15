@@ -3089,7 +3089,11 @@ function FindErrors($raid_id, $team_id)
 				// На КП без сканера не может быть записи со временем посещения точки
 				if (!$errors[$id] && !isset($scanners[$id]) && $team_time) $errors[$id] = 22;
 				// На КП со сканером не может быть записи о посещении без времени
-				if (!$errors[$id] && isset($scanners[$id]) && !$team_time) $errors[$id] = 23;
+				if (!$errors[$id] && isset($scanners[$id]) && !$team_time)
+				{
+					// для ОКП - предупреждение, для остальных типов КП - ошибка
+					if ($points[$id]['pointtype'] == 3) $errors[$id] = -3; else $errors[$id] = 23;
+				}
 				// Время посещения точки должно быть в интервале работы точки
 				if (!$errors[$id] && $team_time &&
 					(($team_time < $points[$id]['min_time']) || ($team_time > $points[$id]['max_time']))) $errors[$id] = 24;
