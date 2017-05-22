@@ -220,8 +220,11 @@ if (isset($_FILES['android']))
 					// Если карточка отсканирована после закрытия старта, то ставим команде время закрытия
 					if ($team_time > $endtime) $team_time = $endtime;
 				// Время прихода на активную точку должно быть в интервале ее работы
+					break;
 				case 2:
+					break;
 				case 3:
+					break;
 				case 4:
 					if ($team_time <> "NULL")
 					{
