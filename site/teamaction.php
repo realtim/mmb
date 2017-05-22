@@ -1347,7 +1347,7 @@ elseif ($action == "UnionTeams")  {
 		                MIN(tlp.teamlevelpoint_duration),
 		                MAX(tlp.teamlevelpoint_penalty),
 		                MAX(tlp.teamlevelpoint_comment),
-		                MAX(tlp.eamlevelpoint_result)
+		                MAX(tlp.teamlevelpoint_result)
  		         from  TeamUnionLogs tul
 			       inner join Teams t
 			       on t.team_id = tul.team_id
