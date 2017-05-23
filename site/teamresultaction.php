@@ -245,7 +245,9 @@ elseif ($action == 'AddTlp')
 	 }
 */
 
-         RecalcTeamResultFromTeamLevelPoints(0,  $pTeamId);
+	// Временно отключил, так как при больших правках тормозит сильно.
+	// Пересчет результатов срабатывает при редактировании данных, ну и общий пересчет по всем командам, конечно
+        // RecalcTeamResultFromTeamLevelPoints(0,  $pTeamId);
 
 
 	//$view = $_POST['view'];
