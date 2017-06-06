@@ -27,14 +27,15 @@ class CRights
 
     public static function canEditTeam($userId, $raidId, $teamId)
     {
-        $teamMemberOrSuper = $teamId == CSql::userTeamId($userId, $raidId) || CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
-        if (!$teamMemberOrSuper)
+        $teamMember = $teamId == CSql::userTeamId($userId, $raidId);
+        $Super = CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId);
+    
+	if (!$teamMember and !$Super)
             return false;
 
         $raidStage = CSql::raidStage($raidId);
-        //$teamOutOfRange = CSql::teamOutOfRange($teamId);
 
-        return ($raidStage < 2);
+        return (($teamMembe and $raidStage < 2) or ($Super and $raidStage < 7));
     }
 
     // 21/05/2016 Проверка на число участников
