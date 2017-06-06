@@ -535,6 +535,8 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 	        $sql = "select lp.levelpoint_id, lp.levelpoint_name, d.distance_name,
         		tlp1.teamscount, tlp2.teamuserscount
         	        from  LevelPoints lp
+				left outer join ScanPoints sp
+				on lp.scanpoint_id = sp.scanpoint_id
  	  			inner join Distances d
 				on lp.distance_id = d.distance_id
 				left outer join
@@ -562,7 +564,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 				     	) tlp2
 			     	on lp.levelpoint_id = tlp2.levelpoint_id					  
 			where d.raid_id = $RaidId and $DistanceCondition and lp.pointtype_id <> 5  
-			     and (lp.pointtype_id <> 3 or lp.scanpoint_id is not null)
+			     and (lp.pointtype_id <> 3 or sp.scanpoint_id is not null)
 			order by lp.levelpoint_order ";
 
 		//echo 'sql '.$sql;
