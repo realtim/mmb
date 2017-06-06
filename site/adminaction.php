@@ -820,7 +820,19 @@ elseif ($action == 'DeleteOutOfRangeTeams')
 		return;
 	}
 
+	// рассылка
+	SendMailForAll($RaidId, "Удаление команд, не получивших приглашения", "К сожалению, ваша команда не получила приглашения и будет удалена.", 5);
 
+
+	$sql = "UPDATE Teamusers tu INNER JOIN Teams t on tu.team_id = t.team_id INNER JOIN Distances d on t.distance_id = d.distance_id  
+		SET tu.teamuser_hide = 1  
+		WHERE d.raid_id = $RaidId and t.team_outofrange = 1
+		";
+
+	//echo  $sql;
+	MySqlQuery($sql);
+
+	
 
 	$sql = "UPDATE Teams t INNER JOIN Distances d on t.distance_id = d.distance_id 
 		SET t.team_hide = 1  
@@ -830,6 +842,7 @@ elseif ($action == 'DeleteOutOfRangeTeams')
 	//echo  $sql;
 	MySqlQuery($sql);
 
+	
 	CMmb::setShortResult('Команды вне зачета удалены', '');
 	//CMmb::setResult('', "ViewAdminDataPage", "");
 	return;
