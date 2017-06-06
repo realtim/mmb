@@ -824,7 +824,7 @@ elseif ($action == 'DeleteOutOfRangeTeams')
 	SendMailForAll($RaidId, "Удаление команд, не получивших приглашения", "К сожалению, ваша команда не получила приглашения и будет удалена.", 5);
 
 
-	$sql = "UPDATE Teamusers tu INNER JOIN Teams t on tu.team_id = t.team_id INNER JOIN Distances d on t.distance_id = d.distance_id  
+	$sql = "UPDATE TeamUsers tu INNER JOIN Teams t on tu.team_id = t.team_id INNER JOIN Distances d on t.distance_id = d.distance_id  
 		SET tu.teamuser_hide = 1  
 		WHERE d.raid_id = $RaidId and t.team_outofrange = 1
 		";
