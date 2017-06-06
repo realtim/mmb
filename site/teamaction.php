@@ -182,6 +182,14 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			return;
 		}
 
+		// Проверка на возможность вставки ещё одного участника ( ограничени в 10 участников)
+		if  !CRights::canAddTeamUser($UserId, $RaidId, $TeamId))
+		{
+			$NewUserId = 0;
+			setViewError('Добавление участника запрещено');
+			return;
+		}
+		
 	}
 	else
 	{
@@ -210,12 +218,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		return;
 	}
 
-	// Проверка на возможность вставки ещё одного участника ( ограничени в 10 участников)
-	if ($action == 'TeamChangeData' and !CRights::canAddTeamUser($UserId, $RaidId, $TeamId))
-	{
-		setViewError('Добавление участника запрещено');
-		return;
-	}
+	
 
 
 
