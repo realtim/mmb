@@ -35,7 +35,7 @@ class CRights
 
         $raidStage = CSql::raidStage($raidId);
 
-        return (($teamMembe and $raidStage < 2) or ($Super and $raidStage < 7));
+        return (($teamMember and $raidStage < 2) or ($Super and $raidStage < 7));
     }
 
     // 21/05/2016 Проверка на число участников
