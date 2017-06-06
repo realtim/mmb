@@ -3616,7 +3616,7 @@ function FindErrors($raid_id, $team_id)
         //   echo $sql;
 	$rs = MySqlQuery($sql);
 
-		 $tm13 = CMmbLogger::addInterval(' 13', $tm12);
+		 $tm12 = CMmbLogger::addInterval(' 12', $tm11);
 
 
 		 //считаем (только для интерфейса список вщзятых КП
@@ -3638,20 +3638,20 @@ function FindErrors($raid_id, $team_id)
         //   echo $sql;
 	$rs = MySqlQuery($sql);
 
-		 $tm14 = CMmbLogger::addInterval(' 14', $tm13);
+		 $tm13 = CMmbLogger::addInterval(' 13', $tm12);
 
 
 	 // теперь можно посчитать рейтинг
 	RecalcUsersRank($raidid);
 
 
-	 $tm14 = CMmbLogger::addInterval(' 15', $tm13);
+	 $tm14 = CMmbLogger::addInterval(' 14', $tm13);
 
 	// 25/01/2017 добавил обнолвение статитстики
 	RecalcTeamUsersStatistic($raidid, 0);
 
 
-	 $tm15= CMmbLogger::addInterval(' 16', $tm14);
+	 $tm15= CMmbLogger::addInterval(' 15', $tm14);
 
 		 $msg = CMmbLogger::getText();
 
