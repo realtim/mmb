@@ -3616,31 +3616,6 @@ function FindErrors($raid_id, $team_id)
         //   echo $sql;
 	$rs = MySqlQuery($sql);
 
-
-		 $tm12 = CMmbLogger::addInterval(' 12', $tm11);
-
-
-		 //Теперь в это поле добавляем предупреждения  tlp.error_id  < 0
-	$sql = " update  Teams t
-                inner join
-                      (select tlp.team_id 
-						,group_concat(COALESCE(error_name, '')) as team_error
-						from TeamLevelPoints tlp
-								left outer join Errors err
-								on tlp.error_id = err.error_id
-							    inner join Teams t
-							    on t.team_id = tlp.team_id
-							    inner join Distances d
-							    on t.distance_id = d.distance_id
-						where  COALESCE(tlp.error_id, 0) < 0
-		                       and $teamRaidCondition
-						group by tlp.team_id
-                      ) a
-		  		on t.team_id = a.team_id
-		  set  t.team_comment = CASE WHEN a.team_error <> '' THEN CONCAT('Предупреждения: ', a.team_error, '; ',  COALESCE(t.team_comment, ''))  ELSE t.team_comment END";
-        //   echo $sql;
-	$rs = MySqlQuery($sql);
-
 		 $tm13 = CMmbLogger::addInterval(' 13', $tm12);
 
 
