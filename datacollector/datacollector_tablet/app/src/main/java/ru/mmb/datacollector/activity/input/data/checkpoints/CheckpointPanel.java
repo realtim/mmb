@@ -153,6 +153,7 @@ class CheckpointPanel {
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
         layoutParams.weight = 1;
         checkpointBox.setLayoutParams(layoutParams);
+        checkpointBox.setBackgroundDrawable(inputDataActivity.getResources().getDrawable(R.drawable.element_border));
         checkpointBox.setText("");
         checkpointBox.setChecked(false);
         checkpointBox.setOnClickListener(new CheckpointBoxClickListener());
