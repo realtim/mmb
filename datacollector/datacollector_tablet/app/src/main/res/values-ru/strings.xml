@@ -83,7 +83,9 @@
     <string name="input_data_no_team_number">333</string>
     <string name="input_data_edit_date">Изменить</string>
     <string name="input_data_check_all">Все</string>
+    <string name="input_data_check_all_OKP">Все ОКП</string>
     <string name="input_data_check_nothing">Очистить</string>
+    <string name="input_data_check_nothing_OKP">Очистить ОКП</string>
     <string name="input_data_no_result">&lt;Результат не определён></string>
     <string name="input_data_ok">ОК</string>
     <string name="input_data_res_missed">Пропущено:</string>

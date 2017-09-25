@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,14 +25,17 @@ import static ru.mmb.datacollector.model.PointType.CHECKPOINT;
 import static ru.mmb.datacollector.model.PointType.MUST_VISIT;
 
 class CheckpointPanel {
+    private static final boolean IS_OKP = true;
+    private static final boolean CHECKED = true;
+
     private final InputDataActivity inputDataActivity;
     private final InputDataActivityState currentState;
 
     private final LinearLayout checkpointsTopPanel;
     private final TableLayout checkpointsPanel;
 
-    private final Map<Checkpoint, CheckBox> checkpointBoxes = new HashMap<>();
-    private final Map<CheckBox, Checkpoint> boxCheckpoints = new HashMap<>();
+    private final Map<Checkpoint, ToggleButton> checkpointToggles = new HashMap<>();
+    private final Map<ToggleButton, Checkpoint> toggleCheckpoints = new HashMap<>();
 
     CheckpointPanel(InputDataActivity context, InputDataActivityState currentState) {
         this.inputDataActivity = context;
@@ -42,24 +46,28 @@ class CheckpointPanel {
         checkpointsPanel = (TableLayout) context.findViewById(R.id.inputData_checkpointsPanel);
         Button btnCheckAll = (Button) context.findViewById(R.id.inputData_checkAllButton);
         Button btnCheckNothing = (Button) context.findViewById(R.id.inputData_checkNothingButton);
+        Button btnCheckAllOkp = (Button) context.findViewById(R.id.inputData_checkAllOkpButton);
+        Button btnCheckNothingOkp = (Button) context.findViewById(R.id.inputData_checkNothingOkpButton);
 
         init();
 
-        initCheckboxesState();
+        initCheckpointsState();
 
-        btnCheckAll.setOnClickListener(new CheckAllClickListener());
-        btnCheckNothing.setOnClickListener(new CheckNothingClickListener());
+        btnCheckAll.setOnClickListener(new SetAllCheckedClickListener(CHECKED, !IS_OKP));
+        btnCheckNothing.setOnClickListener(new SetAllCheckedClickListener(!CHECKED, !IS_OKP));
+        btnCheckAllOkp.setOnClickListener(new SetAllCheckedClickListener(CHECKED, IS_OKP));
+        btnCheckNothingOkp.setOnClickListener(new SetAllCheckedClickListener(!CHECKED, IS_OKP));
     }
 
     private void init() {
         if (!currentState.needInputCheckpoints()) {
             checkpointsTopPanel.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0));
         } else {
-            createCheckpointBoxes();
+            createCheckpointsTable();
         }
     }
 
-    private void createCheckpointBoxes() {
+    private void createCheckpointsTable() {
         List<Checkpoint> checkpoints = currentState.getLevelPointForTeam().getCheckpoints();
         int checkpointsCount = checkpoints.size();
         int colCount = checkpointsCount / 2;
@@ -108,12 +116,12 @@ class CheckpointPanel {
     }
 
     private void addMustVisitCheckpointControls(Checkpoint checkpoint, TableRow checkRow, TableRow textRow) {
-        addCheckpointCheckBox(checkpoint, checkRow);
-        addCheckpointNameControl(checkpoint, textRow, R.color.Salmon);
+        addCheckpointToggle(checkpoint, checkRow, IS_OKP);
+        addCheckpointNameControl(checkpoint, textRow, IS_OKP);
     }
 
     private void addOrdinaryCheckpointControls(Checkpoint checkpoint, TableRow checkRow, TableRow textRow) {
-        addCheckpointCheckBox(checkpoint, checkRow);
+        addCheckpointToggle(checkpoint, checkRow);
         addCheckpointNameControl(checkpoint, textRow);
     }
 
@@ -132,74 +140,100 @@ class CheckpointPanel {
     }
 
     private void addCheckpointNameControl(Checkpoint checkpoint, TableRow textRow) {
-        addCheckpointNameControl(checkpoint, textRow, null);
+        addCheckpointNameControl(checkpoint, textRow, !IS_OKP);
     }
 
-    private void addCheckpointNameControl(Checkpoint checkpoint, TableRow tableRow, Integer textColor) {
+    private void addCheckpointNameControl(Checkpoint checkpoint, TableRow tableRow, boolean isOkp) {
         TextView checkNameText = new TextView(inputDataActivity);
         checkNameText.setText(checkpoint.getCheckpointName());
+        checkNameText.setTextAppearance(inputDataActivity, android.R.style.TextAppearance_Large);
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
         layoutParams.weight = 1;
-        layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
+        checkNameText.setGravity(Gravity.CENTER_HORIZONTAL);
         checkNameText.setLayoutParams(layoutParams);
-        if (textColor != null) {
-            checkNameText.setTextColor(inputDataActivity.getResources().getColor(textColor));
+        if (isOkp) {
+            checkNameText.setTextColor(inputDataActivity.getResources().getColor(R.color.Salmon));
         }
         tableRow.addView(checkNameText);
+        addSeparator(tableRow);
     }
 
-    private void addCheckpointCheckBox(Checkpoint checkpoint, TableRow tableRow) {
-        CheckBox checkpointBox = new CheckBox(inputDataActivity);
+    private void addSeparator(TableRow tableRow) {
+        TextView separator = new TextView(inputDataActivity);
+        separator.setText("");
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
+        layoutParams.width = 5;
+        separator.setLayoutParams(layoutParams);
+        tableRow.addView(separator);
+    }
+
+    private void addCheckpointToggle(Checkpoint checkpoint, TableRow tableRow) {
+        addCheckpointToggle(checkpoint, tableRow, !IS_OKP);
+    }
+
+    private void addCheckpointToggle(Checkpoint checkpoint, TableRow tableRow, boolean isOkp) {
+        ToggleButton checkpointToggle = new ToggleButton(inputDataActivity);
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams();
         layoutParams.weight = 1;
-        checkpointBox.setLayoutParams(layoutParams);
-        checkpointBox.setBackgroundDrawable(inputDataActivity.getResources().getDrawable(R.drawable.element_border));
-        checkpointBox.setText("");
-        checkpointBox.setChecked(false);
-        checkpointBox.setOnClickListener(new CheckpointBoxClickListener());
-        tableRow.addView(checkpointBox);
-        checkpointBoxes.put(checkpoint, checkpointBox);
-        boxCheckpoints.put(checkpointBox, checkpoint);
+        checkpointToggle.setLayoutParams(layoutParams);
+        checkpointToggle.setTextOn("X");
+        checkpointToggle.setTextOff(" ");
+        checkpointToggle.setOnClickListener(new CheckpointToggleClickListener());
+        if (isOkp) {
+            checkpointToggle.setBackgroundDrawable(inputDataActivity.getResources().getDrawable(R.drawable.must_visit_toggle));
+        } else {
+            checkpointToggle.setBackgroundDrawable(inputDataActivity.getResources().getDrawable(R.drawable.ordinary_toggle));
+        }
+        tableRow.addView(checkpointToggle);
+        addSeparator(tableRow);
+        checkpointToggles.put(checkpoint, checkpointToggle);
+        toggleCheckpoints.put(checkpointToggle, checkpoint);
     }
 
-    private void initCheckboxesState() {
+    private void initCheckpointsState() {
         if (!currentState.needInputCheckpoints()) return;
 
         List<Checkpoint> checkpoints = currentState.getLevelPointForTeam().getCheckpoints();
         for (Checkpoint checkpoint : checkpoints) {
             PointType pointType = checkpoint.getLevelPoint().getPointType();
             if (pointType == CHECKPOINT || pointType == MUST_VISIT) {
-                CheckBox checkBox = checkpointBoxes.get(checkpoint);
-                checkBox.setChecked(currentState.isChecked(checkpoint));
+                ToggleButton toggleButton = checkpointToggles.get(checkpoint);
+                toggleButton.setChecked(currentState.isChecked(checkpoint));
             }
         }
     }
 
-    private class CheckpointBoxClickListener implements OnClickListener {
+    private class CheckpointToggleClickListener implements OnClickListener {
         @Override
         public void onClick(View v) {
-            Checkpoint checkpoint = boxCheckpoints.get(v);
-            currentState.setChecked(checkpoint, ((CheckBox) v).isChecked());
+            Checkpoint checkpoint = toggleCheckpoints.get(v);
+            currentState.setChecked(checkpoint, ((ToggleButton) v).isChecked());
         }
     }
 
-    private class CheckAllClickListener implements OnClickListener {
-        @Override
-        public void onClick(View v) {
-            for (Map.Entry<Checkpoint, CheckBox> entry : checkpointBoxes.entrySet()) {
-                entry.getValue().setChecked(true);
-            }
-            currentState.checkAll();
-        }
-    }
+    private class SetAllCheckedClickListener implements OnClickListener {
+        private final boolean checkedValue;
+        private final boolean isOkp;
 
-    private class CheckNothingClickListener implements OnClickListener {
+        public SetAllCheckedClickListener(boolean checkedValue, boolean isOkp) {
+            this.checkedValue = checkedValue;
+            this.isOkp = isOkp;
+        }
+
         @Override
         public void onClick(View v) {
-            for (Map.Entry<Checkpoint, CheckBox> entry : checkpointBoxes.entrySet()) {
-                entry.getValue().setChecked(false);
+            for (Map.Entry<Checkpoint, ToggleButton> entry : checkpointToggles.entrySet()) {
+                PointType pointType = entry.getKey().getLevelPoint().getPointType();
+                boolean needSet = isOkp ? (pointType == MUST_VISIT) : (pointType != MUST_VISIT);
+                if (needSet) {
+                    entry.getValue().setChecked(checkedValue);
+                }
             }
-            currentState.uncheckAll();
+            if (checkedValue) {
+                currentState.checkAll(isOkp);
+            } else {
+                currentState.uncheckAll(isOkp);
+            }
         }
     }
 }

@@ -117,6 +117,20 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/global_padding"
                     android:text="@string/input_data_check_nothing" />
+
+                <Button
+                    android:id="@+id/inputData_checkAllOkpButton"
+                    android:layout_width="100dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/global_padding"
+                    android:text="@string/input_data_check_all_OKP" />
+
+                <Button
+                    android:id="@+id/inputData_checkNothingOkpButton"
+                    android:layout_width="120dip"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/global_padding"
+                    android:text="@string/input_data_check_nothing_OKP" />
             </LinearLayout>
 
             <TableLayout

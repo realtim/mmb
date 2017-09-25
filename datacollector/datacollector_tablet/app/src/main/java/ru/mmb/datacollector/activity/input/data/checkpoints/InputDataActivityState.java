@@ -173,13 +173,13 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
         }
     }
 
-    public void checkAll() {
-        checkedState.checkAll();
+    public void checkAll(boolean isOkp) {
+        checkedState.checkAll(isOkp);
         fireStateChanged();
     }
 
-    public void uncheckAll() {
-        checkedState.uncheckAll();
+    public void uncheckAll(boolean isOkp) {
+        checkedState.uncheckAll(isOkp);
         fireStateChanged();
     }
 

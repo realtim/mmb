@@ -2,17 +2,20 @@ package ru.mmb.datacollector.model.checkpoints;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import ru.mmb.datacollector.model.Checkpoint;
 import ru.mmb.datacollector.model.LevelPoint;
+import ru.mmb.datacollector.model.PointType;
 
 public class CheckedState implements Serializable {
     private static final long serialVersionUID = -1671058824332140814L;
 
     private final Map<Integer, Boolean> checkedMap = new LinkedHashMap<>();
+    private final Map<Integer, Boolean> okpMap = new HashMap<>();
     private LevelPoint levelPoint;
 
     public CheckedState() {
@@ -23,15 +26,23 @@ public class CheckedState implements Serializable {
             if (this.levelPoint == null || this.levelPoint.getLevelPointId() != levelPoint.getLevelPointId())
                 rebuildCheckedMap(levelPoint);
         } else {
-            checkedMap.clear();
+            clearCheckedMaps();
         }
         this.levelPoint = levelPoint;
     }
 
-    private void rebuildCheckedMap(LevelPoint levelPoint) {
+    private void clearCheckedMaps() {
         checkedMap.clear();
+        okpMap.clear();
+    }
+
+    private void rebuildCheckedMap(LevelPoint levelPoint) {
+        clearCheckedMaps();
         for (Checkpoint checkpoint : levelPoint.getCheckpoints()) {
-            checkedMap.put(checkpoint.getCheckpointOrder(), false);
+            Integer checkpointOrder = checkpoint.getCheckpointOrder();
+            Boolean isOkp = (checkpoint.getLevelPoint().getPointType() == PointType.MUST_VISIT);
+            checkedMap.put(checkpointOrder, false);
+            okpMap.put(checkpointOrder, isOkp);
         }
     }
 
@@ -100,17 +111,19 @@ public class CheckedState implements Serializable {
         return result;
     }
 
-    public void checkAll() {
-        setAllChecked(true);
+    public void checkAll(boolean isOkp) {
+        setAllChecked(true, isOkp);
     }
 
-    public void uncheckAll() {
-        setAllChecked(false);
+    public void uncheckAll(boolean isOkp) {
+        setAllChecked(false, isOkp);
     }
 
-    private void setAllChecked(boolean value) {
+    private void setAllChecked(boolean value, boolean isOkp) {
         for (Integer orderNum : checkedMap.keySet()) {
-            checkedMap.put(orderNum, value);
+            if (okpMap.get(orderNum).booleanValue() == isOkp) {
+                checkedMap.put(orderNum, value);
+            }
         }
     }
 

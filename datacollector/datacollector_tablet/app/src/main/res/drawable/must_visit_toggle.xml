@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="false">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/White" />
+            <stroke android:width="3dip" android:color="@color/Salmon" />
+            <corners android:radius="5dip" />
+            <padding android:top="5dip" android:bottom="5dip" />
+        </shape>
+    </item>
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/DimGray" />
+            <stroke android:width="3dip" android:color="@color/Salmon" />
+            <corners android:radius="5dip" />
+            <padding android:top="5dip" android:bottom="5dip" />
+        </shape>
+    </item>
+</selector>
