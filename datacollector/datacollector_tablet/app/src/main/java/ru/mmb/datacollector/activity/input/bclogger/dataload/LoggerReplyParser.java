@@ -24,24 +24,12 @@ public class LoggerReplyParser {
         dataSaver.init();
         try {
             String[] replyStrings = loggerReply.split("\\n");
-            boolean inDataLines = false;
             int linesProcessed = 0;
             for (String replyString : replyStrings) {
                 // stop parsing if thread is terminated
                 if (owner.isTerminated()) {
                     break;
                 }
-                if ("====".equals(replyString.trim())) {
-                    if (!inDataLines) {
-                        // got start of data lines marker
-                        inDataLines = true;
-                        continue;
-                    } else {
-                        // got end of data lines marker
-                        break;
-                    }
-                }
-                if (!inDataLines) continue;
 
                 linesProcessed++;
                 if (linesProcessed % 50 == 0) {
@@ -49,27 +37,7 @@ public class LoggerReplyParser {
                 }
 
                 LogStringParsingResult parsingResult = parseReplyString(replyString);
-                if (parsingResult.isRegexpMatches() && parsingResult.isCrcFailed()) {
-                    /*if (owner.needRepeatLineRequest()) {
-                        parsingResult = owner.repeatLineRequest(parsingResult.getLineNumber());
-                        if (parsingResult == null) {
-                            owner.writeError("ERROR repeating on bad CRC was not successful");
-                            continue;
-                        }
-                    } else {
-                        owner.writeError("ERROR repeating on bad CRC was not successful");
-                        continue;
-                    }*/
-                    // FIXME now line numbers are lost, repeating cancelled
-                    owner.writeError("ERROR bad CRC, no repeating line request implemented");
-                    continue;
-                }
-
-                parsingResult.checkConsistencyErrors(confLoggerId);
-
-                if (parsingResult.isFatalError()) {
-                    owner.writeError(parsingResult.getErrorMessage());
-                } else {
+                if (checkParsingResult(parsingResult)) {
                     int scanpointOrder = parsingResult.getScanpointOrderNumber();
                     if (scanpointOrder == currentScanPoint.getScanPointOrder()) {
                         if (parsingResult.isWrongRecordDateTime()) {
@@ -104,6 +72,24 @@ public class LoggerReplyParser {
             result.setRegexpMatches(false);
         }
         return result;
+    }
+
+    private boolean checkParsingResult(LogStringParsingResult parsingResult) {
+        if (parsingResult.isRegexpMatches()) {
+            if (parsingResult.isCrcFailed()) {
+                owner.writeError("ERROR bad CRC");
+                return false;
+            }
+            parsingResult.checkConsistencyErrors(confLoggerId);
+            if (parsingResult.isFatalError()) {
+                owner.writeError(parsingResult.getErrorMessage());
+                return false;
+            }
+            // return true only if regexp matches and there were no errors
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private boolean checkCRC(String replyString, int crcToCompare) {
