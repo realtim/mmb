@@ -88,6 +88,7 @@ public class LoggerReplyParser {
             // return true only if regexp matches and there were no errors
             return true;
         } else {
+            owner.writeError("ERROR regexp not matches");
             return false;
         }
     }
