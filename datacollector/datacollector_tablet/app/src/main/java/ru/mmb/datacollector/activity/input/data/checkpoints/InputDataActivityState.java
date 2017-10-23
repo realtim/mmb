@@ -25,6 +25,8 @@ import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_CHECKPOI
 import static ru.mmb.datacollector.activity.Constants.KEY_CURRENT_INPUT_LOGGER_DATA_EXISTS;
 
 public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
+    private static final boolean IS_OKP = true;
+
     private CheckedState checkedState = new CheckedState();
     private DateRecord inputDate = new DateRecord();
     private boolean loggerDataExists = false;
@@ -157,6 +159,9 @@ public class InputDataActivityState extends ActivityStateWithTeamAndScanPoint {
                     SQLiteDatabaseAdapter.getConnectedInstance().getExistingTeamResultRecord(getCurrentScanPoint(), getCurrentTeam());
             if (previousRecord != null) {
                 checkedState.loadTakenCheckpoints(previousRecord.getCheckedMap());
+            } else {
+                // if initial record creation, then set all OKP checked
+                checkedState.checkAll(IS_OKP);
             }
             if (!isCommonStart()) {
                 RawLoggerData rawLoggerData =
