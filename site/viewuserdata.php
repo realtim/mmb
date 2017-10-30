@@ -290,8 +290,17 @@ if (!isset($MyPHPScript)) return;
 	// Функция добавления впечатдения
 	function AddLink()
 	{ 
-		document.UserLinksForm.action.value = "AddLink";
-		document.UserLinksForm.submit();
+		if (document.UserLinksForm.NewLinkUrl.value.startsWith('http://')
+		    || document.UserLinksForm.NewLinkUrl.value.startsWith('https://'))
+		    || document.UserLinksForm.LinkTypeId.value === "6"
+		{
+			document.UserLinksForm.action.value = "AddLink";
+			document.UserLinksForm.submit();
+		}
+		else
+		{
+			alert("Поле 'Адрес ссылки' должно содержать адрес, например http://your-site.com/mmb.html");
+		}
 	}
 
 	// Функция добавления впечатдения
