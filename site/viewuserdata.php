@@ -289,13 +289,14 @@ if (!isset($MyPHPScript)) return;
 
 	// Функция добавления впечатдения
 	function AddLink()
-	{ 
-		if (document.UserLinksForm.NewLinkUrl.value.startsWith('http://')
-		    || document.UserLinksForm.NewLinkUrl.value.startsWith('https://'))
-		    || document.UserLinksForm.LinkTypeId.value === "6"
+	{
+		var linksForm = document.UserLinksForm;
+		if (linksForm.NewLinkUrl.value.startsWith('http://')
+		    || linksForm.NewLinkUrl.value.startsWith('https://')
+		    || linksForm.LinkTypeId.value === "6")
 		{
-			document.UserLinksForm.action.value = "AddLink";
-			document.UserLinksForm.submit();
+			linksForm.action.value = "AddLink";
+			linksForm.submit();
 		}
 		else
 		{
