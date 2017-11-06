@@ -939,10 +939,18 @@ elseif ($action == 'JsonExport')
 			where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 
 		$Result = MySqlQuery($Sql);
-		while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
+	
+		$firstRow = true;
+		while (($Row = mysql_fetch_assoc($Result))) 
 		{ 
-			fwrite($output, json_encode($Row).",");
+    		  if (firstRow) {
+        	    $firstRow = false;
+    		  } else {
+	            fwrite($output, ",");   
+    		  }
+    		  fwrite($output, json_encode($Row));
 		}
+
 		fwrite($output, ']}');
 		mysql_free_result($Result);
  		fclose($output);
