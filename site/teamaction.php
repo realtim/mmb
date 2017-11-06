@@ -857,7 +857,7 @@ elseif ($action == 'JsonExport')
 	// Добавил ограничение - только по текущему ММБ
 	$Sql = "select u.user_id, CASE WHEN COALESCE(u.user_noshow, 0) = 1 THEN '$Anonimus' ELSE u.user_name END as user_name,
 	               u.user_birthyear, u.user_city, u.user_minraidid, u.user_maxraidid,
-		       u.user_maxnotstartraidid, u.user_r6, u.user_noinvitation 
+		       u.user_maxnotstartraidid, u.user_r6, u.user_noinvitation, u.user_sex 
 	        from Users u
 			     inner join TeamUsers tu on u.user_id = tu.user_id
 		    	 inner join Teams t on tu.team_id = t.team_id
