@@ -904,7 +904,7 @@ class CMmbAuth {
              			inner join Distances d
              			on t.distance_id = d.distance_id
 				inner join Invitations inv
-				on inv.user_id = inv.user_id
+				on u.user_id = inv.user_id
 				inner join InvitationDeliveries invd
 				on inv.invitationdelivery_id = invd.invitationdelivery_id
 				   and invd.raid_id = d.raid_id
