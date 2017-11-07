@@ -943,7 +943,7 @@ elseif ($action == 'JsonExport')
 		$firstRow = true;
 		while (($Row = mysql_fetch_assoc($Result))) 
 		{ 
-    		  if (firstRow) {
+    		  if ($firstRow) {
         	    $firstRow = false;
     		  } else {
 	            fwrite($output, ",");   
