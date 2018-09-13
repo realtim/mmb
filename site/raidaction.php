@@ -1055,6 +1055,40 @@ elseif ($action == 'HideLevelPoint')
 		return;
 	}
 	
+	
+	$sql = "select  count(*) as lpcount
+	      from LevelPointDiscounts
+	      where levelpoint_id = $pLevelPointId
+	      	and levelpointdiscount_hide = 0";
+	
+	if (CSql::singleValue($sql, 'lpcount') > 0)
+	{
+		raidError('Есть группы амнистии, которые ссылаются на эту контрольную точку.');
+		return;
+	}
+
+	$sql = "select  count(*) as lpcount
+	      from TeamLevelPoints
+	      where levelpoint_id = $pLevelPointId";
+	
+	if (CSql::singleValue($sql, 'lpcount') > 0)
+	{
+		raidError('Есть данные о прохождении команд, которые ссылаются на эту контрольную точку.');
+		return;
+	}
+	
+	$sql = "select  count(*) as lpcount
+	      from TeamLevelDismiss
+	      where levelpoint_id = $pLevelPointId";
+	
+	if (CSql::singleValue($sql, 'lpcount') > 0)
+	{
+		raidError('Есть данные о сходах участников команд, которые ссылаются на эту контрольную точку. ');
+		return;
+	}
+
+
+	
 	$sql = "select  distance_id, levelpoint_order
 	      from LevelPoints
 	      where levelpoint_id = $pLevelPointId";
@@ -1074,8 +1108,10 @@ elseif ($action == 'HideLevelPoint')
 	 MySqlQuery($sql);
 
 		// сдвигаем все точки с большими порядоквыми номерами, чем текущая
+	// с условием, что точка удалена (предыдущим запросом) - не сработало ограничение целостности
         $sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
-	        where levelpoint_order > $LevelOrder and distance_id = $DistanceId";
+	        where levelpoint_order > $LevelOrder and distance_id = $DistanceId
+			and not exists(select * from LevelPoints where levelpoint_id = $pLevelPointId)";
 			
 	 MySqlQuery($sql);
 
@@ -1117,15 +1153,18 @@ elseif ($action == 'LevelPointOrderDown')
 	$LevelOrder = $Row['levelpoint_order'];
 
 
-	$sql = "select  levelpoint_id
+	$sql = "select  levelpoint_id, levelpoint_order
 	      from LevelPoints
 	      where levelpoint_order < $LevelOrder
 	            and distance_id = $DistanceId
 		    and levelpoint_hide = 0
 	     order by levelpoint_order desc
 	     LIMIT 0,1";
-	 
-	$MaxLevelPointId = (int)CSql::singleValue($sql, 'levelpoint_id');
+	
+	$Row = CSql::singleRow($sql);
+	$MaxLevelPointId = $Row['levelpoint_id'];
+	$MaxLevelOrder = $Row['levelpoint_order'];
+
         if ($MaxLevelPointId == 0)
 	{
 		raidError('Нельзя уменьшить порядковый номер.');
@@ -1133,14 +1172,19 @@ elseif ($action == 'LevelPointOrderDown')
 	}
        
               
-        $sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
+        $sql = "update LevelPoints set levelpoint_order = 0
 	        where levelpoint_id = $pLevelPointId";
 			
 	 MySqlQuery($sql);
 
 
-        $sql = "update LevelPoints set levelpoint_order = levelpoint_order + 1
+        $sql = "update LevelPoints set levelpoint_order = $MaxLevelOrder + 1
 	        where levelpoint_id = $MaxLevelPointId";
+			
+	 MySqlQuery($sql);
+
+	$sql = "update LevelPoints set levelpoint_order = $MaxLevelOrder
+	        where levelpoint_id = $pLevelPointId";
 			
 	 MySqlQuery($sql);
 
@@ -1180,7 +1224,7 @@ elseif ($action == 'LevelPointOrderUp')
 	$LevelOrder = $Row['levelpoint_order'];
 
 
-	$sql = "select  levelpoint_id
+	$sql = "select  levelpoint_id, levelpoint_order
 	      from LevelPoints
 	      where levelpoint_order > $LevelOrder
 	            and distance_id = $DistanceId
@@ -1188,24 +1232,33 @@ elseif ($action == 'LevelPointOrderUp')
 	     order by levelpoint_order asc
 	     LIMIT 0,1";
 
-	$MinLevelPointId = (int)CSql::singleValue($sql, 'levelpoint_id');
-        if ($MinLevelPointId == 0)
+	$Row = CSql::singleRow($sql);
+	$MinLevelPointId = $Row['levelpoint_id'];
+	$MinLevelOrder = $Row['levelpoint_order'];
+
+	if ($MinLevelPointId == 0)
 	{
 		raidError('Нельзя увеличить порядковый номер.');
 		return;
 	}
        
-        $sql = "update LevelPoints set levelpoint_order = levelpoint_order + 1
+        $sql = "update LevelPoints set levelpoint_order = 0
 	        where levelpoint_id = $pLevelPointId";
 			
 	 MySqlQuery($sql);
 
 
-        $sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
+        $sql = "update LevelPoints set levelpoint_order = $MinLevelOrder - 1
 	        where levelpoint_id = $MinLevelPointId";
 			
 	 MySqlQuery($sql);
-	 
+	
+        $sql = "update LevelPoints set levelpoint_order = $MinLevelOrder
+	        where levelpoint_id = $pLevelPointId";
+			
+	 MySqlQuery($sql);
+
+	
 	 $statustext = CheckLevelPoints($DistanceId);
 	 if (!empty($error))
 	 {
