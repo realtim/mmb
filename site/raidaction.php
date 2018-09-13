@@ -1063,7 +1063,7 @@ elseif ($action == 'HideLevelPoint')
 	
 	if (CSql::singleValue($sql, 'lpcount') > 0)
 	{
-		raidError('Есть группы амнистии, которые ссылаются на эту контрольную точку.');
+		raidError('Есть группы амнистии, которые привзаны к этой контрольной точке.');
 		return;
 	}
 
@@ -1098,6 +1098,21 @@ elseif ($action == 'HideLevelPoint')
 	$LevelOrder = $Row['levelpoint_order'];
 
 
+	$sql = "select  count(*) as lpcount
+	      from LevelPointDiscounts
+	      where distance_id = $DistanceId
+	      	and  levelpointdiscount_start <= $LevelOrder
+		and  levelpointdiscount_finish >= $LevelOrder
+	      	and levelpointdiscount_hide = 0";
+	
+	if (CSql::singleValue($sql, 'lpcount') > 0)
+	{
+		raidError('Есть группы амнистии, которые содержат эту контрольную точку.');
+		return;
+	}
+
+	
+	
         //  19.06.2015 ПРобуем удалить точку физически
 
         $sql = "delete from LevelPoints where levelpoint_id = $pLevelPointId";
