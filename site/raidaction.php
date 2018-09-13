@@ -1107,14 +1107,24 @@ elseif ($action == 'HideLevelPoint')
 			
 	 MySqlQuery($sql);
 
+	$sql = "select  count(*) as lpcount
+	      from LevelPoints
+	      where levelpoint_id = $pLevelPointId";
+	
+	if (CSql::singleValue($sql, 'lpcount') > 0)
+	{
+		raidError('Контрольная точка не удалена. ');
+		return;
+	} else {
 		// сдвигаем все точки с большими порядоквыми номерами, чем текущая
-	// с условием, что точка удалена (предыдущим запросом) - не сработало ограничение целостности
-        $sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
-	        where levelpoint_order > $LevelOrder and distance_id = $DistanceId
-			and not exists(select * from LevelPoints where levelpoint_id = $pLevelPointId)";
+		// с условием, что точка удалена (предыдущим запросом) - не сработало ограничение целостности
+        	$sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
+	        	where levelpoint_order > $LevelOrder and distance_id = $DistanceId";
 			
-	 MySqlQuery($sql);
-
+	 	MySqlQuery($sql);
+	}
+	// конец проверки, что точка действительно удалилиась			
+		
 
 	 $statustext = CheckLevelPoints($DistanceId);
 	 if (!empty($error))
