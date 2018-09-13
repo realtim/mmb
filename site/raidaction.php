@@ -1119,8 +1119,9 @@ elseif ($action == 'HideLevelPoint')
 		// сдвигаем все точки с большими порядоквыми номерами, чем текущая
 		// с условием, что точка удалена (предыдущим запросом) - не сработало ограничение целостности
         	$sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
-	        	where levelpoint_order > $LevelOrder and distance_id = $DistanceId";
-		print $sql;	
+	        	where levelpoint_order > $LevelOrder and distance_id = $DistanceId
+			order by levelpoint_order asc ";
+		//print $sql;	
 	 	MySqlQuery($sql);
 	}
 	// конец проверки, что точка действительно удалилиась			
