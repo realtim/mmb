@@ -438,7 +438,7 @@ if (!isset($MyPHPScript)) return;
             // Отправляем письмо
             SendMail(trim($UserEmail), $Msg, $UserName);
 
-            CMmb::setShortResult("Пароль $NewPassword выслан.", 'MainPage');
+            CMmb::setShortResult("Пароль выслан.", 'MainPage');
 
             // и вот тут м.б. стоит активировать сессию, чтобы автоматом войти на сайт
             $SessionId = StartSession($UserId);
