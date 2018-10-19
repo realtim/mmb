@@ -384,7 +384,7 @@ if (!$DisabledDistance) {
 	{
 		$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
 		print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
-	}3e4
+	}
 	mysql_free_result($Result);
 	print('</select>'."\n");
 
