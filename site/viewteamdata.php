@@ -181,7 +181,9 @@ $RaidRulesLink = CSql::raidFileLink($RaidId, 1, false);
 	function ValidateTeamDataForm()
 	{
 		document.TeamDataForm.action.value = "<? echo $NextActionName; ?>";
-		return true;
+		document.TeamDataForm.submit();
+
+		//return true;
 	}
 
 	// Удалить команду
@@ -252,7 +254,7 @@ $RaidRulesLink = CSql::raidFileLink($RaidId, 1, false);
 
 <?php
 // Выводим начало формы с командой
-print('<form name="TeamDataForm" action="'.$MyPHPScript.'?RaidId='.$RaidId.'#'.$TeamNum.'" method="post" onSubmit="'.$OnSubmitFunction.'">'."\n");
+print('<form name="TeamDataForm" action="'.$MyPHPScript.'?RaidId='.$RaidId.'#'.$TeamNum.'" method="post">'."\n");
 print('<input type="hidden" name="action" value="">'."\n");
 print('<input type="hidden" name="TeamId" value="'.$TeamId.'">'."\n");
 print('<input type="hidden" name="RaidId" value="'.$RaidId.'">'."\n");
@@ -382,7 +384,7 @@ if (!$DisabledDistance) {
 	{
 		$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
 		print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
-	}
+	}3e4
 	mysql_free_result($Result);
 	print('</select>'."\n");
 
@@ -616,7 +618,7 @@ if (($viewmode == "Add") && ($AllowEdit == 1) )
 if ($AllowEdit == 1)
 {
 	print('<tr><td class="input" style="padding-top: 10px;">'."\n");
-	print('<input type="button" onClick="javascript: if (ValidateTeamDataForm()) submit();" name="RegisterButton" value="'.$SaveButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
+	print('<input type="button" onClick="javascript: ValidateTeamDataForm();" name="RegisterButton" value="'.$SaveButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
 	print('<select name="view" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
 	if ($viewmode == 'Add')
 	{
