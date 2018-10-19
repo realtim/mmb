@@ -418,7 +418,7 @@ if (!isset($MyPHPScript)) return;
         }
 
 
-        $sql = "select user_id, user_email, user_name from  Users where user_sessionfornewpassword = $changepasswordsessionid";
+        $sql = "select user_id, user_email, user_name from  Users where user_sessionfornewpassword = '$changepasswordsessionid'";
         //  echo $sql;
         $Row = CSql::singleRow($sql);
         $UserId = $Row['user_id'];
