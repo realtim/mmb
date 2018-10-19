@@ -411,12 +411,14 @@ if (!isset($MyPHPScript)) return;
 
         $changepasswordsessionid = mmb_validate($_REQUEST, 'changepasswordsessionid', '');
         if (empty($changepasswordsessionid)){
+            CMmb::setShortResult("Пустой идентификатор запроса пароля.", 'MainPage');
+
             $action = "";
             return;
         }
 
 
-        $sql = "select user_id, user_email, user_name from  Users where user_sessionfornewpassword = trim('$changepasswordsessionid')";
+        $sql = "select user_id, user_email, user_name from  Users where user_sessionfornewpassword = $changepasswordsessionid";
         //  echo $sql;
         $Row = CSql::singleRow($sql);
         $UserId = $Row['user_id'];
@@ -440,7 +442,11 @@ if (!isset($MyPHPScript)) return;
 
             // и вот тут м.б. стоит активировать сессию, чтобы автоматом войти на сайт
             $SessionId = StartSession($UserId);
-        }
+        } else {
+            
+           CMmb::setShortResult("Не найден пользователья для идентификатора $changepasswordsessionid ", 'MainPage');
+            
+        }    
 
         $changepasswordsessionid = "";
         $action = "";
