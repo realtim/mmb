@@ -1046,7 +1046,7 @@ elseif ($action == 'JsonExport')
 		$Sql = "select teamunionlog_id,  teamunionlog_hide
                         from TeamUnionLogs
 		        where team_id = $TeamId
-			      and union_status = 1
+			      and (union_status = 1 or union_status = 3)
 		        LIMIT 0,1 "  ;
 
 		$Row = CSql::singleRow($Sql);
@@ -1068,12 +1068,13 @@ elseif ($action == 'JsonExport')
 			 
 			 if ($TeamUnionLogHide == 0)
 			 {
-			    $TeamAdd = 0;
+			
+			  $TeamAdd = 0;
 			 
 			 } else {
 			   
 			  // Есть и команда скрыта -  обновляем
- 		          $Sql = "update TeamUnionLogs set teamunionlog_hide = 0, teamunionlog_dt = now()  where teamunionlog_id = $TeamUnionLogId";
+ 		          $Sql = "update TeamUnionLogs set teamunionlog_hide = 0, teamunionlog_dt = now(), union_status = 1  where teamunionlog_id = $TeamUnionLogId";
 			  MySqlQuery($Sql);  
 			  
    		          $TeamAdd = 1;
@@ -1177,6 +1178,27 @@ elseif ($action == "ClearUnionTeams")  {
 	$Result = MySqlQuery($sql);
 	CMmb::setResult('Объединение очищено', 'ViewAdminUnionPage');
 }
+elseif ($action == "ClearUnionTransaction")  {
+    // Действие вызывается нажатием кнопки "Сбросить транзакцию" на странице со списокм команд в объединении
+
+
+	// Права 
+        if (!$Administrator and !$Moderator)
+        {
+		CMmb::setErrorMessage('Нет прав на объединение');
+	      return;
+	} 
+
+    
+	$sql = "update TeamUnionLogs
+                SET union_status = 0, teamunionlog_hide = 1
+		where union_status = 3
+	      "; 
+		//echo 'sql '.$sql;
+		
+	$Result = MySqlQuery($sql);
+	CMmb::setResult('Транзакция по объединению сброшена', 'ViewAdminUnionPage');
+}
 elseif ($action == "UnionTeams")  {
     // Действие вызывается нажатием кнопки "Объединить" 
     
@@ -1238,11 +1260,11 @@ elseif ($action == "UnionTeams")  {
 
     if ($Row['teamcount'] < 2)
     {
-	    setUnionError('Объединить можно две команды или больше');
+	    setUnionError('Меньше двух команд в объедиении или не закончилось предыдущее');
         return;
     }
     
-
+    $teamCount = $Row['teamcount'];
     $pDistanceId = $Row['maxdistanceid'];
     $pTeamMapsCount  = $Row['mapscount'];
         // Проверяем одинаковое число взятых КП
@@ -1255,7 +1277,7 @@ elseif ($action == "UnionTeams")  {
 			where tul.teamunionlog_hide = 0 
                   and tul.union_status = 1
            group by tlp.levelpoint_id
-			having count(*) <> 2 ";
+			having count(*) <> $teamCount ";
     
 	if (CSql::rowCount($sql) > 0)
 	{
@@ -1292,8 +1314,23 @@ elseif ($action == "UnionTeams")  {
         $pTeamUseGPS = $Row['team_usegps'];
         $pTeamGreenPeace = $Row['team_greenpeace'];
 	
+	
+	// Проверяем, что нет начатой транзакции
+	$sql = "select tul.team_id
+	        from  TeamUnionLogs tul
+	        where tul.union_status = 3
+                ";
+    
+	if (CSql::rowCount($sql) > 0)
+	{
+		setUnionError('Есть незаконченное активное объединение.');
+	       return;
+	}
+
+
 
 	// Приступаем, собственно к объединению:
+	// переводим текущие команды в статус 3
 	// Создаём новую команду и ставим ей признак скрытая
 	// GPS по принципу ИЛИ, greenpeace по принципу И, число карт - суммируем
 	// Добавляем всех участников
@@ -1301,7 +1338,19 @@ elseif ($action == "UnionTeams")  {
         // Проставляем новую команду в поле parent_id 
 	// Открываем новую команду
 	// Скрываем старые команды
+	// Ставим статус в журнале, что команды объединены
     
+		// Удаляем хвосты преыдущего объединения, если они есть (статус 3)	
+	//	$sql = " update TeamUnionLogs set union_status = 0, teamunionlog_hide = 1
+	//		 where union_status = 3 ";
+	//	MySqlQuery($sql);
+
+		// переводим текущие команды в статус 3
+		$sql = " update TeamUnionLogs set union_status = 3
+			 where teamunionlog_hide = 0 
+                               and union_status = 1 ";
+		MySqlQuery($sql);
+  
 
 		$sql = "insert into Teams (team_num, team_name, team_usegps, team_mapscount, distance_id,
 			team_registerdt, team_greenpeace, team_hide, team_outofrange)
@@ -1336,8 +1385,7 @@ elseif ($action == "UnionTeams")  {
 			      on t.team_id = tul.team_id
 			      inner join TeamUsers tu
 			      on tu.team_id = t.team_id
-			where tul.teamunionlog_hide = 0 
-	                      and tul.union_status = 1
+			where tul.union_status = 3
 	                      and tu.teamuser_hide = 0 ";
 			 
 // Правильнее написать ХП, которая делает это
@@ -1366,8 +1414,7 @@ elseif ($action == "UnionTeams")  {
 			       on t.team_id = tlp.team_id 
 			       inner join LevelPoints lp
 			       on tlp.levelpoint_id = lp.levelpoint_id
-			 where tul.teamunionlog_hide = 0 
-                               and tul.union_status = 1
+			 where tul.union_status = 3
               group by tlp.levelpoint_id ";
   
 		MySqlQuery($sql);
@@ -1386,18 +1433,13 @@ elseif ($action == "UnionTeams")  {
 			         and tu2.user_id = tu.user_id
 			      inner join TeamLevelDismiss tld
 			      on tld.teamuser_id = tu.teamuser_id
-			where tul.teamunionlog_hide = 0 
-	                      and tul.union_status = 1
+			where tul.union_status = 3
 	                      and tu.teamuser_hide = 0 ";
 			 
 		MySqlQuery($sql);
 
-
-
-
 		$sql = " update TeamUnionLogs set team_parentid = $TeamId
-			 where teamunionlog_hide = 0 
-                               and union_status = 1 ";
+			 where union_status = 3 ";
 
 		MySqlQuery($sql);
   
@@ -1445,8 +1487,8 @@ elseif ($action == "UnionTeams")  {
 
 	 
 		$sql = " update TeamUnionLogs set union_status = 2
-			 where union_status = 1
-			       and teamunionlog_hide = 0 ";
+			 where union_status = 3
+			 ";
 		 
 		MySqlQuery($sql);
 
