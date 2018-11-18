@@ -50,6 +50,14 @@ if (!isset($MyPHPScript)) return;
 		document.UnionTeamsForm.submit();
 	}
 
+	// Функция очистки активной транзакции
+	function ClearUnionTransaction()
+	{
+		document.UnionTeamsForm.action.value = "ClearUnionTransaction";
+		document.UnionTeamsForm.submit();
+	}
+
+	
 	// Функция отмены текущего объединения
 	function TryCancelTeamUnion(parentteamid)
 	{
@@ -138,6 +146,7 @@ if (!isset($MyPHPScript)) return;
 			print('<div style="margin-top: 5px;">'."\n");
 				print('<input type="button" onClick="javascript: if (ValidateUnionTeamsForm()) submit();" name="UnionButton" value="'.$UnionButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
 				print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите убрать все команды из текущего объединения? \')) {ClearUnionTeams();}" name="CancelButton" value="Очистить объединение" tabindex="'.(++$TabIndex).'">'."\n");
+				print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите сросить активную транзакцию по текущему объединению? \')) {ClearUnionTransaction();}" name="ClearUnionTransactionButton" value="Сбросить активную транзакцию" tabindex="'.(++$TabIndex).'">'."\n");
 			print("</div>\n");
 
 
