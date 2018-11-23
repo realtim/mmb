@@ -118,6 +118,7 @@ function SendDistance(PDO $pdo, $raid_id)
     $points = array();
     $raid_start = -1;
     $prev_start = -1;
+    $max_order = -1;
     $sql = $pdo->prepare("SELECT levelpoint_order, levelpoint_name, pointtype_id, levelpoint_penalty, UNIX_TIMESTAMP(levelpoint_mindatetime) AS mintime, UNIX_TIMESTAMP(levelpoint_maxdatetime) AS maxtime FROM LevelPoints WHERE distance_id = :distance_id AND levelpoint_hide = 0 ORDER BY levelpoint_order ASC");
     $sql ->bindParam("distance_id", $distance_id, PDO::PARAM_INT);
     $sql->execute();
@@ -130,6 +131,8 @@ function SendDistance(PDO $pdo, $raid_id)
             $raid_start = $row["mintime"];
         }
         if (!$row["mintime"]) $row["mintime"] = $prev_start; else $prev_start = $row["mintime"];
+        if ($row["levelpoint_order"] <= 0) die("Некорректный номер точки " . $row["levelpoint_order"]);
+        if ($row["levelpoint_order"] > $max_order) $max_order = $row["levelpoint_order"];
         $row["levelpoint_name"] = trim(strtr($row["levelpoint_name"], "\t\n", "  "));
         $points["p" . $row["levelpoint_order"]] = array("name" => $row["levelpoint_name"], "type" => intval($row["pointtype_id"]), "penalty" => intval($row["levelpoint_penalty"]), "start" => intval($row["mintime"]), "end" => intval($row["maxtime"]));
     }
@@ -163,12 +166,15 @@ function SendDistance(PDO $pdo, $raid_id)
 
     // Получаем список неудаленных команд
     $teams = array();
+    $max_number = -1;
     $sql = $pdo->prepare("SELECT team_num, team_name, team_mapscount FROM Teams WHERE distance_id = :distance_id AND team_hide = 0 ORDER BY team_num ASC");
     $sql ->bindParam("distance_id", $distance_id, PDO::PARAM_INT);
     $sql->execute();
     $result = $sql->fetchAll(PDO::FETCH_ASSOC);
     foreach ($result as $row) {
+        if ($row["team_num"] <= 0) die("Некорректный номер команды " . $row["team_num"]);
         if (isset($teams["t" . $row["team_num"]])) die("Дублирующийся номер команды " . $row["team_num"]);
+        if ($row["team_num"] > $max_number) $max_number = $row["team_num"];
         $row["team_name"] = trim(strtr($row["team_name"], "\t\n", "  "));
         $teams["t" . $row["team_num"]] = array("name" => $row["team_name"], "maps" => intval($row["team_mapscount"]), "members" => 0);
     }
@@ -199,15 +205,15 @@ function SendDistance(PDO $pdo, $raid_id)
     // Все данные извлечены успешно, отправляем их
     echo "\n";
     echo "R\t$raid_id\t$db_ready_date\t$raid_end\t$raid_name\n";
-    echo "P\t", count($points), "\n";
+    echo "P\t", count($points), "\t$max_order\n";
     foreach ($points as $n => $point)
         echo "\t", substr($n, 1), "\t", $point["type"], "\t", $point["penalty"], "\t", $point["start"], "\t", $point["end"], "\t", $point["name"], "\n";
     echo "D\t", count($discounts), "\n";
     foreach ($discounts as $discount)
         echo "\t", $discount["value"], "\t", $discount["start"], "\t", $discount["end"], "\n";
-    echo "T\t", count($teams), "\n";
+    echo "T\t", count($teams), "\t$max_number\n";
     foreach ($teams as $n => $team)
-        echo "\t", substr($n, 1), "\t", $team["maps"], "\t", $team["name"], "\n";
+        echo "\t", substr($n, 1), "\t", $team["members"], "\t", $team["maps"], "\t", $team["name"], "\n";
     echo "M\t", count($members), "\n";
     foreach ($members as $n => $member)
         echo "\t", substr($n, 1), "\t", $member["team"], "\t", $member["name"], "\t", $member["phone"], "\n";
