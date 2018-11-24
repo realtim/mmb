@@ -1,0 +1,40 @@
+<resources>
+
+    <!-- Base application theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/bg_primary</item>
+        <item name="colorPrimaryDark">@color/bg_primary_dark</item>
+        <item name="colorAccent">@color/bg_secondary</item>
+        <item name="colorControlHighlight">@color/bg_primary_light</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColor">@color/text_secondary</item>
+
+        <item name="toolbarNavigationButtonStyle">@style/AppTheme.MenuIcon</item>
+        <item name="navigationIcon">@drawable/ic_menu</item>
+
+        <item name="android:buttonStyle">@style/AppTheme.Button</item>
+        <item name="colorButtonNormal">?colorPrimary</item>
+
+    </style>
+
+    <style name="AppTheme.MenuIcon" parent="Widget.AppCompat.Toolbar.Button.Navigation">
+        <item name="tint">?android:textColorPrimary</item>
+    </style>
+
+    <style name="AppTheme.NavigationHeader" parent="AppTheme">
+        <item name="android:background">?colorPrimary</item>
+        <item name="android:textColor">?android:textColorPrimaryInverse</item>
+        <item name="android:tint">?android:textColorPrimaryInverse</item>
+    </style>
+
+    <style name="AppTheme.Button" parent="Widget.AppCompat.Button">
+        <item name="android:textColor">?android:textColorPrimaryInverse</item>
+    </style>
+
+    <style name="Divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/text_secondary</item>
+    </style>
+
+</resources>

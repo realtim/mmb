@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:tint="?android:textColorPrimary">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/database"
+            android:icon="@drawable/ic_cloud_download"
+            android:title="@string/mode_cloud_download" />
+        <item
+            android:id="@+id/bluetooth"
+            android:icon="@drawable/ic_bluetooth"
+            android:title="@string/mode_bluetooth_select" />
+        <item
+            android:id="@+id/chip_init"
+            android:icon="@drawable/ic_chip_init"
+            android:title="@string/mode_chip_init" />
+        <item
+            android:id="@+id/active_point"
+            android:icon="@drawable/ic_active_point"
+            android:title="@string/mode_active_point" />
+        <item
+            android:id="@+id/team_list"
+            android:icon="@drawable/ic_team_list"
+            android:title="@string/mode_team_list" />
+    </group>
+
+</menu>

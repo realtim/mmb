@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<resources>
+    <string name="err_db_cant_create_dir">Can\'t create database directory </string>
+    <string name="err_db_is_null">Failed to connect to database</string>
+    <string name="err_db_empty_email">Email can not be empty</string>
+    <string name="err_db_bad_email">Bad Email format</string>
+    <string name="err_db_empty_password">Password can not be empty</string>
+    <string name="err_db_download_waiting">Previous request has not completed yet</string>
+    <string name="err_db_download_failed">Data download failed: </string>
+    <string name="err_db_reading_response">I/O error while reading server response</string>
+    <string name="err_db_bad_response">Error in response format</string>
+    <string name="err_db_saving">Error saving to local database</string>
+
+    <string name="err_bt_absent">Device does not support Bluetooth</string>
+    <string name="err_bt_forbidden">Application should be allowed to use Bluetooth</string>
+    <string name="err_bt_cant_connect">Connection attempt failed</string>
+    <string name="err_bt_internal_error">Communication internal error</string>
+    <string name="err_bt_send_failed">Sending data to station failed</string>
+    <string name="err_bt_receive_timeout">Station communication timeout</string>
+    <string name="err_bt_receive_bad_response">Incorrect station response</string>
+    <string name="err_bt_receive_command_failed">Station command execution failed</string>
+    <string name="err_bt_response_wrong_length">Station response has wrong length</string>
+</resources>

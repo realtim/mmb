@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<resources>
+    <string name="err_db_cant_create_dir">Для базы данных не удалось создать директорию </string>
+    <string name="err_db_is_null">Не удалось подключиться к базе данных</string>
+    <string name="err_db_empty_email">Email не может быть пустым</string>
+    <string name="err_db_bad_email">Некорректный Email</string>
+    <string name="err_db_empty_password">Пароль не может быть пустым</string>
+    <string name="err_db_download_waiting">Предыдущий запрос к сайту еще не завершен</string>
+    <string name="err_db_download_failed">Скачивание данных завершилось неуспешно: </string>
+    <string name="err_db_reading_response">Ошибка чтения при обработке ответа сервера</string>
+    <string name="err_db_bad_response">Некорректное содержимое в ответе сервера</string>
+    <string name="err_db_saving">Ошибка записи в локальную базу данных</string>
+
+    <string name="err_bt_absent">Устройство не поддерживает Bluetooth</string>
+    <string name="err_bt_forbidden">Приложению должно быть разрешено использование Bluetooth</string>
+    <string name="err_bt_cant_connect">Подключиться к станции не удалось</string>
+    <string name="err_bt_internal_error">Внутренняя ошибка взаимодействия со станцией</string>
+    <string name="err_bt_send_failed">Ошибка отправки запроса к станции</string>
+    <string name="err_bt_receive_timeout">Станция не отвечает</string>
+    <string name="err_bt_receive_bad_response">Некорректный ответ станции</string>
+    <string name="err_bt_receive_command_failed">Ошибка выполнения команды станцией</string>
+    <string name="err_bt_response_wrong_length">Неправильная длина ответа станции</string>
+</resources>

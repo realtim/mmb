@@ -1,0 +1,1 @@
+Android app for managing and gathering data from Sportiduino Bluetooth stations.

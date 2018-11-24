@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<ruleset name="PMD rules"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0  https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>Custom ruleset</description>
+
+    <exclude-pattern>.*/R.java</exclude-pattern>
+    <exclude-pattern>.*/gen/.*</exclude-pattern>
+
+    <rule ref="category/java/bestpractices.xml"/>
+
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="OnlyOneReturn"/>
+        <exclude name="AtLeastOneConstructor"/>
+<!---->        <exclude name="CommentDefaultAccessModifier"/>
+<!---->        <exclude name="DefaultPackage"/>
+    </rule>
+    <rule ref="category/java/codestyle.xml/ControlStatementBraces">
+       <properties>
+            <property name="checkSingleIfStmt" value="false"/>
+        </properties>
+    </rule>
+
+    <rule ref="category/java/design.xml">
+<!---->        <exclude name="LawOfDemeter"/>
+    </rule>
+
+    <rule ref="category/java/errorprone.xml">
+<!---->        <exclude name="DataflowAnomalyAnalysis"/>
+<!---->        <exclude name="BeanMembersShouldSerialize"/>
+<!---->        <exclude name="AvoidLiteralsInIfCondition"/>
+    </rule>
+
+    <rule ref="category/java/multithreading.xml"/>
+
+    <rule ref="category/java/performance.xml">
+<!---->        <exclude name="AvoidInstantiatingObjectsInLoops" />
+    </rule>
+
+    <rule ref="category/java/security.xml"/>
+
+    <rule ref="category/java/documentation.xml"/>
+    <rule ref="category/java/documentation.xml/CommentSize">
+       <properties>
+            <property name="maxLines" value="12"/>
+        </properties>
+    </rule>
+
+</ruleset>
