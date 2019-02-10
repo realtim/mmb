@@ -15,6 +15,10 @@
         <item name="android:buttonStyle">@style/AppTheme.Button</item>
         <item name="colorButtonNormal">?colorPrimary</item>
 
+        <item name="android:spinnerItemStyle">@style/SpinnerItem</item>
+        <item name="android:spinnerDropDownItemStyle">@style/SpinnerDropDownItem</item>
+        <!-- Override the dropdown item in support library -->
+        <item name="spinnerDropDownItemStyle">@style/SpinnerDropDownItem</item>
     </style>
 
     <style name="AppTheme.MenuIcon" parent="Widget.AppCompat.Toolbar.Button.Navigation">
@@ -29,6 +33,18 @@
 
     <style name="AppTheme.Button" parent="Widget.AppCompat.Button">
         <item name="android:textColor">?android:textColorPrimaryInverse</item>
+    </style>
+
+    <style name="SpinnerItem" parent="@android:style/Widget.TextView.SpinnerItem">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body1</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="SpinnerDropDownItem" parent="Widget.AppCompat.DropDownItem.Spinner">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <style name="Divider">

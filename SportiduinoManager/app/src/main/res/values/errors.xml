@@ -21,4 +21,5 @@
     <string name="err_bt_receive_bad_response">Incorrect station response</string>
     <string name="err_bt_receive_command_failed">Station command execution failed</string>
     <string name="err_bt_response_wrong_length">Station response has wrong length</string>
+    <string name="err_bt_bad_point_number">Incorrect number of active point</string>
 </resources>

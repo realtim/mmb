@@ -6,7 +6,9 @@ import android.database.sqlite.SQLiteException;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import ru.mmb.sportiduinomanager.R;
@@ -363,6 +365,30 @@ public class Distance {
         calendar.setTimeInMillis(mTimeDownloaded * 1000);
         final DateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
         return format.format(calendar.getTime());
+    }
+
+    /**
+     * Get list of active points names.
+     *
+     * @return List of names
+     */
+    public List<String> getPointNames() {
+        final List<String> names = new ArrayList<>();
+        for (final Point point : mPoints) {
+            names.add(point.mName);
+        }
+        return names;
+    }
+
+    /**
+     * Get the point type.
+     *
+     * @param number Point number
+     * @return Point type
+     */
+    public int getPointType(final int number) {
+        if (number < 0 || number >= mPoints.length) return -1;
+        return mPoints[number].mType;
     }
 
     /**

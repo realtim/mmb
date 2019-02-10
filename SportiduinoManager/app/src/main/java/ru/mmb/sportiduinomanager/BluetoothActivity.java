@@ -15,6 +15,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
 
 /**
@@ -197,6 +200,15 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         } else {
             mBluetoothSearch = BT_SEARCH_OFF;
         }
+        // Get list of active points from db
+        final Distance distance = mMainApplication.getDistance();
+        final List<String> points = distance.getPointNames();
+        // Create list adapter for station mode spinner
+        final Spinner spinner = findViewById(R.id.station_spinner);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                R.layout.support_simple_spinner_dropdown_item, points);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
         // Update activity layout
         updateLayout();
     }
@@ -284,6 +296,60 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
     }
 
     /**
+     * Set new mode and number for the station.
+     *
+     * @param view View of button clicked
+     */
+    public void changeStationMode(final View view) {
+        // Get the station we work with
+        final Station station = mMainApplication.getStation();
+        if (station == null) return;
+        // Get new station number
+        final Spinner spinner = findViewById(R.id.station_spinner);
+        final byte newNumber = (byte) spinner.getSelectedItemPosition();
+        // Compute new station mode
+        byte newMode;
+        final Distance distance = mMainApplication.getDistance();
+        switch (distance.getPointType(newNumber)) {
+            case -1:
+                Toast.makeText(getApplicationContext(), R.string.err_bt_bad_point_number,
+                        Toast.LENGTH_LONG).show();
+                return;
+            case 0:
+                newMode = Station.STATION_MODE_INIT;
+                break;
+            case 2:
+                newMode = Station.STATION_MODE_FINISH;
+                break;
+            default:
+                newMode = Station.STATION_MODE_ORDINARY;
+                break;
+        }
+        // Do nothing if numbers are the same
+        final byte currentNumber = station.getNumber();
+        if (currentNumber == newNumber && newMode == station.getMode()) return;
+        // TODO: Check if some teams date from station was not downloaded and download it
+        // Reset station to change it's number
+        if (currentNumber != newNumber && !station.resetStation(newNumber)) {
+            Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
+            return;
+        }
+        // Set new station mode
+        if (!station.setMode(newMode)) {
+            Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
+            updateLayout();
+            return;
+        }
+        // Update station timer and response time for the last communication with station
+        ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
+                .getString(R.string.response_time, station.getResponseTime()));
+        ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
+                .getString(R.string.station_time_drift, station.getTimeDrift()));
+        // Update layout to see all results of our commands
+        updateLayout();
+    }
+
+    /**
      * Synchronize station clock with Android clock.
      *
      * @param view View of button clicked
@@ -344,24 +410,26 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         ((TextView) findViewById(R.id.station_bt_name)).setText(station.getName());
         ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
                 .getString(R.string.response_time, station.getResponseTime()));
-        int modeName;
         switch (station.getMode()) {
-            case 0:
-                modeName = R.string.station_mode_0;
+            case Station.STATION_MODE_INIT:
+                ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
+                        .getString(R.string.station_mode_0, station.getNumber()));
                 break;
-            case 1:
-                modeName = R.string.station_mode_1;
+            case Station.STATION_MODE_ORDINARY:
+                ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
+                        .getString(R.string.station_mode_1, station.getNumber()));
                 break;
-            case 2:
-                modeName = R.string.station_mode_2;
+            case Station.STATION_MODE_FINISH:
+                ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
+                        .getString(R.string.station_mode_2, station.getNumber()));
                 break;
             default:
-                modeName = R.string.station_mode_unknown;
+                ((TextView) findViewById(R.id.station_mode_value))
+                        .setText(R.string.station_mode_unknown);
                 break;
         }
-        ((TextView) findViewById(R.id.station_mode_value)).setText(modeName);
-        ((TextView) findViewById(R.id.station_number)).setText(getResources()
-                .getString(R.string.station_number, station.getNumber()));
+        final Spinner spinner = findViewById(R.id.station_spinner);
+        spinner.setSelection(station.getNumber());
         ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
                 .getString(R.string.station_time_drift, station.getTimeDrift()));
         ((TextView) findViewById(R.id.station_chips_registered_value))

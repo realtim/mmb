@@ -20,6 +20,24 @@ import ru.mmb.sportiduinomanager.R;
  */
 public class Station {
     /**
+     * Station mode for chips initialization.
+     */
+    public static final byte STATION_MODE_INIT = 0;
+    /**
+     * Station mode for ordinary active point.
+     */
+    public static final byte STATION_MODE_ORDINARY = 1;
+    /**
+     * Station mode for active point at segment finish.
+     */
+    public static final byte STATION_MODE_FINISH = 2;
+
+    /**
+     * Timeout (im ms) while waiting for station response.
+     */
+    private static final int WAIT_TIMEOUT = 50000;
+
+    /**
      * Result of sending command to station: everything is ok.
      */
     private static final byte COMMAND_OK = 0;
@@ -40,11 +58,6 @@ public class Station {
      * of command execution
      */
     private static final byte REC_COMMAND_ERROR = 4;
-
-    /**
-     * Timeout (im ms) while waiting for station response.
-     */
-    private static final int WAIT_TIMEOUT = 5000;
 
     /**
      * Default UUID of station Bluetooth socket.
@@ -422,6 +435,26 @@ public class Station {
     }
 
     /**
+     * Set station mode and number.
+     *
+     * @param mode New station mode (chip initialization, ordinary or finish point)
+     * @return True if we got valid response from station, check mLastError otherwise
+     */
+    public boolean setMode(final byte mode) {
+        byte[] commandData = new byte[4];
+        commandData[0] = (byte) 0x80;
+        commandData[1] = (byte) 0;  // TODO: change station bios to remove extra byte
+        commandData[2] = mode;
+        commandData[3] = mNumber;
+        // Send it to station
+        final byte[] response = new byte[4];
+        if (!command(commandData, response)) return false;
+        // Get current station clock drift
+        mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
+        return true;
+    }
+
+    /**
      * Set station clock to Android local time converted to UTC timezone.
      *
      * @return True if we got valid response from station, check mLastError otherwise
@@ -443,6 +476,30 @@ public class Station {
         final byte[] response = new byte[4];
         if (!command(commandData, response)) return false;
         // Get new station clock drift after time change
+        mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
+        return true;
+    }
+
+    /**
+     * Reset station by giving it new number and erasing all data in it.
+     *
+     * @param number New station number
+     * @return True if we got valid response from station, check mLastError otherwise
+     */
+    public boolean resetStation(final byte number) {
+        byte[] commandData = new byte[12];
+        commandData[0] = (byte) 0x82;
+        commandData[1] = (byte) 0;  // TODO: change station bios to remove extra byte
+        commandData[2] = number;
+        commandData[3] = mNumber;
+        int2byte_array(mChipsRegistered, commandData, 4);
+        int2byte_array(mLastChipTime, commandData, 8);
+        // Send it to station
+        final byte[] response = new byte[4];
+        if (!command(commandData, response)) return false;
+        // Update station number in class object
+        mNumber = number;
+        // Get current station clock drift
         mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
         return true;
     }
