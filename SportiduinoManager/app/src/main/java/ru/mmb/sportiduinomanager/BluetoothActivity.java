@@ -316,26 +316,26 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
                         Toast.LENGTH_LONG).show();
                 return;
             case 0:
-                newMode = Station.STATION_MODE_INIT;
+                newMode = Station.MODE_INIT_CHIPS;
                 break;
             case 2:
-                newMode = Station.STATION_MODE_FINISH;
+                newMode = Station.MODE_FINISH_POINT;
                 break;
             default:
-                newMode = Station.STATION_MODE_ORDINARY;
+                newMode = Station.MODE_OTHER_POINT;
                 break;
         }
         // Do nothing if numbers are the same
         final byte currentNumber = station.getNumber();
         if (currentNumber == newNumber && newMode == station.getMode()) return;
-        // TODO: Check if some teams date from station was not downloaded and download it
+        // TODO: Check if some teams data from station was not downloaded and download it
         // Reset station to change it's number
         if (currentNumber != newNumber && !station.resetStation(newNumber)) {
             Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
             return;
         }
         // Set new station mode
-        if (!station.setMode(newMode)) {
+        if (!station.newMode(newMode)) {
             Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
             updateLayout();
             return;
@@ -398,7 +398,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         // Show station status block
         final Station station = mMainApplication.getStation();
         // Station was not connected yet or failed to respond
-        if (station == null || !station.getStatus()) {
+        if (station == null || !station.fetchStatus()) {
             if (station != null) {
                 Toast.makeText(getApplicationContext(), station.getLastError(),
                         Toast.LENGTH_LONG).show();
@@ -411,15 +411,15 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
                 .getString(R.string.response_time, station.getResponseTime()));
         switch (station.getMode()) {
-            case Station.STATION_MODE_INIT:
+            case Station.MODE_INIT_CHIPS:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
                         .getString(R.string.station_mode_0, station.getNumber()));
                 break;
-            case Station.STATION_MODE_ORDINARY:
+            case Station.MODE_OTHER_POINT:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
                         .getString(R.string.station_mode_1, station.getNumber()));
                 break;
-            case Station.STATION_MODE_FINISH:
+            case Station.MODE_FINISH_POINT:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
                         .getString(R.string.station_mode_2, station.getNumber()));
                 break;

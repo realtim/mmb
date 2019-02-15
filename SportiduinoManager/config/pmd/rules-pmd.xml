@@ -25,6 +25,10 @@
 
     <rule ref="category/java/design.xml">
 <!---->        <exclude name="LawOfDemeter"/>
+<!---->        <exclude name="CyclomaticComplexity"/>
+<!---->        <exclude name="LoosePackageCoupling"/>
+<!---->        <exclude name="NcssCount"/>
+<!---->        <exclude name="NPathComplexity"/>
     </rule>
 
     <rule ref="category/java/errorprone.xml">

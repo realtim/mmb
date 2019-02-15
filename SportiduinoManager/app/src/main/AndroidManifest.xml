@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ru.mmb.sportiduinomanager"
-    android:versionCode="00002"
-    android:versionName="0.0.002"
+    android:versionCode="00003"
+    android:versionName="0.0.003"
     >
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -27,5 +27,6 @@
         </activity>
         <activity android:name=".DatabaseActivity" />
         <activity android:name=".BluetoothActivity" />
+        <activity android:name=".ChipInitActivity" />
     </application>
 </manifest>

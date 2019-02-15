@@ -22,4 +22,7 @@
     <string name="err_bt_receive_command_failed">Ошибка выполнения команды станцией</string>
     <string name="err_bt_response_wrong_length">Неправильная длина ответа станции</string>
     <string name="err_bt_bad_point_number">Некорректный номер активной точки</string>
+
+    <string name="err_init_no_distance_loaded">Не загружена дистанция с сайта</string>
+    <string name="err_init_no_such_team">Команды с таким номером не существует</string>
 </resources>

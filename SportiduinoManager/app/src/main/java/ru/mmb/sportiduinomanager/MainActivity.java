@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                                 activity = new Intent(getApplicationContext(), BluetoothActivity.class);
                                 break;
                             case R.id.chip_init:
-                                Toast.makeText(MainActivity.this, "Chip Init", Toast.LENGTH_LONG).show();
+                                activity = new Intent(getApplicationContext(), ChipInitActivity.class);
                                 break;
                             case R.id.active_point:
                                 Toast.makeText(MainActivity.this, "Active Point", Toast.LENGTH_LONG).show();

@@ -57,10 +57,11 @@ task findbugs(type: FindBugs) {
 
 apply plugin: 'pmd'
 pmd {
-    toolVersion "6.9.0"
+    toolVersion "6.11.0"
 }
 task pmd(type: Pmd) {
     group 'verification'
+    ruleSets = []
     ruleSetFiles = files("$project.rootDir/config/pmd/rules-pmd.xml")
     source 'src'
     include '**/*.java'

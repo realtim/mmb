@@ -28,7 +28,7 @@
     <string name="password">Password</string>
     <string name="use_test_site">Use test site</string>
     <string name="download_distance_success">Distance was successfully downloaded</string>
-    <string name="database_distance_version">Race/teams from %s site, downloaded %s</string>
+    <string name="database_distance_version">Race/teams from %1$s site, downloaded %2$s</string>
     <string name="site_name_test">test</string>
     <string name="site_name_main">main</string>
 
@@ -48,4 +48,19 @@
     <string name="station_sync_time">Synchronize</string>
     <string name="station_chips_registered">Chips registered</string>
     <string name="station_last_chip">Last chip at</string>
+
+    <string name="team_number_title">Team number</string>
+    <string name="key_1">1</string>
+    <string name="key_2">2</string>
+    <string name="key_3">3</string>
+    <string name="key_4">4</string>
+    <string name="key_5">5</string>
+    <string name="key_6">6</string>
+    <string name="key_7">7</string>
+    <string name="key_8">8</string>
+    <string name="key_9">9</string>
+    <string name="key_0">0</string>
+    <string name="key_del">\u232b</string>
+    <string name="key_clear">\u00d7</string>
+    <string name="team_number">-</string>
 </resources>

@@ -22,20 +22,20 @@ public class Station {
     /**
      * Station mode for chips initialization.
      */
-    public static final byte STATION_MODE_INIT = 0;
+    public static final byte MODE_INIT_CHIPS = 0;
     /**
-     * Station mode for ordinary active point.
+     * Station mode for an ordinary active point.
      */
-    public static final byte STATION_MODE_ORDINARY = 1;
+    public static final byte MODE_OTHER_POINT = 1;
     /**
-     * Station mode for active point at segment finish.
+     * Station mode for active point at distance segment end.
      */
-    public static final byte STATION_MODE_FINISH = 2;
+    public static final byte MODE_FINISH_POINT = 2;
 
     /**
      * Timeout (im ms) while waiting for station response.
      */
-    private static final int WAIT_TIMEOUT = 50000;
+    private static final int WAIT_TIMEOUT = 50_000;
 
     /**
      * Result of sending command to station: everything is ok.
@@ -404,7 +404,7 @@ public class Station {
     }
 
     // Copy 4-byte int value to the section of byte array
-    private void int2byte_array(final int value, final byte[] array, final int from) {
+    private void int2ByteArray(final int value, final byte[] array, final int from) {
         byte[] converted = new byte[4];
         for (int i = 0; i <= 3; i++) {
             converted[0] = (byte) ((value >> 8 * (3 - i)) & 0xff);
@@ -417,7 +417,7 @@ public class Station {
      *
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean getStatus() {
+    public boolean fetchStatus() {
         // Get response from station
         final byte[] response = new byte[12];
         if (!command(new byte[]{(byte) 0x83}, response)) return false;
@@ -440,7 +440,7 @@ public class Station {
      * @param mode New station mode (chip initialization, ordinary or finish point)
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean setMode(final byte mode) {
+    public boolean newMode(final byte mode) {
         byte[] commandData = new byte[4];
         commandData[0] = (byte) 0x80;
         commandData[1] = (byte) 0;  // TODO: change station bios to remove extra byte
@@ -492,8 +492,8 @@ public class Station {
         commandData[1] = (byte) 0;  // TODO: change station bios to remove extra byte
         commandData[2] = number;
         commandData[3] = mNumber;
-        int2byte_array(mChipsRegistered, commandData, 4);
-        int2byte_array(mLastChipTime, commandData, 8);
+        int2ByteArray(mChipsRegistered, commandData, 4);
+        int2ByteArray(mLastChipTime, commandData, 8);
         // Send it to station
         final byte[] response = new byte[4];
         if (!command(commandData, response)) return false;

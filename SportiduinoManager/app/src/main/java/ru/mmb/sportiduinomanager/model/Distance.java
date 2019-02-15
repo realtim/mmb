@@ -392,6 +392,18 @@ public class Distance {
     }
 
     /**
+     * Get the team name.
+     *
+     * @param number Team number
+     * @return String with team name or null if the team does not exist
+     */
+    public String getTeamName(final int number) {
+        if (number <= 0 || number >= mTeams.length) return null;
+        if (mTeams[number] == null) return null;
+        return mTeams[number].mName;
+    }
+
+    /**
      * Save distance to local SQLite database.
      *
      * @param database SQLite database handler
@@ -551,8 +563,6 @@ public class Distance {
      * @return True if it can be reloaded
      */
     public boolean canBeReloaded() {
-        // Allow data loss if we work with test site
-        if (mTestSite == 1) return true;
         // Allow data loss if it was not initialized correctly
         if (mTimeReadonly == 0 || mTimeFinish == 0) return true;
         // Get current time
@@ -562,7 +572,7 @@ public class Distance {
         if (now < mTimeReadonly) return true;
         // Allow data loss if race was finished more then 1 month ago
         // (race was finalized anyway)
-        return now > (mTimeFinish + 86400 * 30);
+        return now > (mTimeFinish + 3600 * 24 * 30);
         // TODO: Add check for team results which were not uploaded to server
     }
 

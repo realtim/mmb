@@ -247,12 +247,10 @@ public class DatabaseActivity extends MainActivity {
                 } else {
                     siteName = (String) getResources().getText(R.string.site_name_test);
                 }
-                final String raidName = mDistance.getRaidName();
-                final String downloadDate = mDistance.getDownloadDate();
-                final String distanceVersion = String.format(
-                        (String) getResources().getText(R.string.database_distance_version), siteName, downloadDate);
-                ((TextView) findViewById(R.id.distance_version)).setText(distanceVersion);
-                ((TextView) findViewById(R.id.distance_name)).setText(raidName);
+                ((TextView) findViewById(R.id.distance_version)).setText(getResources()
+                        .getString(R.string.database_distance_version, siteName,
+                                mDistance.getDownloadDate()));
+                ((TextView) findViewById(R.id.distance_name)).setText(mDistance.getRaidName());
                 dbContentLayout.setVisibility(View.VISIBLE);
                 // Update main menu item
                 databaseItem.setTitle(getResources().getText(R.string.mode_cloud_done));
