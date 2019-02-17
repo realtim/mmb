@@ -1,202 +1,211 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:local="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
-    <Button
-        android:id="@+id/key_1"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/default_padding"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_1"
-        app:layout_constraintEnd_toStartOf="@+id/key_2"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <android.support.constraint.ConstraintLayout xmlns:local="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/key_2"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/default_padding"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/key_3"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/key_1"
-        app:layout_constraintTop_toTopOf="parent" />
+        <!-- Row 1 -->
+        <android.support.constraint.Guideline
+            android:id="@+id/line1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_begin="@dimen/default_padding" />
 
-    <Button
-        android:id="@+id/key_3"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/default_padding"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_3"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/key_4"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/key_2"
-        app:layout_constraintTop_toTopOf="parent" />
+        <Button
+            android:id="@+id/key_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_1"
+            app:layout_constraintEnd_toStartOf="@id/key_2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/line1"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <Button
-        android:id="@+id/key_4"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/default_padding"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_4"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/key_5"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/key_3"
-        app:layout_constraintTop_toTopOf="parent" />
+        <Button
+            android:id="@+id/key_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_2"
+            app:layout_constraintEnd_toStartOf="@id/key_3"
+            app:layout_constraintStart_toEndOf="@id/key_1"
+            app:layout_constraintTop_toTopOf="@id/line1"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <Button
-        android:id="@+id/key_5"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/default_padding"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_5"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/key_del"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/key_4"
-        app:layout_constraintTop_toTopOf="parent" />
+        <Button
+            android:id="@+id/key_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_3"
+            app:layout_constraintEnd_toStartOf="@id/key_4"
+            app:layout_constraintStart_toEndOf="@id/key_2"
+            app:layout_constraintTop_toTopOf="@id/line1"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <Button
-        android:id="@+id/key_del"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/default_padding"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_del"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/key_5"
-        app:layout_constraintTop_toTopOf="parent" />
+        <Button
+            android:id="@+id/key_4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_4"
+            app:layout_constraintEnd_toStartOf="@id/key_5"
+            app:layout_constraintStart_toEndOf="@id/key_3"
+            app:layout_constraintTop_toTopOf="@id/line1"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <Button
-        android:id="@+id/key_6"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_6"
-        app:layout_constraintStart_toStartOf="@+id/key_1"
-        app:layout_constraintTop_toBottomOf="@+id/key_1" />
+        <Button
+            android:id="@+id/key_5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_5"
+            app:layout_constraintEnd_toStartOf="@id/key_del"
+            app:layout_constraintStart_toEndOf="@id/key_4"
+            app:layout_constraintTop_toTopOf="@id/line1"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <Button
-        android:id="@+id/key_7"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_7"
-        app:layout_constraintEnd_toStartOf="@+id/key_8"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/key_6"
-        app:layout_constraintTop_toBottomOf="@+id/key_1" />
+        <Button
+            android:id="@+id/key_del"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_del"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/key_5"
+            app:layout_constraintTop_toTopOf="@id/line1"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <Button
-        android:id="@+id/key_8"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_8"
-        app:layout_constraintEnd_toStartOf="@+id/key_9"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/key_7"
-        app:layout_constraintTop_toBottomOf="@+id/key_1" />
+        <!-- Row 2 -->
+        <Button
+            android:id="@+id/key_6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_padding"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_6"
+            app:layout_constraintEnd_toStartOf="@id/key_7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/key_1"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <Button
-        android:id="@+id/key_9"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_9"
-        app:layout_constraintEnd_toStartOf="@+id/key_0"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/key_8"
-        app:layout_constraintTop_toBottomOf="@+id/key_1" />
+        <Button
+            android:id="@+id/key_7"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_7"
+            app:layout_constraintEnd_toStartOf="@id/key_8"
+            app:layout_constraintStart_toEndOf="@id/key_6"
+            app:layout_constraintTop_toTopOf="@id/key_6"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <Button
-        android:id="@+id/key_0"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_0"
-        app:layout_constraintEnd_toStartOf="@+id/key_clear"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/key_9"
-        app:layout_constraintTop_toBottomOf="@+id/key_1" />
+        <Button
+            android:id="@+id/key_8"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_8"
+            app:layout_constraintEnd_toStartOf="@id/key_9"
+            app:layout_constraintStart_toEndOf="@id/key_7"
+            app:layout_constraintTop_toTopOf="@id/key_6"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <Button
-        android:id="@+id/key_clear"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:onClick="keyboardButtonClicked"
-        android:text="@string/key_clear"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/key_0"
-        app:layout_constraintTop_toBottomOf="@+id/key_1" />
+        <Button
+            android:id="@+id/key_9"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_9"
+            app:layout_constraintEnd_toStartOf="@id/key_0"
+            app:layout_constraintStart_toEndOf="@id/key_8"
+            app:layout_constraintTop_toTopOf="@id/key_6"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <TextView
-        android:id="@+id/team_number_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/default_padding"
-        android:text="@string/team_number_title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/key_6" />
+        <Button
+            android:id="@+id/key_0"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_0"
+            app:layout_constraintEnd_toStartOf="@id/key_clear"
+            app:layout_constraintStart_toEndOf="@id/key_9"
+            app:layout_constraintTop_toTopOf="@id/key_6"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <TextView
-        android:id="@+id/init_team_number"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:autofillHints="team"
-        android:hint="@string/team_number"
-        android:maxLength="4"
-        android:paddingTop="0dp"
-        android:scrollHorizontally="false"
-        android:singleLine="true"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        android:textColor="@color/text_primary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/team_number_title"
-        local:targetApi="28" />
+        <Button
+            android:id="@+id/key_clear"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:onClick="keyboardButtonClicked"
+            android:text="@string/key_clear"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/key_0"
+            app:layout_constraintTop_toTopOf="@id/key_6"
+            app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-    <TextView
-        android:id="@+id/init_team_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/default_padding"
-        android:textAppearance="@style/TextAppearance.AppCompat.Title"
-        android:textColor="@color/text_primary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/init_team_number" />
 
-    <TextView
-        android:id="@+id/init_error"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/default_padding"
-        android:textColor="@color/bg_secondary"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/init_team_name" />
+        <TextView
+            android:id="@+id/team_number_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_padding"
+            android:text="@string/team_number_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/key_6" />
 
-</android.support.constraint.ConstraintLayout>
+        <TextView
+            android:id="@+id/init_team_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autofillHints="team"
+            android:hint="@string/team_number"
+            android:maxLength="4"
+            android:paddingTop="0dp"
+            android:scrollHorizontally="false"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+            android:textColor="@color/text_primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/team_number_title"
+            local:targetApi="28" />
+
+        <TextView
+            android:id="@+id/init_team_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_padding"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:textColor="@color/text_primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/init_team_number" />
+
+        <TextView
+            android:id="@+id/init_error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_padding"
+            android:textColor="@color/bg_secondary"
+            android:visibility="invisible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/init_team_name" />
+
+    </android.support.constraint.ConstraintLayout>
+
+</ScrollView>

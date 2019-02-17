@@ -249,42 +249,64 @@ public class Distance {
         // Check if it the database was opened
         if (database == null) return DB_STATE_FAILED;
         // Check if it has main table with mmb status
-        Cursor result = database.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='mmb'", null);
-        if (result.getCount() != 1) {
+        try {
+            final Cursor result = database.rawQuery("SELECT name FROM sqlite_master WHERE "
+                    + "type='table' AND name='mmb'", null);
+            if (result.getCount() != 1) {
+                result.close();
+                return DB_STATE_EMPTY;
+            }
             result.close();
+        } catch (SQLiteException e) {
+            // Database has wrong structure, erase it
+            erase(database);
             return DB_STATE_EMPTY;
         }
-        result.close();
         // Get database version, test flag and download date
-        result = database.rawQuery("SELECT version FROM mmb", null);
-        if (!result.moveToFirst()) {
-            // database is damaged, erase all data
+        try {
+            final Cursor result = database.rawQuery("SELECT version FROM mmb", null);
+            if (!result.moveToFirst()) {
+                // database is damaged, erase all data
+                result.close();
+                erase(database);
+                return DB_STATE_EMPTY;
+            }
+            // Check database version
+            if (result.getInt(0) != DB_VERSION) {
+                // database has previous version of data structures , erase all data
+                result.close();
+                erase(database);
+                return DB_STATE_EMPTY;
+            }
             result.close();
+        } catch (SQLiteException e) {
+            // Database has wrong structure, erase it
             erase(database);
             return DB_STATE_EMPTY;
         }
-        // Check database version
-        if (result.getInt(0) != DB_VERSION) {
-            // database has previous version of data structures , erase all data
-            result.close();
-            erase(database);
-            return DB_STATE_EMPTY;
-        }
-        result.close();
         // check if database can be outdated
-        result = database.rawQuery("SELECT (NOT test_site) AND (unixtime_downloaded < unixtime_readonly) FROM mmb",
-                null);
-        if (!result.moveToFirst()) {
-            // database is damaged, erase all data
+        try {
+
+            final Cursor result = database.rawQuery("SELECT (NOT test_site) AND "
+                            + "(unixtime_downloaded < unixtime_readonly) FROM mmb",
+                    null);
+            if (!result.moveToFirst()) {
+                // database is damaged, erase all data
+                result.close();
+                erase(database);
+                return DB_STATE_EMPTY;
+            }
+            if (result.getInt(0) == 1) {
+                result.close();
+                return DB_STATE_OUTDATED;
+            }
             result.close();
+        } catch (SQLiteException e) {
+            // Database has wrong structure, erase it
             erase(database);
             return DB_STATE_EMPTY;
         }
-        if (result.getInt(0) == 1) {
-            result.close();
-            return DB_STATE_OUTDATED;
-        }
-        result.close();
+        // All checks passed
         return DB_STATE_OK;
     }
 

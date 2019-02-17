@@ -92,14 +92,14 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
                     if (mBluetoothState != BT_STATE_ON) {
                         // Bluetooth state was changed, update activity layout
                         mBluetoothState = BT_STATE_ON;
-                        updateLayout();
+                        updateLayout(false);
                     }
                     break;
                 case BluetoothAdapter.STATE_OFF:
                     if (mBluetoothState != BT_STATE_OFF) {
                         // Bluetooth state was changed, update activity layout
                         mBluetoothState = BT_STATE_OFF;
-                        updateLayout();
+                        updateLayout(false);
                         // Ask to turn it on
                         final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
@@ -120,7 +120,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
             final String action = intent.getAction();
             if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 mBluetoothSearch = BT_SEARCH_OFF;
-                updateLayout();
+                updateLayout(false);
             } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Discovery has found a device
                 // Get the BluetoothDevice object and its info from the Intent
@@ -170,7 +170,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         if (mBluetoothAdapter == null) {
             // Device doesn't support Bluetooth
             mBluetoothState = BT_STATE_ABSENT;
-            updateLayout();
+            updateLayout(false);
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_bt_absent),
                     Toast.LENGTH_LONG).show();
             return;
@@ -180,7 +180,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
             if (!mBluetoothAdapter.isEnabled()) {
                 // Hide all elements and request Bluetooth
                 mBluetoothState = BT_STATE_OFF;
-                updateLayout();
+                updateLayout(false);
                 final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
                 return;
@@ -188,7 +188,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         } catch (SecurityException e) {
             // Bluetooth permission was withdrawn from the application
             mBluetoothState = BT_STATE_ABSENT;
-            updateLayout();
+            updateLayout(false);
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_bt_forbidden),
                     Toast.LENGTH_LONG).show();
             return;
@@ -200,9 +200,10 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         } else {
             mBluetoothSearch = BT_SEARCH_OFF;
         }
-        // Get list of active points from db
+        // Get list of active points (if a distance was downloaded)
         final Distance distance = mMainApplication.getDistance();
-        final List<String> points = distance.getPointNames();
+        List<String> points = new ArrayList<>();
+        if (distance != null) points = distance.getPointNames();
         // Create list adapter for station mode spinner
         final Spinner spinner = findViewById(R.id.station_spinner);
         final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
@@ -210,7 +211,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
         // Update activity layout
-        updateLayout();
+        updateLayout(true);
     }
 
     @Override
@@ -232,7 +233,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         } else {
             mBluetoothState = BT_STATE_OFF;
         }
-        updateLayout();
+        updateLayout(false);
     }
 
     /**
@@ -266,7 +267,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         if (!mBluetoothAdapter.isEnabled()) {
             // Hide all elements and request Bluetooth
             mBluetoothState = BT_STATE_OFF;
-            updateLayout();
+            updateLayout(false);
             final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             return;
@@ -292,7 +293,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         if (!mBluetoothAdapter.startDiscovery()) return;
         // Display progress indicator
         mBluetoothSearch = BT_SEARCH_ON;
-        updateLayout();
+        updateLayout(false);
     }
 
     /**
@@ -304,12 +305,17 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         // Get the station we work with
         final Station station = mMainApplication.getStation();
         if (station == null) return;
+        // Get the distance
+        final Distance distance = mMainApplication.getDistance();
+        if (distance == null) {
+            Toast.makeText(getApplicationContext(), R.string.err_db_no_distance_loaded, Toast.LENGTH_LONG).show();
+            return;
+        }
         // Get new station number
         final Spinner spinner = findViewById(R.id.station_spinner);
         final byte newNumber = (byte) spinner.getSelectedItemPosition();
         // Compute new station mode
         byte newMode;
-        final Distance distance = mMainApplication.getDistance();
         switch (distance.getPointType(newNumber)) {
             case -1:
                 Toast.makeText(getApplicationContext(), R.string.err_bt_bad_point_number,
@@ -330,23 +336,28 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         if (currentNumber == newNumber && newMode == station.getMode()) return;
         // TODO: Check if some teams data from station was not downloaded and download it
         // Reset station to change it's number
+        // TODO: Show hourglass or something, reset takes long time
         if (currentNumber != newNumber && !station.resetStation(newNumber)) {
             Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
             return;
         }
+        long responseTime = station.getResponseTime();
         // Set new station mode
         if (!station.newMode(newMode)) {
             Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
-            updateLayout();
+            updateLayout(false);
+            ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
+                    .getString(R.string.response_time, responseTime + station.getResponseTime()));
             return;
         }
-        // Update station timer and response time for the last communication with station
+        // Compute total response time for two calls
+        responseTime += station.getResponseTime();
+        // Get current station status (just in case) and update layout
+        updateLayout(true);
+        responseTime += station.getResponseTime();
+        // Set correct response time for sum of three commands responses
         ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
-                .getString(R.string.response_time, station.getResponseTime()));
-        ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
-                .getString(R.string.station_time_drift, station.getTimeDrift()));
-        // Update layout to see all results of our commands
-        updateLayout();
+                .getString(R.string.response_time, responseTime));
     }
 
     /**
@@ -370,7 +381,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
     /**
      * Update layout according to activity state.
      */
-    private void updateLayout() {
+    private void updateLayout(final boolean fetchStatus) {
         // Show BT search button / progress
         if (mBluetoothSearch == BT_SEARCH_OFF) {
             findViewById(R.id.device_search_progress).setVisibility(View.INVISIBLE);
@@ -391,22 +402,25 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
 
         // Don'try to update station status during BT search
         if (mBluetoothSearch == BT_SEARCH_ON) {
-            findViewById(R.id.station_status).setVisibility(View.INVISIBLE);
+            findViewById(R.id.station_status).setVisibility(View.GONE);
             return;
         }
 
         // Show station status block
         final Station station = mMainApplication.getStation();
-        // Station was not connected yet or failed to respond
-        if (station == null || !station.fetchStatus()) {
-            if (station != null) {
-                Toast.makeText(getApplicationContext(), station.getLastError(),
-                        Toast.LENGTH_LONG).show();
-            }
-            findViewById(R.id.station_status).setVisibility(View.INVISIBLE);
+        // Station was not connected yet
+        if (station == null) {
+            findViewById(R.id.station_status).setVisibility(View.GONE);
             return;
         }
-        // Station responded, update it's status in layout
+        // Update station data if asked
+        if (fetchStatus && !station.fetchStatus()) {
+            Toast.makeText(getApplicationContext(), station.getLastError(),
+                    Toast.LENGTH_LONG).show();
+            findViewById(R.id.station_status).setVisibility(View.GONE);
+            return;
+        }
+        // Update station data status in layout
         ((TextView) findViewById(R.id.station_bt_name)).setText(station.getName());
         ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
                 .getString(R.string.response_time, station.getResponseTime()));
@@ -467,7 +481,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
             final BluetoothActivity activity = activityReference.get();
             if (activity == null || activity.isFinishing()) return;
             // Update activity layout
-            activity.updateLayout();
+            activity.updateLayout(false);
         }
 
         /**
@@ -514,7 +528,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
                 activity.mAdapter.setConnectedDevice(null, false);
             }
             // Update activity layout
-            activity.updateLayout();
+            activity.updateLayout(true);
         }
     }
 }

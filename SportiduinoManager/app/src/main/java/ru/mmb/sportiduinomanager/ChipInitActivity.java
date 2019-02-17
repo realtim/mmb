@@ -37,6 +37,11 @@ public class ChipInitActivity extends MainActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        // Set selection in drawer menu to current mode
+        getMenuItem(R.id.chip_init).setChecked(true);
+        // Disable startup animation
+        overridePendingTransition(0, 0);
+        // Update screen layout
         updateKeyboardState();
         updateTeamName();
     }
@@ -147,8 +152,8 @@ public class ChipInitActivity extends MainActivity {
         // Hide all if no number was entered yet
         if (mTeamNumber.length() == 0) {
             teamNumberText.setText(getResources().getString(R.string.team_number));
-            teamNameText.setVisibility(View.INVISIBLE);
-            errorText.setVisibility(View.INVISIBLE);
+            teamNameText.setVisibility(View.GONE);
+            errorText.setVisibility(View.GONE);
             return;
         }
         // Update team number on screen
@@ -156,8 +161,8 @@ public class ChipInitActivity extends MainActivity {
         // Check if local database was loaded
         final Distance distance = mMainApplication.getDistance();
         if (distance == null) {
-            teamNameText.setVisibility(View.INVISIBLE);
-            errorText.setText(getResources().getString(R.string.err_init_no_distance_loaded));
+            teamNameText.setVisibility(View.GONE);
+            errorText.setText(getResources().getString(R.string.err_db_no_distance_loaded));
             errorText.setVisibility(View.VISIBLE);
             return;
         }
@@ -165,14 +170,14 @@ public class ChipInitActivity extends MainActivity {
         final int teamNumber = Integer.parseInt(mTeamNumber);
         final String teamName = distance.getTeamName(teamNumber);
         if (teamName == null) {
-            teamNameText.setVisibility(View.INVISIBLE);
+            teamNameText.setVisibility(View.GONE);
             errorText.setText(getResources().getString(R.string.err_init_no_such_team));
             errorText.setVisibility(View.VISIBLE);
             return;
         }
         teamNameText.setText(teamName);
         teamNameText.setVisibility(View.VISIBLE);
-        errorText.setVisibility(View.INVISIBLE);
+        errorText.setVisibility(View.GONE);
     }
 
 }

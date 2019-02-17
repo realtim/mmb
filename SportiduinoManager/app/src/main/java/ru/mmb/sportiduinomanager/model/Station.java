@@ -35,7 +35,12 @@ public class Station {
     /**
      * Timeout (im ms) while waiting for station response.
      */
-    private static final int WAIT_TIMEOUT = 50_000;
+    private static final int WAIT_TIMEOUT = 60_000;
+
+    /**
+     * Size of send/receive packets for station communications.
+     */
+    private static final int PACKET_SIZE = 32;
 
     /**
      * Result of sending command to station: everything is ok.
@@ -240,7 +245,8 @@ public class Station {
 
     // Write command to station input stream
     private boolean send(final byte[] command) {
-        byte[] buffer = new byte[command.length + 4];
+        if (command.length > (PACKET_SIZE - 4)) return false;
+        byte[] buffer = new byte[PACKET_SIZE];
         buffer[0] = (byte) 0xFE;
         buffer[1] = (byte) 0xFE;
         buffer[2] = (byte) 0xFE;
@@ -256,10 +262,10 @@ public class Station {
         return true;
     }
 
-    // Read raw data in 32-byte blocks from station output stream
+    // Read raw data in PACKET_SIZE-byte blocks from station output stream
     private byte[] receive() {
         byte[] response = null;
-        final byte[] buffer = new byte[32];
+        final byte[] buffer = new byte[PACKET_SIZE];
         mResponseTime = -1;
         try {
             final long begin = System.currentTimeMillis();
@@ -268,16 +274,16 @@ public class Station {
                 // wait for data to appear in input stream
                 if (input.available() == 0) {
                     try {
-                        Thread.sleep(50);
+                        Thread.sleep(25);
                     } catch (InterruptedException e) {
                         return null;
                     }
                     continue;
                 }
-                // read data into 32-byte buffer
+                // read data into PACKET_SIZE byte buffer
                 final int newLen = input.read(buffer);
                 if (newLen == 0) continue;
-                // add received bytes (32 or less) to response array
+                // add received bytes (PACKET_SIZE or less) to response array
                 if (response == null) {
                     response = new byte[newLen];
                     System.arraycopy(buffer, 0, response, 0, newLen);
@@ -288,10 +294,10 @@ public class Station {
                     System.arraycopy(buffer, 0, temp, oldLen, newLen);
                     response = temp;
                 }
-                // stop waiting for more data if we got round number of 32-byte blocks
+                // stop waiting for more data if we got round number of PACKET_SIZE byte blocks
                 // and last block does not have continuation flag
-                if (response.length % 32 == 0
-                        && response[response.length - 32 + 5] != (byte) 0x80) {
+                if (response.length % PACKET_SIZE == 0
+                        && response[response.length - PACKET_SIZE + 5] != (byte) 0x80) {
                     mResponseTime = System.currentTimeMillis() - begin;
                     return response;
                 }
@@ -313,33 +319,34 @@ public class Station {
         // get station response
         final byte[] receiveBuffer = receive();
         if (receiveBuffer == null) return new byte[]{REC_TIMEOUT};
-        // check if we got response as several 32-byte blocks
-        if (receiveBuffer.length % 32 != 0) return new byte[]{REC_BAD_RESPONSE};
+        // check if we got response as several PACKET_SIZE blocks
+        if (receiveBuffer.length % PACKET_SIZE != 0) return new byte[]{REC_BAD_RESPONSE};
         // process all blocks
         final byte responseCode = (byte) (sendBuffer[0] + 0x10);
         byte[] response = new byte[]{COMMAND_OK};
-        for (int n = 0; n < receiveBuffer.length / 32; n++) {
+        for (int n = 0; n < receiveBuffer.length / PACKET_SIZE; n++) {
+            final int start = n * PACKET_SIZE;
             // check header
-            if (receiveBuffer[n * 32] != (byte) 0xfe
-                    || receiveBuffer[n * 32 + 1] != (byte) 0xfe
-                    || receiveBuffer[n * 32 + 2] != (byte) 0xfe
-                    || receiveBuffer[n * 32 + 3] != (byte) 0xfe) {
+            if (receiveBuffer[start] != (byte) 0xfe
+                    || receiveBuffer[start + 1] != (byte) 0xfe
+                    || receiveBuffer[start + 2] != (byte) 0xfe
+                    || receiveBuffer[start + 3] != (byte) 0xfe) {
                 return new byte[]{REC_BAD_RESPONSE};
             }
             // check if command code received is equal to command code sent
-            if (receiveBuffer[n * 32 + 4] != responseCode) return new byte[]{REC_BAD_RESPONSE};
+            if (receiveBuffer[start + 4] != responseCode) return new byte[]{REC_BAD_RESPONSE};
             // check payload length
-            if (receiveBuffer[n * 32 + 5] == 0) return new byte[]{REC_COMMAND_ERROR};
+            if (receiveBuffer[start + 5] == 0) return new byte[]{REC_COMMAND_ERROR};
             // check command execution code (it should be present and equal to zero)
-            if (receiveBuffer[n * 32 + 6] != 0) return new byte[]{REC_COMMAND_ERROR};
+            if (receiveBuffer[start + 6] != 0) return new byte[]{REC_COMMAND_ERROR};
             // check zero finish byte
-            if (receiveBuffer[n * 32 + 31] != (byte) 0x00) return new byte[]{REC_BAD_RESPONSE};
+            if (receiveBuffer[start + 31] != (byte) 0x00) return new byte[]{REC_BAD_RESPONSE};
             // copy payload to response buffer
             final int oldLen = response.length;
-            final int newLen = receiveBuffer[n * 32 + 5] - 1;
+            final int newLen = receiveBuffer[start + 5] - 1;
             final byte[] temp = new byte[oldLen + newLen];
             System.arraycopy(response, 0, temp, 0, oldLen);
-            System.arraycopy(receiveBuffer, n * 32 + 7, temp, oldLen, newLen);
+            System.arraycopy(receiveBuffer, start + 7, temp, oldLen, newLen);
             response = temp;
         }
         return response;
@@ -470,8 +477,7 @@ public class Station {
         commandData[4] = (byte) calendar.get(Calendar.DAY_OF_MONTH);
         commandData[5] = (byte) calendar.get(Calendar.HOUR_OF_DAY);
         commandData[6] = (byte) calendar.get(Calendar.MINUTE);
-        // Set 1sec in future due to delays in station communication
-        commandData[7] = (byte) (calendar.get(Calendar.SECOND) + 1);
+        commandData[7] = (byte) (calendar.get(Calendar.SECOND));
         // Send it to station
         final byte[] response = new byte[4];
         if (!command(commandData, response)) return false;

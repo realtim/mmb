@@ -11,6 +11,7 @@
     <string name="err_db_reading_response">Ошибка чтения при обработке ответа сервера</string>
     <string name="err_db_bad_response">Некорректное содержимое в ответе сервера</string>
     <string name="err_db_saving">Ошибка записи в локальную базу данных</string>
+    <string name="err_db_no_distance_loaded">Не загружена дистанция с сайта</string>
 
     <string name="err_bt_absent">Устройство не поддерживает Bluetooth</string>
     <string name="err_bt_forbidden">Приложению должно быть разрешено использование Bluetooth</string>
@@ -23,6 +24,5 @@
     <string name="err_bt_response_wrong_length">Неправильная длина ответа станции</string>
     <string name="err_bt_bad_point_number">Некорректный номер активной точки</string>
 
-    <string name="err_init_no_distance_loaded">Не загружена дистанция с сайта</string>
     <string name="err_init_no_such_team">Команды с таким номером не существует</string>
 </resources>
