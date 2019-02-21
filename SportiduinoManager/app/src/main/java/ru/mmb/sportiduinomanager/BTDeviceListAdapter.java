@@ -71,12 +71,8 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
             holder.mConnectButton.setAlpha(1f);
             holder.mConnectButton.setClickable(true);
             // Set my listener for Connect button
-            holder.mConnectButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(final View view) {
-                    mOnClick.onItemClick(holder.getAdapterPosition());
-                }
-            });
+            holder.mConnectButton
+                    .setOnClickListener(view -> mOnClick.onItemClick(holder.getAdapterPosition()));
         }
     }
 

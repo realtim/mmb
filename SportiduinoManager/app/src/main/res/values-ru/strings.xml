@@ -3,6 +3,8 @@
 <resources>
     <string name="app_name">Sportiduino менеджер</string>
     <string name="navigation_header">Режим работы</string>
+    <string name="acra_toast_text">Приложение завершилось из-за ошибки, детальный отчет
+        будет отправлен на сайт mmb.progressor.ru</string>
 
     <string name="unknown">\?\?\?</string>
 

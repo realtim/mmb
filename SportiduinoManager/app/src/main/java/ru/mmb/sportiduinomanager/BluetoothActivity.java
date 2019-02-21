@@ -280,7 +280,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
         }
         // Empty device list in view and in the app
-        mMainApplication.setBTDeviceList(new ArrayList<BluetoothDevice>());
+        mMainApplication.setBTDeviceList(new ArrayList<>());
         mAdapter.clearList();
         // Disconnect currently connected station
         final Station station = mMainApplication.getStation();

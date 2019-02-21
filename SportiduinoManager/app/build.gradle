@@ -3,6 +3,11 @@ android {
 
     compileSdkVersion 28
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         applicationId "ru.mmb.sportiduinomanager"
         minSdkVersion 19
@@ -27,6 +32,13 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt')
         }
+    }
+
+    dependencies {
+        def acraVersion = '5.2.1'
+        implementation "ch.acra:acra-core:$acraVersion"
+        implementation "ch.acra:acra-http:$acraVersion"
+        implementation "ch.acra:acra-toast:$acraVersion"
     }
 }
 

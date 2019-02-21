@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -52,41 +51,37 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout = findViewById(R.id.drawer_layout);
         // Set behavior of Navigation drawer
         mNavigationView = findViewById(R.id.navigation_view);
-        mNavigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    // This method will trigger on item Click of navigation menu
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull final MenuItem menuItem) {
-                        // Process selected menu item
-                        Intent activity = null;
-                        switch (menuItem.getItemId()) {
-                            case R.id.database:
-                                activity = new Intent(getApplicationContext(), DatabaseActivity.class);
-                                break;
-                            case R.id.bluetooth:
-                                activity = new Intent(getApplicationContext(), BluetoothActivity.class);
-                                break;
-                            case R.id.chip_init:
-                                activity = new Intent(getApplicationContext(), ChipInitActivity.class);
-                                break;
-                            case R.id.active_point:
-                                Toast.makeText(MainActivity.this, "Active Point", Toast.LENGTH_LONG).show();
-                                break;
-                            case R.id.team_list:
-                                Toast.makeText(MainActivity.this, "Team List", Toast.LENGTH_LONG).show();
-                                break;
-                            default:
-                        }
-                        // Switch to new activity
-                        if (activity != null) {
-                            activity.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                            startActivity(activity);
-                        }
-                        // Closing drawer on item click
-                        mDrawerLayout.closeDrawers();
-                        return true;
-                    }
-                });
+        // This method will trigger on item Click of navigation menu
+        mNavigationView.setNavigationItemSelectedListener(menuItem -> {
+            // Process selected menu item
+            Intent activity = null;
+            switch (menuItem.getItemId()) {
+                case R.id.database:
+                    activity = new Intent(getApplicationContext(), DatabaseActivity.class);
+                    break;
+                case R.id.bluetooth:
+                    activity = new Intent(getApplicationContext(), BluetoothActivity.class);
+                    break;
+                case R.id.chip_init:
+                    activity = new Intent(getApplicationContext(), ChipInitActivity.class);
+                    break;
+                case R.id.active_point:
+                    Toast.makeText(this, "Active Point", Toast.LENGTH_LONG).show();
+                    break;
+                case R.id.team_list:
+                    Toast.makeText(this, "Team List", Toast.LENGTH_LONG).show();
+                    break;
+                default:
+            }
+            // Switch to new activity
+            if (activity != null) {
+                activity.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(activity);
+            }
+            // Closing drawer on item click
+            mDrawerLayout.closeDrawers();
+            return true;
+        });
     }
 
     @Override

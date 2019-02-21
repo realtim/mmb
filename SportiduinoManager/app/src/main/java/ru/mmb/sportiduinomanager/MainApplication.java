@@ -13,12 +13,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.acra.ACRA;
+import org.acra.BuildConfig;
+import org.acra.annotation.AcraCore;
+import org.acra.annotation.AcraHttpSender;
+import org.acra.annotation.AcraToast;
+import org.acra.data.StringFormat;
+import org.acra.sender.HttpSender;
+
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
+
+import static org.acra.ReportField.*;
 
 /**
  * Keeps all persistent activity data for application lifetime.
  */
+
+// ACRA exception reporting system
+@AcraCore(buildConfigClass = BuildConfig.class,
+        reportFormat = StringFormat.JSON,
+        reportContent = {REPORT_ID, APP_VERSION_CODE, APP_VERSION_NAME, PACKAGE_NAME, FILE_PATH,
+                PHONE_MODEL, BRAND, PRODUCT, ANDROID_VERSION, BUILD, TOTAL_MEM_SIZE,
+                AVAILABLE_MEM_SIZE, CUSTOM_DATA, STACK_TRACE, INITIAL_CONFIGURATION,
+                CRASH_CONFIGURATION, DISPLAY, USER_APP_START_DATE, USER_CRASH_DATE, LOGCAT,
+                EVENTSLOG, RADIOLOG, INSTALLATION_ID, DEVICE_FEATURES, ENVIRONMENT,
+                SETTINGS_SYSTEM, SETTINGS_SECURE, SETTINGS_GLOBAL, THREAD_DETAILS, BUILD_CONFIG})
+@AcraHttpSender(uri = "http://mmb.progressor.ru/php/mmbscripts/acra.php",
+        httpMethod = HttpSender.Method.POST)
+@AcraToast(resText = R.string.acra_toast_text)
+
 @SuppressWarnings("WeakerAccess")
 public class MainApplication extends Application {
     /**
@@ -276,5 +300,12 @@ public class MainApplication extends Application {
             mDb.close();
         }
         super.onTerminate();
+    }
+
+    @Override
+    protected void attachBaseContext(final Context base) {
+        super.attachBaseContext(base);
+        // The following line triggers the initialization of ACRA
+        ACRA.init(this);
     }
 }
