@@ -2,6 +2,7 @@
 <resources>
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#ff757575</color>
+    <color name="text_primary_inverse">#ffffff</color>
     <color name="bg_primary">#388e3c</color>
     <color name="bg_primary_dark">#1b5e20</color>
     <color name="bg_primary_light">#c8e6c9</color>

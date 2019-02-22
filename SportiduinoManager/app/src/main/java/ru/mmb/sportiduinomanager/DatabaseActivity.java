@@ -7,8 +7,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.SwitchCompat;
 import android.view.MenuItem;
@@ -21,10 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -62,6 +60,10 @@ public class DatabaseActivity extends MainActivity {
      * Async download thread manager.
      */
     private DownloadManager mDownloadManager;
+    /**
+     * Copy of activity context for AsyncTask.
+     */
+    private DatabaseActivity mContext;
 
     /**
      * Receiver of "download completed" events.
@@ -91,36 +93,8 @@ public class DatabaseActivity extends MainActivity {
             final String path = Uri.parse(cursor
                     .getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).getPath();
             cursor.close();
-            // open downloaded file
-            ParcelFileDescriptor response;
-            try {
-                response = mDownloadManager.openDownloadedFile(downloadId);
-                mMainApplication.setDistanceDownloadId(-1L);
-            } catch (FileNotFoundException e) {
-                Toast.makeText(context, getResources().getString(R.string.err_db_reading_response),
-                        Toast.LENGTH_LONG).show();
-                mMainApplication.setDistanceDownloadId(-1L);
-                return;
-            }
-            // parse the file and load it to database
-            final InputStream inputStream = new FileInputStream(response.getFileDescriptor());
-            final Scanner scanner = new Scanner(inputStream, "UTF-8").useDelimiter("[\t\n]");
-            finishDistanceDownload(context, scanner);
-            scanner.close();
-            updateLayout();
-            // close and delete downloaded file
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                Toast.makeText(context, getResources().getString(R.string.err_db_reading_response),
-                        Toast.LENGTH_LONG).show();
-                return;
-            }
-            final File file = new File(path);
-            if (!file.delete()) {
-                Toast.makeText(context, getResources().getString(R.string.err_db_reading_response),
-                        Toast.LENGTH_LONG).show();
-            }
+            // Parse the file and load it to database in background thread
+            new LoadDistance(mContext).execute(path);
         }
     };
 
@@ -151,6 +125,7 @@ public class DatabaseActivity extends MainActivity {
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
+        mContext = this;
         mMainApplication = (MainApplication) this.getApplication();
         mDistance = mMainApplication.getDistance();
         mDownloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
@@ -224,6 +199,7 @@ public class DatabaseActivity extends MainActivity {
                 break;
             case Distance.DB_STATE_OUTDATED:
             case Distance.DB_STATE_OK:
+                mDistance = mMainApplication.getDistance();
                 // Don't allow to reload database if it contains important data
                 if (mDistance.canBeReloaded()) {
                     dlDistanceLayout.setVisibility(View.VISIBLE);
@@ -326,163 +302,194 @@ public class DatabaseActivity extends MainActivity {
         mMainApplication.setDistanceDownloadId(mDownloadManager.enqueue(request));
     }
 
-    // Process server response and save distance and teams to SQLite database
-    private void finishDistanceDownload(final Context context, final Scanner scanner) {
-        // TODO: move it to background thread
-        // check for error message from server
-        if (!scanner.hasNextLine()) {
-            Toast.makeText(context, getResources().getString(R.string.err_db_reading_response),
-                    Toast.LENGTH_LONG).show();
-            return;
+    /**
+     * Separate thread for async parsing of downloaded file with a distance.
+     */
+    private static class LoadDistance extends AsyncTask<String, Void, Integer> {
+        /**
+         * Reference to parent activity (which can cease to exist in any moment).
+         */
+        private final WeakReference<DatabaseActivity> activityReference;
+        /**
+         * Reference to main application thread.
+         */
+        private final MainApplication mainApplication;
+        /**
+         * Downloaded file with a distance.
+         */
+        private File mFile;
+        /**
+         * Custom string which cannot be loaded from resources.
+         */
+        private String mCustomError;
+
+        // Retain only a weak reference to the activity
+        LoadDistance(final DatabaseActivity context) {
+            super();
+            activityReference = new WeakReference<>(context);
+            mainApplication = (MainApplication) context.getApplication();
         }
-        final String message = scanner.nextLine();
-        if (!"".equals(message)) {
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-            return;
-        }
-        // read the response
-        final String badResponse = getResources().getString(R.string.err_db_bad_response);
-        boolean oldDistance = true;
-        while (scanner.hasNextLine()) {
-            final String blockType = scanner.next();
-            switch (blockType) {
-                case "R":
-                    // get raid information
-                    final int raidId = scanner.nextInt();
-                    final long raidTimeReadonly = scanner.nextLong();
-                    final long raidTimeFinish = scanner.nextLong();
-                    final String raidName = scanner.next();
-                    mDistance = new Distance(raidId, raidTimeReadonly, raidTimeFinish, raidName,
-                            mMainApplication.getUserEmail(), mMainApplication.getUserPassword(),
-                            mMainApplication.getTestSite());
-                    oldDistance = false;
-                    break;
-                case "P":
-                    // parse list of points
-                    if (oldDistance) {
-                        Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    final int nPoints = scanner.nextInt();
-                    final int maxOrder = scanner.nextInt();
-                    mDistance.initPointArray(maxOrder, getResources().getString(R.string.mode_chip_init));
-                    for (int i = 0; i < nPoints; i++) {
-                        if (!"".equals(scanner.next())) {
-                            Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        final int index = scanner.nextInt();
-                        final int type = scanner.nextInt();
-                        final int penalty = scanner.nextInt();
-                        final long start = scanner.nextLong();
-                        final long end = scanner.nextLong();
-                        final String name = scanner.next();
-                        if (!mDistance.addPoint(index, type, penalty, start, end, name)) {
-                            Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                    }
-                    break;
-                case "D":
-                    // parse list of discounts
-                    if (oldDistance) {
-                        Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    final int nDiscounts = scanner.nextInt();
-                    mDistance.initDiscountArray(nDiscounts);
-                    for (int i = 0; i < nDiscounts; i++) {
-                        if (!"".equals(scanner.next())) {
-                            Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        final int minutes = scanner.nextInt();
-                        final int fromPoint = scanner.nextInt();
-                        final int toPoint = scanner.nextInt();
-                        if (!mDistance.addDiscount(minutes, fromPoint, toPoint)) {
-                            Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                    }
-                    break;
-                case "T":
-                    // parse list of teams
-                    if (oldDistance) {
-                        Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    final int nTeams = scanner.nextInt();
-                    final int maxNumber = scanner.nextInt();
-                    mDistance.initTeamArray(maxNumber);
-                    for (int i = 0; i < nTeams; i++) {
-                        if (!"".equals(scanner.next())) {
-                            Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        final int number = scanner.nextInt();
-                        final int nMembers = scanner.nextInt();
-                        final int nMaps = scanner.nextInt();
-                        final String name = scanner.next();
-                        if (!mDistance.addTeam(number, nMembers, nMaps, name)) {
-                            Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                    }
-                    break;
-                case "M":
-                    // parse list of team members
-                    if (oldDistance) {
-                        Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    final int nMembers = scanner.nextInt();
-                    for (int i = 0; i < nMembers; i++) {
-                        if (!"".equals(scanner.next())) {
-                            Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        final long memberId = scanner.nextLong();
-                        final int team = scanner.nextInt();
-                        final String name = scanner.next();
-                        final String phone = scanner.next();
-                        if (!mDistance.addMember(memberId, team, name, phone)) {
-                            Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                    }
-                    break;
-                case "E":
-                    // End of distance data in server response
-                    break;
-                default:
-                    Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-                    return;
+
+        /**
+         * Process server response and save distance and teams to SQLite database.
+         *
+         * @param path Path to file
+         * @return True if succeeded
+         */
+        protected Integer doInBackground(final String... path) {
+            // Create scanner for file parsing
+            mFile = new File(path[0]);
+            Scanner scanner;
+            try {
+                scanner = new Scanner(mFile, "UTF-8").useDelimiter("[\t\n]");
+            } catch (FileNotFoundException e) {
+                return R.string.err_db_reading_response;
             }
-            if ("E".equals(blockType)) break;
+            // check for error message from server
+            if (!scanner.hasNextLine()) return R.string.err_db_reading_response;
+            final String message = scanner.nextLine();
+            if (!"".equals(message)) {
+                mCustomError = message;
+                return -1;
+            }
+            // read the response
+            Distance distance = null;
+            boolean oldDistance = true;
+            while (scanner.hasNextLine()) {
+                final String blockType = scanner.next();
+                switch (blockType) {
+                    case "R":
+                        // get raid information
+                        final int raidId = scanner.nextInt();
+                        final long raidTimeReadonly = scanner.nextLong();
+                        final long raidTimeFinish = scanner.nextLong();
+                        final String raidName = scanner.next();
+                        distance = new Distance(raidId, raidTimeReadonly, raidTimeFinish, raidName,
+                                mainApplication.getUserEmail(), mainApplication.getUserPassword(),
+                                mainApplication.getTestSite());
+                        oldDistance = false;
+                        break;
+                    case "P":
+                        // parse list of points
+                        if (oldDistance) return R.string.err_db_bad_response;
+                        final int nPoints = scanner.nextInt();
+                        final int maxOrder = scanner.nextInt();
+                        distance.initPointArray(maxOrder,
+                                mainApplication.getContext().getResources().getString(R.string.mode_chip_init));
+                        for (int i = 0; i < nPoints; i++) {
+                            if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
+                            final int index = scanner.nextInt();
+                            final int type = scanner.nextInt();
+                            final int penalty = scanner.nextInt();
+                            final long start = scanner.nextLong();
+                            final long end = scanner.nextLong();
+                            final String name = scanner.next();
+                            if (!distance.addPoint(index, type, penalty, start, end, name)) {
+                                return R.string.err_db_bad_response;
+                            }
+                        }
+                        break;
+                    case "D":
+                        // parse list of discounts
+                        if (oldDistance) return R.string.err_db_bad_response;
+                        final int nDiscounts = scanner.nextInt();
+                        distance.initDiscountArray(nDiscounts);
+                        for (int i = 0; i < nDiscounts; i++) {
+                            if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
+                            final int minutes = scanner.nextInt();
+                            final int fromPoint = scanner.nextInt();
+                            final int toPoint = scanner.nextInt();
+                            if (!distance.addDiscount(minutes, fromPoint, toPoint)) {
+                                return R.string.err_db_bad_response;
+                            }
+                        }
+                        break;
+                    case "T":
+                        // parse list of teams
+                        if (oldDistance) return R.string.err_db_bad_response;
+                        final int nTeams = scanner.nextInt();
+                        final int maxNumber = scanner.nextInt();
+                        distance.initTeamArray(maxNumber);
+                        for (int i = 0; i < nTeams; i++) {
+                            if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
+                            final int number = scanner.nextInt();
+                            final int nMembers = scanner.nextInt();
+                            final int nMaps = scanner.nextInt();
+                            final String name = scanner.next();
+                            if (!distance.addTeam(number, nMembers, nMaps, name)) {
+                                return R.string.err_db_bad_response;
+                            }
+                        }
+                        break;
+                    case "M":
+                        // parse list of team members
+                        if (oldDistance) return R.string.err_db_bad_response;
+                        final int nMembers = scanner.nextInt();
+                        for (int i = 0; i < nMembers; i++) {
+                            if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
+                            final long memberId = scanner.nextLong();
+                            final int team = scanner.nextInt();
+                            final String name = scanner.next();
+                            final String phone = scanner.next();
+                            if (!distance.addMember(memberId, team, name, phone)) {
+                                return R.string.err_db_bad_response;
+                            }
+                        }
+                        break;
+                    case "E":
+                        // End of distance data in server response
+                        break;
+                    default:
+                        return R.string.err_db_bad_response;
+                }
+                if ("E".equals(blockType)) break;
+            }
+            scanner.close();
+            // check if all necessary data were present
+            if (oldDistance) return R.string.err_db_bad_response;
+            // Validate loaded distance
+            if (distance.hasErrors()) {
+                // Downloaded distance had errors, restore old distance from persistent memory
+                return R.string.err_db_bad_response;
+            }
+            // Copy parsed distance to persistent memory
+            mainApplication.setDistance(distance);
+            // Save parsed distance to local database
+            final String result = distance.saveToDb(mainApplication.getDatabase());
+            mainApplication.updateDbStatus();
+            if (result != null) {
+                mCustomError =
+                        mainApplication.getContext().getResources().getString(R.string.err_db_saving) + ": " + result;
+                return -1;
+            }
+            // TODO: reload distance from database to ensure that it was saved correctly
+            return R.string.download_distance_success;
         }
-        // check if all necessary data were present
-        if (oldDistance) {
-            Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-            return;
+
+        /**
+         * Show parsing result, delete the file and update screen layout.
+         *
+         * @param message False if connection attempt failed
+         */
+        protected void onPostExecute(final Integer message) {
+            // Show parsing result
+            if (mCustomError == null) {
+                Toast.makeText(mainApplication, message, Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(mainApplication, mCustomError, Toast.LENGTH_LONG).show();
+            }
+            // Delete downloaded file
+            if (!mFile.delete()) {
+                Toast.makeText(mainApplication, R.string.err_db_reading_response,
+                        Toast.LENGTH_LONG).show();
+            }
+            mainApplication.setDistanceDownloadId(-1L);
+            // Get a reference to the activity if it is still there
+            final DatabaseActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) return;
+            // Update activity layout
+            activity.updateLayout();
         }
-        // Validate loaded distance
-        if (mDistance.hasErrors()) {
-            // Downloaded distance had errors, restore old distance from persistent memory
-            mDistance = mMainApplication.getDistance();
-            Toast.makeText(context, badResponse, Toast.LENGTH_LONG).show();
-            return;
-        }
-        // Copy parsed distance to persistent memory
-        mMainApplication.setDistance(mDistance);
-        // Save parsed distance to local database
-        final String result = mDistance.saveToDb(mMainApplication.getDatabase());
-        mMainApplication.updateDbStatus();
-        if (result != null) {
-            Toast.makeText(context, getResources().getString(R.string.err_db_saving) + ": " + result,
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        Toast.makeText(context, getResources().getString(R.string.download_distance_success), Toast.LENGTH_LONG).show();
-        // TODO: reload distance from database to ensure that it was saved correctly
     }
+
 }

@@ -8,11 +8,12 @@
         <item name="colorControlHighlight">@color/bg_primary_light</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textColorPrimaryInverse">@color/text_primary_inverse</item>
 
         <item name="toolbarNavigationButtonStyle">@style/AppTheme.MenuIcon</item>
         <item name="navigationIcon">@drawable/ic_menu</item>
 
-        <item name="android:buttonStyle">@style/AppTheme.Button</item>
+        <item name="buttonStyle">@style/AppTheme.Button</item>
         <item name="colorButtonNormal">?colorPrimary</item>
 
         <item name="android:spinnerItemStyle">@style/SpinnerItem</item>

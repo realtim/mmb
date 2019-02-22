@@ -45,10 +45,15 @@ import static org.acra.ReportField.*;
 
 @SuppressWarnings("WeakerAccess")
 public class MainApplication extends Application {
+
     /**
      * Name of local SQLite database.
      */
     static final String DB_NAME = "mmb.sqlite";
+    /**
+     * Copy of main application context.
+     */
+    Context mContext;
     /**
      * Handler of SQLite database.
      */
@@ -91,6 +96,15 @@ public class MainApplication extends Application {
      * Connected Bluetooth station.
      */
     private Station mStation;
+
+    /**
+     * Get main application context.
+     *
+     * @return context
+     */
+    public Context getContext() {
+        return mContext;
+    }
 
     /**
      * Get database object.
@@ -240,6 +254,7 @@ public class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
         final Context context = getApplicationContext();
+        mContext = context;
         // Set russian locale for debug build type
         if (BuildConfig.DEBUG) {
             switchToRussian(context);
