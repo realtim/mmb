@@ -48,6 +48,14 @@
         <item name="android:gravity">center</item>
     </style>
 
+    <style name="AppTheme.TextBig" parent="TextAppearance.AppCompat.Display1">
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="AppTheme.TextMedium" parent="TextAppearance.AppCompat.Subhead">
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
     <style name="Divider">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>

@@ -1,3 +1,7 @@
+plugins {
+    id 'com.github.spotbugs' version '1.6.10'
+}
+
 apply plugin: 'com.android.application'
 android {
 
@@ -61,7 +65,7 @@ task findbugs(type: FindBugs) {
     ignoreFailures = true
     effort = "max"
     reportLevel = "high"
-    classes = files("build/intermediates/javac/")
+    classes = files("build/intermediates/javac/debug")
     source 'src'
     include '**/*.java'
     classpath = files()
@@ -77,4 +81,28 @@ task pmd(type: Pmd) {
     ruleSetFiles = files("$project.rootDir/config/pmd/rules-pmd.xml")
     source 'src'
     include '**/*.java'
+}
+
+spotbugs {
+    toolVersion = '3.1.11'
+}
+tasks.withType(com.github.spotbugs.SpotBugsTask) {
+    group = "verification"
+    ignoreFailures = true
+    effort = "max"
+    reportLevel = "high"
+    classes = files("build/intermediates/javac/debug")
+    source 'src'
+    include '**/*.java'
+    classpath = files()
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
+sourceSets {
+     // we define `main` sourceSet here, so SpotBugs Gradle Plugin generates `spotbugsMain` task
+     main {
+       java.srcDirs = ['src/main/java']
+     }
 }

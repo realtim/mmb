@@ -426,6 +426,34 @@ public class Distance {
     }
 
     /**
+     * Get the team maps count.
+     *
+     * @param number Team number
+     * @return Number of maps for the team
+     */
+    public int getTeamMaps(final int number) {
+        if (number <= 0 || number >= mTeams.length) return 0;
+        if (mTeams[number] == null) return 0;
+        return mTeams[number].mMaps;
+    }
+
+    /**
+     * Get the list of team members names.
+     *
+     * @param number Team number
+     * @return List of team members names (or empty list if the team does not exist)
+     */
+    public List<String> getTeamMembers(final int number) {
+        if (number <= 0 || number >= mTeams.length) return new ArrayList<>();
+        if (mTeams[number] == null) return new ArrayList<>();
+        final List<String> list = new ArrayList<>();
+        for (final Member member : mTeams[number].mMembers) {
+            list.add(member.mName);
+        }
+        return list;
+    }
+
+    /**
      * Save distance to local SQLite database.
      *
      * @param database SQLite database handler

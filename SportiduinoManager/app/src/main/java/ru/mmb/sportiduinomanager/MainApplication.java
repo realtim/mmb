@@ -24,7 +24,36 @@ import org.acra.sender.HttpSender;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
 
-import static org.acra.ReportField.*;
+import static org.acra.ReportField.ANDROID_VERSION;
+import static org.acra.ReportField.APP_VERSION_CODE;
+import static org.acra.ReportField.APP_VERSION_NAME;
+import static org.acra.ReportField.AVAILABLE_MEM_SIZE;
+import static org.acra.ReportField.BRAND;
+import static org.acra.ReportField.BUILD;
+import static org.acra.ReportField.BUILD_CONFIG;
+import static org.acra.ReportField.CRASH_CONFIGURATION;
+import static org.acra.ReportField.CUSTOM_DATA;
+import static org.acra.ReportField.DEVICE_FEATURES;
+import static org.acra.ReportField.DISPLAY;
+import static org.acra.ReportField.ENVIRONMENT;
+import static org.acra.ReportField.EVENTSLOG;
+import static org.acra.ReportField.FILE_PATH;
+import static org.acra.ReportField.INITIAL_CONFIGURATION;
+import static org.acra.ReportField.INSTALLATION_ID;
+import static org.acra.ReportField.LOGCAT;
+import static org.acra.ReportField.PACKAGE_NAME;
+import static org.acra.ReportField.PHONE_MODEL;
+import static org.acra.ReportField.PRODUCT;
+import static org.acra.ReportField.RADIOLOG;
+import static org.acra.ReportField.REPORT_ID;
+import static org.acra.ReportField.SETTINGS_GLOBAL;
+import static org.acra.ReportField.SETTINGS_SECURE;
+import static org.acra.ReportField.SETTINGS_SYSTEM;
+import static org.acra.ReportField.STACK_TRACE;
+import static org.acra.ReportField.THREAD_DETAILS;
+import static org.acra.ReportField.TOTAL_MEM_SIZE;
+import static org.acra.ReportField.USER_APP_START_DATE;
+import static org.acra.ReportField.USER_CRASH_DATE;
 
 /**
  * Keeps all persistent activity data for application lifetime.
@@ -96,6 +125,16 @@ public class MainApplication extends Application {
      * Connected Bluetooth station.
      */
     private Station mStation;
+
+    /**
+     * Current team number at chip initialization.
+     */
+    private int mTeamNumber;
+
+    /**
+     * Current members selection mask at chip initialization.
+     */
+    private int mTeamMask;
 
     /**
      * Get main application context.
@@ -249,6 +288,43 @@ public class MainApplication extends Application {
     public void setStation(final Station station) {
         mStation = station;
     }
+
+    /**
+     * Get the current team number during chip initialization.
+     *
+     * @return Team number
+     */
+    public int getTeamNumber() {
+        return mTeamNumber;
+    }
+
+    /**
+     * Save the current team number during chip initialization.
+     *
+     * @param teamNumber Team number
+     */
+    public void setTeamNumber(final int teamNumber) {
+        mTeamNumber = teamNumber;
+    }
+
+    /**
+     * Get the current team mask during chip initialization.
+     *
+     * @return Team number as string
+     */
+    public int getTeamMask() {
+        return mTeamMask;
+    }
+
+    /**
+     * Save the current team mask during chip initialization.
+     *
+     * @param teamMask Team mask
+     */
+    public void setTeamMask(final int teamMask) {
+        mTeamMask = teamMask;
+    }
+
 
     @Override
     public void onCreate() {

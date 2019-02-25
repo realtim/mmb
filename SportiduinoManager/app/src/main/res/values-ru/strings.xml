@@ -65,4 +65,7 @@
     <string name="key_del">\u232b</string>
     <string name="key_clear">\u00d7</string>
     <string name="team_number">-</string>
+    <string name="team_maps_count">Карт: %1$d</string>
+    <string name="team_members_count">Участников: %1$d (%2$s)</string>
+    <string name="init_team_chip">Записать чип</string>
 </resources>

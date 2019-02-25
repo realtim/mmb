@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="ru.mmb.sportiduinomanager"
-    android:versionCode="00005"
-    android:versionName="0.0.005">
+    android:versionCode="00006"
+    android:versionName="0.0.006">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />

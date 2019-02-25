@@ -2,6 +2,7 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
@@ -77,6 +78,7 @@
             android:id="@+id/key_del"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:clickable="false"
             android:onClick="keyboardButtonClicked"
             android:text="@string/key_del"
             app:layout_constraintEnd_toEndOf="parent"
@@ -134,6 +136,7 @@
             android:id="@+id/key_0"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:clickable="false"
             android:onClick="keyboardButtonClicked"
             android:text="@string/key_0"
             app:layout_constraintEnd_toStartOf="@id/key_clear"
@@ -145,6 +148,7 @@
             android:id="@+id/key_clear"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:clickable="false"
             android:onClick="keyboardButtonClicked"
             android:text="@string/key_clear"
             app:layout_constraintEnd_toEndOf="parent"
@@ -152,47 +156,50 @@
             app:layout_constraintTop_toTopOf="@id/key_6"
             app:layout_constraintWidth_max="@dimen/default_key_button_width" />
 
-
-        <TextView
-            android:id="@+id/team_number_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/default_padding"
-            android:text="@string/team_number_title"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/key_6" />
-
         <TextView
             android:id="@+id/init_team_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:autofillHints="team"
-            android:hint="@string/team_number"
+            android:layout_marginTop="@dimen/default_padding"
+            android:gravity="center"
+            android:hint="@string/team_number_title"
             android:maxLength="4"
-            android:paddingTop="0dp"
-            android:scrollHorizontally="false"
             android:singleLine="true"
-            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-            android:textColor="@color/text_primary"
+            android:text="@string/team_number"
+            android:textAppearance="@style/AppTheme.TextBig"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/team_number_title"
+            app:layout_constraintTop_toBottomOf="@+id/key_6"
             local:targetApi="28" />
+
+        <android.support.constraint.Group
+            android:id="@+id/init_team_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="init_team_name,init_team_maps,init_members_count,member_list" />
 
         <TextView
             android:id="@+id/init_team_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/default_padding"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:textColor="@color/text_primary"
+            android:scrollHorizontally="false"
+            android:text="@string/unknown"
+            android:textAppearance="@style/AppTheme.TextMedium"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/init_team_number" />
+
+        <TextView
+            android:id="@+id/init_team_maps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_padding"
+            android:text="@string/team_maps_count"
+            android:textAppearance="@style/AppTheme.TextMedium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/init_team_name" />
 
         <TextView
             android:id="@+id/init_error"
@@ -200,12 +207,46 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/default_padding"
             android:textColor="@color/bg_secondary"
-            android:visibility="invisible"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/init_team_name" />
+            app:layout_constraintTop_toBottomOf="@+id/init_team_maps" />
+
+        <Button
+            android:id="@+id/init_team_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_padding"
+            android:onClick="initChip"
+            android:text="@string/init_team_chip"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/init_team_maps" />
+
+        <TextView
+            android:id="@+id/init_members_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_padding"
+            android:scrollHorizontally="false"
+            android:text="@string/team_members_count"
+            android:textAppearance="@style/AppTheme.TextMedium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/init_team_chip" />
+
+        <android.support.v7.widget.RecyclerView xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/member_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:choiceMode="multipleChoice"
+            android:scrollbars="none"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/init_members_count"
+            tools:itemCount="4"
+            tools:listitem="@layout/member_list_item" />
 
     </android.support.constraint.ConstraintLayout>
-
 </ScrollView>

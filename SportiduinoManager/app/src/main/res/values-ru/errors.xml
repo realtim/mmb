@@ -25,4 +25,5 @@
     <string name="err_bt_bad_point_number">Некорректный номер активной точки</string>
 
     <string name="err_init_no_such_team">Команды с таким номером не существует</string>
+    <string name="err_init_empty_team">В команде должно быть не менее 1 участника</string>
 </resources>
