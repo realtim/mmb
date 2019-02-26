@@ -43,6 +43,11 @@ public class Station {
     private static final int PACKET_SIZE = 32;
 
     /**
+     * Protocol signature in all headers.
+     */
+    private static final byte HEADER_SIGNATURE = (byte) 0xFE;
+
+    /**
      * Result of sending command to station: everything is ok.
      */
     private static final byte COMMAND_OK = 0;
@@ -203,7 +208,7 @@ public class Station {
     public String getLastChipTimeString() {
         if (mLastChipTime == 0) return "-";
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(mLastChipTime * 1000);
+        calendar.setTimeInMillis(mLastChipTime * 1000L);
         final DateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault());
         return format.format(calendar.getTime());
     }
@@ -243,14 +248,19 @@ public class Station {
         }
     }
 
-    // Write command to station input stream
+    /**
+     * Write command to station input stream.
+     *
+     * @param command Command payload without start and stop bytes
+     * @return True if the command was sent
+     */
     private boolean send(final byte[] command) {
         if (command.length > (PACKET_SIZE - 4)) return false;
         byte[] buffer = new byte[PACKET_SIZE];
-        buffer[0] = (byte) 0xFE;
-        buffer[1] = (byte) 0xFE;
-        buffer[2] = (byte) 0xFE;
-        buffer[3] = (byte) 0xFE;
+        buffer[0] = HEADER_SIGNATURE;
+        buffer[1] = HEADER_SIGNATURE;
+        buffer[2] = HEADER_SIGNATURE;
+        buffer[3] = HEADER_SIGNATURE;
         System.arraycopy(command, 0, buffer, 4, command.length);
         try {
             final OutputStream output = mSocket.getOutputStream();
@@ -262,9 +272,24 @@ public class Station {
         return true;
     }
 
-    // Read raw data in PACKET_SIZE-byte blocks from station output stream
+    /**
+     * Sleep while waiting for station response to arrive.
+     */
+    private void sleep() {
+        try {
+            Thread.sleep(25);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Read raw data in PACKET_SIZE-byte blocks from station output stream.
+     *
+     * @return Station response or null in case of timeout or exception
+     */
     private byte[] receive() {
-        byte[] response = null;
+        byte[] response = new byte[0];
         final byte[] buffer = new byte[PACKET_SIZE];
         mResponseTime = -1;
         try {
@@ -273,22 +298,18 @@ public class Station {
             while (System.currentTimeMillis() - begin < WAIT_TIMEOUT) {
                 // wait for data to appear in input stream
                 if (input.available() == 0) {
-                    try {
-                        Thread.sleep(25);
-                    } catch (InterruptedException e) {
-                        return null;
-                    }
+                    sleep();
                     continue;
                 }
                 // read data into PACKET_SIZE byte buffer
                 final int newLen = input.read(buffer);
                 if (newLen == 0) continue;
                 // add received bytes (PACKET_SIZE or less) to response array
-                if (response == null) {
+                final int oldLen = response.length;
+                if (oldLen == 0) {
                     response = new byte[newLen];
                     System.arraycopy(buffer, 0, response, 0, newLen);
                 } else {
-                    final int oldLen = response.length;
                     final byte[] temp = new byte[oldLen + newLen];
                     System.arraycopy(response, 0, temp, 0, oldLen);
                     System.arraycopy(buffer, 0, temp, oldLen, newLen);
@@ -307,18 +328,23 @@ public class Station {
         } catch (IOException e) {
             // station got disconnected
             disconnect();
-            return null;
+            return response;
         }
     }
 
-    // Send command to station, receive response and make response integrity checks
+    /**
+     * Send command to station, receive response and make response integrity checks.
+     *
+     * @param sendBuffer Actual command payload without starting and ending bytes
+     * @return Byte array with station response, first byte contains error code
+     */
     private byte[] runCommand(final byte[] sendBuffer) {
         // reconnect (just in case and send the command
         if (!connect()) return new byte[]{SEND_FAILED};
         if (!send(sendBuffer)) return new byte[]{SEND_FAILED};
         // get station response
         final byte[] receiveBuffer = receive();
-        if (receiveBuffer == null) return new byte[]{REC_TIMEOUT};
+        if (receiveBuffer.length == 0) return new byte[]{REC_TIMEOUT};
         // check if we got response as several PACKET_SIZE blocks
         if (receiveBuffer.length % PACKET_SIZE != 0) return new byte[]{REC_BAD_RESPONSE};
         // process all blocks
@@ -327,10 +353,10 @@ public class Station {
         for (int n = 0; n < receiveBuffer.length / PACKET_SIZE; n++) {
             final int start = n * PACKET_SIZE;
             // check header
-            if (receiveBuffer[start] != (byte) 0xfe
-                    || receiveBuffer[start + 1] != (byte) 0xfe
-                    || receiveBuffer[start + 2] != (byte) 0xfe
-                    || receiveBuffer[start + 3] != (byte) 0xfe) {
+            if (receiveBuffer[start] != HEADER_SIGNATURE
+                    || receiveBuffer[start + 1] != HEADER_SIGNATURE
+                    || receiveBuffer[start + 2] != HEADER_SIGNATURE
+                    || receiveBuffer[start + 3] != HEADER_SIGNATURE) {
                 return new byte[]{REC_BAD_RESPONSE};
             }
             // check if command code received is equal to command code sent
@@ -352,16 +378,20 @@ public class Station {
         return response;
     }
 
+    /**
+     * Call runCommand (which performs communication with a station),
+     * receive response, check it, set mLastError in case of error and fill
+     * responseContent with actual station response.
+     *
+     * @param commandContent  Command payload sent to station
+     * @param responseContent Station response without service bytes
+     * @return True if there was no communication or command execution errors
+     */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean command(final byte[] commandContent, final byte[] responseContent) {
         mLastError = 0;
         // Communicate with the station
         final byte[] rawResponse = runCommand(commandContent);
-        // Sanity check
-        if (rawResponse == null || rawResponse.length == 0) {
-            mLastError = R.string.err_bt_internal_error;
-            return false;
-        }
         // Check for command execution errors and response parsing errors
         if (rawResponse[0] != COMMAND_OK) {
             switch (rawResponse[0]) {
@@ -401,20 +431,33 @@ public class Station {
         return mLastError;
     }
 
-    // Convert byte array section to int
+    /**
+     * Convert byte array section to int.
+     *
+     * @param array Array of bytes
+     * @param start Starting position of byte sequence which will be converted to int
+     * @param end   Ending position of byte sequence
+     * @return Int representation of byte sequence
+     */
     private int byteArray2Int(final byte[] array, final int start, final int end) {
         int result = 0;
         for (int i = start; i <= end; i++) {
-            result = result | (array[i] & 0xff) << ((end - i) * 8);
+            result = result | (array[i] & 0xFF) << ((end - i) * 8);
         }
         return result;
     }
 
-    // Copy 4-byte int value to the section of byte array
+    /**
+     * Copy 4-byte int value to the section of byte array.
+     *
+     * @param value Int value to copy
+     * @param array Target byte array
+     * @param from  Starting position in byte array to copy int value
+     */
     private void int2ByteArray(final int value, final byte[] array, final int from) {
         byte[] converted = new byte[4];
         for (int i = 0; i <= 3; i++) {
-            converted[0] = (byte) ((value >> 8 * (3 - i)) & 0xff);
+            converted[0] = (byte) ((value >> 8 * (3 - i)) & 0xFF);
         }
         System.arraycopy(converted, 0, array, from, 4);
     }

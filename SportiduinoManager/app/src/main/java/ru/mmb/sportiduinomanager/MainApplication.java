@@ -24,37 +24,6 @@ import org.acra.sender.HttpSender;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
 
-import static org.acra.ReportField.ANDROID_VERSION;
-import static org.acra.ReportField.APP_VERSION_CODE;
-import static org.acra.ReportField.APP_VERSION_NAME;
-import static org.acra.ReportField.AVAILABLE_MEM_SIZE;
-import static org.acra.ReportField.BRAND;
-import static org.acra.ReportField.BUILD;
-import static org.acra.ReportField.BUILD_CONFIG;
-import static org.acra.ReportField.CRASH_CONFIGURATION;
-import static org.acra.ReportField.CUSTOM_DATA;
-import static org.acra.ReportField.DEVICE_FEATURES;
-import static org.acra.ReportField.DISPLAY;
-import static org.acra.ReportField.ENVIRONMENT;
-import static org.acra.ReportField.EVENTSLOG;
-import static org.acra.ReportField.FILE_PATH;
-import static org.acra.ReportField.INITIAL_CONFIGURATION;
-import static org.acra.ReportField.INSTALLATION_ID;
-import static org.acra.ReportField.LOGCAT;
-import static org.acra.ReportField.PACKAGE_NAME;
-import static org.acra.ReportField.PHONE_MODEL;
-import static org.acra.ReportField.PRODUCT;
-import static org.acra.ReportField.RADIOLOG;
-import static org.acra.ReportField.REPORT_ID;
-import static org.acra.ReportField.SETTINGS_GLOBAL;
-import static org.acra.ReportField.SETTINGS_SECURE;
-import static org.acra.ReportField.SETTINGS_SYSTEM;
-import static org.acra.ReportField.STACK_TRACE;
-import static org.acra.ReportField.THREAD_DETAILS;
-import static org.acra.ReportField.TOTAL_MEM_SIZE;
-import static org.acra.ReportField.USER_APP_START_DATE;
-import static org.acra.ReportField.USER_CRASH_DATE;
-
 /**
  * Keeps all persistent activity data for application lifetime.
  */
@@ -62,27 +31,59 @@ import static org.acra.ReportField.USER_CRASH_DATE;
 // ACRA exception reporting system
 @AcraCore(buildConfigClass = BuildConfig.class,
         reportFormat = StringFormat.JSON,
-        reportContent = {REPORT_ID, APP_VERSION_CODE, APP_VERSION_NAME, PACKAGE_NAME, FILE_PATH,
-                PHONE_MODEL, BRAND, PRODUCT, ANDROID_VERSION, BUILD, TOTAL_MEM_SIZE,
-                AVAILABLE_MEM_SIZE, CUSTOM_DATA, STACK_TRACE, INITIAL_CONFIGURATION,
-                CRASH_CONFIGURATION, DISPLAY, USER_APP_START_DATE, USER_CRASH_DATE, LOGCAT,
-                EVENTSLOG, RADIOLOG, INSTALLATION_ID, DEVICE_FEATURES, ENVIRONMENT,
-                SETTINGS_SYSTEM, SETTINGS_SECURE, SETTINGS_GLOBAL, THREAD_DETAILS, BUILD_CONFIG})
+        reportContent = {org.acra.ReportField.REPORT_ID,
+                org.acra.ReportField.APP_VERSION_CODE,
+                org.acra.ReportField.APP_VERSION_NAME,
+                org.acra.ReportField.PACKAGE_NAME,
+                org.acra.ReportField.FILE_PATH,
+                org.acra.ReportField.PHONE_MODEL,
+                org.acra.ReportField.BRAND,
+                org.acra.ReportField.PRODUCT,
+                org.acra.ReportField.ANDROID_VERSION,
+                org.acra.ReportField.BUILD,
+                org.acra.ReportField.TOTAL_MEM_SIZE,
+                org.acra.ReportField.AVAILABLE_MEM_SIZE,
+                org.acra.ReportField.CUSTOM_DATA,
+                org.acra.ReportField.STACK_TRACE,
+                org.acra.ReportField.INITIAL_CONFIGURATION,
+                org.acra.ReportField.CRASH_CONFIGURATION,
+                org.acra.ReportField.DISPLAY,
+                org.acra.ReportField.USER_APP_START_DATE,
+                org.acra.ReportField.USER_CRASH_DATE,
+                org.acra.ReportField.LOGCAT,
+                org.acra.ReportField.EVENTSLOG,
+                org.acra.ReportField.RADIOLOG,
+                org.acra.ReportField.INSTALLATION_ID,
+                org.acra.ReportField.DEVICE_FEATURES,
+                org.acra.ReportField.ENVIRONMENT,
+                org.acra.ReportField.SETTINGS_SYSTEM,
+                org.acra.ReportField.SETTINGS_SECURE,
+                org.acra.ReportField.SETTINGS_GLOBAL,
+                org.acra.ReportField.THREAD_DETAILS,
+                org.acra.ReportField.BUILD_CONFIG})
 @AcraHttpSender(uri = "http://mmb.progressor.ru/php/mmbscripts/acra.php",
         httpMethod = HttpSender.Method.POST)
 @AcraToast(resText = R.string.acra_toast_text)
 
 @SuppressWarnings("WeakerAccess")
-public class MainApplication extends Application {
+public final class MainApplication extends Application {
 
     /**
      * Name of local SQLite database.
      */
     static final String DB_NAME = "mmb.sqlite";
     /**
+     * Alpha for disabled buttons appearance in the application.
+     */
+    static final float DISABLED_BUTTON = .5f;
+    /**
+     * Alpha for enabled buttons appearance in the application.
+     */
+    static final float ENABLED_BUTTON = 1f;
+    /**
      * Copy of main application context.
      */
-    Context mContext;
+    private Context mContext;
     /**
      * Handler of SQLite database.
      */
@@ -228,6 +229,10 @@ public class MainApplication extends Application {
     /**
      * Keep email and password of authorized user
      * and info about which website database we are using, main of test.
+     *
+     * @param userEmail    Email entered by user
+     * @param userPassword Password entered by user
+     * @param testSite     Test site selection (equal 1 if selected)
      */
     public void setAuthorizationParameters(final String userEmail, final String userPassword, final int testSite) {
         mUserEmail = userEmail;
@@ -374,6 +379,12 @@ public class MainApplication extends Application {
         }
     }
 
+
+    /**
+     * Switch to russian locale in debug version.
+     *
+     * @param context Application context
+     */
     @SuppressWarnings("deprecation")
     private void switchToRussian(final Context context) {
         final Locale locale = new Locale("ru");

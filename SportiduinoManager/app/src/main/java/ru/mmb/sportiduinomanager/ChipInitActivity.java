@@ -16,7 +16,7 @@ import ru.mmb.sportiduinomanager.model.Distance;
  * Provides ability to select a team, mark team members as absent,
  * init a chip for the team and save this data in local database.
  */
-public class ChipInitActivity extends MainActivity implements MemberListAdapter.OnItemClicked {
+public final class ChipInitActivity extends MainActivity implements MemberListAdapter.OnItemClicked {
     /**
      * Max number of symbols in mTeamNumber string.
      */
@@ -68,6 +68,7 @@ public class ChipInitActivity extends MainActivity implements MemberListAdapter.
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.chip_init).setChecked(true);
+        // TODO: Change toolbar title
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Update screen layout
@@ -213,16 +214,19 @@ public class ChipInitActivity extends MainActivity implements MemberListAdapter.
     private void changeKeyState(final int buttonId, final boolean isEnabled) {
         final Button getResultsButton = findViewById(buttonId);
         if (isEnabled) {
-            getResultsButton.setAlpha(1f);
+            getResultsButton.setAlpha(MainApplication.ENABLED_BUTTON);
             getResultsButton.setClickable(true);
         } else {
-            getResultsButton.setAlpha(.5f);
+            getResultsButton.setAlpha(MainApplication.DISABLED_BUTTON);
             getResultsButton.setClickable(false);
         }
     }
 
     /**
      * Try to find team with entered number and update layout with it's data.
+     *
+     * @param isNew True if the team was selected right now,
+     *              False if it is being reloaded after activity restart.
      */
     private void loadTeam(final boolean isNew) {
         // Parse integer team number from string
@@ -272,6 +276,7 @@ public class ChipInitActivity extends MainActivity implements MemberListAdapter.
         // Mark all members as selected for new team,
         // leave mask untouched for old team being reloaded
         if (isNew) {
+            mTeamMask = 0;
             for (int i = 0; i < teamMembers.size(); i++) {
                 mTeamMask = mTeamMask | (1 << i);
             }

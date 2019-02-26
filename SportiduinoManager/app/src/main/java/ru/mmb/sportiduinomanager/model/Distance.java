@@ -310,7 +310,11 @@ public class Distance {
         return DB_STATE_OK;
     }
 
-    // Database has old structure or was broken, erase all tables in it
+    /**
+     * Erase all tables in database when it has old structure or was broken.
+     *
+     * @param database Database handle
+     */
     private static void erase(final SQLiteDatabase database) {
         database.execSQL("DROP TABLE IF EXISTS mmb");
         database.execSQL("DROP TABLE IF EXISTS points");
@@ -649,10 +653,10 @@ public class Distance {
     /**
      * Allocate discount array with nDiscount as array size.
      *
-     * @param nDiscount Number of discounts
+     * @param numberOfDiscounts Number of discounts
      */
-    public void initDiscountArray(final int nDiscount) {
-        mDiscounts = new Discount[nDiscount];
+    public void initDiscountArray(final int numberOfDiscounts) {
+        mDiscounts = new Discount[numberOfDiscounts];
     }
 
     /**
@@ -684,13 +688,14 @@ public class Distance {
     /**
      * Construct team and save it to appropriate position in team array.
      *
-     * @param number   Team number
-     * @param nMembers Number of team members
-     * @param maps     Number of maps
-     * @param name     Team name
+     * @param number       Team number
+     * @param membersCount Number of team members
+     * @param mapsCount    Number of maps
+     * @param name         Team name
      * @return True in case of valid team number value
      */
-    public boolean addTeam(final int number, final int nMembers, final int maps, final String name) {
+    public boolean addTeam(final int number, final int membersCount, final int mapsCount,
+                           final String name) {
         // Check if team array was initialized
         if (mTeams == null) return false;
         // Check if team number is valid
@@ -698,7 +703,7 @@ public class Distance {
         // Check if the point was already set
         if (mTeams[number] == null) {
             // set the point
-            mTeams[number] = new Team(nMembers, maps, name);
+            mTeams[number] = new Team(membersCount, mapsCount, name);
             return true;
         }
         return false;
@@ -855,6 +860,15 @@ public class Distance {
          */
         final String mName;
 
+        /**
+         * Constructor for Point class.
+         *
+         * @param type    Point type
+         * @param penalty Penalty for missing this point
+         * @param start   Time at which this point start working
+         * @param end     Time at which this point stop working
+         * @param name    Point name
+         */
         Point(final int type, final int penalty, final long start, final long end, final String name) {
             mType = type;
             mPenalty = penalty;
@@ -881,6 +895,13 @@ public class Distance {
          */
         final String mPhone;
 
+        /**
+         * Constructor for Member class.
+         *
+         * @param memberId ID of the member
+         * @param name     Member name and birth date
+         * @param phone    Member phone
+         */
         Member(final long memberId, final String name, final String phone) {
             mId = memberId;
             mName = name;
@@ -905,10 +926,17 @@ public class Distance {
          */
         final Member[] mMembers;
 
-        Team(final int nMembers, final int maps, final String name) {
-            mMaps = maps;
+        /**
+         * Constructor for Team class.
+         *
+         * @param membersCount Number of members in this team
+         * @param mapsCount    Number of ordered maps
+         * @param name         Team name
+         */
+        Team(final int membersCount, final int mapsCount, final String name) {
+            mMaps = mapsCount;
             mName = name;
-            mMembers = new Member[nMembers];
+            mMembers = new Member[membersCount];
         }
     }
 
@@ -929,6 +957,13 @@ public class Distance {
          */
         final int mTo;
 
+        /**
+         * Constructor for Discount class.
+         *
+         * @param minutes   Value of discount in minutes
+         * @param fromPoint Starting point for discount interval
+         * @param toPoint   Ending point for discount interval
+         */
         Discount(final int minutes, final int fromPoint, final int toPoint) {
             mMinutes = minutes;
             mFrom = fromPoint;

@@ -35,6 +35,9 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
 
     /**
      * Adapter constructor.
+     *
+     * @param bluetoothDevices List of detected Bluetooth devices
+     * @param onClick          Adapter for processing Connect button click
      */
     BTDeviceListAdapter(final List<BluetoothDevice> bluetoothDevices, final OnItemClicked onClick) {
         super();
@@ -65,10 +68,10 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
         }
         // Disable button while connecting to this/other device
         if (mIsConnecting) {
-            holder.mConnectButton.setAlpha(.5f);
+            holder.mConnectButton.setAlpha(MainApplication.DISABLED_BUTTON);
             holder.mConnectButton.setClickable(false);
         } else {
-            holder.mConnectButton.setAlpha(1f);
+            holder.mConnectButton.setAlpha(MainApplication.ENABLED_BUTTON);
             holder.mConnectButton.setClickable(true);
             // Set my listener for Connect button
             holder.mConnectButton
@@ -105,6 +108,8 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
 
     /**
      * Add new device to the list.
+     *
+     * @param device New Bluetooth device to add to our list
      */
     void insertItem(final BluetoothDevice device) {
         mBTDeviceList.add(device);
@@ -113,6 +118,9 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
 
     /**
      * Get device from the position.
+     *
+     * @param position Position in the list of devices
+     * @return Bluetooth device at that position
      */
     BluetoothDevice getDevice(final int position) {
         return mBTDeviceList.get(position);
@@ -120,6 +128,9 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
 
     /**
      * Save MAC of connected device in the adapter.
+     *
+     * @param address      MAC address as string
+     * @param isConnecting True if we are connecting to this device right now
      */
     void setConnectedDevice(final String address, final boolean isConnecting) {
         mConnectedDevice = address;
@@ -152,6 +163,11 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
          */
         private final ImageButton mConnectButton;
 
+        /**
+         * View holder for a list item with device name and Connect button.
+         *
+         * @param view View of this list item
+         */
         DeviceHolder(final View view) {
             super(view);
             mName = view.findViewById(R.id.device_name);

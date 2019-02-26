@@ -31,9 +31,9 @@ import java.util.Scanner;
 import ru.mmb.sportiduinomanager.model.Distance;
 
 /**
- * Provides interaction with database at http://mmb.progressor.ru
+ * Provides interaction with database at http://mmb.progressor.ru site.
  */
-public class DatabaseActivity extends MainActivity {
+public final class DatabaseActivity extends MainActivity {
     /**
      * URL of test database interaction script.
      */
@@ -98,7 +98,12 @@ public class DatabaseActivity extends MainActivity {
         }
     };
 
-    // Calculate MD5 from user password string
+    /**
+     * Calculate MD5 from user password string.
+     *
+     * @param str String with a password
+     * @return MD5 of the string
+     */
     private String md5(final String str) {
         try {
             // Create MD5 Hash
@@ -137,6 +142,7 @@ public class DatabaseActivity extends MainActivity {
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.database).setChecked(true);
+        // TODO: Change toolbar title
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Update layout elements
@@ -152,6 +158,10 @@ public class DatabaseActivity extends MainActivity {
         unregisterReceiver(mDistanceReceiver);
     }
 
+    /**
+     * Update Database activity layout
+     * after start or distance download/results upload.
+     */
     private void updateLayout() {
         // Get database status from persistent memory
         final int dbStatus = mMainApplication.getDbStatus();
@@ -210,10 +220,10 @@ public class DatabaseActivity extends MainActivity {
                 ((EditText) findViewById(R.id.user_email)).setText(mMainApplication.getUserEmail());
                 ((SwitchCompat) findViewById(R.id.test_database)).setChecked(mMainApplication.getTestSite() == 1);
                 // TODO: add check for showing UL/DL buttons
-                getResultsButton.setAlpha(.5f);
+                getResultsButton.setAlpha(MainApplication.DISABLED_BUTTON);
                 getResultsButton.setClickable(false);
                 getResultsButton.setVisibility(View.VISIBLE);
-                sendResultsButton.setAlpha(.5f);
+                sendResultsButton.setAlpha(MainApplication.DISABLED_BUTTON);
                 sendResultsButton.setClickable(false);
                 sendResultsButton.setVisibility(View.VISIBLE);
                 // Show database content
@@ -261,25 +271,27 @@ public class DatabaseActivity extends MainActivity {
             return;
         }
         final EditText etUserPassword = findViewById(R.id.user_password);
-        String sUserPassword = etUserPassword.getText().toString();
-        if (sUserPassword.isEmpty()) {
+        String userPassword = etUserPassword.getText().toString();
+        if (userPassword.isEmpty()) {
             etUserPassword.setError(getResources().getString(R.string.err_db_empty_password));
             return;
         }
-        sUserPassword = md5(sUserPassword);
+        userPassword = md5(userPassword);
 
         // get download url
-        final int testSite = ((SwitchCompat) findViewById(R.id.test_database)).isChecked() ? 1 : 0;
+        int testSite;
         String url;
-        if (testSite == 0) {
-            url = MAIN_DATABASE_URL;
-        } else {
+        if (((SwitchCompat) findViewById(R.id.test_database)).isChecked()) {
+            testSite = 1;
             url = TEST_DATABASE_URL;
+        } else {
+            testSite = 0;
+            url = MAIN_DATABASE_URL;
         }
 
         // Save email/password/site in main application
         // (as this activity can be recreated loosing these value)
-        mMainApplication.setAuthorizationParameters(sUserEmail, sUserPassword, testSite);
+        mMainApplication.setAuthorizationParameters(sUserEmail, userPassword, testSite);
 
         // Clean password field to require to enter it again for next distance download
         etUserPassword.setText("");
@@ -295,7 +307,7 @@ public class DatabaseActivity extends MainActivity {
         // start download
         final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.addRequestHeader("X-Sportiduino-Protocol", HTTP_API_VERSION);
-        request.addRequestHeader("X-Sportiduino-Auth", sUserEmail + "|" + sUserPassword);
+        request.addRequestHeader("X-Sportiduino-Auth", sUserEmail + "|" + userPassword);
         request.addRequestHeader("X-Sportiduino-Action", "1");
         request.setTitle(getResources().getString(R.string.app_name));
         request.setDestinationInExternalFilesDir(getApplicationContext(), null, "distance.temp");
@@ -309,11 +321,11 @@ public class DatabaseActivity extends MainActivity {
         /**
          * Reference to parent activity (which can cease to exist in any moment).
          */
-        private final WeakReference<DatabaseActivity> activityReference;
+        private final WeakReference<DatabaseActivity> mActivityRef;
         /**
          * Reference to main application thread.
          */
-        private final MainApplication mainApplication;
+        private final MainApplication mMainApplication;
         /**
          * Downloaded file with a distance.
          */
@@ -323,11 +335,15 @@ public class DatabaseActivity extends MainActivity {
          */
         private String mCustomError;
 
-        // Retain only a weak reference to the activity
+        /**
+         * Retain only a weak reference to the activity.
+         *
+         * @param context Calling activity context
+         */
         LoadDistance(final DatabaseActivity context) {
             super();
-            activityReference = new WeakReference<>(context);
-            mainApplication = (MainApplication) context.getApplication();
+            mActivityRef = new WeakReference<>(context);
+            mMainApplication = (MainApplication) context.getApplication();
         }
 
         /**
@@ -365,8 +381,8 @@ public class DatabaseActivity extends MainActivity {
                         final long raidTimeFinish = scanner.nextLong();
                         final String raidName = scanner.next();
                         distance = new Distance(raidId, raidTimeReadonly, raidTimeFinish, raidName,
-                                mainApplication.getUserEmail(), mainApplication.getUserPassword(),
-                                mainApplication.getTestSite());
+                                mMainApplication.getUserEmail(), mMainApplication.getUserPassword(),
+                                mMainApplication.getTestSite());
                         oldDistance = false;
                         break;
                     case "P":
@@ -375,7 +391,7 @@ public class DatabaseActivity extends MainActivity {
                         final int nPoints = scanner.nextInt();
                         final int maxOrder = scanner.nextInt();
                         distance.initPointArray(maxOrder,
-                                mainApplication.getContext().getResources().getString(R.string.mode_chip_init));
+                                mMainApplication.getContext().getResources().getString(R.string.mode_chip_init));
                         for (int i = 0; i < nPoints; i++) {
                             if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
                             final int index = scanner.nextInt();
@@ -453,13 +469,13 @@ public class DatabaseActivity extends MainActivity {
                 return R.string.err_db_bad_response;
             }
             // Copy parsed distance to persistent memory
-            mainApplication.setDistance(distance);
+            mMainApplication.setDistance(distance);
             // Save parsed distance to local database
-            final String result = distance.saveToDb(mainApplication.getDatabase());
-            mainApplication.updateDbStatus();
+            final String result = distance.saveToDb(mMainApplication.getDatabase());
+            mMainApplication.updateDbStatus();
             if (result != null) {
                 mCustomError =
-                        mainApplication.getContext().getResources().getString(R.string.err_db_saving) + ": " + result;
+                        mMainApplication.getContext().getResources().getString(R.string.err_db_saving) + ": " + result;
                 return -1;
             }
             // TODO: reload distance from database to ensure that it was saved correctly
@@ -474,18 +490,18 @@ public class DatabaseActivity extends MainActivity {
         protected void onPostExecute(final Integer message) {
             // Show parsing result
             if (mCustomError == null) {
-                Toast.makeText(mainApplication, message, Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainApplication, message, Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(mainApplication, mCustomError, Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainApplication, mCustomError, Toast.LENGTH_LONG).show();
             }
             // Delete downloaded file
             if (!mFile.delete()) {
-                Toast.makeText(mainApplication, R.string.err_db_reading_response,
+                Toast.makeText(mMainApplication, R.string.err_db_reading_response,
                         Toast.LENGTH_LONG).show();
             }
-            mainApplication.setDistanceDownloadId(-1L);
+            mMainApplication.setDistanceDownloadId(-1L);
             // Get a reference to the activity if it is still there
-            final DatabaseActivity activity = activityReference.get();
+            final DatabaseActivity activity = mActivityRef.get();
             if (activity == null || activity.isFinishing()) return;
             // Update activity layout
             activity.updateLayout();

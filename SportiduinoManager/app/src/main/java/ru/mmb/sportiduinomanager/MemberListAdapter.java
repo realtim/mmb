@@ -29,6 +29,8 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
 
     /**
      * Adapter constructor.
+     *
+     * @param onClick Interface for click processing in calling activity.
      */
     MemberListAdapter(final OnItemClicked onClick) {
         super();
@@ -57,11 +59,7 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
         final String name = mNamesList.get(position);
         // Update the contents of the view with that member
         holder.mMember.setText(name);
-        if ((mMask & (1 << position)) == 0) {
-            holder.mMember.setChecked(false);
-        } else {
-            holder.mMember.setChecked(true);
-        }
+        holder.mMember.setChecked((mMask & (1 << position)) != 0);
         // Set my listener for the team member checkbox
         holder.mMember.setOnClickListener(view -> mOnClick.onItemClick(holder.getAdapterPosition()));
     }
@@ -76,6 +74,9 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
 
     /**
      * Fill list of members after selecting new team.
+     *
+     * @param names List of team members names
+     * @param mask  Bit mask with team members presence at active point
      */
     void fillList(final List<String> names, final int mask) {
         mNamesList = names;
@@ -104,6 +105,11 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
          */
         private final CheckBox mMember;
 
+        /**
+         * Holder for list element containing checkbox with team member name.
+         *
+         * @param view View of list item
+         */
         MemberHolder(final View view) {
             super(view);
             mMember = view.findViewById(R.id.check_member);

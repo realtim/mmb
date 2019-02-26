@@ -31,7 +31,7 @@ import ru.mmb.sportiduinomanager.model.Station;
 /**
  * Provides ability to discover a station, connect to it and set it's mode.
  */
-public class BluetoothActivity extends MainActivity implements BTDeviceListAdapter.OnItemClicked {
+public final class BluetoothActivity extends MainActivity implements BTDeviceListAdapter.OnItemClicked {
     /**
      * Code of started Bluetooth discovery activity.
      */
@@ -163,6 +163,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.bluetooth).setChecked(true);
+        // TODO: Change toolbar title
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Check if device supports Bluetooth
@@ -380,6 +381,9 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
 
     /**
      * Update layout according to activity state.
+     *
+     * @param fetchStatus True if we need to send command to station
+     *                    to get it's current status
      */
     private void updateLayout(final boolean fetchStatus) {
         // Show BT search button / progress
@@ -460,17 +464,21 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         /**
          * Reference to parent activity (which can cease to exist in any moment).
          */
-        private final WeakReference<BluetoothActivity> activityReference;
+        private final WeakReference<BluetoothActivity> mActivityRef;
         /**
          * Reference to main application thread.
          */
-        private final MainApplication mainApplication;
+        private final MainApplication mMainApplication;
 
-        // Retain only a weak reference to the activity
+        /**
+         * Retain only a weak reference to the activity.
+         *
+         * @param context Context of calling activity
+         */
         ConnectDevice(final BluetoothActivity context) {
             super();
-            activityReference = new WeakReference<>(context);
-            mainApplication = (MainApplication) context.getApplication();
+            mActivityRef = new WeakReference<>(context);
+            mMainApplication = (MainApplication) context.getApplication();
         }
 
         /**
@@ -478,7 +486,7 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
          */
         protected void onPreExecute() {
             // Get a reference to the activity if it is still there
-            final BluetoothActivity activity = activityReference.get();
+            final BluetoothActivity activity = mActivityRef.get();
             if (activity == null || activity.isFinishing()) return;
             // Update activity layout
             activity.updateLayout(false);
@@ -494,12 +502,12 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
             final Station station = new Station(device[0]);
             if (station.connect()) {
                 // Save connected station in main application
-                mainApplication.setStation(station);
+                mMainApplication.setStation(station);
                 return true;
             }
             // Disconnect from station
             station.disconnect();
-            mainApplication.setStation(null);
+            mMainApplication.setStation(null);
             return false;
         }
 
@@ -511,14 +519,14 @@ public class BluetoothActivity extends MainActivity implements BTDeviceListAdapt
         protected void onPostExecute(final Boolean result) {
             // Show error message if connect attempt failed
             if (!result) {
-                Toast.makeText(mainApplication, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainApplication, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
             }
             // Get a reference to the activity if it is still there
-            final BluetoothActivity activity = activityReference.get();
+            final BluetoothActivity activity = mActivityRef.get();
             if (activity == null || activity.isFinishing()) return;
             // Update device list in activity
             if (result) {
-                final Station station = mainApplication.getStation();
+                final Station station = mMainApplication.getStation();
                 if (station == null) {
                     activity.mAdapter.setConnectedDevice(null, false);
                 } else {

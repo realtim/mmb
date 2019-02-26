@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
 
     @Override
-    public void setContentView(@LayoutRes final int layoutResID) {
+    public final void setContentView(@LayoutRes final int layoutResID) {
         // This is going to be our actual root layout.
         @SuppressLint("InflateParams") final DrawerLayout fullLayout =
                 (DrawerLayout) getLayoutInflater().inflate(R.layout.activity_main, null);
@@ -84,6 +84,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Method called at the start of activity.
+     *
+     * @param instanceState Activity instance
+     */
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
@@ -114,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(final MenuItem item) {
+    public final boolean onOptionsItemSelected(final MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -125,6 +130,12 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Get access from child activity to the item of menu slider.
+     *
+     * @param itemId Menu item id
+     * @return Menu item handler
+     */
     MenuItem getMenuItem(final int itemId) {
         return mNavigationView.getMenu().findItem(itemId);
     }
