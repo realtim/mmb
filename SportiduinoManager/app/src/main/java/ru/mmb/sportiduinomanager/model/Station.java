@@ -90,6 +90,11 @@ public class Station {
     private int mLastError;
 
     /**
+     * Time at the start of command processing.
+     */
+    private long mStartTime;
+
+    /**
      * Time waiting for station while receiving station response.
      */
     private long mResponseTime;
@@ -291,11 +296,9 @@ public class Station {
     private byte[] receive() {
         byte[] response = new byte[0];
         final byte[] buffer = new byte[PACKET_SIZE];
-        mResponseTime = -1;
         try {
-            final long begin = System.currentTimeMillis();
             final InputStream input = mSocket.getInputStream();
-            while (System.currentTimeMillis() - begin < WAIT_TIMEOUT) {
+            while (System.currentTimeMillis() - mStartTime < WAIT_TIMEOUT) {
                 // wait for data to appear in input stream
                 if (input.available() == 0) {
                     sleep();
@@ -319,11 +322,9 @@ public class Station {
                 // and last block does not have continuation flag
                 if (response.length % PACKET_SIZE == 0
                         && response[response.length - PACKET_SIZE + 5] != (byte) 0x80) {
-                    mResponseTime = System.currentTimeMillis() - begin;
                     return response;
                 }
             }
-            mResponseTime = System.currentTimeMillis() - begin;
             return response;
         } catch (IOException e) {
             // station got disconnected
@@ -392,8 +393,12 @@ public class Station {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean command(final byte[] commandContent, final byte[] responseContent) {
         mLastError = 0;
+        // Save time at the beginning of command processing
+        mStartTime = System.currentTimeMillis();
         // Communicate with the station
         final byte[] rawResponse = runCommand(commandContent);
+        // Compute execution time
+        mResponseTime = System.currentTimeMillis() - mStartTime;
         // Check for command execution errors and response parsing errors
         if (rawResponse[0] != COMMAND_OK) {
             switch (rawResponse[0]) {
@@ -474,9 +479,9 @@ public class Station {
      */
     private void int2ByteArray(final int value, final byte[] array, final int starting,
                                final int count) {
-        byte[] converted = new byte[4];
+        byte[] converted = new byte[count];
         for (int i = 0; i < count; i++) {
-            converted[i] = (byte) ((value >> 8 * i) & 0xFF);
+            converted[count - 1 - i] = (byte) ((value >> 8 * i) & 0xFF);
         }
         System.arraycopy(converted, 0, array, starting, count);
     }
@@ -591,8 +596,9 @@ public class Station {
         int2ByteArray(now, commandData, 4, 4);
         int2ByteArray(teamMask, commandData, 8, 4);
         // Send command to station
-        final byte[] response = new byte[4];
+        final byte[] response = new byte[11];
         if (!command(commandData, response)) return false;
+        // TODO: save init time
         // Get current station clock drift
         mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
         return true;
