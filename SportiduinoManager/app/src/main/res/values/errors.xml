@@ -16,14 +16,25 @@
     <string name="err_bt_absent">Device does not support Bluetooth</string>
     <string name="err_bt_forbidden">Application should be allowed to use Bluetooth</string>
     <string name="err_bt_cant_connect">Connection attempt failed</string>
-    <string name="err_bt_internal_error">Communication internal error</string>
     <string name="err_bt_send_failed">Sending data to station failed</string>
     <string name="err_bt_receive_timeout">Station communication timeout</string>
     <string name="err_bt_receive_bad_response">Incorrect station response</string>
-    <string name="err_bt_receive_command_failed">Station command execution failed</string>
     <string name="err_bt_response_wrong_length">Station response has wrong length</string>
     <string name="err_bt_bad_point_number">Incorrect number of active point</string>
 
     <string name="err_init_no_such_team">No team with this number</string>
     <string name="err_init_empty_team">A team should consist of 1 or more members</string>
+    <string name="err_init_no_station">Connect to a station to be able to init chips</string>
+    <string name="err_init_wrong_mode">Switch the station to chip init mode</string>
+
+    <string name="err_station_wrong">Wrong station number in the command</string>
+    <string name="err_station_read">A error while reading chip data</string>
+    <string name="err_station_write">A error while writing data to chip</string>
+    <string name="err_station_init_chip">The chip is already initialized</string>
+    <string name="err_station_bad_chip">Use the same chip to write updated mask to it</string>
+    <string name="err_station_no_chip">Put the chip near the station</string>
+    <string name="err_station_unknown">The station returned an unknown error</string>
+
+    <string name="err_todo_active_point">Active point mode is not supported yet</string>
+    <string name="err_todo_team_list">Team list mode is not supported yet</string>
 </resources>

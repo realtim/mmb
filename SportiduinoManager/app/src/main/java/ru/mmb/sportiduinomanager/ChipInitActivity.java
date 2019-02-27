@@ -7,10 +7,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
 import ru.mmb.sportiduinomanager.model.Distance;
+import ru.mmb.sportiduinomanager.model.Station;
 
 /**
  * Provides ability to select a team, mark team members as absent,
@@ -26,6 +28,11 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * Main application thread with persistent data.
      */
     private MainApplication mMainApplication;
+
+    /**
+     * Station which was previously paired via Bluetooth.
+     */
+    private Station mStation;
 
     /**
      * RecyclerView with team members.
@@ -71,6 +78,8 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         // TODO: Change toolbar title
         // Disable startup animation
         overridePendingTransition(0, 0);
+        // Get connected station from main application thread
+        mStation = mMainApplication.getStation();
         // Update screen layout
         updateKeyboardState();
         loadTeam(false);
@@ -160,13 +169,21 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * @param view View of button clicked
      */
     public void initChip(final View view) {
-        // TODO: send command to station and check result
-        // Clear team number and mask to start again
-        mTeamNumber = "";
-        mTeamMask = 0;
-        // Update onscreen keyboard and "load" empty team
-        updateKeyboardState();
-        loadTeam(true);
+        // Check team number, mask and station presence
+        if (mTeamNumber.length() == 0 || mTeamMask == 0 || mStation == null) return;
+        final int teamNumber = Integer.parseInt(mTeamNumber);
+        // Send command to station and check result
+        if (mStation.initChip(teamNumber, mTeamMask)) {
+            // Clear team number and mask to start again
+            mTeamNumber = "";
+            mTeamMask = 0;
+            // Update onscreen keyboard and "load" empty team
+            updateKeyboardState();
+            loadTeam(true);
+        } else {
+            Toast.makeText(getApplicationContext(), mStation.getLastError(),
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     /**
@@ -246,6 +263,15 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         final Button initButton = findViewById(R.id.init_team_chip);
         final TextView teamNumberText = findViewById(R.id.init_team_number);
         final Group teamData = findViewById(R.id.init_team_data);
+        // Check if we can send initialization command to a station
+        if (mStation == null) {
+            showError(true, R.string.err_init_no_station);
+            return;
+        }
+        if (mStation.getMode() != Station.MODE_INIT_CHIPS) {
+            showError(true, R.string.err_init_wrong_mode);
+            return;
+        }
         // Hide all if no number was entered yet
         if (teamNumber == 0) {
             teamNumberText.setText(getResources().getString(R.string.team_number));
@@ -288,6 +314,11 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         ((TextView) findViewById(R.id.init_members_count)).setText(getResources()
                 .getString(R.string.team_members_count, getMembersCount(),
                         Integer.toString(mTeamMask, 2)));
+        // Check if some team members were selected as present
+        if (mTeamMask == 0) {
+            showError(false, R.string.err_init_empty_team);
+            return;
+        }
         // Make all team data visible
         initButton.setVisibility(View.VISIBLE);
         teamData.setVisibility(View.VISIBLE);

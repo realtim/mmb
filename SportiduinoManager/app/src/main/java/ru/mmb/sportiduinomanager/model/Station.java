@@ -362,9 +362,11 @@ public class Station {
             // check if command code received is equal to command code sent
             if (receiveBuffer[start + 4] != responseCode) return new byte[]{REC_BAD_RESPONSE};
             // check payload length
-            if (receiveBuffer[start + 5] == 0) return new byte[]{REC_COMMAND_ERROR};
+            if (receiveBuffer[start + 5] == 0) return new byte[]{REC_BAD_RESPONSE};
             // check command execution code (it should be present and equal to zero)
-            if (receiveBuffer[start + 6] != 0) return new byte[]{REC_COMMAND_ERROR};
+            if (receiveBuffer[start + 6] != 0) {
+                return new byte[]{(byte) (REC_COMMAND_ERROR + receiveBuffer[start + 6])};
+            }
             // check zero finish byte
             if (receiveBuffer[start + 31] != (byte) 0x00) return new byte[]{REC_BAD_RESPONSE};
             // copy payload to response buffer
@@ -404,11 +406,26 @@ public class Station {
                 case REC_BAD_RESPONSE:
                     mLastError = R.string.err_bt_receive_bad_response;
                     return false;
-                case REC_COMMAND_ERROR:
-                    mLastError = R.string.err_bt_receive_command_failed;
+                case REC_COMMAND_ERROR + 1:
+                    mLastError = R.string.err_station_wrong;
+                    return false;
+                case REC_COMMAND_ERROR + 2:
+                    mLastError = R.string.err_station_read;
+                    return false;
+                case REC_COMMAND_ERROR + 3:
+                    mLastError = R.string.err_station_write;
+                    return false;
+                case REC_COMMAND_ERROR + 4:
+                    mLastError = R.string.err_station_init_chip;
+                    return false;
+                case REC_COMMAND_ERROR + 5:
+                    mLastError = R.string.err_station_bad_chip;
+                    return false;
+                case REC_COMMAND_ERROR + 6:
+                    mLastError = R.string.err_station_no_chip;
                     return false;
                 default:
-                    mLastError = R.string.err_bt_internal_error;
+                    mLastError = R.string.err_station_unknown;
                     return false;
             }
         }
@@ -448,40 +465,20 @@ public class Station {
     }
 
     /**
-     * Copy 4-byte int value to the section of byte array.
+     * Copy first count bytes from int value to the section of byte array.
      *
-     * @param value Int value to copy
-     * @param array Target byte array
-     * @param from  Starting position in byte array to copy int value
+     * @param value    Int value to copy
+     * @param array    Target byte array
+     * @param starting Starting position in byte array to copy int value
+     * @param count    Number of bytes to copy
      */
-    private void int2ByteArray(final int value, final byte[] array, final int from) {
+    private void int2ByteArray(final int value, final byte[] array, final int starting,
+                               final int count) {
         byte[] converted = new byte[4];
-        for (int i = 0; i <= 3; i++) {
-            converted[0] = (byte) ((value >> 8 * (3 - i)) & 0xFF);
+        for (int i = 0; i < count; i++) {
+            converted[i] = (byte) ((value >> 8 * i) & 0xFF);
         }
-        System.arraycopy(converted, 0, array, from, 4);
-    }
-
-    /**
-     * Get station local time, mode, number, etc.
-     *
-     * @return True if we got valid response from station, check mLastError otherwise
-     */
-    public boolean fetchStatus() {
-        // Get response from station
-        final byte[] response = new byte[12];
-        if (!command(new byte[]{(byte) 0x83}, response)) return false;
-        // Get station clock drift
-        mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
-        // Get station mode
-        mMode = response[4];
-        // Get station N
-        mNumber = response[5];
-        // Get number of chips registered by station
-        mChipsRegistered = byteArray2Int(response, 6, 7);
-        // Get last chips registration time
-        mLastChipTime = byteArray2Int(response, 8, 11);
-        return true;
+        System.arraycopy(converted, 0, array, starting, count);
     }
 
     /**
@@ -541,8 +538,8 @@ public class Station {
         commandData[1] = (byte) 0;  // TODO: change station bios to remove extra byte
         commandData[2] = number;
         commandData[3] = mNumber;
-        int2ByteArray(mChipsRegistered, commandData, 4);
-        int2ByteArray(mLastChipTime, commandData, 8);
+        int2ByteArray(mChipsRegistered, commandData, 4, 4);
+        int2ByteArray(mLastChipTime, commandData, 8, 4);
         // Send it to station
         final byte[] response = new byte[4];
         if (!command(commandData, response)) return false;
@@ -552,4 +549,53 @@ public class Station {
         mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
         return true;
     }
+
+    /**
+     * Get station local time, mode, number, etc.
+     *
+     * @return True if we got valid response from station, check mLastError otherwise
+     */
+    public boolean fetchStatus() {
+        // Get response from station
+        final byte[] response = new byte[12];
+        if (!command(new byte[]{(byte) 0x83}, response)) return false;
+        // Get station clock drift
+        mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
+        // Get station mode
+        mMode = response[4];
+        // Get station N
+        mNumber = response[5];
+        // Get number of chips registered by station
+        mChipsRegistered = byteArray2Int(response, 6, 7);
+        // Get last chips registration time
+        mLastChipTime = byteArray2Int(response, 8, 11);
+        return true;
+    }
+
+    /**
+     * Init a chip with team number and members mask.
+     *
+     * @param teamNumber Team number
+     * @param teamMask   Mask of team members presence
+     * @return True if succeeded
+     */
+    public boolean initChip(final int teamNumber, final int teamMask) {
+        // Note: last 4 byte are reserved and equal to zero now
+        byte[] commandData = new byte[16];
+        // Prepare command payload
+        commandData[0] = (byte) 0x84;
+        commandData[1] = (byte) 0;  // TODO: change station bios to remove extra byte
+        int2ByteArray(teamNumber, commandData, 2, 2);
+        final int now = (int) (System.currentTimeMillis() / 1000L);
+        // TODO: station should use its own clock
+        int2ByteArray(now, commandData, 4, 4);
+        int2ByteArray(teamMask, commandData, 8, 4);
+        // Send command to station
+        final byte[] response = new byte[4];
+        if (!command(commandData, response)) return false;
+        // Get current station clock drift
+        mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
+        return true;
+    }
+
 }

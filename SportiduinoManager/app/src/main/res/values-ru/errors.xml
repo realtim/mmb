@@ -16,14 +16,29 @@
     <string name="err_bt_absent">Устройство не поддерживает Bluetooth</string>
     <string name="err_bt_forbidden">Приложению должно быть разрешено использование Bluetooth</string>
     <string name="err_bt_cant_connect">Подключиться к станции не удалось</string>
-    <string name="err_bt_internal_error">Внутренняя ошибка взаимодействия со станцией</string>
     <string name="err_bt_send_failed">Ошибка отправки запроса к станции</string>
     <string name="err_bt_receive_timeout">Станция не отвечает</string>
     <string name="err_bt_receive_bad_response">Некорректный ответ станции</string>
-    <string name="err_bt_receive_command_failed">Ошибка выполнения команды станцией</string>
     <string name="err_bt_response_wrong_length">Неправильная длина ответа станции</string>
     <string name="err_bt_bad_point_number">Некорректный номер активной точки</string>
 
     <string name="err_init_no_such_team">Команды с таким номером не существует</string>
     <string name="err_init_empty_team">В команде должно быть не менее 1 участника</string>
+    <string name="err_init_no_station">Для инициализации чипов подключитесь сначала к
+        станции</string>
+    <string name="err_init_wrong_mode">Переключите станцию в режим инициализации чипов</string>
+
+    <string name="err_station_wrong">Некорректный номер станции в команде к ней</string>
+    <string name="err_station_read">Ошибка чтения данных из чипа</string>
+    <string name="err_station_write">Ошибка записи данных в чип</string>
+    <string name="err_station_init_chip">Этот чип уже был недавно инициализирован</string>
+    <string name="err_station_bad_chip">Повторно поднесите чип для записи в него
+        обновленного состава участников</string>
+    <string name="err_station_no_chip">Поднесите чип ближе к станции</string>
+    <string name="err_station_unknown">Станция вернула неизвестный код ошибки</string>
+
+    <string name="err_todo_active_point">Режим работы на активной точке еще не
+        поддерживается</string>
+    <string name="err_todo_team_list">Режим просмотра результатов команд еще не
+        поддерживается</string>
 </resources>
