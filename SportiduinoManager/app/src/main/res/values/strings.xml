@@ -21,8 +21,8 @@
     <string name="database_status_unknown">Database status unknown</string>
     <string name="database_fatal_error">Database fatal error, something gone wrong</string>
     <string name="database_empty">Local database is empty, download data from site</string>
-    <string name="database_outdated">Data can be outdated, download race and teams again!</string>
     <string name="database_ok">Local database is in healthy state</string>
+    <string name="database_damaged">Database is damaged, download race and teams again!</string>
     <string name="download_results">Download results from site</string>
     <string name="send_results">Send my results to site</string>
     <string name="download_distance">Download race and teams</string>

@@ -10,7 +10,6 @@
     <string name="err_db_download_failed">Data download failed: </string>
     <string name="err_db_reading_response">I/O error while reading server response</string>
     <string name="err_db_bad_response">Error in response format</string>
-    <string name="err_db_saving">Error saving to local database</string>
     <string name="err_db_no_distance_loaded">Distance was not loaded from site</string>
 
     <string name="err_bt_absent">Device does not support Bluetooth</string>

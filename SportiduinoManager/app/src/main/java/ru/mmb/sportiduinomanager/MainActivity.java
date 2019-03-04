@@ -2,7 +2,6 @@ package ru.mmb.sportiduinomanager;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.design.widget.NavigationView;
@@ -16,7 +15,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import ru.mmb.sportiduinomanager.model.Distance;
+import ru.mmb.sportiduinomanager.model.Database;
 
 /**
  * Provides left menu via NavigationDrawer.
@@ -103,20 +102,25 @@ public class MainActivity extends AppCompatActivity {
             final TextView message = findViewById(R.id.startup_message);
             message.setText(startupError);
         }
-        final SQLiteDatabase database = appState.getDatabase();
+        final Database database = appState.getDatabase();
         if (startupError == null && database == null) {
             final TextView message = findViewById(R.id.startup_message);
             message.setText(R.string.err_db_is_null);
         }
         // Update 'Database' menu item
         final MenuItem databaseItem = mNavigationView.getMenu().findItem(R.id.database);
-        final int dbStatus = Distance.getDbStatus(database);
-        if (dbStatus == Distance.DB_STATE_FAILED || dbStatus == Distance.DB_STATE_EMPTY) {
-            databaseItem.setTitle(getResources().getText(R.string.mode_cloud_download));
-            databaseItem.setIcon(R.drawable.ic_cloud_download);
+        int dbStatus;
+        if (database == null) {
+            dbStatus = Database.DB_STATE_FAILED;
         } else {
+            dbStatus = database.getDbStatus();
+        }
+        if (dbStatus == Database.DB_STATE_OK) {
             databaseItem.setTitle(getResources().getText(R.string.mode_cloud_done));
             databaseItem.setIcon(R.drawable.ic_cloud_done);
+        } else {
+            databaseItem.setTitle(getResources().getText(R.string.mode_cloud_download));
+            databaseItem.setIcon(R.drawable.ic_cloud_download);
         }
     }
 

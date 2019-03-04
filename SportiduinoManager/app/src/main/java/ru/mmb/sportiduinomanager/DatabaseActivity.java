@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -28,7 +29,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
+import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
+import ru.mmb.sportiduinomanager.model.Teams;
 
 /**
  * Provides interaction with database at http://mmb.progressor.ru site.
@@ -51,6 +54,11 @@ public final class DatabaseActivity extends MainActivity {
      * Local copy of distance (downloaded from site or loaded from local database).
      */
     private Distance mDistance;
+
+    /**
+     * Local copy of teams with members (from site or local database).
+     */
+    private Teams mTeams;
 
     /**
      * Main application thread with persistent data.
@@ -99,6 +107,27 @@ public final class DatabaseActivity extends MainActivity {
     };
 
     /**
+     * Get descriptive string message about database status.
+     *
+     * @param status Status of the database
+     * @return Resource id with string message about the status
+     */
+    private static int getStatusMessage(final int status) {
+        switch (status) {
+            case Database.DB_STATE_FAILED:
+                return R.string.database_fatal_error;
+            case Database.DB_STATE_EMPTY:
+                return R.string.database_empty;
+            case Database.DB_STATE_OK:
+                return R.string.database_ok;
+            case Database.DB_STATE_DAMAGED:
+                return R.string.database_damaged;
+            default:
+                return R.string.database_status_unknown;
+        }
+    }
+
+    /**
      * Calculate MD5 from user password string.
      *
      * @param str String with a password
@@ -133,6 +162,7 @@ public final class DatabaseActivity extends MainActivity {
         mContext = this;
         mMainApplication = (MainApplication) this.getApplication();
         mDistance = mMainApplication.getDistance();
+        mTeams = mMainApplication.getTeams();
         mDownloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         setContentView(R.layout.activity_database);
     }
@@ -163,18 +193,28 @@ public final class DatabaseActivity extends MainActivity {
      * after start or distance download/results upload.
      */
     private void updateLayout() {
-        // Get database status from persistent memory
-        final int dbStatus = mMainApplication.getDbStatus();
+        int dbStatus;
+        // Get database from persistent memory
+        final Database database = mMainApplication.getDatabase();
+        // Find its status
+        if (database == null) {
+            dbStatus = Database.DB_STATE_FAILED;
+        } else {
+            dbStatus = database.getDbStatus();
+            if (dbStatus == Database.DB_STATE_OK && (mDistance == null || mTeams == null)) {
+                dbStatus = Database.DB_STATE_DAMAGED;
+            }
+        }
         // Hide progress bar and update database status string
         final TextView statusMessage = findViewById(R.id.database_status_description);
         int statusColor;
-        if (dbStatus == Distance.DB_STATE_EMPTY || dbStatus == Distance.DB_STATE_OK) {
+        if (dbStatus == Database.DB_STATE_EMPTY || dbStatus == Database.DB_STATE_OK) {
             statusColor = R.color.text_primary;
         } else {
             statusColor = R.color.bg_secondary;
         }
         statusMessage.setTextColor(ResourcesCompat.getColor(getResources(), statusColor, getTheme()));
-        statusMessage.setText(Distance.getStatusMessage(dbStatus));
+        statusMessage.setText(getStatusMessage(dbStatus));
         if (mMainApplication.getDistanceDownloadId() == -1) {
             findViewById(R.id.database_status_progress).setVisibility(View.INVISIBLE);
             statusMessage.setVisibility(View.VISIBLE);
@@ -189,7 +229,7 @@ public final class DatabaseActivity extends MainActivity {
         final LinearLayout dlDistanceLayout = findViewById(R.id.download_distance_layout);
         final LinearLayout dbContentLayout = findViewById(R.id.database_content_layout);
         switch (dbStatus) {
-            case Distance.DB_STATE_FAILED:
+            case Database.DB_STATE_FAILED:
                 // Database is broken, can't do anything
                 databaseItem.setTitle(getResources().getText(R.string.mode_cloud_download));
                 databaseItem.setIcon(R.drawable.ic_cloud_download);
@@ -198,8 +238,9 @@ public final class DatabaseActivity extends MainActivity {
                 dlDistanceLayout.setVisibility(View.GONE);
                 dbContentLayout.setVisibility(View.GONE);
                 break;
-            case Distance.DB_STATE_EMPTY:
-                // Database is empty, need to download it from server
+            case Database.DB_STATE_EMPTY:
+            case Database.DB_STATE_DAMAGED:
+                // Database is empty or damaged, need to download it from server
                 databaseItem.setTitle(getResources().getText(R.string.mode_cloud_download));
                 databaseItem.setIcon(R.drawable.ic_cloud_download);
                 getResultsButton.setVisibility(View.GONE);
@@ -207,9 +248,7 @@ public final class DatabaseActivity extends MainActivity {
                 dlDistanceLayout.setVisibility(View.VISIBLE);
                 dbContentLayout.setVisibility(View.GONE);
                 break;
-            case Distance.DB_STATE_OUTDATED:
-            case Distance.DB_STATE_OK:
-                mDistance = mMainApplication.getDistance();
+            case Database.DB_STATE_OK:
                 // Don't allow to reload database if it contains important data
                 if (mDistance.canBeReloaded()) {
                     dlDistanceLayout.setVisibility(View.VISIBLE);
@@ -370,7 +409,7 @@ public final class DatabaseActivity extends MainActivity {
             }
             // read the response
             Distance distance = null;
-            boolean oldDistance = true;
+            Teams teams = null;
             while (scanner.hasNextLine()) {
                 final String blockType = scanner.next();
                 switch (blockType) {
@@ -380,14 +419,14 @@ public final class DatabaseActivity extends MainActivity {
                         final long raidTimeReadonly = scanner.nextLong();
                         final long raidTimeFinish = scanner.nextLong();
                         final String raidName = scanner.next();
-                        distance = new Distance(raidId, raidTimeReadonly, raidTimeFinish, raidName,
-                                mMainApplication.getUserEmail(), mMainApplication.getUserPassword(),
-                                mMainApplication.getTestSite());
-                        oldDistance = false;
+                        distance = new Distance(mMainApplication.getUserEmail(),
+                                mMainApplication.getUserPassword(), mMainApplication.getTestSite(),
+                                raidId, raidName, System.currentTimeMillis() / 1000,
+                                raidTimeReadonly, raidTimeFinish);
                         break;
                     case "P":
                         // parse list of points
-                        if (oldDistance) return R.string.err_db_bad_response;
+                        if (distance == null) return R.string.err_db_bad_response;
                         final int nPoints = scanner.nextInt();
                         final int maxOrder = scanner.nextInt();
                         distance.initPointArray(maxOrder,
@@ -407,7 +446,7 @@ public final class DatabaseActivity extends MainActivity {
                         break;
                     case "D":
                         // parse list of discounts
-                        if (oldDistance) return R.string.err_db_bad_response;
+                        if (distance == null) return R.string.err_db_bad_response;
                         final int nDiscounts = scanner.nextInt();
                         distance.initDiscountArray(nDiscounts);
                         for (int i = 0; i < nDiscounts; i++) {
@@ -422,24 +461,23 @@ public final class DatabaseActivity extends MainActivity {
                         break;
                     case "T":
                         // parse list of teams
-                        if (oldDistance) return R.string.err_db_bad_response;
                         final int nTeams = scanner.nextInt();
                         final int maxNumber = scanner.nextInt();
-                        distance.initTeamArray(maxNumber);
+                        teams = new Teams(maxNumber);
                         for (int i = 0; i < nTeams; i++) {
                             if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
                             final int number = scanner.nextInt();
                             final int nMembers = scanner.nextInt();
                             final int nMaps = scanner.nextInt();
                             final String name = scanner.next();
-                            if (!distance.addTeam(number, nMembers, nMaps, name)) {
+                            if (!teams.addTeam(number, nMembers, nMaps, name)) {
                                 return R.string.err_db_bad_response;
                             }
                         }
                         break;
                     case "M":
                         // parse list of team members
-                        if (oldDistance) return R.string.err_db_bad_response;
+                        if (teams == null) return R.string.err_db_bad_response;
                         final int nMembers = scanner.nextInt();
                         for (int i = 0; i < nMembers; i++) {
                             if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
@@ -447,7 +485,7 @@ public final class DatabaseActivity extends MainActivity {
                             final int team = scanner.nextInt();
                             final String name = scanner.next();
                             final String phone = scanner.next();
-                            if (!distance.addMember(memberId, team, name, phone)) {
+                            if (!teams.addTeamMember(team, memberId, name, phone)) {
                                 return R.string.err_db_bad_response;
                             }
                         }
@@ -462,20 +500,23 @@ public final class DatabaseActivity extends MainActivity {
             }
             scanner.close();
             // check if all necessary data were present
-            if (oldDistance) return R.string.err_db_bad_response;
-            // Validate loaded distance
-            if (distance.hasErrors()) {
-                // Downloaded distance had errors, restore old distance from persistent memory
+            if (distance == null || teams == null) return R.string.err_db_bad_response;
+            // Validate loaded distance and teams
+            if (distance.hasErrors() || teams.hasErrors()) {
+                // Downloaded distance had errors, use old distance from persistent memory
                 return R.string.err_db_bad_response;
             }
-            // Copy parsed distance to persistent memory
+            // Copy parsed distance and teams to class members and to persistent memory
             mMainApplication.setDistance(distance);
-            // Save parsed distance to local database
-            final String result = distance.saveToDb(mMainApplication.getDatabase());
-            mMainApplication.updateDbStatus();
-            if (result != null) {
-                mCustomError =
-                        mMainApplication.getContext().getResources().getString(R.string.err_db_saving) + ": " + result;
+            mMainApplication.setTeams(teams);
+            // Save parsed distance and teams to local database
+            final Database database = mMainApplication.getDatabase();
+            try {
+                database.saveDistance(distance);
+                database.saveTeams(teams);
+                // TODO: mMainApplication.setDatabase(database);
+            } catch (SQLiteException e) {
+                mCustomError = e.getMessage();
                 return -1;
             }
             // TODO: reload distance from database to ensure that it was saved correctly
@@ -503,6 +544,9 @@ public final class DatabaseActivity extends MainActivity {
             // Get a reference to the activity if it is still there
             final DatabaseActivity activity = mActivityRef.get();
             if (activity == null || activity.isFinishing()) return;
+            // Update distance and teams class members
+            activity.mDistance = mMainApplication.getDistance();
+            activity.mTeams = mMainApplication.getTeams();
             // Update activity layout
             activity.updateLayout();
         }

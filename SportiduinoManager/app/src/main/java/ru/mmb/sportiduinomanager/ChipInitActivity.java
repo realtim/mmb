@@ -11,8 +11,8 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.model.Teams;
 
 /**
  * Provides ability to select a team, mark team members as absent,
@@ -261,10 +261,6 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         }
         // No errors found yet
         findViewById(R.id.init_error).setVisibility(View.INVISIBLE);
-        // Save layout elements views for future usage
-        final Button initButton = findViewById(R.id.init_team_chip);
-        final TextView teamNumberText = findViewById(R.id.init_team_number);
-        final Group teamData = findViewById(R.id.init_team_data);
         // Check if we can send initialization command to a station
         if (mStation == null) {
             showError(true, R.string.err_init_no_station);
@@ -274,6 +270,10 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             showError(true, R.string.err_init_wrong_mode);
             return;
         }
+        // Save layout elements views for future usage
+        final Button initButton = findViewById(R.id.init_team_chip);
+        final TextView teamNumberText = findViewById(R.id.init_team_number);
+        final Group teamData = findViewById(R.id.init_team_data);
         // Hide all if no number was entered yet
         if (teamNumber == 0) {
             teamNumberText.setText(getResources().getString(R.string.team_number));
@@ -284,13 +284,13 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         // Update team number on screen
         teamNumberText.setText(mTeamNumber);
         // Check if local database was loaded
-        final Distance distance = mMainApplication.getDistance();
-        if (distance == null) {
+        final Teams teams = mMainApplication.getTeams();
+        if (teams == null) {
             showError(true, R.string.err_db_no_distance_loaded);
             return;
         }
         // Try to find team with entered number in local database
-        final String teamName = distance.getTeamName(teamNumber);
+        final String teamName = teams.getTeamName(teamNumber);
         if (teamName == null) {
             showError(true, R.string.err_init_no_such_team);
             return;
@@ -298,9 +298,9 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         // Update team name and map count
         ((TextView) findViewById(R.id.init_team_name)).setText(teamName);
         ((TextView) findViewById(R.id.init_team_maps)).setText(getResources()
-                .getString(R.string.team_maps_count, distance.getTeamMaps(teamNumber)));
+                .getString(R.string.team_maps_count, teams.getTeamMaps(teamNumber)));
         // Get list of team members
-        final List<String> teamMembers = distance.getTeamMembers(teamNumber);
+        final List<String> teamMembers = teams.getMembersNames(teamNumber);
         // Mark all members as selected for new team,
         // leave mask untouched for old team being reloaded
         if (isNew) {

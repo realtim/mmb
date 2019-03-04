@@ -183,7 +183,7 @@ function SendDistance(PDO $pdo, $raid_id)
 
     // Получаем список участников из этих команд
     $members = array();
-    $sql = $pdo->prepare("SELECT Users.user_id, Teams.team_num, Users.user_name, Users.user_birthyear, Users.user_phone FROM Teams, TeamUsers, Users WHERE distance_id = :distance_id AND team_hide = 0 AND teamuser_hide = 0 AND user_hide = 0 AND TeamUsers.user_id = Users.user_id AND TeamUsers.team_id = Teams.team_id ORDER BY Teams.team_num ASC, Users.user_name ASC");
+    $sql = $pdo->prepare("SELECT Users.user_id, Teams.team_num, Users.user_name, Users.user_birthyear, Users.user_phone FROM Teams, TeamUsers, Users WHERE distance_id = :distance_id AND team_hide = 0 AND teamuser_hide = 0 AND user_hide = 0 AND TeamUsers.user_id = Users.user_id AND TeamUsers.team_id = Teams.team_id ORDER BY Users.user_id ASC");
     $sql ->bindParam("distance_id", $distance_id, PDO::PARAM_INT);
     $sql->execute();
     $result = $sql->fetchAll(PDO::FETCH_ASSOC);

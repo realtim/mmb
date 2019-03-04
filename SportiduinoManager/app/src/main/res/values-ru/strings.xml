@@ -21,8 +21,8 @@
     <string name="database_status_unknown">Состояние базы неизвестно</string>
     <string name="database_fatal_error">Критическая ошибка открытия базы, что-то пошло не так</string>
     <string name="database_empty">Локальная база пуста, загрузите данные с сайта</string>
-    <string name="database_outdated">Дистанция/участники могли устареть, загрузите их повторно!</string>
     <string name="database_ok">Локальная база в порядке</string>
+    <string name="database_damaged">Дистаниция/команды повреждены, загрузите их повторно!</string>
     <string name="download_results">Получить все результаты с сайта</string>
     <string name="send_results">Отправить мои результаты на сайт</string>
     <string name="download_distance">Получить дистанцию+участников</string>

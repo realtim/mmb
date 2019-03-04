@@ -18,7 +18,7 @@ import ru.mmb.sportiduinomanager.R;
 /**
  * Provides all communication with a Bluetooth station.
  */
-public class Station {
+public final class Station {
     /**
      * Station mode for chips initialization.
      */

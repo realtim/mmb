@@ -1,9 +1,5 @@
 package ru.mmb.sportiduinomanager.model;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -11,79 +7,46 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import ru.mmb.sportiduinomanager.R;
-
-import static android.database.DatabaseUtils.sqlEscapeString;
-
 /**
- * Creates the distance from scratch, loads it from local SQLite database
- * and saves it to database.
+ * Support of distance parameters, points lists and discounts.
  */
-public class Distance {
-    /**
-     * Local database state: unknown.
-     */
-    public static final int DB_STATE_UNKNOWN = 1;
-    /**
-     * Local database state: damaged or not consistent.
-     */
-    public static final int DB_STATE_FAILED = 0;
-    /**
-     * Local database state: just created without any data.
-     */
-    public static final int DB_STATE_EMPTY = 1;
-    /**
-     * Local database state: contains data from previous raid.
-     */
-    public static final int DB_STATE_OUTDATED = 2;
-    /**
-     * Local database state: healthy.
-     */
-    public static final int DB_STATE_OK = 3;
-    /**
-     * Local database structure version.
-     */
-    private static final int DB_VERSION = 1;
+public final class Distance {
     /**
      * Raid_id from website database.
      */
-    private int mRaidId;
+    private final int mRaidId;
     /**
      * Raid_name from website database.
      */
-    private String mRaidName;
+    private final String mRaidName;
     /**
      * Unixtime when distance has been downloaded from site.
      */
-    private long mTimeDownloaded;
+    private final long mTimeDownloaded;
     /**
      * Unixtime when website database will(was) become readonly.
      */
-    private long mTimeReadonly;
+    private final long mTimeReadonly;
     /**
      * Unixtime of last active point closing time.
      */
-    private long mTimeFinish;
+    private final long mTimeFinish;
     /**
      * Email of authorized user who performs all interaction with website.
      */
-    private String mUserEmail;
+    private final String mUserEmail;
     /**
      * Password of authorized user who performs all interaction with website.
      */
-    private String mUserPassword;
+    private final String mUserPassword;
     /**
      * Which website database is used, test or main.
      */
-    private int mTestSite;
+    private final int mTestSite;
     /**
      * Sparse array of active points, array index == point number.
      */
     private Point[] mPoints;
-    /**
-     * Sparse array of teams, array index == team number.
-     */
-    private Team[] mTeams;
     /**
      * List of discounts.
      */
@@ -92,257 +55,26 @@ public class Distance {
     /**
      * Construct distance from imported data.
      *
-     * @param raidId       ID of the raid
-     * @param readonly     Time when the raid becomes readonly
-     * @param finish       Time when the last active point is closed
-     * @param raidName     ASCII raid name
-     * @param userEmail    Email of the user downloading the raid
-     * @param userPassword Password of the user downloading the raid
-     * @param testSite     Download raid test site instead of main site
+     * @param userEmail      Email of the user downloading the raid
+     * @param userPassword   Password of the user downloading the raid
+     * @param testSite       Download raid test site instead of main site
+     * @param raidId         ID of the raid
+     * @param timeDownloaded Time when the distance was download from site
+     * @param timeReadonly   Time when the raid becomes readonly
+     * @param timeFinish     Time when the last active point is closed
+     * @param raidName       ASCII raid name
      */
-    public Distance(final int raidId, final long readonly, final long finish, final String raidName,
-                    final String userEmail, final String userPassword, final int testSite) {
-        mRaidId = raidId;
-        mRaidName = raidName;
-        mTimeDownloaded = System.currentTimeMillis() / 1000;
-        mTimeReadonly = readonly;
-        mTimeFinish = finish;
+    public Distance(final String userEmail, final String userPassword, final int testSite,
+                    final int raidId, final String raidName, final long timeDownloaded,
+                    final long timeReadonly, final long timeFinish) {
         mUserEmail = userEmail;
         mUserPassword = userPassword;
         mTestSite = testSite;
-    }
-
-    /**
-     * Construct distance from database.
-     * Distance should be validated with hasErrors() after using this constructor.
-     *
-     * @param database SQLite database handler
-     */
-    public Distance(final SQLiteDatabase database) {
-        Cursor result;
-        // Load raid parameters
-        try {
-            result = database.rawQuery("SELECT user_email, user_password, test_site, raid_id,"
-                    + " raid_name, unixtime_downloaded, unixtime_readonly, unixtime_finish FROM mmb", null);
-        } catch (SQLiteException e) {
-            return;
-        }
-        if (!result.moveToFirst()) {
-            result.close();
-            return;
-        }
-        mUserEmail = result.getString(0);
-        mUserPassword = result.getString(1);
-        mTestSite = result.getInt(2);
-        mRaidId = result.getInt(3);
-        mRaidName = result.getString(4);
-        mTimeDownloaded = result.getLong(5);
-        mTimeReadonly = result.getLong(6);
-        mTimeFinish = result.getLong(7);
-        result.close();
-        // Get max point number of reservation of points array
-        try {
-            result = database.rawQuery("SELECT MAX(number) FROM points", null);
-        } catch (SQLiteException e) {
-            return;
-        }
-        if (!result.moveToFirst()) {
-            result.close();
-            return;
-        }
-        final int maxPoint = result.getInt(0);
-        result.close();
-        mPoints = new Point[maxPoint + 1];
-        // Load list of points
-        try {
-            result = database.rawQuery("SELECT number, type, penalty, unixtime_start, "
-                    + "unixtime_end, name FROM points", null);
-        } catch (SQLiteException e) {
-            return;
-        }
-        result.moveToFirst();
-        do {
-            mPoints[result.getInt(0)] = new Point(result.getInt(1), result.getInt(2),
-                    result.getLong(3), result.getLong(4), result.getString(5));
-        } while (result.moveToNext());
-        result.close();
-        // Get max team number of reservation of teams array
-        try {
-            result = database.rawQuery("SELECT MAX(number) FROM teams", null);
-        } catch (SQLiteException e) {
-            return;
-        }
-        if (!result.moveToFirst()) {
-            result.close();
-            return;
-        }
-        final int maxTeam = result.getInt(0);
-        result.close();
-        mTeams = new Team[maxTeam + 1];
-        // Load list of teams
-        try {
-            result = database.rawQuery("SELECT number, COUNT(*), maps, teams.name FROM teams, "
-                    + "members WHERE teams.number = members.team GROUP BY teams.number", null);
-        } catch (SQLiteException e) {
-            return;
-        }
-        result.moveToFirst();
-        do {
-            mTeams[result.getInt(0)] = new Team(result.getInt(1), result.getInt(2),
-                    result.getString(3));
-        } while (result.moveToNext());
-        result.close();
-        // Add members to loaded teams
-        try {
-            result = database.rawQuery("SELECT id, team, name, phone FROM members", null);
-        } catch (SQLiteException e) {
-            return;
-        }
-        result.moveToFirst();
-        do {
-            final int teamN = result.getInt(1);
-            final int numberOfMembers = mTeams[teamN].mMembers.length;
-            for (int i = 0; i <= numberOfMembers; i++) {
-                if (i == numberOfMembers) return;
-                if (mTeams[teamN].mMembers[i] == null) {
-                    mTeams[teamN].mMembers[i] = new Member(result.getInt(0), result.getString(2),
-                            result.getString(3));
-                    break;
-                }
-            }
-        } while (result.moveToNext());
-        result.close();
-        // Get number of discounts
-        try {
-            result = database.rawQuery("SELECT COUNT(*) FROM discounts", null);
-        } catch (SQLiteException e) {
-            return;
-        }
-        if (!result.moveToFirst()) {
-            result.close();
-            return;
-        }
-        final int numberOfDiscounts = result.getInt(0);
-        result.close();
-        mDiscounts = new Discount[numberOfDiscounts];
-        if (numberOfDiscounts == 0) return;
-        // Load discounts
-        try {
-            result = database.rawQuery("SELECT minutes, from_point, to_point FROM discounts", null);
-        } catch (SQLiteException e) {
-            return;
-        }
-        result.moveToFirst();
-        for (int i = 0; i < numberOfDiscounts; i++) {
-            mDiscounts[i] = new Discount(result.getInt(0), result.getInt(1), result.getInt(2));
-        }
-        result.close();
-    }
-
-    /**
-     * Check database and return it's status.
-     *
-     * @param database SQLite database handler
-     * @return Database status
-     */
-    public static int getDbStatus(final SQLiteDatabase database) {
-        // Check if it the database was opened
-        if (database == null) return DB_STATE_FAILED;
-        // Check if it has main table with mmb status
-        try {
-            final Cursor result = database.rawQuery("SELECT name FROM sqlite_master WHERE "
-                    + "type='table' AND name='mmb'", null);
-            if (result.getCount() != 1) {
-                result.close();
-                return DB_STATE_EMPTY;
-            }
-            result.close();
-        } catch (SQLiteException e) {
-            // Database has wrong structure, erase it
-            erase(database);
-            return DB_STATE_EMPTY;
-        }
-        // Get database version, test flag and download date
-        try {
-            final Cursor result = database.rawQuery("SELECT version FROM mmb", null);
-            if (!result.moveToFirst()) {
-                // database is damaged, erase all data
-                result.close();
-                erase(database);
-                return DB_STATE_EMPTY;
-            }
-            // Check database version
-            if (result.getInt(0) != DB_VERSION) {
-                // database has previous version of data structures , erase all data
-                result.close();
-                erase(database);
-                return DB_STATE_EMPTY;
-            }
-            result.close();
-        } catch (SQLiteException e) {
-            // Database has wrong structure, erase it
-            erase(database);
-            return DB_STATE_EMPTY;
-        }
-        // check if database can be outdated
-        try {
-
-            final Cursor result = database.rawQuery("SELECT (NOT test_site) AND "
-                            + "(unixtime_downloaded < unixtime_readonly) FROM mmb",
-                    null);
-            if (!result.moveToFirst()) {
-                // database is damaged, erase all data
-                result.close();
-                erase(database);
-                return DB_STATE_EMPTY;
-            }
-            if (result.getInt(0) == 1) {
-                result.close();
-                return DB_STATE_OUTDATED;
-            }
-            result.close();
-        } catch (SQLiteException e) {
-            // Database has wrong structure, erase it
-            erase(database);
-            return DB_STATE_EMPTY;
-        }
-        // All checks passed
-        return DB_STATE_OK;
-    }
-
-    /**
-     * Erase all tables in database when it has old structure or was broken.
-     *
-     * @param database Database handle
-     */
-    private static void erase(final SQLiteDatabase database) {
-        database.execSQL("DROP TABLE IF EXISTS mmb");
-        database.execSQL("DROP TABLE IF EXISTS points");
-        database.execSQL("DROP TABLE IF EXISTS teams");
-        database.execSQL("DROP TABLE IF EXISTS members");
-        database.execSQL("DROP TABLE IF EXISTS discounts");
-        // TODO: drop other tables
-    }
-
-    /**
-     * Get descriptive string message about database status.
-     *
-     * @param status Status of the database
-     * @return Resource id with string message about the status
-     */
-    public static int getStatusMessage(final int status) {
-        switch (status) {
-            case DB_STATE_FAILED:
-                return R.string.database_fatal_error;
-            case DB_STATE_EMPTY:
-                return R.string.database_empty;
-            case DB_STATE_OUTDATED:
-                return R.string.database_outdated;
-            case DB_STATE_OK:
-                return R.string.database_ok;
-            default:
-                return R.string.database_status_unknown;
-        }
+        mRaidId = raidId;
+        mRaidName = raidName;
+        mTimeDownloaded = timeDownloaded;
+        mTimeReadonly = timeReadonly;
+        mTimeFinish = timeFinish;
     }
 
     /**
@@ -373,6 +105,24 @@ public class Distance {
     }
 
     /**
+     * Get the time when the distance was downloaded from site.
+     *
+     * @return Unixtime
+     */
+    long getTimeDownloaded() {
+        return mTimeDownloaded;
+    }
+
+    /**
+     * Get raid id.
+     *
+     * @return Raid id
+     */
+    int getRaidId() {
+        return mRaidId;
+    }
+
+    /**
      * Get name of current raid.
      *
      * @return Raid name
@@ -382,7 +132,25 @@ public class Distance {
     }
 
     /**
-     * Get time of downloading distance from site.
+     * Get time when the distance will become readonly at the site.
+     *
+     * @return Unixtime
+     */
+    long getTimeReadonly() {
+        return mTimeReadonly;
+    }
+
+    /**
+     * Get time when the last raid point will be closed.
+     *
+     * @return Unixtime
+     */
+    long getTimeFinish() {
+        return mTimeFinish;
+    }
+
+    /**
+     * Get time of downloading distance from site as a string.
      *
      * @return Formatted datetime
      */
@@ -401,9 +169,49 @@ public class Distance {
     public List<String> getPointNames() {
         final List<String> names = new ArrayList<>();
         for (final Point point : mPoints) {
-            names.add(point.mName);
+            if (point != null) names.add(point.mName);
         }
         return names;
+    }
+
+    /**
+     * Fill lists with all points parameters for fast saving in local database.
+     *
+     * @param numbers    Points numbers
+     * @param types      Points types
+     * @param penalties  Points penalties
+     * @param startTimes Points opening times
+     * @param endTimes   Points closing times
+     * @param names      Points names
+     */
+    void fillPointsLists(final List<Integer> numbers, final List<Integer> types,
+                                final List<Integer> penalties, final List<Long> startTimes,
+                                final List<Long> endTimes, final List<String> names) {
+        for (int i = 1; i < mPoints.length; i++) {
+            if (mPoints[i] == null) continue;
+            numbers.add(i);
+            types.add(mPoints[i].mType);
+            penalties.add(mPoints[i].mPenalty);
+            startTimes.add(mPoints[i].mStart);
+            endTimes.add(mPoints[i].mEnd);
+            names.add(mPoints[i].mName);
+        }
+    }
+
+    /**
+     * Fill lists with all discounts parameters for fast saving in local database.
+     *
+     * @param minutes Discounts in minutes
+     * @param fromN   Discount intervals starting points
+     * @param toN     Discount intervals ending points
+     */
+    void fillDiscountsLists(final List<Integer> minutes, final List<Integer> fromN,
+                                   final List<Integer> toN) {
+        for (final Discount discount : mDiscounts) {
+            minutes.add(discount.mMinutes);
+            fromN.add(discount.mFrom);
+            toN.add(discount.mTo);
+        }
     }
 
     /**
@@ -413,202 +221,8 @@ public class Distance {
      * @return Point type
      */
     public int getPointType(final int number) {
-        if (number < 0 || number >= mPoints.length) return -1;
+        if (number < 0 || number >= mPoints.length || mPoints[number] == null) return -1;
         return mPoints[number].mType;
-    }
-
-    /**
-     * Get the team name.
-     *
-     * @param number Team number
-     * @return String with team name or null if the team does not exist
-     */
-    public String getTeamName(final int number) {
-        if (number <= 0 || number >= mTeams.length) return null;
-        if (mTeams[number] == null) return null;
-        return mTeams[number].mName;
-    }
-
-    /**
-     * Get the team maps count.
-     *
-     * @param number Team number
-     * @return Number of maps for the team
-     */
-    public int getTeamMaps(final int number) {
-        if (number <= 0 || number >= mTeams.length) return 0;
-        if (mTeams[number] == null) return 0;
-        return mTeams[number].mMaps;
-    }
-
-    /**
-     * Get the list of team members names.
-     *
-     * @param number Team number
-     * @return List of team members names (or empty list if the team does not exist)
-     */
-    public List<String> getTeamMembers(final int number) {
-        if (number <= 0 || number >= mTeams.length) return new ArrayList<>();
-        if (mTeams[number] == null) return new ArrayList<>();
-        final List<String> list = new ArrayList<>();
-        for (final Member member : mTeams[number].mMembers) {
-            list.add(member.mName);
-        }
-        return list;
-    }
-
-    /**
-     * Save distance to local SQLite database.
-     *
-     * @param database SQLite database handler
-     * @return SQLite exception or null in case of success
-     */
-    public String saveToDb(final SQLiteDatabase database) {
-        // Create main table with raid parameters
-        try {
-            database.execSQL("CREATE TABLE IF NOT EXISTS mmb(version INTEGER NOT NULL,"
-                    + " user_email VARCHAR(100) NOT NULL, user_password VARCHAR(35) NOT NULL,"
-                    + " test_site INTEGER NOT NULL, unixtime_downloaded INTEGER NOT NULL,"
-                    + " raid_id INTEGER PRIMARY KEY, raid_name VARCHAR(50) NOT NULL,"
-                    + " unixtime_readonly INTEGER NOT NULL, unixtime_finish INTEGER NOT NULL)");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        // Empty the table just in case
-        try {
-            database.execSQL("DELETE FROM mmb");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        // Save general raid parameters into database
-        try {
-            final String sql = String.format(Locale.getDefault(), "INSERT INTO mmb(version, user_email,"
-                            + " user_password, test_site, unixtime_downloaded, raid_id, raid_name, unixtime_readonly, "
-                            + " unixtime_finish) VALUES (%d, %s, %s, %d, %d, %d, %s, %d, %d)",
-                    DB_VERSION, sqlEscapeString(mUserEmail), sqlEscapeString(mUserPassword),
-                    mTestSite, mTimeDownloaded, mRaidId, sqlEscapeString(mRaidName),
-                    mTimeReadonly, mTimeFinish);
-            database.execSQL(sql);
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-
-        // Create table with points parameters
-        try {
-            database.execSQL("CREATE TABLE IF NOT EXISTS points(number INTEGER PRIMARY KEY,"
-                    + " type INTEGER NOT NULL, penalty INTEGER NOT NULL,"
-                    + " unixtime_start DATETIME NOT NULL, unixtime_end DATETIME NOT NULL,"
-                    + " name VARCHAR(50) NOT NULL)");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        // Empty the table just in case
-        try {
-            database.execSQL("DELETE FROM points");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        // Save all points (including zero point for chip initialization) into database
-        for (int i = 0; i < mPoints.length; i++) {
-            final Point point = mPoints[i];
-            if (point == null) continue;
-            try {
-                final String sql = String.format(Locale.getDefault(), "INSERT INTO points(number, type, penalty,"
-                                + " unixtime_start, unixtime_end, name) VALUES(%d, %d, %d, %d, %d, %s)",
-                        i, point.mType, point.mPenalty, point.mStart, point.mEnd,
-                        sqlEscapeString(point.mName));
-                database.execSQL(sql);
-            } catch (SQLiteException e) {
-                return e.getMessage();
-            }
-        }
-
-        // Create table with teams parameters
-        try {
-            database.execSQL("CREATE TABLE IF NOT EXISTS teams(number INTEGER PRIMARY KEY, maps INTEGER NOT NULL,"
-                    + " name VARCHAR(100))");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        // Empty the table just in case
-        try {
-            database.execSQL("DELETE FROM teams");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        // Create table with teams members
-        try {
-            database.execSQL("CREATE TABLE IF NOT EXISTS members(id INTEGER PRIMARY KEY, team integer,"
-                    + " name VARCHAR(105), phone varchar(25))");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        // Empty tables just in case
-        try {
-            database.execSQL("DELETE FROM teams");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        try {
-            database.execSQL("DELETE FROM members");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        // Save all teams and members into database
-        for (int i = 0; i < mTeams.length; i++) {
-            final Team team = mTeams[i];
-            if (team == null) continue;
-            try {
-                final String sql = String.format(Locale.getDefault(), "INSERT INTO teams(number, maps, name)"
-                        + " VALUES(%d, %d, %s)", i, team.mMaps, sqlEscapeString(team.mName));
-                database.execSQL(sql);
-            } catch (SQLiteException e) {
-                return e.getMessage();
-            }
-            for (final Member member : team.mMembers) {
-                try {
-                    final String sql = String.format(Locale.getDefault(),
-                            "INSERT INTO members(id, team, name, phone)"
-                                    + " VALUES(%d, %d, %s, %s)", member.mId, i,
-                            sqlEscapeString(member.mName), sqlEscapeString(member.mPhone));
-                    database.execSQL(sql);
-                } catch (SQLiteException e) {
-                    return e.getMessage();
-                }
-            }
-        }
-
-        // Create table with discounts
-        try {
-            database.execSQL("CREATE TABLE IF NOT EXISTS discounts(minutes INTEGER NOT NULL,"
-                    + " from_point INTEGER NOT NULL, to_point INTEGER NOT NULL)");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        // Empty the table just in case
-        try {
-            database.execSQL("DELETE FROM discounts");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        // Save discounts into database
-        for (final Discount discount : mDiscounts) {
-            try {
-                final String sql = String.format(Locale.getDefault(), "INSERT INTO discounts(minutes, from_point,"
-                        + " to_point) VALUES(%d, %d, %d)", discount.mMinutes, discount.mFrom, discount.mTo);
-                database.execSQL(sql);
-            } catch (SQLiteException e) {
-                return e.getMessage();
-            }
-        }
-
-        // process journal and clean up the database file
-        try {
-            database.execSQL("VACUUM");
-        } catch (SQLiteException e) {
-            return e.getMessage();
-        }
-        return null;
     }
 
     /**
@@ -642,15 +256,6 @@ public class Distance {
     }
 
     /**
-     * Allocate team array with maxNumber as max array index.
-     *
-     * @param maxNumber Max index in team array
-     */
-    public void initTeamArray(final int maxNumber) {
-        mTeams = new Team[maxNumber + 1];
-    }
-
-    /**
      * Allocate discount array with nDiscount as array size.
      *
      * @param numberOfDiscounts Number of discounts
@@ -681,56 +286,6 @@ public class Distance {
             // set the point
             mPoints[index] = new Point(type, penalty, start, end, name);
             return true;
-        }
-        return false;
-    }
-
-    /**
-     * Construct team and save it to appropriate position in team array.
-     *
-     * @param number       Team number
-     * @param membersCount Number of team members
-     * @param mapsCount    Number of maps
-     * @param name         Team name
-     * @return True in case of valid team number value
-     */
-    public boolean addTeam(final int number, final int membersCount, final int mapsCount,
-                           final String name) {
-        // Check if team array was initialized
-        if (mTeams == null) return false;
-        // Check if team number is valid
-        if (number < 0 || number >= mTeams.length) return false;
-        // Check if the point was already set
-        if (mTeams[number] == null) {
-            // set the point
-            mTeams[number] = new Team(membersCount, mapsCount, name);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Add new member to the list of team members.
-     *
-     * @param memberId Member id
-     * @param team     Team number
-     * @param name     Member first and last name and year of birth
-     * @param phone    Member mobile phone (can be empty)
-     * @return True in case of valid team and number of its members
-     */
-    public boolean addMember(final long memberId, final int team, final String name, final String phone) {
-        // Check if team array was initialized
-        if (mTeams == null) return false;
-        // Check if team number is valid
-        if (team < 0 || team >= mTeams.length) return false;
-        // Check if the team was initialized
-        if (mTeams[team] == null) return false;
-        // Try to add member to free place in team members array
-        for (int i = 0; i < mTeams[team].mMembers.length; i++) {
-            if (mTeams[team].mMembers[i] == null) {
-                mTeams[team].mMembers[i] = new Member(memberId, name, phone);
-                return true;
-            }
         }
         return false;
     }
@@ -781,28 +336,6 @@ public class Distance {
                 if (mPoints[i].mPenalty < 0) return true;
                 if (mPoints[i].mStart > 0 && mPoints[i].mEnd < mPoints[i].mStart) return true;
                 if ("".equals(mPoints[i].mName)) return true;
-            }
-        }
-
-        // Check if some teams were loaded
-        if (mTeams == null) return true;
-        if (mTeams.length == 0) return true;
-        // Check if all teams were loaded
-        if (mTeams[mTeams.length - 1] == null) return true;
-        // Check teams data
-        for (final Team team : mTeams) {
-            if (team != null) {
-                // Check if all team members were loaded
-                for (int i = 0; i < team.mMembers.length; i++) {
-                    if (team.mMembers[i] == null) return true;
-                    // Check for bad member data
-                    if (team.mMembers[i].mId <= 0) return true;
-                    if ("".equals(team.mMembers[i].mName)) return true;
-                }
-                // Check number of maps
-                if (team.mMaps <= 0) return true;
-                // Check for empty team name
-                if ("".equals(team.mName)) return true;
             }
         }
 
@@ -875,68 +408,6 @@ public class Distance {
             mStart = start;
             mEnd = end;
             mName = name;
-        }
-    }
-
-    /**
-     * A member of a team.
-     */
-    private class Member {
-        /**
-         * Member id.
-         */
-        final long mId;
-        /**
-         * Member first name, last name and year of birth.
-         */
-        final String mName;
-        /**
-         * Member phone (can be empty).
-         */
-        final String mPhone;
-
-        /**
-         * Constructor for Member class.
-         *
-         * @param memberId ID of the member
-         * @param name     Member name and birth date
-         * @param phone    Member phone
-         */
-        Member(final long memberId, final String name, final String phone) {
-            mId = memberId;
-            mName = name;
-            mPhone = phone;
-        }
-    }
-
-    /**
-     * A team parameters.
-     */
-    private class Team {
-        /**
-         * Number of maps printed for the team.
-         */
-        final int mMaps;
-        /**
-         * Team name.
-         */
-        final String mName;
-        /**
-         * List of team members.
-         */
-        final Member[] mMembers;
-
-        /**
-         * Constructor for Team class.
-         *
-         * @param membersCount Number of members in this team
-         * @param mapsCount    Number of ordered maps
-         * @param name         Team name
-         */
-        Team(final int membersCount, final int mapsCount, final String name) {
-            mMaps = mapsCount;
-            mName = name;
-            mMembers = new Member[membersCount];
         }
     }
 

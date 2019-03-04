@@ -5,10 +5,9 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -21,8 +20,10 @@ import org.acra.annotation.AcraToast;
 import org.acra.data.StringFormat;
 import org.acra.sender.HttpSender;
 
+import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.model.Teams;
 
 /**
  * Keeps all persistent activity data for application lifetime.
@@ -69,10 +70,6 @@ import ru.mmb.sportiduinomanager.model.Station;
 public final class MainApplication extends Application {
 
     /**
-     * Name of local SQLite database.
-     */
-    static final String DB_NAME = "mmb.sqlite";
-    /**
      * Alpha for disabled buttons appearance in the application.
      */
     static final float DISABLED_BUTTON = .5f;
@@ -85,17 +82,14 @@ public final class MainApplication extends Application {
      */
     private Context mContext;
     /**
-     * Handler of SQLite database.
-     */
-    private SQLiteDatabase mDb;
-    /**
      * Description of error occurred during application startup (if any).
      */
     private String mStartupError = "";
+
     /**
-     * Current status of SQLite database.
+     * Database object for loading/saving data to local SQLite database.
      */
-    private int mDbStatus = Distance.DB_STATE_UNKNOWN;
+    private Database mDatabase;
 
     /**
      * Id of distance download background process.
@@ -117,6 +111,11 @@ public final class MainApplication extends Application {
      * Distance downloaded from site or loaded from local database.
      */
     private Distance mDistance;
+
+    /**
+     * Teams with members downloaded from site or loaded from local database.
+     */
+    private Teams mTeams;
 
     /**
      * List of previously discovered Bluetooth devices.
@@ -147,15 +146,6 @@ public final class MainApplication extends Application {
     }
 
     /**
-     * Get database object.
-     *
-     * @return Database handler
-     */
-    public SQLiteDatabase getDatabase() {
-        return mDb;
-    }
-
-    /**
      * Get startup error message (if any).
      *
      * @return Error message string
@@ -165,20 +155,12 @@ public final class MainApplication extends Application {
     }
 
     /**
-     * Get local SQLite database status.
+     * Get database object.
      *
-     * @return The status
+     * @return Database handler
      */
-    public int getDbStatus() {
-        if (mDbStatus == Distance.DB_STATE_UNKNOWN) updateDbStatus();
-        return mDbStatus;
-    }
-
-    /**
-     * Update local SQLite database status.
-     */
-    public void updateDbStatus() {
-        mDbStatus = Distance.getDbStatus(mDb);
+    public Database getDatabase() {
+        return mDatabase;
     }
 
     /**
@@ -256,6 +238,24 @@ public final class MainApplication extends Application {
      */
     public void setDistance(final Distance distance) {
         mDistance = distance;
+    }
+
+    /**
+     * Get teams with members loaded to persistent memory.
+     *
+     * @return Teams with members
+     */
+    public Teams getTeams() {
+        return mTeams;
+    }
+
+    /**
+     * Save teams with members to persistent memory.
+     *
+     * @param teams The teams to save
+     */
+    public void setTeams(final Teams teams) {
+        mTeams = teams;
     }
 
     /**
@@ -340,41 +340,35 @@ public final class MainApplication extends Application {
         if (BuildConfig.DEBUG) {
             switchToRussian(context);
         }
-        // Get default path to application databases
-        // and create databases folder if not exist
-        final File databasePath = context.getDatabasePath(DB_NAME);
-        final File folder = databasePath.getParentFile();
-        if (folder != null && !folder.exists()) {
-            final boolean success = folder.mkdir();
-            if (!success) {
-                mStartupError = getResources()
-                        .getString(R.string.err_db_cant_create_dir).concat(folder.getAbsolutePath());
-                return;
-            }
-        }
-        // Try to open database (create it if it does not exist)
+        // Try to open/create local SQLite database
         try {
-            final SQLiteDatabase database = SQLiteDatabase.openDatabase(
-                    databasePath.getAbsolutePath(), null, SQLiteDatabase.CREATE_IF_NECESSARY);
-            database.setLocale(new Locale("ru_RU"));
-            mDb = database;
+            mDatabase = new Database(context);
+        } catch (IOException e) {
+            mStartupError = context.getString(R.string.err_db_cant_create_dir).concat(e.getMessage());
+            return;
         } catch (SQLiteException e) {
             mStartupError = e.getMessage();
+            return;
         }
-        // Check database status
-        updateDbStatus();
-        if (mDbStatus == Distance.DB_STATE_OK) {
+        // Try to load distance amd teams from database if it is not empty
+        if (mDatabase.getDbStatus() == Database.DB_STATE_OK) {
             // Try to load distance from database
-            final Distance distance = new Distance(mDb);
-            if (distance.hasErrors()) {
-                mDbStatus = Distance.DB_STATE_FAILED;
-
-            } else {
-                mDistance = distance;
-                // Get user email, password and test/main database flag from loaded distance
-                mUserEmail = mDistance.getUserEmail();
-                mUserPassword = mDistance.getUserPassword();
-                mTestSite = mDistance.getTestSite();
+            try {
+                final Distance distance =
+                        mDatabase.loadDistance(context.getString(R.string.mode_chip_init));
+                if (distance != null && !distance.hasErrors()) {
+                    mDistance = distance;
+                    // Get user email, password and test/main database flag from loaded distance
+                    mUserEmail = mDistance.getUserEmail();
+                    mUserPassword = mDistance.getUserPassword();
+                    mTestSite = mDistance.getTestSite();
+                }
+                final Teams teams = mDatabase.loadTeams();
+                if (teams != null && !teams.hasErrors()) {
+                    mTeams = teams;
+                }
+            } catch (SQLiteException e) {
+                mStartupError = e.getMessage();
             }
         }
     }
@@ -393,15 +387,6 @@ public final class MainApplication extends Application {
         final Configuration config = new Configuration(res.getConfiguration());
         config.setLocale(locale);
         res.updateConfiguration(config, res.getDisplayMetrics());
-    }
-
-    @Override
-    public void onTerminate() {
-        // Close database on app termination
-        if (mDb != null) {
-            mDb.close();
-        }
-        super.onTerminate();
     }
 
     @Override
