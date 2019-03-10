@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.model.Teams;
 
@@ -33,6 +34,11 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * Station which was previously paired via Bluetooth.
      */
     private Station mStation;
+
+    /**
+     * Chips events received from stations.
+     */
+    private Chips mChips;
 
     /**
      * RecyclerView with team members.
@@ -80,6 +86,8 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         overridePendingTransition(0, 0);
         // Get connected station from main application thread
         mStation = mMainApplication.getStation();
+        //Get chips events from main application thread
+        mChips = mMainApplication.getChips();
         // Update screen layout
         updateKeyboardState();
         loadTeam(false);
@@ -174,14 +182,24 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         final int teamNumber = Integer.parseInt(mTeamNumber);
         // Send command to station and check result
         if (mStation.initChip(teamNumber, mTeamMask)) {
-            // Clear team number and mask to start again
-            mTeamNumber = "";
-            mTeamMask = 0;
-            // Update onscreen keyboard and "load" empty team
-            updateKeyboardState();
-            loadTeam(true);
-            Toast.makeText(getApplicationContext(), getString(R.string.response_time,
-                    mStation.getResponseTime()), Toast.LENGTH_LONG).show();
+            // Create new chip init event and save it into local database
+            mChips.addNewEvent(mStation, mStation.getLastInitTime(), teamNumber, mTeamMask,
+                    mStation.getNumber(), mStation.getLastInitTime());
+            final String result = mChips.saveNewEvents(mMainApplication.getDatabase());
+            if ("".equals(result)) {
+                // Clear team number and mask to start again
+                mTeamNumber = "";
+                mTeamMask = 0;
+                // Update onscreen keyboard and "load" empty team
+                updateKeyboardState();
+                loadTeam(true);
+                Toast.makeText(getApplicationContext(), getString(R.string.response_time,
+                        mStation.getResponseTime()), Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show();
+            }
+            // Copy changed list of chips events to main application
+            mMainApplication.setChips(mChips);
         } else {
             Toast.makeText(getApplicationContext(), mStation.getLastError(),
                     Toast.LENGTH_LONG).show();

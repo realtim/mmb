@@ -252,6 +252,41 @@ public final class Database {
     }
 
     /**
+     * Load chips events from local SQLite database.
+     *
+     * @return New Chips object with loaded data or null in case of an error
+     * @throws SQLiteException All SQL exceptions while working with SQLite database
+     */
+    public Chips loadChips() throws SQLiteException {
+        // Open local database
+        final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath, null,
+                SQLiteDatabase.OPEN_READONLY);
+        // Create teams object
+        final Chips chips = new Chips();
+        // Load chip events into it
+        final Cursor result = database.rawQuery("SELECT stationmac, stationtime, stationdrift,"
+                + " stationnumber, stationmode, inittime, team_num, teammask, levelpoint_order,"
+                + " teamlevelpoint_datetime, status FROM chips", null);
+        if (!result.moveToFirst()) {
+            // No chips events in database yet
+            result.close();
+            database.close();
+            return chips;
+        }
+        do {
+            final ChipEvent event = new ChipEvent(result.getLong(0), result.getInt(1),
+                    result.getInt(2), result.getInt(3), result.getInt(4), result.getInt(5),
+                    result.getInt(6), result.getInt(7), result.getInt(8), result.getInt(9),
+                    result.getInt(10));
+            chips.addEvent(event);
+        } while (result.moveToNext());
+        result.close();
+        database.close();
+        return chips;
+    }
+
+
+    /**
      * Save distance to local SQLite database.
      *
      * @param distance A distance to save
@@ -364,6 +399,39 @@ public final class Database {
     }
 
     /**
+     * Save chips events from custom list of events to local SQLite database.
+     *
+     * @param events List of chips events
+     * @throws SQLiteException All SQL exceptions while working with SQLite database
+     */
+    void saveChips(final List<ChipEvent> events) throws SQLiteException {
+        // Open local database
+        final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath, null,
+                SQLiteDatabase.OPEN_READWRITE);
+        final SQLiteStatement statement = database.compileStatement("INSERT INTO chips"
+                + "(stationmac, stationtime, stationdrift, stationnumber, stationmode,"
+                + " inittime, team_num, teammask, levelpoint_order,"
+                + " teamlevelpoint_datetime, status) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        // Save all events from the unsaved list
+        for (final ChipEvent event : events) {
+            statement.bindLong(1, event.mStationMAC);
+            statement.bindLong(2, event.mStationTime);
+            statement.bindLong(3, event.mStationDrift);
+            statement.bindLong(4, event.mStationNumber);
+            statement.bindLong(5, event.mStationMode);
+            statement.bindLong(6, event.mInitTime);
+            statement.bindLong(7, event.mTeamNumber);
+            statement.bindLong(8, event.mTeamMask);
+            statement.bindLong(9, event.mPointNumber);
+            statement.bindLong(10, event.mPointTime);
+            statement.bindLong(11, ChipEvent.STATUS_SAVED);
+            statement.execute();
+        }
+        database.close();
+    }
+
+    /**
      * Recreate all tables in local SQLite database.
      *
      * @param database Handle of opened SQLite database
@@ -382,7 +450,7 @@ public final class Database {
                 + " unixtime_readonly INTEGER NOT NULL, unixtime_finish INTEGER NOT NULL)");
         // Create the table with points list
         database.execSQL("DROP TABLE IF EXISTS points");
-        database.execSQL("CREATE TABLE IF NOT EXISTS points(number INTEGER PRIMARY KEY,"
+        database.execSQL("CREATE TABLE points(number INTEGER PRIMARY KEY,"
                 + " type INTEGER NOT NULL, penalty INTEGER NOT NULL,"
                 + " unixtime_start DATETIME NOT NULL, unixtime_end DATETIME NOT NULL,"
                 + " name VARCHAR(50) NOT NULL)");
@@ -396,8 +464,19 @@ public final class Database {
                 + " name VARCHAR(105), phone varchar(25))");
         // Create the table with discounts
         database.execSQL("DROP TABLE IF EXISTS discounts");
-        database.execSQL("CREATE TABLE IF NOT EXISTS discounts(minutes INTEGER NOT NULL,"
+        database.execSQL("CREATE TABLE discounts(minutes INTEGER NOT NULL,"
                 + " from_point INTEGER NOT NULL, to_point INTEGER NOT NULL)");
+        // Create table with registered chips data
+        database.execSQL("DROP TABLE IF EXISTS chips");
+        database.execSQL("CREATE TABLE chips(stationmac INTEGER NOT NULL,"
+                + " stationtime INTEGER NOT NULL, stationdrift INTEGER NOT NULL,"
+                + " stationnumber INTEGER NOT NULL, stationmode INTEGER NOT NULL,"
+                + " inittime INTEGER NOT NULL, team_num INTEGER NOT NULL,"
+                + " teammask INTEGER NOT NULL, levelpoint_order INTEGER NOT NULL,"
+                + " teamlevelpoint_datetime INTEGER NOT NULL, status INTEGER NOT NULL,"
+                + " PRIMARY KEY (stationmac, stationtime, stationdrift,"
+                + "stationnumber, stationmode, inittime, team_num, teammask, levelpoint_order,"
+                + " teamlevelpoint_datetime))");
         // TODO: Recreate other tables
         // process journal and clean up the database file
         database.execSQL("VACUUM");

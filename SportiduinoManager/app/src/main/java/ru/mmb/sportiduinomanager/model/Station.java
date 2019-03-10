@@ -90,9 +90,14 @@ public final class Station {
     private int mLastError;
 
     /**
-     * Time at the start of command processing.
+     * Android time at the start of command processing.
      */
     private long mStartTime;
+
+    /**
+     * Station local time at the end of command processing.
+     */
+    private int mStationTime;
 
     /**
      * Time waiting for station while receiving station response.
@@ -103,19 +108,28 @@ public final class Station {
      * Time difference in seconds between the station and Android.
      */
     private int mTimeDrift;
+
+    /**
+     * Time of last chip initialization written in a chip.
+     */
+    private int mLastInitTime;
+
     /**
      * Current station mode (0, 1 or 2).
      */
     private byte mMode;
+
     /**
      * Configurable station number
      * (an active point number to work at or zero for chip initialization).
      */
     private byte mNumber;
+
     /**
      * Number of teams who checked in.
      */
     private int mChipsRegistered;
+
     /**
      * Text representation of time of last chip registration in local timezone.
      */
@@ -161,6 +175,25 @@ public final class Station {
     }
 
     /**
+     * Get station MAC as long integer.
+     *
+     * @return Bluetooth module MAC address as 8 bytes
+     */
+    public long getMACasLong() {
+        final String hex = mDevice.getAddress().replace(":", "");
+        return Long.parseLong(hex, 16);
+    }
+
+    /**
+     * Get station time at the end of last command processing.
+     *
+     * @return Time as unixtime
+     */
+    public int getStationTime() {
+        return mStationTime;
+    }
+
+    /**
      * Get time spent waiting while receiving station response for last command.
      *
      * @return Response time in ms
@@ -194,6 +227,15 @@ public final class Station {
      */
     public int getTimeDrift() {
         return mTimeDrift;
+    }
+
+    /**
+     * Get last initialization time written in a chip.
+     *
+     * @return Time as unixtime
+     */
+    public int getLastInitTime() {
+        return mLastInitTime;
     }
 
     /**
@@ -390,7 +432,6 @@ public final class Station {
      * @param responseContent Station response without service bytes
      * @return True if there was no communication or command execution errors
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean command(final byte[] commandContent, final byte[] responseContent) {
         mLastError = 0;
         // Save time at the beginning of command processing
@@ -398,7 +439,8 @@ public final class Station {
         // Communicate with the station
         final byte[] rawResponse = runCommand(commandContent);
         // Compute execution time
-        mResponseTime = System.currentTimeMillis() - mStartTime;
+        final long now = System.currentTimeMillis();
+        mResponseTime = now - mStartTime;
         // Check for command execution errors and response parsing errors
         if (rawResponse[0] != COMMAND_OK) {
             switch (rawResponse[0]) {
@@ -439,6 +481,9 @@ public final class Station {
             mLastError = R.string.err_bt_response_wrong_length;
             return false;
         }
+        // Everything is OK, get station clock current time and drift
+        mStationTime = byteArray2Int(rawResponse, 1, 4);
+        mTimeDrift = mStationTime - (int) (now / 1000L);
         // Everything is OK, copy station response content
         System.arraycopy(rawResponse, 1, responseContent, 0, responseContent.length);
         return true;
@@ -500,10 +545,7 @@ public final class Station {
         commandData[3] = mNumber;
         // Send it to station
         final byte[] response = new byte[4];
-        if (!command(commandData, response)) return false;
-        // Get current station clock drift
-        mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
-        return true;
+        return command(commandData, response);
     }
 
     /**
@@ -525,10 +567,7 @@ public final class Station {
         commandData[7] = (byte) (calendar.get(Calendar.SECOND));
         // Send it to station
         final byte[] response = new byte[4];
-        if (!command(commandData, response)) return false;
-        // Get new station clock drift after time change
-        mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
-        return true;
+        return command(commandData, response);
     }
 
     /**
@@ -550,8 +589,6 @@ public final class Station {
         if (!command(commandData, response)) return false;
         // Update station number in class object
         mNumber = number;
-        // Get current station clock drift
-        mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
         return true;
     }
 
@@ -564,8 +601,6 @@ public final class Station {
         // Get response from station
         final byte[] response = new byte[12];
         if (!command(new byte[]{(byte) 0x83}, response)) return false;
-        // Get station clock drift
-        mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
         // Get station mode
         mMode = response[4];
         // Get station N
@@ -598,9 +633,8 @@ public final class Station {
         // Send command to station
         final byte[] response = new byte[11];
         if (!command(commandData, response)) return false;
-        // TODO: save init time
-        // Get current station clock drift
-        mTimeDrift = byteArray2Int(response, 0, 3) - (int) (System.currentTimeMillis() / 1000L);
+        // TODO: get init time from station response
+        mLastInitTime = mStationTime;
         return true;
     }
 

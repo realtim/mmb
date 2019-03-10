@@ -20,6 +20,7 @@ import org.acra.annotation.AcraToast;
 import org.acra.data.StringFormat;
 import org.acra.sender.HttpSender;
 
+import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
@@ -116,6 +117,11 @@ public final class MainApplication extends Application {
      * Teams with members downloaded from site or loaded from local database.
      */
     private Teams mTeams;
+
+    /**
+     * List of chip events received from a station or loaded from local database.
+     */
+    private Chips mChips;
 
     /**
      * List of previously discovered Bluetooth devices.
@@ -259,6 +265,24 @@ public final class MainApplication extends Application {
     }
 
     /**
+     * Get chips events loaded to persistent memory.
+     *
+     * @return Chips events
+     */
+    public Chips getChips() {
+        return mChips;
+    }
+
+    /**
+     * Save chips events to persistent memory.
+     *
+     * @param chips Chips events to save
+     */
+    public void setChips(final Chips chips) {
+        mChips = chips;
+    }
+
+    /**
      * Get the list of previously discovered Bluetooth devices.
      *
      * @return List od Bluetooth devices
@@ -352,7 +376,7 @@ public final class MainApplication extends Application {
         }
         // Try to load distance amd teams from database if it is not empty
         if (mDatabase.getDbStatus() == Database.DB_STATE_OK) {
-            // Try to load distance from database
+            // Try to load distance, teams and chip events from database
             try {
                 final Distance distance =
                         mDatabase.loadDistance(context.getString(R.string.mode_chip_init));
@@ -367,6 +391,8 @@ public final class MainApplication extends Application {
                 if (teams != null && !teams.hasErrors()) {
                     mTeams = teams;
                 }
+                final Chips chips = mDatabase.loadChips();
+                if (chips != null) mChips = chips;
             } catch (SQLiteException e) {
                 mStartupError = e.getMessage();
             }

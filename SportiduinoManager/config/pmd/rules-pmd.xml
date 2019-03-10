@@ -29,6 +29,7 @@
 <!---->        <exclude name="LoosePackageCoupling"/>
 <!---->        <exclude name="NcssCount"/>
 <!---->        <exclude name="NPathComplexity"/>
+<!---->        <exclude name="ExcessiveParameterList"/>
     </rule>
 
     <rule ref="category/java/errorprone.xml">
@@ -48,7 +49,7 @@
     <rule ref="category/java/documentation.xml"/>
     <rule ref="category/java/documentation.xml/CommentSize">
        <properties>
-            <property name="maxLines" value="12"/>
+            <property name="maxLines" value="14"/>
         </properties>
     </rule>
 
