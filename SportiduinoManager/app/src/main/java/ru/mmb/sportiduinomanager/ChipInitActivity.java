@@ -313,6 +313,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             showError(true, R.string.err_init_no_such_team);
             return;
         }
+        // TODO: check if we already initialized a chip for this team
         // Update team name and map count
         ((TextView) findViewById(R.id.init_team_name)).setText(teamName);
         ((TextView) findViewById(R.id.init_team_maps)).setText(getResources()

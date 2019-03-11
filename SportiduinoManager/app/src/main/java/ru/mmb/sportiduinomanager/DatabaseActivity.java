@@ -31,25 +31,13 @@ import java.util.Scanner;
 
 import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
+import ru.mmb.sportiduinomanager.model.SiteRequest;
 import ru.mmb.sportiduinomanager.model.Teams;
 
 /**
  * Provides interaction with database at http://mmb.progressor.ru site.
  */
 public final class DatabaseActivity extends MainActivity {
-    /**
-     * URL of test database interaction script.
-     */
-    private static final String TEST_DATABASE_URL = "http://mmb.progressor.ru/php/mmbscripts_git/sportiduino.php";
-    /**
-     * URL of main database interaction script.
-     */
-    private static final String MAIN_DATABASE_URL = "http://mmb.progressor.ru/php/mmbscripts/sportiduino.php";
-    /**
-     * Website script API version supported by this application.
-     */
-    private static final String HTTP_API_VERSION = "1";
-
     /**
      * Local copy of distance (downloaded from site or loaded from local database).
      */
@@ -319,13 +307,10 @@ public final class DatabaseActivity extends MainActivity {
 
         // get download url
         int testSite;
-        String url;
         if (((SwitchCompat) findViewById(R.id.test_database)).isChecked()) {
             testSite = 1;
-            url = TEST_DATABASE_URL;
         } else {
             testSite = 0;
-            url = MAIN_DATABASE_URL;
         }
 
         // Save email/password/site in main application
@@ -344,13 +329,11 @@ public final class DatabaseActivity extends MainActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
 
         // start download
-        final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-        request.addRequestHeader("X-Sportiduino-Protocol", HTTP_API_VERSION);
-        request.addRequestHeader("X-Sportiduino-Auth", sUserEmail + "|" + userPassword);
-        request.addRequestHeader("X-Sportiduino-Action", "1");
-        request.setTitle(getResources().getString(R.string.app_name));
-        request.setDestinationInExternalFilesDir(getApplicationContext(), null, "distance.temp");
-        mMainApplication.setDistanceDownloadId(mDownloadManager.enqueue(request));
+        final SiteRequest siteRequest =
+                SiteRequest.builder().userEmail(sUserEmail).userPassword(userPassword)
+                        .testSite(testSite).title(getResources().getString(R.string.app_name))
+                        .context(getApplicationContext()).downloadManager(mDownloadManager).build();
+        mMainApplication.setDistanceDownloadId(siteRequest.askDistance());
     }
 
     /**
