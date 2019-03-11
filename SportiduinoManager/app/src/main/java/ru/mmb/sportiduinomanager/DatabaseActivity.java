@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -22,12 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.lang.ref.WeakReference;
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Scanner;
 
 import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
@@ -69,9 +63,11 @@ public final class DatabaseActivity extends MainActivity {
         public void onReceive(final Context context, final Intent intent) {
             // check if it was our download which have been completed
             final long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0L);
-            if (downloadId != mMainApplication.getDistanceDownloadId()) {
-                return;
+            String action = "";
+            if (downloadId == mMainApplication.getDistanceDownloadId()) {
+                action = "1";
             }
+            if ("".equals(action)) return;
             // check download status
             final Cursor cursor = mDownloadManager.query(
                     new DownloadManager.Query().setFilterById(downloadId));
@@ -90,7 +86,7 @@ public final class DatabaseActivity extends MainActivity {
                     .getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).getPath();
             cursor.close();
             // Parse the file and load it to database in background thread
-            new LoadDistance(mContext).execute(path);
+            new ProcessFile(mContext).execute(path, action);
         }
     };
 
@@ -112,35 +108,6 @@ public final class DatabaseActivity extends MainActivity {
                 return R.string.database_damaged;
             default:
                 return R.string.database_status_unknown;
-        }
-    }
-
-    /**
-     * Calculate MD5 from user password string.
-     *
-     * @param str String with a password
-     * @return MD5 of the string
-     */
-    private String md5(final String str) {
-        try {
-            // Create MD5 Hash
-            final MessageDigest digest = MessageDigest.getInstance("MD5");
-            digest.update(str.getBytes(Charset.forName("UTF-8")));
-            final byte[] messageDigest = digest.digest();
-
-            // Create Hex String
-            final StringBuilder hexString = new StringBuilder();
-            for (final byte aMessageDigest : messageDigest) {
-                final String hexNumber = Integer.toHexString(0xFF & aMessageDigest);
-                if (hexNumber.length() < 2) {
-                    hexString.append('0');
-                }
-                hexString.append(hexNumber);
-            }
-            return hexString.toString();
-
-        } catch (NoSuchAlgorithmException e) {
-            return "";
         }
     }
 
@@ -303,7 +270,7 @@ public final class DatabaseActivity extends MainActivity {
             etUserPassword.setError(getResources().getString(R.string.err_db_empty_password));
             return;
         }
-        userPassword = md5(userPassword);
+        userPassword = SiteRequest.md5(userPassword);
 
         // get download url
         int testSite;
@@ -339,7 +306,7 @@ public final class DatabaseActivity extends MainActivity {
     /**
      * Separate thread for async parsing of downloaded file with a distance.
      */
-    private static class LoadDistance extends AsyncTask<String, Void, Integer> {
+    private static class ProcessFile extends AsyncTask<String, Void, Integer> {
         /**
          * Reference to parent activity (which can cease to exist in any moment).
          */
@@ -349,7 +316,7 @@ public final class DatabaseActivity extends MainActivity {
          */
         private final MainApplication mMainApplication;
         /**
-         * Downloaded file with a distance.
+         * Downloaded file with some data.
          */
         private File mFile;
         /**
@@ -362,7 +329,7 @@ public final class DatabaseActivity extends MainActivity {
          *
          * @param context Calling activity context
          */
-        LoadDistance(final DatabaseActivity context) {
+        ProcessFile(final DatabaseActivity context) {
             super();
             mActivityRef = new WeakReference<>(context);
             mMainApplication = (MainApplication) context.getApplication();
@@ -375,135 +342,37 @@ public final class DatabaseActivity extends MainActivity {
          * @return True if succeeded
          */
         protected Integer doInBackground(final String... path) {
-            // Create scanner for file parsing
+            // Save file to be able to delete it later
             mFile = new File(path[0]);
-            Scanner scanner;
-            try {
-                scanner = new Scanner(mFile, "UTF-8").useDelimiter("[\t\n]");
-            } catch (FileNotFoundException e) {
-                return R.string.err_db_reading_response;
-            }
-            // check for error message from server
-            if (!scanner.hasNextLine()) return R.string.err_db_reading_response;
-            final String message = scanner.nextLine();
-            if (!"".equals(message)) {
-                mCustomError = message;
-                return -1;
-            }
-            // read the response
-            Distance distance = null;
-            Teams teams = null;
-            while (scanner.hasNextLine()) {
-                final String blockType = scanner.next();
-                switch (blockType) {
-                    case "R":
-                        // get raid information
-                        final int raidId = scanner.nextInt();
-                        final long raidTimeReadonly = scanner.nextLong();
-                        final long raidTimeFinish = scanner.nextLong();
-                        final String raidName = scanner.next();
-                        distance = new Distance(mMainApplication.getUserEmail(),
-                                mMainApplication.getUserPassword(), mMainApplication.getTestSite(),
-                                raidId, raidName, System.currentTimeMillis() / 1000,
-                                raidTimeReadonly, raidTimeFinish);
-                        break;
-                    case "P":
-                        // parse list of points
-                        if (distance == null) return R.string.err_db_bad_response;
-                        final int nPoints = scanner.nextInt();
-                        final int maxOrder = scanner.nextInt();
-                        distance.initPointArray(maxOrder,
-                                mMainApplication.getContext().getResources().getString(R.string.mode_chip_init));
-                        for (int i = 0; i < nPoints; i++) {
-                            if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
-                            final int index = scanner.nextInt();
-                            final int type = scanner.nextInt();
-                            final int penalty = scanner.nextInt();
-                            final long start = scanner.nextLong();
-                            final long end = scanner.nextLong();
-                            final String name = scanner.next();
-                            if (!distance.addPoint(index, type, penalty, start, end, name)) {
-                                return R.string.err_db_bad_response;
-                            }
-                        }
-                        break;
-                    case "D":
-                        // parse list of discounts
-                        if (distance == null) return R.string.err_db_bad_response;
-                        final int nDiscounts = scanner.nextInt();
-                        distance.initDiscountArray(nDiscounts);
-                        for (int i = 0; i < nDiscounts; i++) {
-                            if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
-                            final int minutes = scanner.nextInt();
-                            final int fromPoint = scanner.nextInt();
-                            final int toPoint = scanner.nextInt();
-                            if (!distance.addDiscount(minutes, fromPoint, toPoint)) {
-                                return R.string.err_db_bad_response;
-                            }
-                        }
-                        break;
-                    case "T":
-                        // parse list of teams
-                        final int nTeams = scanner.nextInt();
-                        final int maxNumber = scanner.nextInt();
-                        teams = new Teams(maxNumber);
-                        for (int i = 0; i < nTeams; i++) {
-                            if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
-                            final int number = scanner.nextInt();
-                            final int nMembers = scanner.nextInt();
-                            final int nMaps = scanner.nextInt();
-                            final String name = scanner.next();
-                            if (!teams.addTeam(number, nMembers, nMaps, name)) {
-                                return R.string.err_db_bad_response;
-                            }
-                        }
-                        break;
-                    case "M":
-                        // parse list of team members
-                        if (teams == null) return R.string.err_db_bad_response;
-                        final int nMembers = scanner.nextInt();
-                        for (int i = 0; i < nMembers; i++) {
-                            if (!"".equals(scanner.next())) return R.string.err_db_bad_response;
-                            final long memberId = scanner.nextLong();
-                            final int team = scanner.nextInt();
-                            final String name = scanner.next();
-                            final String phone = scanner.next();
-                            if (!teams.addTeamMember(team, memberId, name, phone)) {
-                                return R.string.err_db_bad_response;
-                            }
-                        }
-                        break;
-                    case "E":
-                        // End of distance data in server response
-                        break;
-                    default:
+            final String action = path[1];
+            if ("1".equals(action)) {
+                // Load downloaded distance and teams into memory and local database
+                final SiteRequest siteRequest = SiteRequest.builder()
+                        .userEmail(mMainApplication.getUserEmail())
+                        .userPassword(mMainApplication.getUserPassword())
+                        .testSite(mMainApplication.getTestSite()).build();
+                final int result = siteRequest.loadDistance(mFile,
+                        mMainApplication.getContext().getResources()
+                                .getString(R.string.mode_chip_init),
+                        mMainApplication.getDatabase());
+                switch (result) {
+                    case SiteRequest.LOAD_READ_ERROR:
+                        return R.string.err_db_reading_response;
+                    case SiteRequest.LOAD_PARSE_ERROR:
                         return R.string.err_db_bad_response;
+                    case SiteRequest.LOAD_CUSTOM_ERROR:
+                        mCustomError = siteRequest.getCustomError();
+                        return -1;
+                    case SiteRequest.LOAD_OK:
+                        // Copy loaded distance and teams to persistent memory
+                        mMainApplication.setDistance(siteRequest.getDistance());
+                        mMainApplication.setTeams(siteRequest.getTeams());
+                        return R.string.download_distance_success;
+                    default:
+                        return R.string.unknown;
                 }
-                if ("E".equals(blockType)) break;
             }
-            scanner.close();
-            // check if all necessary data were present
-            if (distance == null || teams == null) return R.string.err_db_bad_response;
-            // Validate loaded distance and teams
-            if (distance.hasErrors() || teams.hasErrors()) {
-                // Downloaded distance had errors, use old distance from persistent memory
-                return R.string.err_db_bad_response;
-            }
-            // Copy parsed distance and teams to class members and to persistent memory
-            mMainApplication.setDistance(distance);
-            mMainApplication.setTeams(teams);
-            // Save parsed distance and teams to local database
-            final Database database = mMainApplication.getDatabase();
-            try {
-                database.saveDistance(distance);
-                database.saveTeams(teams);
-                // TODO: mMainApplication.setDatabase(database);
-            } catch (SQLiteException e) {
-                mCustomError = e.getMessage();
-                return -1;
-            }
-            // TODO: reload distance from database to ensure that it was saved correctly
-            return R.string.download_distance_success;
+            return R.string.unknown;
         }
 
         /**
