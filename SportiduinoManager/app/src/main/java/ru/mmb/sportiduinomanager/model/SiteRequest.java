@@ -1,23 +1,21 @@
 package ru.mmb.sportiduinomanager.model;
 
-import android.app.DownloadManager;
-import android.content.Context;
 import android.database.sqlite.SQLiteException;
-import android.net.Uri;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Interaction with http://mmb.progressor.ru - send request and receive response.
  */
 public final class SiteRequest {
     /**
-     * Downloaded file parsing was successful.
+     * Downloaded data parsing was successful.
      */
     public static final int LOAD_OK = 0;
     /**
@@ -25,13 +23,22 @@ public final class SiteRequest {
      */
     public static final int LOAD_READ_ERROR = 1;
     /**
-     * Downloaded file has an error in its format.
+     * Downloaded data has an error in its format.
      */
     public static final int LOAD_PARSE_ERROR = 2;
     /**
+     * Something unexpected has been happened.
+     */
+    public static final int LOAD_FATAL_ERROR = 3;
+    /**
      * Member mCustomError contains custom text error message.
      */
-    public static final int LOAD_CUSTOM_ERROR = 3;
+    public static final int LOAD_CUSTOM_ERROR = 4;
+
+    /**
+     * Request type for distance download.
+     */
+    public static final int TYPE_DL_DISTANCE = 1;
 
     /**
      * URL of test database interaction script.
@@ -59,17 +66,17 @@ public final class SiteRequest {
      */
     private final int mTestSite;
     /**
-     * Download manager title.
+     * Type of site request (see TYPE_* constants).
      */
-    private final String mTitle;
+    private final int mType;
     /**
-     * Application context to select download location.
+     * Localized name for chip init active point.
      */
-    private final Context mContext;
+    private final String mChipInitName;
     /**
-     * Defines callback where downloaded file will be processed.
+     * Database object for saving downloaded data.
      */
-    private final DownloadManager mDownloadManager;
+    private final Database mDatabase;
 
     /**
      * Custom error from first line of downloaded file or from SQLite exception.
@@ -94,9 +101,9 @@ public final class SiteRequest {
         this.mUserEmail = srb.mUserEmail;
         this.mUserPassword = srb.mUserPassword;
         this.mTestSite = srb.mTestSite;
-        this.mTitle = srb.mTitle;
-        this.mContext = srb.mContext;
-        this.mDownloadManager = srb.mDownloadManager;
+        this.mType = srb.mType;
+        this.mChipInitName = srb.mChipInitName;
+        this.mDatabase = srb.mDatabase;
     }
 
     /**
@@ -106,35 +113,6 @@ public final class SiteRequest {
      */
     public static SiteRequestBuilder builder() {
         return new SiteRequestBuilder();
-    }
-
-    /**
-     * Calculate MD5 from user password string.
-     *
-     * @param str String with a password
-     * @return MD5 of the string
-     */
-    public static String md5(final String str) {
-        try {
-            // Create MD5 Hash
-            final MessageDigest digest = MessageDigest.getInstance("MD5");
-            digest.update(str.getBytes(Charset.forName("UTF-8")));
-            final byte[] messageDigest = digest.digest();
-
-            // Create Hex String
-            final StringBuilder hexString = new StringBuilder();
-            for (final byte aMessageDigest : messageDigest) {
-                final String hexNumber = Integer.toHexString(0xFF & aMessageDigest);
-                if (hexNumber.length() < 2) {
-                    hexString.append('0');
-                }
-                hexString.append(hexNumber);
-            }
-            return hexString.toString();
-
-        } catch (NoSuchAlgorithmException e) {
-            return "";
-        }
     }
 
     /**
@@ -165,55 +143,74 @@ public final class SiteRequest {
     }
 
     /**
-     * Ask site for distance and teams data download.
+     * Make one of download/upload request according to mType.
      *
-     * @return ID of download request registered in download manager
+     * @return One of LOAD result constants, mCustomError can be also set
+     * @throws IOException                    Input stream error
+     * @throws NumberFormatException          A field does not contain integer/long
+     * @throws ArrayIndexOutOfBoundsException Number of fields in a line is too small
      */
-    public long askDistance() {
-        return askSomething("1", "distance.temp");
+    public int makeRequest() throws IOException, NumberFormatException, ArrayIndexOutOfBoundsException {
+        switch (mType) {
+            case TYPE_DL_DISTANCE:
+                return loadDistance();
+            default:
+                return LOAD_FATAL_ERROR;
+        }
+
     }
 
     /**
      * Send some request to site with previously prepared body.
      *
-     * @param action   Type of request (distance dl, chips ul, results ul)
-     * @param filename Filename where server response will be stored
-     * @return ID of download request registered in download manager
+     * @return Successfully opened connection to site or null in case of en error
      */
-    private long askSomething(final String action, final String filename) {
+    private HttpURLConnection askSomething() {
         // Select correct url
-        String url;
+        String urlString;
         if (mTestSite == 1) {
-            url = TEST_DATABASE_URL;
+            urlString = TEST_DATABASE_URL;
         } else {
-            url = MAIN_DATABASE_URL;
+            urlString = MAIN_DATABASE_URL;
         }
-        // Construct request for download manager
-        final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-        request.addRequestHeader("X-Sportiduino-Protocol", HTTP_API_VERSION);
-        request.addRequestHeader("X-Sportiduino-Auth", mUserEmail + "|" + mUserPassword);
-        request.addRequestHeader("X-Sportiduino-Action", action);
-        request.setTitle(mTitle);
-        request.setDestinationInExternalFilesDir(mContext, null, filename);
-        // Send request to download manager
-        return mDownloadManager.enqueue(request);
+        URL url;
+        try {
+            url = new URL(urlString);
+        } catch (MalformedURLException e) {
+            return null;
+        }
+        HttpURLConnection connection;
+        try {
+            connection = (HttpURLConnection) url.openConnection();
+        } catch (IOException e) {
+            return null;
+        }
+        connection.setRequestProperty("X-Sportiduino-Protocol", HTTP_API_VERSION);
+        connection.setRequestProperty("X-Sportiduino-Auth", mUserEmail + "|" + mUserPassword);
+        connection.setRequestProperty("X-Sportiduino-Action", String.valueOf(mType));
+        try {
+            connection.connect();
+        } catch (IOException e) {
+            return null;
+        }
+        return connection;
     }
 
     /**
-     * Parse the file downloaded from the site and load distance and teams from it.
+     * Ask site for distance and teams data download.
      *
-     * @param path         Path to downloaded file
-     * @param chipInitName Name of chip initialization point in current language
-     * @param database     Database object for saving distance+teams in local database
      * @return One of LOAD result constants, mCustomError can be also set
      * @throws IOException                    Unexpected end of file
      * @throws NumberFormatException          A field does not contain integer/long
      * @throws ArrayIndexOutOfBoundsException Number of fields in a line is too small
      */
-    public int loadDistance(final String path, final String chipInitName,
-                            final Database database)
+    private int loadDistance()
             throws IOException, NumberFormatException, ArrayIndexOutOfBoundsException {
-        final BufferedReader reader = new BufferedReader(new FileReader(path));
+        final HttpURLConnection connection = askSomething();
+        if (connection == null) return LOAD_READ_ERROR;
+        final BufferedReader reader =
+                new BufferedReader(new InputStreamReader(connection.getInputStream(),
+                        StandardCharsets.UTF_8));
         // check for error message from server
         String line = reader.readLine();
         if (!"".equals(line)) {
@@ -246,7 +243,7 @@ public final class SiteRequest {
                     if (distance == null) return LOAD_PARSE_ERROR;
                     final int nPoints = Integer.parseInt(values[1]);
                     final int maxOrder = Integer.parseInt(values[2]);
-                    distance.initPointArray(maxOrder, chipInitName);
+                    distance.initPointArray(maxOrder, mChipInitName);
                     for (int i = 0; i < nPoints; i++) {
                         line = reader.readLine();
                         if (line == null) return LOAD_PARSE_ERROR;
@@ -322,6 +319,7 @@ public final class SiteRequest {
             }
         } while (blockType != 'E');
         reader.close();
+        connection.disconnect();
         // check if all necessary data were present
         if (distance == null || teams == null) return LOAD_PARSE_ERROR;
         // Validate loaded distance and teams
@@ -334,8 +332,8 @@ public final class SiteRequest {
         mTeams = teams;
         // Save parsed distance and teams to local database
         try {
-            database.saveDistance(distance);
-            database.saveTeams(teams);
+            mDatabase.saveDistance(distance);
+            mDatabase.saveTeams(teams);
         } catch (SQLiteException e) {
             mCustomError = e.getMessage();
             return LOAD_CUSTOM_ERROR;
@@ -361,17 +359,17 @@ public final class SiteRequest {
          */
         private int mTestSite;
         /**
-         * Download manager title.
+         * Type of site request (see TYPE_* constants).
          */
-        private String mTitle;
+        private int mType;
         /**
-         * Application context to select download location.
+         * Localized name for chip init active point.
          */
-        private Context mContext;
+        private String mChipInitName;
         /**
-         * Defines callback where downloaded file will be processed.
+         * Database object for saving downloaded data.
          */
-        private DownloadManager mDownloadManager;
+        private Database mDatabase;
 
         /**
          * Use the static method SiteRequest.builder() to get an instance.
@@ -413,37 +411,38 @@ public final class SiteRequest {
         }
 
         /**
-         * Set title.
+         * Set type of site request.
          *
-         * @param title Download manager title
+         * @param type See TYPE_* constants
          * @return this
          */
-        public SiteRequestBuilder title(final String title) {
-            this.mTitle = title;
+        public SiteRequestBuilder type(final int type) {
+            this.mType = type;
             return this;
         }
 
         /**
-         * Set context.
+         * Set localized name for chip init active point.
          *
-         * @param context Application context to select download location.
+         * @param chipInitName String with chip init name
          * @return this
          */
-        public SiteRequestBuilder context(final Context context) {
-            this.mContext = context;
+        public SiteRequestBuilder chipInitName(final String chipInitName) {
+            this.mChipInitName = chipInitName;
             return this;
         }
 
         /**
-         * Set download manager callback.
+         * Set database object for saving downloaded data.
          *
-         * @param downloadManager Defines callback where downloaded file will be processed
+         * @param database Database object
          * @return this
          */
-        public SiteRequestBuilder downloadManager(final DownloadManager downloadManager) {
-            this.mDownloadManager = downloadManager;
+        public SiteRequestBuilder database(final Database database) {
+            this.mDatabase = database;
             return this;
         }
+
 
         /**
          * Finalize builder.

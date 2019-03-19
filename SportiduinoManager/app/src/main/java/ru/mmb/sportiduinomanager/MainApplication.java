@@ -93,10 +93,6 @@ public final class MainApplication extends Application {
     private Database mDatabase;
 
     /**
-     * Id of distance download background process.
-     */
-    private long mDistanceDlId = -1L;
-    /**
      * Email of the user who authorized (or tried to authorize) at the site.
      */
     private String mUserEmail = "";
@@ -167,24 +163,6 @@ public final class MainApplication extends Application {
      */
     public Database getDatabase() {
         return mDatabase;
-    }
-
-    /**
-     * Get id of distance download process.
-     *
-     * @return Process id
-     */
-    public long getDistanceDownloadId() {
-        return mDistanceDlId;
-    }
-
-    /**
-     * Save id of distance download process.
-     *
-     * @param downloadId Process id
-     */
-    public void setDistanceDownloadId(final long downloadId) {
-        mDistanceDlId = downloadId;
     }
 
     /**

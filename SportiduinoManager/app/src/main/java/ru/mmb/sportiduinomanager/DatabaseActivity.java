@@ -1,12 +1,6 @@
 package ru.mmb.sportiduinomanager;
 
-import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
@@ -20,9 +14,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
@@ -48,48 +44,13 @@ public final class DatabaseActivity extends MainActivity {
      */
     private MainApplication mMainApplication;
     /**
-     * Async download thread manager.
-     */
-    private DownloadManager mDownloadManager;
-    /**
      * Copy of activity context for AsyncTask.
      */
     private DatabaseActivity mContext;
-
     /**
-     * Receiver of "download completed" events.
+     * True when download/upload async task is active.
      */
-    private final BroadcastReceiver mDistanceReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            // check if it was our download which have been completed
-            final long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0L);
-            String action = "";
-            if (downloadId == mMainApplication.getDistanceDownloadId()) {
-                action = "1";
-            }
-            if ("".equals(action)) return;
-            // check download status
-            final Cursor cursor = mDownloadManager.query(
-                    new DownloadManager.Query().setFilterById(downloadId));
-            if (cursor == null || !cursor.moveToFirst()) {
-                return;
-            }
-            if (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
-                    != DownloadManager.STATUS_SUCCESSFUL) {
-                Toast.makeText(context, getResources().getString(R.string.err_db_download_failed)
-                                + cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_REASON)),
-                        Toast.LENGTH_LONG).show();
-                cursor.close();
-                return;
-            }
-            final String path = Uri.parse(cursor
-                    .getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))).getPath();
-            cursor.close();
-            // Parse the file and load it to database in background thread
-            new ProcessFile(mContext).execute(path, action);
-        }
-    };
+    private boolean mDownloadActive;
 
     /**
      * Get descriptive string message about database status.
@@ -112,14 +73,43 @@ public final class DatabaseActivity extends MainActivity {
         }
     }
 
+    /**
+     * Calculate MD5 from user password string.
+     *
+     * @param str String with a password
+     * @return MD5 of the string
+     */
+    private static String md5(final String str) {
+        try {
+            // Create MD5 Hash
+            final MessageDigest digest = MessageDigest.getInstance("MD5");
+            digest.update(str.getBytes(StandardCharsets.UTF_8));
+            final byte[] messageDigest = digest.digest();
+
+            // Create Hex String
+            final StringBuilder hexString = new StringBuilder();
+            for (final byte aMessageDigest : messageDigest) {
+                final String hexNumber = Integer.toHexString(0xFF & aMessageDigest);
+                if (hexNumber.length() < 2) {
+                    hexString.append('0');
+                }
+                hexString.append(hexNumber);
+            }
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            return "";
+        }
+    }
+
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
         mContext = this;
+        mDownloadActive = false;
         mMainApplication = (MainApplication) this.getApplication();
         mDistance = mMainApplication.getDistance();
         mTeams = mMainApplication.getTeams();
-        mDownloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         setContentView(R.layout.activity_database);
     }
 
@@ -133,15 +123,6 @@ public final class DatabaseActivity extends MainActivity {
         overridePendingTransition(0, 0);
         // Update layout elements
         updateLayout();
-        // Register download receiver
-        registerReceiver(mDistanceReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        // Unregister download receiver
-        unregisterReceiver(mDistanceReceiver);
     }
 
     /**
@@ -171,12 +152,12 @@ public final class DatabaseActivity extends MainActivity {
         }
         statusMessage.setTextColor(ResourcesCompat.getColor(getResources(), statusColor, getTheme()));
         statusMessage.setText(getStatusMessage(dbStatus));
-        if (mMainApplication.getDistanceDownloadId() == -1) {
-            findViewById(R.id.database_status_progress).setVisibility(View.INVISIBLE);
-            statusMessage.setVisibility(View.VISIBLE);
-        } else {
+        if (mDownloadActive) {
             statusMessage.setVisibility(View.INVISIBLE);
             findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.database_status_progress).setVisibility(View.INVISIBLE);
+            statusMessage.setVisibility(View.VISIBLE);
         }
         // Detect what we will show or hide
         final MenuItem databaseItem = getMenuItem(R.id.database);
@@ -248,7 +229,7 @@ public final class DatabaseActivity extends MainActivity {
      */
     public void startDistanceDownload(final View view) {
         // Check if we have another download waiting
-        if (mMainApplication.getDistanceDownloadId() != -1) {
+        if (mDownloadActive) {
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_db_download_waiting),
                     Toast.LENGTH_LONG).show();
             return;
@@ -271,7 +252,7 @@ public final class DatabaseActivity extends MainActivity {
             etUserPassword.setError(getResources().getString(R.string.err_db_empty_password));
             return;
         }
-        userPassword = SiteRequest.md5(userPassword);
+        userPassword = md5(userPassword);
 
         // get download url
         int testSite;
@@ -293,21 +274,25 @@ public final class DatabaseActivity extends MainActivity {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
         // Show progress bar instead of status text
+        mDownloadActive = true;
         findViewById(R.id.database_status_description).setVisibility(View.INVISIBLE);
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
 
         // start download
+        final String chipInitName =
+                mMainApplication.getContext().getResources().getString(R.string.mode_chip_init);
         final SiteRequest siteRequest =
                 SiteRequest.builder().userEmail(sUserEmail).userPassword(userPassword)
-                        .testSite(testSite).title(getResources().getString(R.string.app_name))
-                        .context(getApplicationContext()).downloadManager(mDownloadManager).build();
-        mMainApplication.setDistanceDownloadId(siteRequest.askDistance());
+                        .testSite(testSite).chipInitName(chipInitName)
+                        .database(mMainApplication.getDatabase())
+                        .type(SiteRequest.TYPE_DL_DISTANCE).build();
+        new AsyncSiteRequest(mContext).execute(siteRequest);
     }
 
     /**
      * Separate thread for async parsing of downloaded file with a distance.
      */
-    private static class ProcessFile extends AsyncTask<String, Void, Integer> {
+    private static class AsyncSiteRequest extends AsyncTask<SiteRequest, Void, Integer> {
         /**
          * Reference to parent activity (which can cease to exist in any moment).
          */
@@ -316,10 +301,6 @@ public final class DatabaseActivity extends MainActivity {
          * Reference to main application thread.
          */
         private final MainApplication mMainApplication;
-        /**
-         * Downloaded file with some data.
-         */
-        private File mFile;
         /**
          * Custom string which cannot be loaded from resources.
          */
@@ -330,7 +311,7 @@ public final class DatabaseActivity extends MainActivity {
          *
          * @param context Calling activity context
          */
-        ProcessFile(final DatabaseActivity context) {
+        AsyncSiteRequest(final DatabaseActivity context) {
             super();
             mActivityRef = new WeakReference<>(context);
             mMainApplication = (MainApplication) context.getApplication();
@@ -339,48 +320,37 @@ public final class DatabaseActivity extends MainActivity {
         /**
          * Process server response and save distance and teams to SQLite database.
          *
-         * @param path Path to file
+         * @param request Previously prepared request to the site
          * @return True if succeeded
          */
-        protected Integer doInBackground(final String... path) {
-            // Save file to be able to delete it later
-            mFile = new File(path[0]);
-            final String action = path[1];
-            if ("1".equals(action)) {
-                // Load downloaded distance and teams into memory and local database
-                final SiteRequest siteRequest = SiteRequest.builder()
-                        .userEmail(mMainApplication.getUserEmail())
-                        .userPassword(mMainApplication.getUserPassword())
-                        .testSite(mMainApplication.getTestSite()).build();
-                int result;
-                try {
-                    result = siteRequest.loadDistance(path[0],
-                            mMainApplication.getContext().getResources()
-                                    .getString(R.string.mode_chip_init),
-                            mMainApplication.getDatabase());
-                } catch (IOException e) {
-                    result = SiteRequest.LOAD_READ_ERROR;
-                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                    result = SiteRequest.LOAD_PARSE_ERROR;
-                }
-                switch (result) {
-                    case SiteRequest.LOAD_READ_ERROR:
-                        return R.string.err_db_reading_response;
-                    case SiteRequest.LOAD_PARSE_ERROR:
-                        return R.string.err_db_bad_response;
-                    case SiteRequest.LOAD_CUSTOM_ERROR:
-                        mCustomError = siteRequest.getCustomError();
-                        return -1;
-                    case SiteRequest.LOAD_OK:
-                        // Copy loaded distance and teams to persistent memory
-                        mMainApplication.setDistance(siteRequest.getDistance());
-                        mMainApplication.setTeams(siteRequest.getTeams());
-                        return R.string.download_distance_success;
-                    default:
-                        return R.string.unknown;
-                }
+        protected Integer doInBackground(final SiteRequest... request) {
+            int result;
+            try {
+                result = request[0].makeRequest();
+            } catch (IOException e) {
+                result = SiteRequest.LOAD_READ_ERROR;
+
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                result = SiteRequest.LOAD_PARSE_ERROR;
             }
-            return R.string.unknown;
+            switch (result) {
+                case SiteRequest.LOAD_READ_ERROR:
+                    return R.string.err_db_reading_response;
+                case SiteRequest.LOAD_PARSE_ERROR:
+                    return R.string.err_db_bad_response;
+                case SiteRequest.LOAD_FATAL_ERROR:
+                    return R.string.err_db_internal_error;
+                case SiteRequest.LOAD_CUSTOM_ERROR:
+                    mCustomError = request[0].getCustomError();
+                    return -1;
+                case SiteRequest.LOAD_OK:
+                    // Copy loaded distance and teams to persistent memory
+                    mMainApplication.setDistance(request[0].getDistance());
+                    mMainApplication.setTeams(request[0].getTeams());
+                    return R.string.download_distance_success;
+                default:
+                    return R.string.unknown;
+            }
         }
 
         /**
@@ -395,12 +365,6 @@ public final class DatabaseActivity extends MainActivity {
             } else {
                 Toast.makeText(mMainApplication, mCustomError, Toast.LENGTH_LONG).show();
             }
-            // Delete downloaded file
-            if (!mFile.delete()) {
-                Toast.makeText(mMainApplication, R.string.err_db_reading_response,
-                        Toast.LENGTH_LONG).show();
-            }
-            mMainApplication.setDistanceDownloadId(-1L);
             // Get a reference to the activity if it is still there
             final DatabaseActivity activity = mActivityRef.get();
             if (activity == null || activity.isFinishing()) return;
@@ -408,8 +372,10 @@ public final class DatabaseActivity extends MainActivity {
             activity.mDistance = mMainApplication.getDistance();
             activity.mTeams = mMainApplication.getTeams();
             // Update activity layout
+            activity.mDownloadActive = false;
             activity.updateLayout();
         }
+
     }
 
 }
