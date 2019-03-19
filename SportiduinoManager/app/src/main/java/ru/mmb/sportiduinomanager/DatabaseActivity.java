@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import ru.mmb.sportiduinomanager.model.Database;
@@ -351,10 +352,17 @@ public final class DatabaseActivity extends MainActivity {
                         .userEmail(mMainApplication.getUserEmail())
                         .userPassword(mMainApplication.getUserPassword())
                         .testSite(mMainApplication.getTestSite()).build();
-                final int result = siteRequest.loadDistance(mFile,
-                        mMainApplication.getContext().getResources()
-                                .getString(R.string.mode_chip_init),
-                        mMainApplication.getDatabase());
+                int result;
+                try {
+                    result = siteRequest.loadDistance(path[0],
+                            mMainApplication.getContext().getResources()
+                                    .getString(R.string.mode_chip_init),
+                            mMainApplication.getDatabase());
+                } catch (IOException e) {
+                    result = SiteRequest.LOAD_READ_ERROR;
+                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                    result = SiteRequest.LOAD_PARSE_ERROR;
+                }
                 switch (result) {
                     case SiteRequest.LOAD_READ_ERROR:
                         return R.string.err_db_reading_response;

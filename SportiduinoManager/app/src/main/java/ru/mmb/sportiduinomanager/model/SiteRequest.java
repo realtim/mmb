@@ -5,12 +5,12 @@ import android.content.Context;
 import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Scanner;
 
 /**
  * Interaction with http://mmb.progressor.ru - send request and receive response.
@@ -202,116 +202,126 @@ public final class SiteRequest {
     /**
      * Parse the file downloaded from the site and load distance and teams from it.
      *
-     * @param file         Downloaded file
+     * @param path         Path to downloaded file
      * @param chipInitName Name of chip initialization point in current language
      * @param database     Database object for saving distance+teams in local database
      * @return One of LOAD result constants, mCustomError can be also set
+     * @throws IOException                    Unexpected end of file
+     * @throws NumberFormatException          A field does not contain integer/long
+     * @throws ArrayIndexOutOfBoundsException Number of fields in a line is too small
      */
-    public int loadDistance(final File file, final String chipInitName, final Database database) {
-        // TODO: replace Scanner with BufferedReader
-        Scanner scanner;
-        try {
-            scanner = new Scanner(file, "UTF-8").useDelimiter("[\t\n]");
-        } catch (FileNotFoundException e) {
-            return LOAD_READ_ERROR;
-        }
+    public int loadDistance(final String path, final String chipInitName,
+                            final Database database)
+            throws IOException, NumberFormatException, ArrayIndexOutOfBoundsException {
+        final BufferedReader reader = new BufferedReader(new FileReader(path));
         // check for error message from server
-        if (!scanner.hasNextLine()) return LOAD_READ_ERROR;
-        final String message = scanner.nextLine();
-        if (!"".equals(message)) {
-            mCustomError = message;
+        String line = reader.readLine();
+        if (!"".equals(line)) {
+            mCustomError = line;
             return LOAD_CUSTOM_ERROR;
         }
         // read the response
         Distance distance = null;
         Teams teams = null;
-        while (scanner.hasNextLine()) {
-            final String blockType = scanner.next();
+        String[] values;
+        char blockType;
+        do {
+            line = reader.readLine();
+            if (line == null) return LOAD_PARSE_ERROR;
+            blockType = line.charAt(0);
+            values = line.split("\t", -1);
             switch (blockType) {
-                case "R":
+                case 'R':
                     // get raid information
-                    final int raidId = scanner.nextInt();
-                    final long raidTimeReadonly = scanner.nextLong();
-                    final long raidTimeFinish = scanner.nextLong();
-                    final String raidName = scanner.next();
+                    final int raidId = Integer.parseInt(values[1]);
+                    final long raidTimeReadonly = Long.parseLong(values[2]);
+                    final long raidTimeFinish = Long.parseLong(values[3]);
+                    final String raidName = values[4];
                     distance = new Distance(mUserEmail, mUserPassword, mTestSite,
                             raidId, raidName, System.currentTimeMillis() / 1000,
                             raidTimeReadonly, raidTimeFinish);
                     break;
-                case "P":
+                case 'P':
                     // parse list of points
                     if (distance == null) return LOAD_PARSE_ERROR;
-                    final int nPoints = scanner.nextInt();
-                    final int maxOrder = scanner.nextInt();
+                    final int nPoints = Integer.parseInt(values[1]);
+                    final int maxOrder = Integer.parseInt(values[2]);
                     distance.initPointArray(maxOrder, chipInitName);
                     for (int i = 0; i < nPoints; i++) {
-                        if (!"".equals(scanner.next())) return LOAD_PARSE_ERROR;
-                        final int index = scanner.nextInt();
-                        final int type = scanner.nextInt();
-                        final int penalty = scanner.nextInt();
-                        final long start = scanner.nextLong();
-                        final long end = scanner.nextLong();
-                        final String name = scanner.next();
+                        line = reader.readLine();
+                        if (line == null) return LOAD_PARSE_ERROR;
+                        values = line.split("\t", -1);
+                        final int index = Integer.parseInt(values[1]);
+                        final int type = Integer.parseInt(values[2]);
+                        final int penalty = Integer.parseInt(values[3]);
+                        final long start = Long.parseLong(values[4]);
+                        final long end = Long.parseLong(values[5]);
+                        final String name = values[6];
                         if (!distance.addPoint(index, type, penalty, start, end, name)) {
                             return LOAD_PARSE_ERROR;
                         }
                     }
                     break;
-                case "D":
+                case 'D':
                     // parse list of discounts
                     if (distance == null) return LOAD_PARSE_ERROR;
-                    final int nDiscounts = scanner.nextInt();
+                    final int nDiscounts = Integer.parseInt(values[1]);
                     distance.initDiscountArray(nDiscounts);
                     for (int i = 0; i < nDiscounts; i++) {
-                        if (!"".equals(scanner.next())) return LOAD_PARSE_ERROR;
-                        final int minutes = scanner.nextInt();
-                        final int fromPoint = scanner.nextInt();
-                        final int toPoint = scanner.nextInt();
+                        line = reader.readLine();
+                        if (line == null) return LOAD_PARSE_ERROR;
+                        values = line.split("\t", -1);
+                        final int minutes = Integer.parseInt(values[1]);
+                        final int fromPoint = Integer.parseInt(values[2]);
+                        final int toPoint = Integer.parseInt(values[3]);
                         if (!distance.addDiscount(minutes, fromPoint, toPoint)) {
                             return LOAD_PARSE_ERROR;
                         }
                     }
                     break;
-                case "T":
+                case 'T':
                     // parse list of teams
-                    final int nTeams = scanner.nextInt();
-                    final int maxNumber = scanner.nextInt();
+                    final int nTeams = Integer.parseInt(values[1]);
+                    final int maxNumber = Integer.parseInt(values[2]);
                     teams = new Teams(maxNumber);
                     for (int i = 0; i < nTeams; i++) {
-                        if (!"".equals(scanner.next())) return LOAD_PARSE_ERROR;
-                        final int number = scanner.nextInt();
-                        final int nMembers = scanner.nextInt();
-                        final int nMaps = scanner.nextInt();
-                        final String name = scanner.next();
+                        line = reader.readLine();
+                        if (line == null) return LOAD_PARSE_ERROR;
+                        values = line.split("\t", -1);
+                        final int number = Integer.parseInt(values[1]);
+                        final int nMembers = Integer.parseInt(values[2]);
+                        final int nMaps = Integer.parseInt(values[3]);
+                        final String name = values[4];
                         if (!teams.addTeam(number, nMembers, nMaps, name)) {
                             return LOAD_PARSE_ERROR;
                         }
                     }
                     break;
-                case "M":
+                case 'M':
                     // parse list of team members
                     if (teams == null) return LOAD_PARSE_ERROR;
-                    final int nMembers = scanner.nextInt();
+                    final int nMembers = Integer.parseInt(values[1]);
                     for (int i = 0; i < nMembers; i++) {
-                        if (!"".equals(scanner.next())) return LOAD_PARSE_ERROR;
-                        final long memberId = scanner.nextLong();
-                        final int team = scanner.nextInt();
-                        final String name = scanner.next();
-                        final String phone = scanner.next();
+                        line = reader.readLine();
+                        if (line == null) return LOAD_PARSE_ERROR;
+                        values = line.split("\t", -1);
+                        final long memberId = Long.parseLong(values[1]);
+                        final int team = Integer.parseInt(values[2]);
+                        final String name = values[3];
+                        final String phone = values[4];
                         if (!teams.addTeamMember(team, memberId, name, phone)) {
                             return LOAD_PARSE_ERROR;
                         }
                     }
                     break;
-                case "E":
+                case 'E':
                     // End of distance data in server response
                     break;
                 default:
                     return LOAD_PARSE_ERROR;
             }
-            if ("E".equals(blockType)) break;
-        }
-        scanner.close();
+        } while (blockType != 'E');
+        reader.close();
         // check if all necessary data were present
         if (distance == null || teams == null) return LOAD_PARSE_ERROR;
         // Validate loaded distance and teams
