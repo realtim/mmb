@@ -17,7 +17,7 @@ public final class Teams {
      *
      * @param maxNumber Max index in team array
      */
-    public Teams(final int maxNumber) {
+    Teams(final int maxNumber) {
         mTeams = new SingleTeam[maxNumber + 1];
     }
 
@@ -31,8 +31,8 @@ public final class Teams {
      * @return True in case of valid team number value
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean addTeam(final int number, final int membersCount, final int mapsCount,
-                           final String name) {
+    boolean addTeam(final int number, final int membersCount, final int mapsCount,
+                    final String name) {
         // Check if team number is valid
         if (number < 0 || number >= mTeams.length) return false;
         // Check if the point was already set
@@ -47,15 +47,15 @@ public final class Teams {
     /**
      * Add new member to the list of team members.
      *
-     * @param teamN       Team number
      * @param memberId    Member id
+     * @param teamN       Team number
      * @param memberName  Member first and last name and year of birth
      * @param memberPhone Member mobile phone (can be empty)
      * @return True in case of valid team and number of its members
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean addTeamMember(final int teamN, final long memberId, final String memberName,
-                                 final String memberPhone) {
+    boolean addTeamMember(final long memberId, final int teamN, final String memberName,
+                           final String memberPhone) {
         // Check if team number is valid
         if (teamN < 0 || teamN >= mTeams.length) return false;
         final int numberOfMembers = mTeams[teamN].mMembers.length;

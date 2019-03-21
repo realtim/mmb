@@ -20,10 +20,18 @@ public final class Chips {
     private final List<ChipEvent> mEvents;
 
     /**
-     * Construct empty list of chip events.
+     * Unixtime when distance has been downloaded from site.
      */
-    public Chips() {
+    private final long mTimeDownloaded;
+
+    /**
+     * Construct empty list of chip events.
+     *
+     * @param timeDownloaded Time of distance dl (to send along with chips to site)
+     */
+    Chips(final long timeDownloaded) {
         mEvents = new ArrayList<>();
+        mTimeDownloaded = timeDownloaded;
     }
 
     /**
@@ -31,7 +39,7 @@ public final class Chips {
      *
      * @param event Chip event to add
      */
-    public void addEvent(final ChipEvent event) {
+    void addEvent(final ChipEvent event) {
         mEvents.add(event);
     }
 
@@ -50,6 +58,15 @@ public final class Chips {
         mEvents.add(new ChipEvent(station.getMACasLong(), station.getStationTime(),
                 station.getTimeDrift(), station.getNumber(), station.getMode(), initTime,
                 teamNumber, teamMask, pointNumber, pointTime, ChipEvent.STATUS_NEW));
+    }
+
+    /**
+     * Get previously loaded time of distance download.
+     *
+     * @return Time as unixtime
+     */
+    long getTimeDownloaded() {
+        return mTimeDownloaded;
     }
 
     /**
@@ -94,5 +111,20 @@ public final class Chips {
             }
         }
         return SUCCESS;
+    }
+
+    /**
+     * Get list of all unsent chip events converted to strings.
+     *
+     * @return Array of strings with events
+     */
+    List<String> getUnsentEvents() {
+        final List<String> eventsAsString = new ArrayList<>();
+        for (final ChipEvent event : mEvents) {
+            if (event.getStatus() != ChipEvent.STATUS_SENT) {
+                eventsAsString.add(event.toString());
+            }
+        }
+        return eventsAsString;
     }
 }

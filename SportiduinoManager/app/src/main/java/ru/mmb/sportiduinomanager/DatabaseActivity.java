@@ -319,6 +319,7 @@ public final class DatabaseActivity extends MainActivity {
                         .userPassword(mMainApplication.getUserPassword())
                         .testSite(mMainApplication.getTestSite())
                         .database(mMainApplication.getDatabase())
+                        .chips(mChips)
                         .type(SiteRequest.TYPE_UL_CHIPS).build();
         new AsyncSiteRequest(mContext).execute(siteRequest);
     }

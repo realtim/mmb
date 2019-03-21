@@ -122,4 +122,17 @@ final class ChipEvent {
     void setStatus(final int status) {
         mStatus = status;
     }
+
+    /**
+     * Get string representation of chip event for sending to site.
+     *
+     * @return Chip event converted to string
+     */
+    public String toString() {
+        return Long.toString(mStationMAC) + '\t' + Integer.toString(mStationTime) + '\t'
+                + Integer.toString(mStationDrift) + '\t' + Integer.toString(mStationNumber) + '\t'
+                + Integer.toString(mStationMode) + '\t' + Integer.toString(mInitTime) + '\t'
+                + Integer.toString(mTeamNumber) + '\t' + Integer.toString(mTeamMask) + '\t'
+                + Integer.toString(mPointNumber) + '\t' + Integer.toString(mPointTime);
+    }
 }

@@ -9,6 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * Interaction with http://mmb.progressor.ru - send request and receive response.
@@ -85,6 +86,10 @@ public final class SiteRequest {
      * Database object for saving downloaded data.
      */
     private final Database mDatabase;
+    /**
+     * List of chips events for sending unsent events to site.
+     */
+    private final Chips mChips;
 
     /**
      * Custom error from first line of downloaded file or from SQLite exception.
@@ -112,6 +117,7 @@ public final class SiteRequest {
         this.mType = srb.mType;
         this.mChipInitName = srb.mChipInitName;
         this.mDatabase = srb.mDatabase;
+        this.mChips = srb.mChips;
     }
 
     /**
@@ -219,7 +225,7 @@ public final class SiteRequest {
         connection.setRequestProperty("X-Sportiduino-Action", String.valueOf(mType));
         if (postData != null) {
             connection.setDoOutput(true);
-            final byte[] postDataBytes = postData.getBytes();
+            final byte[] postDataBytes = postData.getBytes(StandardCharsets.UTF_8);
             final int length = postDataBytes.length;
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             connection.setRequestProperty("Content-Length", String.valueOf(length));
@@ -276,31 +282,23 @@ public final class SiteRequest {
             switch (blockType) {
                 case 'R':
                     // get raid information
-                    final int raidId = Integer.parseInt(values[1]);
-                    final long raidTimeReadonly = Long.parseLong(values[2]);
-                    final long raidTimeFinish = Long.parseLong(values[3]);
-                    final String raidName = values[4];
                     distance = new Distance(mUserEmail, mUserPassword, mTestSite,
-                            raidId, raidName, System.currentTimeMillis() / 1000,
-                            raidTimeReadonly, raidTimeFinish);
+                            Integer.parseInt(values[1]), values[4],
+                            System.currentTimeMillis() / 1000,
+                            Long.parseLong(values[2]), Long.parseLong(values[3]));
                     break;
                 case 'P':
                     // parse list of points
                     if (distance == null) return LOAD_PARSE_ERROR;
                     final int nPoints = Integer.parseInt(values[1]);
-                    final int maxOrder = Integer.parseInt(values[2]);
-                    distance.initPointArray(maxOrder, mChipInitName);
+                    distance.initPointArray(Integer.parseInt(values[2]), mChipInitName);
                     for (int i = 0; i < nPoints; i++) {
                         line = reader.readLine();
                         if (line == null) return LOAD_PARSE_ERROR;
                         values = line.split("\t", -1);
-                        final int index = Integer.parseInt(values[1]);
-                        final int type = Integer.parseInt(values[2]);
-                        final int penalty = Integer.parseInt(values[3]);
-                        final long start = Long.parseLong(values[4]);
-                        final long end = Long.parseLong(values[5]);
-                        final String name = values[6];
-                        if (!distance.addPoint(index, type, penalty, start, end, name)) {
+                        if (!distance.addPoint(Integer.parseInt(values[1]),
+                                Integer.parseInt(values[2]), Integer.parseInt(values[3]),
+                                Long.parseLong(values[4]), Long.parseLong(values[5]), values[6])) {
                             return LOAD_PARSE_ERROR;
                         }
                     }
@@ -314,10 +312,8 @@ public final class SiteRequest {
                         line = reader.readLine();
                         if (line == null) return LOAD_PARSE_ERROR;
                         values = line.split("\t", -1);
-                        final int minutes = Integer.parseInt(values[1]);
-                        final int fromPoint = Integer.parseInt(values[2]);
-                        final int toPoint = Integer.parseInt(values[3]);
-                        if (!distance.addDiscount(minutes, fromPoint, toPoint)) {
+                        if (!distance.addDiscount(Integer.parseInt(values[1]),
+                                Integer.parseInt(values[2]), Integer.parseInt(values[3]))) {
                             return LOAD_PARSE_ERROR;
                         }
                     }
@@ -325,17 +321,14 @@ public final class SiteRequest {
                 case 'T':
                     // parse list of teams
                     final int nTeams = Integer.parseInt(values[1]);
-                    final int maxNumber = Integer.parseInt(values[2]);
-                    teams = new Teams(maxNumber);
+                    teams = new Teams(Integer.parseInt(values[2]));
                     for (int i = 0; i < nTeams; i++) {
                         line = reader.readLine();
                         if (line == null) return LOAD_PARSE_ERROR;
                         values = line.split("\t", -1);
-                        final int number = Integer.parseInt(values[1]);
-                        final int nMembers = Integer.parseInt(values[2]);
-                        final int nMaps = Integer.parseInt(values[3]);
-                        final String name = values[4];
-                        if (!teams.addTeam(number, nMembers, nMaps, name)) {
+                        if (!teams.addTeam(Integer.parseInt(values[1]),
+                                Integer.parseInt(values[2]), Integer.parseInt(values[3]),
+                                values[4])) {
                             return LOAD_PARSE_ERROR;
                         }
                     }
@@ -348,11 +341,8 @@ public final class SiteRequest {
                         line = reader.readLine();
                         if (line == null) return LOAD_PARSE_ERROR;
                         values = line.split("\t", -1);
-                        final long memberId = Long.parseLong(values[1]);
-                        final int team = Integer.parseInt(values[2]);
-                        final String name = values[3];
-                        final String phone = values[4];
-                        if (!teams.addTeamMember(team, memberId, name, phone)) {
+                        if (!teams.addTeamMember(Long.parseLong(values[1]),
+                                Integer.parseInt(values[2]), values[3], values[4])) {
                             return LOAD_PARSE_ERROR;
                         }
                     }
@@ -384,7 +374,6 @@ public final class SiteRequest {
             mCustomError = e.getMessage();
             return LOAD_CUSTOM_ERROR;
         }
-        // TODO: reload distance from database to ensure that it was saved correctly
         return LOAD_OK;
     }
 
@@ -399,8 +388,13 @@ public final class SiteRequest {
         final HttpURLConnection connection = prepareConnection();
         if (connection == null) return LOAD_READ_ERROR;
         // Prepare data to send
-        // TODO: send real data
-        final String data = "data=" + mType;
+        final List<String> events = mChips.getUnsentEvents();
+        final StringBuilder builder = new StringBuilder();
+        for (final String event : events) {
+            builder.append('\n').append(event);
+        }
+        final String data =
+                "data=" + mChips.getTimeDownloaded() + '\t' + events.size() + builder.toString();
         // Send data to site
         final int result = makeConnection(connection, data);
         if (result != LOAD_OK) return result;
@@ -415,6 +409,9 @@ public final class SiteRequest {
             mCustomError = response;
             return LOAD_CUSTOM_ERROR;
         }
+        // TODO: read and check the number of imported events
+        // TODO: change state to SENT in memory, find localtime of last sent event
+        // TODO: and update events in the database
         return LOAD_OK;
     }
 
@@ -461,6 +458,10 @@ public final class SiteRequest {
          * Database object for saving downloaded data.
          */
         private Database mDatabase;
+        /**
+         * List of chips events for sending unsent events to site.
+         */
+        private Chips mChips;
 
         /**
          * Use the static method SiteRequest.builder() to get an instance.
@@ -534,6 +535,16 @@ public final class SiteRequest {
             return this;
         }
 
+        /**
+         * Set a list of chips events for sending unsent events to site.
+         *
+         * @param chips Chip events
+         * @return this
+         */
+        public SiteRequestBuilder chips(final Chips chips) {
+            this.mChips = chips;
+            return this;
+        }
 
         /**
          * Finalize builder.

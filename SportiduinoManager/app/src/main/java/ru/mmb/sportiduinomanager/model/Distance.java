@@ -250,7 +250,7 @@ public final class Distance {
      * @param maxIndex       Max index in point array
      * @param initChipsPoint Name of pseudo point for chip initialization
      */
-    public void initPointArray(final int maxIndex, final String initChipsPoint) {
+    void initPointArray(final int maxIndex, final String initChipsPoint) {
         mPoints = new Point[maxIndex + 1];
         mPoints[0] = new Point(0, 0, 0, 0, initChipsPoint);
     }
@@ -260,7 +260,7 @@ public final class Distance {
      *
      * @param numberOfDiscounts Number of discounts
      */
-    public void initDiscountArray(final int numberOfDiscounts) {
+    void initDiscountArray(final int numberOfDiscounts) {
         mDiscounts = new Discount[numberOfDiscounts];
     }
 
@@ -275,7 +275,7 @@ public final class Distance {
      * @param name    Point name
      * @return True in case of valid index value
      */
-    public boolean addPoint(final int index, final int type, final int penalty, final long start, final long end,
+    boolean addPoint(final int index, final int type, final int penalty, final long start, final long end,
                             final String name) {
         // Check if point array was initialized
         if (mPoints == null) return false;
@@ -298,7 +298,7 @@ public final class Distance {
      * @param toPoint   Last point of discount interval
      * @return True in case of success
      */
-    public boolean addDiscount(final int minutes, final int fromPoint, final int toPoint) {
+    boolean addDiscount(final int minutes, final int fromPoint, final int toPoint) {
         // Check if discount array was initialized
         if (mDiscounts == null) return false;
         for (int i = 0; i < mDiscounts.length; i++) {

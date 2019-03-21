@@ -155,12 +155,13 @@ public final class Database {
         result.close();
         // Get max point number for reservation of points array
         result = database.rawQuery("SELECT MAX(number) FROM points", null);
-        if (!result.moveToFirst()) {
-            result.close();
-            database.close();
-            return null;
+        int maxPointNumber;
+        if (result.moveToFirst()) {
+            maxPointNumber = result.getInt(0);
+        } else {
+            maxPointNumber = 0;
         }
-        distance.initPointArray(result.getInt(0), initChipsPoint);
+        distance.initPointArray(maxPointNumber, initChipsPoint);
         result.close();
         // Load list of points
         result = database.rawQuery("SELECT number, type, penalty, unixtime_start, "
@@ -230,7 +231,7 @@ public final class Database {
         } while (result.moveToNext());
         result.close();
         // Add members to loaded teams
-        result = database.rawQuery("SELECT team, id, name, phone FROM members ORDER BY id ASC",
+        result = database.rawQuery("SELECT id, team, name, phone FROM members ORDER BY id ASC",
                 null);
         if (!result.moveToFirst()) {
             result.close();
@@ -238,7 +239,7 @@ public final class Database {
             return null;
         }
         do {
-            if (!teams.addTeamMember(result.getInt(0), result.getInt(1), result.getString(2),
+            if (!teams.addTeamMember(result.getLong(0), result.getInt(1), result.getString(2),
                     result.getString(3))) {
                 result.close();
                 database.close();
@@ -261,10 +262,19 @@ public final class Database {
         // Open local database
         final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath, null,
                 SQLiteDatabase.OPEN_READONLY);
-        // Create teams object
-        final Chips chips = new Chips();
+        // Get distance download date
+        Cursor result = database.rawQuery("SELECT unixtime_downloaded FROM distance", null);
+        long timeDownloaded;
+        if (result.moveToFirst()) {
+            timeDownloaded = result.getLong(0);
+        } else {
+            timeDownloaded = 0;
+        }
+        result.close();
+        // Create chips object
+        final Chips chips = new Chips(timeDownloaded);
         // Load chip events into it
-        final Cursor result = database.rawQuery("SELECT stationmac, stationtime, stationdrift,"
+        result = database.rawQuery("SELECT stationmac, stationtime, stationdrift,"
                 + " stationnumber, stationmode, inittime, team_num, teammask, levelpoint_order,"
                 + " teamlevelpoint_datetime, status FROM chips", null);
         if (!result.moveToFirst()) {
@@ -292,7 +302,7 @@ public final class Database {
      * @param distance A distance to save
      * @throws SQLiteException All SQL exceptions while working with SQLite database
      */
-    public void saveDistance(final Distance distance) throws SQLiteException {
+    void saveDistance(final Distance distance) throws SQLiteException {
         SQLiteStatement statement;
         // Open local database
         final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath, null,
@@ -360,7 +370,7 @@ public final class Database {
      * @param teams Teams to save
      * @throws SQLiteException All SQL exceptions while working with SQLite database
      */
-    public void saveTeams(final Teams teams) throws SQLiteException {
+    void saveTeams(final Teams teams) throws SQLiteException {
         // Open local database
         final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath, null,
                 SQLiteDatabase.OPEN_READWRITE);

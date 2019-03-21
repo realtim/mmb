@@ -179,7 +179,7 @@ public final class Station {
      *
      * @return Bluetooth module MAC address as 8 bytes
      */
-    public long getMACasLong() {
+    long getMACasLong() {
         final String hex = mDevice.getAddress().replace(":", "");
         return Long.parseLong(hex, 16);
     }
@@ -189,7 +189,7 @@ public final class Station {
      *
      * @return Time as unixtime
      */
-    public int getStationTime() {
+    int getStationTime() {
         return mStationTime;
     }
 
