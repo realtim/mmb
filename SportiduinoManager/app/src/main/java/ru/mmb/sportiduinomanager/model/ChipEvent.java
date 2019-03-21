@@ -7,62 +7,66 @@ final class ChipEvent {
     /**
      * Chip event status: new, exists only in app memory.
      */
-    public static final int STATUS_NEW = 0;
+    static final int STATUS_NEW = 0;
     /**
      * Chip event status: saved to local SQLite database.
      */
-    public static final int STATUS_SAVED = 1;
-    //TODO: public static final int STATUS_SENT = 2;
+    static final int STATUS_SAVED = 1;
+
+    /**
+     * Chip event status: sent to site.
+     */
+    static final int STATUS_SENT = 2;
 
     /**
      * Station Bluetooth adapter MAC as long integer.
      */
-    public final long mStationMAC;
+    final long mStationMAC;
 
     /**
      * Station time at the moment when event was received by app.
      */
-    public final int mStationTime;
+    final int mStationTime;
 
     /**
      * Time difference between station and Android.
      */
-    public final int mStationDrift;
+    final int mStationDrift;
 
     /**
      * Current number of the paired station.
      */
-    public final int mStationNumber;
+    final int mStationNumber;
 
     /**
      * Station mode (initialization or active point).
      */
-    public final int mStationMode;
+    final int mStationMode;
 
     /**
      * Initialization time of the chip.
      */
-    public final int mInitTime;
+    final int mInitTime;
 
     /**
      * Team number from the chip.
      */
-    public final int mTeamNumber;
+    final int mTeamNumber;
 
     /**
      * Team members mask from the chip.
      */
-    public final int mTeamMask;
+    final int mTeamMask;
 
     /**
      * Active point for registered event.
      */
-    public final int mPointNumber;
+    final int mPointNumber;
 
     /**
      * Time of registered event.
      */
-    public final int mPointTime;
+    final int mPointTime;
 
     /**
      * Status of event processing (new, saved, sent).
@@ -106,7 +110,7 @@ final class ChipEvent {
      *
      * @return Event status (new, saved, sent)
      */
-    public int getStatus() {
+    int getStatus() {
         return mStatus;
     }
 
@@ -115,7 +119,7 @@ final class ChipEvent {
      *
      * @param status Event status (new, saved, sent)
      */
-    public void setStatus(final int status) {
+    void setStatus(final int status) {
         mStatus = status;
     }
 }

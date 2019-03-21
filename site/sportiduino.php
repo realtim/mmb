@@ -222,7 +222,8 @@ function SendDistance(PDO $pdo, $raid_id)
 
 function ReceiveResults(PDO $pdo, $raid_id, $user_id)
 {
-    die("Функция еще не реализована");
+    if (isset($_POST["data"])) die("data=" . $_POST["data"]);
+    else die("Функция еще не реализована");
 }
 
 function SendResults(PDO $pdo, $raid_id, $request)

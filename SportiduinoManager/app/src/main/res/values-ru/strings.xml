@@ -30,6 +30,7 @@
     <string name="password">Пароль</string>
     <string name="use_test_site">Использовать тестовый сайт</string>
     <string name="download_distance_success">Скачивание данных завершилось успешно</string>
+    <string name="send_results_success">Данные с чипов успешно отправлены на сайт</string>
     <string name="database_distance_version">Дистанция/участники с %1$s сайта, версия от %2$s</string>
     <string name="site_name_test">тестового</string>
     <string name="site_name_main">основного</string>

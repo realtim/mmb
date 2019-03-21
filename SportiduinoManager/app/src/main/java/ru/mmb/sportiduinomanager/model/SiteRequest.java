@@ -39,6 +39,14 @@ public final class SiteRequest {
      * Request type for distance download.
      */
     public static final int TYPE_DL_DISTANCE = 1;
+    /**
+     * Request type for chips events upload.
+     */
+    public static final int TYPE_UL_CHIPS = 2;
+    /**
+     * Request type for results download.
+     */
+    public static final int TYPE_DL_RESULTS = 3;
 
     /**
      * URL of test database interaction script.
@@ -125,6 +133,15 @@ public final class SiteRequest {
     }
 
     /**
+     * Get the type of site request.
+     *
+     * @return See TYPE_* constants
+     */
+    public int getRequestType() {
+        return mType;
+    }
+
+    /**
      * Get loaded distance.
      *
      * @return Distance object
@@ -154,18 +171,21 @@ public final class SiteRequest {
         switch (mType) {
             case TYPE_DL_DISTANCE:
                 return loadDistance();
+            case TYPE_UL_CHIPS:
+                return sendChipEvents();
+            case TYPE_DL_RESULTS:
+                return loadResults();
             default:
                 return LOAD_FATAL_ERROR;
         }
-
     }
 
     /**
-     * Send some request to site with previously prepared body.
+     * Create HttpURLConnection object from url of main/test site script.
      *
-     * @return Successfully opened connection to site or null in case of en error
+     * @return HttpURLConnection object or null in case of malformed url
      */
-    private HttpURLConnection askSomething() {
+    private HttpURLConnection prepareConnection() {
         // Select correct url
         String urlString;
         if (mTestSite == 1) {
@@ -179,21 +199,43 @@ public final class SiteRequest {
         } catch (MalformedURLException e) {
             return null;
         }
-        HttpURLConnection connection;
         try {
-            connection = (HttpURLConnection) url.openConnection();
+            return (HttpURLConnection) url.openConnection();
         } catch (IOException e) {
             return null;
         }
+    }
+
+    /**
+     * Set connection properties and try to open it.
+     *
+     * @param connection previously prepared in prepareConnection
+     * @param postData   string with POST parameters or null in case of GET request
+     * @return One of LOAD result constants
+     */
+    private int makeConnection(final HttpURLConnection connection, final String postData) {
         connection.setRequestProperty("X-Sportiduino-Protocol", HTTP_API_VERSION);
         connection.setRequestProperty("X-Sportiduino-Auth", mUserEmail + "|" + mUserPassword);
         connection.setRequestProperty("X-Sportiduino-Action", String.valueOf(mType));
+        if (postData != null) {
+            connection.setDoOutput(true);
+            final byte[] postDataBytes = postData.getBytes();
+            final int length = postDataBytes.length;
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection.setRequestProperty("Content-Length", String.valueOf(length));
+            connection.setFixedLengthStreamingMode(length);
+            try {
+                connection.getOutputStream().write(postDataBytes);
+            } catch (IOException e) {
+                return LOAD_READ_ERROR;
+            }
+        }
         try {
             connection.connect();
         } catch (IOException e) {
-            return null;
+            return LOAD_READ_ERROR;
         }
-        return connection;
+        return LOAD_OK;
     }
 
     /**
@@ -206,8 +248,12 @@ public final class SiteRequest {
      */
     private int loadDistance()
             throws IOException, NumberFormatException, ArrayIndexOutOfBoundsException {
-        final HttpURLConnection connection = askSomething();
+        // Prepare and open connection to site
+        final HttpURLConnection connection = prepareConnection();
         if (connection == null) return LOAD_READ_ERROR;
+        final int result = makeConnection(connection, null);
+        if (result != LOAD_OK) return result;
+        // Start reading server response
         final BufferedReader reader =
                 new BufferedReader(new InputStreamReader(connection.getInputStream(),
                         StandardCharsets.UTF_8));
@@ -339,6 +385,51 @@ public final class SiteRequest {
             return LOAD_CUSTOM_ERROR;
         }
         // TODO: reload distance from database to ensure that it was saved correctly
+        return LOAD_OK;
+    }
+
+    /**
+     * Send all unsent chip events from local database to site database.
+     *
+     * @return One of LOAD result constants, mCustomError can be also set
+     * @throws IOException Unexpected end of file
+     */
+    private int sendChipEvents() throws IOException {
+        // Prepare connection to site
+        final HttpURLConnection connection = prepareConnection();
+        if (connection == null) return LOAD_READ_ERROR;
+        // Prepare data to send
+        // TODO: send real data
+        final String data = "data=" + mType;
+        // Send data to site
+        final int result = makeConnection(connection, data);
+        if (result != LOAD_OK) return result;
+        // Read script response
+        final BufferedReader reader =
+                new BufferedReader(new InputStreamReader(connection.getInputStream(),
+                        StandardCharsets.UTF_8));
+        final String response = reader.readLine();
+        connection.disconnect();
+        // Non-empty server response contains server error
+        if (!"".equals(response)) {
+            mCustomError = response;
+            return LOAD_CUSTOM_ERROR;
+        }
+        return LOAD_OK;
+    }
+
+    /**
+     * Download new results from site database to local database.
+     *
+     * @return One of LOAD result constants, mCustomError can be also set
+     */
+    private int loadResults() {
+        // TODO: replace placeholder with real function
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            return LOAD_FATAL_ERROR;
+        }
         return LOAD_OK;
     }
 

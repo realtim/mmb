@@ -53,6 +53,18 @@ public final class Chips {
     }
 
     /**
+     * Check if some chip events were not sent to site yet.
+     *
+     * @return True if one or more events was not sent yet
+     */
+    public boolean hasUnsentEvents() {
+        for (final ChipEvent event : mEvents) {
+            if (event.getStatus() != ChipEvent.STATUS_SENT) return true;
+        }
+        return false;
+    }
+
+    /**
      * Save all new (unsaved) chip events to local database.
      *
      * @param database Database object from application thread

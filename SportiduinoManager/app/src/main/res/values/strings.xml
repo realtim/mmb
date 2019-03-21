@@ -30,6 +30,7 @@
     <string name="password">Password</string>
     <string name="use_test_site">Use test site</string>
     <string name="download_distance_success">Distance was successfully downloaded</string>
+    <string name="send_results_success">Chip data were successfully sent to site</string>
     <string name="database_distance_version">Race/teams from %1$s site, downloaded %2$s</string>
     <string name="site_name_test">test</string>
     <string name="site_name_main">main</string>
