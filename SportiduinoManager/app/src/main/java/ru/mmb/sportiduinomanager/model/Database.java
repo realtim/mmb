@@ -1,5 +1,6 @@
 package ru.mmb.sportiduinomanager.model;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -43,7 +44,7 @@ public final class Database {
     /**
      * Local database structure version.
      */
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
 
     /**
      * Name of SQLite database file.
@@ -140,8 +141,8 @@ public final class Database {
                 SQLiteDatabase.OPEN_READONLY);
         // Load raid parameters
         result = database.rawQuery("SELECT user_email, user_password, test_site, raid_id,"
-                        + " raid_name, unixtime_downloaded, unixtime_readonly, unixtime_finish "
-                        + "FROM distance",
+                        + " raid_name, unixtime_downloaded, unixtime_readonly, unixtime_finish,"
+                        + " last_result_id FROM distance",
                 null);
         if (!result.moveToFirst()) {
             result.close();
@@ -151,7 +152,7 @@ public final class Database {
         // Create new distance (without points and discounts yet)
         final Distance distance = new Distance(result.getString(0), result.getString(1),
                 result.getInt(2), result.getInt(3), result.getString(4), result.getLong(5),
-                result.getLong(6), result.getLong(7));
+                result.getLong(6), result.getLong(7), result.getLong(8));
         result.close();
         // Get max point number for reservation of points array
         result = database.rawQuery("SELECT MAX(number) FROM points", null);
@@ -311,8 +312,8 @@ public final class Database {
         database.execSQL("DELETE FROM distance");
         // Save general raid parameters into database
         statement = database.compileStatement("INSERT INTO distance(user_email, user_password,"
-                + " test_site, unixtime_downloaded, raid_id, raid_name,"
-                + " unixtime_readonly, unixtime_finish) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                + " test_site, unixtime_downloaded, raid_id, raid_name, unixtime_readonly,"
+                + " unixtime_finish, last_result_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         statement.bindString(1, distance.getUserEmail());
         statement.bindString(2, distance.getUserPassword());
         statement.bindLong(3, distance.getTestSite());
@@ -321,6 +322,7 @@ public final class Database {
         statement.bindString(6, distance.getRaidName());
         statement.bindLong(7, distance.getTimeReadonly());
         statement.bindLong(8, distance.getTimeFinish());
+        statement.bindLong(9, distance.getLastResultId());
         statement.execute();
         // Empty the table with points
         database.execSQL("DELETE FROM points");
@@ -358,6 +360,10 @@ public final class Database {
             statement.bindLong(3, toN.get(i));
             statement.execute();
         }
+        // Erase chip events from previous raid when loading new distance
+        database.execSQL("DELETE FROM chips");
+        // Erase teams results from previous raid when loading new distance
+        database.execSQL("DELETE FROM results");
         // process journal and clean up the database file
         database.execSQL("VACUUM");
         database.close();
@@ -442,6 +448,32 @@ public final class Database {
     }
 
     /**
+     * Mark all unsent chip events in local database as sent.
+     *
+     * @param expectedUnsentN Number of chips events that should change status in db
+     * @return true if actual number of unsent events in db is equal to expected
+     * @throws SQLiteException All SQL exceptions while working with SQLite database
+     */
+    boolean markChipsSent(final int expectedUnsentN) throws SQLiteException {
+        // Open local database
+        final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath, null,
+                SQLiteDatabase.OPEN_READWRITE);
+        // Change status to STATUS_SENT in a transaction
+        database.beginTransaction();
+        final ContentValues newValues = new ContentValues();
+        newValues.put("status", ChipEvent.STATUS_SENT);
+        // Update status and get the number of changed rows
+        final int changedRows = database.update("chips", newValues,
+                "status <> " + ChipEvent.STATUS_SENT, null);
+        // Rollback transaction if actual number of unsent events in db <> expected
+        if (expectedUnsentN == changedRows) database.setTransactionSuccessful();
+        // End transaction and close the database
+        database.endTransaction();
+        database.close();
+        return expectedUnsentN == changedRows;
+    }
+
+    /**
      * Recreate all tables in local SQLite database.
      *
      * @param database Handle of opened SQLite database
@@ -457,7 +489,8 @@ public final class Database {
                 + " user_password VARCHAR(35) NOT NULL,"
                 + " test_site INTEGER NOT NULL, unixtime_downloaded INTEGER NOT NULL,"
                 + " raid_id INTEGER PRIMARY KEY, raid_name VARCHAR(50) NOT NULL,"
-                + " unixtime_readonly INTEGER NOT NULL, unixtime_finish INTEGER NOT NULL)");
+                + " unixtime_readonly INTEGER NOT NULL, unixtime_finish INTEGER NOT NULL,"
+                + " last_result_id INTEGER)");
         // Create the table with points list
         database.execSQL("DROP TABLE IF EXISTS points");
         database.execSQL("CREATE TABLE points(number INTEGER PRIMARY KEY,"
@@ -484,10 +517,16 @@ public final class Database {
                 + " inittime INTEGER NOT NULL, team_num INTEGER NOT NULL,"
                 + " teammask INTEGER NOT NULL, levelpoint_order INTEGER NOT NULL,"
                 + " teamlevelpoint_datetime INTEGER NOT NULL, status INTEGER NOT NULL,"
-                + " PRIMARY KEY (stationmac, stationtime, stationdrift,"
+                + " UNIQUE (stationmac, stationtime, stationdrift,"
                 + "stationnumber, stationmode, inittime, team_num, teammask, levelpoint_order,"
                 + " teamlevelpoint_datetime))");
-        // TODO: Recreate other tables
+        // Create table with teams results from all stations
+        database.execSQL("DROP TABLE IF EXISTS results");
+        database.execSQL("CREATE TABLE results(stationmode INTEGER NOT NULL,"
+                + " team_num INTEGER NOT NULL, teammask INTEGER NOT NULL,"
+                + " levelpoint_order INTEGER NOT NULL, teamlevelpoint_datetime INTEGER NOT NULL,"
+                + " UNIQUE (stationmode, team_num, teammask, levelpoint_order,"
+                + " teamlevelpoint_datetime))");
         // process journal and clean up the database file
         database.execSQL("VACUUM");
         // Change the status to empty

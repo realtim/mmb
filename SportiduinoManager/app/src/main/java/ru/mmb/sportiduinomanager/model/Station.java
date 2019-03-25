@@ -151,8 +151,8 @@ public final class Station {
         // Create client socket with default Bluetooth UUID
         try {
             mSocket = mDevice.createRfcommSocketToServiceRecord(STATION_UUID);
-        } catch (IOException e) {
-            mSocket = null;
+        } catch (IOException ignored) {
+            // Just let mSocket to stay equal null
         }
     }
 
@@ -290,8 +290,9 @@ public final class Station {
         // Close socket
         try {
             mSocket.close();
-        } catch (IOException closeException) {
-            mSocket = null;
+        } catch (IOException ignored) {
+            // Don't care if we had problems -
+            // a user just stopped working with this station
         }
     }
 

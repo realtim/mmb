@@ -114,6 +114,31 @@ public final class Chips {
     }
 
     /**
+     * Mark all unsent chip events as sent.
+     *
+     * @param expectedUnsentN Expected number of unsent events
+     * @return true if actual number is equal to expected
+     */
+    boolean markChipsSent(final int expectedUnsentN) {
+        // Get actual number of unsent chip events
+        int actualUnsentN = 0;
+        for (final ChipEvent event : mEvents) {
+            if (event.getStatus() != ChipEvent.STATUS_SENT) actualUnsentN++;
+        }
+        // Do nothing if actual number of unsent events differ from expected
+        if (expectedUnsentN != actualUnsentN) return false;
+        // Data is consistent, mark all unsent events as sent
+        for (int i = 0; i < mEvents.size(); i++) {
+            final ChipEvent event = mEvents.get(i);
+            if (event.getStatus() != ChipEvent.STATUS_SENT) {
+                event.setStatus(ChipEvent.STATUS_SENT);
+                mEvents.set(i, event);
+            }
+        }
+        return true;
+    }
+
+    /**
      * Get list of all unsent chip events converted to strings.
      *
      * @return Array of strings with events
@@ -126,5 +151,51 @@ public final class Chips {
             }
         }
         return eventsAsString;
+    }
+
+    /**
+     * Get number of chip events.
+     *
+     * @return Number of events
+     */
+    public int size() {
+        return mEvents.size();
+    }
+
+    /**
+     * Get statistic for sent/unsent chip initializations and teams results.
+     *
+     * @return Array of four integers
+     */
+    public List<Integer> getStatistic() {
+        // Init counters
+        final List<Integer> statistic = new ArrayList<>();
+        int initUnsent = 0;
+        int initSent = 0;
+        int resultUnsent = 0;
+        int resultSent = 0;
+        // Find number of each type of events
+        for (final ChipEvent event : mEvents) {
+            if (event.getStatus() == ChipEvent.STATUS_SENT) {
+                if (event.getMode() == Station.MODE_INIT_CHIPS) {
+                    initSent++;
+                } else {
+                    resultSent++;
+                }
+            } else {
+                if (event.getMode() == Station.MODE_INIT_CHIPS) {
+                    initUnsent++;
+                } else {
+                    resultUnsent++;
+                }
+            }
+        }
+
+        // Return all numbers as array
+        statistic.add(initUnsent);
+        statistic.add(initSent);
+        statistic.add(resultUnsent);
+        statistic.add(resultSent);
+        return statistic;
     }
 }

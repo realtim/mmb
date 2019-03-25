@@ -255,9 +255,22 @@ public final class MainApplication extends Application {
      * Save chips events to persistent memory.
      *
      * @param chips Chips events to save
+     * @param force Force replacing of old chip events with new
      */
-    public void setChips(final Chips chips) {
-        mChips = chips;
+    public void setChips(final Chips chips, final boolean force) {
+        if (force || mChips == null) {
+            // Forget old chip events and replace them with new
+            mChips = chips;
+            return;
+        }
+        // Check if old list has more events then new
+        if (mChips.size() > chips.size()) {
+            // Reload chips events from local database
+            // (it is better to lose some events statuses then the whole events)
+            mChips = mDatabase.loadChips();
+        } else {
+            mChips = chips;
+        }
     }
 
     /**

@@ -84,7 +84,7 @@ switch ($request["X-Sportiduino-Action"]) {
         SendDistance($pdo, $raid_id);
         break;
     case 2:
-        ReceiveResults($pdo, $raid_id, $user_id);
+        ReceiveResults($pdo, $user_id);
         break;
     case 3:
         SendResults($pdo, $raid_id, $request);
@@ -220,10 +220,43 @@ function SendDistance(PDO $pdo, $raid_id)
     echo "E\n";
 }
 
-function ReceiveResults(PDO $pdo, $raid_id, $user_id)
+function ReceiveResults(PDO $pdo, $user_id)
 {
-    if (isset($_POST["data"])) die("data=" . $_POST["data"]);
-    else die("Функция еще не реализована");
+    // Проверяем корректность первой строки с датой локальной базы и количеством данных с чипов
+    if (!isset($_POST["data"])) die("Запрос клиента некорректно сформирован");
+    $lines = explode("\n", $_POST["data"]);
+    if (count($lines) < 2) die("В запросе недостаточное количество строк");
+    list($db_dl_time, $n_events) = explode("\t", $lines[0]);
+    if (!isset($db_dl_time) || !isset($n_events)) die("Некорректная первая строка запроса '" . $lines[0] ."'");
+    if (intval($n_events) != (count($lines) - 1)) die("Некорректное количество данных из чипов '$n_events'");
+    // Готовим запрос на вставку присланных данных в таблицу
+    $sql = $pdo->prepare("INSERT IGNORE INTO SportiduinoChips (user_id, sportiduino_dbdate, sportiduino_stationmac, sportiduino_stationtime, sportiduino_stationdrift, sportiduino_stationnumber, sportiduino_stationmode, sportiduino_inittime, team_num, sportiduino_teammask, levelpoint_order, teamlevelpoint_datetime) VALUES (?, FROM_UNIXTIME(?), ?, FROM_UNIXTIME(?), ?, ?, ?, FROM_UNIXTIME(?), ?, ?, ?, FROM_UNIXTIME(?))");
+    // Готовим транзакцию
+    try {
+        $pdo->beginTransaction();
+        // В цикле сканируем все строки с данными из чипов и добавляем их в транзакцию
+        for ($i = 1; $i <= $n_events; $i++) {
+            // Формируем массив из целых чисел, описывающих событие с чипом
+            $event_data = explode("\t", $lines[$i]);
+            if (count($event_data) != 10) die("Некорректное количество данных в строке '" . $lines[$i] . "'");
+            $values = array($user_id, intval($db_dl_time));
+            foreach ($event_data as $value)
+                $values[] = intval($value);
+            // Добавляем их отдельной строкой в таблице
+            $sql->execute($values);
+        }
+        // Пробуем выполнить транзакцию
+        $pdo->commit();
+    } catch (Exception $e) {
+        // Отменяем транзацию в случае ошибки
+        $pdo->rollback();
+        die($e);
+    }
+    // Завершаем работу с базой
+    $sql = null;
+    // Сообщаем  о количестве обработанных данных
+    // (количество добавленных в таблицу не проверяется и может быть меньше количества обработанных из-за дублей)
+    echo "\n$n_events";
 }
 
 function SendResults(PDO $pdo, $raid_id, $request)

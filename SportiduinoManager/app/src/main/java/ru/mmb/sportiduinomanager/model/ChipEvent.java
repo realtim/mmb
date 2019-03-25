@@ -124,6 +124,16 @@ final class ChipEvent {
     }
 
     /**
+     * Get station mode for the chip event
+     * to distinguish between chip init and active point check in.
+     *
+     * @return See Station.MODE_* constants
+     */
+    int getMode() {
+        return mStationMode;
+    }
+
+    /**
      * Get string representation of chip event for sending to site.
      *
      * @return Chip event converted to string

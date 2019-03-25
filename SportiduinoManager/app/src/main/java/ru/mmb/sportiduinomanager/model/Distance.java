@@ -51,6 +51,10 @@ public final class Distance {
      * List of discounts.
      */
     private Discount[] mDiscounts;
+    /**
+     * Id of last result downloaded from site.
+     */
+    private long mLastResultId;
 
     /**
      * Construct distance from imported data.
@@ -59,14 +63,15 @@ public final class Distance {
      * @param userPassword   Password of the user downloading the raid
      * @param testSite       Download raid test site instead of main site
      * @param raidId         ID of the raid
+     * @param raidName       ASCII raid name
      * @param timeDownloaded Time when the distance was download from site
      * @param timeReadonly   Time when the raid becomes readonly
      * @param timeFinish     Time when the last active point is closed
-     * @param raidName       ASCII raid name
+     * @param lastResultId   Id of last result downloaded from site
      */
-    public Distance(final String userEmail, final String userPassword, final int testSite,
-                    final int raidId, final String raidName, final long timeDownloaded,
-                    final long timeReadonly, final long timeFinish) {
+    Distance(final String userEmail, final String userPassword, final int testSite,
+             final int raidId, final String raidName, final long timeDownloaded,
+             final long timeReadonly, final long timeFinish, final long lastResultId) {
         mUserEmail = userEmail;
         mUserPassword = userPassword;
         mTestSite = testSite;
@@ -75,6 +80,7 @@ public final class Distance {
         mTimeDownloaded = timeDownloaded;
         mTimeReadonly = timeReadonly;
         mTimeFinish = timeFinish;
+        mLastResultId = lastResultId;
     }
 
     /**
@@ -150,6 +156,24 @@ public final class Distance {
     }
 
     /**
+     * Get id of last result downloaded from server.
+     *
+     * @return id of last result from last results downloading
+     */
+    long getLastResultId() {
+        return mLastResultId;
+    }
+
+    /**
+     * Update id of last result downloaded from site.
+     *
+     * @param lastResultId New id of last result downloaded
+     */
+    void setLastResultId(final long lastResultId) {
+        mLastResultId = lastResultId;
+    }
+
+    /**
      * Get time of downloading distance from site as a string.
      *
      * @return Formatted datetime
@@ -185,8 +209,8 @@ public final class Distance {
      * @param names      Points names
      */
     void fillPointsLists(final List<Integer> numbers, final List<Integer> types,
-                                final List<Integer> penalties, final List<Long> startTimes,
-                                final List<Long> endTimes, final List<String> names) {
+                         final List<Integer> penalties, final List<Long> startTimes,
+                         final List<Long> endTimes, final List<String> names) {
         for (int i = 1; i < mPoints.length; i++) {
             if (mPoints[i] == null) continue;
             numbers.add(i);
@@ -206,7 +230,7 @@ public final class Distance {
      * @param toN     Discount intervals ending points
      */
     void fillDiscountsLists(final List<Integer> minutes, final List<Integer> fromN,
-                                   final List<Integer> toN) {
+                            final List<Integer> toN) {
         for (final Discount discount : mDiscounts) {
             minutes.add(discount.mMinutes);
             fromN.add(discount.mFrom);
@@ -241,7 +265,6 @@ public final class Distance {
         // Allow data loss if race was finished more then 1 month ago
         // (race was finalized anyway)
         return now > (mTimeFinish + 3600 * 24 * 30);
-        // TODO: Add check for team results which were not uploaded to server
     }
 
     /**
@@ -276,7 +299,7 @@ public final class Distance {
      * @return True in case of valid index value
      */
     boolean addPoint(final int index, final int type, final int penalty, final long start, final long end,
-                            final String name) {
+                     final String name) {
         // Check if point array was initialized
         if (mPoints == null) return false;
         // Check if point index is valid
@@ -338,7 +361,6 @@ public final class Distance {
                 if ("".equals(mPoints[i].mName)) return true;
             }
         }
-
         // Check if some discounts were loaded
         if (mDiscounts == null) return true;
         if (mDiscounts.length == 0) return false;
@@ -355,7 +377,6 @@ public final class Distance {
             if (mPoints[discount.mFrom] == null) return true;
             if (mPoints[discount.mTo] == null) return true;
         }
-
         // No errors were detected
         return false;
     }

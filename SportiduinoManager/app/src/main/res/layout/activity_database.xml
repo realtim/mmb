@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
 
-    <RelativeLayout xmlns:local="http://schemas.android.com/tools"
+    <android.support.constraint.ConstraintLayout xmlns:local="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -16,7 +17,9 @@
             android:paddingLeft="@dimen/default_padding"
             android:paddingTop="@dimen/default_padding"
             android:paddingRight="@dimen/default_padding"
-            android:paddingBottom="0dip">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                 android:id="@+id/database_status_description"
@@ -32,23 +35,23 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:visibility="invisible" />
-
         </FrameLayout>
-
 
         <LinearLayout
             android:id="@+id/database_actions_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/database_status"
             android:layout_centerHorizontal="true"
             android:orientation="vertical"
-            android:padding="@dimen/default_padding">
+            android:paddingBottom="@dimen/default_padding"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/database_status">
 
             <Button
                 android:id="@+id/send_results"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:clickable="false"
                 android:onClick="startChipEventsUpload"
                 android:padding="@dimen/default_padding"
@@ -57,22 +60,23 @@
             <Button
                 android:id="@+id/get_results"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:clickable="false"
+                android:onClick="startResultsDownload"
                 android:padding="@dimen/default_padding"
                 android:text="@string/download_results" />
 
             <LinearLayout
                 android:id="@+id/download_distance_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:focusableInTouchMode="true"
                 android:orientation="vertical">
 
                 <EditText
                     android:id="@+id/user_email"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:autofillHints="email"
                     android:hint="@string/email"
                     android:inputType="textEmailAddress"
@@ -82,7 +86,7 @@
                 <EditText
                     android:id="@+id/user_password"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:autofillHints="password"
                     android:hint="@string/password"
                     android:inputType="textPassword"
@@ -92,7 +96,7 @@
                 <android.support.v7.widget.SwitchCompat
                     android:id="@+id/test_database"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:checked="false"
                     android:padding="@dimen/default_padding"
                     android:text="@string/use_test_site"
@@ -101,46 +105,80 @@
                 <Button
                     android:id="@+id/download_distance"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:onClick="startDistanceDownload"
                     android:padding="@dimen/default_padding"
                     android:text="@string/download_distance" />
             </LinearLayout>
-
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/database_content_layout"
-            android:layout_width="match_parent"
+        <android.support.constraint.Group
+            android:id="@+id/database_content_group"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/database_actions_layout"
-            android:layout_alignParentStart="true"
+            app:constraint_referenced_ids="database_divider,distance_name,distance_version,database_local_init,database_local_results" />
+
+        <View
+            android:id="@+id/database_divider"
+            style="@style/Divider"
+            android:padding="@dimen/default_padding"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/database_actions_layout" />
+
+        <TextView
+            android:id="@+id/distance_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:gravity="center"
-            android:orientation="vertical"
-            android:padding="@dimen/default_padding">
+            android:paddingLeft="@dimen/default_padding"
+            android:paddingTop="@dimen/default_padding"
+            android:paddingRight="@dimen/default_padding"
+            android:text="@string/unknown"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/database_divider" />
 
-            <View style="@style/Divider" />
+        <TextView
+            android:id="@+id/distance_version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingLeft="@dimen/default_padding"
+            android:paddingRight="@dimen/default_padding"
+            android:paddingBottom="@dimen/default_padding"
+            android:text="@string/database_distance_version"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/distance_name" />
 
-            <TextView
-                android:id="@+id/distance_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="@dimen/default_padding"
-                android:paddingTop="@dimen/default_padding"
-                android:paddingRight="@dimen/default_padding"
-                android:text="@string/unknown" />
+        <TextView
+            android:id="@+id/database_local_init"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingLeft="@dimen/default_padding"
+            android:paddingTop="@dimen/default_padding"
+            android:paddingRight="@dimen/default_padding"
+            android:text="@string/database_local_init"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/distance_version" />
 
-            <TextView
-                android:id="@+id/distance_version"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:paddingLeft="@dimen/default_padding"
-                android:paddingRight="@dimen/default_padding"
-                android:text="@string/unknown" />
+        <TextView
+            android:id="@+id/database_local_results"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="false"
+            android:gravity="center"
+            android:paddingLeft="@dimen/default_padding"
+            android:paddingRight="@dimen/default_padding"
+            android:paddingBottom="@dimen/default_padding"
+            android:text="@string/database_local_results"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/database_local_init" />
 
-        </LinearLayout>
-
-    </RelativeLayout>
+    </android.support.constraint.ConstraintLayout>
 
 </ScrollView>

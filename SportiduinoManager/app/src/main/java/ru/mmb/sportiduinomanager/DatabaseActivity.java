@@ -3,6 +3,7 @@ package ru.mmb.sportiduinomanager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.constraint.Group;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.SwitchCompat;
 import android.view.MenuItem;
@@ -19,6 +20,7 @@ import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Database;
@@ -151,57 +153,49 @@ public final class DatabaseActivity extends MainActivity {
         }
         // Hide progress bar and update database status string
         final TextView statusMessage = findViewById(R.id.database_status_description);
-        int statusColor;
-        if (dbStatus == Database.DB_STATE_EMPTY || dbStatus == Database.DB_STATE_OK) {
-            statusColor = R.color.text_primary;
-        } else {
-            statusColor = R.color.bg_secondary;
-        }
-        statusMessage.setTextColor(ResourcesCompat.getColor(getResources(), statusColor, getTheme()));
-        statusMessage.setText(getStatusMessage(dbStatus));
         if (mTransferActive) {
             statusMessage.setVisibility(View.INVISIBLE);
             findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.database_status_progress).setVisibility(View.INVISIBLE);
+            int statusColor;
+            if (dbStatus == Database.DB_STATE_EMPTY || dbStatus == Database.DB_STATE_OK) {
+                statusColor = R.color.text_primary;
+            } else {
+                statusColor = R.color.bg_secondary;
+            }
+            statusMessage.setTextColor(ResourcesCompat.getColor(getResources(), statusColor, getTheme()));
+            statusMessage.setText(getStatusMessage(dbStatus));
             statusMessage.setVisibility(View.VISIBLE);
         }
         // Detect what we will show or hide
         final MenuItem databaseItem = getMenuItem(R.id.database);
         final Button sendChipsButton = findViewById(R.id.send_results);
         final Button getResultsButton = findViewById(R.id.get_results);
-        final LinearLayout dlDistanceLayout = findViewById(R.id.download_distance_layout);
-        final LinearLayout dbContentLayout = findViewById(R.id.database_content_layout);
+        final LinearLayout dlDistance = findViewById(R.id.download_distance_layout);
+        final Group dbContent = findViewById(R.id.database_content_group);
         switch (dbStatus) {
             case Database.DB_STATE_FAILED:
-                // Database is broken, can't do anything
-                databaseItem.setTitle(getResources().getText(R.string.mode_cloud_download));
-                databaseItem.setIcon(R.drawable.ic_cloud_download);
-                sendChipsButton.setVisibility(View.GONE);
-                getResultsButton.setVisibility(View.GONE);
-                dlDistanceLayout.setVisibility(View.GONE);
-                dbContentLayout.setVisibility(View.GONE);
-                break;
             case Database.DB_STATE_EMPTY:
             case Database.DB_STATE_DAMAGED:
-                // Database is empty or damaged, need to download it from server
+                // Database is empty/broken/damaged, need to download it from server
                 databaseItem.setTitle(getResources().getText(R.string.mode_cloud_download));
                 databaseItem.setIcon(R.drawable.ic_cloud_download);
                 sendChipsButton.setVisibility(View.GONE);
                 getResultsButton.setVisibility(View.GONE);
-                dlDistanceLayout.setVisibility(View.VISIBLE);
-                dbContentLayout.setVisibility(View.GONE);
+                dlDistance.setVisibility(View.VISIBLE);
+                dbContent.setVisibility(View.GONE);
                 break;
             case Database.DB_STATE_OK:
-                // Don't allow to reload database if it contains important data
+                // Don't allow to reload database if it can contain important data
                 if (mDistance.canBeReloaded()) {
-                    dlDistanceLayout.setVisibility(View.VISIBLE);
+                    dlDistance.setVisibility(View.VISIBLE);
+                    // set user email and test db flag from local database
+                    ((EditText) findViewById(R.id.user_email)).setText(mMainApplication.getUserEmail());
+                    ((SwitchCompat) findViewById(R.id.test_database)).setChecked(mMainApplication.getTestSite() == 1);
                 } else {
-                    dlDistanceLayout.setVisibility(View.GONE);
+                    dlDistance.setVisibility(View.GONE);
                 }
-                // set user email and test db flag from local database
-                ((EditText) findViewById(R.id.user_email)).setText(mMainApplication.getUserEmail());
-                ((SwitchCompat) findViewById(R.id.test_database)).setChecked(mMainApplication.getTestSite() == 1);
                 // Check if we have some unsent event
                 sendChipsButton.setVisibility(View.VISIBLE);
                 if (mChips == null || !mChips.hasUnsentEvents()) {
@@ -211,11 +205,9 @@ public final class DatabaseActivity extends MainActivity {
                     sendChipsButton.setAlpha(MainApplication.ENABLED_BUTTON);
                     sendChipsButton.setClickable(true);
                 }
-                // TODO: Enable button when results download will be coded
-                getResultsButton.setAlpha(MainApplication.DISABLED_BUTTON);
-                getResultsButton.setClickable(false);
+                // Always allow to download results from site
                 getResultsButton.setVisibility(View.VISIBLE);
-                // Show database content
+                // Set distance description
                 String siteName;
                 if (mDistance.getTestSite() == 0) {
                     siteName = (String) getResources().getText(R.string.site_name_main);
@@ -226,7 +218,16 @@ public final class DatabaseActivity extends MainActivity {
                         .getString(R.string.database_distance_version, siteName,
                                 mDistance.getDownloadDate()));
                 ((TextView) findViewById(R.id.distance_name)).setText(mDistance.getRaidName());
-                dbContentLayout.setVisibility(View.VISIBLE);
+                // Set chip events statistic
+                final List<Integer> statistic = mChips.getStatistic();
+                ((TextView) findViewById(R.id.database_local_init)).setText(getResources()
+                        .getString(R.string.database_local_init, statistic.get(0),
+                                statistic.get(1)));
+                ((TextView) findViewById(R.id.database_local_results)).setText(getResources()
+                        .getString(R.string.database_local_results, statistic.get(2),
+                                statistic.get(3)));
+                // Show database content
+                dbContent.setVisibility(View.VISIBLE);
                 // Update main menu item
                 databaseItem.setTitle(getResources().getText(R.string.mode_cloud_done));
                 databaseItem.setIcon(R.drawable.ic_cloud_done);
@@ -313,7 +314,7 @@ public final class DatabaseActivity extends MainActivity {
         mTransferActive = true;
         findViewById(R.id.database_status_description).setVisibility(View.INVISIBLE);
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
-        // start upload
+        // Start upload
         final SiteRequest siteRequest =
                 SiteRequest.builder().userEmail(mMainApplication.getUserEmail())
                         .userPassword(mMainApplication.getUserPassword())
@@ -321,6 +322,32 @@ public final class DatabaseActivity extends MainActivity {
                         .database(mMainApplication.getDatabase())
                         .chips(mChips)
                         .type(SiteRequest.TYPE_UL_CHIPS).build();
+        new AsyncSiteRequest(mContext).execute(siteRequest);
+    }
+
+    /**
+     * Start download of new results from site.
+     *
+     * @param view View of button clicked
+     */
+    public void startResultsDownload(final View view) {
+        // Check if we have another transfer waiting
+        if (mTransferActive) {
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_db_download_waiting),
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        // Show progress bar instead of status text
+        mTransferActive = true;
+        findViewById(R.id.database_status_description).setVisibility(View.INVISIBLE);
+        findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
+        // Start download
+        final SiteRequest siteRequest =
+                SiteRequest.builder().userEmail(mMainApplication.getUserEmail())
+                        .userPassword(mMainApplication.getUserPassword())
+                        .testSite(mMainApplication.getTestSite())
+                        .database(mMainApplication.getDatabase())
+                        .type(SiteRequest.TYPE_DL_RESULTS).build();
         new AsyncSiteRequest(mContext).execute(siteRequest);
     }
 
@@ -373,6 +400,12 @@ public final class DatabaseActivity extends MainActivity {
                     return R.string.err_db_reading_response;
                 case SiteRequest.LOAD_PARSE_ERROR:
                     return R.string.err_db_bad_response;
+                case SiteRequest.LOAD_DATA_CHANGED:
+                    // New events has been added during events upload
+                    // Force events reload from local database
+                    // and forget about sending some events to site
+                    mMainApplication.setChips(mMainApplication.getDatabase().loadChips(), true);
+                    return R.string.send_results_failure;
                 case SiteRequest.LOAD_FATAL_ERROR:
                     return R.string.err_db_internal_error;
                 case SiteRequest.LOAD_CUSTOM_ERROR:
@@ -386,15 +419,16 @@ public final class DatabaseActivity extends MainActivity {
                             mMainApplication.setTeams(request[0].getTeams());
                             return R.string.download_distance_success;
                         case SiteRequest.TYPE_UL_CHIPS:
-                            // TODO: update chips in main app memory
+                            // Update chip events in persistent memory
+                            mMainApplication.setChips(request[0].getChips(), false);
                             return R.string.send_results_success;
                         case SiteRequest.TYPE_DL_RESULTS:
                             return R.string.unknown;
                         default:
-                            return R.string.unknown;
+                            return R.string.err_db_internal_error;
                     }
                 default:
-                    return R.string.unknown;
+                    return R.string.err_db_internal_error;
             }
         }
 

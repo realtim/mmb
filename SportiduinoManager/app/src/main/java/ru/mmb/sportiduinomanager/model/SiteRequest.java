@@ -28,13 +28,17 @@ public final class SiteRequest {
      */
     public static final int LOAD_PARSE_ERROR = 2;
     /**
+     * Local data was changed during upload process.
+     */
+    public static final int LOAD_DATA_CHANGED = 3;
+    /**
      * Something unexpected has been happened.
      */
-    public static final int LOAD_FATAL_ERROR = 3;
+    public static final int LOAD_FATAL_ERROR = 4;
     /**
      * Member mCustomError contains custom text error message.
      */
-    public static final int LOAD_CUSTOM_ERROR = 4;
+    public static final int LOAD_CUSTOM_ERROR = 5;
 
     /**
      * Request type for distance download.
@@ -166,6 +170,15 @@ public final class SiteRequest {
     }
 
     /**
+     * Get updated chip events with status changed from SAVED to SENT.
+     *
+     * @return Chips object
+     */
+    public Chips getChips() {
+        return mChips;
+    }
+
+    /**
      * Make one of download/upload request according to mType.
      *
      * @return One of LOAD result constants, mCustomError can be also set
@@ -285,7 +298,7 @@ public final class SiteRequest {
                     distance = new Distance(mUserEmail, mUserPassword, mTestSite,
                             Integer.parseInt(values[1]), values[4],
                             System.currentTimeMillis() / 1000,
-                            Long.parseLong(values[2]), Long.parseLong(values[3]));
+                            Long.parseLong(values[2]), Long.parseLong(values[3]), 0);
                     break;
                 case 'P':
                     // parse list of points
@@ -402,31 +415,73 @@ public final class SiteRequest {
         final BufferedReader reader =
                 new BufferedReader(new InputStreamReader(connection.getInputStream(),
                         StandardCharsets.UTF_8));
-        final String response = reader.readLine();
-        connection.disconnect();
-        // Non-empty server response contains server error
-        if (!"".equals(response)) {
-            mCustomError = response;
+        // Non-empty first line contains server error
+        final String error = reader.readLine();
+        if (!"".equals(error)) {
+            mCustomError = error;
             return LOAD_CUSTOM_ERROR;
         }
-        // TODO: read and check the number of imported events
-        // TODO: change state to SENT in memory, find localtime of last sent event
-        // TODO: and update events in the database
-        return LOAD_OK;
+        // Check that all chip events were received by server
+        final String header = reader.readLine();
+        if (header == null) return LOAD_READ_ERROR;
+        try {
+            if (Integer.parseInt(header) != events.size()) return LOAD_PARSE_ERROR;
+        } catch (NumberFormatException e) {
+            // This line can contain php error, show it to user
+            mCustomError = header;
+            return LOAD_CUSTOM_ERROR;
+        }
+        // Finish parsing of server response
+        connection.disconnect();
+        // Update chip events status in local database
+        if (mDatabase.markChipsSent(events.size())) {
+            // Update chip events status in memory
+            if (mChips.markChipsSent(events.size())) {
+                return LOAD_OK;
+            } else {
+                return LOAD_DATA_CHANGED;
+            }
+        } else {
+            return LOAD_DATA_CHANGED;
+        }
     }
 
     /**
      * Download new results from site database to local database.
      *
      * @return One of LOAD result constants, mCustomError can be also set
+     * @throws IOException Unexpected end of file
      */
-    private int loadResults() {
-        // TODO: replace placeholder with real function
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            return LOAD_FATAL_ERROR;
+    private int loadResults() throws IOException {
+        // Prepare and open connection to site
+        final HttpURLConnection connection = prepareConnection();
+        if (connection == null) return LOAD_READ_ERROR;
+        final int result = makeConnection(connection, null);
+        if (result != LOAD_OK) return result;
+        // Start reading server response
+        final BufferedReader reader =
+                new BufferedReader(new InputStreamReader(connection.getInputStream(),
+                        StandardCharsets.UTF_8));
+        // check for error message from server
+        final String error = reader.readLine();
+        if (!"".equals(error)) {
+            mCustomError = error;
+            return LOAD_CUSTOM_ERROR;
         }
+        // Get id of last result in site database
+        final String header = reader.readLine();
+        if (header == null) return LOAD_READ_ERROR;
+        long lastResultId;
+        try {
+            lastResultId = Integer.parseInt(header);
+        } catch (NumberFormatException e) {
+            // This line can contain php error, show it to user
+            mCustomError = header;
+            return LOAD_CUSTOM_ERROR;
+        }
+        // TODO: mDistance is null, save it in future mResults object
+        mDistance.setLastResultId(lastResultId);
+        // TODO: parse teams results
         return LOAD_OK;
     }
 

@@ -199,7 +199,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
                 Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show();
             }
             // Copy changed list of chips events to main application
-            mMainApplication.setChips(mChips);
+            mMainApplication.setChips(mChips, false);
         } else {
             Toast.makeText(getApplicationContext(), mStation.getLastError(),
                     Toast.LENGTH_LONG).show();
