@@ -1,4 +1,4 @@
-package ru.mmb.sportiduinomanager;
+package ru.mmb.sportiduinomanager.activity.devices;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -25,6 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import ru.mmb.sportiduinomanager.MainActivity;
+import ru.mmb.sportiduinomanager.MainApplication;
+import ru.mmb.sportiduinomanager.R;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
 
@@ -254,7 +257,16 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         // Mark clicked device as being connected
         mAdapter.setConnectedDevice(deviceClicked.getAddress(), true);
         // Try to connect to device in background thread
-        new ConnectDevice(this).execute(deviceClicked);
+        new ConnectDeviceTask(this).execute(deviceClicked);
+    }
+
+    /**
+     * Get device list adapter for ConnectDeviceTask.
+     *
+     * @return local device list adapter
+     */
+    BTDeviceListAdapter getDeviceListAdapter() {
+        return mAdapter;
     }
 
     /**
@@ -385,7 +397,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      * @param fetchStatus True if we need to send command to station
      *                    to get it's current status
      */
-    private void updateLayout(final boolean fetchStatus) {
+    void updateLayout(final boolean fetchStatus) {
         // Show BT search button / progress
         if (mBluetoothSearch == BT_SEARCH_OFF) {
             findViewById(R.id.device_search_progress).setVisibility(View.INVISIBLE);
@@ -455,88 +467,5 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         ((TextView) findViewById(R.id.station_last_chip_time)).setText(station.getLastChipTimeString());
         // Show status block
         findViewById(R.id.station_status).setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * Separate thread for async connecting to Bluetooth device.
-     */
-    private static class ConnectDevice extends AsyncTask<BluetoothDevice, Void, Boolean> {
-        /**
-         * Reference to parent activity (which can cease to exist in any moment).
-         */
-        private final WeakReference<BluetoothActivity> mActivityRef;
-        /**
-         * Reference to main application thread.
-         */
-        private final MainApplication mMainApplication;
-
-        /**
-         * Retain only a weak reference to the activity.
-         *
-         * @param context Context of calling activity
-         */
-        ConnectDevice(final BluetoothActivity context) {
-            super();
-            mActivityRef = new WeakReference<>(context);
-            mMainApplication = (MainApplication) context.getApplication();
-        }
-
-        /**
-         * Show hourglass icon before connecting to the device.
-         */
-        protected void onPreExecute() {
-            // Get a reference to the activity if it is still there
-            final BluetoothActivity activity = mActivityRef.get();
-            if (activity == null || activity.isFinishing()) return;
-            // Update activity layout
-            activity.updateLayout(false);
-        }
-
-        /**
-         * Try to connect to the Bluetooth device.
-         *
-         * @param device Bluetooth device clicked
-         * @return True if succeeded
-         */
-        protected Boolean doInBackground(final BluetoothDevice... device) {
-            final Station station = new Station(device[0]);
-            if (station.connect()) {
-                // Save connected station in main application
-                mMainApplication.setStation(station);
-                return true;
-            }
-            // Disconnect from station
-            station.disconnect();
-            mMainApplication.setStation(null);
-            return false;
-        }
-
-        /**
-         * Show error message in case of connect failure and update screen layout.
-         *
-         * @param result False if connection attempt failed
-         */
-        protected void onPostExecute(final Boolean result) {
-            // Show error message if connect attempt failed
-            if (!result) {
-                Toast.makeText(mMainApplication, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
-            }
-            // Get a reference to the activity if it is still there
-            final BluetoothActivity activity = mActivityRef.get();
-            if (activity == null || activity.isFinishing()) return;
-            // Update device list in activity
-            if (result) {
-                final Station station = mMainApplication.getStation();
-                if (station == null) {
-                    activity.mAdapter.setConnectedDevice(null, false);
-                } else {
-                    activity.mAdapter.setConnectedDevice(station.getAddress(), false);
-                }
-            } else {
-                activity.mAdapter.setConnectedDevice(null, false);
-            }
-            // Update activity layout
-            activity.updateLayout(true);
-        }
     }
 }

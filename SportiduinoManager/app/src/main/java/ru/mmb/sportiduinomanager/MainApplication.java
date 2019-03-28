@@ -73,11 +73,11 @@ public final class MainApplication extends Application {
     /**
      * Alpha for disabled buttons appearance in the application.
      */
-    static final float DISABLED_BUTTON = .5f;
+    public static final float DISABLED_BUTTON = .5f;
     /**
      * Alpha for enabled buttons appearance in the application.
      */
-    static final float ENABLED_BUTTON = 1f;
+    public static final float ENABLED_BUTTON = 1f;
     /**
      * Copy of main application context.
      */

@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import ru.mmb.sportiduinomanager.activity.devices.BluetoothActivity;
 import ru.mmb.sportiduinomanager.model.Database;
 
 /**
@@ -142,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
      * @param itemId Menu item id
      * @return Menu item handler
      */
-    MenuItem getMenuItem(final int itemId) {
+    protected MenuItem getMenuItem(final int itemId) {
         return mNavigationView.getMenu().findItem(itemId);
     }
 

@@ -1,4 +1,4 @@
-package ru.mmb.sportiduinomanager;
+package ru.mmb.sportiduinomanager.activity.devices;
 
 import android.bluetooth.BluetoothDevice;
 import android.support.annotation.NonNull;
@@ -11,6 +11,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import ru.mmb.sportiduinomanager.MainApplication;
+import ru.mmb.sportiduinomanager.R;
 
 /**
  * Provides the list of discovered Bluetooth devices.
