@@ -40,17 +40,22 @@
     <string name="site_name_test">тестового</string>
     <string name="site_name_main">основного</string>
 
+    <string name="bluetooth_activity_title">Настройка станции</string>
     <string name="device_search">Поиск станций</string>
     <string name="device_name">%1$s (%2$s)</string>
     <string name="device_connect_description">Нажмите для подключения к станции</string>
     <string name="connected_station">Подключенная станция</string>
     <string name="response_time">Время отклика: %1$dмс</string>
     <string name="station_mode">Текущий режим</string>
-    <string name="station_mode_0">Инициализация чипов на точке #%1$d</string>
-    <string name="station_mode_1">Обычный КП #%1$d</string>
-    <string name="station_mode_2">Финишный КП #%1$d</string>
+    <string name="station_mode_value_0">Инициализация чипов на точке #%1$d</string>
+    <string name="station_mode_value_1">Обычный КП #%1$d</string>
+    <string name="station_mode_value_2">Финишный КП #%1$d</string>
     <string name="station_mode_unknown">Неизвестный режим</string>
+    <string name="station_new_point">Новая точка</string>
     <string name="station_new_mode">Новый режим</string>
+    <string name="station_mode_0">Инициализация</string>
+    <string name="station_mode_1">Обычный</string>
+    <string name="station_mode_2">Финишный</string>
     <string name="station_change_mode">Сохранить</string>
     <string name="station_time_drift">Смещение часов: %1$dс</string>
     <string name="station_sync_time">Синхронизировать</string>

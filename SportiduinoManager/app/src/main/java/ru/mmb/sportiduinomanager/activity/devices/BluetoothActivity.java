@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -20,8 +19,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -167,6 +166,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.bluetooth).setChecked(true);
         // TODO: Change toolbar title
+        getSupportActionBar().setTitle(getResources().getString(R.string.bluetooth_activity_title));
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Check if device supports Bluetooth
@@ -204,18 +204,29 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         } else {
             mBluetoothSearch = BT_SEARCH_OFF;
         }
+        // Initialize pointes and modes spinners
+        final Spinner stationPointSpinner = findViewById(R.id.station_point_spinner);
+        stationPointSpinner.setAdapter(getPointsAdapter());
+        final Spinner stationModeSpinner = findViewById(R.id.station_mode_spinner);
+        stationModeSpinner.setAdapter(getStationModesAdapter());
+        // Update activity layout
+        updateLayout(true);
+    }
+
+    private ArrayAdapter<String> getPointsAdapter() {
         // Get list of active points (if a distance was downloaded)
         final Distance distance = mMainApplication.getDistance();
         List<String> points = new ArrayList<>();
         if (distance != null) points = distance.getPointNames();
-        // Create list adapter for station mode spinner
-        final Spinner spinner = findViewById(R.id.station_spinner);
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                R.layout.support_simple_spinner_dropdown_item, points);
-        // Apply the adapter to the spinner
-        spinner.setAdapter(adapter);
-        // Update activity layout
-        updateLayout(true);
+        return new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, points);
+    }
+
+    private ArrayAdapter<String> getStationModesAdapter() {
+        List<String> modes = Arrays.asList(
+                getResources().getString(R.string.station_mode_0),
+                getResources().getString(R.string.station_mode_1),
+                getResources().getString(R.string.station_mode_2));
+        return new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, modes);
     }
 
     @Override
@@ -325,8 +336,13 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
             return;
         }
         // Get new station number
-        final Spinner spinner = findViewById(R.id.station_spinner);
-        final byte newNumber = (byte) spinner.getSelectedItemPosition();
+        final Spinner stationPointSpinner = findViewById(R.id.station_point_spinner);
+        final byte newNumber = (byte) stationPointSpinner.getSelectedItemPosition();
+        // Get new station mode
+        final Spinner stationModeSpinner = findViewById(R.id.station_mode_spinner);
+        final byte newMode = (byte) stationModeSpinner.getSelectedItemPosition();
+        /*
+        // TODO: Set default station mode for point on stationPointSpinner.selectItem
         // Compute new station mode
         byte newMode;
         switch (distance.getPointType(newNumber)) {
@@ -344,6 +360,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
                 newMode = Station.MODE_OTHER_POINT;
                 break;
         }
+        */
         // Do nothing if numbers are the same
         final byte currentNumber = station.getNumber();
         if (currentNumber == newNumber && newMode == station.getMode()) return;
@@ -443,23 +460,25 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         switch (station.getMode()) {
             case Station.MODE_INIT_CHIPS:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
-                        .getString(R.string.station_mode_0, station.getNumber()));
+                        .getString(R.string.station_mode_value_0, station.getNumber()));
                 break;
             case Station.MODE_OTHER_POINT:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
-                        .getString(R.string.station_mode_1, station.getNumber()));
+                        .getString(R.string.station_mode_value_1, station.getNumber()));
                 break;
             case Station.MODE_FINISH_POINT:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
-                        .getString(R.string.station_mode_2, station.getNumber()));
+                        .getString(R.string.station_mode_value_2, station.getNumber()));
                 break;
             default:
                 ((TextView) findViewById(R.id.station_mode_value))
                         .setText(R.string.station_mode_unknown);
                 break;
         }
-        final Spinner spinner = findViewById(R.id.station_spinner);
-        spinner.setSelection(station.getNumber());
+        final Spinner stationPointSpinner = findViewById(R.id.station_point_spinner);
+        stationPointSpinner.setSelection(station.getNumber());
+        final Spinner stationModeSpinner = findViewById(R.id.station_mode_spinner);
+        stationModeSpinner.setSelection(station.getMode());
         ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
                 .getString(R.string.station_time_drift, station.getTimeDrift()));
         ((TextView) findViewById(R.id.station_chips_registered_value))
