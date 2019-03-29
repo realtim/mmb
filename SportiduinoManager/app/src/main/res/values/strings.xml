@@ -10,10 +10,14 @@
 
     <string name="menu_back">Back</string>
     <string name="mode_cloud_download">Download race and teams</string>
+    <string name="mode_cloud_upload">Upload results to site</string>
     <string name="mode_cloud_done">Download results from site</string>
     <string name="mode_bluetooth_select">Select Station</string>
+    <string name="mode_bluetooth_set">Configure station %1$s</string>
     <string name="mode_chip_init">Init Chips</string>
+    <string name="mode_chip_init_name">Init Chips at %1$s</string>
     <string name="mode_active_point">Active point</string>
+    <string name="mode_active_point_name">Active point %1$s</string>
     <string name="mode_team_list">Browse team results</string>
 
     <string name="start_page_text">Description of work with the App</string>
@@ -40,6 +44,7 @@
         uploaded)</string>
     <string name="site_name_test">test</string>
     <string name="site_name_main">main</string>
+    <string name="active_point_prefix">AP</string>
 
     <string name="device_search">Search for BT devices</string>
     <string name="device_name">%1$s (%2$s)</string>

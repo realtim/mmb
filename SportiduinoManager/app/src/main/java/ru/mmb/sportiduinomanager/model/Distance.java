@@ -188,12 +188,20 @@ public final class Distance {
     /**
      * Get list of active points names.
      *
+     * @param prefix 'AP' numeric point name prefix
      * @return List of names
      */
-    public List<String> getPointNames() {
+    public List<String> getPointNames(final String prefix) {
         final List<String> names = new ArrayList<>();
         for (final Point point : mPoints) {
-            if (point != null) names.add(point.mName);
+            if (point != null) {
+                final String name = point.mName;
+                if (name.charAt(0) >= '0' && name.charAt(0) <= '9') {
+                    names.add(prefix + name);
+                } else {
+                    names.add(name);
+                }
+            }
         }
         return names;
     }
@@ -247,6 +255,23 @@ public final class Distance {
     public int getPointType(final int number) {
         if (number < 0 || number >= mPoints.length || mPoints[number] == null) return -1;
         return mPoints[number].mType;
+    }
+
+    /**
+     * Get name of the point.
+     *
+     * @param number Point number
+     * @param prefix 'AP' numeric point name prefix
+     * @return Point name
+     */
+    public String getPointName(final int number, final String prefix) {
+        if (number < 0 || number >= mPoints.length || mPoints[number] == null) return "";
+        final String name = mPoints[number].mName;
+        if (name.charAt(0) >= '0' && name.charAt(0) <= '9') {
+            return prefix + name;
+        } else {
+            return name;
+        }
     }
 
     /**
@@ -380,14 +405,6 @@ public final class Distance {
         // No errors were detected
         return false;
     }
-
-    /*
-    public String getPointName(final int index) {
-        if (index < 0 || index >= mPoints.size()) return UNKNOWN_POINT;
-        Point point = mPoints.get(index);
-        if (point == null) return UNKNOWN_POINT;
-        return point.mName;
-    }*/
 
     /**
      * An active point parameters.

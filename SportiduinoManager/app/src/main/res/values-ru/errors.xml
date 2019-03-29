@@ -2,7 +2,6 @@
 
 <resources>
     <string name="err_db_cant_create_dir">Для базы данных не удалось создать директорию </string>
-    <string name="err_db_is_null">Не удалось подключиться к базе данных</string>
     <string name="err_db_empty_email">Email не может быть пустым</string>
     <string name="err_db_bad_email">Некорректный Email</string>
     <string name="err_db_empty_password">Пароль не может быть пустым</string>

@@ -136,8 +136,9 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
-        mMainApplication = (MainApplication) this.getApplication();
+        mMainApplication = (MainApplication) getApplication();
         setContentView(R.layout.activity_bluetooth);
+        updateMenuItems(mMainApplication, R.id.bluetooth);
         // Start monitoring bluetooth changes
         registerReceiver(mBTStateMonitor, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
         // Prepare for Bluetooth device search
@@ -163,7 +164,6 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.bluetooth).setChecked(true);
-        // TODO: Change toolbar title
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Check if device supports Bluetooth
@@ -204,7 +204,9 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         // Get list of active points (if a distance was downloaded)
         final Distance distance = mMainApplication.getDistance();
         List<String> points = new ArrayList<>();
-        if (distance != null) points = distance.getPointNames();
+        if (distance != null) {
+            points = distance.getPointNames(getResources().getString(R.string.active_point_prefix));
+        }
         // Create list adapter for station mode spinner
         final Spinner spinner = findViewById(R.id.station_spinner);
         final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
@@ -347,6 +349,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         if (!station.newMode(newMode)) {
             Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
             updateLayout(false);
+            updateMenuItems(mMainApplication, R.id.bluetooth);
             ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
                     .getString(R.string.response_time, responseTime + station.getResponseTime()));
             return;
@@ -355,6 +358,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         responseTime += station.getResponseTime();
         // Get current station status (just in case) and update layout
         updateLayout(true);
+        updateMenuItems(mMainApplication, R.id.bluetooth);
         responseTime += station.getResponseTime();
         // Set correct response time for sum of three commands responses
         ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
@@ -537,6 +541,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
             }
             // Update activity layout
             activity.updateLayout(true);
+            activity.updateMenuItems(mMainApplication, R.id.bluetooth);
         }
     }
 }
