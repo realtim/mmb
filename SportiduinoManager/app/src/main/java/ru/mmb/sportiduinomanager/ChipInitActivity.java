@@ -59,8 +59,9 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
+        mMainApplication = (MainApplication) getApplication();
         setContentView(R.layout.activity_chipinit);
-        mMainApplication = (MainApplication) this.getApplication();
+        updateMenuItems(mMainApplication, R.id.chip_init);
         // Load last entered team number and mask from main application
         mTeamNumber = Integer.toString(mMainApplication.getTeamNumber());
         if ("0".equals(mTeamNumber)) mTeamNumber = "";
@@ -81,7 +82,6 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.chip_init).setChecked(true);
-        // TODO: Change toolbar title
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Get connected station from main application thread

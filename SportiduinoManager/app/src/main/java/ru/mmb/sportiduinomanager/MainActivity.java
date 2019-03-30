@@ -12,11 +12,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Objects;
+
 import ru.mmb.sportiduinomanager.activity.devices.BluetoothActivity;
+
+import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Database;
+import ru.mmb.sportiduinomanager.model.Distance;
+import ru.mmb.sportiduinomanager.model.Station;
 
 /**
  * Provides left menu via NavigationDrawer.
@@ -97,32 +102,13 @@ public class MainActivity extends AppCompatActivity {
         // Show startup screen, overload this method to show another view
         setContentView(R.layout.startup_screen);
         // Show error from application onCreate (if any)
-        final MainApplication appState = (MainApplication) getApplication();
-        final String startupError = appState.getStartupError();
-        if (startupError != null) {
-            final TextView message = findViewById(R.id.startup_message);
-            message.setText(startupError);
+        final MainApplication mainApplication = (MainApplication) getApplication();
+        final String startupError = mainApplication.getStartupError();
+        if (!"".equals(startupError)) {
+            Toast.makeText(this, startupError, Toast.LENGTH_LONG).show();
         }
-        final Database database = appState.getDatabase();
-        if (startupError == null && database == null) {
-            final TextView message = findViewById(R.id.startup_message);
-            message.setText(R.string.err_db_is_null);
-        }
-        // Update 'Database' menu item
-        final MenuItem databaseItem = mNavigationView.getMenu().findItem(R.id.database);
-        int dbStatus;
-        if (database == null) {
-            dbStatus = Database.DB_STATE_FAILED;
-        } else {
-            dbStatus = database.getDbStatus();
-        }
-        if (dbStatus == Database.DB_STATE_OK) {
-            databaseItem.setTitle(getResources().getText(R.string.mode_cloud_done));
-            databaseItem.setIcon(R.drawable.ic_cloud_done);
-        } else {
-            databaseItem.setTitle(getResources().getText(R.string.mode_cloud_download));
-            databaseItem.setIcon(R.drawable.ic_cloud_download);
-        }
+        // Update menu items
+        updateMenuItems(mainApplication, 0);
     }
 
     @Override
@@ -154,5 +140,82 @@ public class MainActivity extends AppCompatActivity {
      */
     public void closeNavigationDrawer(@SuppressWarnings("unused") final View view) {
         mDrawerLayout.closeDrawers();
+    }
+
+    /**
+     * Update menu titles and icons according to app state.
+     *
+     * @param mainApplication Main application context
+     * @param activeItem      Currently selected menu item id or 0 for startup screen
+     */
+    void updateMenuItems(final MainApplication mainApplication, final int activeItem) {
+        // Get app state from main thread
+        final Database database = mainApplication.getDatabase();
+        final Distance distance = mainApplication.getDistance();
+        final Station station = mainApplication.getStation();
+        final Chips chips = mainApplication.getChips();
+        // Update 'Database' menu item
+        final MenuItem databaseItem = mNavigationView.getMenu().findItem(R.id.database);
+        int dbStatus;
+        if (database == null) {
+            dbStatus = Database.DB_STATE_FAILED;
+        } else {
+            dbStatus = database.getDbStatus();
+        }
+        if (dbStatus == Database.DB_STATE_OK) {
+            if (chips != null && chips.hasUnsentEvents()) {
+                databaseItem.setTitle(getResources().getText(R.string.mode_cloud_upload));
+                databaseItem.setIcon(R.drawable.ic_cloud_upload);
+            } else {
+                databaseItem.setTitle(getResources().getText(R.string.mode_cloud_done));
+                databaseItem.setIcon(R.drawable.ic_cloud_done);
+            }
+        } else {
+            databaseItem.setTitle(getResources().getText(R.string.mode_cloud_download));
+            databaseItem.setIcon(R.drawable.ic_cloud_download);
+        }
+        // Update 'Bluetooth' menu item
+        final MenuItem bluetoothItem = mNavigationView.getMenu().findItem(R.id.bluetooth);
+        if (station == null) {
+            bluetoothItem.setTitle(getResources().getText(R.string.mode_bluetooth_select));
+        } else {
+            bluetoothItem.setTitle(getResources().getString(R.string.mode_bluetooth_set,
+                    station.getName()));
+        }
+        // Get the name of the point which is selected in connected station
+        String pointName = "";
+        if (station != null) {
+            pointName = distance.getPointName(station.getNumber(),
+                    getResources().getString(R.string.active_point_prefix));
+        }
+        // Update 'Chip Init' menu item
+        final MenuItem chipInitItem = mNavigationView.getMenu().findItem(R.id.chip_init);
+        if (station == null || station.getMode() != Station.MODE_INIT_CHIPS) {
+            chipInitItem.setEnabled(false);
+            chipInitItem.setTitle(getResources().getText(R.string.mode_chip_init));
+        } else {
+            chipInitItem.setEnabled(true);
+            if (station.getNumber() == 0) {
+                chipInitItem.setTitle(getResources().getText(R.string.mode_chip_init));
+            } else {
+                chipInitItem.setTitle(getResources().getString(R.string.mode_chip_init_name,
+                        pointName));
+            }
+        }
+        // Update 'Active Point' item
+        final MenuItem activePointItem = mNavigationView.getMenu().findItem(R.id.active_point);
+        if (station == null || station.getMode() == Station.MODE_INIT_CHIPS) {
+            activePointItem.setEnabled(false);
+            activePointItem.setTitle(getResources().getText(R.string.mode_active_point));
+        } else {
+            activePointItem.setEnabled(true);
+            activePointItem.setTitle(getResources().getString(R.string.mode_active_point_name,
+                    pointName));
+        }
+        // Update toolbar title
+        if (activeItem != 0) {
+            Objects.requireNonNull(getSupportActionBar())
+                    .setTitle(mNavigationView.getMenu().findItem(activeItem).getTitle());
+        }
     }
 }

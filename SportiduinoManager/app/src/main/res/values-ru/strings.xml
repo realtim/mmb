@@ -10,10 +10,14 @@
 
     <string name="menu_back">Назад</string>
     <string name="mode_cloud_download">Получить дистанцию с сайта</string>
+    <string name="mode_cloud_upload">Отправить результаты на сайт</string>
     <string name="mode_cloud_done">Обновить результаты с сайта</string>
     <string name="mode_bluetooth_select">Выбрать станцию</string>
+    <string name="mode_bluetooth_set">Настроить станцию %1$s</string>
     <string name="mode_chip_init">Инициализация чипов</string>
+    <string name="mode_chip_init_name">Инициализация чипов на %1$s</string>
     <string name="mode_active_point">На активной точке</string>
+    <string name="mode_active_point_name">На активной точке %1$s</string>
     <string name="mode_team_list">Просмотр результатов</string>
 
     <string name="start_page_text">Здесь будет описание работы с приложением</string>
@@ -39,6 +43,7 @@
         на сайт)</string>
     <string name="site_name_test">тестового</string>
     <string name="site_name_main">основного</string>
+    <string name="active_point_prefix">КП</string>
 
     <string name="bluetooth_activity_title">Настройка станции</string>
     <string name="device_search">Поиск станций</string>

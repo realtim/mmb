@@ -115,11 +115,12 @@ public final class DatabaseActivity extends MainActivity {
         super.onCreate(instanceState);
         mContext = this;
         mTransferActive = false;
-        mMainApplication = (MainApplication) this.getApplication();
+        mMainApplication = (MainApplication) getApplication();
         mDistance = mMainApplication.getDistance();
         mTeams = mMainApplication.getTeams();
         mChips = mMainApplication.getChips();
         setContentView(R.layout.activity_database);
+        updateMenuItems(mMainApplication, R.id.database);
     }
 
     @Override
@@ -127,7 +128,6 @@ public final class DatabaseActivity extends MainActivity {
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.database).setChecked(true);
-        // TODO: Change toolbar title
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Update layout elements
@@ -454,6 +454,7 @@ public final class DatabaseActivity extends MainActivity {
             // Update activity layout
             activity.mTransferActive = false;
             activity.updateLayout();
+            activity.updateMenuItems(mMainApplication, R.id.database);
         }
     }
 
