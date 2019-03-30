@@ -51,9 +51,9 @@
     <string name="connected_station">Подключенная станция</string>
     <string name="response_time">Время отклика: %1$dмс</string>
     <string name="station_mode">Текущий режим</string>
-    <string name="station_mode_value_0">Инициализация чипов на точке #%1$d</string>
-    <string name="station_mode_value_1">Обычный КП #%1$d</string>
-    <string name="station_mode_value_2">Финишный КП #%1$d</string>
+    <string name="station_mode_value_0">Инициализация чипов на точке #%1$s</string>
+    <string name="station_mode_value_1">Обычный КП #%1$s</string>
+    <string name="station_mode_value_2">Финишный КП #%1$s</string>
     <string name="station_mode_unknown">Неизвестный режим</string>
     <string name="station_new_point">Новая точка</string>
     <string name="station_new_mode">Новый режим</string>
