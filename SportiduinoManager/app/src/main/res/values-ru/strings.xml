@@ -45,7 +45,6 @@
     <string name="site_name_main">основного</string>
     <string name="active_point_prefix">КП</string>
 
-    <string name="bluetooth_activity_title">Настройка станции</string>
     <string name="device_search">Поиск станций</string>
     <string name="device_name">%1$s (%2$s)</string>
     <string name="device_connect_description">Нажмите для подключения к станции</string>

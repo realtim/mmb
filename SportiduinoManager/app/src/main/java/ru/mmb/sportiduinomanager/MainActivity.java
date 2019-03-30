@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
      * @param mainApplication Main application context
      * @param activeItem      Currently selected menu item id or 0 for startup screen
      */
-    void updateMenuItems(final MainApplication mainApplication, final int activeItem) {
+    protected void updateMenuItems(final MainApplication mainApplication, final int activeItem) {
         // Get app state from main thread
         final Database database = mainApplication.getDatabase();
         final Distance distance = mainApplication.getDistance();

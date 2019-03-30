@@ -46,7 +46,6 @@
     <string name="site_name_main">main</string>
     <string name="active_point_prefix">AP</string>
 
-    <string name="bluetooth_activity_title">Station setup</string>
     <string name="device_search">Search for BT devices</string>
     <string name="device_name">%1$s (%2$s)</string>
     <string name="device_connect_description">Press to connect to the device</string>
