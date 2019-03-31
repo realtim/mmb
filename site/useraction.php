@@ -452,7 +452,7 @@ if (!isset($MyPHPScript)) return;
             $SessionId = StartSession($UserId);
         } else {
             
-           CMmb::setShortResult("Не найден пользователь для идентификатора $changepasswordsessionid,\r\n Возможно вы запросили пароль дважды и испльзуете ссылку не из последнего письма.", 'MainPage');
+           CMmb::setShortResult("Не найден пользователь для идентификатора $changepasswordsessionid, возможно вы запросили пароль дважды и испльзуете ссылку не из последнего письма.", 'MainPage');
             
         }    
 
