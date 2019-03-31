@@ -392,7 +392,8 @@ if (!isset($MyPHPScript)) return;
                where user_id = '$pUserId'";
         //echo $sql;
         
-         CMmbLogger::d('User token', $sql);
+        CMmbLogger::enable(1);
+        CMmbLogger::d('User token', $sql);
         
         $rs = MySqlQuery($sql);
 
@@ -423,7 +424,8 @@ if (!isset($MyPHPScript)) return;
 
         $sql = "select user_id, user_email, user_name from  Users where user_sessionfornewpassword = '$changepasswordsessionid'";
         //  echo $sql;
-       CMmbLogger::d('Find user by token', $sql);
+        CMmbLogger::enable(1);
+        CMmbLogger::d('Find user by token', $sql);
         
         $Row = CSql::singleRow($sql);
         $UserId = $Row['user_id'];
