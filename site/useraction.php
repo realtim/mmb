@@ -389,10 +389,10 @@ if (!isset($MyPHPScript)) return;
         // пишем в базу сессию для восстановления пароля
         $sql = "update   Users  set user_sessionfornewpassword = '$ChangePasswordSessionId',
                                    user_sendnewpasswordrequestdt = now()
-               where user_id = '$pUserId'";
+               where user_id = $pUserId";
         //echo $sql;
         
-         CMmbLogger::d('User token', "query text: '$sql'");
+         CMmbLogger::d('User token', $sql);
         
         //'MySqlQuery', "sql error: '$err' \r\non query: '$SqlString'"
         
@@ -452,7 +452,7 @@ if (!isset($MyPHPScript)) return;
             $SessionId = StartSession($UserId);
         } else {
             
-           CMmb::setShortResult("Не найден пользователь для идентификатора $changepasswordsessionid ", 'MainPage');
+           CMmb::setShortResult("Не найден пользователь для идентификатора $changepasswordsessionid,\r\n Возможно вы запросили пароль дважды и испльзуете ссылку не из последнего письма.", 'MainPage');
             
         }    
 
