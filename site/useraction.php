@@ -396,7 +396,7 @@ if (!isset($MyPHPScript)) return;
         $Msg = "Здравствуйте!\r\n\r\n";
         $Msg.= "Кто-то (возможно, это были Вы) запросил восстановление пароля на сайте ММБ для этого адреса e-mail.\r\n";
         $Msg.= "Для получения нового пароля необходимо перейти по ссылке:\r\n";
-        $Msg.= $MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+        $Msg.= $MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId \r\n\r\n";
         $Msg.= "P.S. Если Вы не запрашивали восстановление пароля - просто проигнорируйте письмо - приносим извинения за доставленные неудобства.\r\n";
 
         //echo $Message;
@@ -444,7 +444,7 @@ if (!isset($MyPHPScript)) return;
             $SessionId = StartSession($UserId);
         } else {
             
-           CMmb::setShortResult("Не найден пользователья для идентификатора $changepasswordsessionid ", 'MainPage');
+           CMmb::setShortResult("Не найден пользователь для идентификатора $changepasswordsessionid ", 'MainPage');
             
         }    
 
