@@ -391,6 +391,9 @@ if (!isset($MyPHPScript)) return;
                                    user_sendnewpasswordrequestdt = now()
                where user_id = '$pUserId'";
         //echo $sql;
+        
+         CMmbLogger::d('User token', $sql);
+        
         $rs = MySqlQuery($sql);
 
         $Msg = "Здравствуйте!\r\n\r\n";
@@ -420,6 +423,8 @@ if (!isset($MyPHPScript)) return;
 
         $sql = "select user_id, user_email, user_name from  Users where user_sessionfornewpassword = '$changepasswordsessionid'";
         //  echo $sql;
+       CMmbLogger::d('Find user by token', $sql);
+        
         $Row = CSql::singleRow($sql);
         $UserId = $Row['user_id'];
         $UserEmail = $Row['user_email'];
