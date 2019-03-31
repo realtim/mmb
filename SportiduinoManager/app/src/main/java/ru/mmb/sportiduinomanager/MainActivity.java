@@ -69,8 +69,7 @@ public class MainActivity extends AppCompatActivity {
                     activity = new Intent(getApplicationContext(), ChipInitActivity.class);
                     break;
                 case R.id.active_point:
-                    Toast.makeText(this, R.string.err_todo_active_point,
-                            Toast.LENGTH_LONG).show();
+                    activity = new Intent(getApplicationContext(), ActivePointActivity.class);
                     break;
                 case R.id.team_list:
                     Toast.makeText(this, R.string.err_todo_team_list,

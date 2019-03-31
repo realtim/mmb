@@ -79,4 +79,8 @@
     <string name="team_maps_count">Карт: %1$d</string>
     <string name="team_members_count">Участников: %1$d (%2$s)</string>
     <string name="init_team_chip">Записать чип</string>
+
+    <string name="ap_total_teams">Команд: %1$d</string>
+    <string name="ap_team_name">№%1$d %2$s</string>
+    <string name="ap_members_count">Участников: %1$d</string>
 </resources>

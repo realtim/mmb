@@ -22,6 +22,22 @@ public final class Teams {
     }
 
     /**
+     * Get count of team members from the team mask.
+     *
+     * @param teamMask Some team members mask
+     * @return Number of team members
+     */
+    public static int getMembersCount(final int teamMask) {
+        int teamMembersCount = 0;
+        for (int i = 0; i < 16; i++) {
+            if ((teamMask & (1 << i)) != 0) {
+                teamMembersCount++;
+            }
+        }
+        return teamMembersCount;
+    }
+
+    /**
      * Construct team and save it to appropriate position in team array.
      *
      * @param number       Team number
@@ -55,7 +71,7 @@ public final class Teams {
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean addTeamMember(final long memberId, final int teamN, final String memberName,
-                           final String memberPhone) {
+                          final String memberPhone) {
         // Check if team number is valid
         if (teamN < 0 || teamN >= mTeams.length) return false;
         final int numberOfMembers = mTeams[teamN].mMembers.length;

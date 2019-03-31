@@ -33,6 +33,5 @@
     <string name="err_station_no_chip">Put the chip near the station</string>
     <string name="err_station_unknown">The station returned an unknown error</string>
 
-    <string name="err_todo_active_point">Active point mode is not supported yet</string>
     <string name="err_todo_team_list">Team list mode is not supported yet</string>
 </resources>

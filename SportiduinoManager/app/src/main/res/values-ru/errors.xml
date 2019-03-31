@@ -35,8 +35,6 @@
     <string name="err_station_no_chip">Поднесите чип ближе к станции</string>
     <string name="err_station_unknown">Станция вернула неизвестный код ошибки</string>
 
-    <string name="err_todo_active_point">Режим работы на активной точке еще не
-        поддерживается</string>
     <string name="err_todo_team_list">Режим просмотра результатов команд еще не
         поддерживается</string>
 </resources>

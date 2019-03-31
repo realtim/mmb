@@ -3,7 +3,7 @@ package ru.mmb.sportiduinomanager.model;
 /**
  * A chip event (initialization or check in).
  */
-final class ChipEvent {
+final class ChipEvent implements Comparable<ChipEvent> {
     /**
      * Chip event status: new, exists only in app memory.
      */
@@ -131,6 +131,12 @@ final class ChipEvent {
      */
     int getMode() {
         return mStationMode;
+    }
+
+    @Override
+    public int compareTo(final ChipEvent compareEvent) {
+        // For ascending order
+        return this.mPointTime - compareEvent.mPointTime;
     }
 
     /**

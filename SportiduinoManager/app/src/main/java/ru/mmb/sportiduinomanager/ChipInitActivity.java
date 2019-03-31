@@ -103,7 +103,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         // Save it to main application
         mMainApplication.setTeamMask(mTeamMask);
         // Display new team members count
-        final int teamMembersCount = getMembersCount();
+        final int teamMembersCount = Teams.getMembersCount(mTeamMask);
         ((TextView) findViewById(R.id.init_members_count)).setText(getResources()
                 .getString(R.string.team_members_count, teamMembersCount,
                         Integer.toString(mTeamMask, 2)));
@@ -333,7 +333,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         mAdapter.fillList(teamMembers, mTeamMask);
         // Update number of members in the team
         ((TextView) findViewById(R.id.init_members_count)).setText(getResources()
-                .getString(R.string.team_members_count, getMembersCount(),
+                .getString(R.string.team_members_count, Teams.getMembersCount(mTeamMask),
                         Integer.toString(mTeamMask, 2)));
         // Check if some team members were selected as present
         if (mTeamMask == 0) {
@@ -363,21 +363,6 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         }
         errorText.setText(getResources().getString(errorId));
         errorText.setVisibility(View.VISIBLE);
-    }
-
-    /**
-     * Get current count of team members.
-     *
-     * @return Number of team members
-     */
-    private int getMembersCount() {
-        int teamMembersCount = 0;
-        for (int i = 0; i < 16; i++) {
-            if ((mTeamMask & (1 << i)) != 0) {
-                teamMembersCount++;
-            }
-        }
-        return teamMembersCount;
     }
 
 }

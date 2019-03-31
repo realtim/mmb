@@ -3,6 +3,7 @@ package ru.mmb.sportiduinomanager.model;
 import android.database.sqlite.SQLiteException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -198,4 +199,65 @@ public final class Chips {
         statistic.add(resultSent);
         return statistic;
     }
+
+    /**
+     * Get chip events at current point and station
+     * (check ins only, not events copied from chips).
+     *
+     * @param pointNumber Active point / station number
+     * @param stationMAC  Station MAC as long
+     * @return New chips object with list of filtered events
+     */
+    public Chips getChipsAtPoint(final int pointNumber, final long stationMAC) {
+        final List<ChipEvent> visits = new ArrayList<>();
+        // Filter events
+        for (final ChipEvent event : mEvents) {
+            if (event.mPointNumber == pointNumber && event.mStationMAC == stationMAC
+                    && event.mStationNumber == pointNumber) {
+                visits.add(event);
+            }
+        }
+        // Sort the array of events
+        Collections.sort(visits);
+        // Create new chips object and copy events to it
+        final Chips chipsAtPoint = new Chips(0);
+        for (final ChipEvent event : visits) {
+            chipsAtPoint.addEvent(event);
+        }
+        return chipsAtPoint;
+    }
+
+    /**
+     * Get number of the last team
+     * (mEvents should be previously filtered with getChipsAtPoint).
+     *
+     * @return Last team number
+     */
+    public int getLastTeamN() {
+        if (mEvents.isEmpty()) return -1;
+        return mEvents.get(mEvents.size() - 1).mTeamNumber;
+    }
+
+    /**
+     * Get time of arrival for the last team
+     * (mEvents should be previously filtered with getChipsAtPoint).
+     *
+     * @return Last team visit unixtime
+     */
+    public int getLastTeamTime() {
+        if (mEvents.isEmpty()) return -1;
+        return mEvents.get(mEvents.size() - 1).mPointTime;
+    }
+
+    /**
+     * Get team members mask for the last team
+     * (mEvents should be previously filtered with getChipsAtPoint).
+     *
+     * @return Last team mask
+     */
+    public int getLastTeamMask() {
+        if (mEvents.isEmpty()) return -1;
+        return mEvents.get(mEvents.size() - 1).mTeamMask;
+    }
+
 }
