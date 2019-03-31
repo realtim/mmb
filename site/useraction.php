@@ -389,14 +389,19 @@ if (!isset($MyPHPScript)) return;
         // пишем в базу сессию для восстановления пароля
         $sql = "update   Users  set user_sessionfornewpassword = '$ChangePasswordSessionId',
                                    user_sendnewpasswordrequestdt = now()
-               where user_id = '$pUserId'";
+               where user_id = $pUserId";
         //echo $sql;
+        
+         CMmbLogger::d('User token', $sql);
+        
+        //'MySqlQuery', "sql error: '$err' \r\non query: '$SqlString'"
+        
         $rs = MySqlQuery($sql);
 
         $Msg = "Здравствуйте!\r\n\r\n";
         $Msg.= "Кто-то (возможно, это были Вы) запросил восстановление пароля на сайте ММБ для этого адреса e-mail.\r\n";
         $Msg.= "Для получения нового пароля необходимо перейти по ссылке:\r\n";
-        $Msg.= $MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId\r\n\r\n";
+        $Msg.= $MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId \r\n\r\n";
         $Msg.= "P.S. Если Вы не запрашивали восстановление пароля - просто проигнорируйте письмо - приносим извинения за доставленные неудобства.\r\n";
 
         //echo $Message;
@@ -420,6 +425,9 @@ if (!isset($MyPHPScript)) return;
 
         $sql = "select user_id, user_email, user_name from  Users where user_sessionfornewpassword = '$changepasswordsessionid'";
         //  echo $sql;
+     
+        CMmbLogger::d('Find user by token', $sql);
+        
         $Row = CSql::singleRow($sql);
         $UserId = $Row['user_id'];
         $UserEmail = $Row['user_email'];
@@ -444,7 +452,7 @@ if (!isset($MyPHPScript)) return;
             $SessionId = StartSession($UserId);
         } else {
             
-           CMmb::setShortResult("Не найден пользователья для идентификатора $changepasswordsessionid ", 'MainPage');
+           CMmb::setShortResult("Не найден пользователь для идентификатора $changepasswordsessionid, возможно вы запросили пароль дважды и испльзуете ссылку не из последнего письма.", 'MainPage');
             
         }    
 
