@@ -134,8 +134,9 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
                 final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 mAdapter.insertItem(device);
                 final List<BluetoothDevice> deviceList = mMainApplication.getBTDeviceList();
-                deviceList.add(device);
-                mMainApplication.setBTDeviceList(deviceList);
+                if (!deviceList.contains(device)) {
+                    deviceList.add(device);
+                }
             }
         }
     };
@@ -272,6 +273,14 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         if (station != null) {
             station.disconnect();
             mMainApplication.setStation(null);
+            updateMenuItems(mMainApplication, R.id.bluetooth);
+            // If connected station is clicked, then just disconnect it
+            if (station.getAddress().equals(deviceClicked.getAddress())) {
+                mAdapter.setConnectedDevice(null, false);
+                // Remove station info
+                updateLayout(false);
+                return;
+            }
         }
         // Mark clicked device as being connected
         mAdapter.setConnectedDevice(deviceClicked.getAddress(), true);
@@ -396,6 +405,13 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         } else {
             Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
         }
+    }
+
+    /**
+     * Open updateMenuItems() method for calls from ConnectDeviceTask
+     */
+    public void fireUpdateMenuItems() {
+        updateMenuItems(mMainApplication, R.id.bluetooth);
     }
 
     /**

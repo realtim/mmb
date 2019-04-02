@@ -115,6 +115,9 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
      * @param device New Bluetooth device to add to our list
      */
     void insertItem(final BluetoothDevice device) {
+        if (mBTDeviceList.contains(device)) {
+            return;
+        }
         mBTDeviceList.add(device);
         notifyItemInserted(getItemCount());
     }

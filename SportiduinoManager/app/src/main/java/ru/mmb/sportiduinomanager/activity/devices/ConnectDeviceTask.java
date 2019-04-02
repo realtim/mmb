@@ -90,5 +90,7 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
         }
         // Update activity layout
         activity.updateLayout(true);
+        // Update menu items only after station status request
+        activity.fireUpdateMenuItems();
     }
 }

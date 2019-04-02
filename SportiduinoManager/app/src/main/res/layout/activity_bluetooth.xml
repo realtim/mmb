@@ -45,7 +45,8 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/device_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="200dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -65,7 +66,7 @@
             android:id="@+id/connected_station"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/default_padding"
+            android:layout_marginTop="8dp"
             android:text="@string/connected_station"
             android:textColor="@color/text_primary"
             app:layout_constraintEnd_toEndOf="parent"
