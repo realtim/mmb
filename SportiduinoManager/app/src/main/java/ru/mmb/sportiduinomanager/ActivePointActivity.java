@@ -3,11 +3,14 @@ package ru.mmb.sportiduinomanager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Station;
@@ -27,21 +30,23 @@ public final class ActivePointActivity extends MainActivity {
      * Station which was previously paired via Bluetooth.
      */
     private Station mStation;
-
     /**
      * List of teams and team members from local database.
      */
     private Teams mTeams;
-
     /**
      * Chips events received from all stations.
      */
     private Chips mChips;
-
     /**
      * Filtered list of events with teams visiting connected station at current point.
      */
     private Chips mVisits;
+
+    /**
+     * Timer of background thread for communication with the station.
+     */
+    private Timer mTimer;
 
     @Override
     protected void onCreate(final Bundle instanceState) {
@@ -70,6 +75,8 @@ public final class ActivePointActivity extends MainActivity {
         }
         // Update activity layout
         updateLayout();
+        // Start background querying of connected station
+        runStationQuerying();
     }
 
     /**
@@ -115,4 +122,52 @@ public final class ActivePointActivity extends MainActivity {
         findViewById(R.id.ap_team_data).setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Background thread for periodic querying of connected station.
+     */
+    private void runStationQuerying() {
+        mTimer = new Timer();
+        mTimer.scheduleAtFixedRate(new TimerTask() {
+            /**
+             * Run every 1s, get station status and get new team data (if any).
+             */
+            public void run() {
+                // Station was not connected yet
+                if (mStation == null) {
+                    stopStationQuerying();
+                    return;
+                }
+                // Fetch current station status
+                if (!mStation.fetchStatus()) {
+                    Toast.makeText(getApplicationContext(), mStation.getLastError(),
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                // TODO: Get new team data if any
+                // Update station clock in UI
+                ActivePointActivity.this.runOnUiThread(() -> {
+                    final Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(mStation.getStationTime() * 1000);
+                    final DateFormat format = new SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault());
+                    ((TextView) findViewById(R.id.station_clock)).setText(format.format(calendar.getTime()));
+                });
+            }
+        }, 1000, 1000);
+    }
+
+    /**
+     * Stops rescheduling of periodic station query.
+     */
+    private void stopStationQuerying() {
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer.purge();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        stopStationQuerying();
+        super.onStop();
+    }
 }

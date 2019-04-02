@@ -189,7 +189,7 @@ public final class Station {
      *
      * @return Time as unixtime
      */
-    int getStationTime() {
+    public int getStationTime() {
         return mStationTime;
     }
 
@@ -598,6 +598,7 @@ public final class Station {
      *
      * @return True if we got valid response from station, check mLastError otherwise
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchStatus() {
         // Get response from station
         final byte[] response = new byte[12];
