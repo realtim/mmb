@@ -1002,7 +1002,7 @@ void sendData()
 	addData(crcCalc(uartIncomingMessageData, COMMAND_BYTE, uartIncomingMessageData[LENGTH_BYTE]));
 #ifdef DEBUG
 	Serial.print(F("Sending:"));
-	for (int i = 0; i <= dataPosition; i++)
+	for (int i = 0; i < dataPosition; i++)
 	{
 		Serial.print(F(" "));
 		if (uartIncomingMessageData[i] < 0x10) Serial.print(F("0"));
@@ -1010,7 +1010,7 @@ void sendData()
 	}
 	Serial.println();
 #endif
-	Serial.write(uartIncomingMessageData, --dataPosition);
+	Serial.write(uartIncomingMessageData, dataPosition);
 }
 
 //MFRC522::StatusCode MFRC522::MIFARE_Read
