@@ -1010,7 +1010,7 @@ void sendData()
 	}
 	Serial.println();
 #endif
-	Serial.write(uartIncomingMessageData, dataPosition);
+	Serial.write(uartIncomingMessageData, --dataPosition);
 }
 
 //MFRC522::StatusCode MFRC522::MIFARE_Read
