@@ -483,13 +483,14 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
                         .setText(R.string.station_mode_unknown);
                 break;
         }
-        // Disable spinner selection listener for an update moment
-        mNewPointSelectedListener.setEnabled(false);
+
         final Spinner stationPointSpinner = findViewById(R.id.station_point_spinner);
+        // Disable point spinner selection listener
+        mNewPointSelectedListener.setCalledFromUpdate();
         stationPointSpinner.setSelection(station.getNumber());
         final Spinner stationModeSpinner = findViewById(R.id.station_mode_spinner);
         stationModeSpinner.setSelection(station.getMode());
-        mNewPointSelectedListener.setEnabled(true);
+
         ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
                 .getString(R.string.station_time_drift, station.getTimeDrift()));
         ((TextView) findViewById(R.id.station_chips_registered_value))
@@ -500,19 +501,21 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     }
 
     private class OnNewPointSelectedListener implements AdapterView.OnItemSelectedListener {
-        private boolean enabled = true;
 
-        public void setEnabled(boolean value) {
-            enabled = value;
+        private boolean calledFromUpdate = false;
+
+        public void setCalledFromUpdate() {
+            this.calledFromUpdate = true;
         }
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            if (!enabled) {
-                return;
+            // Disable listener when called directly at updateLayout()
+            if (!calledFromUpdate) {
+                int defaultMode = getPointDefaultMode(parent.getSelectedItemPosition());
+                ((Spinner) findViewById(R.id.station_mode_spinner)).setSelection(defaultMode);
             }
-            int defaultMode = getPointDefaultMode(parent.getSelectedItemPosition());
-            ((Spinner) findViewById(R.id.station_mode_spinner)).setSelection(defaultMode);
+            calledFromUpdate = false;
         }
 
         private int getPointDefaultMode(int pointNumber) {
