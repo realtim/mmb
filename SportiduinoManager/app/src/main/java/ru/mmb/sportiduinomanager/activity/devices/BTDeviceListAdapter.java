@@ -1,4 +1,4 @@
-package ru.mmb.sportiduinomanager;
+package ru.mmb.sportiduinomanager.activity.devices;
 
 import android.bluetooth.BluetoothDevice;
 import android.support.annotation.NonNull;
@@ -11,6 +11,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import ru.mmb.sportiduinomanager.MainApplication;
+import ru.mmb.sportiduinomanager.R;
 
 /**
  * Provides the list of discovered Bluetooth devices.
@@ -112,6 +115,9 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
      * @param device New Bluetooth device to add to our list
      */
     void insertItem(final BluetoothDevice device) {
+        if (mBTDeviceList.contains(device)) {
+            return;
+        }
         mBTDeviceList.add(device);
         notifyItemInserted(getItemCount());
     }
