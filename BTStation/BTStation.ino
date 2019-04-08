@@ -1,3 +1,5 @@
+#define DEBUG
+
 #include <Wire.h>
 #include "ds3231.h"
 #include <SPI.h>
@@ -5,18 +7,32 @@
 #include <EEPROM.h>
 #include <SPIFlash.h>
 
-//#define DEBUG
+#ifdef DEBUG
+//#include <NeoSWSerial.h>
+#include <SoftwareSerial.h>
+#endif
+
 
 #define UART_SPEED 9600
 
 #define FW_VERSION						104 //версия прошивки, номер пишется в чипы
-#define LED_PIN							4 //светодиод
+
+#ifdef DEBUG
+#define DEBUG_RX						2 //
+#define DEBUG_TX						6 //
+#endif
+
 #define BUZZER_PIN						3 //пищалка
+#define LED_PIN							4 //светодиод
 #define RTC_ENABLE_PIN					5 //питание часов кроме батарейного
-#define RFID_RST_PIN					9 //рфид модуль reset
-#define RFID_SS_PIN						10 //рфид модуль chip_select
+
 #define FLASH_ENABLE_PIN				7 //SPI enable pin
 #define FLASH_SS_PIN					8 //SPI SELECT pin
+#define RFID_RST_PIN					9 //рфид модуль reset
+#define RFID_SS_PIN						10 //рфид модуль chip_select
+//#define RFID_MOSI_PIN					11 //рфид модуль chip_select
+//#define RFID_MISO_PIN					12 //рфид модуль chip_select
+//#define RFID_SCK_PIN					13 //рфид модуль chip_select
 #define BATTERY_PIN						A0 //замер напряжения батареи
 
 #define EEPROM_STATION_NUMBER_ADDRESS	800 //номер станции в eeprom памяти
@@ -30,21 +46,21 @@
 #define COMMAND_INIT_CHIP			0x84
 #define COMMAND_GET_LAST_TEAM		0x85
 #define COMMAND_GET_CHIP_HISTORY	0x86
-#define COMMAND_GET_STATION_CLONES	0x87
+#define COMMAND_READ_CARD_PAGE		0x87
 #define COMMAND_UPDATE_TEAM_MASK	0x88
-#define COMMAND_WRITE_MASTER_CHIP	0x89
+#define COMMAND_WRITE_CARD_PAGE		0x89
 
 //размеры данных для команд
-#define DATA_LENGTH_SET_MODE			3
-#define DATA_LENGTH_SET_TIME			7
-#define DATA_LENGTH_RESET_STATION		9
-#define DATA_LENGTH_GET_STATUS			1
-#define DATA_LENGTH_INIT_CHIP			15
-#define DATA_LENGTH_GET_LAST_TEAM		1
-#define DATA_LENGTH_GET_CHIP_HISTORY	5
-#define DATA_LENGTH_GET_STATION_CLONES	1
-#define DATA_LENGTH_UPDATE_TEAM_MASK	11
-#define DATA_LENGTH_WRITE_MASTER_CHIP	16
+#define DATA_LENGTH_SET_MODE			1
+#define DATA_LENGTH_SET_TIME			6
+#define DATA_LENGTH_RESET_STATION		7
+#define DATA_LENGTH_GET_STATUS			0
+#define DATA_LENGTH_INIT_CHIP			4
+#define DATA_LENGTH_GET_LAST_TEAM		0
+#define DATA_LENGTH_GET_CHIP_HISTORY	4
+#define DATA_LENGTH_READ_CARD_PAGE		2
+#define DATA_LENGTH_UPDATE_TEAM_MASK	8
+#define DATA_LENGTH_WRITE_CARD_PAGE		13
 
 //ответы станции
 #define REPLY_SET_MODE				0x90
@@ -54,13 +70,14 @@
 #define REPLY_INIT_CHIP				0x94
 #define REPLY_GET_LAST_TEAM			0x95
 #define REPLY_GET_CHIP_HISTORY		0x96
-#define REPLY_GET_STATION_CLONES	0x97
+#define REPLY_READ_CARD_PAGE		0x97
 #define REPLY_UPDATE_TEAM_MASK		0x98
-#define REPLY_WRITE_MASTER_CHIP		0x99
+#define REPLY_WRITE_CARD_PAGE		0x99
 
 //режимы станции
-#define MODE_INIT	0
-#define MODE_KP		1
+#define MODE_INIT		0
+#define MODE_START_KP	1
+#define MODE_FINISH_KP	2
 
 //коды ошибок станции
 #define OK				0
@@ -71,41 +88,48 @@
 #define WRONG_CHIP		5
 #define NO_CHIP			6
 #define BUFFER_OVERFLOW	7
-#define INCORRECT_DATA	8
+#define WRONG_DATA		8
+#define WRONG_UID		9
+#define WRONG_TEAM		10
+#define NO_DATA			11
 
 //страницы в чипе. 0-7 служебные, 8-127 для отметок
-
-//#define PAGE_UID	0
-#define PAGE_INIT	4 //номер чипа+режим и тип чипа+версия
-#define PAGE_PASS	5 //
-#define PAGE_INIT1	6 
-#define PAGE_INIT2	7
-//#define PAGE_DATA	8
+#define PAGE_UID		0
+#define PAGE_CHIP_NUM	4 //номер_чипа + тип_чипа + версия_прошивки
+#define PAGE_INIT_TIME	5 //время инициализации
+#define PAGE_RESERVED1	6
+#define PAGE_RESERVED2	7
+#define PAGE_DATA_START	8
 
 //параметры чипов
-#define ntagValue	130 //максимальное число страниц на чипе
-#define ntagType	215 //режим работы и тип чипа
-#define maxPage		127 //?????
+//#define NTAG213_MAX_PAGE	40 //максимальное число страниц на чипе
+#define NTAG215_MAX_PAGE	130 //максимальное число страниц на чипе
+//#define NTAG216_MAX_PAGE	226 //максимальное число страниц на чипе
+
+#define NTAG_TYPE			215 //режим работы и тип чипа
+//#define maxPage		127 //?????
 
 //описание протокола
 #define STATION_NUMBER_BYTE	3
-#define LENGTH_BYTE			5
-#define COMMAND_BYTE		4
+#define LENGTH_BYTE			4
+#define COMMAND_BYTE		5
 #define DATA_START_BYTE		6
 
 #define receiveTimeOut 1000
 
 //станция запоминает последнюю отметку сюда
 byte lastChip[16];
-unsigned int totalChipsChecked = 0; // количество отмеченных чипов в памяти.
 unsigned long lastTimeChecked = 0;
+unsigned int totalChipsChecked = 0; // количество отмеченных чипов в памяти.
+bool lastTeamEnable = false; //читалось ли что-нибудь с момента включения
+
 
 //по умолчанию номер станции и режим.
 byte stationMode = MODE_INIT;
 byte stationNumber = 0;
 const unsigned long maxTimeInit = 600000UL; //одна неделя
 
-byte dump[16];
+byte ntag_page[16];
 byte tempDump[4] = { 255, 0, 0, 0 };
 
 //параметры для хранения маски в режиме 1.
@@ -130,9 +154,17 @@ unsigned long uartTimeout = 1000;
 bool receivingData = false;
 unsigned long receiveStartTime = 0;
 
+#ifdef DEBUG
+SoftwareSerial DebugSerial(DEBUG_RX, DEBUG_TX);
+#endif
+
+
 void setup()
 {
 	Serial.begin(UART_SPEED);
+#ifdef DEBUG
+	DebugSerial.begin(9600);
+#endif
 
 	analogReference(INTERNAL);
 
@@ -165,14 +197,8 @@ void setup()
 	{
 		beep(200, 200);
 	}
-	if (c == MODE_INIT)
-	{
-		stationMode = MODE_INIT;
-	}
-	else if (c == MODE_KP)
-	{
-		stationMode = MODE_KP;
-	}
+	if (c == MODE_START_KP) stationMode = MODE_START_KP;
+	else if (c == MODE_FINISH_KP) stationMode = MODE_FINISH_KP;
 	else stationMode = MODE_INIT;
 
 	totalChipsChecked = refreshChipCounter();
@@ -192,7 +218,7 @@ void loop()
 	if (receivingData && millis() - receiveStartTime > receiveTimeOut)
 	{
 #ifdef DEBUG
-		Serial.println(F("receive timeout"));
+		DebugSerial.println(F("receive timeout"));
 #endif
 		uartBufferPosition = 0;
 		uartReady = false;
@@ -208,12 +234,12 @@ void loop()
 	//обработать пришедшую команду
 	if (uartReady)
 	{
-		executeCommand();
 		uartReady = false;
+		executeCommand();
 	}
 
 	//если режим КП то отметить чип автоматом
-	if (!receivingData && stationMode != 0 && stationNumber != 0)
+	if (!receivingData && stationMode != 0)
 	{
 		processRfidCard();
 	}
@@ -225,8 +251,8 @@ void loop()
 void executeCommand()
 {
 #ifdef DEBUG
-	Serial.print(F("Command:"));
-	Serial.println(String(uartIncomingMessageData[COMMAND_BYTE], HEX));
+	DebugSerial.print(F("Command:"));
+	DebugSerial.println(String(uartBuffer[COMMAND_BYTE], HEX));
 #endif
 	bool errorLengthFlag = false;
 	switch (uartBuffer[COMMAND_BYTE])
@@ -252,46 +278,49 @@ void executeCommand()
 		else errorLengthFlag = true;
 		break;
 	case COMMAND_GET_LAST_TEAM:
-		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_GET_LAST_TEAM) getLastTeams();
+		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_GET_LAST_TEAM) getLastTeam();
 		else errorLengthFlag = true;
 		break;
 	case COMMAND_GET_CHIP_HISTORY:
 		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_GET_CHIP_HISTORY) getChipHistory();
 		else errorLengthFlag = true;
 		break;
-	case COMMAND_GET_STATION_CLONES:
-		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_GET_STATION_CLONES) getStationClones();
+	case COMMAND_READ_CARD_PAGE:
+		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_READ_CARD_PAGE) readCardPages();
 		else errorLengthFlag = true;
 		break;
 	case COMMAND_UPDATE_TEAM_MASK:
 		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_UPDATE_TEAM_MASK) updateTeamMask();
 		else errorLengthFlag = true;
 		break;
-	case COMMAND_WRITE_MASTER_CHIP:
-		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_WRITE_MASTER_CHIP) writeMasterChip();
+	case COMMAND_WRITE_CARD_PAGE:
+		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_WRITE_CARD_PAGE) writeCardPage();
 		else errorLengthFlag = true;
 		break;
 	}
 #ifdef DEBUG
-	if (errorLengthFlag) Serial.println(F("Incorrect data length"));
+	if (errorLengthFlag) DebugSerial.println(F("Incorrect data length"));
 #endif
 }
 
 //установка режима
 void setMode()
 {
-	//Если номер станции не совпадает с присланным в пакете, то режим не меняется
-	if (stationNumber != uartBuffer[DATA_START_BYTE + 1])
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
 	{
 		sendError(WRONG_STATION, REPLY_SET_MODE);
 		return;
 	}
 
+	//0: новый номер режима
 	stationMode = uartBuffer[DATA_START_BYTE];
 	eepromwrite(EEPROM_STATION_MODE_ADDRESS, stationMode);
 
 	//формирование пакета данных.
 	init_package(REPLY_SET_MODE);
+
+	//0: код ошибки
 	addData(OK);
 	sendData();
 }
@@ -299,6 +328,31 @@ void setMode()
 //обновление времени на станции
 void setTime()
 {
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_SET_MODE);
+		return;
+	}
+
+	//0-5: дата и время [yy.mm.dd hh:mm:ss]
+	/*int ss= uartBuffer[DATA_START_BYTE + 5] - 4;
+	int mm= uartBuffer[DATA_START_BYTE + 4] + 8;
+	int hh=uartBuffer[DATA_START_BYTE + 3];
+	int dd= uartBuffer[DATA_START_BYTE + 2];
+	int mon= uartBuffer[DATA_START_BYTE + 1];
+	int yy= uartBuffer[DATA_START_BYTE] + 2000;
+	if (ss < 0)
+	{
+		mm--;
+		ss = 60 - ss;
+	}
+	if (mm > 59)
+	{
+		hh++;
+		mm = mm-60;
+	}*/
+
 	systemTime.year = uartBuffer[DATA_START_BYTE] + 2000;
 	systemTime.mon = uartBuffer[DATA_START_BYTE + 1];
 	systemTime.mday = uartBuffer[DATA_START_BYTE + 2];
@@ -306,13 +360,24 @@ void setTime()
 	systemTime.min = uartBuffer[DATA_START_BYTE + 4];
 	systemTime.sec = uartBuffer[DATA_START_BYTE + 5];
 
+#ifdef DEBUG
+	DebugSerial.print(F("Time: "));
+	for (int i = 0; i < 6; i++) DebugSerial.println(String(uartBuffer[DATA_START_BYTE + i]) + " ");
+#endif
+
+	//0-3: дата и время в unixtime
+	//systemTime.unixtime = uartBuffer[DATA_START_BYTE] * 16777216 + uartBuffer[DATA_START_BYTE] * 65536 + uartBuffer[DATA_START_BYTE] * 256 + uartBuffer[DATA_START_BYTE];
+
 	delay(1);
 	DS3231_set(systemTime); //correct time
 
 	DS3231_get(&systemTime);
-	unsigned long tmpTime = systemTime.unixtime;
+	unsigned long tmpTime = systemTime.unixtime;// +488;
 
 	init_package(REPLY_SET_TIME);
+
+	//0: код ошибки
+	//1-4: текущее время
 	addData(OK);
 	addData((tmpTime & 0xFF000000) >> 24);
 	addData((tmpTime & 0x00FF0000) >> 16);
@@ -324,45 +389,55 @@ void setTime()
 //сброс настроек станции
 void resetStation()
 {
-	//сброс произойдет только в случае совпадения номера станции в пакете
-	if (stationNumber != uartBuffer[DATA_START_BYTE + 1])
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
 	{
 		sendError(WRONG_STATION, REPLY_RESET_STATION);
 		return;
 	}
 
+	//0-1: кол-во отмеченных карт (для сверки)
+	//2-5: время последней отметки(для сверки)
+	//6 : новый номер станции
 	//проверить количество отметок
-	unsigned int checkCardNumber = uartBuffer[DATA_START_BYTE + 2];
+	unsigned int checkCardNumber = uartBuffer[DATA_START_BYTE];
 	checkCardNumber <<= 8;
-	checkCardNumber += uartBuffer[DATA_START_BYTE + 3];
+	checkCardNumber += uartBuffer[DATA_START_BYTE + 1];
 	if (checkCardNumber != totalChipsChecked)
 	{
-		sendError(INCORRECT_DATA, REPLY_RESET_STATION);
+		sendError(WRONG_DATA, REPLY_RESET_STATION);
 		return;
 	}
 
 	//проверить время последней отметки
-	unsigned long checkLastTime = uartBuffer[DATA_START_BYTE + 4];
+	unsigned long checkLastTime = uartBuffer[DATA_START_BYTE + 2];
+	checkLastTime <<= 8;
+	checkLastTime += uartBuffer[DATA_START_BYTE + 3];
+	checkLastTime <<= 8;
+	checkLastTime += uartBuffer[DATA_START_BYTE + 4];
 	checkLastTime <<= 8;
 	checkLastTime += uartBuffer[DATA_START_BYTE + 5];
-	checkLastTime <<= 8;
-	checkLastTime += uartBuffer[DATA_START_BYTE + 6];
-	checkLastTime <<= 8;
-	checkLastTime += uartBuffer[DATA_START_BYTE + 7];
 	if (checkLastTime != lastTimeChecked)
 	{
-		sendError(INCORRECT_DATA, REPLY_RESET_STATION);
+		sendError(WRONG_DATA, REPLY_RESET_STATION);
 		return;
 	}
 
 	stationMode = 0;
 	eepromwrite(EEPROM_STATION_MODE_ADDRESS, stationMode);
-	stationNumber = uartBuffer[DATA_START_BYTE];
+	stationNumber = uartBuffer[DATA_START_BYTE + 6];
 	eepromwrite(EEPROM_STATION_NUMBER_ADDRESS, stationNumber);
 
 	SPIflash.eraseChip();
 
+	lastTimeChecked = 0;
+	totalChipsChecked = 0;
+	lastTeamEnable = false;
+
+
 	init_package(REPLY_RESET_STATION);
+
+	//0: код ошибки
 	addData(OK);
 	sendData();
 }
@@ -373,16 +448,25 @@ void getStatus()
 	DS3231_get(&systemTime);
 	unsigned long tmpTime = systemTime.unixtime;
 
+	//0: код ошибки
+	//1: версия прошивки
+	//2: номер станции
+	//3: номер режима
+	//4-7 : текущее время
+	//8-9 : количество отметок на станции
+	//10-13 : время последней отметки на станции
+	//14-15 : напряжение батареи в условных единицах[0..1023] ~[0..1.1В]
+	//16-17 : температура
 	init_package(REPLY_GET_STATUS);
 	addData(OK);
+	addData(FW_VERSION);
+	addData(stationNumber);
+	addData(stationMode);
+
 	addData((tmpTime & 0xFF000000) >> 24);
 	addData((tmpTime & 0x00FF0000) >> 16);
 	addData((tmpTime & 0x0000FF00) >> 8);
 	addData(tmpTime & 0x000000FF);
-
-	addData(stationMode);
-
-	addData(stationNumber);
 
 	addData((totalChipsChecked & 0xFF00) >> 8);
 	addData(totalChipsChecked & 0x00FF);
@@ -392,18 +476,28 @@ void getStatus()
 	addData((lastTimeChecked & 0x0000FF00) >> 8);
 	addData(lastTimeChecked & 0x000000FF);
 
-	/*unsigned int batteryLevel = getBatteryLevel();
+	unsigned int batteryLevel = getBatteryLevel();
 	addData((batteryLevel & 0xFF00) >> 8);
 	addData(batteryLevel & 0x00FF);
-	addData(FW_VERSION);
-	*/
+
+	int temperature = (int)DS3231_get_treg();
+	addData((temperature & 0xFF00) >> 8);
+	addData(temperature & 0x00FF);
 
 	sendData();
 }
 
+//проверить!!!
 //инициализация чипа
 void initChip()
 {
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_INIT_CHIP);
+		return;
+	}
+
 	SPI.begin();      // Init SPI bus
 	mfrc522.PCD_Init();   // Init MFRC522
 
@@ -420,115 +514,147 @@ void initChip()
 		return;
 	}
 
-	if (!ntagRead(PAGE_PASS))
+	//проверить!!!
+	//инициализация сработает только если время инициализации записанное уже на чипе превышает неделю с текущего времени
+	/*if (!ntagRead4pages(PAGE_INIT_TIME))
 	{
 		sendError(READ_ERROR, REPLY_INIT_CHIP);
+		SPI.end();
 		return;
 	}
-
-	unsigned long initTime = dump[0];
+	unsigned long initTime = ntag_page[0];
 	initTime <<= 8;
-	initTime += dump[1];
+	initTime += ntag_page[1];
 	initTime <<= 8;
-	initTime += dump[2];
+	initTime += ntag_page[2];
 	initTime <<= 8;
-	initTime += dump[3];
-
+	initTime += ntag_page[3];
 	DS3231_get(&systemTime);
-
-	//инициализация сработает только если время инициализации записанное уже на чипе превышает неделю с нанешнего времени
 	if ((systemTime.unixtime - initTime) < maxTimeInit)
 	{
 		sendError(LOW_INIT_TIME, REPLY_INIT_CHIP);
+		SPI.end();
 		return;
-	}
+	}*/
 
 	//заполняем карту 0xFF
-	byte Wbuff[] = { 255,255,255,255 };
-	for (byte page = PAGE_INIT; page < ntagValue; page++)
+	byte dataBlock[4] = { 255,255,255,255 };
+	/*for (byte page = PAGE_CHIP_NUM; page < NTAG215_MAX_PAGE; page++)
 	{
-		if (!ntagWrite(Wbuff, page))
+		if (!ntagWritePage(dataBlock, page))
 		{
 			sendError(WRITE_ERROR, REPLY_INIT_CHIP);
+			SPI.end();
 			return;
 		}
-	}
+	}*/
 
 	//заполняем карту 0x00
-	for (byte i = 0; i < 4; i++) Wbuff[i] = 0;
-	for (byte page = PAGE_INIT; page < ntagValue; page++)
+	for (byte i = 0; i < 4; i++) dataBlock[i] = 0;
+	for (byte page = PAGE_CHIP_NUM; page < NTAG215_MAX_PAGE; page++)
 	{
-		if (!ntagWrite(Wbuff, page))
+		if (!ntagWritePage(dataBlock, page))
 		{
 			sendError(WRITE_ERROR, REPLY_INIT_CHIP);
+			SPI.end();
 			return;
 		}
 	}
 
+	//0-1: номер команды
+	//2-3 : маска участников
 	//пишем данные на карту
 	//номер команды, тип чипа, версия прошивки станции
-	byte dataBlock5[] = { uartBuffer[DATA_START_BYTE], uartBuffer[DATA_START_BYTE + 1], ntagType, FW_VERSION };
-	if (!ntagWrite(dataBlock5, PAGE_INIT))
+	dataBlock[0] = uartBuffer[DATA_START_BYTE];
+	dataBlock[1] = uartBuffer[DATA_START_BYTE + 1];
+	dataBlock[2] = NTAG_TYPE;
+	dataBlock[3] = FW_VERSION;
+	if (!ntagWritePage(dataBlock, PAGE_CHIP_NUM))
 	{
 		sendError(WRITE_ERROR, REPLY_INIT_CHIP);
+		SPI.end();
 		return;
 	}
 
 	//текущее время
 	unsigned long tmpTime = systemTime.unixtime;
-	byte t1 = (tmpTime & 0xFF000000) >> 24;
-	byte t2 = (tmpTime & 0x00FF0000) >> 16;
-	byte t3 = (tmpTime & 0x0000FF00) >> 8;
-	byte t4 = tmpTime & 0x000000FF;
-	byte dataBlock2[] = { t1, t2, t3, t4 };
-	if (!ntagWrite(dataBlock2, PAGE_PASS))
+	dataBlock[0] = (tmpTime & 0xFF000000) >> 24;
+	dataBlock[1] = (tmpTime & 0x00FF0000) >> 16;
+	dataBlock[2] = (tmpTime & 0x0000FF00) >> 8;
+	dataBlock[3] = tmpTime & 0x000000FF;
+	if (!ntagWritePage(dataBlock, PAGE_INIT_TIME))
 	{
 		sendError(WRITE_ERROR, REPLY_INIT_CHIP);
+		SPI.end();
 		return;
 	}
 
 	//маска участников
-	byte dataBlock3[] = { uartBuffer[DATA_START_BYTE + 6], uartBuffer[DATA_START_BYTE + 7], uartBuffer[DATA_START_BYTE + 8], uartBuffer[DATA_START_BYTE + 9] };
-	if (!ntagWrite(dataBlock3, PAGE_INIT1))
+	dataBlock[0] = uartBuffer[DATA_START_BYTE + 2];
+	dataBlock[1] = uartBuffer[DATA_START_BYTE + 3];
+	dataBlock[2] = 0;
+	dataBlock[3] = 0;
+	if (!ntagWritePage(dataBlock, PAGE_RESERVED1))
 	{
 		sendError(WRITE_ERROR, REPLY_INIT_CHIP);
-		return;
-	}
-
-	//резерв
-	byte dataBlock4[] = { uartBuffer[DATA_START_BYTE + 10], uartBuffer[DATA_START_BYTE + 11], uartBuffer[DATA_START_BYTE + 12], uartBuffer[DATA_START_BYTE + 13] };
-	if (!ntagWrite(dataBlock4, PAGE_INIT2))
-	{
-		sendError(WRITE_ERROR, REPLY_INIT_CHIP);
+		SPI.end();
 		return;
 	}
 
 	//получаем UID карты
-	if (!ntagRead(0))
+/*	if (!ntagRead4pages(PAGE_UID))
 	{
 		sendError(READ_ERROR, REPLY_INIT_CHIP);
+		SPI.end();
 		return;
 	}
-	SPI.end();
+	SPI.end();*/
 
 	init_package(REPLY_INIT_CHIP);
 	addData(OK);
-	for (byte h = 0; h < 7; h++)
+/*	for (byte i = 0; i <= 7; i++)
 	{
-		addData(dump[h]);
-	}
+		addData(ntag_page[i]);
+	}*/
+	addData((tmpTime & 0xFF000000) >> 24);
+	addData((tmpTime & 0x00FF0000) >> 16);
+	addData((tmpTime & 0x0000FF00) >> 8);
+	addData(tmpTime & 0x000000FF);
 	sendData();
 }
 
-void getLastTeams()
+//получить последнюю отметившуюся команду
+void getLastTeam()
 {
+	if (!lastTeamEnable)
+	{
+		sendError(NO_DATA, REPLY_GET_LAST_TEAM);
+		return;
+	}
+
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_GET_LAST_TEAM);
+		return;
+	}
+
 	init_package(REPLY_GET_LAST_TEAM);
+
+	//0: код ошибки
+	//1-2: номер чипа
+	//3-6 : время инициализации
+	//7-14 : информация из страниц 6 - 7
+	//15-18 : время последней отметки на станции
 	addData(OK);
 
-	for (byte r = 0; r < 14; r++)
+	addData(lastChip[0]);
+	addData(lastChip[1]);
+	for (byte r = 4; r < 16; r++)
 	{
 		addData(lastChip[r]);
 	}
+
 	addData((lastTimeChecked & 0xFF000000) >> 24);
 	addData((lastTimeChecked & 0x00FF0000) >> 16);
 	addData((lastTimeChecked & 0x0000FF00) >> 8);
@@ -540,128 +666,133 @@ void getLastTeams()
 //разобраться и отрефакторить
 void getChipHistory()
 {
-	init_package(REPLY_GET_CHIP_HISTORY);
-	addData(OK);
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_GET_CHIP_HISTORY);
+		return;
+	}
+
+	//0-1: с какой записи
+	//2-3: по какую запись включительно
 	unsigned int commandNumberFrom = uartBuffer[DATA_START_BYTE];
 	commandNumberFrom <<= 8;
 	commandNumberFrom += uartBuffer[DATA_START_BYTE + 1];
-	unsigned int commandNumberTo = uartBuffer[DATA_START_BYTE];
+	unsigned int commandNumberTo = uartBuffer[DATA_START_BYTE + 2];
 	commandNumberTo <<= 8;
-	commandNumberTo += uartBuffer[DATA_START_BYTE + 1];
+	commandNumberTo += uartBuffer[DATA_START_BYTE + 3];
 
-	for (int chipN = commandNumberFrom; chipN < commandNumberTo; chipN++)
+	init_package(REPLY_GET_CHIP_HISTORY);
+	addData(OK);
+	//: код ошибки
+	//1-2: номер команды
+	//3-4 : маска участников
+	//5-8 : время отметки команды
+
+	for (unsigned int chipN = commandNumberFrom; chipN <= commandNumberTo; chipN++)
 	{
-		unsigned long shortF = chipN * 20;
-
-		if (SPIflash.readByte(shortF) != 255)
+		if (readTeamFromFlash(chipN))
 		{
-			unsigned long markTime = SPIflash.readByte(shortF + 16);
-			markTime <<= 8;
-			markTime += SPIflash.readByte(shortF + 17);
-			markTime <<= 8;
-			markTime += SPIflash.readByte(shortF + 18);
-			markTime <<= 8;
-			markTime += SPIflash.readByte(shortF + 19);
-
-			unsigned long pageF = chipN;
-			pageF = pageF * 1000 + 100000UL;
-
-			addData(SPIflash.readByte(pageF + 4 * 4));
-			addData(SPIflash.readByte(pageF + 4 * 4 + 1));
-
-			byte startTime = SPIflash.readByte(pageF + 5 * 4);
-			byte startTime2 = SPIflash.readByte(pageF + 5 * 4 + 1);
-			for (byte gh = 24; gh < 32; gh++)
+			for (int i = 0; i < 8; i++)
 			{
-				addData(SPIflash.readByte(pageF + gh));
+				addData(ntag_page[i]);
 			}
-			for (byte p = 8; p < 130; p++)
-			{
-				byte st = SPIflash.readByte(pageF + p * 4);
-				if (st != 0 && st != 255)
-				{
-					addData(st);
-					byte t2 = SPIflash.readByte(pageF + p * 4 + 1);
-					if (t2 < startTime2) addData(startTime + 1);
-					else addData(startTime);
-					addData(t2);
-					addData(SPIflash.readByte(pageF + p * 4 + 2));
-					addData(SPIflash.readByte(pageF + p * 4 + 3));
-				}
-			}
+		}
+		else
+		{
+			sendError(READ_ERROR, REPLY_GET_CHIP_HISTORY);
+			return;
 		}
 	}
 	sendData();
 }
 
-//????? снимаем дамп с карты, на которой записан лог другой станции????? разобраться и отрефакторить
-void getStationClones()
+//снимаем постраничный дамп с карты. разобраться и отрефакторить
+void readCardPages()
 {
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_READ_CARD_PAGE);
+		return;
+	}
+
 	SPI.begin();      // Init SPI bus
 	mfrc522.PCD_Init();   // Init MFRC522
 	// Look for new cards
 	if (!mfrc522.PICC_IsNewCardPresent())
 	{
-		sendError(NO_CHIP, REPLY_GET_STATION_CLONES);
+		sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
+		SPI.end();
 		return;
 	}
 	// Select one of the cards
 	if (!mfrc522.PICC_ReadCardSerial())
 	{
-		sendError(NO_CHIP, REPLY_GET_STATION_CLONES);
+		sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
+		SPI.end();
 		return;
 	}
 
-	if (!ntagRead(PAGE_INIT))
+	byte pageFrom = uartBuffer[DATA_START_BYTE];
+	byte pageTo = uartBuffer[DATA_START_BYTE + 1];
+
+	init_package(REPLY_READ_CARD_PAGE);
+
+	//0: код ошибки
+	//1-8: UID чипа
+	//9-12: данные из страницы карты(4 байта)
+	addData(OK);
+
+	if (!ntagRead4pages(PAGE_UID))
 	{
-		sendError(READ_ERROR, REPLY_GET_STATION_CLONES);
+		sendError(READ_ERROR, REPLY_READ_CARD_PAGE);
+		SPI.end();
 		return;
 	}
+	for (int i = 0; i <= 7; i++) addData(ntag_page[i]);
 
-	init_package(REPLY_GET_STATION_CLONES);
-	addData(dump[0]);
-
-	for (byte page = 5; page < ntagValue; page++)
+	while (pageFrom <= pageTo)
 	{
-		if (!ntagRead(page))
+		//0: какую страницу карты
+		if (!ntagRead4pages(pageFrom))
 		{
-			sendError(READ_ERROR, REPLY_GET_STATION_CLONES);
+			sendError(READ_ERROR, REPLY_READ_CARD_PAGE);
+			SPI.end();
 			return;
 		}
-
-		for (byte i = 0; i < 4; i++)
+		int n = (pageTo - pageFrom + 1);
+		if (n > 4) n = 4;
+		for (int i = 0; i < n; i++)
 		{
-			for (byte y = 0; y < 8; y++)
-			{
-				byte temp = dump[i];
-				temp = temp >> y;
-				if (temp % 2 == 1)
-				{
-					int num = (page - 5) * 32 + i * 8 + y;
-					byte first = (num & 0xFF00) >> 8;
-					byte second = num & 0x00FF;
-					addData(first);
-					addData(second);
-				}
-			}
+			addData(pageFrom);
+			for (int j = 0; j < 4; j++) addData(ntag_page[i * 4 + j]);
+			pageFrom++;
 		}
 	}
+	SPI.end();
 
-	addData(OK);
 	sendData();
 }
 
+//Обновить маску команды
 void updateTeamMask()
 {
-	//if (stationMode == 1) return;
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_UPDATE_TEAM_MASK);
+		return;
+	}
 
 	SPI.begin();      // Init SPI bus
 	mfrc522.PCD_Init();   // Init MFRC522
 
-   // Look for new cards
+	// Look for new cards
 	if (!mfrc522.PICC_IsNewCardPresent())
 	{
 		sendError(NO_CHIP, REPLY_UPDATE_TEAM_MASK);
+		SPI.end();
 		return;
 	}
 
@@ -669,208 +800,160 @@ void updateTeamMask()
 	if (!mfrc522.PICC_ReadCardSerial())
 	{
 		sendError(NO_CHIP, REPLY_UPDATE_TEAM_MASK);
+		SPI.end();
 		return;
 	}
 
-	if (!ntagRead(PAGE_INIT))
+	//0-1: номер команды
+	//2-5: время выдачи чипа
+	//6-7: маска участников
+
+	//проверить номер команды
+	if (!ntagRead4pages(PAGE_CHIP_NUM))
 	{
 		sendError(READ_ERROR, REPLY_UPDATE_TEAM_MASK);
+		SPI.end();
+		return;
+	}
+	if (ntag_page[0] != uartBuffer[DATA_START_BYTE] || ntag_page[1] != uartBuffer[DATA_START_BYTE + 1])
+	{
+		sendError(WRONG_TEAM, REPLY_UPDATE_TEAM_MASK);
+		SPI.end();
 		return;
 	}
 
-	if (dump[0] == uartBuffer[DATA_START_BYTE] && dump[1] == uartBuffer[DATA_START_BYTE + 1])
+	//проверить время выдачи чипа
+	if (!ntagRead4pages(PAGE_INIT_TIME))
 	{
-		byte dataBlock[4] = { uartBuffer[DATA_START_BYTE + 2], uartBuffer[DATA_START_BYTE + 3], uartBuffer[DATA_START_BYTE + 4], uartBuffer[DATA_START_BYTE + 5] };
-		if (!ntagWrite(dataBlock, PAGE_INIT1))
-		{
-			sendError(WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
-			return;
-		}
-
-		byte dataBlock2[] = { uartBuffer[DATA_START_BYTE + 6], uartBuffer[DATA_START_BYTE + 7], uartBuffer[DATA_START_BYTE + 8], uartBuffer[DATA_START_BYTE + 9] };
-		if (!ntagWrite(dataBlock2, PAGE_INIT2))
-		{
-			sendError(WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
-			return;
-		}
+		sendError(READ_ERROR, REPLY_UPDATE_TEAM_MASK);
+		SPI.end();
+		return;
 	}
-	else
+	if (ntag_page[0] != uartBuffer[DATA_START_BYTE + 2] || ntag_page[1] != uartBuffer[DATA_START_BYTE + 3] || ntag_page[2] != uartBuffer[DATA_START_BYTE + 4] || ntag_page[3] != uartBuffer[DATA_START_BYTE + 5])
 	{
+#ifdef DEBUG
+		DebugSerial.println(F("chip init time wrong"));
+		DebugSerial.print(String(ntag_page[0], HEX));
+		DebugSerial.print(F("="));
+		DebugSerial.println(String(uartBuffer[DATA_START_BYTE + 2], HEX));
+
+		DebugSerial.print(F("upd mask chip error"));
+		DebugSerial.print(String(ntag_page[1], HEX));
+		DebugSerial.print(F("="));
+		DebugSerial.println(String(uartBuffer[DATA_START_BYTE + 3], HEX));
+
+		DebugSerial.print(F("upd mask chip error"));
+		DebugSerial.print(String(ntag_page[2], HEX));
+		DebugSerial.print(F("="));
+		DebugSerial.println(String(uartBuffer[DATA_START_BYTE + 4], HEX));
+
+		DebugSerial.print(F("upd mask chip error"));
+		DebugSerial.print(String(ntag_page[3], HEX));
+		DebugSerial.print(F("="));
+		DebugSerial.println(String(uartBuffer[DATA_START_BYTE + 5], HEX));
+#endif
 		sendError(WRONG_CHIP, REPLY_UPDATE_TEAM_MASK);
+		SPI.end();
+		return;
+	}
+
+	//записать страницу на карту
+	byte dataBlock[4] = { uartBuffer[DATA_START_BYTE + 6], uartBuffer[DATA_START_BYTE + 7], 0,0 };
+	if (!ntagWritePage(dataBlock, PAGE_RESERVED1))
+	{
+		sendError(WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
+		SPI.end();
 		return;
 	}
 	SPI.end();
 
 	init_package(REPLY_UPDATE_TEAM_MASK);
+
+	//0: код ошибки
 	addData(OK);
 	sendData();
 }
 
-void writeMasterChip()
+//пишем присланные с ББ 4 байта в указанную страницу
+void writeCardPage()
 {
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_WRITE_CARD_PAGE);
+		return;
+	}
+
 	SPI.begin();      // Init SPI bus
 	mfrc522.PCD_Init();   // Init MFRC522
 
 	// Look for new cards
 	if (!mfrc522.PICC_IsNewCardPresent())
 	{
-		sendError(NO_CHIP, REPLY_WRITE_MASTER_CHIP);
+		sendError(NO_CHIP, REPLY_WRITE_CARD_PAGE);
+		SPI.end();
 		return;
 	}
 
 	// Select one of the cards
 	if (!mfrc522.PICC_ReadCardSerial())
 	{
-		sendError(NO_CHIP, REPLY_WRITE_MASTER_CHIP);
+		sendError(NO_CHIP, REPLY_WRITE_CARD_PAGE);
+		SPI.end();
 		return;
 	}
 
-	byte pass0 = uartBuffer[DATA_START_BYTE + 11];
-	byte pass1 = uartBuffer[DATA_START_BYTE + 12];
-	byte pass2 = uartBuffer[DATA_START_BYTE + 13];
-	byte setting = uartBuffer[DATA_START_BYTE + 14];
+	//0-7: UID чипа
+	//8: номер страницы
+	//9-12: данные для записи (4 байта)
 
-
-
-	if (uartBuffer[DATA_START_BYTE] == 253)
+	//проверить UID
+	if (!ntagRead4pages(PAGE_UID))
 	{
-		byte Wbuff[] = { 255, 255, 255, 255 };
-
-		for (byte page = PAGE_INIT; page < ntagValue; page++)
+		sendError(READ_ERROR, REPLY_READ_CARD_PAGE);
+		SPI.end();
+		return;
+	}
+	bool flag = false;
+	for (int i = 0; i <= 7; i++)
+	{
+		if (ntag_page[i] != uartBuffer[DATA_START_BYTE + i])
 		{
-			if (!ntagWrite(Wbuff, page))
-			{
-				sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-				return;
-			}
-		}
-
-		byte Wbuff2[] = { 0,0,0,0 };
-
-		for (byte page = PAGE_INIT; page < ntagValue; page++)
-		{
-			if (!ntagWrite(Wbuff2, page))
-			{
-				sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-				return;
-			}
-		}
-		byte dataBlock[4] = { 0, 253, 255, FW_VERSION };
-		if (!ntagWrite(dataBlock, PAGE_INIT))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
-
-
-		byte dataBlock2[] = { pass0, pass1, pass2, 0 };
-		if (!ntagWrite(dataBlock2, PAGE_PASS))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
+			flag = true;
+			break;
 		}
 	}
-
-	if (uartBuffer[DATA_START_BYTE] == 252)
+	if (flag)
 	{
-		byte dataBlock[4] = { 0, 252, 255, FW_VERSION };
-		if (!ntagWrite(dataBlock, PAGE_INIT))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
-
-		byte dataBlock2[] = { pass0, pass1, pass2, 0 };
-		if (!ntagWrite(dataBlock2, PAGE_PASS))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
+		sendError(WRONG_UID, REPLY_READ_CARD_PAGE);
+		SPI.end();
+		return;
 	}
 
-	if (uartBuffer[DATA_START_BYTE] == 251)
+	//записать страницу
+	byte dataBlock[] =
 	{
-		byte dataBlock[4] = { 0, 251, 255, FW_VERSION };
-		if (!ntagWrite(dataBlock, PAGE_INIT))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
-
-		byte dataBlock2[] = { pass0, pass1, pass2,0 };
-		if (!ntagWrite(dataBlock2, PAGE_PASS))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
-
-		byte dataBlock3[] = { uartBuffer[DATA_START_BYTE + 7], 0, 0, 0 };
-		if (!ntagWrite(dataBlock3, PAGE_INIT1))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
-	}
-
-	if (uartBuffer[DATA_START_BYTE] == 254)
+		uartBuffer[DATA_START_BYTE + 9],
+		uartBuffer[DATA_START_BYTE + 10],
+		uartBuffer[DATA_START_BYTE + 11],
+		uartBuffer[DATA_START_BYTE + 12]
+	};
+	if (!ntagWritePage(dataBlock, uartBuffer[DATA_START_BYTE + 8]))
 	{
-		byte dataBlock[4] = { 0, 254, 255, FW_VERSION };
-		if (!ntagWrite(dataBlock, PAGE_INIT))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
-
-		byte dataBlock2[] = { uartBuffer[DATA_START_BYTE + 8], uartBuffer[DATA_START_BYTE + 9], uartBuffer[DATA_START_BYTE + 10], 0 };
-		if (!ntagWrite(dataBlock2, PAGE_INIT1))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
-
-		byte dataBlock3[] = { pass0, pass1, pass2, setting };
-		if (!ntagWrite(dataBlock3, PAGE_PASS))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
+		sendError(WRITE_ERROR, REPLY_WRITE_CARD_PAGE);
+		SPI.end();
+		return;
 	}
+	SPI.end();
 
-	if (uartBuffer[DATA_START_BYTE] == 250)
-	{
-		byte dataBlock[4] = { 0, 250, 255, FW_VERSION };
-		if (!ntagWrite(dataBlock, PAGE_INIT))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
+	init_package(REPLY_WRITE_CARD_PAGE);
 
-		byte dataBlock2[] = { pass0, pass1, pass2, 0 };
-		if (!ntagWrite(dataBlock2, PAGE_PASS))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
-
-		byte dataBlock3[] = { uartBuffer[DATA_START_BYTE + 2], uartBuffer[DATA_START_BYTE + 1], uartBuffer[DATA_START_BYTE + 3], 0 };
-		if (!ntagWrite(dataBlock3, PAGE_INIT1))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
-
-		byte dataBlock4[] = { uartBuffer[DATA_START_BYTE + 4], uartBuffer[DATA_START_BYTE + 5], uartBuffer[DATA_START_BYTE + 6], 0 };
-		if (!ntagWrite(dataBlock4, PAGE_INIT2))
-		{
-			sendError(WRITE_ERROR, REPLY_WRITE_MASTER_CHIP);
-			return;
-		}
-	}
-
-	init_package(REPLY_WRITE_MASTER_CHIP);
+	//0: код ошибки
 	addData(OK);
 	sendData();
 }
+
+
 
 // Internal functions
 
@@ -946,7 +1029,8 @@ void beep(int ms, byte n)
 //инициализация пакета данных
 void init_package(byte command)
 {
-	uartBuffer[0] = uartBuffer[1] = uartBuffer[2] = uartBuffer[3] = 0xFE;
+	uartBuffer[0] = uartBuffer[1] = uartBuffer[2] = 0xFE;
+	uartBuffer[3] = stationNumber;
 	uartBuffer[COMMAND_BYTE] = command;
 	uartBufferPosition = DATA_START_BYTE;
 }
@@ -966,28 +1050,47 @@ void addData(byte data)
 //передача пакета данных.
 void sendData()
 {
-	uartBuffer[LENGTH_BYTE] = uartBufferPosition - COMMAND_BYTE;
-	addData(crcCalc(uartBuffer, COMMAND_BYTE, uartBuffer[LENGTH_BYTE]));
+	uartBuffer[LENGTH_BYTE] = uartBufferPosition - COMMAND_BYTE - 1;
+	addData(crcCalc(uartBuffer, STATION_NUMBER_BYTE, uartBufferPosition - 1));
 #ifdef DEBUG
-	Serial.print(F("Sending:"));
-	for (int i = 0; i < uartIncomingMessagePosition; i++)
+	DebugSerial.print(F("Sending:"));
+	for (int i = 0; i < uartBufferPosition; i++)
 	{
-		Serial.print(F(" "));
-		if (uartIncomingMessageData[i] < 0x10) Serial.print(F("0"));
-		Serial.print(String(uartIncomingMessageData[i], HEX));
+		DebugSerial.print(F(" "));
+		if (uartBuffer[i] < 0x10) DebugSerial.print(F("0"));
+		DebugSerial.print(String(uartBuffer[i], HEX));
 	}
-	Serial.println();
+	DebugSerial.println();
 #endif
 	Serial.write(uartBuffer, uartBufferPosition);
+	uartBufferPosition = 0;
 }
 
-//MFRC522::StatusCode MFRC522::MIFARE_Read
-bool ntagWrite(byte *dataBlock, byte pageAdr)
+//запись страницы (4 байта) в чип
+bool ntagWritePage(byte *dataBlock, byte pageAdr)
 {
+	/*SPI.begin();      // Init SPI bus
+	mfrc522.PCD_Init();   // Init MFRC522
+	// Look for new cards
+	if (!mfrc522.PICC_IsNewCardPresent())
+	{
+		sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
+		SPI.end();
+		return false;
+	}
+	// Select one of the cards
+	if (!mfrc522.PICC_ReadCardSerial())
+	{
+		sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
+		SPI.end();
+		return false;
+	}*/
+
 	const byte sizePageNtag = 4;
 	status = (MFRC522::StatusCode) mfrc522.MIFARE_Ultralight_Write(pageAdr, dataBlock, sizePageNtag);
 	if (status != MFRC522::STATUS_OK)
 	{
+		//SPI.end();
 		return false;
 	}
 
@@ -997,8 +1100,10 @@ bool ntagWrite(byte *dataBlock, byte pageAdr)
 	status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(pageAdr, buffer, &size);
 	if (status != MFRC522::STATUS_OK)
 	{
+		//SPI.end();
 		return false;
 	}
+	//SPI.end();
 
 	for (byte i = 0; i < 4; i++)
 	{
@@ -1008,25 +1113,47 @@ bool ntagWrite(byte *dataBlock, byte pageAdr)
 	return true;
 }
 
-bool ntagRead(byte pageAdr)
+//чтение 4-х страниц (16 байт) из чипа
+bool ntagRead4pages(byte pageAdr)
 {
+	/*SPI.begin();      // Init SPI bus
+	mfrc522.PCD_Init();   // Init MFRC522
+	// Look for new cards
+	if (!mfrc522.PICC_IsNewCardPresent())
+	{
+		sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
+		SPI.end();
+		return false;
+	}
+	// Select one of the cards
+	if (!mfrc522.PICC_ReadCardSerial())
+	{
+		sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
+		SPI.end();
+		return false;
+	}*/
+#ifdef DEBUG
+	DebugSerial.println(F("card found"));
+#endif
 	byte buffer[18];
 	byte size = sizeof(buffer);
 
 	status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(pageAdr, buffer, &size);
 	if (status != MFRC522::STATUS_OK)
 	{
+		//SPI.end();
 		return false;
 	}
+	//SPI.end();
 
 	for (byte i = 0; i < 16; i++)
 	{
-		dump[i] = buffer[i];
+		ntag_page[i] = buffer[i];
 	}
 	return true;
 }
 
-//Writing the chip
+//Обработка поднесенного чипа
 void processRfidCard()
 {
 	//инициализируем переменные
@@ -1041,55 +1168,58 @@ void processRfidCard()
 	// Look for new cards
 	if (!mfrc522.PICC_IsNewCardPresent())
 	{
+		SPI.end();
 		return;
 	}
 
 	// Select one of the cards
 	if (!mfrc522.PICC_ReadCardSerial())
 	{
+		SPI.end();
 		return;
 	}
-#ifdef DEBUG
-	Serial.println(F("card found"));
-#endif
+
 
 	DS3231_get(&systemTime);
 	unsigned long tempT = systemTime.unixtime;
 
 	//читаем блок информации
-	if (!ntagRead(PAGE_INIT))
+	if (!ntagRead4pages(PAGE_CHIP_NUM))
 	{
 #ifdef DEBUG
-		Serial.println(F("can't read card"));
+		DebugSerial.println(F("can't read card"));
 #endif
+		SPI.end();
 		return;
 	}
 
 	//Заменяем маску, хранящуюся в буфере при совпадении маски
-	if (tempNumTeam0 != 0 || tempNumTeam1 != 0)
+	/*if (tempNumTeam0 != 0 || tempNumTeam1 != 0)
 	{
-		if (tempNumTeam0 == dump[0] && tempNumTeam1 == dump[1])
+		if (tempNumTeam0 == ntag_page[0] && tempNumTeam1 == ntag_page[1])
 		{
 			bool updateMask = false;
 
 			for (int i = 0; i < 8; i++)
 			{
-				if (tempTeamMask[i] != dump[i + 9]) updateMask = true;
+				if (tempTeamMask[i] != ntag_page[i + 9]) updateMask = true;
 			}
 
 			if (updateMask)
 			{
 				byte dataBlock[4] = { tempTeamMask[0],tempTeamMask[1],tempTeamMask[2],tempTeamMask[3] };
-				if (!ntagWrite(dataBlock, PAGE_INIT1))
+				if (!ntagWritePage(dataBlock, PAGE_RESERVED1))
 				{
 					//sendError(WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
+					SPI.end();
 					return;
 				}
 
 				byte dataBlock2[] = { tempTeamMask[4],tempTeamMask[5],tempTeamMask[6],tempTeamMask[7] };
-				if (!ntagWrite(dataBlock2, PAGE_INIT2))
+				if (!ntagWritePage(dataBlock2, PAGE_RESERVED2))
 				{
 					//sendError(WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
+					SPI.end();
 					return;
 				}
 			}
@@ -1097,6 +1227,7 @@ void processRfidCard()
 		else
 		{
 			//sendError(WRONG_CHIP, REPLY_UPDATE_TEAM_MASK);
+			SPI.end();
 			return;
 		}
 		tempNumTeam0 = 0;
@@ -1109,91 +1240,111 @@ void processRfidCard()
 
 
 
-		/*init_package(REPLY_UPDATE_TEAM_MASK);
-		addData(OK);
-		addData((tempT & 0xFF000000) >> 24);
-		addData((tempT & 0x00FF0000) >> 16);
-		addData((tempT & 0x0000FF00) >> 8);
-		addData(tempT & 0x000000FF);
-		sendData();*/
-	}
+		//init_package(REPLY_UPDATE_TEAM_MASK);
+		//addData(OK);
+		//addData((tempT & 0xFF000000) >> 24);
+		//addData((tempT & 0x00FF0000) >> 16);
+		//addData((tempT & 0x0000FF00) >> 8);
+		//addData(tempT & 0x000000FF);
+		//sendData();
+	}*/
 
 	//в первых трех байтах находятся нули для обычных чипов и заданные числа для мастер-чипов
 	byte info = 0;
-	if (dump[2] == 255)
+	if (ntag_page[2] == 255)
 	{
+		SPI.end();
 		return;
 	}
 
-	unsigned long timeInit = dump[4];
+	//Не слишком ли старый чип? Недельной давности и более
+	unsigned long timeInit = ntag_page[4];
 	timeInit = timeInit << 8;
-	timeInit += dump[5];
+	timeInit += ntag_page[5];
 	timeInit = timeInit << 8;
-	timeInit += dump[6];
+	timeInit += ntag_page[6];
 	timeInit = timeInit << 8;
-	timeInit += dump[7];
-
+	timeInit += ntag_page[7];
 	if ((systemTime.unixtime - timeInit) > maxTimeInit)
 	{
+		SPI.end();
 		return;
 	}
+
 
 	tempDump[0] = 0;
 
-	chipNum = (dump[0] << 8) + dump[1];
-	if (chipNum == 0) return;
+	//Не равен ли номер чипа 0
+	chipNum = (ntag_page[0] << 8) + ntag_page[1];
+	if (chipNum == 0)
+	{
+		SPI.end();
+		return;
+	}
 
-	newPage = findNewPage(128);
+	//ищем свободную страницу на карте
+	newPage = findNewPage(NTAG215_MAX_PAGE - 2);
 
-	if (newPage == 0) return;
+	//ошибка чтения
+	if (newPage == 0)
+	{
+		SPI.end();
+		return;
+	}
 
+	//Не служебные ли это станции
 	if (stationNumber == tempDump[0] && stationNumber != 245)
 	{
 		beep(500, 1);
+		SPI.end();
 		return;
 	}
 
-	if (newPage > maxPage)
+	//Номер страницы в чипе больше максимума... Наверное, переполнен???
+	if (newPage > NTAG215_MAX_PAGE - 3)
 	{
+		SPI.end();
 		return;
 	}
 
-	if (!writeTimeToCard(newPage))
+	//Пишем на карту отметку
+	if (!writeCheckPointToCard(newPage))
 	{
+		SPI.end();
 		return;
 	}
+	SPI.end();
 
+	//Пишем в лог карту
 	writeFlash(chipNum);
 	totalChipsChecked++;
 	beep(200, 1);
+}
 
-	SPI.end();
-} // end of rfid()
-
-bool writeTimeToCard(int newPage)
+//пишет на карту время и станцию отметки
+bool writeCheckPointToCard(int newPage)
 {
 	DS3231_get(&systemTime);
 	unsigned long tempT = systemTime.unixtime;
 
-	byte dataBlock2[4] = { 0, 0, 0, 0 };
-	dataBlock2[0] = stationNumber;
-	dataBlock2[1] = (tempT & 0x00FF0000) >> 16;
-	dataBlock2[2] = (tempT & 0x0000FF00) >> 8;
-	dataBlock2[3] = (tempT & 0x000000FF);
+	byte dataBlock[4];
+	dataBlock[0] = stationNumber;
+	dataBlock[1] = (tempT & 0x00FF0000) >> 16;
+	dataBlock[2] = (tempT & 0x0000FF00) >> 8;
+	dataBlock[3] = (tempT & 0x000000FF);
 
-	if (ntagWrite(dataBlock2, newPage))
-	{
-		return true;
-	}
-	else
+	if (!ntagWritePage(dataBlock, newPage))
 	{
 		return false;
 	}
+	lastTeamEnable = true;
+	return true;
 }
 
+//Поиск последней записанной страницы? Переписать эту черную магию...
 byte findNewPage(byte finishpage)
 {
-	byte startpage = 8;
+	byte startpage = PAGE_DATA_START;
 	byte page = (finishpage + startpage) / 2;
 
 	while (1)
@@ -1205,43 +1356,48 @@ byte findNewPage(byte finishpage)
 
 		page = (finishpage + startpage) / 2;
 
-		if (!ntagRead(page))
+		if (!ntagRead4pages(page))
 		{
 			for (byte i = 0; i < 4; i++) tempDump[i] = 0;
 			return 0;
 		}
 
-		if (dump[0] == 0)
+		if (ntag_page[0] == 0)
 		{
 			finishpage = (finishpage - startpage) / 2 + startpage;
 		}
 		else
 		{
-			for (byte i = 0; i < 4; i++) tempDump[i] = dump[i];
+			for (byte i = 0; i < 4; i++) tempDump[i] = ntag_page[i];
 			startpage = finishpage - (finishpage - startpage) / 2;
 		}
 	}
 }
 
+//разобраться с адресами хранения
 void writeFlash(int chipNum)
 {
 	DS3231_get(&systemTime);
 	lastTimeChecked = systemTime.unixtime;
+	//адрес хранения в каталоге дампов (всех страниц чипов)
 	unsigned long pageFlash = chipNum * 1000 + 100000UL;
-	unsigned long shortFlash = chipNum;
-	shortFlash = shortFlash * 20;
-	for (byte page = 0; page < maxPage; page = page + 4)
+	//адрес хранения в каталоге отметок (4-х страниц чипов)
+	unsigned long shortFlash = chipNum * 20;
+
+	//copy card content to flash. все страницы не на чинающиеся с 0
+	for (byte page = 0; page < NTAG215_MAX_PAGE - 3; page = page + 4)
 	{
-		if (!ntagRead(page))
+		if (!ntagRead4pages(page))
 		{
 			return;
 		}
 
+
 		for (byte dop = 0; dop < 16; dop++)
 		{
-			if (dump[(dop / 4) * 4] != 0 || page == 4)
+			if (ntag_page[(dop / 4) * 4] != 0 || page == 4)
 			{
-				SPIflash.writeByte(pageFlash + page * 4 + dop, dump[dop]);
+				SPIflash.writeByte(pageFlash + page * 4 + dop, ntag_page[dop]);
 			}
 		}
 
@@ -1249,17 +1405,18 @@ void writeFlash(int chipNum)
 		{
 			for (byte i = 0; i < 16; i++)
 			{
-				SPIflash.writeByte(shortFlash + i, dump[i]);
-				lastChip[i] = dump[i];
+				SPIflash.writeByte(shortFlash + i, ntag_page[i]);
+				lastChip[i] = ntag_page[i];
 			}
 
-
+			lastTeamEnable = true;
 			byte byteTime[4];
 			byteTime[0] = (lastTimeChecked & 0xFF000000) >> 24;
 			byteTime[1] = (lastTimeChecked & 0x00FF0000) >> 16;
 			byteTime[2] = (lastTimeChecked & 0x0000FF00) >> 8;
 			byteTime[3] = (lastTimeChecked & 0x000000FF);
 
+			//SPIflash.writeByteArray(shortFlash + 16, byteTime, 4, true);
 			SPIflash.writeByte(shortFlash + 16, byteTime[0]);
 			SPIflash.writeByte(shortFlash + 17, byteTime[1]);
 			SPIflash.writeByte(shortFlash + 18, byteTime[2]);
@@ -1268,6 +1425,7 @@ void writeFlash(int chipNum)
 	}
 }
 
+//подсчет записанных в флэш отметок
 int refreshChipCounter()
 {
 	int chips = 0;
@@ -1276,10 +1434,32 @@ int refreshChipCounter()
 		if (SPIflash.readByte(i) != 255) chips++;
 	}
 #ifdef DEBUG
-	Serial.print(F("chip counter="));
-	Serial.println(String(chips));
+	DebugSerial.print(F("chip counter="));
+	DebugSerial.println(String(chips));
 #endif
 	return chips;
+}
+
+bool readTeamFromFlash(unsigned int num)
+{
+	unsigned long addr = num * 20;
+	SPIflash.readByte(addr);
+	//if (SPIflash.readByte(addr) != 255)
+	//{
+		//#команда
+	ntag_page[0] = SPIflash.readByte(addr + 0);
+	ntag_page[1] = SPIflash.readByte(addr + 1);
+	//маска
+	ntag_page[2] = SPIflash.readByte(addr + 8);
+	ntag_page[3] = SPIflash.readByte(addr + 9);
+	//время отметки
+	ntag_page[4] = SPIflash.readByte(addr + 16);
+	ntag_page[5] = SPIflash.readByte(addr + 17);
+	ntag_page[6] = SPIflash.readByte(addr + 18);
+	ntag_page[7] = SPIflash.readByte(addr + 19);
+	return true;
+	//}
+	return false;
 }
 
 //обработка ошибок. формирование пакета с сообщением о ошибке
@@ -1298,19 +1478,20 @@ bool readUart()
 		if (c == -1) // can't read stream
 		{
 #ifdef DEBUG
-			Serial.println(F("read error"));
+			DebugSerial.println(F("read error"));
 #endif
 			uartBufferPosition = 0;
 			receivingData = false;
+			beep(50, 2);
 			return false;
 		}
 		//0 byte = FE
 		else if (uartBufferPosition == 0 && c == 0xfe)
 		{
 #ifdef DEBUG
-			Serial.print(F("byte0="));
-			if (c < 0x10) Serial.print(F("0"));
-			Serial.println(String(byte(c), HEX));
+			DebugSerial.print(F("byte0="));
+			if (c < 0x10) DebugSerial.print(F("0"));
+			DebugSerial.println(String(byte(c), HEX));
 #endif
 			receivingData = true;
 			uartBuffer[uartBufferPosition] = (byte)c;
@@ -1322,9 +1503,9 @@ bool readUart()
 		else if (uartBufferPosition == 1 && c == 0xfe)
 		{
 #ifdef DEBUG
-			Serial.print(F("byte1"));
-			if (c < 0x10) Serial.print(F("0"));
-			Serial.println(String(byte(c), HEX));
+			DebugSerial.print(F("byte1"));
+			if (c < 0x10) DebugSerial.print(F("0"));
+			DebugSerial.println(String(byte(c), HEX));
 #endif
 			uartBuffer[uartBufferPosition] = (byte)c;
 			uartBufferPosition++;
@@ -1333,43 +1514,33 @@ bool readUart()
 		else if (uartBufferPosition == 2 && c == 0xfe)
 		{
 #ifdef DEBUG
-			Serial.print(F("byte2"));
-			if (c < 0x10) Serial.print(F("0"));
-			Serial.println(String(byte(c), HEX));
-#endif
-			uartBuffer[uartBufferPosition] = (byte)c;
-			uartBufferPosition++;
-		}
-		//3rd byte = FE
-		else if (uartBufferPosition == 3 && c == 0xfe)
-		{
-#ifdef DEBUG
-			Serial.print(F("byte3"));
-			if (c < 0x10) Serial.print(F("0"));
-			Serial.println(String(byte(c), HEX));
+			DebugSerial.print(F("byte2"));
+			if (c < 0x10) DebugSerial.print(F("0"));
+			DebugSerial.println(String(byte(c), HEX));
 #endif
 			uartBuffer[uartBufferPosition] = (byte)c;
 			uartBufferPosition++;
 		}
 		//4th byte = command, length and data
-		else if (uartBufferPosition >= COMMAND_BYTE)
+		else if (uartBufferPosition >= STATION_NUMBER_BYTE)
 		{
 			uartBuffer[uartBufferPosition] = (byte)c;
 #ifdef DEBUG
-			Serial.print(F("byte"));
-			Serial.print(String(uartIncomingMessagePosition));
-			Serial.print(F("="));
-			if (c < 0x10) Serial.print(F("0"));
-			Serial.println(String(byte(c), HEX));
+			DebugSerial.print(F("byte"));
+			DebugSerial.print(String(uartBufferPosition));
+			DebugSerial.print(F("="));
+			if (c < 0x10) DebugSerial.print(F("0"));
+			DebugSerial.println(String(byte(c), HEX));
 #endif
 			//incorrect length
-			if (uartBufferPosition == LENGTH_BYTE && uartBuffer[LENGTH_BYTE] > (255 - DATA_START_BYTE - 1))
+			if (uartBufferPosition == LENGTH_BYTE && uartBuffer[LENGTH_BYTE] > (254 - DATA_START_BYTE))
 			{
 #ifdef DEBUG
-				Serial.println(F("incorrect length"));
+				DebugSerial.println(F("incorrect length"));
 #endif
 				uartBufferPosition = 0;
 				receivingData = false;
+				beep(50, 2);
 				return false;
 			}
 
@@ -1378,32 +1549,33 @@ bool readUart()
 			{
 				//crc matching
 #ifdef DEBUG
-				Serial.print(F("received packet expected CRC="));
-				Serial.println(String(crcCalc(uartIncomingMessageData, COMMAND_BYTE, uartIncomingMessageData[LENGTH_BYTE]), HEX));
+				DebugSerial.print(F("received packet expected CRC="));
+				DebugSerial.println(String(crcCalc(uartBuffer, STATION_NUMBER_BYTE, uartBufferPosition - 1), HEX));
 #endif
-				if (uartBuffer[uartBufferPosition] == crcCalc(uartBuffer, COMMAND_BYTE, uartBuffer[LENGTH_BYTE])) // CRC not correct
+				if (uartBuffer[uartBufferPosition] == crcCalc(uartBuffer, STATION_NUMBER_BYTE, uartBufferPosition - 1))
 				{
 #ifdef DEBUG
-					Serial.print(F("Command received:"));
-					for (int i = 0; i <= uartIncomingMessagePosition; i++)
+					DebugSerial.print(F("Command received:"));
+					for (int i = 0; i <= uartBufferPosition; i++)
 					{
-						Serial.print(F(" "));
-						if (uartIncomingMessageData[i] < 0x10) Serial.print(F("0"));
-						Serial.print(String(uartIncomingMessageData[i], HEX));
+						DebugSerial.print(F(" "));
+						if (uartBuffer[i] < 0x10) DebugSerial.print(F("0"));
+						DebugSerial.print(String(uartBuffer[i], HEX));
 					}
-					Serial.println();
+					DebugSerial.println();
 #endif
 					uartBufferPosition = 0;
 					receivingData = false;
 					return true;
 				}
-				else
+				else // CRC not correct
 				{
 #ifdef DEBUG
-					Serial.println(F("incorrect crc"));
+					DebugSerial.println(F("incorrect crc"));
 #endif
 					uartBufferPosition = 0;
 					receivingData = false;
+					beep(50, 2);
 					return false;
 				}
 			}
@@ -1412,19 +1584,21 @@ bool readUart()
 		else
 		{
 #ifdef DEBUG
-			Serial.println(F("unexpected byte"));
+			DebugSerial.println(F("unexpected byte"));
 #endif
 			uartBufferPosition = 0;
+			beep(50, 3);
 		}
 	}
+	beep(50, 2);
 	return false;
 }
 
-byte crcCalc(byte* dataArray, int startPosition, int dataLength)
+byte crcCalc(byte* dataArray, int startPosition, int dataEnd)
 {
 	byte crc = 0x00;
 	int i = startPosition;
-	while (i < dataLength)
+	while (i <= dataEnd)
 	{
 		byte tmpByte = dataArray[i];
 		for (byte tempI = 8; tempI; tempI--)

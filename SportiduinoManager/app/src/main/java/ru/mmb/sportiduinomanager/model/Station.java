@@ -35,12 +35,17 @@ public final class Station {
     /**
      * Timeout (im ms) while waiting for station response.
      */
-    private static final int WAIT_TIMEOUT = 60_000;
+    private static final int WAIT_TIMEOUT = 30_000;
 
     /**
-     * Size of send/receive packets for station communications.
+     * Maximum size of communication packet.
      */
-    private static final int PACKET_SIZE = 32;
+    private static final int MAX_PACKET_SIZE = 255;
+
+    /**
+     * Size of header in communication packet.
+     */
+    private static final int HEADER_SIZE = 6;
 
     /**
      * Protocol signature in all headers.
@@ -50,7 +55,7 @@ public final class Station {
     /**
      * Result of sending command to station: everything is ok.
      */
-    private static final byte COMMAND_OK = 0;
+    private static final byte ALL_OK = 0;
     /**
      * Result of sending command to station: sending data failed.
      */
@@ -68,6 +73,27 @@ public final class Station {
      * of command execution
      */
     private static final byte REC_COMMAND_ERROR = 4;
+
+    /**
+     * Code of setMode station command.
+     */
+    private static final byte CMD_SET_MODE = (byte) 0x80;
+    /**
+     * Code of setTime station command.
+     */
+    private static final byte CMD_SET_TIME = (byte) 0x81;
+    /**
+     * Code of resetStation station command.
+     */
+    private static final byte CMD_RESET_STATION = (byte) 0x82;
+    /**
+     * Code of getStatus station command.
+     */
+    private static final byte CMD_GET_STATUS = (byte) 0x83;
+    /**
+     * Code of chipInit station command.
+     */
+    private static final byte CMD_INIT_CHIP = (byte) 0x84;
 
     /**
      * Default UUID of station Bluetooth socket.
@@ -95,7 +121,7 @@ public final class Station {
     private long mStartTime;
 
     /**
-     * Station local time at the end of command processing.
+     * Station local time at the end of getStatus/setTime.
      */
     private int mStationTime;
 
@@ -136,6 +162,19 @@ public final class Station {
     private int mLastChipTime;
 
     /**
+     * Station firmware version received from getStatus.
+     */
+    private byte mFirmware;
+    /**
+     * Station battery voltage received from getStatus.
+     */
+    private int mVoltage;
+    /**
+     * Station temperature received from getStatus.
+     */
+    private int mTemperature;
+
+    /**
      * Create Station from Bluetooth scan.
      *
      * @param device Bluetooth device handler
@@ -148,6 +187,9 @@ public final class Station {
         mNumber = 0;
         mChipsRegistered = 0;
         mLastChipTime = 0;
+        mFirmware = 0;
+        mVoltage = 0;
+        mTemperature = 0;
         // Create client socket with default Bluetooth UUID
         try {
             mSocket = mDevice.createRfcommSocketToServiceRecord(STATION_UUID);
@@ -248,6 +290,33 @@ public final class Station {
     }
 
     /**
+     * Get station firmware version.
+     *
+     * @return Firmware version as byte
+     */
+    public byte getFirmware() {
+        return mFirmware;
+    }
+
+    /**
+     * Get station battery voltage.
+     *
+     * @return Battery voltage as 0..1023
+     */
+    public int getVoltage() {
+        return mVoltage;
+    }
+
+    /**
+     * Get station temperature.
+     *
+     * @return Station temperature in Celsius degrees
+     */
+    public int getTemperature() {
+        return mTemperature;
+    }
+
+    /**
      * Get the time of last chip registration.
      *
      * @return Text representation of time of last chip registration in local timezone
@@ -303,13 +372,16 @@ public final class Station {
      * @return True if the command was sent
      */
     private boolean send(final byte[] command) {
-        if (command.length > (PACKET_SIZE - 4)) return false;
-        byte[] buffer = new byte[PACKET_SIZE];
+        final int len = command.length;
+        if (len == 0 || len > MAX_PACKET_SIZE) return false;
+        byte[] buffer = new byte[len + HEADER_SIZE];
         buffer[0] = HEADER_SIGNATURE;
         buffer[1] = HEADER_SIGNATURE;
         buffer[2] = HEADER_SIGNATURE;
-        buffer[3] = HEADER_SIGNATURE;
-        System.arraycopy(command, 0, buffer, 4, command.length);
+        buffer[3] = mNumber;
+        buffer[4] = (byte) (len - 1);
+        System.arraycopy(command, 0, buffer, 5, len);
+        buffer[len + HEADER_SIZE - 1] = crc8(buffer, len + HEADER_SIZE - 1);
         try {
             final OutputStream output = mSocket.getOutputStream();
             output.write(buffer);
@@ -338,7 +410,7 @@ public final class Station {
      */
     private byte[] receive() {
         byte[] response = new byte[0];
-        final byte[] buffer = new byte[PACKET_SIZE];
+        final byte[] buffer = new byte[MAX_PACKET_SIZE];
         try {
             final InputStream input = mSocket.getInputStream();
             while (System.currentTimeMillis() - mStartTime < WAIT_TIMEOUT) {
@@ -347,7 +419,7 @@ public final class Station {
                     sleep();
                     continue;
                 }
-                // read data into PACKET_SIZE byte buffer
+                // read data into MAX_PACKET_SIZE byte buffer
                 final int newLen = input.read(buffer);
                 if (newLen == 0) continue;
                 // add received bytes (PACKET_SIZE or less) to response array
@@ -361,10 +433,9 @@ public final class Station {
                     System.arraycopy(buffer, 0, temp, oldLen, newLen);
                     response = temp;
                 }
-                // stop waiting for more data if we got round number of PACKET_SIZE byte blocks
-                // and last block does not have continuation flag
-                if (response.length % PACKET_SIZE == 0
-                        && response[response.length - PACKET_SIZE + 5] != (byte) 0x80) {
+                // stop waiting for more data if we got whole packet
+                if (response.length >= HEADER_SIZE
+                        && response.length >= (response[HEADER_SIZE - 2] + HEADER_SIZE + 1)) {
                     return response;
                 }
             }
@@ -388,39 +459,40 @@ public final class Station {
         if (!send(sendBuffer)) return new byte[]{SEND_FAILED};
         // get station response
         final byte[] receiveBuffer = receive();
-        if (receiveBuffer.length == 0) return new byte[]{REC_TIMEOUT};
-        // check if we got response as several PACKET_SIZE blocks
-        if (receiveBuffer.length % PACKET_SIZE != 0) return new byte[]{REC_BAD_RESPONSE};
-        // process all blocks
-        final byte responseCode = (byte) (sendBuffer[0] + 0x10);
-        byte[] response = new byte[]{COMMAND_OK};
-        for (int n = 0; n < receiveBuffer.length / PACKET_SIZE; n++) {
-            final int start = n * PACKET_SIZE;
-            // check header
-            if (receiveBuffer[start] != HEADER_SIGNATURE
-                    || receiveBuffer[start + 1] != HEADER_SIGNATURE
-                    || receiveBuffer[start + 2] != HEADER_SIGNATURE
-                    || receiveBuffer[start + 3] != HEADER_SIGNATURE) {
-                return new byte[]{REC_BAD_RESPONSE};
-            }
-            // check if command code received is equal to command code sent
-            if (receiveBuffer[start + 4] != responseCode) return new byte[]{REC_BAD_RESPONSE};
-            // check payload length
-            if (receiveBuffer[start + 5] == 0) return new byte[]{REC_BAD_RESPONSE};
-            // check command execution code (it should be present and equal to zero)
-            if (receiveBuffer[start + 6] != 0) {
-                return new byte[]{(byte) (REC_COMMAND_ERROR + receiveBuffer[start + 6])};
-            }
-            // check zero finish byte
-            if (receiveBuffer[start + 31] != (byte) 0x00) return new byte[]{REC_BAD_RESPONSE};
-            // copy payload to response buffer
-            final int oldLen = response.length;
-            final int newLen = receiveBuffer[start + 5] - 1;
-            final byte[] temp = new byte[oldLen + newLen];
-            System.arraycopy(response, 0, temp, 0, oldLen);
-            System.arraycopy(receiveBuffer, start + 7, temp, oldLen, newLen);
-            response = temp;
+        final int len = receiveBuffer.length;
+        if (len == 0) return new byte[]{REC_TIMEOUT};
+        // check if response has at minimum 1 byte payload
+        if (len < HEADER_SIZE) return new byte[]{REC_BAD_RESPONSE};
+        // check buffer length
+        if (receiveBuffer[HEADER_SIZE - 2] != len - HEADER_SIZE - 1) {
+            return new byte[]{REC_BAD_RESPONSE};
         }
+        // check header
+        if (receiveBuffer[0] != HEADER_SIGNATURE || receiveBuffer[1] != HEADER_SIGNATURE
+                || receiveBuffer[2] != HEADER_SIGNATURE) {
+            return new byte[]{REC_BAD_RESPONSE};
+        }
+        // check station number
+        if (sendBuffer[0] != CMD_GET_STATUS && sendBuffer[0] != CMD_RESET_STATION
+                && receiveBuffer[3] != mNumber) {
+            return new byte[]{REC_BAD_RESPONSE};
+        }
+        // check crc
+        if (receiveBuffer[len - 1] != crc8(receiveBuffer, len - 1)) {
+            return new byte[]{REC_BAD_RESPONSE};
+        }
+        // check if command code received is equal to command code sent
+        if (receiveBuffer[HEADER_SIZE - 1] != sendBuffer[0] + 0x10) {
+            return new byte[]{REC_BAD_RESPONSE};
+        }
+        // check command execution code (it should be present and equal to zero)
+        if (receiveBuffer[HEADER_SIZE] != 0) {
+            return new byte[]{(byte) (REC_COMMAND_ERROR + receiveBuffer[HEADER_SIZE])};
+        }
+        // copy payload to response buffer
+        final byte[] response = new byte[len - HEADER_SIZE - 1];
+        response[0] = ALL_OK;
+        System.arraycopy(receiveBuffer, HEADER_SIZE + 1, response, 1, len - HEADER_SIZE - 2);
         return response;
     }
 
@@ -443,7 +515,7 @@ public final class Station {
         final long now = System.currentTimeMillis();
         mResponseTime = now - mStartTime;
         // Check for command execution errors and response parsing errors
-        if (rawResponse[0] != COMMAND_OK) {
+        if (rawResponse[0] != ALL_OK) {
             switch (rawResponse[0]) {
                 case SEND_FAILED:
                     mLastError = R.string.err_bt_send_failed;
@@ -472,6 +544,15 @@ public final class Station {
                 case REC_COMMAND_ERROR + 6:
                     mLastError = R.string.err_station_no_chip;
                     return false;
+                case REC_COMMAND_ERROR + 7:
+                    mLastError = R.string.err_station_buffer_overflow;
+                    return false;
+                case REC_COMMAND_ERROR + 8:
+                    mLastError = R.string.err_station_reset_impossible;
+                    return false;
+                case REC_COMMAND_ERROR + 9:
+                    mLastError = R.string.err_station_incorrect_uid;
+                    return false;
                 default:
                     mLastError = R.string.err_station_unknown;
                     return false;
@@ -482,9 +563,6 @@ public final class Station {
             mLastError = R.string.err_bt_response_wrong_length;
             return false;
         }
-        // Everything is OK, get station clock current time and drift
-        mStationTime = byteArray2Int(rawResponse, 1, 4);
-        mTimeDrift = mStationTime - (int) (now / 1000L);
         // Everything is OK, copy station response content
         System.arraycopy(rawResponse, 1, responseContent, 0, responseContent.length);
         return true;
@@ -498,6 +576,31 @@ public final class Station {
     public int getLastError() {
         return mLastError;
     }
+
+    /**
+     * Compute CRC8 checksum.
+     *
+     * @param array Array of bytes
+     * @param end   ending position for computing crc
+     * @return CRC8
+     */
+    private byte crc8(final byte[] array, final int end) {
+        byte crc = 0x00;
+        for (int i = 3; i < end; i++) {
+            byte extract = array[i];
+            for (byte tempI = 8; tempI != 0; tempI--) {
+                byte sum = (byte) ((crc & 0xFF) ^ (extract & 0xFF));
+                sum = (byte) ((sum & 0xFF) & 0x01);
+                crc = (byte) ((crc & 0xFF) >>> 1);
+                if (sum != 0) {
+                    crc = (byte) ((crc & 0xFF) ^ 0x8C);
+                }
+                extract = (byte) ((extract & 0xFF) >>> 1);
+            }
+        }
+        return (byte) (crc & 0xFF);
+    }
+
 
     /**
      * Convert byte array section to int.
@@ -539,14 +642,13 @@ public final class Station {
      * @return True if we got valid response from station, check mLastError otherwise
      */
     public boolean newMode(final byte mode) {
-        byte[] commandData = new byte[4];
-        commandData[0] = (byte) 0x80;
-        commandData[1] = (byte) 0;  // TODO: change station bios to remove extra byte
-        commandData[2] = mode;
-        commandData[3] = mNumber;
-        // Send it to station
-        final byte[] response = new byte[4];
-        return command(commandData, response);
+        final byte[] response = new byte[0];
+        if (command(new byte[]{CMD_SET_MODE, mode}, response)) {
+            mMode = mode;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -555,20 +657,23 @@ public final class Station {
      * @return True if we got valid response from station, check mLastError otherwise
      */
     public boolean syncTime() {
-        byte[] commandData = new byte[8];
-        commandData[0] = (byte) 0x81;
-        commandData[1] = (byte) 0;  // TODO: change station bios to remove extra byte
+        byte[] commandData = new byte[7];
+        commandData[0] = CMD_SET_TIME;
         // Get current UTC time
         final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        commandData[2] = (byte) (calendar.get(Calendar.YEAR) - 2000);
-        commandData[3] = (byte) (calendar.get(Calendar.MONTH) + 1);
-        commandData[4] = (byte) calendar.get(Calendar.DAY_OF_MONTH);
-        commandData[5] = (byte) calendar.get(Calendar.HOUR_OF_DAY);
-        commandData[6] = (byte) calendar.get(Calendar.MINUTE);
-        commandData[7] = (byte) (calendar.get(Calendar.SECOND));
+        commandData[1] = (byte) (calendar.get(Calendar.YEAR) - 2000);
+        commandData[2] = (byte) (calendar.get(Calendar.MONTH) + 1);
+        commandData[3] = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+        commandData[4] = (byte) calendar.get(Calendar.HOUR_OF_DAY);
+        commandData[5] = (byte) calendar.get(Calendar.MINUTE);
+        commandData[6] = (byte) (calendar.get(Calendar.SECOND));
         // Send it to station
         final byte[] response = new byte[4];
-        return command(commandData, response);
+        if (!command(commandData, response)) return false;
+        // Get new station time
+        mStationTime = byteArray2Int(response, 0, 3);
+        mTimeDrift = mStationTime - (int) (System.currentTimeMillis() / 1000L);
+        return true;
     }
 
     /**
@@ -578,18 +683,17 @@ public final class Station {
      * @return True if we got valid response from station, check mLastError otherwise
      */
     public boolean resetStation(final byte number) {
-        byte[] commandData = new byte[12];
-        commandData[0] = (byte) 0x82;
-        commandData[1] = (byte) 0;  // TODO: change station bios to remove extra byte
-        commandData[2] = number;
-        commandData[3] = mNumber;
-        int2ByteArray(mChipsRegistered, commandData, 4, 4);
-        int2ByteArray(mLastChipTime, commandData, 8, 4);
+        byte[] commandData = new byte[8];
+        commandData[0] = CMD_RESET_STATION;
+        int2ByteArray(mChipsRegistered, commandData, 1, 2);
+        int2ByteArray(mLastChipTime, commandData, 3, 4);
+        commandData[7] = number;
         // Send it to station
-        final byte[] response = new byte[4];
+        final byte[] response = new byte[0];
         if (!command(commandData, response)) return false;
-        // Update station number in class object
+        // Update station number and mode in class object
         mNumber = number;
+        mMode = MODE_INIT_CHIPS;
         return true;
     }
 
@@ -601,16 +705,25 @@ public final class Station {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchStatus() {
         // Get response from station
-        final byte[] response = new byte[12];
-        if (!command(new byte[]{(byte) 0x83}, response)) return false;
-        // Get station mode
-        mMode = response[4];
+        final byte[] response = new byte[17];
+        if (!command(new byte[]{CMD_GET_STATUS}, response)) return false;
+        // Get station firmware
+        mFirmware = response[0];
         // Get station N
-        mNumber = response[5];
+        mNumber = response[1];
+        // Get station mode
+        mMode = response[2];
+        // Get station time
+        mStationTime = byteArray2Int(response, 3, 6);
+        mTimeDrift = mStationTime - (int) (System.currentTimeMillis() / 1000L);
         // Get number of chips registered by station
-        mChipsRegistered = byteArray2Int(response, 6, 7);
+        mChipsRegistered = byteArray2Int(response, 7, 8);
         // Get last chips registration time
-        mLastChipTime = byteArray2Int(response, 8, 11);
+        mLastChipTime = byteArray2Int(response, 9, 12);
+        // Get station battery voltage
+        mVoltage = byteArray2Int(response, 13, 14);
+        // Get station temperature
+        mTemperature = byteArray2Int(response, 15, 16);
         return true;
     }
 
@@ -623,20 +736,16 @@ public final class Station {
      */
     public boolean initChip(final int teamNumber, final int teamMask) {
         // Note: last 4 byte are reserved and equal to zero now
-        byte[] commandData = new byte[16];
+        byte[] commandData = new byte[5];
+        commandData[0] = CMD_INIT_CHIP;
         // Prepare command payload
-        commandData[0] = (byte) 0x84;
-        commandData[1] = (byte) 0;  // TODO: change station bios to remove extra byte
-        int2ByteArray(teamNumber, commandData, 2, 2);
-        final int now = (int) (System.currentTimeMillis() / 1000L);
-        // TODO: station should use its own clock
-        int2ByteArray(now, commandData, 4, 4);
-        int2ByteArray(teamMask, commandData, 8, 4);
+        int2ByteArray(teamNumber, commandData, 1, 2);
+        int2ByteArray(teamMask, commandData, 3, 2);
         // Send command to station
-        final byte[] response = new byte[11];
+        final byte[] response = new byte[4];
         if (!command(commandData, response)) return false;
-        // TODO: get init time from station response
-        mLastInitTime = mStationTime;
+        // Get init time from station response
+        mLastInitTime = byteArray2Int(response, 0, 3);
         return true;
     }
 

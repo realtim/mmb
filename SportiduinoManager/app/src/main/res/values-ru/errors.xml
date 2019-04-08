@@ -33,6 +33,10 @@
     <string name="err_station_bad_chip">Повторно поднесите чип для записи в него
         обновленного состава участников</string>
     <string name="err_station_no_chip">Поднесите чип ближе к станции</string>
+    <string name="err_station_buffer_overflow">Переполнение буфера обмена данными станции</string>
+    <string name="err_station_reset_impossible">Смена номера станции невозможна, в ней
+        имеются несохраненные данные</string>
+    <string name="err_station_incorrect_uid">Некорректный UID чипа</string>
     <string name="err_station_unknown">Станция вернула неизвестный код ошибки</string>
 
     <string name="err_todo_team_list">Режим просмотра результатов команд еще не

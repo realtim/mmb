@@ -31,6 +31,10 @@
     <string name="err_station_init_chip">The chip is already initialized</string>
     <string name="err_station_bad_chip">Use the same chip to write updated mask to it</string>
     <string name="err_station_no_chip">Put the chip near the station</string>
+    <string name="err_station_buffer_overflow">Station buffer overflow</string>
+    <string name="err_station_reset_impossible">Station reset is impossible, new dara have
+        been appeared</string>
+    <string name="err_station_incorrect_uid">Incorrect chip UID</string>
     <string name="err_station_unknown">The station returned an unknown error</string>
 
     <string name="err_todo_team_list">Team list mode is not supported yet</string>
