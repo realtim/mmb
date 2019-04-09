@@ -45,8 +45,8 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/device_list"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="8dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_padding"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -66,7 +66,7 @@
             android:id="@+id/connected_station"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/default_padding"
             android:text="@string/connected_station"
             android:textColor="@color/text_primary"
             app:layout_constraintEnd_toEndOf="parent"
@@ -116,6 +116,13 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/station_mode" />
 
+        <android.support.constraint.Guideline
+            android:id="@+id/station_center"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/default_padding"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+
         <TextView
             android:id="@+id/station_new_point"
             android:layout_width="wrap_content"
@@ -123,8 +130,8 @@
             android:layout_marginTop="@dimen/default_padding"
             android:text="@string/station_new_point"
             android:textColor="@color/text_primary"
-            app:layout_constraintEnd_toEndOf="@+id/station_point_spinner"
-            app:layout_constraintStart_toStartOf="@+id/station_point_spinner"
+            app:layout_constraintEnd_toEndOf="@+id/station_center"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/station_mode_value" />
 
         <TextView
@@ -134,25 +141,28 @@
             android:layout_marginTop="@dimen/default_padding"
             android:text="@string/station_new_mode"
             android:textColor="@color/text_primary"
-            app:layout_constraintEnd_toEndOf="@+id/station_mode_spinner"
-            app:layout_constraintStart_toStartOf="@+id/station_mode_spinner"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/station_center"
             app:layout_constraintTop_toBottomOf="@+id/station_mode_value" />
 
         <Spinner
             android:id="@+id/station_point_spinner"
-            android:layout_width="150dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toStartOf="@+id/station_mode_spinner"
+            android:dropDownWidth="wrap_content"
+            android:minWidth="@dimen/min_points_list_width"
+            app:layout_constraintEnd_toEndOf="@+id/station_center"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/station_new_point"
-            app:layout_constraintHorizontal_chainStyle="packed"/>
+            app:layout_constraintTop_toBottomOf="@+id/station_new_point" />
 
         <Spinner
             android:id="@+id/station_mode_spinner"
-            android:layout_width="150dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toEndOf="@+id/station_point_spinner"
+            android:dropDownWidth="wrap_content"
+            android:minWidth="@dimen/min_points_list_width"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/station_center"
             app:layout_constraintTop_toBottomOf="@+id/station_new_mode" />
 
         <Button

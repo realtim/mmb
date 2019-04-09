@@ -1,4 +1,4 @@
-package ru.mmb.sportiduinomanager.activity.devices;
+package ru.mmb.sportiduinomanager;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -25,11 +25,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import ru.mmb.sportiduinomanager.MainActivity;
-import ru.mmb.sportiduinomanager.MainApplication;
-import ru.mmb.sportiduinomanager.R;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.task.ConnectDeviceTask;
 
 /**
  * Provides ability to discover a station, connect to it and set it's mode.
@@ -82,9 +80,10 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      */
     private int mBluetoothSearch = BT_SEARCH_OFF;
     /**
-     * Reference to new point selection listener gives us possibility to enable and disable it.
+     * Reference to new point selection listener
+     * gives us ability to enable/disable it.
      */
-    private OnNewPointSelectedListener mNewPointSelectedListener;
+    private PointSelectedListener mOnPointSelected;
 
     /**
      * Receiver of Bluetooth adapter state changes.
@@ -209,17 +208,22 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         } else {
             mBluetoothSearch = BT_SEARCH_OFF;
         }
-        // Initialize pointes and modes spinners
-        final Spinner stationPointSpinner = findViewById(R.id.station_point_spinner);
-        stationPointSpinner.setAdapter(getPointsAdapter());
-        mNewPointSelectedListener = new OnNewPointSelectedListener();
-        stationPointSpinner.setOnItemSelectedListener(mNewPointSelectedListener);
-        final Spinner stationModeSpinner = findViewById(R.id.station_mode_spinner);
-        stationModeSpinner.setAdapter(getStationModesAdapter());
+        // Initialize points and modes spinners
+        final Spinner pointSpinner = findViewById(R.id.station_point_spinner);
+        pointSpinner.setAdapter(getPointsAdapter());
+        mOnPointSelected = new PointSelectedListener();
+        pointSpinner.setOnItemSelectedListener(mOnPointSelected);
+        final Spinner modeSpinner = findViewById(R.id.station_mode_spinner);
+        modeSpinner.setAdapter(getModesAdapter());
         // Update activity layout
         updateLayout(true);
     }
 
+    /**
+     * Generator of list content for points dropdown list.
+     *
+     * @return Sorted list of all points of the distance
+     */
     private ArrayAdapter<String> getPointsAdapter() {
         // Get list of active points (if a distance was downloaded)
         final Distance distance = mMainApplication.getDistance();
@@ -230,8 +234,13 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         return new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, points);
     }
 
-    private ArrayAdapter<String> getStationModesAdapter() {
-        List<String> modes = Arrays.asList(
+    /**
+     * Generator of list content for station modes dropdown list.
+     *
+     * @return List of all supported station modes
+     */
+    private ArrayAdapter<String> getModesAdapter() {
+        final List<String> modes = Arrays.asList(
                 getResources().getString(R.string.station_mode_0),
                 getResources().getString(R.string.station_mode_1),
                 getResources().getString(R.string.station_mode_2));
@@ -293,7 +302,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      *
      * @return local device list adapter
      */
-    BTDeviceListAdapter getDeviceListAdapter() {
+    public BTDeviceListAdapter getDeviceListAdapter() {
         return mAdapter;
     }
 
@@ -353,33 +362,35 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
             return;
         }
         // Get new station number
-        final Spinner stationPointSpinner = findViewById(R.id.station_point_spinner);
-        final byte newNumber = (byte) stationPointSpinner.getSelectedItemPosition();
+        final Spinner pointSpinner = findViewById(R.id.station_point_spinner);
+        final byte newNumber = (byte) pointSpinner.getSelectedItemPosition();
         // Get new station mode
-        final Spinner stationModeSpinner = findViewById(R.id.station_mode_spinner);
-        final byte newMode = (byte) stationModeSpinner.getSelectedItemPosition();
+        final Spinner modeSpinner = findViewById(R.id.station_mode_spinner);
+        final byte newMode = (byte) modeSpinner.getSelectedItemPosition();
         // Do nothing if numbers are the same
         final byte currentNumber = station.getNumber();
         if (currentNumber == newNumber && newMode == station.getMode()) return;
         // TODO: Check if some teams data from station was not downloaded and download it
-        // Reset station to change it's number
         // TODO: Show hourglass or something, reset takes long time
+        // Reset station to change it's number
         if (currentNumber != newNumber && !station.resetStation(newNumber)) {
             Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
             return;
         }
         long responseTime = station.getResponseTime();
         // Set new station mode
-        if (!station.newMode(newMode)) {
-            Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
-            updateLayout(false);
-            updateMenuItems(mMainApplication, R.id.bluetooth);
-            ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
-                    .getString(R.string.response_time, responseTime + station.getResponseTime()));
-            return;
+        if (newMode != station.getMode()) {
+            if (!station.newMode(newMode)) {
+                Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
+                updateLayout(false);
+                updateMenuItems(mMainApplication, R.id.bluetooth);
+                ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
+                        .getString(R.string.response_time, responseTime + station.getResponseTime()));
+                return;
+            }
+            // Compute total response time for two calls
+            responseTime += station.getResponseTime();
         }
-        // Compute total response time for two calls
-        responseTime += station.getResponseTime();
         // Get current station status (just in case) and update layout
         updateLayout(true);
         updateMenuItems(mMainApplication, R.id.bluetooth);
@@ -408,19 +419,12 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     }
 
     /**
-     * Open updateMenuItems() method for calls from ConnectDeviceTask
-     */
-    public void fireUpdateMenuItems() {
-        updateMenuItems(mMainApplication, R.id.bluetooth);
-    }
-
-    /**
      * Update layout according to activity state.
      *
      * @param fetchStatus True if we need to send command to station
      *                    to get it's current status
      */
-    void updateLayout(final boolean fetchStatus) {
+    public void updateLayout(final boolean fetchStatus) {
         // Show BT search button / progress
         if (mBluetoothSearch == BT_SEARCH_OFF) {
             findViewById(R.id.device_search_progress).setVisibility(View.INVISIBLE);
@@ -447,7 +451,6 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
 
         // Show station status block
         final Station station = mMainApplication.getStation();
-        final Distance distance = mMainApplication.getDistance();
         // Station was not connected yet
         if (station == null) {
             findViewById(R.id.station_status).setVisibility(View.GONE);
@@ -464,7 +467,14 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         ((TextView) findViewById(R.id.station_bt_name)).setText(station.getName());
         ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
                 .getString(R.string.response_time, station.getResponseTime()));
-        final String pointName = distance.getPointName(station.getNumber(), getResources().getString(R.string.active_point_prefix));
+        final Distance distance = mMainApplication.getDistance();
+        String pointName;
+        if (distance == null) {
+            pointName = "#" + station.getNumber();
+        } else {
+            pointName = distance.getPointName(station.getNumber(),
+                    getResources().getString(R.string.active_point_prefix));
+        }
         switch (station.getMode()) {
             case Station.MODE_INIT_CHIPS:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
@@ -484,12 +494,13 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
                 break;
         }
 
-        final Spinner stationPointSpinner = findViewById(R.id.station_point_spinner);
-        // Disable point spinner selection listener
-        mNewPointSelectedListener.setCalledFromUpdate();
-        stationPointSpinner.setSelection(station.getNumber());
-        final Spinner stationModeSpinner = findViewById(R.id.station_mode_spinner);
-        stationModeSpinner.setSelection(station.getMode());
+        // Update drop down lists according to current station number and mode
+        final Spinner pointSpinner = findViewById(R.id.station_point_spinner);
+        // Disable point spinner selection listener during this update
+        mOnPointSelected.setCalledFromUpdate();
+        pointSpinner.setSelection(station.getNumber());
+        final Spinner modeSpinner = findViewById(R.id.station_mode_spinner);
+        modeSpinner.setSelection(station.getMode());
 
         ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
                 .getString(R.string.station_time_drift, station.getTimeDrift()));
@@ -500,27 +511,49 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         findViewById(R.id.station_status).setVisibility(View.VISIBLE);
     }
 
-    private class OnNewPointSelectedListener implements AdapterView.OnItemSelectedListener {
+    /**
+     * Callback to be invoked when an item in points list has been selected.
+     */
+    private class PointSelectedListener implements AdapterView.OnItemSelectedListener {
 
-        private boolean calledFromUpdate = false;
+        /**
+         * Flag for disabling Mode Spinner change when called from updateLayout.
+         */
+        private boolean mCalledFromUpdate;
 
-        public void setCalledFromUpdate() {
-            this.calledFromUpdate = true;
+        /**
+         * Set mCalledFromUpdate to true for
+         * disabling setting mode to default during layout update.
+         */
+        void setCalledFromUpdate() {
+            this.mCalledFromUpdate = true;
         }
 
         @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        public void onItemSelected(final AdapterView<?> parent, final View view, final int position,
+                                   final long rowId) {
             // Disable listener when called directly at updateLayout()
-            if (!calledFromUpdate) {
-                int defaultMode = getPointDefaultMode(parent.getSelectedItemPosition());
-                ((Spinner) findViewById(R.id.station_mode_spinner)).setSelection(defaultMode);
+            if (!mCalledFromUpdate) {
+                final int defaultMode = getPointDefaultMode(parent.getSelectedItemPosition());
+                if (defaultMode >= 0) {
+                    ((Spinner) findViewById(R.id.station_mode_spinner)).setSelection(defaultMode);
+                }
             }
-            calledFromUpdate = false;
+            mCalledFromUpdate = false;
         }
 
-        private int getPointDefaultMode(int pointNumber) {
+        /**
+         * Get default mode for selected point.
+         *
+         * @param pointNumber Point number in downloaded distance
+         * @return One of Station.MODE_* constants or -1 in case of error
+         */
+        private int getPointDefaultMode(final int pointNumber) {
             final Distance distance = mMainApplication.getDistance();
+            if (distance == null) return -1;
             switch (distance.getPointType(pointNumber)) {
+                case -1:
+                    return -1;
                 case 0:
                     return Station.MODE_INIT_CHIPS;
                 case 2:
@@ -531,7 +564,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         }
 
         @Override
-        public void onNothingSelected(AdapterView<?> parent) {
+        public void onNothingSelected(final AdapterView<?> parent) {
             // do nothing
         }
     }

@@ -1,4 +1,4 @@
-package ru.mmb.sportiduinomanager.activity.devices;
+package ru.mmb.sportiduinomanager;
 
 import android.bluetooth.BluetoothDevice;
 import android.support.annotation.NonNull;
@@ -11,9 +11,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import ru.mmb.sportiduinomanager.MainApplication;
-import ru.mmb.sportiduinomanager.R;
 
 /**
  * Provides the list of discovered Bluetooth devices.
@@ -138,7 +135,7 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
      * @param address      MAC address as string
      * @param isConnecting True if we are connecting to this device right now
      */
-    void setConnectedDevice(final String address, final boolean isConnecting) {
+    public void setConnectedDevice(final String address, final boolean isConnecting) {
         mConnectedDevice = address;
         mIsConnecting = isConnecting;
         notifyDataSetChanged();

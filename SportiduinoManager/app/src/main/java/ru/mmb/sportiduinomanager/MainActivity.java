@@ -16,8 +16,6 @@ import android.widget.Toast;
 
 import java.util.Objects;
 
-import ru.mmb.sportiduinomanager.activity.devices.BluetoothActivity;
-
 import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
@@ -128,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
      * @param itemId Menu item id
      * @return Menu item handler
      */
-    protected MenuItem getMenuItem(final int itemId) {
+    MenuItem getMenuItem(final int itemId) {
         return mNavigationView.getMenu().findItem(itemId);
     }
 
@@ -147,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
      * @param mainApplication Main application context
      * @param activeItem      Currently selected menu item id or 0 for startup screen
      */
-    protected void updateMenuItems(final MainApplication mainApplication, final int activeItem) {
+    public void updateMenuItems(final MainApplication mainApplication, final int activeItem) {
         // Get app state from main thread
         final Database database = mainApplication.getDatabase();
         final Distance distance = mainApplication.getDistance();

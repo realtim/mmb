@@ -18,7 +18,6 @@
     <string name="err_bt_receive_timeout">Станция не отвечает</string>
     <string name="err_bt_receive_bad_response">Некорректный ответ станции</string>
     <string name="err_bt_response_wrong_length">Неправильная длина ответа станции</string>
-    <string name="err_bt_bad_point_number">Некорректный номер активной точки</string>
 
     <string name="err_init_no_such_team">Команды с таким номером не существует</string>
     <string name="err_init_empty_team">В команде должно быть не менее 1 участника</string>

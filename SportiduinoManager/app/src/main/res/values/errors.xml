@@ -18,7 +18,6 @@
     <string name="err_bt_receive_timeout">Station communication timeout</string>
     <string name="err_bt_receive_bad_response">Incorrect station response</string>
     <string name="err_bt_response_wrong_length">Station response has wrong length</string>
-    <string name="err_bt_bad_point_number">Incorrect number of active point</string>
 
     <string name="err_init_no_such_team">No team with this number</string>
     <string name="err_init_empty_team">A team should consist of 1 or more members</string>

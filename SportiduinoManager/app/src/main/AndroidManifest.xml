@@ -33,7 +33,7 @@
             </intent-filter>
         </activity>
         <activity android:name="DatabaseActivity" />
-        <activity android:name=".activity.devices.BluetoothActivity" />
+        <activity android:name="BluetoothActivity" />
         <activity android:name="ChipInitActivity" />
         <activity android:name="ActivePointActivity" />
     </application>

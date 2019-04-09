@@ -1,4 +1,4 @@
-package ru.mmb.sportiduinomanager.activity.devices;
+package ru.mmb.sportiduinomanager.task;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.AsyncTask;
@@ -6,6 +6,7 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
+import ru.mmb.sportiduinomanager.BluetoothActivity;
 import ru.mmb.sportiduinomanager.MainApplication;
 import ru.mmb.sportiduinomanager.R;
 import ru.mmb.sportiduinomanager.model.Station;
@@ -91,6 +92,6 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
         // Update activity layout
         activity.updateLayout(true);
         // Update menu items only after station status request
-        activity.fireUpdateMenuItems();
+        activity.updateMenuItems(mMainApplication, R.id.bluetooth);
     }
 }
