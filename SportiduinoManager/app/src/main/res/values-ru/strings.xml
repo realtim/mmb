@@ -49,7 +49,9 @@
     <string name="device_name">%1$s (%2$s)</string>
     <string name="device_connect_description">Нажмите для подключения к станции</string>
     <string name="connected_station">Подключенная станция</string>
-    <string name="response_time">Время отклика: %1$dмс</string>
+    <string name="station_firmware">Версия прошивки %1$d</string>
+    <string name="station_voltage">Напряжение батареи %1$d, температура %2$d°C</string>
+    <string name="response_time">Время отклика %1$dмс</string>
     <string name="station_mode">Текущий режим</string>
     <string name="station_mode_value_0">Инициализация чипов на точке #%1$s</string>
     <string name="station_mode_value_1">Обычный КП #%1$s</string>

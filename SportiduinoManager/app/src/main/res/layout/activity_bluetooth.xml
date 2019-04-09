@@ -60,7 +60,7 @@
             android:id="@+id/station_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="connected_station,station_bt_name,station_bt_response,station_mode,station_mode_value,station_new_point,station_new_mode,station_point_spinner,station_mode_spinner,station_change_mode,station_time_drift,station_sync_time,station_chips_registered,station_chips_registered_value,station_last_chip,station_last_chip_time" />
+            app:constraint_referenced_ids="connected_station,station_bt_name,station_firmware,station_voltage,station_response_time,station_mode,station_mode_value,station_new_point,station_new_mode,station_point_spinner,station_mode_spinner,station_change_mode,station_time_drift,station_sync_time,station_chips_registered,station_chips_registered_value,station_last_chip,station_last_chip_time" />
 
         <TextView
             android:id="@+id/connected_station"
@@ -85,14 +85,34 @@
             app:layout_constraintTop_toBottomOf="@+id/connected_station" />
 
         <TextView
-            android:id="@+id/station_bt_response"
+            android:id="@+id/station_firmware"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/station_firmware"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/station_bt_name" />
+
+        <TextView
+            android:id="@+id/station_voltage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/station_voltage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/station_firmware" />
+
+        <TextView
+            android:id="@+id/station_response_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/response_time"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/station_bt_name" />
+            app:layout_constraintTop_toBottomOf="@+id/station_voltage" />
 
         <TextView
             android:id="@+id/station_mode"
@@ -104,7 +124,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/station_bt_response" />
+            app:layout_constraintTop_toBottomOf="@+id/station_response_time" />
 
         <TextView
             android:id="@+id/station_mode_value"

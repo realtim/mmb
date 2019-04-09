@@ -384,7 +384,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
                 Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
                 updateLayout(false);
                 updateMenuItems(mMainApplication, R.id.bluetooth);
-                ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
+                ((TextView) findViewById(R.id.station_response_time)).setText(getResources()
                         .getString(R.string.response_time, responseTime + station.getResponseTime()));
                 return;
             }
@@ -396,7 +396,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         updateMenuItems(mMainApplication, R.id.bluetooth);
         responseTime += station.getResponseTime();
         // Set correct response time for sum of three commands responses
-        ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
+        ((TextView) findViewById(R.id.station_response_time)).setText(getResources()
                 .getString(R.string.response_time, responseTime));
     }
 
@@ -409,7 +409,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         final Station station = mMainApplication.getStation();
         if (station == null) return;
         if (station.syncTime()) {
-            ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
+            ((TextView) findViewById(R.id.station_response_time)).setText(getResources()
                     .getString(R.string.response_time, station.getResponseTime()));
             ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
                     .getString(R.string.station_time_drift, station.getTimeDrift()));
@@ -465,7 +465,12 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         }
         // Update station data status in layout
         ((TextView) findViewById(R.id.station_bt_name)).setText(station.getName());
-        ((TextView) findViewById(R.id.station_bt_response)).setText(getResources()
+        ((TextView) findViewById(R.id.station_firmware)).setText(getResources()
+                .getString(R.string.station_firmware, station.getFirmware()));
+        ((TextView) findViewById(R.id.station_voltage)).setText(getResources()
+                .getString(R.string.station_voltage,
+                        station.getVoltage(), station.getTemperature()));
+        ((TextView) findViewById(R.id.station_response_time)).setText(getResources()
                 .getString(R.string.response_time, station.getResponseTime()));
         final Distance distance = mMainApplication.getDistance();
         String pointName;
