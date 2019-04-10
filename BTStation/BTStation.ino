@@ -1,4 +1,4 @@
-#define DEBUG
+//#define DEBUG
 
 #include <Wire.h>
 #include "ds3231.h"
@@ -49,6 +49,8 @@
 #define COMMAND_READ_CARD_PAGE		0x87
 #define COMMAND_UPDATE_TEAM_MASK	0x88
 #define COMMAND_WRITE_CARD_PAGE		0x89
+#define COMMAND_READ_FLASH			0x8a
+#define COMMAND_WRITE_FLASH			0x8b
 
 //размеры данных для команд
 #define DATA_LENGTH_SET_MODE			1
@@ -57,10 +59,12 @@
 #define DATA_LENGTH_GET_STATUS			0
 #define DATA_LENGTH_INIT_CHIP			4
 #define DATA_LENGTH_GET_LAST_TEAM		0
-#define DATA_LENGTH_GET_CHIP_HISTORY	4
+#define DATA_LENGTH_GET_CHIP_HISTORY	2
 #define DATA_LENGTH_READ_CARD_PAGE		2
 #define DATA_LENGTH_UPDATE_TEAM_MASK	8
 #define DATA_LENGTH_WRITE_CARD_PAGE		13
+#define DATA_LENGTH_READ_FLASH			8
+#define DATA_LENGTH_WRITE_FLASH			4  //and more according to data length
 
 //ответы станции
 #define REPLY_SET_MODE				0x90
@@ -73,6 +77,8 @@
 #define REPLY_READ_CARD_PAGE		0x97
 #define REPLY_UPDATE_TEAM_MASK		0x98
 #define REPLY_WRITE_CARD_PAGE		0x99
+#define REPLY_READ_FLASH			0x9a
+#define REPLY_WRITE_FLASH			0x9b
 
 //режимы станции
 #define MODE_INIT		0
@@ -297,6 +303,15 @@ void executeCommand()
 		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_WRITE_CARD_PAGE) writeCardPage();
 		else errorLengthFlag = true;
 		break;
+	case COMMAND_READ_FLASH:
+		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_READ_FLASH) readFlash();
+		else errorLengthFlag = true;
+		break;
+	case COMMAND_WRITE_FLASH:
+		if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_WRITE_FLASH) writeFlash();
+		else errorLengthFlag = true;
+		break;
+
 	}
 #ifdef DEBUG
 	if (errorLengthFlag) DebugSerial.println(F("Incorrect data length"));
@@ -321,7 +336,11 @@ void setMode()
 	init_package(REPLY_SET_MODE);
 
 	//0: код ошибки
-	addData(OK);
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_SET_MODE);
+		return;
+	}
 	sendData();
 }
 
@@ -378,11 +397,17 @@ void setTime()
 
 	//0: код ошибки
 	//1-4: текущее время
-	addData(OK);
-	addData((tmpTime & 0xFF000000) >> 24);
-	addData((tmpTime & 0x00FF0000) >> 16);
-	addData((tmpTime & 0x0000FF00) >> 8);
-	addData(tmpTime & 0x000000FF);
+	bool flag = true;
+	flag &= addData(OK);
+	flag &= addData((tmpTime & 0xFF000000) >> 24);
+	flag &= addData((tmpTime & 0x00FF0000) >> 16);
+	flag &= addData((tmpTime & 0x0000FF00) >> 8);
+	flag &= addData(tmpTime & 0x000000FF);
+	if (!flag)
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_SET_TIME);
+		return;
+	}
 	sendData();
 }
 
@@ -438,7 +463,12 @@ void resetStation()
 	init_package(REPLY_RESET_STATION);
 
 	//0: код ошибки
-	addData(OK);
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_RESET_STATION);
+		return;
+	}
+
 	sendData();
 }
 
@@ -450,44 +480,55 @@ void getStatus()
 
 	//0: код ошибки
 	//1: версия прошивки
-	//2: номер станции
-	//3: номер режима
-	//4-7 : текущее время
-	//8-9 : количество отметок на станции
-	//10-13 : время последней отметки на станции
-	//14-15 : напряжение батареи в условных единицах[0..1023] ~[0..1.1В]
-	//16-17 : температура
+	//2: номер режима
+	//3-6: текущее время
+	//7-8: количество отметок на станции
+	//9-12: время последней отметки на станции
+	//13-14: напряжение батареи в условных единицах[0..1023] ~[0..1.1В]
+	//15-16: температура чипа DS3231 (чуть выше окружающей среды)
+	//ПОСЛЕ ММБ!!! 15-16: емкость флэш-памяти
 	init_package(REPLY_GET_STATUS);
-	addData(OK);
-	addData(FW_VERSION);
-	addData(stationNumber);
-	addData(stationMode);
 
-	addData((tmpTime & 0xFF000000) >> 24);
-	addData((tmpTime & 0x00FF0000) >> 16);
-	addData((tmpTime & 0x0000FF00) >> 8);
-	addData(tmpTime & 0x000000FF);
+	bool flag = true;
+	flag &= addData(OK);
+	flag &= addData(FW_VERSION);
+	flag &= addData(stationMode);
 
-	addData((totalChipsChecked & 0xFF00) >> 8);
-	addData(totalChipsChecked & 0x00FF);
+	flag &= addData((tmpTime & 0xFF000000) >> 24);
+	flag &= addData((tmpTime & 0x00FF0000) >> 16);
+	flag &= addData((tmpTime & 0x0000FF00) >> 8);
+	flag &= addData(tmpTime & 0x000000FF);
 
-	addData((lastTimeChecked & 0xFF000000) >> 24);
-	addData((lastTimeChecked & 0x00FF0000) >> 16);
-	addData((lastTimeChecked & 0x0000FF00) >> 8);
-	addData(lastTimeChecked & 0x000000FF);
+	flag &= addData((totalChipsChecked & 0xFF00) >> 8);
+	flag &= addData(totalChipsChecked & 0x00FF);
+
+	flag &= addData((lastTimeChecked & 0xFF000000) >> 24);
+	flag &= addData((lastTimeChecked & 0x00FF0000) >> 16);
+	flag &= addData((lastTimeChecked & 0x0000FF00) >> 8);
+	flag &= addData(lastTimeChecked & 0x000000FF);
 
 	unsigned int batteryLevel = getBatteryLevel();
-	addData((batteryLevel & 0xFF00) >> 8);
-	addData(batteryLevel & 0x00FF);
+	flag &= addData((batteryLevel & 0xFF00) >> 8);
+	flag &= addData(batteryLevel & 0x00FF);
 
 	int temperature = (int)DS3231_get_treg();
-	addData((temperature & 0xFF00) >> 8);
-	addData(temperature & 0x00FF);
+	flag &= addData((temperature & 0xFF00) >> 8);
+	flag &= addData(temperature & 0x00FF);
+
+	/*long capacity = SPIflash.getCapacity();
+	flag &= addData((capacity & 0xFF000000) >> 24);
+	flag &= addData((capacity & 0x00FF0000) >> 16);
+	flag &= addData((capacity & 0x0000FF00) >> 8);
+	flag &= addData(capacity & 0x000000FF);*/
+	if (!flag)
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_GET_STATUS);
+		return;
+	}
 
 	sendData();
 }
 
-//проверить!!!
 //инициализация чипа
 void initChip()
 {
@@ -515,8 +556,8 @@ void initChip()
 	}
 
 	//проверить!!!
-	//инициализация сработает только если время инициализации записанное уже на чипе превышает неделю с текущего времени
-	/*if (!ntagRead4pages(PAGE_INIT_TIME))
+	//инициализация сработает только если время инициализации записанное уже на чипе превышает неделю до текущего времени
+	if (!ntagRead4pages(PAGE_INIT_TIME))
 	{
 		sendError(READ_ERROR, REPLY_INIT_CHIP);
 		SPI.end();
@@ -533,6 +574,32 @@ void initChip()
 	if ((systemTime.unixtime - initTime) < maxTimeInit)
 	{
 		sendError(LOW_INIT_TIME, REPLY_INIT_CHIP);
+		SPI.end();
+		return;
+	}
+
+	//0-1: номер команды
+	//2-3 : маска участников
+	//ПОСЛЕ ММБ!!! 4 - 11: UID чипа
+	//проверяем UID карты
+	/*if (!ntagRead4pages(PAGE_UID))
+	{
+		sendError(READ_ERROR, REPLY_INIT_CHIP);
+		SPI.end();
+		return;
+	}
+	bool flag = true;
+	for (byte i = 0; i <= 7; i++)
+	{
+		if (ntag_page[i] != uartBuffer[DATA_START_BYTE + 4 + i])
+		{
+			flag = false;
+			break;
+		}
+	}
+	if (!flag)
+	{
+		sendError(WRONG_UID, REPLY_INIT_CHIP);
 		SPI.end();
 		return;
 	}*/
@@ -561,10 +628,8 @@ void initChip()
 		}
 	}
 
-	//0-1: номер команды
-	//2-3 : маска участников
 	//пишем данные на карту
-	//номер команды, тип чипа, версия прошивки станции
+	//номер команды, тип чипа, версия прошивки станции	
 	dataBlock[0] = uartBuffer[DATA_START_BYTE];
 	dataBlock[1] = uartBuffer[DATA_START_BYTE + 1];
 	dataBlock[2] = NTAG_TYPE;
@@ -576,7 +641,7 @@ void initChip()
 		return;
 	}
 
-	//текущее время
+	//пишем на карту текущее время
 	unsigned long tmpTime = systemTime.unixtime;
 	dataBlock[0] = (tmpTime & 0xFF000000) >> 24;
 	dataBlock[1] = (tmpTime & 0x00FF0000) >> 16;
@@ -600,26 +665,42 @@ void initChip()
 		SPI.end();
 		return;
 	}
-
 	//получаем UID карты
-/*	if (!ntagRead4pages(PAGE_UID))
+	if (!ntagRead4pages(PAGE_UID))
 	{
 		sendError(READ_ERROR, REPLY_INIT_CHIP);
 		SPI.end();
 		return;
 	}
-	SPI.end();*/
+	SPI.end();
 
 	init_package(REPLY_INIT_CHIP);
-	addData(OK);
-/*	for (byte i = 0; i <= 7; i++)
+	if (!addData(OK))
 	{
-		addData(ntag_page[i]);
-	}*/
-	addData((tmpTime & 0xFF000000) >> 24);
-	addData((tmpTime & 0x00FF0000) >> 16);
-	addData((tmpTime & 0x0000FF00) >> 8);
-	addData(tmpTime & 0x000000FF);
+		sendError(BUFFER_OVERFLOW, REPLY_INIT_CHIP);
+		return;
+	}
+	//добавляем в ответ время инициализации
+	bool flag = true;
+	flag &= addData((tmpTime & 0xFF000000) >> 24);
+	flag &= addData((tmpTime & 0x00FF0000) >> 16);
+	flag &= addData((tmpTime & 0x0000FF00) >> 8);
+	flag &= addData(tmpTime & 0x000000FF);
+	if (!flag)
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_INIT_CHIP);
+		return;
+	}
+
+	//добавляем в ответ UID
+	for (byte i = 0; i <= 7; i++)
+	{
+		if (!addData(ntag_page[i]))
+		{
+			sendError(BUFFER_OVERFLOW, REPLY_INIT_CHIP);
+			return;
+		}
+	}
 	sendData();
 }
 
@@ -641,24 +722,35 @@ void getLastTeam()
 
 	init_package(REPLY_GET_LAST_TEAM);
 
+
+	bool flag = true;
 	//0: код ошибки
-	//1-2: номер чипа
+	flag &= addData(OK);
+
+	//1-2: номер команды
+	flag &= addData(lastChip[0]);
+	flag &= addData(lastChip[1]);
+
 	//3-6 : время инициализации
-	//7-14 : информация из страниц 6 - 7
-	//15-18 : время последней отметки на станции
-	addData(OK);
+	flag &= addData(lastChip[4]);
+	flag &= addData(lastChip[5]);
+	flag &= addData(lastChip[6]);
+	flag &= addData(lastChip[7]);
 
-	addData(lastChip[0]);
-	addData(lastChip[1]);
-	for (byte r = 4; r < 16; r++)
+	//7-8: маска команды
+	flag &= addData(lastChip[8]);
+	flag &= addData(lastChip[9]);
+
+	//9-12 : время последней отметки на станции
+	flag &= addData(ntag_page[12]);
+	flag &= addData(ntag_page[13]);
+	flag &= addData(ntag_page[14]);
+	flag &= addData(ntag_page[15]);
+	if (!flag)
 	{
-		addData(lastChip[r]);
+		sendError(BUFFER_OVERFLOW, REPLY_GET_LAST_TEAM);
+		return;
 	}
-
-	addData((lastTimeChecked & 0xFF000000) >> 24);
-	addData((lastTimeChecked & 0x00FF0000) >> 16);
-	addData((lastTimeChecked & 0x0000FF00) >> 8);
-	addData(lastTimeChecked & 0x000000FF);
 
 	sendData();
 }
@@ -673,37 +765,52 @@ void getChipHistory()
 		return;
 	}
 
-	//0-1: с какой записи
-	//2-3: по какую запись включительно
-	unsigned int commandNumberFrom = uartBuffer[DATA_START_BYTE];
-	commandNumberFrom <<= 8;
-	commandNumberFrom += uartBuffer[DATA_START_BYTE + 1];
-	unsigned int commandNumberTo = uartBuffer[DATA_START_BYTE + 2];
-	commandNumberTo <<= 8;
-	commandNumberTo += uartBuffer[DATA_START_BYTE + 3];
+	//0-1: какую запись
+	unsigned int teamNumber = uartBuffer[DATA_START_BYTE];
+	teamNumber <<= 8;
+	teamNumber += uartBuffer[DATA_START_BYTE + 1];
 
 	init_package(REPLY_GET_CHIP_HISTORY);
-	addData(OK);
-	//: код ошибки
-	//1-2: номер команды
-	//3-4 : маска участников
-	//5-8 : время отметки команды
-
-	for (unsigned int chipN = commandNumberFrom; chipN <= commandNumberTo; chipN++)
+	if (!addData(OK))
 	{
-		if (readTeamFromFlash(chipN))
-		{
-			for (int i = 0; i < 8; i++)
-			{
-				addData(ntag_page[i]);
-			}
-		}
-		else
-		{
-			sendError(READ_ERROR, REPLY_GET_CHIP_HISTORY);
-			return;
-		}
+		sendError(BUFFER_OVERFLOW, REPLY_GET_CHIP_HISTORY);
+		return;
 	}
+	//0: код ошибки
+	//1-2: номер команды
+	//3-6 : время инициализации
+	//7-8: маска команды
+	//9-12 : время последней отметки на станции
+	readTeamFromFlash(teamNumber);
+	bool flag = true;
+	//0: код ошибки                            
+	flag &= addData(OK);
+
+	//1-2: номер чипа
+	flag &= addData(lastChip[0]);
+	flag &= addData(lastChip[1]);
+
+	//3-6 : время инициализации
+	flag &= addData(lastChip[4]);
+	flag &= addData(lastChip[5]);
+	flag &= addData(lastChip[6]);
+	flag &= addData(lastChip[7]);
+
+	//7-8: маска команды	
+	flag &= addData(lastChip[8]);
+	flag &= addData(lastChip[9]);
+
+	//9-12 : время последней отметки на станции
+	flag &= addData(ntag_page[12]);
+	flag &= addData(ntag_page[13]);
+	flag &= addData(ntag_page[14]);
+	flag &= addData(ntag_page[15]);
+	if (!flag)
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_GET_LAST_TEAM);
+		return;
+	}
+
 	sendData();
 }
 
@@ -742,7 +849,11 @@ void readCardPages()
 	//0: код ошибки
 	//1-8: UID чипа
 	//9-12: данные из страницы карты(4 байта)
-	addData(OK);
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
+		return;
+	}
 
 	if (!ntagRead4pages(PAGE_UID))
 	{
@@ -750,7 +861,14 @@ void readCardPages()
 		SPI.end();
 		return;
 	}
-	for (int i = 0; i <= 7; i++) addData(ntag_page[i]);
+	for (int i = 0; i <= 7; i++)
+	{
+		if (!addData(ntag_page[i]))
+		{
+			sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
+			return;
+		}
+	}
 
 	while (pageFrom <= pageTo)
 	{
@@ -765,8 +883,20 @@ void readCardPages()
 		if (n > 4) n = 4;
 		for (int i = 0; i < n; i++)
 		{
-			addData(pageFrom);
-			for (int j = 0; j < 4; j++) addData(ntag_page[i * 4 + j]);
+			if (!addData(pageFrom))
+			{
+				sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
+				return;
+			}
+			for (int j = 0; j < 4; j++)
+			{
+				if (!addData(ntag_page[i * 4 + j]))
+				{
+					sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
+					return;
+				}
+
+			}
 			pageFrom++;
 		}
 	}
@@ -829,6 +959,7 @@ void updateTeamMask()
 		SPI.end();
 		return;
 	}
+
 	if (ntag_page[0] != uartBuffer[DATA_START_BYTE + 2] || ntag_page[1] != uartBuffer[DATA_START_BYTE + 3] || ntag_page[2] != uartBuffer[DATA_START_BYTE + 4] || ntag_page[3] != uartBuffer[DATA_START_BYTE + 5])
 	{
 #ifdef DEBUG
@@ -858,7 +989,7 @@ void updateTeamMask()
 	}
 
 	//записать страницу на карту
-	byte dataBlock[4] = { uartBuffer[DATA_START_BYTE + 6], uartBuffer[DATA_START_BYTE + 7], 0,0 };
+	byte dataBlock[4] = { uartBuffer[DATA_START_BYTE + 6], ntag_page[6], uartBuffer[DATA_START_BYTE + 8],ntag_page[7] };
 	if (!ntagWritePage(dataBlock, PAGE_RESERVED1))
 	{
 		sendError(WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
@@ -870,7 +1001,11 @@ void updateTeamMask()
 	init_package(REPLY_UPDATE_TEAM_MASK);
 
 	//0: код ошибки
-	addData(OK);
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_UPDATE_TEAM_MASK);
+		return;
+	}
 	sendData();
 }
 
@@ -910,7 +1045,7 @@ void writeCardPage()
 	//проверить UID
 	if (!ntagRead4pages(PAGE_UID))
 	{
-		sendError(READ_ERROR, REPLY_READ_CARD_PAGE);
+		sendError(READ_ERROR, REPLY_WRITE_CARD_PAGE);
 		SPI.end();
 		return;
 	}
@@ -925,7 +1060,7 @@ void writeCardPage()
 	}
 	if (flag)
 	{
-		sendError(WRONG_UID, REPLY_READ_CARD_PAGE);
+		sendError(WRONG_UID, REPLY_WRITE_CARD_PAGE);
 		SPI.end();
 		return;
 	}
@@ -949,10 +1084,126 @@ void writeCardPage()
 	init_package(REPLY_WRITE_CARD_PAGE);
 
 	//0: код ошибки
-	addData(OK);
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_WRITE_CARD_PAGE);
+		return;
+	}
 	sendData();
 }
 
+//читаем флэш
+void readFlash()
+{
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_READ_FLASH);
+		return;
+	}
+
+	//0-3: адрес начала чтения
+	//4-7: адрес конца чтения
+	unsigned long startAddress = uartBuffer[DATA_START_BYTE];
+	startAddress <<= 8;
+	startAddress += uartBuffer[DATA_START_BYTE + 1];
+	startAddress <<= 8;
+	startAddress += uartBuffer[DATA_START_BYTE + 2];
+	startAddress <<= 8;
+	startAddress += uartBuffer[DATA_START_BYTE + 3];
+
+	unsigned long endAddress = uartBuffer[DATA_START_BYTE + 4];
+	endAddress <<= 8;
+	endAddress += uartBuffer[DATA_START_BYTE + 5];
+	endAddress <<= 8;
+	endAddress += uartBuffer[DATA_START_BYTE + 6];
+	endAddress <<= 8;
+	endAddress += uartBuffer[DATA_START_BYTE + 7];
+
+#ifdef DEBUG
+	DebugSerial.print(F("flash read="));
+	DebugSerial.print(String(startAddress));
+	DebugSerial.print(F("-"));
+	DebugSerial.println(String(endAddress));
+#endif
+
+	init_package(REPLY_READ_FLASH);
+	//0: код ошибки
+	//1...: данные из флэша
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_READ_FLASH);
+		return;
+	}
+	for (unsigned long i = startAddress; i <= endAddress; i++)
+	{
+		byte b = SPIflash.readByte(i);
+		if (!addData(b))
+		{
+			sendError(BUFFER_OVERFLOW, REPLY_READ_FLASH);
+			return;
+		}
+#ifdef DEBUG
+		DebugSerial.print(String(i));
+		DebugSerial.print("=");
+		if (b < 0x10) DebugSerial.print(F("0"));
+		DebugSerial.println(String(b, HEX));
+#endif
+	}
+
+	sendData();
+}
+
+//пишем в флэш
+bool writeFlash()
+{
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_WRITE_FLASH);
+		return;
+	}
+
+	//0-3: адрес начала записи
+	//1: кол-во записанных байт (для проверки)
+	unsigned long startAddress = uartBuffer[DATA_START_BYTE];
+	startAddress <<= 8;
+	startAddress += uartBuffer[DATA_START_BYTE + 1];
+	startAddress <<= 8;
+	startAddress += uartBuffer[DATA_START_BYTE + 2];
+	startAddress <<= 8;
+	startAddress += uartBuffer[DATA_START_BYTE + 3];
+
+	init_package(REPLY_WRITE_CARD_PAGE);
+	//0: код ошибки
+	//1: кол-во записанных байт (для проверки)
+
+	unsigned long i = startAddress + uartBuffer[LENGTH_BYTE] - 4;
+	byte n = 0;
+	while (startAddress <= i)
+	{
+		if (!SPIflash.writeByte(startAddress, uartBuffer[DATA_START_BYTE + n]))
+		{
+			sendError(WRITE_ERROR, REPLY_WRITE_FLASH);
+			return false;
+		}
+		startAddress++;
+		n++;
+	}
+
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_WRITE_FLASH);
+		return false;
+	}
+	if (!addData(n))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_WRITE_FLASH);
+		return false;
+	}
+
+	sendData();
+}
 
 
 // Internal functions
@@ -1036,22 +1287,23 @@ void init_package(byte command)
 }
 
 //добавление данных в буфер
-void addData(byte data)
+bool addData(byte data)
 {
-	if (uartBufferPosition > 254)
+	if (uartBufferPosition > 255)
 	{
-		sendError(BUFFER_OVERFLOW, uartBuffer[COMMAND_BYTE]);
-		return;
+		//sendError(BUFFER_OVERFLOW, uartBuffer[COMMAND_BYTE]);
+		return false;
 	}
 	uartBuffer[uartBufferPosition] = data;
 	uartBufferPosition++;
+	return true;
 }
 
 //передача пакета данных.
 void sendData()
 {
 	uartBuffer[LENGTH_BYTE] = uartBufferPosition - COMMAND_BYTE - 1;
-	addData(crcCalc(uartBuffer, STATION_NUMBER_BYTE, uartBufferPosition - 1));
+	uartBuffer[uartBufferPosition] = crcCalc(uartBuffer, STATION_NUMBER_BYTE, uartBufferPosition - 1);
 #ifdef DEBUG
 	DebugSerial.print(F("Sending:"));
 	for (int i = 0; i < uartBufferPosition; i++)
@@ -1062,7 +1314,7 @@ void sendData()
 	}
 	DebugSerial.println();
 #endif
-	Serial.write(uartBuffer, uartBufferPosition);
+	Serial.write(uartBuffer, uartBufferPosition + 1);
 	uartBufferPosition = 0;
 }
 
@@ -1392,7 +1644,6 @@ void writeFlash(int chipNum)
 			return;
 		}
 
-
 		for (byte dop = 0; dop < 16; dop++)
 		{
 			if (ntag_page[(dop / 4) * 4] != 0 || page == 4)
@@ -1409,18 +1660,19 @@ void writeFlash(int chipNum)
 				lastChip[i] = ntag_page[i];
 			}
 
+			//время отметки
+			ntag_page[12] = ((lastTimeChecked & 0xFF000000) >> 24);
+			ntag_page[13] = ((lastTimeChecked & 0x00FF0000) >> 16);
+			ntag_page[14] = ((lastTimeChecked & 0x0000FF00) >> 8);
+			ntag_page[15] = (lastTimeChecked & 0x000000FF);
 			lastTeamEnable = true;
-			byte byteTime[4];
-			byteTime[0] = (lastTimeChecked & 0xFF000000) >> 24;
-			byteTime[1] = (lastTimeChecked & 0x00FF0000) >> 16;
-			byteTime[2] = (lastTimeChecked & 0x0000FF00) >> 8;
-			byteTime[3] = (lastTimeChecked & 0x000000FF);
 
+			//сохраняем время отметки
 			//SPIflash.writeByteArray(shortFlash + 16, byteTime, 4, true);
-			SPIflash.writeByte(shortFlash + 16, byteTime[0]);
-			SPIflash.writeByte(shortFlash + 17, byteTime[1]);
-			SPIflash.writeByte(shortFlash + 18, byteTime[2]);
-			SPIflash.writeByte(shortFlash + 19, byteTime[3]);
+			SPIflash.writeByte(shortFlash + 16, ntag_page[12]);
+			SPIflash.writeByte(shortFlash + 17, ntag_page[13]);
+			SPIflash.writeByte(shortFlash + 18, ntag_page[14]);
+			SPIflash.writeByte(shortFlash + 19, ntag_page[15]);
 		}
 	}
 }
@@ -1431,7 +1683,13 @@ int refreshChipCounter()
 	int chips = 0;
 	for (int i = 0; i < 20000; i += 20)
 	{
-		if (SPIflash.readByte(i) != 255) chips++;
+		if (SPIflash.readByte(i) != 255)
+		{
+			chips++;
+#ifdef DEBUG			
+			DebugSerial.println(String(i));
+#endif
+		}
 	}
 #ifdef DEBUG
 	DebugSerial.print(F("chip counter="));
@@ -1440,33 +1698,36 @@ int refreshChipCounter()
 	return chips;
 }
 
-bool readTeamFromFlash(unsigned int num)
+void readTeamFromFlash(unsigned int num)
 {
 	unsigned long addr = num * 20;
 	SPIflash.readByte(addr);
-	//if (SPIflash.readByte(addr) != 255)
-	//{
-		//#команда
+	//#команды
 	ntag_page[0] = SPIflash.readByte(addr + 0);
 	ntag_page[1] = SPIflash.readByte(addr + 1);
+
+	//время инициализации
+	ntag_page[4] = SPIflash.readByte(addr + 4);
+	ntag_page[5] = SPIflash.readByte(addr + 5);
+	ntag_page[6] = SPIflash.readByte(addr + 6);
+	ntag_page[7] = SPIflash.readByte(addr + 7);
+
 	//маска
-	ntag_page[2] = SPIflash.readByte(addr + 8);
-	ntag_page[3] = SPIflash.readByte(addr + 9);
+	ntag_page[8] = SPIflash.readByte(addr + 8);
+	ntag_page[9] = SPIflash.readByte(addr + 9);
 	//время отметки
-	ntag_page[4] = SPIflash.readByte(addr + 16);
-	ntag_page[5] = SPIflash.readByte(addr + 17);
-	ntag_page[6] = SPIflash.readByte(addr + 18);
-	ntag_page[7] = SPIflash.readByte(addr + 19);
-	return true;
-	//}
-	return false;
+	ntag_page[12] = SPIflash.readByte(addr + 16);
+	ntag_page[13] = SPIflash.readByte(addr + 17);
+	ntag_page[14] = SPIflash.readByte(addr + 18);
+	ntag_page[15] = SPIflash.readByte(addr + 19);
 }
 
 //обработка ошибок. формирование пакета с сообщением о ошибке
 void sendError(byte errorCode, byte commandCode)
 {
 	init_package(commandCode);
-	addData(errorCode);
+	uartBuffer[DATA_START_BYTE] = errorCode;
+	uartBufferPosition = DATA_START_BYTE + 1;
 	sendData();
 }
 
@@ -1590,7 +1851,7 @@ bool readUart()
 			beep(50, 3);
 		}
 	}
-	beep(50, 2);
+	//beep(50, 2);
 	return false;
 }
 
