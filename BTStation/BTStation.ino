@@ -113,7 +113,10 @@
 //#define NTAG216_MAX_PAGE	226 //максимальное число страниц на чипе
 
 #define NTAG_TYPE			215 //режим работы и тип чипа
-//#define maxPage		127 //?????
+
+#define LOG_LENGTH			4000 //максимальное кол-во записей в логе
+
+#define LOG_RECORD_LENGTH	1024 //размер записи лога
 
 //описание протокола
 #define STATION_NUMBER_BYTE	3
@@ -745,7 +748,7 @@ void getChipHistory()
 	recordNumber <<= 8;
 	recordNumber += uartBuffer[DATA_START_BYTE + 1];
 
-	if (recordNumber < 1 || recordNumber >= 4000)
+	if (recordNumber < 1 || recordNumber >= LOG_LENGTH)
 	{
 		sendError(WRONG_TEAM, REPLY_GET_CHIP_HISTORY);
 		return;
@@ -1364,7 +1367,7 @@ bool ntagRead4pages(byte pageAdr)
 	return true;
 }
 
-//!!! Обработка поднесенного чипа
+//Обработка поднесенного чипа
 void processRfidCard()
 {
 	DS3231_get(&systemTime);
@@ -1397,7 +1400,7 @@ void processRfidCard()
 
 	/*
 	Фильтруем
-	1 - чипы с командой №0 или > 4000
+	1 - чипы с командой №0 или > LOG_LENGTH
 	2 - чип, который совпадает с уже отмеченным (в lastTeams[])
 	3 - чип более недельной давности инициализации
 	*/
@@ -1416,12 +1419,36 @@ void processRfidCard()
 		return;
 	}
 
-	//Не равен ли номер чипа 0 или >= 4000
+	//Не равен ли номер чипа 0 или >= LOG_LENGTH
 	unsigned int chipNum = (ntag_page[0] << 8) + ntag_page[1];
-	if (chipNum < 1 || chipNum >= 4000)
+	if (chipNum < 1 || chipNum >= LOG_LENGTH)
 	{
 		SPI.end();
 		return;
+	}
+
+	//не надо ли обновить у чипа маску?
+	//0-1: номер команды
+	//2-5: время выдачи чипа
+	//6-7: маска участников
+	if (ntag_page[0] == newTeamMask[0]
+		&& ntag_page[1] == newTeamMask[1]
+		&& ntag_page[4] == newTeamMask[2]
+		&& ntag_page[5] == newTeamMask[3]
+		&& ntag_page[6] == newTeamMask[4]
+		&& ntag_page[7] == newTeamMask[5])
+	{
+		if ((ntag_page[8] != newTeamMask[6] || ntag_page[9] != newTeamMask[7]))
+		{
+			byte dataBlock[4] = { newTeamMask[6], newTeamMask[7], ntag_page[10], ntag_page[11] };
+			if (!ntagWritePage(dataBlock, PAGE_RESERVED1))
+			{
+				sendError(WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
+				SPI.end();
+				return;
+			}
+			SPI.end();
+		}
 	}
 
 	//сравнить с буфером последних команд
@@ -1453,13 +1480,7 @@ void processRfidCard()
 		}
 
 		//добавляем в буфер последних команд
-		for (byte i = 2; i < lastTeamsLength * 2; i = i + 2)
-		{
-			lastTeams[i] = lastTeams[i - 2];
-			lastTeams[i + 1] = lastTeams[i - 1];
-		}
-		lastTeams[0] = (byte)(chipNum >> 8);
-		lastTeams[1] = (byte)chipNum;
+		addLastTeam(chipNum);
 		lastTimeChecked = tempT;
 		totalChipsChecked++;
 
@@ -1477,7 +1498,7 @@ void processRfidCard()
 #endif
 
 		//Пишем в лог карту
-		writeFlash(chipNum, tempT);
+		writeDumpToFlash(chipNum, tempT);
 	}
 }
 
@@ -1528,8 +1549,8 @@ byte findNewPage(byte finishpage)
 	}
 }
 
-// !!! разобраться с адресами хранения
-bool writeFlash(unsigned int recordNum, unsigned long tempT)
+//пишем дамп карты в лог
+bool writeDumpToFlash(unsigned int recordNum, unsigned long tempT)
 {
 	//адрес хранения в каталоге
 	unsigned long pageFlash = recordNum * 1024;
@@ -1628,7 +1649,7 @@ void readTeamFromFlash(unsigned int recordNum)
 int refreshChipCounter()
 {
 	int chips = 0;
-	for (int i = 0; i < 4000; i++)
+	for (int i = 0; i < LOG_LENGTH; i++)
 	{
 		if (SPIflash.readByte(i * 1024) != 255)
 		{
@@ -1797,4 +1818,15 @@ byte crcCalc(byte* dataArray, int startPosition, int dataEnd)
 		i++;
 	}
 	return (crc);
+}
+
+void addLastTeam(unsigned int number)
+{
+	for (byte i = 2; i < lastTeamsLength * 2; i = i + 2)
+	{
+		lastTeams[i] = lastTeams[i - 2];
+		lastTeams[i + 1] = lastTeams[i - 1];
+	}
+	lastTeams[0] = (byte)(number >> 8);
+	lastTeams[1] = (byte)number;
 }
