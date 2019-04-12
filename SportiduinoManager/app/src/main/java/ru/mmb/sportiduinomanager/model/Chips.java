@@ -164,6 +164,19 @@ public final class Chips {
     }
 
     /**
+     * Checks if the list of events contains an event for specific team.
+     *
+     * @param team Team number to search
+     * @return true if an event for the team has been found
+     */
+    public boolean contains(final int team) {
+        for (final ChipEvent event : mEvents) {
+            if (event.mTeamNumber == team) return true;
+        }
+        return false;
+    }
+
+    /**
      * Get statistic for sent/unsent chip initializations and teams results.
      *
      * @return Array of four integers

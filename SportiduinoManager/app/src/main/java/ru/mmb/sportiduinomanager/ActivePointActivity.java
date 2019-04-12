@@ -7,7 +7,9 @@ import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -123,6 +125,57 @@ public final class ActivePointActivity extends MainActivity {
     }
 
     /**
+     * Get all events for all new teams
+     * which has been visited the station after the last check.
+     */
+    private void fetchTeamsVisits() {
+        // Do nothing if no teams visited us yet
+        if (mStation.getChipsRegistered() == 0) return;
+        // Number of team visits at local db and at station are the same?
+        // Time of last visit in local db and at station is the same?
+        // (it can change without changing of number of teams)
+        if (mVisits.size() == mStation.getChipsRegistered()
+                && mVisits.getLastTeamTime() == mStation.getLastChipTime()) return;
+        // Ok, we have some new team visits
+        boolean fullDownload = false;
+        // Get previous teams list from station
+        final List<Integer> prevLastTeams = mStation.getLastTeams();
+        // Ask station for new list
+        if (mStation.fetchLastTeams()) {
+            fullDownload = true;
+        }
+        final List<Integer> currLastTeams = mStation.getLastTeams();
+        // Check if teams from previous list were saved in local db
+        for (final int team : prevLastTeams) {
+            if (!mVisits.contains(team)) {
+                fullDownload = true;
+            }
+        }
+        // Start building the list of teams to fetch
+        List<Integer> fetchTeams = new ArrayList<>();
+        for (final int team : currLastTeams) {
+            if (!prevLastTeams.contains(team)) {
+                fetchTeams.add(team);
+            }
+        }
+        // If all members of last teams buffer are new to us,
+        // then we need to make a full rescan
+        if (fetchTeams.size() == Station.LAST_TEAMS_LEN) {
+            fullDownload = true;
+        }
+        // If all last teams are the same but last team time has been changed
+        // then we need to rescan all teams from the buffer
+        if (fetchTeams.isEmpty()) {
+            fetchTeams = currLastTeams;
+        }
+        // For full rescan of all teams make a list of all registered teams
+        if (fullDownload) {
+            fetchTeams = mTeams.getTeamList();
+        }
+        // TODO: scan these teams
+    }
+
+    /**
      * Background thread for periodic querying of connected station.
      */
     private void runStationQuerying() {
@@ -143,6 +196,8 @@ public final class ActivePointActivity extends MainActivity {
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
+                // Fetch new new teams visits
+                fetchTeamsVisits();
                 // TODO: Get new team data if any
                 // Update station clock in UI
                 ActivePointActivity.this.runOnUiThread(() -> {

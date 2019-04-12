@@ -167,6 +167,21 @@ public final class Teams {
     }
 
     /**
+     * Get the list of all teams numbers.
+     *
+     * @return List of registered teams numbers
+     */
+    public List<Integer> getTeamList() {
+        final List<Integer> teams = new ArrayList<>();
+        for (int number = 1; number < mTeams.length; number++) {
+            if (mTeams[number] != null) {
+                teams.add(number);
+            }
+        }
+        return teams;
+    }
+
+    /**
      * Check the team list (loaded from site or from local db) for various errors.
      *
      * @return True if some errors were found

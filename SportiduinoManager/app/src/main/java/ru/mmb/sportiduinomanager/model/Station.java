@@ -8,7 +8,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -33,25 +35,26 @@ public final class Station {
     public static final byte MODE_FINISH_POINT = 2;
 
     /**
+     * Size of last teams buffer in station.
+     */
+    public static final byte LAST_TEAMS_LEN = 10;
+
+    /**
      * Timeout (im ms) while waiting for station response.
      */
     private static final int WAIT_TIMEOUT = 30_000;
-
     /**
      * Maximum size of communication packet.
      */
     private static final int MAX_PACKET_SIZE = 255;
-
     /**
      * Size of header in communication packet.
      */
     private static final int HEADER_SIZE = 6;
-
     /**
      * Protocol signature in all headers.
      */
     private static final byte HEADER_SIGNATURE = (byte) 0xFE;
-
     /**
      * Result of sending command to station: everything is ok.
      */
@@ -73,7 +76,6 @@ public final class Station {
      * of command execution
      */
     private static final byte REC_COMMAND_ERROR = 4;
-
     /**
      * Code of setMode station command.
      */
@@ -94,7 +96,10 @@ public final class Station {
      * Code of chipInit station command.
      */
     private static final byte CMD_INIT_CHIP = (byte) 0x84;
-
+    /**
+     * Code of getLastTeams station command.
+     */
+    private static final byte CMD_LAST_TEAMS = (byte) 0x85;
     /**
      * Default UUID of station Bluetooth socket.
      */
@@ -175,6 +180,11 @@ public final class Station {
     private int mTemperature;
 
     /**
+     * List of last teams which visited the station.
+     */
+    private List<Integer> mLastTeams;
+
+    /**
      * Create Station from Bluetooth scan.
      *
      * @param device Bluetooth device handler
@@ -190,6 +200,7 @@ public final class Station {
         mFirmware = 0;
         mVoltage = 0;
         mTemperature = 0;
+        mLastTeams = new ArrayList<>();
         // Create client socket with default Bluetooth UUID
         try {
             mSocket = mDevice.createRfcommSocketToServiceRecord(STATION_UUID);
@@ -317,7 +328,25 @@ public final class Station {
     }
 
     /**
+     * Get list of last teams visits.
+     *
+     * @return Array of teams numbers
+     */
+    public List<Integer> getLastTeams() {
+        return mLastTeams;
+    }
+
+    /**
      * Get the time of last chip registration.
+     *
+     * @return Unixtime of last chip event
+     */
+    public long getLastChipTime() {
+        return mLastChipTime;
+    }
+
+    /**
+     * Get the time of last chip registration as a formatted string.
      *
      * @return Text representation of time of last chip registration in local timezone
      */
@@ -476,6 +505,10 @@ public final class Station {
         if (sendBuffer[0] != CMD_GET_STATUS && sendBuffer[0] != CMD_RESET_STATION
                 && receiveBuffer[3] != mNumber) {
             return new byte[]{REC_BAD_RESPONSE};
+        }
+        // update station number for getStatus command
+        if (sendBuffer[0] == CMD_GET_STATUS) {
+            mNumber = receiveBuffer[3];
         }
         // check crc
         if (receiveBuffer[len - 1] != crc8(receiveBuffer, len - 1)) {
@@ -705,25 +738,23 @@ public final class Station {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchStatus() {
         // Get response from station
-        final byte[] response = new byte[17];
+        final byte[] response = new byte[16];
         if (!command(new byte[]{CMD_GET_STATUS}, response)) return false;
         // Get station firmware
         mFirmware = response[0];
-        // Get station N
-        mNumber = response[1];
         // Get station mode
-        mMode = response[2];
+        mMode = response[1];
         // Get station time
-        mStationTime = byteArray2Int(response, 3, 6);
+        mStationTime = byteArray2Int(response, 2, 5);
         mTimeDrift = mStationTime - (int) (System.currentTimeMillis() / 1000L);
         // Get number of chips registered by station
-        mChipsRegistered = byteArray2Int(response, 7, 8);
+        mChipsRegistered = byteArray2Int(response, 6, 7);
         // Get last chips registration time
-        mLastChipTime = byteArray2Int(response, 9, 12);
+        mLastChipTime = byteArray2Int(response, 8, 11);
         // Get station battery voltage
-        mVoltage = byteArray2Int(response, 13, 14);
+        mVoltage = byteArray2Int(response, 12, 13);
         // Get station temperature
-        mTemperature = byteArray2Int(response, 15, 16);
+        mTemperature = byteArray2Int(response, 14, 15);
         return true;
     }
 
@@ -749,4 +780,20 @@ public final class Station {
         return true;
     }
 
+    /**
+     * Get list of last LAST_TEAMS_LEN teams which has been visited the station.
+     *
+     * @return True if succeeded
+     */
+    public boolean fetchLastTeams() {
+        // Get response from station
+        final byte[] response = new byte[LAST_TEAMS_LEN * 2];
+        if (!command(new byte[]{CMD_LAST_TEAMS}, response)) return false;
+        mLastTeams = new ArrayList<>();
+        for (int i = 0; i < LAST_TEAMS_LEN; i++) {
+            final int teamNumber = byteArray2Int(response, i * 2, i * 2 + 1);
+            if (teamNumber > 0) mLastTeams.add(teamNumber);
+        }
+        return true;
+    }
 }
