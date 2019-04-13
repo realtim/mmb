@@ -28,6 +28,7 @@ import java.util.Locale;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.task.ConnectDeviceTask;
+import ru.mmb.sportiduinomanager.task.ResetStationTask;
 
 /**
  * Provides ability to discover a station, connect to it and set it's mode.
@@ -57,6 +58,14 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      * Bluetooth device search is active.
      */
     private static final int BT_SEARCH_ON = 1;
+    /**
+     * Station reset not running now.
+     */
+    public static final int RESET_STATION_OFF = 0;
+    /**
+     * Station reset is in progress.
+     */
+    public static final int RESET_STATION_ON = 0;
 
     /**
      * RecyclerView with discovered Bluetooth devices and connect buttons.
@@ -79,6 +88,10 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      * Current state of bluetooth device discovery.
      */
     private int mBluetoothSearch = BT_SEARCH_OFF;
+    /**
+     * Current state of station reset procedure.
+     */
+    private int mResetStation = RESET_STATION_OFF;
     /**
      * Reference to new point selection listener
      * gives us ability to enable/disable it.
@@ -307,6 +320,15 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     }
 
     /**
+     * Accessor method to change mResetStation from AsyncTask.
+     *
+     * @param newState new state RESET_STATION_ON or RESET_STATION_OFF
+     */
+    public void setResetStationState(final int newState) {
+        mResetStation = newState;
+    }
+
+    /**
      * Search for available Bluetooth devices.
      *
      * @param view View of button clicked
@@ -371,12 +393,25 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         final byte currentNumber = station.getNumber();
         if (currentNumber == newNumber && newMode == station.getMode()) return;
         // TODO: Check if some teams data from station was not downloaded and download it
-        // TODO: Show hourglass or something, reset takes long time
         // Reset station to change it's number
-        if (currentNumber != newNumber && !station.resetStation(newNumber)) {
-            Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
+        if (currentNumber != newNumber) {
+            new ResetStationTask(this, newMode).execute(newNumber, newMode);
             return;
         }
+        // If no station reset needed, then just call station mode change
+        onStationNumberReset(newMode);
+    }
+
+    /**
+     * Call station mode change when station reset finished.
+     * Perform all short-running operations on station mode change
+     * right in main UI thread.
+     *
+     * @param newMode new station mode to set
+     */
+    public void onStationNumberReset(final byte newMode) {
+        final Station station = mMainApplication.getStation();
+        if (station == null) return;
         long responseTime = station.getResponseTime();
         // Set new station mode
         if (newMode != station.getMode()) {
@@ -426,7 +461,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      */
     public void updateLayout(final boolean fetchStatus) {
         // Show BT search button / progress
-        if (mBluetoothSearch == BT_SEARCH_OFF) {
+        if (mBluetoothSearch == BT_SEARCH_OFF && mResetStation == RESET_STATION_OFF) {
             findViewById(R.id.device_search_progress).setVisibility(View.INVISIBLE);
             findViewById(R.id.device_search).setVisibility(View.VISIBLE);
         } else {
@@ -443,8 +478,8 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         }
         findViewById(R.id.device_list).setVisibility(View.VISIBLE);
 
-        // Don'try to update station status during BT search
-        if (mBluetoothSearch == BT_SEARCH_ON) {
+        // Don'try to update station status during BT search or running station reset
+        if (mBluetoothSearch == BT_SEARCH_ON || mResetStation == RESET_STATION_ON) {
             findViewById(R.id.station_status).setVisibility(View.GONE);
             return;
         }
