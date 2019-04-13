@@ -7,6 +7,7 @@ import java.lang.ref.WeakReference;
 
 import ru.mmb.sportiduinomanager.BluetoothActivity;
 import ru.mmb.sportiduinomanager.MainApplication;
+import ru.mmb.sportiduinomanager.R;
 import ru.mmb.sportiduinomanager.model.Station;
 
 /**
@@ -68,17 +69,23 @@ public class ResetStationTask extends AsyncTask<Byte, Void, Boolean> {
      * @param result False if station reset failed
      */
     protected void onPostExecute(final Boolean result) {
-        final Station station = mMainApplication.getStation();
-        if (station == null) return;
-        // Show error message if station reset failed
-        if (!result) {
-            Toast.makeText(mMainApplication, station.getLastError(), Toast.LENGTH_LONG).show();
-            return;
-        }
         // Get a reference to the activity if it is still there
         final BluetoothActivity activity = mActivityRef.get();
         if (activity == null || activity.isFinishing()) return;
-        // Call finishing new mode change from main UI thread.
-        activity.onStationNumberReset(mNewMode);
+
+        activity.setResetStationState(BluetoothActivity.RESET_STATION_OFF);
+
+        if (result) {
+            // Call new mode change from main UI thread.
+            activity.onStationNumberReset(mNewMode);
+        } else {
+            // Show error message if station reset failed
+            final Station station = mMainApplication.getStation();
+            if (station != null) {
+                Toast.makeText(mMainApplication, station.getLastError(), Toast.LENGTH_LONG).show();
+            }
+            activity.updateLayout(true);
+            activity.updateMenuItems(mMainApplication, R.id.bluetooth);
+        }
     }
 }

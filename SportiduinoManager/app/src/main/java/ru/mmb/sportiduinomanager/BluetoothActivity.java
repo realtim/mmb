@@ -65,7 +65,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     /**
      * Station reset is in progress.
      */
-    public static final int RESET_STATION_ON = 0;
+    public static final int RESET_STATION_ON = 1;
 
     /**
      * RecyclerView with discovered Bluetooth devices and connect buttons.
