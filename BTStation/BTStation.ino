@@ -50,6 +50,7 @@
 #define COMMAND_WRITE_CARD_PAGE		0x89
 #define COMMAND_READ_FLASH			0x8a
 #define COMMAND_WRITE_FLASH			0x8b
+#define COMMAND_ERASE_FLASH_SECTOR	0x8c
 
 //размеры данных для команд
 #define DATA_LENGTH_SET_MODE			1
@@ -64,6 +65,7 @@
 #define DATA_LENGTH_WRITE_CARD_PAGE		13
 #define DATA_LENGTH_READ_FLASH			8
 #define DATA_LENGTH_WRITE_FLASH			4  //and more according to data length
+#define DATA_LENGTH_ERASE_FLASH_SECTOR	2
 
 //ответы станции
 #define REPLY_SET_MODE				0x90
@@ -78,6 +80,7 @@
 #define REPLY_WRITE_CARD_PAGE		0x99
 #define REPLY_READ_FLASH			0x9a
 #define REPLY_WRITE_FLASH			0x9b
+#define REPLY_ERASE_FLASH_SECTOR	0x9с
 
 //режимы станции
 #define MODE_INIT		0
@@ -97,6 +100,7 @@
 #define WRONG_UID		9
 #define WRONG_TEAM		10
 #define NO_DATA			11
+#define WRONG_COMMAND	12
 
 //страницы в чипе. 0-7 служебные, 8-... для отметок
 #define PAGE_UID		0
@@ -310,8 +314,14 @@ void executeCommand()
 		if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_WRITE_FLASH) writeFlash();
 		else errorLengthFlag = true;
 		break;
-
+	case COMMAND_ERASE_FLASH_SECTOR:
+		if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_ERASE_FLASH_SECTOR) eraseFlashSector();
+		else errorLengthFlag = true;
+		break;
 	}
+	uartBufferPosition = 0;
+	if (errorLengthFlag) sendError(WRONG_COMMAND, 0);
+
 #ifdef DEBUG
 	//if (errorLengthFlag) DebugSerial.println(F("Incorrect data length"));
 #endif
@@ -1173,6 +1183,32 @@ bool writeFlash()
 		return false;
 	}
 
+	sendData();
+}
+
+//стираем сектор флэша 256 байт
+void eraseFlashSector()
+{
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_WRITE_CARD_PAGE);
+		return;
+	}
+
+	unsigned int sectordNumber = uartBuffer[DATA_START_BYTE];
+	sectordNumber <<= 8;
+	sectordNumber += uartBuffer[DATA_START_BYTE + 1];
+
+	SPIflash.eraseSector(sectordNumber);
+
+	init_package(REPLY_WRITE_CARD_PAGE);
+	//0: код ошибки
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_WRITE_CARD_PAGE);
+		return;
+	}
 	sendData();
 }
 
