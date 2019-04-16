@@ -11,7 +11,6 @@
 #include <SoftwareSerial.h>
 #endif
 
-
 #define UART_SPEED 9600
 
 #define FW_VERSION						104 //версия прошивки, номер пишется в чипы
@@ -80,7 +79,7 @@
 #define REPLY_WRITE_CARD_PAGE		0x99
 #define REPLY_READ_FLASH			0x9a
 #define REPLY_WRITE_FLASH			0x9b
-#define REPLY_ERASE_FLASH_SECTOR	0x9с
+#define REPLY_ERASE_FLASH_SECTOR	0x9c
 
 //режимы станции
 #define MODE_INIT		0
@@ -101,6 +100,7 @@
 #define WRONG_TEAM		10
 #define NO_DATA			11
 #define WRONG_COMMAND	12
+#define ERASE_ERROR		13
 
 //страницы в чипе. 0-7 служебные, 8-... для отметок
 #define PAGE_UID		0
@@ -505,11 +505,18 @@ void getStatus()
 	flag &= addData((temperature & 0xFF00) >> 8);
 	flag &= addData(temperature & 0x00FF);
 
-	/*uint32_t capacity = SPIflash.getCapacity();
-	flag &= addData((capacity & 0xFF000000) >> 24);
-	flag &= addData((capacity & 0x00FF0000) >> 16);
-	flag &= addData((capacity & 0x0000FF00) >> 8);
-	flag &= addData(capacity & 0x000000FF);*/
+	uint32_t n = SPIflash.getCapacity();
+	flag &= addData((n & 0xFF000000) >> 24);
+	flag &= addData((n & 0x00FF0000) >> 16);
+	flag &= addData((n & 0x0000FF00) >> 8);
+	flag &= addData(n & 0x000000FF);
+
+	n = SPIflash.getMaxPage();
+	flag &= addData((n & 0xFF000000) >> 24);
+	flag &= addData((n & 0x00FF0000) >> 16);
+	flag &= addData((n & 0x0000FF00) >> 8);
+	flag &= addData(n & 0x000000FF);
+
 	if (!flag)
 	{
 		sendError(BUFFER_OVERFLOW, REPLY_GET_STATUS);
@@ -1155,13 +1162,13 @@ bool writeFlash()
 	startAddress <<= 8;
 	startAddress += uartBuffer[DATA_START_BYTE + 3];
 
-	init_package(REPLY_WRITE_CARD_PAGE);
+	init_package(REPLY_WRITE_FLASH);
 
 	uint32_t i = startAddress + uartBuffer[LENGTH_BYTE] - 4;
 	uint8_t n = 0;
-	while (startAddress <= i)
+	while (startAddress < i)
 	{
-		if (!SPIflash.writeByte(startAddress, uartBuffer[DATA_START_BYTE + n]))
+		if (!SPIflash.writeByte(startAddress, uartBuffer[DATA_START_BYTE + 4 + n]))
 		{
 			sendError(WRITE_ERROR, REPLY_WRITE_FLASH);
 			return false;
@@ -1192,21 +1199,25 @@ void eraseFlashSector()
 	//Если номер станции не совпадает с присланным в пакете, то отказ
 	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
 	{
-		sendError(WRONG_STATION, REPLY_WRITE_CARD_PAGE);
+		sendError(WRONG_STATION, REPLY_ERASE_FLASH_SECTOR);
 		return;
 	}
 
-	uint16_t sectordNumber = uartBuffer[DATA_START_BYTE];
+	uint32_t sectordNumber = uartBuffer[DATA_START_BYTE];
 	sectordNumber <<= 8;
 	sectordNumber += uartBuffer[DATA_START_BYTE + 1];
 
-	SPIflash.eraseSector(sectordNumber);
+	if (!SPIflash.eraseSector(sectordNumber))
+	{
+		sendError(ERASE_ERROR, REPLY_ERASE_FLASH_SECTOR);
+		return;
+	}
 
-	init_package(REPLY_WRITE_CARD_PAGE);
+	init_package(REPLY_ERASE_FLASH_SECTOR);
 	//0: код ошибки
 	if (!addData(OK))
 	{
-		sendError(BUFFER_OVERFLOW, REPLY_WRITE_CARD_PAGE);
+		sendError(BUFFER_OVERFLOW, REPLY_ERASE_FLASH_SECTOR);
 		return;
 	}
 	sendData();
@@ -1309,7 +1320,7 @@ void processRfidCard()
 	}
 
 	//Есть ли чип на флэше
-	if (!flag && SPIflash.readByte(chipNum * 1024) != 255) flag = true;
+	if (!flag && SPIflash.readByte((uint32_t)((uint32_t)chipNum * (uint32_t)1024)) != 255) flag = true;
 
 	//если новый чип или финишный КП
 	if (!flag || stationMode == MODE_FINISH_KP)
@@ -1324,26 +1335,26 @@ void processRfidCard()
 			return;
 		}
 
-		//добавляем в буфер последних команд
-		addLastTeam(chipNum);
-		lastTimeChecked = tempT;
-		totalChipsChecked++;
-
 		//Пишем на карту отметку
 		if (!writeCheckPointToCard(newPage, tempT))
 		{
 			SPI.end();
 			return;
 		}
+
+		//добавляем в буфер последних команд
+		addLastTeam(chipNum);
+		lastTimeChecked = tempT;
+		totalChipsChecked++;
+
+		//Пишем в лог карту
+		writeDumpToFlash(chipNum, tempT);
 		SPI.end();
 		beep(200, 1);
 #ifdef DEBUG
 		DebugSerial.print(F("record# "));
 		DebugSerial.println(String(chipNum));
 #endif
-
-		//Пишем в лог карту
-		writeDumpToFlash(chipNum, tempT);
 	}
 }
 
@@ -1661,9 +1672,10 @@ uint8_t findNewPage()
 		for (uint8_t n = 0; n < 4; n++)
 		{
 			//1) текущая страница пустая
+			//2) равна номеру станции
+			if (ntag_page[0 + n * 4] == 0 || ntag_page[0 + n * 4] == stationNumber) return page;
 			//2) равна номеру станции, а след. страница пустая
 			//if (ntag_page[0 + n * 4] == 0 || (ntag_page[0 + n * 4] == stationNumber && ntag_page[0 + 4 + n * 4] == 0)) return page;
-			if (ntag_page[0 + n * 4] == 0 || ntag_page[0 + n * 4] == stationNumber) return page;
 			page++;
 		}
 	}
@@ -1701,7 +1713,7 @@ uint8_t findNewPage()
 bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 {
 	//адрес хранения в каталоге
-	uint32_t pageFlash = recordNum * 1024;
+	uint32_t pageFlash = (uint32_t)(uint32_t(recordNum) * (uint32_t)(1024));
 #ifdef DEBUG
 	DebugSerial.print(F("Flash address: "));
 	DebugSerial.println(String(pageFlash));
@@ -1710,10 +1722,10 @@ bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 	//если режим финишной станции, то, возможно, надо переписать содержимое.
 	if (stationMode == MODE_FINISH_KP && SPIflash.readByte(pageFlash) != 255)
 	{
-		SPIflash.eraseSector(pageFlash / 256);
+		SPIflash.eraseSector((long)((float)pageFlash / 256));
 #ifdef DEBUG
 		DebugSerial.print(F("erased sector: "));
-		DebugSerial.println(String(pageFlash / 256));
+		DebugSerial.println(String((uint32_t)((uint32_t)pageFlash / (uint32_t)256)));
 #endif
 	}
 
@@ -1757,7 +1769,7 @@ bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 		}
 		if (page < 8 || ntag_page[0]>0)
 		{
-			SPIflash.writeByteArray(pageFlash + page * 4, ntag_page, 16);
+			SPIflash.writeByteArray(pageFlash + (uint32_t)page * (uint32_t)4, ntag_page, 16);
 			checkCount++;
 #ifdef DEBUG
 			DebugSerial.print(F("write: "));
@@ -1774,14 +1786,14 @@ bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 			break;
 		}
 	}
-	SPIflash.writeByte(recordNum * 1024 + 12, checkCount);
+	SPIflash.writeByte((uint32_t)((uint32_t)recordNum * (uint32_t)1024 + (uint32_t)12), checkCount);
 	return true;
 }
 
 //получаем сведения о команде из лога
 bool readTeamFromFlash(uint16_t recordNum)
 {
-	uint32_t addr = recordNum * 1024;
+	uint32_t addr = (uint32_t)((uint32_t)recordNum * (uint32_t)1024);
 	if (SPIflash.readByte(addr) == 255) return false;
 	//#команды
 	//время инициализации
@@ -1789,7 +1801,7 @@ bool readTeamFromFlash(uint16_t recordNum)
 	//время отметки
 	for (uint8_t i = 0; i < 13; i++)
 	{
-		ntag_page[i] = SPIflash.readByte(addr + i);
+		ntag_page[i] = SPIflash.readByte(addr + (uint32_t)i);
 	}
 	return true;
 }
@@ -1800,7 +1812,7 @@ uint16_t refreshChipCounter()
 	uint16_t chips = 0;
 	for (uint16_t i = 0; i < LOG_LENGTH; i++)
 	{
-		if (SPIflash.readByte(i * 1024) != 255)
+		if (SPIflash.readByte((uint32_t)((uint32_t)i * (uint32_t)1024)) != 255)
 		{
 			chips++;
 #ifdef DEBUG			
@@ -1848,10 +1860,10 @@ uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
 
 void addLastTeam(uint16_t number)
 {
-	for (uint8_t i = 2; i < lastTeamsLength * 2; i = i + 2)
+	for (uint8_t i = lastTeamsLength * 2 - 1; i > 1; i = i - 2)
 	{
 		lastTeams[i] = lastTeams[i - 2];
-		lastTeams[i + 1] = lastTeams[i - 1];
+		lastTeams[i - 1] = lastTeams[i - 3];
 	}
 	lastTeams[0] = (byte)(number >> 8);
 	lastTeams[1] = (byte)number;
