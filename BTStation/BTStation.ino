@@ -1810,7 +1810,7 @@ bool readTeamFromFlash(uint16_t recordNum)
 uint16_t refreshChipCounter()
 {
 	uint16_t chips = 0;
-	for (uint16_t i = 0; i < LOG_LENGTH; i++)
+	for (uint16_t i = 1; i < LOG_LENGTH; i++)
 	{
 		if (SPIflash.readByte((uint32_t)((uint32_t)i * (uint32_t)1024)) != 255)
 		{
