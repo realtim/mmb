@@ -42,8 +42,9 @@ public final class ActivePointActivity extends MainActivity {
     private Chips mChips;
     /**
      * Filtered list of events with teams visiting connected station at current point.
+     * One event per team only. Should be equal to records in station flash memory.
      */
-    private Chips mVisits;
+    private Chips mFlash;
 
     /**
      * Timer of background thread for communication with the station.
@@ -73,7 +74,7 @@ public final class ActivePointActivity extends MainActivity {
         mChips = mMainApplication.getChips();
         // Create filtered chip events for current station and point
         if (mChips != null) {
-            mVisits = mChips.getChipsAtPoint(mStation.getNumber(), mStation.getMACasLong());
+            mFlash = mChips.getChipsAtPoint(mStation.getNumber(), mStation.getMACasLong());
         }
         // Update activity layout
         updateLayout();
@@ -88,14 +89,14 @@ public final class ActivePointActivity extends MainActivity {
         // Update number of teams visited this active point
         // (station clock will be updated in background thread)
         ((TextView) findViewById(R.id.ap_total_teams)).setText(getResources()
-                .getString(R.string.ap_total_teams, mVisits.size()));
+                .getString(R.string.ap_total_teams, mFlash.size()));
         // Hide last team block when no teams have been visited the station
-        if (mVisits == null || mVisits.size() == 0) {
+        if (mFlash == null || mFlash.size() == 0) {
             findViewById(R.id.ap_team_data).setVisibility(View.GONE);
             return;
         }
         // Update last team number and name
-        final int teamNumber = mVisits.getLastTeamN();
+        final int teamNumber = mFlash.getLastTeamN();
         if (teamNumber <= 0 || mTeams == null) {
             findViewById(R.id.ap_team_data).setVisibility(View.GONE);
             return;
@@ -103,7 +104,7 @@ public final class ActivePointActivity extends MainActivity {
         ((TextView) findViewById(R.id.ap_team_name)).setText(getResources()
                 .getString(R.string.ap_team_name, teamNumber, mTeams.getTeamName(teamNumber)));
         // Update last team time
-        final long teamTime = mVisits.getLastTeamTime();
+        final long teamTime = mFlash.getLastTeamTime();
         if (teamTime <= 0) {
             findViewById(R.id.ap_team_data).setVisibility(View.GONE);
             return;
@@ -113,7 +114,7 @@ public final class ActivePointActivity extends MainActivity {
         final DateFormat format = new SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault());
         ((TextView) findViewById(R.id.ap_team_time)).setText(format.format(calendar.getTime()));
         // Update number of team members
-        final int teamMask = mVisits.getLastTeamMask();
+        final int teamMask = mFlash.getLastTeamMask();
         if (teamMask <= 0) {
             findViewById(R.id.ap_team_data).setVisibility(View.GONE);
             return;
@@ -127,31 +128,34 @@ public final class ActivePointActivity extends MainActivity {
     /**
      * Get all events for all new teams
      * which has been visited the station after the last check.
+     *
+     * @return True if some new teams has been visited the station
      */
-    private void fetchTeamsVisits() {
+    private boolean fetchTeamsVisits() {
         // Do nothing if no teams visited us yet
-        if (mStation.getChipsRegistered() == 0) return;
+        if (mStation.getChipsRegistered() == 0) return false;
         // Number of team visits at local db and at station are the same?
         // Time of last visit in local db and at station is the same?
         // (it can change without changing of number of teams)
-        if (mVisits.size() == mStation.getChipsRegistered()
-                && mVisits.getLastTeamTime() == mStation.getLastChipTime()) return;
+        if (mFlash.size() == mStation.getChipsRegistered()
+                && mFlash.getLastTeamTime() == mStation.getLastChipTime()) return false;
         // Ok, we have some new team visits
         boolean fullDownload = false;
         // Get previous teams list from station
-        final List<Integer> prevLastTeams = mStation.getLastTeams();
+        final List<Integer> prevLastTeams = mStation.lastTeams();
         // Ask station for new list
-        if (mStation.fetchLastTeams()) {
+        if (!mStation.fetchLastTeams()) {
             fullDownload = true;
         }
-        final List<Integer> currLastTeams = mStation.getLastTeams();
-        // Check if teams from previous list were saved in local db
+        final List<Integer> currLastTeams = mStation.lastTeams();
+        // Check if teams from previous list were copied from flash
         for (final int team : prevLastTeams) {
-            if (!mVisits.contains(team)) {
+            if (!mFlash.contains(team)) {
+                // Something strange has been happened, do full download of all teams
                 fullDownload = true;
             }
         }
-        // Start building the list of teams to fetch
+        // Start building the final list of teams to fetch
         List<Integer> fetchTeams = new ArrayList<>();
         for (final int team : currLastTeams) {
             if (!prevLastTeams.contains(team)) {
@@ -172,7 +176,38 @@ public final class ActivePointActivity extends MainActivity {
         if (fullDownload) {
             fetchTeams = mTeams.getTeamList();
         }
-        // TODO: scan these teams
+        // Get visit parameters for all teams in fetch list
+        boolean flashChanged = false;
+        boolean newEvents = false;
+        for (final int teamNumber : fetchTeams) {
+            // Fetch data for the team visit to station
+            if (!mStation.fetchTeamRecord(teamNumber)) continue;
+            final Chips teamVisit = mStation.getChipEvents();
+            if (teamVisit.size() == 0) continue;
+            // Update copy of station flash memory
+            if (mFlash.merge(teamVisit)) {
+                flashChanged = true;
+            }
+            // Try to add team visit as new event
+            if (mChips.join(teamVisit)) {
+                newEvents = true;
+                // TODO: read chip records at other points
+            }
+        }
+        if (newEvents) {
+            // Save new events in local database
+            final String result = mChips.saveNewEvents(mMainApplication.getDatabase());
+            if (!"".equals(result)) {
+                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show();
+            }
+            // Copy changed list of chips events to main application
+            mMainApplication.setChips(mChips, false);
+        }
+        if (flashChanged) {
+            // Sort visits by their time
+            mFlash.sort();
+        }
+        return newEvents || flashChanged;
     }
 
     /**
@@ -197,14 +232,18 @@ public final class ActivePointActivity extends MainActivity {
                     return;
                 }
                 // Fetch new new teams visits
-                fetchTeamsVisits();
-                // TODO: Get new team data if any
-                // Update station clock in UI
+                final boolean newTeam = fetchTeamsVisits();
+                // Update activity objects
                 ActivePointActivity.this.runOnUiThread(() -> {
+                    // Update station clock in UI
                     final Calendar calendar = Calendar.getInstance();
                     calendar.setTimeInMillis(mStation.getStationTime() * 1000);
                     final DateFormat format = new SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault());
                     ((TextView) findViewById(R.id.station_clock)).setText(format.format(calendar.getTime()));
+                    // Got new team, update activity layout
+                    if (newTeam) {
+                        updateLayout();
+                    }
                 });
             }
         }, 1000, 1000);

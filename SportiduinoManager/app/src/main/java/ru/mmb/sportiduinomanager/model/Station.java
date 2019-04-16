@@ -101,6 +101,10 @@ public final class Station {
      */
     private static final byte CMD_LAST_TEAMS = (byte) 0x85;
     /**
+     * Code of getTeamRecord station command.
+     */
+    private static final byte CMD_TEAM_RECORD = (byte) 0x86;
+    /**
      * Default UUID of station Bluetooth socket.
      */
     private static final UUID STATION_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -109,63 +113,63 @@ public final class Station {
      * Station Bluetooth whole object.
      */
     private final BluetoothDevice mDevice;
-
+    /**
+     * List of last teams which visited the station.
+     */
+    private final List<Integer> mLastTeams;
+    /**
+     * Result of getTeamRecord call.
+     */
+    private final Chips mChips;
+    /**
+     * Number of used pages in chips from getTeamRecord call.
+     */
+    private final List<Integer> mChipRecordsN;
     /**
      * Connected station Bluetooth socket.
      */
     private BluetoothSocket mSocket;
-
     /**
      * Code of last error of communication with station.
      */
     private int mLastError;
-
     /**
      * Android time at the start of command processing.
      */
     private long mStartTime;
-
     /**
      * Station local time at the end of getStatus/setTime.
      */
     private int mStationTime;
-
     /**
      * Time waiting for station while receiving station response.
      */
     private long mResponseTime;
-
     /**
      * Time difference in seconds between the station and Android.
      */
     private int mTimeDrift;
-
     /**
      * Time of last chip initialization written in a chip.
      */
     private int mLastInitTime;
-
     /**
      * Current station mode (0, 1 or 2).
      */
     private byte mMode;
-
     /**
      * Configurable station number
      * (an active point number to work at or zero for chip initialization).
      */
     private byte mNumber;
-
     /**
      * Number of teams who checked in.
      */
     private int mChipsRegistered;
-
     /**
      * Text representation of time of last chip registration in local timezone.
      */
     private int mLastChipTime;
-
     /**
      * Station firmware version received from getStatus.
      */
@@ -178,11 +182,6 @@ public final class Station {
      * Station temperature received from getStatus.
      */
     private int mTemperature;
-
-    /**
-     * List of last teams which visited the station.
-     */
-    private List<Integer> mLastTeams;
 
     /**
      * Create Station from Bluetooth scan.
@@ -201,6 +200,8 @@ public final class Station {
         mVoltage = 0;
         mTemperature = 0;
         mLastTeams = new ArrayList<>();
+        mChips = new Chips(0);
+        mChipRecordsN = new ArrayList<>();
         // Create client socket with default Bluetooth UUID
         try {
             mSocket = mDevice.createRfcommSocketToServiceRecord(STATION_UUID);
@@ -332,7 +333,7 @@ public final class Station {
      *
      * @return Array of teams numbers
      */
-    public List<Integer> getLastTeams() {
+    public List<Integer> lastTeams() {
         return mLastTeams;
     }
 
@@ -343,6 +344,24 @@ public final class Station {
      */
     public long getLastChipTime() {
         return mLastChipTime;
+    }
+
+    /**
+     * Get result of getTeamRecord call.
+     *
+     * @return List of ChipEvent object inside Chips object
+     */
+    public Chips getChipEvents() {
+        return mChips;
+    }
+
+    /**
+     * Get number of used pages in team chip from getTeamRecord call.
+     *
+     * @return Total number of chip pages to read from station flash
+     */
+    public List<Integer> getChipRecordsN() {
+        return mChipRecordsN;
     }
 
     /**
@@ -773,10 +792,11 @@ public final class Station {
         int2ByteArray(teamNumber, commandData, 1, 2);
         int2ByteArray(teamMask, commandData, 3, 2);
         // Send command to station
-        final byte[] response = new byte[4];
+        final byte[] response = new byte[12];
         if (!command(commandData, response)) return false;
         // Get init time from station response
         mLastInitTime = byteArray2Int(response, 0, 3);
+        // Chip UID (bytes 4-11) is ignored right now
         return true;
     }
 
@@ -789,11 +809,37 @@ public final class Station {
         // Get response from station
         final byte[] response = new byte[LAST_TEAMS_LEN * 2];
         if (!command(new byte[]{CMD_LAST_TEAMS}, response)) return false;
-        mLastTeams = new ArrayList<>();
+        mLastTeams.clear();
         for (int i = 0; i < LAST_TEAMS_LEN; i++) {
             final int teamNumber = byteArray2Int(response, i * 2, i * 2 + 1);
             if (teamNumber > 0) mLastTeams.add(teamNumber);
         }
+        return true;
+    }
+
+    /**
+     * Get info about team with teamNumber number visiting the station.
+     *
+     * @param teamNumber Number of team to fetch
+     * @return True if succeeded
+     */
+    public boolean fetchTeamRecord(final int teamNumber) {
+        // Prepare command payload
+        byte[] commandData = new byte[3];
+        commandData[0] = CMD_TEAM_RECORD;
+        int2ByteArray(teamNumber, commandData, 1, 2);
+        // Send command to station
+        final byte[] response = new byte[13];
+        mChips.clear();
+        mChipRecordsN.clear();
+        if (!command(commandData, response)) return false;
+        final int checkTeamNumber = byteArray2Int(response, 0, 1);
+        if (checkTeamNumber != teamNumber) return false;
+        final int initTime = byteArray2Int(response, 2, 5);
+        final int teamMask = byteArray2Int(response, 6, 7);
+        final int teamTime = byteArray2Int(response, 8, 11);
+        mChips.addNewEvent(this, initTime, teamNumber, teamMask, mNumber, teamTime);
+        mChipRecordsN.add((int) response[12]);
         return true;
     }
 }

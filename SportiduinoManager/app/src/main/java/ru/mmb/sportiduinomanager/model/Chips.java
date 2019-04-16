@@ -164,6 +164,13 @@ public final class Chips {
     }
 
     /**
+     * Clear list of chip events.
+     */
+    void clear() {
+        mEvents.clear();
+    }
+
+    /**
      * Checks if the list of events contains an event for specific team.
      *
      * @param team Team number to search
@@ -174,6 +181,76 @@ public final class Chips {
             if (event.mTeamNumber == team) return true;
         }
         return false;
+    }
+
+    /**
+     * Loose merging of two lists of events with replacing of old visits with new.
+     *
+     * @param newEvents List of events to add
+     * @return True if some events were added or replaced
+     */
+    public boolean merge(final Chips newEvents) {
+        boolean dataChanged = false;
+        for (final ChipEvent newEvent : newEvents.mEvents) {
+            boolean isSameTeam = false;
+            for (int i = 0; i < mEvents.size(); i++) {
+                final ChipEvent event = mEvents.get(i);
+                if (event.mTeamNumber == newEvent.mTeamNumber
+                        && event.mPointNumber == newEvent.mPointNumber) {
+                    // This team has visited this point before
+                    isSameTeam = true;
+                    if (event.mPointTime == newEvent.mPointTime
+                            && event.mTeamMask == newEvent.mTeamMask) {
+                        // It is the same visit, skip it
+                        break;
+                    }
+                    if (event.mPointTime <= newEvent.mPointTime) {
+                        // Team time and/or mask has been changed, replace old event with new
+                        mEvents.set(i, newEvent);
+                        dataChanged = true;
+                        break;
+                    }
+                }
+            }
+            // If it was same/new visit of already seen team, do nothing
+            if (isSameTeam) continue;
+            // It is completely new event, add it to the list
+            mEvents.add(newEvent);
+            dataChanged = true;
+        }
+        return dataChanged;
+    }
+
+    /**
+     * Strict joining of two lists of events,
+     * events are not replaced, they are only added or skipped as full duplicates.
+     *
+     * @param newEvents List of events to add
+     * @return True if some events were added
+     */
+    public boolean join(final Chips newEvents) {
+        boolean dataChanged = false;
+        for (final ChipEvent newEvent : newEvents.mEvents) {
+            boolean isSameEvent = false;
+            for (final ChipEvent event : this.mEvents) {
+                if (event.mTeamNumber == newEvent.mTeamNumber
+                        && event.mPointTime == newEvent.mPointTime
+                        && event.mTeamMask == newEvent.mTeamMask
+                        && event.mPointNumber == newEvent.mPointNumber
+                        && event.mInitTime == newEvent.mInitTime
+                        && event.mStationMAC == newEvent.mStationMAC
+                        && event.mStationNumber == newEvent.mStationNumber
+                        && event.mStationMode == newEvent.mStationMode) {
+                    isSameEvent = true;
+                    break;
+                }
+            }
+            // Skip identical chip events
+            if (isSameEvent) continue;
+            mEvents.add(newEvent);
+            dataChanged = true;
+        }
+        return dataChanged;
     }
 
     /**
@@ -227,7 +304,25 @@ public final class Chips {
         for (final ChipEvent event : mEvents) {
             if (event.mPointNumber == pointNumber && event.mStationMAC == stationMAC
                     && event.mStationNumber == pointNumber) {
-                visits.add(event);
+                // Find previous visit of this team (if any)
+                int index = -1;
+                for (int i = 0; i < visits.size(); i++) {
+                    if (visits.get(i).mTeamNumber == event.mTeamNumber) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index >= 0) {
+                    // Replace previous visit of the same team with new visit
+                    // if the time of new visit is greater then old
+                    if (event.mPointTime > visits.get(index).mPointTime) {
+                        visits.remove(index);
+                        visits.add(event);
+                    }
+                } else {
+                    // It is the first visit of this team, add it
+                    visits.add(event);
+                }
             }
         }
         // Sort the array of events
@@ -238,6 +333,13 @@ public final class Chips {
             chipsAtPoint.addEvent(event);
         }
         return chipsAtPoint;
+    }
+
+    /**
+     * Sort list of events by their time in ascending order.
+     */
+    public void sort() {
+        Collections.sort(mEvents);
     }
 
     /**
