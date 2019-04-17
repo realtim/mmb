@@ -757,7 +757,7 @@ public final class Station {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchStatus() {
         // Get response from station
-        final byte[] response = new byte[16];
+        final byte[] response = new byte[24];
         if (!command(new byte[]{CMD_GET_STATUS}, response)) return false;
         // Get station firmware
         mFirmware = response[0];
@@ -774,6 +774,7 @@ public final class Station {
         mVoltage = byteArray2Int(response, 12, 13);
         // Get station temperature
         mTemperature = byteArray2Int(response, 14, 15);
+        // Ignore flash memory size and sector size
         return true;
     }
 

@@ -141,8 +141,8 @@ public final class ActivePointActivity extends MainActivity {
                 && mFlash.getLastTeamTime() == mStation.getLastChipTime()) return false;
         // Ok, we have some new team visits
         boolean fullDownload = false;
-        // Get previous teams list from station
-        final List<Integer> prevLastTeams = mStation.lastTeams();
+        // Clone previous teams list from station
+        final List<Integer> prevLastTeams = new ArrayList<>(mStation.lastTeams());
         // Ask station for new list
         if (!mStation.fetchLastTeams()) {
             fullDownload = true;

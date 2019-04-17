@@ -173,6 +173,13 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         getMenuItem(R.id.bluetooth).setChecked(true);
         // Disable startup animation
         overridePendingTransition(0, 0);
+        // Initialize points and modes spinners
+        final Spinner pointSpinner = findViewById(R.id.station_point_spinner);
+        pointSpinner.setAdapter(getPointsAdapter());
+        mOnPointSelected = new PointSelectedListener();
+        pointSpinner.setOnItemSelectedListener(mOnPointSelected);
+        final Spinner modeSpinner = findViewById(R.id.station_mode_spinner);
+        modeSpinner.setAdapter(getModesAdapter());
         // Check if device supports Bluetooth
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -208,13 +215,6 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         } else {
             mBluetoothSearch = BT_SEARCH_OFF;
         }
-        // Initialize points and modes spinners
-        final Spinner pointSpinner = findViewById(R.id.station_point_spinner);
-        pointSpinner.setAdapter(getPointsAdapter());
-        mOnPointSelected = new PointSelectedListener();
-        pointSpinner.setOnItemSelectedListener(mOnPointSelected);
-        final Spinner modeSpinner = findViewById(R.id.station_mode_spinner);
-        modeSpinner.setAdapter(getModesAdapter());
         // Update activity layout
         updateLayout(true);
     }
