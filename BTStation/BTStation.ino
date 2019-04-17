@@ -33,8 +33,9 @@
 //#define RFID_SCK_PIN					13 //рфид модуль
 #define BATTERY_PIN						A0 //замер напряжения батареи
 
-#define EEPROM_STATION_NUMBER_ADDRESS	800 //номер станции в eeprom памяти
-#define EEPROM_STATION_MODE_ADDRESS		860 //номер режима в eeprom памяти
+#define EEPROM_STATION_NUMBER_ADDRESS	00 //номер станции в eeprom памяти
+#define EEPROM_STATION_MODE_ADDRESS		10 //номер режима в eeprom памяти
+#define EEPROM_VOLTAGE_KOEFF			20 //коэфф. пересчета значения ADC в вольты = 0,00587
 
 //команды
 #define COMMAND_SET_MODE			0x80
@@ -50,6 +51,8 @@
 #define COMMAND_READ_FLASH			0x8a
 #define COMMAND_WRITE_FLASH			0x8b
 #define COMMAND_ERASE_FLASH_SECTOR	0x8c
+#define COMMAND_GET_CONFIG			0x8d
+#define COMMAND_SET_KOEFF			0x8e
 
 //размеры данных для команд
 #define DATA_LENGTH_SET_MODE			1
@@ -65,6 +68,8 @@
 #define DATA_LENGTH_READ_FLASH			8
 #define DATA_LENGTH_WRITE_FLASH			4  //and more according to data length
 #define DATA_LENGTH_ERASE_FLASH_SECTOR	2
+#define DATA_LENGTH_GET_CONFIG			0
+#define DATA_LENGTH_SET_KOEFF			4
 
 //ответы станции
 #define REPLY_SET_MODE				0x90
@@ -80,6 +85,8 @@
 #define REPLY_READ_FLASH			0x9a
 #define REPLY_WRITE_FLASH			0x9b
 #define REPLY_ERASE_FLASH_SECTOR	0x9c
+#define REPLY_GET_CONFIG			0x9d
+#define REPLY_SET_KOEFF				0x9e
 
 //режимы станции
 #define MODE_INIT		0
@@ -112,14 +119,15 @@
 
 //параметры чипов
 //#define NTAG213_MAX_PAGE	40 //максимальное число страниц на чипе
-#define NTAG215_MAX_PAGE	130 //максимальное число страниц на чипе
+//#define NTAG215_MAX_PAGE	130 //максимальное число страниц на чипе
+#define TAG_MAX_PAGE	130 //максимальное число страниц на чипе
 //#define NTAG216_MAX_PAGE	226 //максимальное число страниц на чипе
 
 #define NTAG_TYPE			215 //режим работы и тип чипа
 
-#define LOG_LENGTH			4000 //максимальное кол-во записей в логе
+uint16_t LOG_LENGTH = 4000; //максимальное кол-во записей в логе
 
-#define LOG_RECORD_LENGTH	1024 //размер записи лога
+#define LOG_RECORD_LENGTH	1024 //размер записи лога (на 1 чип)
 
 //описание протокола
 #define STATION_NUMBER_BYTE	3
@@ -137,9 +145,11 @@ uint32_t lastTimeChecked = 0;
 uint16_t totalChipsChecked = 0; // количество отмеченных чипов в памяти.
 
 //по умолчанию номер станции и режим.
-uint8_t stationMode = MODE_INIT;
 uint8_t stationNumber = 0;
+uint8_t stationMode = MODE_INIT;
 const uint32_t maxTimeInit = 600000UL; //одна неделя
+
+float voltageKoeff = 0.00578;
 
 uint8_t ntag_page[16]; //буфер для чтения из карты через ntagRead4pages()
 
@@ -209,6 +219,22 @@ void setup()
 	if (c == MODE_START_KP) stationMode = MODE_START_KP;
 	else if (c == MODE_FINISH_KP) stationMode = MODE_FINISH_KP;
 	else stationMode = MODE_INIT;
+
+	//читаем коэфф. пересчета напряжения
+
+	//читаем номер станции из памяти
+	union Convert
+	{
+		float number;
+		byte byte[4];
+	} p;
+	for (byte i = 0; i < 4; i++)
+	{
+		p.byte[i] = eepromread(EEPROM_VOLTAGE_KOEFF + i * 3); //Read the station number from the EEPROM
+	}
+	voltageKoeff = p.number;
+
+	LOG_LENGTH = (uint32_t)(SPIflash.getCapacity() / LOG_RECORD_LENGTH);
 
 	totalChipsChecked = refreshChipCounter();
 
@@ -316,6 +342,14 @@ void executeCommand()
 		break;
 	case COMMAND_ERASE_FLASH_SECTOR:
 		if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_ERASE_FLASH_SECTOR) eraseFlashSector();
+		else errorLengthFlag = true;
+		break;
+	case COMMAND_GET_CONFIG:
+		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_GET_CONFIG) getConfig();
+		else errorLengthFlag = true;
+		break;
+	case COMMAND_SET_KOEFF:
+		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_KOEFF) setKoeff();
 		else errorLengthFlag = true;
 		break;
 	}
@@ -469,20 +503,15 @@ void getStatus()
 	uint32_t tmpTime = systemTime.unixtime;
 
 	//0: код ошибки
-	//1: версия прошивки
-	//2: номер режима
-	//3-6: текущее время
-	//7-8: количество отметок на станции
-	//9-12: время последней отметки на станции
-	//13-14: напряжение батареи в условных единицах[0..1023] ~[0..1.1В]
-	//15-16: температура чипа DS3231 (чуть выше окружающей среды)
-	//ПОСЛЕ ММБ!!! 15-16: емкость флэш-памяти
+	//1 - 4: текущее время
+	//5 - 6 : количество отметок на станции
+	//7 - 10 : время последней отметки на станции
+	//11 - 12 : напряжение батареи в условных единицах[0..1023] ~[0..1.1В]
+	//13 - 14 : температура чипа DS3231(чуть выше окружающей среды)
 	init_package(REPLY_GET_STATUS);
 
 	bool flag = true;
 	flag &= addData(OK);
-	flag &= addData(FW_VERSION);
-	flag &= addData(stationMode);
 
 	flag &= addData((tmpTime & 0xFF000000) >> 24);
 	flag &= addData((tmpTime & 0x00FF0000) >> 16);
@@ -504,18 +533,6 @@ void getStatus()
 	int temperature = (int)DS3231_get_treg();
 	flag &= addData((temperature & 0xFF00) >> 8);
 	flag &= addData(temperature & 0x00FF);
-
-	uint32_t n = SPIflash.getCapacity();
-	flag &= addData((n & 0xFF000000) >> 24);
-	flag &= addData((n & 0x00FF0000) >> 16);
-	flag &= addData((n & 0x0000FF00) >> 8);
-	flag &= addData(n & 0x000000FF);
-
-	n = SPIflash.getMaxPage();
-	flag &= addData((n & 0xFF000000) >> 24);
-	flag &= addData((n & 0x00FF0000) >> 16);
-	flag &= addData((n & 0x0000FF00) >> 8);
-	flag &= addData(n & 0x000000FF);
 
 	if (!flag)
 	{
@@ -615,7 +632,7 @@ void initChip()
 
 	//заполняем карту 0x00
 	for (uint8_t i = 0; i < 4; i++) dataBlock[i] = 0;
-	for (uint8_t page = PAGE_CHIP_NUM; page < NTAG215_MAX_PAGE; page++)
+	for (uint8_t page = PAGE_CHIP_NUM; page < TAG_MAX_PAGE; page++)
 	{
 		if (!ntagWritePage(dataBlock, page))
 		{
@@ -1223,6 +1240,87 @@ void eraseFlashSector()
 	sendData();
 }
 
+// выдает статус: время на станции, номер станции, номер режима, число отметок, время последней страницы
+void getConfig()
+{
+	//0: код ошибки
+	//1: версия прошивки
+	//2: номер режима
+	//3: тип чипов (емкость разная, а распознать их программно можно только по ошибкам чтения "дальних" страниц)
+	//4-7: емкость флэш - памяти
+	//8-11: размер сектора флэш - памяти
+	//12-15: коэффициент пересчета напряжения(float, 4 bytes) - просто умножаешь коэффициент на полученное в статусе число и будет температура
+	init_package(REPLY_GET_CONFIG);
+
+	bool flag = true;
+	flag &= addData(OK);
+	flag &= addData(FW_VERSION);
+	flag &= addData(stationMode);
+	flag &= addData(NTAG_TYPE);
+
+	uint32_t n = SPIflash.getCapacity();
+	flag &= addData((n & 0xFF000000) >> 24);
+	flag &= addData((n & 0x00FF0000) >> 16);
+	flag &= addData((n & 0x0000FF00) >> 8);
+	flag &= addData(n & 0x000000FF);
+
+	n = SPIflash.getMaxPage();
+	flag &= addData((n & 0xFF000000) >> 24);
+	flag &= addData((n & 0x00FF0000) >> 16);
+	flag &= addData((n & 0x0000FF00) >> 8);
+	flag &= addData(n & 0x000000FF);
+
+	byte v[4];
+	floatToByte(v, voltageKoeff);
+	flag &= addData(v[0]);
+	flag &= addData(v[1]);
+	flag &= addData(v[2]);
+	flag &= addData(v[3]);
+
+	if (!flag)
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_GET_CONFIG);
+		return;
+	}
+
+	sendData();
+}
+
+void setKoeff()
+{
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_SET_KOEFF);
+		return;
+	}
+
+	//0-3: коэфф.
+	union Convert
+	{
+		float number;
+		byte byte[4];
+	} p;
+
+	for (byte i = 0; i < 4; i++)
+	{
+		p.byte[i] = uartBuffer[DATA_START_BYTE + i];
+		eepromwrite(EEPROM_VOLTAGE_KOEFF + i * 3, uartBuffer[DATA_START_BYTE + i]); //Read the station number from the EEPROM
+	}
+	voltageKoeff = p.number;
+
+	init_package(REPLY_SET_KOEFF);
+	//0: код ошибки
+	//1...: данные из флэша
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_SET_KOEFF);
+		return;
+	}
+
+	sendData();
+}
+
 //Обработка поднесенного чипа
 void processRfidCard()
 {
@@ -1320,7 +1418,7 @@ void processRfidCard()
 	}
 
 	//Есть ли чип на флэше
-	if (!flag && SPIflash.readByte((uint32_t)((uint32_t)chipNum * (uint32_t)1024)) != 255) flag = true;
+	if (!flag && SPIflash.readByte((uint32_t)((uint32_t)chipNum * (uint32_t)LOG_RECORD_LENGTH)) != 255) flag = true;
 
 	//если новый чип или финишный КП
 	if (!flag || stationMode == MODE_FINISH_KP)
@@ -1329,7 +1427,7 @@ void processRfidCard()
 		uint8_t newPage = findNewPage();
 
 		//ошибка чтения или больше максимума... Наверное, переполнен???
-		if (newPage < PAGE_DATA_START || newPage >= NTAG215_MAX_PAGE)
+		if (newPage < PAGE_DATA_START || newPage >= TAG_MAX_PAGE)
 		{
 			SPI.end();
 			return;
@@ -1345,7 +1443,7 @@ void processRfidCard()
 		//добавляем в буфер последних команд
 		addLastTeam(chipNum);
 		lastTimeChecked = tempT;
-		totalChipsChecked++;
+		if (!flag) totalChipsChecked++;
 
 		//Пишем в лог карту
 		writeDumpToFlash(chipNum, tempT);
@@ -1468,7 +1566,7 @@ bool readUart()
 				}
 			}
 			uartBufferPosition++;
-		}
+				}
 		else
 		{
 #ifdef DEBUG
@@ -1480,7 +1578,7 @@ bool readUart()
 		}
 	}
 	return false;
-}
+			}
 
 // Internal functions
 
@@ -1663,7 +1761,7 @@ bool writeCheckPointToCard(uint8_t newPage, uint32_t tempT)
 uint8_t findNewPage()
 {
 	uint8_t page = PAGE_DATA_START;
-	while (page < NTAG215_MAX_PAGE)
+	while (page < TAG_MAX_PAGE)
 	{
 		if (!ntagRead4pages(page))
 		{
@@ -1679,7 +1777,7 @@ uint8_t findNewPage()
 			page++;
 		}
 	}
-	return NTAG215_MAX_PAGE;
+	return TAG_MAX_PAGE;
 	/*uint8_t finishpage = NTAG215_MAX_PAGE - 2;
 	uint8_t startpage = PAGE_DATA_START;
 	uint8_t page = (finishpage + startpage) / 2;
@@ -1713,7 +1811,7 @@ uint8_t findNewPage()
 bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 {
 	//адрес хранения в каталоге
-	uint32_t pageFlash = (uint32_t)(uint32_t(recordNum) * (uint32_t)(1024));
+	uint32_t pageFlash = (uint32_t)(uint32_t(recordNum) * (uint32_t)LOG_RECORD_LENGTH);
 #ifdef DEBUG
 	DebugSerial.print(F("Flash address: "));
 	DebugSerial.println(String(pageFlash));
@@ -1727,13 +1825,13 @@ bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 		DebugSerial.print(F("erased sector: "));
 		DebugSerial.println(String((uint32_t)((uint32_t)pageFlash / (uint32_t)256)));
 #endif
-	}
+}
 
 	//save basic parameters
 	if (!ntagRead4pages(PAGE_CHIP_NUM))
 	{
 		return false;
-	}
+}
 	//1-2: номер команды
 	SPIflash.writeByte(pageFlash, ntag_page[0]);
 	SPIflash.writeByte(pageFlash + 1, ntag_page[1]);
@@ -1757,7 +1855,7 @@ bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 	//copy card content to flash. все страницы не на чинающиеся с 0
 	pageFlash += 16;
 	uint8_t checkCount = 0;
-	for (uint8_t page = 0; page < NTAG215_MAX_PAGE - 3; page = page + 4)
+	for (uint8_t page = 0; page < TAG_MAX_PAGE - 3; page = page + 4)
 	{
 #ifdef DEBUG
 		DebugSerial.print(F("reading page: "));
@@ -1785,15 +1883,16 @@ bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 #endif
 			break;
 		}
-	}
-	SPIflash.writeByte((uint32_t)((uint32_t)recordNum * (uint32_t)1024 + (uint32_t)12), checkCount);
+		}
+	//add dump pages number
+	SPIflash.writeByte((uint32_t)((uint32_t)recordNum * (uint32_t)LOG_RECORD_LENGTH + (uint32_t)12), checkCount);
 	return true;
-}
+		}
 
 //получаем сведения о команде из лога
 bool readTeamFromFlash(uint16_t recordNum)
 {
-	uint32_t addr = (uint32_t)((uint32_t)recordNum * (uint32_t)1024);
+	uint32_t addr = (uint32_t)((uint32_t)recordNum * (uint32_t)LOG_RECORD_LENGTH);
 	if (SPIflash.readByte(addr) == 255) return false;
 	//#команды
 	//время инициализации
@@ -1810,11 +1909,27 @@ bool readTeamFromFlash(uint16_t recordNum)
 uint16_t refreshChipCounter()
 {
 	uint16_t chips = 0;
+
+	uint32_t addr;
 	for (uint16_t i = 1; i < LOG_LENGTH; i++)
 	{
-		if (SPIflash.readByte((uint32_t)((uint32_t)i * (uint32_t)1024)) != 255)
+		addr = (uint32_t)((uint32_t)i * (uint32_t)LOG_RECORD_LENGTH);
+		if (SPIflash.readByte(addr) != 255)
 		{
 			chips++;
+			uint32_t time = SPIflash.readByte(addr + 8);
+			time <<= 8;
+			time += SPIflash.readByte(addr + 9);
+			time <<= 8;
+			time += SPIflash.readByte(addr + 10);
+			time <<= 8;
+			time += SPIflash.readByte(addr + 11);
+			if (time > lastTimeChecked)
+			{
+				lastTimeChecked = time;
+				lastTeams[0] = SPIflash.readByte(addr);
+				lastTeams[1] = SPIflash.readByte(addr + 1);
+			}
 #ifdef DEBUG			
 			DebugSerial.println(String(i));
 #endif
@@ -1834,7 +1949,7 @@ void sendError(uint8_t errorCode, uint8_t commandCode)
 	uartBuffer[DATA_START_BYTE] = errorCode;
 	uartBufferPosition = DATA_START_BYTE + 1;
 	sendData();
-}
+	}
 
 uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
 {
@@ -1867,4 +1982,14 @@ void addLastTeam(uint16_t number)
 	}
 	lastTeams[0] = (byte)(number >> 8);
 	lastTeams[1] = (byte)number;
+}
+
+void floatToByte(byte* bytes, float f)
+{
+	int length = sizeof(float);
+
+	for (int i = 0; i < length; i++)
+	{
+		bytes[i] = ((byte*)&f)[i];
+	}
 }
