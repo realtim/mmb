@@ -105,6 +105,10 @@ public final class Station {
      */
     private static final byte CMD_TEAM_RECORD = (byte) 0x86;
     /**
+     * Code of getConfig station command.
+     */
+    private static final byte CMD_GET_CONFIG = (byte) 0x8d;
+    /**
      * Default UUID of station Bluetooth socket.
      */
     private static final UUID STATION_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -171,7 +175,7 @@ public final class Station {
      */
     private int mLastChipTime;
     /**
-     * Station firmware version received from getStatus.
+     * Station firmware version received from getConfig.
      */
     private byte mFirmware;
     /**
@@ -757,24 +761,19 @@ public final class Station {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchStatus() {
         // Get response from station
-        final byte[] response = new byte[24];
+        final byte[] response = new byte[14];
         if (!command(new byte[]{CMD_GET_STATUS}, response)) return false;
-        // Get station firmware
-        mFirmware = response[0];
-        // Get station mode
-        mMode = response[1];
         // Get station time
-        mStationTime = byteArray2Int(response, 2, 5);
+        mStationTime = byteArray2Int(response, 0, 3);
         mTimeDrift = mStationTime - (int) (System.currentTimeMillis() / 1000L);
         // Get number of chips registered by station
-        mChipsRegistered = byteArray2Int(response, 6, 7);
+        mChipsRegistered = byteArray2Int(response, 4, 5);
         // Get last chips registration time
-        mLastChipTime = byteArray2Int(response, 8, 11);
+        mLastChipTime = byteArray2Int(response, 6, 9);
         // Get station battery voltage
-        mVoltage = byteArray2Int(response, 12, 13);
+        mVoltage = byteArray2Int(response, 10, 11);
         // Get station temperature
-        mTemperature = byteArray2Int(response, 14, 15);
-        // Ignore flash memory size and sector size
+        mTemperature = byteArray2Int(response, 12, 13);
         return true;
     }
 
@@ -841,6 +840,23 @@ public final class Station {
         final int teamTime = byteArray2Int(response, 8, 11);
         mChips.addNewEvent(this, initTime, teamNumber, teamMask, mNumber, teamTime);
         mChipRecordsN.add((int) response[12]);
+        return true;
+    }
+
+    /**
+     * Get station firmware version and configuration.
+     *
+     * @return True if succeeded
+     */
+    public boolean fetchConfig() {
+        // Get response from station
+        final byte[] response = new byte[15];
+        if (!command(new byte[]{CMD_GET_CONFIG}, response)) return false;
+        // Get station firmware
+        mFirmware = response[0];
+        // Get station mode
+        mMode = response[1];
+        // Ignore all other parameters
         return true;
     }
 }
