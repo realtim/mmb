@@ -525,8 +525,8 @@ public final class Station {
             return new byte[]{REC_BAD_RESPONSE};
         }
         // check station number
-        if (sendBuffer[0] != CMD_GET_STATUS && sendBuffer[0] != CMD_RESET_STATION
-                && receiveBuffer[3] != mNumber) {
+        if (sendBuffer[0] != CMD_GET_STATUS && sendBuffer[0] != CMD_GET_CONFIG
+                && sendBuffer[0] != CMD_RESET_STATION && receiveBuffer[3] != mNumber) {
             return new byte[]{REC_BAD_RESPONSE};
         }
         // update station number for getStatus command

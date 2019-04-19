@@ -396,7 +396,6 @@ public final class MainApplication extends Application {
      *
      * @param context Application context
      */
-    @SuppressWarnings("deprecation")
     private void switchToRussian(final Context context) {
         final Locale locale = new Locale("ru");
         Locale.setDefault(locale);

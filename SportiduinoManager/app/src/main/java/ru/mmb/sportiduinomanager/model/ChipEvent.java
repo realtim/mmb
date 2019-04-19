@@ -145,10 +145,8 @@ final class ChipEvent implements Comparable<ChipEvent> {
      * @return Chip event converted to string
      */
     public String toString() {
-        return Long.toString(mStationMAC) + '\t' + Integer.toString(mStationTime) + '\t'
-                + Integer.toString(mStationDrift) + '\t' + Integer.toString(mStationNumber) + '\t'
-                + Integer.toString(mStationMode) + '\t' + Integer.toString(mInitTime) + '\t'
-                + Integer.toString(mTeamNumber) + '\t' + Integer.toString(mTeamMask) + '\t'
-                + Integer.toString(mPointNumber) + '\t' + Integer.toString(mPointTime);
+        return Long.toString(mStationMAC) + '\t' + mStationTime + '\t' + mStationDrift + '\t'
+                + mStationNumber + '\t' + mStationMode + '\t' + mInitTime + '\t' + mTeamNumber
+                + '\t' + mTeamMask + '\t' + mPointNumber + '\t' + mPointTime;
     }
 }

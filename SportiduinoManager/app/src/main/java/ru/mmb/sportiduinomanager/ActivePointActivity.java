@@ -1,6 +1,8 @@
 package ru.mmb.sportiduinomanager;
 
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,7 +24,7 @@ import ru.mmb.sportiduinomanager.model.Teams;
  * Provides ability to get chip events from station, mark team members as absent,
  * update team members mask in a chip and save this data in local database.
  */
-public final class ActivePointActivity extends MainActivity {
+public final class ActivePointActivity extends MainActivity implements TeamListAdapter.OnItemClicked {
     /**
      * Main application thread with persistent data.
      */
@@ -45,6 +47,15 @@ public final class ActivePointActivity extends MainActivity {
      * One event per team only. Should be equal to records in station flash memory.
      */
     private Chips mFlash;
+
+    /**
+     * RecyclerView with list of teams visited the station.
+     */
+    private TeamListAdapter mAdapter;
+    /**
+     * Last clicked position in team list.
+     */
+    private int mPosition;
 
     /**
      * Timer of background thread for communication with the station.
@@ -76,11 +87,30 @@ public final class ActivePointActivity extends MainActivity {
         if (mChips != null) {
             mFlash = mChips.getChipsAtPoint(mStation.getNumber(), mStation.getMACasLong());
         }
+        // Prepare recycler view of team list
+        final RecyclerView recyclerView = findViewById(R.id.team_list);
+        // Use a linear layout manager
+        final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        // Specify an RecyclerView adapter and initialize it
+        mAdapter = new TeamListAdapter(this, mTeams, mFlash);
+        recyclerView.setAdapter(mAdapter);
+        // Show last team by default
+        mPosition = 0;
         // Update activity layout
         updateLayout();
         // Start background querying of connected station
         runStationQuerying();
     }
+
+    /**
+     * The onClick implementation of the RecyclerView item click.
+     */
+    @Override
+    public void onItemClick(final int position) {
+        mPosition = position;
+    }
+
 
     /**
      * Update layout according to activity state.
@@ -95,16 +125,18 @@ public final class ActivePointActivity extends MainActivity {
             findViewById(R.id.ap_team_data).setVisibility(View.GONE);
             return;
         }
-        // Update last team number and name
-        final int teamNumber = mFlash.getLastTeamN();
+        // Get index in mFlash team visits list to display
+        final int index = mFlash.size() - 1 - mPosition;
+        // Update team number and name
+        final int teamNumber = mFlash.getTeamNumber(index);
         if (teamNumber <= 0 || mTeams == null) {
             findViewById(R.id.ap_team_data).setVisibility(View.GONE);
             return;
         }
         ((TextView) findViewById(R.id.ap_team_name)).setText(getResources()
                 .getString(R.string.ap_team_name, teamNumber, mTeams.getTeamName(teamNumber)));
-        // Update last team time
-        final long teamTime = mFlash.getLastTeamTime();
+        // Update team time
+        final long teamTime = mFlash.getTeamTime(index);
         if (teamTime <= 0) {
             findViewById(R.id.ap_team_data).setVisibility(View.GONE);
             return;
@@ -114,7 +146,7 @@ public final class ActivePointActivity extends MainActivity {
         final DateFormat format = new SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault());
         ((TextView) findViewById(R.id.ap_team_time)).setText(format.format(calendar.getTime()));
         // Update number of team members
-        final int teamMask = mFlash.getLastTeamMask();
+        final int teamMask = mFlash.getTeamMask(index);
         if (teamMask <= 0) {
             findViewById(R.id.ap_team_data).setVisibility(View.GONE);
             return;
@@ -138,7 +170,9 @@ public final class ActivePointActivity extends MainActivity {
         // Time of last visit in local db and at station is the same?
         // (it can change without changing of number of teams)
         if (mFlash.size() == mStation.getChipsRegistered()
-                && mFlash.getLastTeamTime() == mStation.getLastChipTime()) return false;
+                && mFlash.getTeamTime(mFlash.size() - 1) == mStation.getLastChipTime()) {
+            return false;
+        }
         // Ok, we have some new team visits
         boolean fullDownload = false;
         // Clone previous teams list from station
@@ -242,6 +276,7 @@ public final class ActivePointActivity extends MainActivity {
                     ((TextView) findViewById(R.id.station_clock)).setText(format.format(calendar.getTime()));
                     // Got new team, update activity layout
                     if (newTeam) {
+                        mAdapter.notifyDataSetChanged();
                         updateLayout();
                     }
                 });

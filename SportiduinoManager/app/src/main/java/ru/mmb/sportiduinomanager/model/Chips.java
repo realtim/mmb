@@ -343,36 +343,39 @@ public final class Chips {
     }
 
     /**
-     * Get number of the last team
+     * Get team number from 'index' element of mEvents list
      * (mEvents should be previously filtered with getChipsAtPoint).
      *
-     * @return Last team number
+     * @param index Index in mEvents list array
+     * @return Team number for element with this index
      */
-    public int getLastTeamN() {
-        if (mEvents.isEmpty()) return -1;
-        return mEvents.get(mEvents.size() - 1).mTeamNumber;
+    public int getTeamNumber(final int index) {
+        if (index < 0 || index >= mEvents.size()) return -1;
+        return mEvents.get(index).mTeamNumber;
     }
 
     /**
-     * Get time of arrival for the last team
+     * Get time of arrival from 'index' element of mEvents list
      * (mEvents should be previously filtered with getChipsAtPoint).
      *
-     * @return Last team visit unixtime
+     * @param index Index in mEvents list array
+     * @return Team visit unixtime for element with this index
      */
-    public int getLastTeamTime() {
-        if (mEvents.isEmpty()) return -1;
-        return mEvents.get(mEvents.size() - 1).mPointTime;
+    public int getTeamTime(final int index) {
+        if (index < 0 || index >= mEvents.size()) return -1;
+        return mEvents.get(index).mPointTime;
     }
 
     /**
-     * Get team members mask for the last team
+     * Get team members mask from 'index' element of mEvents list
      * (mEvents should be previously filtered with getChipsAtPoint).
      *
-     * @return Last team mask
+     * @param index Index in mEvents list array
+     * @return Team mask for element with this index
      */
-    public int getLastTeamMask() {
-        if (mEvents.isEmpty()) return -1;
-        return mEvents.get(mEvents.size() - 1).mTeamMask;
+    public int getTeamMask(final int index) {
+        if (index < 0 || index >= mEvents.size()) return -1;
+        return mEvents.get(index).mTeamMask;
     }
 
 }

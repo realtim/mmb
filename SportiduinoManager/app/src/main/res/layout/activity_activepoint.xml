@@ -2,6 +2,7 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
@@ -42,7 +43,7 @@
             android:id="@+id/ap_team_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="ap_team_name,ap_team_time,ap_members_count" />
+            app:constraint_referenced_ids="ap_team_name,ap_team_time,ap_members_count,ap_divider_2,ap_team_list" />
 
         <TextView
             android:id="@+id/ap_team_name"
@@ -77,6 +78,29 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ap_team_time" />
+
+
+        <View
+            android:id="@+id/ap_divider_2"
+            style="@style/Divider"
+            android:layout_margin="@dimen/default_padding"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ap_members_count" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/ap_team_list"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="@dimen/default_padding"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ap_divider_2"
+            tools:itemCount="5"
+            tools:layout_margin="@dimen/default_padding"
+            tools:listitem="@layout/team_list_item" />
+
 
     </android.support.constraint.ConstraintLayout>
 </ScrollView>
