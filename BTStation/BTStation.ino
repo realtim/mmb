@@ -13,7 +13,8 @@
 
 #define UART_SPEED 9600
 
-#define FW_VERSION						104 //версия прошивки, номер пишется в чипы
+//версия прошивки, номер пишется в чипы
+#define FW_VERSION						104
 
 #ifdef DEBUG
 #define DEBUG_RX						2 //
@@ -33,9 +34,12 @@
 //#define RFID_SCK_PIN					13 //рфид модуль
 #define BATTERY_PIN						A0 //замер напряжения батареи
 
-#define EEPROM_STATION_NUMBER_ADDRESS	00 //номер станции в eeprom памяти
-#define EEPROM_STATION_MODE_ADDRESS		10 //номер режима в eeprom памяти
-#define EEPROM_VOLTAGE_KOEFF			20 //коэфф. пересчета значения ADC в вольты = 0,00587
+//номер станции в eeprom памяти
+#define EEPROM_STATION_NUMBER_ADDRESS	00
+//номер режима в eeprom памяти
+#define EEPROM_STATION_MODE_ADDRESS		10
+//коэфф. пересчета значения ADC в вольты = 0,00587
+#define EEPROM_VOLTAGE_KOEFF			20
 
 //команды
 #define COMMAND_SET_MODE			0x80
@@ -111,23 +115,30 @@
 
 //страницы в чипе. 0-7 служебные, 8-... для отметок
 #define PAGE_UID		0
-#define PAGE_CHIP_NUM	4 //номер_чипа + тип_чипа + версия_прошивки
-#define PAGE_INIT_TIME	5 //время инициализации
+//номер_чипа + тип_чипа + версия_прошивки
+#define PAGE_CHIP_NUM	4
+//время инициализации
+#define PAGE_INIT_TIME	5
 #define PAGE_TEAM_MASK	6
 #define PAGE_RESERVED2	7
 #define PAGE_DATA_START	8
 
+//тип чипа
+#define NTAG_TYPE			215
+
 //параметры чипов
-//#define NTAG213_MAX_PAGE	40 //максимальное число страниц на чипе
-//#define NTAG215_MAX_PAGE	130 //максимальное число страниц на чипе
-#define TAG_MAX_PAGE	130 //максимальное число страниц на чипе
-//#define NTAG216_MAX_PAGE	226 //максимальное число страниц на чипе
 
-#define NTAG_TYPE			215 //режим работы и тип чипа
+//максимальное число страниц на чипе
+//#define NTAG213_MAX_PAGE	40
+//#define NTAG215_MAX_PAGE	130
+#define TAG_MAX_PAGE	130
+//#define NTAG216_MAX_PAGE	226
 
-uint16_t LOG_LENGTH = 4000; //максимальное кол-во записей в логе
+//максимальное кол-во записей в логе
+uint16_t LOG_LENGTH = 4000;
 
-#define LOG_RECORD_LENGTH	1024 //размер записи лога (на 1 чип)
+//размер записи лога (на 1 чип)
+#define LOG_RECORD_LENGTH	1024
 
 //описание протокола
 #define STATION_NUMBER_BYTE	3
@@ -135,21 +146,26 @@ uint16_t LOG_LENGTH = 4000; //максимальное кол-во записе�
 #define COMMAND_BYTE		5
 #define DATA_START_BYTE		6
 
+//тайм-аут приема команды с момента начала
 #define receiveTimeOut 1000
 
 //размер буфера последних команд
 const uint8_t lastTeamsLength = 10;
+
 //станция запоминает последние команды сюда
 uint8_t lastTeams[lastTeamsLength * 2];
 uint32_t lastTimeChecked = 0;
-uint16_t totalChipsChecked = 0; // количество отмеченных чипов в памяти.
+
+// количество отмеченных чипов в памяти.
+uint16_t totalChipsChecked = 0;
 
 //по умолчанию номер станции и режим.
 uint8_t stationNumber = 0;
 uint8_t stationMode = MODE_INIT;
 const uint32_t maxTimeInit = 600000UL; //одна неделя
 
-float voltageKoeff = 0.00578;
+//коэфф. перевода значения АЦП в напряжение для делителя 10кОм/2.2кОм
+float voltageCoeff = 0.00578;
 
 uint8_t ntag_page[16]; //буфер для чтения из карты через ntagRead4pages()
 
@@ -160,7 +176,7 @@ MFRC522::StatusCode status;
 MFRC522 mfrc522(RFID_SS_PIN, RFID_RST_PIN); // Create MFRC522 instance
 
 //хранение времени
-struct ts systemTime; //time
+struct ts systemTime;
 
 //UART command buffer
 uint8_t uartBuffer[256];
@@ -176,7 +192,6 @@ uint8_t newTeamMask[8];
 #ifdef DEBUG
 SoftwareSerial DebugSerial(DEBUG_RX, DEBUG_TX);
 #endif
-
 
 void setup()
 {
@@ -232,7 +247,7 @@ void setup()
 	{
 		p.byte[i] = eepromread(EEPROM_VOLTAGE_KOEFF + i * 3); //Read the station number from the EEPROM
 	}
-	voltageKoeff = p.number;
+	voltageCoeff = p.number;
 
 	LOG_LENGTH = (uint32_t)(SPIflash.getCapacity() / LOG_RECORD_LENGTH);
 
@@ -572,8 +587,8 @@ void initChip()
 	//инициализация сработает только если время инициализации записанное уже на чипе превышает неделю до текущего времени
 	if (!ntagRead4pages(PAGE_INIT_TIME))
 	{
-		sendError(READ_ERROR, REPLY_INIT_CHIP);
 		SPI.end();
+		sendError(READ_ERROR, REPLY_INIT_CHIP);
 		return;
 	}
 	uint32_t initTime = ntag_page[0];
@@ -586,8 +601,8 @@ void initChip()
 	DS3231_get(&systemTime);
 	if ((systemTime.unixtime - initTime) < maxTimeInit)
 	{
-		sendError(LOW_INIT_TIME, REPLY_INIT_CHIP);
 		SPI.end();
+		sendError(LOW_INIT_TIME, REPLY_INIT_CHIP);
 		return;
 	}
 
@@ -598,8 +613,8 @@ void initChip()
 	//проверяем UID карты
 	/*if (!ntagRead4pages(PAGE_UID))
 	{
-		sendError(READ_ERROR, REPLY_INIT_CHIP);
 		SPI.end();
+		sendError(READ_ERROR, REPLY_INIT_CHIP);
 		return;
 	}
 	bool flag = true;
@@ -613,8 +628,8 @@ void initChip()
 	}
 	if (!flag)
 	{
-		sendError(WRONG_UID, REPLY_INIT_CHIP);
 		SPI.end();
+		sendError(WRONG_UID, REPLY_INIT_CHIP);
 		return;
 	}*/
 
@@ -624,8 +639,8 @@ void initChip()
 	{
 		if (!ntagWritePage(dataBlock, page))
 		{
-			sendError(WRITE_ERROR, REPLY_INIT_CHIP);
 			SPI.end();
+			sendError(WRITE_ERROR, REPLY_INIT_CHIP);
 			return;
 		}
 	}*/
@@ -636,8 +651,8 @@ void initChip()
 	{
 		if (!ntagWritePage(dataBlock, page))
 		{
-			sendError(WRITE_ERROR, REPLY_INIT_CHIP);
 			SPI.end();
+			sendError(WRITE_ERROR, REPLY_INIT_CHIP);
 			return;
 		}
 	}
@@ -650,8 +665,8 @@ void initChip()
 	dataBlock[3] = FW_VERSION;
 	if (!ntagWritePage(dataBlock, PAGE_CHIP_NUM))
 	{
-		sendError(WRITE_ERROR, REPLY_INIT_CHIP);
 		SPI.end();
+		sendError(WRITE_ERROR, REPLY_INIT_CHIP);
 		return;
 	}
 
@@ -663,8 +678,8 @@ void initChip()
 	dataBlock[3] = tmpTime & 0x000000FF;
 	if (!ntagWritePage(dataBlock, PAGE_INIT_TIME))
 	{
-		sendError(WRITE_ERROR, REPLY_INIT_CHIP);
 		SPI.end();
+		sendError(WRITE_ERROR, REPLY_INIT_CHIP);
 		return;
 	}
 
@@ -675,16 +690,16 @@ void initChip()
 	dataBlock[3] = 0;
 	if (!ntagWritePage(dataBlock, PAGE_TEAM_MASK))
 	{
-		sendError(WRITE_ERROR, REPLY_INIT_CHIP);
 		SPI.end();
+		sendError(WRITE_ERROR, REPLY_INIT_CHIP);
 		return;
 	}
 
 	//получаем UID карты
 	if (!ntagRead4pages(PAGE_UID))
 	{
-		sendError(READ_ERROR, REPLY_INIT_CHIP);
 		SPI.end();
+		sendError(READ_ERROR, REPLY_INIT_CHIP);
 		return;
 	}
 	SPI.end();
@@ -821,15 +836,15 @@ void readCardPages()
 	// Look for new cards
 	if (!mfrc522.PICC_IsNewCardPresent())
 	{
-		sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
 		SPI.end();
+		sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
 		return;
 	}
 	// Select one of the cards
 	if (!mfrc522.PICC_ReadCardSerial())
 	{
-		sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
 		SPI.end();
+		sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
 		return;
 	}
 
@@ -843,20 +858,22 @@ void readCardPages()
 	//9-12: данные из страницы карты(4 байта)
 	if (!addData(OK))
 	{
+		SPI.end();
 		sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
 		return;
 	}
 
 	if (!ntagRead4pages(PAGE_UID))
 	{
-		sendError(READ_ERROR, REPLY_READ_CARD_PAGE);
 		SPI.end();
+		sendError(READ_ERROR, REPLY_READ_CARD_PAGE);
 		return;
 	}
 	for (uint8_t i = 0; i <= 7; i++)
 	{
 		if (!addData(ntag_page[i]))
 		{
+			SPI.end();
 			sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
 			return;
 		}
@@ -867,8 +884,8 @@ void readCardPages()
 		//0: какую страницу карты
 		if (!ntagRead4pages(pageFrom))
 		{
-			sendError(READ_ERROR, REPLY_READ_CARD_PAGE);
 			SPI.end();
+			sendError(READ_ERROR, REPLY_READ_CARD_PAGE);
 			return;
 		}
 		uint8_t n = (pageTo - pageFrom + 1);
@@ -877,6 +894,7 @@ void readCardPages()
 		{
 			if (!addData(pageFrom))
 			{
+				SPI.end();
 				sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
 				return;
 			}
@@ -884,10 +902,10 @@ void readCardPages()
 			{
 				if (!addData(ntag_page[i * 4 + j]))
 				{
+					SPI.end();
 					sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
 					return;
 				}
-
 			}
 			pageFrom++;
 		}
@@ -926,38 +944,38 @@ void updateTeamMask()
 		// Look for new cards
 		if (!mfrc522.PICC_IsNewCardPresent())
 		{
-			sendError(NO_CHIP, REPLY_UPDATE_TEAM_MASK);
 			SPI.end();
+			sendError(NO_CHIP, REPLY_UPDATE_TEAM_MASK);
 			return;
 		}
 
 		// Select one of the cards
 		if (!mfrc522.PICC_ReadCardSerial())
 		{
-			sendError(NO_CHIP, REPLY_UPDATE_TEAM_MASK);
 			SPI.end();
+			sendError(NO_CHIP, REPLY_UPDATE_TEAM_MASK);
 			return;
 		}
 
 		//проверить номер команды
 		if (!ntagRead4pages(PAGE_CHIP_NUM))
 		{
-			sendError(READ_ERROR, REPLY_UPDATE_TEAM_MASK);
 			SPI.end();
+			sendError(READ_ERROR, REPLY_UPDATE_TEAM_MASK);
 			return;
 		}
 		if (ntag_page[0] != uartBuffer[DATA_START_BYTE] || ntag_page[1] != uartBuffer[DATA_START_BYTE + 1])
 		{
-			sendError(WRONG_TEAM, REPLY_UPDATE_TEAM_MASK);
 			SPI.end();
+			sendError(WRONG_TEAM, REPLY_UPDATE_TEAM_MASK);
 			return;
 		}
 
 		//проверить время выдачи чипа
 		if (!ntagRead4pages(PAGE_INIT_TIME))
 		{
-			sendError(READ_ERROR, REPLY_UPDATE_TEAM_MASK);
 			SPI.end();
+			sendError(READ_ERROR, REPLY_UPDATE_TEAM_MASK);
 			return;
 		}
 
@@ -987,8 +1005,8 @@ void updateTeamMask()
 			DebugSerial.print(F("="));
 			DebugSerial.println(String(uartBuffer[DATA_START_BYTE + 5], HEX));*/
 #endif
-			sendError(WRONG_CHIP, REPLY_UPDATE_TEAM_MASK);
 			SPI.end();
+			sendError(WRONG_CHIP, REPLY_UPDATE_TEAM_MASK);
 			return;
 		}
 
@@ -996,15 +1014,14 @@ void updateTeamMask()
 		uint8_t dataBlock[4] = { uartBuffer[DATA_START_BYTE + 6],uartBuffer[DATA_START_BYTE + 7], ntag_page[6],ntag_page[7] };
 		if (!ntagWritePage(dataBlock, PAGE_TEAM_MASK))
 		{
-			sendError(WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
 			SPI.end();
+			sendError(WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
 			return;
 		}
 		SPI.end();
-
-		init_package(REPLY_UPDATE_TEAM_MASK);
 	}
 
+	init_package(REPLY_UPDATE_TEAM_MASK);
 	//0: код ошибки
 	if (!addData(OK))
 	{
@@ -1038,8 +1055,8 @@ void writeCardPage()
 	// Select one of the cards
 	if (!mfrc522.PICC_ReadCardSerial())
 	{
-		sendError(NO_CHIP, REPLY_WRITE_CARD_PAGE);
 		SPI.end();
+		sendError(NO_CHIP, REPLY_WRITE_CARD_PAGE);
 		return;
 	}
 
@@ -1050,8 +1067,8 @@ void writeCardPage()
 	//проверить UID
 	if (!ntagRead4pages(PAGE_UID))
 	{
-		sendError(READ_ERROR, REPLY_WRITE_CARD_PAGE);
 		SPI.end();
+		sendError(READ_ERROR, REPLY_WRITE_CARD_PAGE);
 		return;
 	}
 	bool flag = false;
@@ -1065,8 +1082,8 @@ void writeCardPage()
 	}
 	if (flag)
 	{
-		sendError(WRONG_UID, REPLY_WRITE_CARD_PAGE);
 		SPI.end();
+		sendError(WRONG_UID, REPLY_WRITE_CARD_PAGE);
 		return;
 	}
 
@@ -1080,8 +1097,8 @@ void writeCardPage()
 	};
 	if (!ntagWritePage(dataBlock, uartBuffer[DATA_START_BYTE + 8]))
 	{
-		sendError(WRITE_ERROR, REPLY_WRITE_CARD_PAGE);
 		SPI.end();
+		sendError(WRITE_ERROR, REPLY_WRITE_CARD_PAGE);
 		return;
 	}
 	SPI.end();
@@ -1098,6 +1115,7 @@ void writeCardPage()
 }
 
 //читаем флэш
+//добавить проверку UID если он не нулевой
 void readFlash()
 {
 	//Если номер станции не совпадает с присланным в пакете, то отказ
@@ -1280,7 +1298,7 @@ void getConfig()
 	flag &= addData(n & 0x000000FF);
 
 	byte v[4];
-	floatToByte(v, voltageKoeff);
+	floatToByte(v, voltageCoeff);
 	flag &= addData(v[0]);
 	flag &= addData(v[1]);
 	flag &= addData(v[2]);
@@ -1316,7 +1334,7 @@ void setVCoeff()
 		p.byte[i] = uartBuffer[DATA_START_BYTE + i];
 		eepromwrite(EEPROM_VOLTAGE_KOEFF + i * 3, uartBuffer[DATA_START_BYTE + i]); //Read the station number from the EEPROM
 	}
-	voltageKoeff = p.number;
+	voltageCoeff = p.number;
 
 	init_package(REPLY_SET_KOEFF);
 	//0: код ошибки
@@ -1708,7 +1726,6 @@ bool ntagWritePage(uint8_t *dataBlock, uint8_t pageAdr)
 	status = (MFRC522::StatusCode) mfrc522.MIFARE_Ultralight_Write(pageAdr, dataBlock, sizePageNtag);
 	if (status != MFRC522::STATUS_OK)
 	{
-		//SPI.end();
 		return false;
 	}
 
@@ -1718,10 +1735,8 @@ bool ntagWritePage(uint8_t *dataBlock, uint8_t pageAdr)
 	status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(pageAdr, buffer, &size);
 	if (status != MFRC522::STATUS_OK)
 	{
-		//SPI.end();
 		return false;
 	}
-	//SPI.end();
 
 	for (uint8_t i = 0; i < 4; i++)
 	{
@@ -1968,6 +1983,22 @@ void sendError(uint8_t errorCode, uint8_t commandCode)
 	sendData();
 }
 
+//добавляем номер в буфер последних команд
+void addLastTeam(uint16_t number)
+{
+	//фильтровать дубли
+	if (lastTeams[0] == (byte)(number >> 8) && lastTeams[1] == (byte)number) return;
+
+	for (uint8_t i = lastTeamsLength * 2 - 1; i > 1; i = i - 2)
+	{
+		lastTeams[i] = lastTeams[i - 2];
+		lastTeams[i - 1] = lastTeams[i - 3];
+	}
+	lastTeams[0] = (byte)(number >> 8);
+	lastTeams[1] = (byte)number;
+
+}
+
 uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
 {
 	uint8_t crc = 0x00;
@@ -1988,19 +2019,6 @@ uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
 		i++;
 	}
 	return (crc);
-}
-
-void addLastTeam(uint16_t number)
-{
-	if (lastTeams[0] == (byte)(number >> 8) && lastTeams[1] == (byte)number) return;
-	
-	for (uint8_t i = lastTeamsLength * 2 - 1; i > 1; i = i - 2)
-	{
-		lastTeams[i] = lastTeams[i - 2];
-		lastTeams[i - 1] = lastTeams[i - 3];
-	}
-	lastTeams[0] = (byte)(number >> 8);
-	lastTeams[1] = (byte)number;
 }
 
 void floatToByte(byte* bytes, float f)
