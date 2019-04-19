@@ -1992,6 +1992,8 @@ uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
 
 void addLastTeam(uint16_t number)
 {
+	if (lastTeams[0] == (byte)(number >> 8) && lastTeams[1] == (byte)number) return;
+	
 	for (uint8_t i = lastTeamsLength * 2 - 1; i > 1; i = i - 2)
 	{
 		lastTeams[i] = lastTeams[i - 2];
