@@ -32,6 +32,8 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
      */
     private final Chips mFlash;
 
+    private int selectedPos;
+
     /**
      * Adapter constructor.
      *
@@ -44,6 +46,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
         mOnClick = onClick;
         mTeams = teams;
         mFlash = flash;
+        selectedPos = RecyclerView.NO_POSITION;
     }
 
     /**
@@ -64,7 +67,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
     @Override
     public void onBindViewHolder(@NonNull final TeamHolder holder, final int position) {
         // Get index of element of mFlash list to display at this position
-        int index = mFlash.size() - position;
+        int index = mFlash.size() - position - 1;
         if (index < 0) {
             index = 0;
         }
@@ -83,20 +86,21 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
         } else {
             teamMembersCount = Teams.getMembersCount(teamMask);
         }
+        final long teamTime = mFlash.getTeamTime(index);
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(mFlash.getTeamTime(index) * 1000);
-        final DateFormat format = new SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault());
-        final String timeTime = format.format(calendar.getTime());
+        calendar.setTimeInMillis(teamTime * 1000L);
+        final DateFormat format = new SimpleDateFormat("dd.MM  HH:mm:ss", Locale.getDefault());
         // Update the contents of the view with that team
         holder.mName.setText(holder.itemView.getResources().getString(R.string.ap_team_name,
                 teamNumber, teamName));
         holder.mCount.setText(holder.itemView.getResources().getString(R.string.list_team_count,
                 teamMembersCount));
         holder.mTime.setText(holder.itemView.getResources().getString(R.string.list_team_time,
-                timeTime));
+                format.format(calendar.getTime())));
+        // Highlight row if it is selected
+        holder.itemView.setSelected(selectedPos == position);
         // Set my listener for all elements of list item
-        // TODO: process click for whole RecyclerView item
-        holder.mName.setOnClickListener(view -> mOnClick.onItemClick(holder.getAdapterPosition()));
+        holder.itemView.setOnClickListener(view -> mOnClick.onItemClick(holder.getAdapterPosition()));
     }
 
     /**

@@ -54,8 +54,8 @@ public final class Chips {
      * @param pointNumber Point visited by chip (can differ from station number)
      * @param pointTime   Point visit time
      */
-    public void addNewEvent(final Station station, final int initTime, final int teamNumber,
-                            final int teamMask, final int pointNumber, final int pointTime) {
+    public void addNewEvent(final Station station, final long initTime, final int teamNumber,
+                            final int teamMask, final int pointNumber, final long pointTime) {
         mEvents.add(new ChipEvent(station.getMACasLong(), station.getStationTime(),
                 station.getTimeDrift(), station.getNumber(), station.getMode(), initTime,
                 teamNumber, teamMask, pointNumber, pointTime, ChipEvent.STATUS_NEW));
@@ -361,7 +361,7 @@ public final class Chips {
      * @param index Index in mEvents list array
      * @return Team visit unixtime for element with this index
      */
-    public int getTeamTime(final int index) {
+    public long getTeamTime(final int index) {
         if (index < 0 || index >= mEvents.size()) return -1;
         return mEvents.get(index).mPointTime;
     }

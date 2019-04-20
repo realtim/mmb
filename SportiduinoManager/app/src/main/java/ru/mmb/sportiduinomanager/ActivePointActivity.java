@@ -88,7 +88,7 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
             mFlash = mChips.getChipsAtPoint(mStation.getNumber(), mStation.getMACasLong());
         }
         // Prepare recycler view of team list
-        final RecyclerView recyclerView = findViewById(R.id.team_list);
+        final RecyclerView recyclerView = findViewById(R.id.ap_team_list);
         // Use a linear layout manager
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
@@ -108,7 +108,10 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
      */
     @Override
     public void onItemClick(final int position) {
+        mAdapter.notifyItemChanged(mPosition);
         mPosition = position;
+        mAdapter.notifyItemChanged(mPosition);
+        updateLayout();
     }
 
 
@@ -142,8 +145,8 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
             return;
         }
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(teamTime * 1000);
-        final DateFormat format = new SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault());
+        calendar.setTimeInMillis(teamTime * 1000L);
+        final DateFormat format = new SimpleDateFormat("dd.MM  HH:mm:ss", Locale.getDefault());
         ((TextView) findViewById(R.id.ap_team_time)).setText(format.format(calendar.getTime()));
         // Update number of team members
         final int teamMask = mFlash.getTeamMask(index);
@@ -260,11 +263,7 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
                     return;
                 }
                 // Fetch current station status
-                if (!mStation.fetchStatus()) {
-                    Toast.makeText(getApplicationContext(), mStation.getLastError(),
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                mStation.fetchStatus();
                 // Fetch new new teams visits
                 final boolean newTeam = fetchTeamsVisits();
                 // Update activity objects
@@ -272,10 +271,16 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
                     // Update station clock in UI
                     final Calendar calendar = Calendar.getInstance();
                     calendar.setTimeInMillis(mStation.getStationTime() * 1000);
-                    final DateFormat format = new SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault());
+                    final DateFormat format = new SimpleDateFormat("dd.MM  HH:mm:ss",
+                            Locale.getDefault());
                     ((TextView) findViewById(R.id.station_clock)).setText(format.format(calendar.getTime()));
-                    // Got new team, update activity layout
+                    // Display station communication error (if any)
+                    if (mStation.getLastError() != 0) {
+                        Toast.makeText(getApplicationContext(), mStation.getLastError(),
+                                Toast.LENGTH_SHORT).show();
+                    }
                     if (newTeam) {
+                        // Got new team, update activity layout
                         mAdapter.notifyDataSetChanged();
                         updateLayout();
                     }

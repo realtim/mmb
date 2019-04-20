@@ -144,7 +144,7 @@ public final class Station {
     /**
      * Station local time at the end of getStatus/setTime.
      */
-    private int mStationTime;
+    private long mStationTime;
     /**
      * Time waiting for station while receiving station response.
      */
@@ -156,7 +156,7 @@ public final class Station {
     /**
      * Time of last chip initialization written in a chip.
      */
-    private int mLastInitTime;
+    private long mLastInitTime;
     /**
      * Current station mode (0, 1 or 2).
      */
@@ -173,7 +173,7 @@ public final class Station {
     /**
      * Text representation of time of last chip registration in local timezone.
      */
-    private int mLastChipTime;
+    private long mLastChipTime;
     /**
      * Station firmware version received from getConfig.
      */
@@ -247,7 +247,7 @@ public final class Station {
      *
      * @return Time as unixtime
      */
-    public int getStationTime() {
+    public long getStationTime() {
         return mStationTime;
     }
 
@@ -292,7 +292,7 @@ public final class Station {
      *
      * @return Time as unixtime
      */
-    public int getLastInitTime() {
+    public long getLastInitTime() {
         return mLastInitTime;
     }
 
@@ -377,7 +377,7 @@ public final class Station {
         if (mLastChipTime == 0) return "-";
         final Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(mLastChipTime * 1000L);
-        final DateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault());
+        final DateFormat format = new SimpleDateFormat("dd.MM.yyyy  HH:mm:ss", Locale.getDefault());
         return format.format(calendar.getTime());
     }
 
@@ -728,7 +728,7 @@ public final class Station {
         if (!command(commandData, response)) return false;
         // Get new station time
         mStationTime = byteArray2Int(response, 0, 3);
-        mTimeDrift = mStationTime - (int) (System.currentTimeMillis() / 1000L);
+        mTimeDrift = (int) (mStationTime - System.currentTimeMillis() / 1000L);
         return true;
     }
 
@@ -742,7 +742,7 @@ public final class Station {
         byte[] commandData = new byte[8];
         commandData[0] = CMD_RESET_STATION;
         int2ByteArray(mChipsRegistered, commandData, 1, 2);
-        int2ByteArray(mLastChipTime, commandData, 3, 4);
+        int2ByteArray((int) mLastChipTime, commandData, 3, 4);
         commandData[7] = number;
         // Send it to station
         final byte[] response = new byte[0];
@@ -765,7 +765,7 @@ public final class Station {
         if (!command(new byte[]{CMD_GET_STATUS}, response)) return false;
         // Get station time
         mStationTime = byteArray2Int(response, 0, 3);
-        mTimeDrift = mStationTime - (int) (System.currentTimeMillis() / 1000L);
+        mTimeDrift = (int) (mStationTime - System.currentTimeMillis() / 1000L);
         // Get number of chips registered by station
         mChipsRegistered = byteArray2Int(response, 4, 5);
         // Get last chips registration time
