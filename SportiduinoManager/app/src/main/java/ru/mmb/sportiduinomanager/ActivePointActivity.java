@@ -52,10 +52,6 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
      * RecyclerView with list of teams visited the station.
      */
     private TeamListAdapter mAdapter;
-    /**
-     * Last clicked position in team list.
-     */
-    private int mPosition;
 
     /**
      * Timer of background thread for communication with the station.
@@ -95,8 +91,6 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
         // Specify an RecyclerView adapter and initialize it
         mAdapter = new TeamListAdapter(this, mTeams, mFlash);
         recyclerView.setAdapter(mAdapter);
-        // Show last team by default
-        mPosition = 0;
         // Update activity layout
         updateLayout();
         // Start background querying of connected station
@@ -108,9 +102,10 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
      */
     @Override
     public void onItemClick(final int position) {
-        mAdapter.notifyItemChanged(mPosition);
-        mPosition = position;
-        mAdapter.notifyItemChanged(mPosition);
+        final int oldPosition = mAdapter.getPosition();
+        mAdapter.setPosition(position);
+        mAdapter.notifyItemChanged(oldPosition);
+        mAdapter.notifyItemChanged(position);
         updateLayout();
     }
 
@@ -129,7 +124,7 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
             return;
         }
         // Get index in mFlash team visits list to display
-        final int index = mFlash.size() - 1 - mPosition;
+        final int index = mFlash.size() - 1 - mAdapter.getPosition();
         // Update team number and name
         final int teamNumber = mFlash.getTeamNumber(index);
         if (teamNumber <= 0 || mTeams == null) {

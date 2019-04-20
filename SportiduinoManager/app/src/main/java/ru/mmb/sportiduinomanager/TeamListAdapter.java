@@ -32,7 +32,10 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
      */
     private final Chips mFlash;
 
-    private int selectedPos;
+    /**
+     * Last clicked position in team list.
+     */
+    private int mSelectedPos;
 
     /**
      * Adapter constructor.
@@ -46,7 +49,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
         mOnClick = onClick;
         mTeams = teams;
         mFlash = flash;
-        selectedPos = RecyclerView.NO_POSITION;
+        mSelectedPos = 0;
     }
 
     /**
@@ -98,7 +101,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
         holder.mTime.setText(holder.itemView.getResources().getString(R.string.list_team_time,
                 format.format(calendar.getTime())));
         // Highlight row if it is selected
-        holder.itemView.setSelected(selectedPos == position);
+        holder.itemView.setSelected(mSelectedPos == position);
         // Set my listener for all elements of list item
         holder.itemView.setOnClickListener(view -> mOnClick.onItemClick(holder.getAdapterPosition()));
     }
@@ -109,6 +112,14 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
     @Override
     public int getItemCount() {
         return mFlash.size();
+    }
+
+    int getPosition() {
+        return mSelectedPos;
+    }
+
+    void setPosition(final int position) {
+        mSelectedPos = position;
     }
 
     /**

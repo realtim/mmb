@@ -87,11 +87,12 @@
         android:id="@+id/ap_team_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="@dimen/default_padding"
+        android:layout_marginTop="@dimen/default_padding"
+        android:layout_marginBottom="@dimen/default_padding"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ap_divider_2"
-        app:layout_constraintBottom_toBottomOf="parent"
         tools:itemCount="5"
         tools:listitem="@layout/team_list_item" />
 

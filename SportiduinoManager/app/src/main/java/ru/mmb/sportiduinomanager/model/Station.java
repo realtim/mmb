@@ -758,7 +758,6 @@ public final class Station {
      *
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchStatus() {
         // Get response from station
         final byte[] response = new byte[14];
@@ -812,7 +811,7 @@ public final class Station {
         mLastTeams.clear();
         for (int i = 0; i < LAST_TEAMS_LEN; i++) {
             final int teamNumber = byteArray2Int(response, i * 2, i * 2 + 1);
-            if (teamNumber > 0) mLastTeams.add(teamNumber);
+            if (teamNumber > 0  && !mLastTeams.contains(teamNumber)) mLastTeams.add(teamNumber);
         }
         return true;
     }
