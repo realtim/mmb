@@ -103,7 +103,7 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
         /**
          * Checkbox with team name.
          */
-        private final CheckBox mMember;
+        final CheckBox mMember;
 
         /**
          * Holder for list element containing checkbox with team member name.

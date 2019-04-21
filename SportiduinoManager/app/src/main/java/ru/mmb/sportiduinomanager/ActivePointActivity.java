@@ -17,6 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import ru.mmb.sportiduinomanager.model.Chips;
+import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.model.Teams;
 
@@ -47,6 +48,10 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
      * One event per team only. Should be equal to records in station flash memory.
      */
     private Chips mFlash;
+    /**
+     * Local copy of distance (downloaded from site or loaded from local database).
+     */
+    private Distance mDistance;
 
     /**
      * RecyclerView with list of teams visited the station.
@@ -83,6 +88,8 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
         if (mChips != null) {
             mFlash = mChips.getChipsAtPoint(mStation.getNumber(), mStation.getMACasLong());
         }
+        // Get distance
+        mDistance = mMainApplication.getDistance();
         // Prepare recycler view of team list
         final RecyclerView recyclerView = findViewById(R.id.ap_team_list);
         // Use a linear layout manager
@@ -104,6 +111,7 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
     public void onItemClick(final int position) {
         final int oldPosition = mAdapter.getPosition();
         mAdapter.setPosition(position);
+        // TODO: save new position in main application
         mAdapter.notifyItemChanged(oldPosition);
         mAdapter.notifyItemChanged(position);
         updateLayout();
@@ -143,6 +151,12 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
         calendar.setTimeInMillis(teamTime * 1000L);
         final DateFormat format = new SimpleDateFormat("dd.MM  HH:mm:ss", Locale.getDefault());
         ((TextView) findViewById(R.id.ap_team_time)).setText(format.format(calendar.getTime()));
+        // Update lists of visited and skipped active points
+        final List<Integer> visited = mChips.getChipMarks(teamNumber, mFlash.getInitTime(index),
+                mStation.getNumber(), mStation.getMACasLong(), mDistance.getMaxPoint());
+        ((TextView) findViewById(R.id.ap_visited)).setText(getResources()
+                .getString(R.string.ap_visited, mDistance.pointsNamesFromList(visited)));
+        // TODO: update list of skipped points
         // Update number of team members
         final int teamMask = mFlash.getTeamMask(index);
         if (teamMask <= 0) {

@@ -519,7 +519,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     /**
      * Callback to be invoked when an item in points list has been selected.
      */
-    private class PointSelectedListener implements AdapterView.OnItemSelectedListener {
+    class PointSelectedListener implements AdapterView.OnItemSelectedListener {
 
         /**
          * Flag for disabling Mode Spinner change when called from updateLayout.

@@ -207,6 +207,70 @@ public final class Distance {
     }
 
     /**
+     * Builds the text representation of the from-to range of points.
+     *
+     * @param list      Whole list of points
+     * @param fromIndex Starting index of the range in the list
+     * @param toIndex   Ending index of the range in the list
+     * @return Range as "1", "1,2" or "1-3"-like string
+     */
+    private String rangeName(final List<Integer> list, final int fromIndex, final int toIndex) {
+        if (toIndex == fromIndex) {
+            return mPoints[list.get(fromIndex)].mName;
+        } else {
+            if (toIndex == fromIndex + 1) {
+                return mPoints[list.get(fromIndex)].mName + "," + mPoints[list.get(toIndex)].mName;
+            } else {
+                return mPoints[list.get(fromIndex)].mName + "-" + mPoints[list.get(toIndex)].mName;
+            }
+        }
+    }
+
+    /**
+     * Converts list of active points numbers to human-readable short list.
+     *
+     * @param list List of points numbers
+     * @return String containing something like "1,3,4,6-8" or "-" for empty list
+     */
+    public String pointsNamesFromList(final List<Integer> list) {
+        final int total = list.size();
+        if (total == 0) return "-";
+        if (total == 1) return mPoints[list.get(0)].mName;
+        String result = "";
+        boolean[] continuous = new boolean[list.size()];
+        continuous[0] = true;
+        for (int i = 1; i < total; i++) {
+            boolean noHole = true;
+            for (int index = list.get(i - 1) + 1; index < list.get(i); index++) {
+                if (mPoints[index] != null) {
+                    noHole = false;
+                }
+                if (!noHole) break;
+            }
+            continuous[i] = noHole;
+        }
+        int rangeStart = 0;
+        for (int i = 1; i < total; i++) {
+            if (!continuous[i]) {
+                final String range = rangeName(list, rangeStart, i - 1);
+                if ("".equals(result)) {
+                    result = range;
+                } else {
+                    result = result.concat(",").concat(range);
+                }
+                rangeStart = i;
+            }
+        }
+        final String range = rangeName(list, rangeStart, total - 1);
+        if ("".equals(result)) {
+            result = range;
+        } else {
+            result = result.concat(",").concat(range);
+        }
+        return result;
+    }
+
+    /**
      * Fill lists with all points parameters for fast saving in local database.
      *
      * @param numbers    Points numbers
@@ -255,6 +319,15 @@ public final class Distance {
     public int getPointType(final int number) {
         if (number < 0 || number >= mPoints.length || mPoints[number] == null) return -1;
         return mPoints[number].mType;
+    }
+
+    /**
+     * Get max index of mPoints array.
+     *
+     * @return Max point number for the distance
+     */
+    public int getMaxPoint() {
+        return mPoints.length - 1;
     }
 
     /**

@@ -378,4 +378,47 @@ public final class Chips {
         return mEvents.get(index).mTeamMask;
     }
 
+    /**
+     * Get chip init time from 'index' element of mEvents list
+     * (mEvents should be previously filtered with getChipsAtPoint).
+     *
+     * @param index Index in mEvents list array
+     * @return Chip initialization unixtime for element with this index
+     */
+    public long getInitTime(final int index) {
+        if (index < 0 || index >= mEvents.size()) return -1;
+        return mEvents.get(index).mInitTime;
+    }
+
+    /**
+     * Get all visited active points for the chip checked at connected station.
+     *
+     * @param teamNumber     Team number in the chip
+     * @param initTime       Initialization time of the chip
+     * @param stationNumber  Connected station number
+     * @param stationMAC     Connected station BT MAC address
+     * @param maxPointNumber Max possible point number in current distance
+     * @return List of points numbers
+     */
+    public List<Integer> getChipMarks(final int teamNumber, final long initTime,
+                                      final int stationNumber, final long stationMAC,
+                                      final int maxPointNumber) {
+        // mark all visited points
+        final boolean[] visited = new boolean[maxPointNumber + 1];
+        for (final ChipEvent event : mEvents) {
+            if (event.mTeamNumber == teamNumber && event.mInitTime == initTime
+                    && event.mStationNumber == stationNumber && event.mStationMAC == stationMAC
+                    && event.mPointNumber <= maxPointNumber) {
+                visited[event.mPointNumber] = true;
+            }
+        }
+        // Build sorted list of visited points
+        final List<Integer> pointNumbers = new ArrayList<>();
+        for (int i = 1; i <= maxPointNumber; i++) {
+            if (visited[i]) {
+                pointNumbers.add(i);
+            }
+        }
+        return pointNumbers;
+    }
 }

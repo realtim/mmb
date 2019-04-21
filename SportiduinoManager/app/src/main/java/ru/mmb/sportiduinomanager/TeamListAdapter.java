@@ -114,10 +114,20 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
         return mFlash.size();
     }
 
+    /**
+     * Get position of selected item in RecyclerView list.
+     *
+     * @return Current selected item index
+     */
     int getPosition() {
         return mSelectedPos;
     }
 
+    /**
+     * Set new selected item in RecyclerView list.
+     *
+     * @param position New selected item index
+     */
     void setPosition(final int position) {
         mSelectedPos = position;
     }
@@ -141,15 +151,15 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
         /**
          * Team number and name.
          */
-        private final TextView mName;
+        final TextView mName;
         /**
          * Current number of members computed from team mask.
          */
-        private final TextView mCount;
+        final TextView mCount;
         /**
          * Time of last visit for the team.
          */
-        private final TextView mTime;
+        final TextView mTime;
 
         /**
          * Holder for list element containing checkbox with team member name.
