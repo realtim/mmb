@@ -13,6 +13,7 @@
         android:layout_centerVertical="true"
         android:layout_marginStart="@dimen/default_padding"
         android:layout_toStartOf="@+id/device_connect"
+        tools:ignore="SelectableText"
         tools:text="Device XXX" />
 
     <ImageButton

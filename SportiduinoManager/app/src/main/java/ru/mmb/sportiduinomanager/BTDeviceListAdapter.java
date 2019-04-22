@@ -160,11 +160,11 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
         /**
          * Name of the Bluetooth device.
          */
-        private final TextView mName;
+        final TextView mName;
         /**
          * Icon to show to the right of the name.
          */
-        private final ImageButton mConnectButton;
+        final ImageButton mConnectButton;
 
         /**
          * View holder for a list item with device name and Connect button.

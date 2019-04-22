@@ -101,6 +101,14 @@ public final class Station {
      */
     private static final byte CMD_LAST_TEAMS = (byte) 0x85;
     /**
+     * Code of getTeamRecord station command.
+     */
+    private static final byte CMD_TEAM_RECORD = (byte) 0x86;
+    /**
+     * Code of getConfig station command.
+     */
+    private static final byte CMD_GET_CONFIG = (byte) 0x8d;
+    /**
      * Default UUID of station Bluetooth socket.
      */
     private static final UUID STATION_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -109,65 +117,65 @@ public final class Station {
      * Station Bluetooth whole object.
      */
     private final BluetoothDevice mDevice;
-
+    /**
+     * List of last teams which visited the station.
+     */
+    private final List<Integer> mLastTeams;
+    /**
+     * Result of getTeamRecord call.
+     */
+    private final Chips mChips;
+    /**
+     * Number of used pages in chips from getTeamRecord call.
+     */
+    private final List<Integer> mChipRecordsN;
     /**
      * Connected station Bluetooth socket.
      */
     private BluetoothSocket mSocket;
-
     /**
      * Code of last error of communication with station.
      */
     private int mLastError;
-
     /**
      * Android time at the start of command processing.
      */
     private long mStartTime;
-
     /**
      * Station local time at the end of getStatus/setTime.
      */
-    private int mStationTime;
-
+    private long mStationTime;
     /**
      * Time waiting for station while receiving station response.
      */
     private long mResponseTime;
-
     /**
      * Time difference in seconds between the station and Android.
      */
     private int mTimeDrift;
-
     /**
      * Time of last chip initialization written in a chip.
      */
-    private int mLastInitTime;
-
+    private long mLastInitTime;
     /**
      * Current station mode (0, 1 or 2).
      */
     private byte mMode;
-
     /**
      * Configurable station number
      * (an active point number to work at or zero for chip initialization).
      */
     private byte mNumber;
-
     /**
      * Number of teams who checked in.
      */
     private int mChipsRegistered;
-
     /**
      * Text representation of time of last chip registration in local timezone.
      */
-    private int mLastChipTime;
-
+    private long mLastChipTime;
     /**
-     * Station firmware version received from getStatus.
+     * Station firmware version received from getConfig.
      */
     private byte mFirmware;
     /**
@@ -178,11 +186,6 @@ public final class Station {
      * Station temperature received from getStatus.
      */
     private int mTemperature;
-
-    /**
-     * List of last teams which visited the station.
-     */
-    private List<Integer> mLastTeams;
 
     /**
      * Create Station from Bluetooth scan.
@@ -201,6 +204,8 @@ public final class Station {
         mVoltage = 0;
         mTemperature = 0;
         mLastTeams = new ArrayList<>();
+        mChips = new Chips(0);
+        mChipRecordsN = new ArrayList<>();
         // Create client socket with default Bluetooth UUID
         try {
             mSocket = mDevice.createRfcommSocketToServiceRecord(STATION_UUID);
@@ -242,7 +247,7 @@ public final class Station {
      *
      * @return Time as unixtime
      */
-    public int getStationTime() {
+    public long getStationTime() {
         return mStationTime;
     }
 
@@ -287,7 +292,7 @@ public final class Station {
      *
      * @return Time as unixtime
      */
-    public int getLastInitTime() {
+    public long getLastInitTime() {
         return mLastInitTime;
     }
 
@@ -332,7 +337,7 @@ public final class Station {
      *
      * @return Array of teams numbers
      */
-    public List<Integer> getLastTeams() {
+    public List<Integer> lastTeams() {
         return mLastTeams;
     }
 
@@ -346,6 +351,24 @@ public final class Station {
     }
 
     /**
+     * Get result of getTeamRecord call.
+     *
+     * @return List of ChipEvent object inside Chips object
+     */
+    public Chips getChipEvents() {
+        return mChips;
+    }
+
+    /**
+     * Get number of used pages in team chip from getTeamRecord call.
+     *
+     * @return Total number of chip pages to read from station flash
+     */
+    public List<Integer> getChipRecordsN() {
+        return mChipRecordsN;
+    }
+
+    /**
      * Get the time of last chip registration as a formatted string.
      *
      * @return Text representation of time of last chip registration in local timezone
@@ -354,7 +377,7 @@ public final class Station {
         if (mLastChipTime == 0) return "-";
         final Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(mLastChipTime * 1000L);
-        final DateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault());
+        final DateFormat format = new SimpleDateFormat("dd.MM.yyyy  HH:mm:ss", Locale.getDefault());
         return format.format(calendar.getTime());
     }
 
@@ -502,8 +525,8 @@ public final class Station {
             return new byte[]{REC_BAD_RESPONSE};
         }
         // check station number
-        if (sendBuffer[0] != CMD_GET_STATUS && sendBuffer[0] != CMD_RESET_STATION
-                && receiveBuffer[3] != mNumber) {
+        if (sendBuffer[0] != CMD_GET_STATUS && sendBuffer[0] != CMD_GET_CONFIG
+                && sendBuffer[0] != CMD_RESET_STATION && receiveBuffer[3] != mNumber) {
             return new byte[]{REC_BAD_RESPONSE};
         }
         // update station number for getStatus command
@@ -705,7 +728,7 @@ public final class Station {
         if (!command(commandData, response)) return false;
         // Get new station time
         mStationTime = byteArray2Int(response, 0, 3);
-        mTimeDrift = mStationTime - (int) (System.currentTimeMillis() / 1000L);
+        mTimeDrift = (int) (mStationTime - System.currentTimeMillis() / 1000L);
         return true;
     }
 
@@ -719,7 +742,7 @@ public final class Station {
         byte[] commandData = new byte[8];
         commandData[0] = CMD_RESET_STATION;
         int2ByteArray(mChipsRegistered, commandData, 1, 2);
-        int2ByteArray(mLastChipTime, commandData, 3, 4);
+        int2ByteArray((int) mLastChipTime, commandData, 3, 4);
         commandData[7] = number;
         // Send it to station
         final byte[] response = new byte[0];
@@ -735,26 +758,21 @@ public final class Station {
      *
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchStatus() {
         // Get response from station
-        final byte[] response = new byte[16];
+        final byte[] response = new byte[14];
         if (!command(new byte[]{CMD_GET_STATUS}, response)) return false;
-        // Get station firmware
-        mFirmware = response[0];
-        // Get station mode
-        mMode = response[1];
         // Get station time
-        mStationTime = byteArray2Int(response, 2, 5);
-        mTimeDrift = mStationTime - (int) (System.currentTimeMillis() / 1000L);
+        mStationTime = byteArray2Int(response, 0, 3);
+        mTimeDrift = (int) (mStationTime - System.currentTimeMillis() / 1000L);
         // Get number of chips registered by station
-        mChipsRegistered = byteArray2Int(response, 6, 7);
+        mChipsRegistered = byteArray2Int(response, 4, 5);
         // Get last chips registration time
-        mLastChipTime = byteArray2Int(response, 8, 11);
+        mLastChipTime = byteArray2Int(response, 6, 9);
         // Get station battery voltage
-        mVoltage = byteArray2Int(response, 12, 13);
+        mVoltage = byteArray2Int(response, 10, 11);
         // Get station temperature
-        mTemperature = byteArray2Int(response, 14, 15);
+        mTemperature = byteArray2Int(response, 12, 13);
         return true;
     }
 
@@ -773,10 +791,11 @@ public final class Station {
         int2ByteArray(teamNumber, commandData, 1, 2);
         int2ByteArray(teamMask, commandData, 3, 2);
         // Send command to station
-        final byte[] response = new byte[4];
+        final byte[] response = new byte[12];
         if (!command(commandData, response)) return false;
         // Get init time from station response
         mLastInitTime = byteArray2Int(response, 0, 3);
+        // Chip UID (bytes 4-11) is ignored right now
         return true;
     }
 
@@ -789,11 +808,54 @@ public final class Station {
         // Get response from station
         final byte[] response = new byte[LAST_TEAMS_LEN * 2];
         if (!command(new byte[]{CMD_LAST_TEAMS}, response)) return false;
-        mLastTeams = new ArrayList<>();
+        mLastTeams.clear();
         for (int i = 0; i < LAST_TEAMS_LEN; i++) {
             final int teamNumber = byteArray2Int(response, i * 2, i * 2 + 1);
-            if (teamNumber > 0) mLastTeams.add(teamNumber);
+            if (teamNumber > 0  && !mLastTeams.contains(teamNumber)) mLastTeams.add(teamNumber);
         }
+        return true;
+    }
+
+    /**
+     * Get info about team with teamNumber number visiting the station.
+     *
+     * @param teamNumber Number of team to fetch
+     * @return True if succeeded
+     */
+    public boolean fetchTeamRecord(final int teamNumber) {
+        // Prepare command payload
+        byte[] commandData = new byte[3];
+        commandData[0] = CMD_TEAM_RECORD;
+        int2ByteArray(teamNumber, commandData, 1, 2);
+        // Send command to station
+        final byte[] response = new byte[13];
+        mChips.clear();
+        mChipRecordsN.clear();
+        if (!command(commandData, response)) return false;
+        final int checkTeamNumber = byteArray2Int(response, 0, 1);
+        if (checkTeamNumber != teamNumber) return false;
+        final int initTime = byteArray2Int(response, 2, 5);
+        final int teamMask = byteArray2Int(response, 6, 7);
+        final int teamTime = byteArray2Int(response, 8, 11);
+        mChips.addNewEvent(this, initTime, teamNumber, teamMask, mNumber, teamTime);
+        mChipRecordsN.add((int) response[12]);
+        return true;
+    }
+
+    /**
+     * Get station firmware version and configuration.
+     *
+     * @return True if succeeded
+     */
+    public boolean fetchConfig() {
+        // Get response from station
+        final byte[] response = new byte[15];
+        if (!command(new byte[]{CMD_GET_CONFIG}, response)) return false;
+        // Get station firmware
+        mFirmware = response[0];
+        // Get station mode
+        mMode = response[1];
+        // Ignore all other parameters
         return true;
     }
 }

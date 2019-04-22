@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:background="@drawable/list_selector"
+    android:clickable="true"
+    android:focusable="true">
+
+    <TextView
+        android:id="@+id/list_team_name"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/default_padding"
+        android:gravity="start|center_vertical"
+        android:text="@string/ap_team_name"
+        app:layout_constraintEnd_toStartOf="@id/list_team_count"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/list_team_count"
+        android:layout_width="32dp"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/list_team_count"
+        app:layout_constraintEnd_toStartOf="@id/list_team_time"
+        app:layout_constraintStart_toEndOf="@id/list_team_name"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/list_team_time"
+        android:layout_width="112dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="@dimen/default_padding"
+        android:gravity="center|end"
+        android:text="@string/list_team_time"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/list_team_count"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</android.support.constraint.ConstraintLayout>

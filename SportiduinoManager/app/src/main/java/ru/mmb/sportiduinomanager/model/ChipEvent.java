@@ -26,7 +26,7 @@ final class ChipEvent implements Comparable<ChipEvent> {
     /**
      * Station time at the moment when event was received by app.
      */
-    final int mStationTime;
+    final long mStationTime;
 
     /**
      * Time difference between station and Android.
@@ -46,7 +46,7 @@ final class ChipEvent implements Comparable<ChipEvent> {
     /**
      * Initialization time of the chip.
      */
-    final int mInitTime;
+    final long mInitTime;
 
     /**
      * Team number from the chip.
@@ -66,7 +66,7 @@ final class ChipEvent implements Comparable<ChipEvent> {
     /**
      * Time of registered event.
      */
-    final int mPointTime;
+    final long mPointTime;
 
     /**
      * Status of event processing (new, saved, sent).
@@ -88,10 +88,10 @@ final class ChipEvent implements Comparable<ChipEvent> {
      * @param pointTime     Time of registered event
      * @param status        Status of event processing (new, saved, sent)
      */
-    ChipEvent(final long stationMAC, final int stationTime, final int stationDrift,
-              final int stationNumber, final int stationMode, final int initTime,
+    ChipEvent(final long stationMAC, final long stationTime, final int stationDrift,
+              final int stationNumber, final int stationMode, final long initTime,
               final int teamNumber, final int teamMask, final int pointNumber,
-              final int pointTime, final int status) {
+              final long pointTime, final int status) {
         mStationMAC = stationMAC;
         mStationTime = stationTime;
         mStationDrift = stationDrift;
@@ -136,7 +136,7 @@ final class ChipEvent implements Comparable<ChipEvent> {
     @Override
     public int compareTo(final ChipEvent compareEvent) {
         // For ascending order
-        return this.mPointTime - compareEvent.mPointTime;
+        return (int) (this.mPointTime - compareEvent.mPointTime);
     }
 
     /**
@@ -145,10 +145,8 @@ final class ChipEvent implements Comparable<ChipEvent> {
      * @return Chip event converted to string
      */
     public String toString() {
-        return Long.toString(mStationMAC) + '\t' + Integer.toString(mStationTime) + '\t'
-                + Integer.toString(mStationDrift) + '\t' + Integer.toString(mStationNumber) + '\t'
-                + Integer.toString(mStationMode) + '\t' + Integer.toString(mInitTime) + '\t'
-                + Integer.toString(mTeamNumber) + '\t' + Integer.toString(mTeamMask) + '\t'
-                + Integer.toString(mPointNumber) + '\t' + Integer.toString(mPointTime);
+        return Long.toString(mStationMAC) + '\t' + mStationTime + '\t' + mStationDrift + '\t'
+                + mStationNumber + '\t' + mStationMode + '\t' + mInitTime + '\t' + mTeamNumber
+                + '\t' + mTeamMask + '\t' + mPointNumber + '\t' + mPointTime;
     }
 }

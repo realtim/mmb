@@ -186,6 +186,13 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         getMenuItem(R.id.bluetooth).setChecked(true);
         // Disable startup animation
         overridePendingTransition(0, 0);
+        // Initialize points and modes spinners
+        final Spinner pointSpinner = findViewById(R.id.station_point_spinner);
+        pointSpinner.setAdapter(getPointsAdapter());
+        mOnPointSelected = new PointSelectedListener();
+        pointSpinner.setOnItemSelectedListener(mOnPointSelected);
+        final Spinner modeSpinner = findViewById(R.id.station_mode_spinner);
+        modeSpinner.setAdapter(getModesAdapter());
         // Check if device supports Bluetooth
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
@@ -221,13 +228,6 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         } else {
             mBluetoothSearch = BT_SEARCH_OFF;
         }
-        // Initialize points and modes spinners
-        final Spinner pointSpinner = findViewById(R.id.station_point_spinner);
-        pointSpinner.setAdapter(getPointsAdapter());
-        mOnPointSelected = new PointSelectedListener();
-        pointSpinner.setOnItemSelectedListener(mOnPointSelected);
-        final Spinner modeSpinner = findViewById(R.id.station_mode_spinner);
-        modeSpinner.setAdapter(getModesAdapter());
         // Update activity layout
         updateLayout(true);
     }
@@ -492,7 +492,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
             return;
         }
         // Update station data if asked
-        if (fetchStatus && !station.fetchStatus()) {
+        if (fetchStatus && (!station.fetchConfig() || !station.fetchStatus())) {
             Toast.makeText(getApplicationContext(), station.getLastError(),
                     Toast.LENGTH_LONG).show();
             findViewById(R.id.station_status).setVisibility(View.GONE);
@@ -554,7 +554,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     /**
      * Callback to be invoked when an item in points list has been selected.
      */
-    private class PointSelectedListener implements AdapterView.OnItemSelectedListener {
+    class PointSelectedListener implements AdapterView.OnItemSelectedListener {
 
         /**
          * Flag for disabling Mode Spinner change when called from updateLayout.

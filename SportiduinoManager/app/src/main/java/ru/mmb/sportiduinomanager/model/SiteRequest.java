@@ -110,7 +110,7 @@ public final class SiteRequest {
     private Teams mTeams;
 
     /**
-     * private constructor, only used by the SiteRequestBuilder.
+     * constructor, only used by the SiteRequestBuilder.
      *
      * @param srb Builder of all class variables
      */
@@ -492,31 +492,31 @@ public final class SiteRequest {
         /**
          * User email for authorization.
          */
-        private String mUserEmail;
+        String mUserEmail;
         /**
          * MD5 of user password for authorization.
          */
-        private String mUserPassword;
+        String mUserPassword;
         /**
          * Selection of main/test version of the site.
          */
-        private int mTestSite;
+        int mTestSite;
         /**
          * Type of site request (see TYPE_* constants).
          */
-        private int mType;
+        int mType;
         /**
          * Localized name for chip init active point.
          */
-        private String mChipInitName;
+        String mChipInitName;
         /**
          * Database object for saving downloaded data.
          */
-        private Database mDatabase;
+        Database mDatabase;
         /**
          * List of chips events for sending unsent events to site.
          */
-        private Chips mChips;
+        Chips mChips;
 
         /**
          * Use the static method SiteRequest.builder() to get an instance.

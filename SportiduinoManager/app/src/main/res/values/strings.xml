@@ -89,5 +89,9 @@
 
     <string name="ap_total_teams">Teams: %1$d</string>
     <string name="ap_team_name">№%1$d %2$s</string>
+    <string name="ap_visited">Visited: %1$s</string>
+    <string name="ap_skipped">Skipped: %1$s</string>
     <string name="ap_members_count">Members: %1$d</string>
+    <string name="list_team_count">%1$d</string>
+    <string name="list_team_time">%1$s</string>
 </resources>
