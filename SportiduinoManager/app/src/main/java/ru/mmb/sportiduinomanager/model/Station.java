@@ -52,6 +52,11 @@ public final class Station {
      */
     private static final int HEADER_SIZE = 6;
     /**
+     * Size of chip UID in communication packet.
+     */
+    public static final int UID_SIZE = 8;
+
+    /**
      * Protocol signature in all headers.
      */
     private static final byte HEADER_SIGNATURE = (byte) 0xFE;
@@ -104,6 +109,10 @@ public final class Station {
      * Code of getTeamRecord station command.
      */
     private static final byte CMD_TEAM_RECORD = (byte) 0x86;
+    /**
+     * Code of readCardPage station command.
+     */
+    private static final byte CMD_READ_CARD_PAGE = (byte) 0x87;
     /**
      * Code of getConfig station command.
      */
@@ -186,6 +195,10 @@ public final class Station {
      * Station temperature received from getStatus.
      */
     private int mTemperature;
+    /**
+     * Loaded chip pages info.
+     */
+    private byte[] mChipInfo;
 
     /**
      * Create Station from Bluetooth scan.
@@ -379,6 +392,15 @@ public final class Station {
         calendar.setTimeInMillis(mLastChipTime * 1000L);
         final DateFormat format = new SimpleDateFormat("dd.MM.yyyy  HH:mm:ss", Locale.getDefault());
         return format.format(calendar.getTime());
+    }
+
+    /**
+     * Get result of CMD_READ_CARD_PAGE.
+     *
+     * @return String representation of pages 0-20 from chip.
+     */
+    public byte[] getChipInfo() {
+        return mChipInfo;
     }
 
     /**
@@ -666,7 +688,7 @@ public final class Station {
      * @param end   Ending position of byte sequence
      * @return Int representation of byte sequence
      */
-    private int byteArray2Int(final byte[] array, final int start, final int end) {
+    public static int byteArray2Int(final byte[] array, final int start, final int end) {
         int result = 0;
         for (int i = start; i <= end; i++) {
             result = result | (array[i] & 0xFF) << ((end - i) * 8);
@@ -858,4 +880,39 @@ public final class Station {
         // Ignore all other parameters
         return true;
     }
+
+    /**
+     * Read chip information from 0 to 20 pages.<br>
+     * Then pretty print it to human readable format.
+     *
+     * @return True if succeeded
+     */
+    public boolean readCardPage() {
+        final int lastPage = 129;
+        final int pagesInRequest = 30;
+        final int requestsCount = (lastPage / pagesInRequest) + 1;
+        mChipInfo = null;
+        byte[] concatResponse = new byte[UID_SIZE + (lastPage + 1) * 5];
+        for (int i = 0; i < requestsCount - 1; i++) {
+            final int pageFrom = i * pagesInRequest;
+            int pageTo = pageFrom + pagesInRequest - 1;
+            if (pageTo > lastPage) pageTo = lastPage;
+            // Prepare command payload
+            byte[] commandData = new byte[3];
+            commandData[0] = CMD_READ_CARD_PAGE;
+            commandData[1] = (byte) (pageFrom & 0xFF);
+            commandData[2] = (byte) (pageTo & 0xFF);
+            final int expectedSize = UID_SIZE + (pageTo - pageFrom + 1) * 5;
+            // Send command to station
+            final byte[] response = new byte[expectedSize];
+            if (!command(commandData, response)) return false;
+            if (pageFrom == 0) {
+                System.arraycopy(response, 0, concatResponse, 0, expectedSize);
+            } else {
+                System.arraycopy(response, UID_SIZE, concatResponse, UID_SIZE + pageFrom * 5, expectedSize - UID_SIZE);
+            }
+        }
+        return true;
+    }
+
 }

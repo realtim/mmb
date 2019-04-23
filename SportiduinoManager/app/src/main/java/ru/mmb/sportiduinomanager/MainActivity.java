@@ -75,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, R.string.err_todo_team_list,
                             Toast.LENGTH_LONG).show();
                     break;
+                case R.id.chip_info:
+                    activity = new Intent(getApplicationContext(), ChipInfoActivity.class);
+                    break;
                 default:
             }
             // Switch to new activity
@@ -208,6 +211,14 @@ public class MainActivity extends AppCompatActivity {
             activePointItem.setEnabled(true);
             activePointItem.setTitle(getResources().getString(R.string.mode_active_point_name,
                     pointName));
+        }
+        // Update 'Chip Info' menu item
+        final MenuItem chipInfoItem = mNavigationView.getMenu().findItem(R.id.chip_info);
+        chipInfoItem.setTitle(getResources().getText(R.string.mode_chip_info));
+        if (station == null || station.getMode() != Station.MODE_INIT_CHIPS) {
+            chipInfoItem.setEnabled(false);
+        } else {
+            chipInfoItem.setEnabled(true);
         }
         // Update toolbar title
         if (activeItem != 0) {

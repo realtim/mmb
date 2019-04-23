@@ -35,6 +35,7 @@
         <activity android:name="DatabaseActivity" />
         <activity android:name="BluetoothActivity" />
         <activity android:name="ChipInitActivity" />
+        <activity android:name="ChipInfoActivity" />
         <activity android:name="ActivePointActivity" />
     </application>
 </manifest>
