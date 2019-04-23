@@ -888,20 +888,18 @@ public final class Station {
      * @return True if succeeded
      */
     public boolean readCardPage() {
-        final int lastPage = 129;
-        final int pagesInRequest = 30;
-        final int requestsCount = (lastPage / pagesInRequest) + 1;
+        final byte pagesInRequest = 20;
+        final int requestsCount = 5;
         mChipInfo = null;
-        byte[] concatResponse = new byte[UID_SIZE + (lastPage + 1) * 5];
-        for (int i = 0; i < requestsCount - 1; i++) {
-            final int pageFrom = i * pagesInRequest;
-            int pageTo = pageFrom + pagesInRequest - 1;
-            if (pageTo > lastPage) pageTo = lastPage;
+        byte[] concatResponse = new byte[UID_SIZE + (pagesInRequest * requestsCount + 1) * 5];
+        for (int i = 0; i < requestsCount; i++) {
+            final byte pageFrom = (byte) (i * pagesInRequest);
+            final byte pageTo = (byte) (pageFrom + pagesInRequest);
             // Prepare command payload
             byte[] commandData = new byte[3];
             commandData[0] = CMD_READ_CARD_PAGE;
-            commandData[1] = (byte) (pageFrom & 0xFF);
-            commandData[2] = (byte) (pageTo & 0xFF);
+            commandData[1] = pageFrom;
+            commandData[2] = pageTo;
             final int expectedSize = UID_SIZE + (pageTo - pageFrom + 1) * 5;
             // Send command to station
             final byte[] response = new byte[expectedSize];
@@ -912,6 +910,7 @@ public final class Station {
                 System.arraycopy(response, UID_SIZE, concatResponse, UID_SIZE + pageFrom * 5, expectedSize - UID_SIZE);
             }
         }
+        mChipInfo = concatResponse;
         return true;
     }
 

@@ -211,6 +211,11 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         new ChipInitTask(this).execute(teamNumber, mTeamMask);
     }
 
+    /**
+     * Update team controls after chip initialization.
+     *
+     * @param initResult success or error
+     */
     public void onChipInitResult(final boolean initResult) {
         // Check team number, mask and station presence
         if (mTeamNumber.length() == 0 || mTeamMask == 0 || mStation == null) return;

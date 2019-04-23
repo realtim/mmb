@@ -20,6 +20,7 @@ import java.util.Locale;
 import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.model.Teams;
+import ru.mmb.sportiduinomanager.task.ChipInfoTask;
 import ru.mmb.sportiduinomanager.task.ChipInitTask;
 
 import static ru.mmb.sportiduinomanager.model.Station.UID_SIZE;
@@ -35,6 +36,16 @@ public final class ChipInfoActivity extends MainActivity {
             new SimpleDateFormat("dd.MM.yyyy  HH:mm:ss", Locale.getDefault());
 
     /**
+     * Chip info request not running now.
+     */
+    public static final int CHIP_INFO_REQUEST_OFF = 0;
+
+    /**
+     * Chip info request is in progress.
+     */
+    public static final int CHIP_INFO_REQUEST_ON = 1;
+
+    /**
      * Main application thread with persistent data.
      */
     private MainApplication mMainApplication;
@@ -43,6 +54,11 @@ public final class ChipInfoActivity extends MainActivity {
      * Station which was previously paired via Bluetooth.
      */
     private Station mStation;
+
+    /**
+     * Current state of chip info request.
+     */
+    private int mChipInfoRequest = CHIP_INFO_REQUEST_OFF;
 
     @Override
     protected void onCreate(final Bundle instanceState) {
@@ -61,6 +77,16 @@ public final class ChipInfoActivity extends MainActivity {
         overridePendingTransition(0, 0);
         // Get connected station from main application thread
         mStation = mMainApplication.getStation();
+        updateLayout();
+    }
+
+    /**
+     * Accessor method to change mChipInfoRequest from AsyncTask.
+     *
+     * @param newState new state CHIP_INFO_REQUEST_ON or CHIP_INFO_REQUEST_OFF
+     */
+    public void setChipInfoRequestState(final int newState) {
+        mChipInfoRequest = newState;
     }
 
     /**
@@ -73,14 +99,34 @@ public final class ChipInfoActivity extends MainActivity {
         chipInfoText.setText("");
         // Check station presence
         if (mStation == null) return;
-        if (mStation.readCardPage()) {
+
+        // Send command to station and check result
+        new ChipInfoTask(this).execute();
+    }
+
+    /**
+     * Update team controls after chip initialization.
+     *
+     * @param requestResult success or error
+     */
+    public void onChipInfoRequestResult(final boolean requestResult) {
+        final TextView chipInfoText = findViewById(R.id.chip_info_text);
+        if (requestResult) {
             chipInfoText.setText(convertResponseToText(mStation.getChipInfo()));
         } else {
             Toast.makeText(getApplicationContext(), mStation.getLastError(), Toast.LENGTH_LONG).show();
         }
+        updateLayout();
     }
 
+    /**
+     * Decode byte array to human readable strings.
+     *
+     * @param chipInfo response byte array from station
+     * @return pretty formatted string
+     */
     private String convertResponseToText(byte[] chipInfo) {
+        if (chipInfo == null) return "";
         final int pagesCount = (chipInfo.length - UID_SIZE) / 5;
         String result = "";
         for (int i = 0; i < pagesCount; i++) {
@@ -111,6 +157,24 @@ public final class ChipInfoActivity extends MainActivity {
             result += "\n";
         }
         return result;
+    }
+
+    /**
+     * Refresh activity controls state.
+     */
+    public void updateLayout() {
+        final Button infoButton = findViewById(R.id.chip_info_request);
+        final ProgressBar infoProgress = findViewById(R.id.chip_info_request_progress);
+        final TextView chipInfoText = findViewById(R.id.chip_info_text);
+        if (mChipInfoRequest == CHIP_INFO_REQUEST_ON) {
+            chipInfoText.setVisibility(View.GONE);
+            infoButton.setVisibility(View.GONE);
+            infoProgress.setVisibility(View.VISIBLE);
+        } else {
+            chipInfoText.setVisibility(View.VISIBLE);
+            infoButton.setVisibility(View.VISIBLE);
+            infoProgress.setVisibility(View.GONE);
+        }
     }
 
 }
