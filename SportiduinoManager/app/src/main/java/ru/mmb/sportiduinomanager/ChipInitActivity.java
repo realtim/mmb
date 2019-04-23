@@ -6,6 +6,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,6 +16,7 @@ import java.util.List;
 import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.model.Teams;
+import ru.mmb.sportiduinomanager.task.ChipInitTask;
 
 /**
  * Provides ability to select a team, mark team members as absent,
@@ -24,6 +27,16 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * Max number of symbols in mTeamNumber string.
      */
     private static final int TEAM_MEMBER_LEN = 4;
+
+    /**
+     * Chip init not running now.
+     */
+    public static final int CHIP_INIT_OFF = 0;
+
+    /**
+     * Chip init is in progress.
+     */
+    public static final int CHIP_INIT_ON = 1;
 
     /**
      * Main application thread with persistent data.
@@ -55,6 +68,11 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * (it can be modified after loading from db and before saving to chip).
      */
     private int mTeamMask;
+
+    /**
+     * Current state of chip init.
+     */
+    private int mChipInit = CHIP_INIT_OFF;
 
     @Override
     protected void onCreate(final Bundle instanceState) {
@@ -111,9 +129,18 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         if (teamMembersCount == 0) {
             showError(false, R.string.err_init_empty_team);
         } else {
-            findViewById(R.id.init_error).setVisibility(View.INVISIBLE);
-            findViewById(R.id.init_team_chip).setVisibility(View.VISIBLE);
+            findViewById(R.id.init_error).setVisibility(View.GONE);
+            findViewById(R.id.init_team_chip_frame).setVisibility(View.VISIBLE);
         }
+    }
+
+    /**
+     * Accessor method to change mChipInit from AsyncTask.
+     *
+     * @param newState new state CHIP_INIT_ON or CHIP_INIT_OFF
+     */
+    public void setChipInitState(final int newState) {
+        mChipInit = newState;
     }
 
     /**
@@ -181,8 +208,15 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         if (mTeamNumber.length() == 0 || mTeamMask == 0 || mStation == null) return;
         final int teamNumber = Integer.parseInt(mTeamNumber);
         // Send command to station and check result
-        if (mStation.initChip(teamNumber, mTeamMask)) {
+        new ChipInitTask(this).execute(teamNumber, mTeamMask);
+    }
+
+    public void onChipInitResult(final boolean initResult) {
+        // Check team number, mask and station presence
+        if (mTeamNumber.length() == 0 || mTeamMask == 0 || mStation == null) return;
+        if (initResult) {
             // Create new chip init event and save it into local database
+            final int teamNumber = Integer.parseInt(mTeamNumber);
             mChips.addNewEvent(mStation, mStation.getLastInitTime(), teamNumber, mTeamMask,
                     mStation.getNumber(), mStation.getLastInitTime());
             final String result = mChips.saveNewEvents(mMainApplication.getDatabase());
@@ -204,13 +238,15 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             Toast.makeText(getApplicationContext(), mStation.getLastError(),
                     Toast.LENGTH_LONG).show();
         }
+        updateKeyboardState();
+        loadTeam(false);
     }
 
     /**
      * Enable/disable virtual keyboard buttons
      * according to number of symbols in mTeamNumber.
      */
-    private void updateKeyboardState() {
+    public void updateKeyboardState() {
         if (mTeamNumber.length() < TEAM_MEMBER_LEN) {
             changeKeyState(R.id.key_1, true);
             changeKeyState(R.id.key_2, true);
@@ -249,8 +285,9 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * @param isEnabled true for enabled button
      */
     private void changeKeyState(final int buttonId, final boolean isEnabled) {
+        final boolean enabled = isEnabled && mChipInit == CHIP_INIT_OFF;
         final Button getResultsButton = findViewById(buttonId);
-        if (isEnabled) {
+        if (enabled) {
             getResultsButton.setAlpha(MainApplication.ENABLED_BUTTON);
             getResultsButton.setClickable(true);
         } else {
@@ -265,7 +302,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * @param isNew True if the team was selected right now,
      *              False if it is being reloaded after activity restart.
      */
-    private void loadTeam(final boolean isNew) {
+    public void loadTeam(final boolean isNew) {
         // Parse integer team number from string
         int teamNumber;
         if (mTeamNumber.length() > 0) {
@@ -278,7 +315,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             mMainApplication.setTeamNumber(teamNumber);
         }
         // No errors found yet
-        findViewById(R.id.init_error).setVisibility(View.INVISIBLE);
+        findViewById(R.id.init_error).setVisibility(View.GONE);
         // Check if we can send initialization command to a station
         if (mStation == null) {
             showError(true, R.string.err_init_no_station);
@@ -289,13 +326,23 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             return;
         }
         // Save layout elements views for future usage
+        final FrameLayout initButtonFrame = findViewById(R.id.init_team_chip_frame);
         final Button initButton = findViewById(R.id.init_team_chip);
+        final ProgressBar initProgress = findViewById(R.id.init_team_chip_progress);
         final TextView teamNumberText = findViewById(R.id.init_team_number);
         final Group teamData = findViewById(R.id.init_team_data);
         // Hide all if no number was entered yet
         if (teamNumber == 0) {
             teamNumberText.setText(getResources().getString(R.string.team_number));
+            initButtonFrame.setVisibility(View.GONE);
+            teamData.setVisibility(View.GONE);
+            return;
+        }
+        // Show just progress if chip init is running
+        if (mChipInit == CHIP_INIT_ON) {
+            initButtonFrame.setVisibility(View.VISIBLE);
             initButton.setVisibility(View.GONE);
+            initProgress.setVisibility(View.VISIBLE);
             teamData.setVisibility(View.GONE);
             return;
         }
@@ -340,8 +387,10 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             showError(false, R.string.err_init_empty_team);
             return;
         }
-        // Make all team data visible
+        initButtonFrame.setVisibility(View.VISIBLE);
         initButton.setVisibility(View.VISIBLE);
+        initProgress.setVisibility(View.GONE);
+        // Make all team data visible
         teamData.setVisibility(View.VISIBLE);
     }
 
@@ -352,14 +401,14 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * @param errorId      Message resource id
      */
     private void showError(final boolean teamNotFound, final int errorId) {
-        final Button initButton = findViewById(R.id.init_team_chip);
+        final FrameLayout initButtonFrame = findViewById(R.id.init_team_chip_frame);
         final Group teamData = findViewById(R.id.init_team_data);
         final TextView errorText = findViewById(R.id.init_error);
         if (teamNotFound) {
-            initButton.setVisibility(View.GONE);
+            initButtonFrame.setVisibility(View.GONE);
             teamData.setVisibility(View.GONE);
         } else {
-            initButton.setVisibility(View.INVISIBLE);
+            initButtonFrame.setVisibility(View.GONE);
         }
         errorText.setText(getResources().getString(errorId));
         errorText.setVisibility(View.VISIBLE);
