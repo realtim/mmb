@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -110,9 +111,9 @@ public final class Station {
      */
     private static final byte CMD_TEAM_RECORD = (byte) 0x86;
     /**
-     * Code of readCardPage station command.
+     * Code of readCardPage station command CMD_READ_CARD_PAGE.
      */
-    private static final byte CMD_READ_CARD_PAGE = (byte) 0x87;
+    private static final byte CMD_CHIP_INFO = (byte) 0x87;
     /**
      * Code of getConfig station command.
      */
@@ -397,10 +398,11 @@ public final class Station {
     /**
      * Get result of CMD_READ_CARD_PAGE.
      *
-     * @return String representation of pages 0-20 from chip.
+     * @return response byte array
      */
     public byte[] getChipInfo() {
-        return mChipInfo;
+        if (mChipInfo == null || mChipInfo.length == 0) return null;
+        return Arrays.copyOf(mChipInfo, mChipInfo.length);
     }
 
     /**
@@ -885,19 +887,19 @@ public final class Station {
      * Read chip information from 0 to 20 pages.<br>
      * Then pretty print it to human readable format.
      *
-     * @return True if succeeded
+     * @param pagesInRequest must be 20
+     * @param requestsCount  multiplier by 20 to get reasonable pages count
+     * @return true if succeeded
      */
-    public boolean readCardPage() {
-        final byte pagesInRequest = 20;
-        final int requestsCount = 5;
-        mChipInfo = null;
-        byte[] concatResponse = new byte[UID_SIZE + (pagesInRequest * requestsCount + 1) * 5];
+    public boolean readCardPage(final byte pagesInRequest, final int requestsCount) {
+        mChipInfo = new byte[] {};
+        final byte[] concatResponse = new byte[UID_SIZE + (pagesInRequest * requestsCount + 1) * 5];
         for (int i = 0; i < requestsCount; i++) {
             final byte pageFrom = (byte) (i * pagesInRequest);
             final byte pageTo = (byte) (pageFrom + pagesInRequest);
             // Prepare command payload
             byte[] commandData = new byte[3];
-            commandData[0] = CMD_READ_CARD_PAGE;
+            commandData[0] = CMD_CHIP_INFO;
             commandData[1] = pageFrom;
             commandData[2] = pageTo;
             final int expectedSize = UID_SIZE + (pageTo - pageFrom + 1) * 5;

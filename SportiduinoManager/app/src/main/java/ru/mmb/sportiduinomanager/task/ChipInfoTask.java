@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import java.lang.ref.WeakReference;
 
 import ru.mmb.sportiduinomanager.ChipInfoActivity;
-import ru.mmb.sportiduinomanager.ChipInitActivity;
 import ru.mmb.sportiduinomanager.MainApplication;
 import ru.mmb.sportiduinomanager.model.Station;
 
@@ -41,7 +40,7 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
         final ChipInfoActivity activity = mActivityRef.get();
         if (activity == null || activity.isFinishing()) return;
         // Change chip init state
-        activity.setChipInfoRequestState(ChipInfoActivity.CHIP_INFO_REQUEST_ON);
+        activity.setInfoRequestState(ChipInfoActivity.INFO_REQUEST_ON);
         // Update activity layout
         activity.updateLayout();
     }
@@ -51,7 +50,7 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
         final Station station = mMainApplication.getStation();
         if (station == null) return true;
 
-        return station.readCardPage();
+        return station.readCardPage((byte) 20, 5);
     }
 
     /**
@@ -64,7 +63,7 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
         final ChipInfoActivity activity = mActivityRef.get();
         if (activity == null || activity.isFinishing()) return;
 
-        activity.setChipInfoRequestState(ChipInfoActivity.CHIP_INFO_REQUEST_OFF);
+        activity.setInfoRequestState(ChipInfoActivity.INFO_REQUEST_OFF);
 
         activity.onChipInfoRequestResult(result);
     }

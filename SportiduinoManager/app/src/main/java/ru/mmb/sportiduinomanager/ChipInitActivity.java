@@ -332,8 +332,6 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         }
         // Save layout elements views for future usage
         final FrameLayout initButtonFrame = findViewById(R.id.init_team_chip_frame);
-        final Button initButton = findViewById(R.id.init_team_chip);
-        final ProgressBar initProgress = findViewById(R.id.init_team_chip_progress);
         final TextView teamNumberText = findViewById(R.id.init_team_number);
         final Group teamData = findViewById(R.id.init_team_data);
         // Hide all if no number was entered yet
@@ -343,6 +341,8 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             teamData.setVisibility(View.GONE);
             return;
         }
+        final Button initButton = findViewById(R.id.init_team_chip);
+        final ProgressBar initProgress = findViewById(R.id.init_team_chip_progress);
         // Show just progress if chip init is running
         if (mChipInit == CHIP_INIT_ON) {
             initButtonFrame.setVisibility(View.VISIBLE);

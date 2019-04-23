@@ -1,12 +1,8 @@
 package ru.mmb.sportiduinomanager;
 
 import android.os.Bundle;
-import android.support.constraint.Group;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,14 +10,10 @@ import android.widget.Toast;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
-import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Station;
-import ru.mmb.sportiduinomanager.model.Teams;
 import ru.mmb.sportiduinomanager.task.ChipInfoTask;
-import ru.mmb.sportiduinomanager.task.ChipInitTask;
 
 import static ru.mmb.sportiduinomanager.model.Station.UID_SIZE;
 
@@ -32,18 +24,22 @@ public final class ChipInfoActivity extends MainActivity {
     /**
      * Date format for time print.
      */
-    private static final DateFormat DATE_FORMAT =
-            new SimpleDateFormat("dd.MM.yyyy  HH:mm:ss", Locale.getDefault());
+    private static final ThreadLocal<DateFormat> DATE_FORMAT = new ThreadLocal<DateFormat>() {
+        @Override
+        protected DateFormat initialValue() {
+            return new SimpleDateFormat("dd.MM.yyyy  HH:mm:ss", Locale.getDefault());
+        }
+    };
 
     /**
      * Chip info request not running now.
      */
-    public static final int CHIP_INFO_REQUEST_OFF = 0;
+    public static final int INFO_REQUEST_OFF = 0;
 
     /**
      * Chip info request is in progress.
      */
-    public static final int CHIP_INFO_REQUEST_ON = 1;
+    public static final int INFO_REQUEST_ON = 1;
 
     /**
      * Main application thread with persistent data.
@@ -58,7 +54,7 @@ public final class ChipInfoActivity extends MainActivity {
     /**
      * Current state of chip info request.
      */
-    private int mChipInfoRequest = CHIP_INFO_REQUEST_OFF;
+    private int mInfoRequest = INFO_REQUEST_OFF;
 
     @Override
     protected void onCreate(final Bundle instanceState) {
@@ -81,12 +77,12 @@ public final class ChipInfoActivity extends MainActivity {
     }
 
     /**
-     * Accessor method to change mChipInfoRequest from AsyncTask.
+     * Accessor method to change mInfoRequest from AsyncTask.
      *
-     * @param newState new state CHIP_INFO_REQUEST_ON or CHIP_INFO_REQUEST_OFF
+     * @param newState new state INFO_REQUEST_ON or INFO_REQUEST_OFF
      */
-    public void setChipInfoRequestState(final int newState) {
-        mChipInfoRequest = newState;
+    public void setInfoRequestState(final int newState) {
+        mInfoRequest = newState;
     }
 
     /**
@@ -125,38 +121,40 @@ public final class ChipInfoActivity extends MainActivity {
      * @param chipInfo response byte array from station
      * @return pretty formatted string
      */
-    private String convertResponseToText(byte[] chipInfo) {
+    private String convertResponseToText(final byte[] chipInfo) {
         if (chipInfo == null) return "";
         final int pagesCount = (chipInfo.length - UID_SIZE) / 5;
-        String result = "";
+        final StringBuilder builder = new StringBuilder(1024);
         for (int i = 0; i < pagesCount; i++) {
             final int pos = UID_SIZE + i * 5;
-            result += String.format("Page#%2d: %02X %02X %02X %02X", chipInfo[pos],
-                    chipInfo[pos + 1], chipInfo[pos + 2], chipInfo[pos + 3], chipInfo[pos + 4]);
+            builder.append(String.format("Page#%2d: %02X %02X %02X %02X", chipInfo[pos],
+                    chipInfo[pos + 1], chipInfo[pos + 2], chipInfo[pos + 3], chipInfo[pos + 4]));
             if (i == 4) {
                 final int teamNum = Station.byteArray2Int(chipInfo, pos + 1, pos + 2);
                 final int ntag = chipInfo[pos + 3] & 0xFF;
                 final int version = chipInfo[pos + 4] & 0xFF;
-                result += String.format("\tTeam# %d, Ntag %d, version %d",
-                        teamNum, ntag, version);
+                builder.append(String.format("\tTeam# %d, Ntag %d, version %d",
+                        teamNum, ntag, version));
             } else if (i == 5) {
                 final int initTime = Station.byteArray2Int(chipInfo, pos + 1, pos + 4);
-                result += "\tInitTime: " + DATE_FORMAT.format(new Date(initTime * 1000L));
+                builder.append("\tInitTime: ")
+                        .append(DATE_FORMAT.get().format(new Date(initTime * 1000L)));
             } else if (i == 6) {
                 final int teamMask = Station.byteArray2Int(chipInfo, pos + 1, pos + 2);
-                result += "\tTeamMask: " + Integer.toBinaryString(teamMask);
-            } else if (i >= 8 &&
-                    !(chipInfo[pos + 1] == 0 && chipInfo[pos + 2] == 0 &&
-                            chipInfo[pos + 3] == 0 && chipInfo[pos + 4] == 0)) {
+                builder.append("\tTeamMask: ").append(Integer.toBinaryString(teamMask));
+            } else if (i >= 8 && !(chipInfo[pos + 1] == 0 && chipInfo[pos + 2] == 0
+                    && chipInfo[pos + 3] == 0 && chipInfo[pos + 4] == 0)) {
+                // If all bytes are 0, then don't try to format data
                 final int pointNumber = chipInfo[pos + 1] & 0xFF;
                 final int todayUnix = (int) (System.currentTimeMillis() / 1000L);
                 final int todayUpperByte = todayUnix & 0xFF000000;
                 final int pointTime = Station.byteArray2Int(chipInfo, pos + 2, pos + 4) + todayUpperByte;
-                result += "\tKP# " + pointNumber + ", PointTime: " + DATE_FORMAT.format(new Date(pointTime * 1000L));
+                builder.append("\tKP# ").append(pointNumber).append(", PointTime: ")
+                        .append(DATE_FORMAT.get().format(new Date(pointTime * 1000L)));
             }
-            result += "\n";
+            builder.append('\n');
         }
-        return result;
+        return builder.toString();
     }
 
     /**
@@ -166,7 +164,7 @@ public final class ChipInfoActivity extends MainActivity {
         final Button infoButton = findViewById(R.id.chip_info_request);
         final ProgressBar infoProgress = findViewById(R.id.chip_info_request_progress);
         final TextView chipInfoText = findViewById(R.id.chip_info_text);
-        if (mChipInfoRequest == CHIP_INFO_REQUEST_ON) {
+        if (mInfoRequest == INFO_REQUEST_ON) {
             chipInfoText.setVisibility(View.GONE);
             infoButton.setVisibility(View.GONE);
             infoProgress.setVisibility(View.VISIBLE);
