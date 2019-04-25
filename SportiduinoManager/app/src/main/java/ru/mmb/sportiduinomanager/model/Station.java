@@ -24,20 +24,24 @@ public final class Station {
     /**
      * Station mode for chips initialization.
      */
-    public static final byte MODE_INIT_CHIPS = 0;
+    public static final int MODE_INIT_CHIPS = 0;
     /**
      * Station mode for an ordinary active point.
      */
-    public static final byte MODE_OTHER_POINT = 1;
+    public static final int MODE_OTHER_POINT = 1;
     /**
      * Station mode for active point at distance segment end.
      */
-    public static final byte MODE_FINISH_POINT = 2;
+    public static final int MODE_FINISH_POINT = 2;
 
     /**
      * Size of last teams buffer in station.
      */
-    public static final byte LAST_TEAMS_LEN = 10;
+    public static final int LAST_TEAMS_LEN = 10;
+    /**
+     * Max number of chip marks that we can get in one request from station.
+     */
+    public static final int MAX_MARK_COUNT = 61;
 
     /**
      * Timeout (im ms) while waiting for station response.
@@ -105,6 +109,10 @@ public final class Station {
      */
     private static final byte CMD_TEAM_RECORD = (byte) 0x86;
     /**
+     * Code of readFlash station command.
+     */
+    private static final byte CMD_READ_FLASH = (byte) 0x8a;
+    /**
      * Code of getConfig station command.
      */
     private static final byte CMD_GET_CONFIG = (byte) 0x8d;
@@ -128,7 +136,7 @@ public final class Station {
     /**
      * Number of used pages in chips from getTeamRecord call.
      */
-    private final List<Integer> mChipRecordsN;
+    private int mChipRecordsN;
     /**
      * Connected station Bluetooth socket.
      */
@@ -160,12 +168,12 @@ public final class Station {
     /**
      * Current station mode (0, 1 or 2).
      */
-    private byte mMode;
+    private int mMode;
     /**
      * Configurable station number
      * (an active point number to work at or zero for chip initialization).
      */
-    private byte mNumber;
+    private int mNumber;
     /**
      * Number of teams who checked in.
      */
@@ -177,7 +185,7 @@ public final class Station {
     /**
      * Station firmware version received from getConfig.
      */
-    private byte mFirmware;
+    private int mFirmware;
     /**
      * Station battery voltage received from getStatus.
      */
@@ -205,7 +213,7 @@ public final class Station {
         mTemperature = 0;
         mLastTeams = new ArrayList<>();
         mChips = new Chips(0);
-        mChipRecordsN = new ArrayList<>();
+        mChipRecordsN = 0;
         // Create client socket with default Bluetooth UUID
         try {
             mSocket = mDevice.createRfcommSocketToServiceRecord(STATION_UUID);
@@ -265,7 +273,7 @@ public final class Station {
      *
      * @return Mode code (0, 1 or 2)
      */
-    public byte getMode() {
+    public int getMode() {
         return mMode;
     }
 
@@ -274,7 +282,7 @@ public final class Station {
      *
      * @return Active point number, zero for chip initialization
      */
-    public byte getNumber() {
+    public int getNumber() {
         return mNumber;
     }
 
@@ -310,7 +318,7 @@ public final class Station {
      *
      * @return Firmware version as byte
      */
-    public byte getFirmware() {
+    public int getFirmware() {
         return mFirmware;
     }
 
@@ -364,7 +372,7 @@ public final class Station {
      *
      * @return Total number of chip pages to read from station flash
      */
-    public List<Integer> getChipRecordsN() {
+    public int getChipRecordsN() {
         return mChipRecordsN;
     }
 
@@ -430,7 +438,7 @@ public final class Station {
         buffer[0] = HEADER_SIGNATURE;
         buffer[1] = HEADER_SIGNATURE;
         buffer[2] = HEADER_SIGNATURE;
-        buffer[3] = mNumber;
+        buffer[3] = (byte) mNumber;
         buffer[4] = (byte) (len - 1);
         System.arraycopy(command, 0, buffer, 5, len);
         buffer[len + HEADER_SIZE - 1] = crc8(buffer, len + HEADER_SIZE - 1);
@@ -486,8 +494,8 @@ public final class Station {
                     response = temp;
                 }
                 // stop waiting for more data if we got whole packet
-                if (response.length >= HEADER_SIZE
-                        && response.length >= (response[HEADER_SIZE - 2] + HEADER_SIZE + 1)) {
+                if (response.length >= HEADER_SIZE && response.length
+                        >= ((int) (response[HEADER_SIZE - 2] & 0xFF) + HEADER_SIZE + 1)) {
                     return response;
                 }
             }
@@ -516,7 +524,7 @@ public final class Station {
         // check if response has at minimum 1 byte payload
         if (len < HEADER_SIZE) return new byte[]{REC_BAD_RESPONSE};
         // check buffer length
-        if (receiveBuffer[HEADER_SIZE - 2] != len - HEADER_SIZE - 1) {
+        if ((int) (receiveBuffer[HEADER_SIZE - 2] & 0xFF) != len - HEADER_SIZE - 1) {
             return new byte[]{REC_BAD_RESPONSE};
         }
         // check header
@@ -531,7 +539,7 @@ public final class Station {
         }
         // update station number for getStatus command
         if (sendBuffer[0] == CMD_GET_STATUS) {
-            mNumber = receiveBuffer[3];
+            mNumber = (int) (receiveBuffer[3] & 0xFF);
         }
         // check crc
         if (receiveBuffer[len - 1] != crc8(receiveBuffer, len - 1)) {
@@ -664,10 +672,10 @@ public final class Station {
      * @param array Array of bytes
      * @param start Starting position of byte sequence which will be converted to int
      * @param end   Ending position of byte sequence
-     * @return Int representation of byte sequence
+     * @return Long representation of byte sequence
      */
-    private int byteArray2Int(final byte[] array, final int start, final int end) {
-        int result = 0;
+    private long byteArray2Long(final byte[] array, final int start, final int end) {
+        long result = 0;
         for (int i = start; i <= end; i++) {
             result = result | (array[i] & 0xFF) << ((end - i) * 8);
         }
@@ -677,13 +685,13 @@ public final class Station {
     /**
      * Copy first count bytes from int value to the section of byte array.
      *
-     * @param value    Int value to copy
+     * @param value    Long value to copy
      * @param array    Target byte array
-     * @param starting Starting position in byte array to copy int value
+     * @param starting Starting position in byte array to copy long value
      * @param count    Number of bytes to copy
      */
-    private void int2ByteArray(final int value, final byte[] array, final int starting,
-                               final int count) {
+    private void long2ByteArray(final long value, final byte[] array, final int starting,
+                                final int count) {
         byte[] converted = new byte[count];
         for (int i = 0; i < count; i++) {
             converted[count - 1 - i] = (byte) ((value >> 8 * i) & 0xFF);
@@ -697,9 +705,9 @@ public final class Station {
      * @param mode New station mode (chip initialization, ordinary or finish point)
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean newMode(final byte mode) {
+    public boolean newMode(final int mode) {
         final byte[] response = new byte[0];
-        if (command(new byte[]{CMD_SET_MODE, mode}, response)) {
+        if (command(new byte[]{CMD_SET_MODE, (byte) mode}, response)) {
             mMode = mode;
             return true;
         } else {
@@ -727,7 +735,7 @@ public final class Station {
         final byte[] response = new byte[4];
         if (!command(commandData, response)) return false;
         // Get new station time
-        mStationTime = byteArray2Int(response, 0, 3);
+        mStationTime = byteArray2Long(response, 0, 3);
         mTimeDrift = (int) (mStationTime - System.currentTimeMillis() / 1000L);
         return true;
     }
@@ -741,8 +749,8 @@ public final class Station {
     public boolean resetStation(final byte number) {
         byte[] commandData = new byte[8];
         commandData[0] = CMD_RESET_STATION;
-        int2ByteArray(mChipsRegistered, commandData, 1, 2);
-        int2ByteArray((int) mLastChipTime, commandData, 3, 4);
+        long2ByteArray(mChipsRegistered, commandData, 1, 2);
+        long2ByteArray((int) mLastChipTime, commandData, 3, 4);
         commandData[7] = number;
         // Send it to station
         final byte[] response = new byte[0];
@@ -763,16 +771,16 @@ public final class Station {
         final byte[] response = new byte[14];
         if (!command(new byte[]{CMD_GET_STATUS}, response)) return false;
         // Get station time
-        mStationTime = byteArray2Int(response, 0, 3);
+        mStationTime = byteArray2Long(response, 0, 3);
         mTimeDrift = (int) (mStationTime - System.currentTimeMillis() / 1000L);
         // Get number of chips registered by station
-        mChipsRegistered = byteArray2Int(response, 4, 5);
+        mChipsRegistered = (int) byteArray2Long(response, 4, 5);
         // Get last chips registration time
-        mLastChipTime = byteArray2Int(response, 6, 9);
+        mLastChipTime = byteArray2Long(response, 6, 9);
         // Get station battery voltage
-        mVoltage = byteArray2Int(response, 10, 11);
+        mVoltage = (int) byteArray2Long(response, 10, 11);
         // Get station temperature
-        mTemperature = byteArray2Int(response, 12, 13);
+        mTemperature = (int) byteArray2Long(response, 12, 13);
         return true;
     }
 
@@ -788,13 +796,13 @@ public final class Station {
         byte[] commandData = new byte[5];
         commandData[0] = CMD_INIT_CHIP;
         // Prepare command payload
-        int2ByteArray(teamNumber, commandData, 1, 2);
-        int2ByteArray(teamMask, commandData, 3, 2);
+        long2ByteArray(teamNumber, commandData, 1, 2);
+        long2ByteArray(teamMask, commandData, 3, 2);
         // Send command to station
         final byte[] response = new byte[12];
         if (!command(commandData, response)) return false;
         // Get init time from station response
-        mLastInitTime = byteArray2Int(response, 0, 3);
+        mLastInitTime = byteArray2Long(response, 0, 3);
         // Chip UID (bytes 4-11) is ignored right now
         return true;
     }
@@ -810,8 +818,8 @@ public final class Station {
         if (!command(new byte[]{CMD_LAST_TEAMS}, response)) return false;
         mLastTeams.clear();
         for (int i = 0; i < LAST_TEAMS_LEN; i++) {
-            final int teamNumber = byteArray2Int(response, i * 2, i * 2 + 1);
-            if (teamNumber > 0  && !mLastTeams.contains(teamNumber)) mLastTeams.add(teamNumber);
+            final int teamNumber = (int) byteArray2Long(response, i * 2, i * 2 + 1);
+            if (teamNumber > 0 && !mLastTeams.contains(teamNumber)) mLastTeams.add(teamNumber);
         }
         return true;
     }
@@ -826,19 +834,67 @@ public final class Station {
         // Prepare command payload
         byte[] commandData = new byte[3];
         commandData[0] = CMD_TEAM_RECORD;
-        int2ByteArray(teamNumber, commandData, 1, 2);
+        long2ByteArray(teamNumber, commandData, 1, 2);
         // Send command to station
         final byte[] response = new byte[13];
         mChips.clear();
-        mChipRecordsN.clear();
+        mChipRecordsN = 0;
         if (!command(commandData, response)) return false;
-        final int checkTeamNumber = byteArray2Int(response, 0, 1);
+        final int checkTeamNumber = (int) byteArray2Long(response, 0, 1);
         if (checkTeamNumber != teamNumber) return false;
-        final int initTime = byteArray2Int(response, 2, 5);
-        final int teamMask = byteArray2Int(response, 6, 7);
-        final int teamTime = byteArray2Int(response, 8, 11);
+        final long initTime = byteArray2Long(response, 2, 5);
+        final int teamMask = (int) byteArray2Long(response, 6, 7);
+        final long teamTime = byteArray2Long(response, 8, 11);
         mChips.addNewEvent(this, initTime, teamNumber, teamMask, mNumber, teamTime);
-        mChipRecordsN.add((int) response[12]);
+        mChipRecordsN = response[12];
+        return true;
+    }
+
+    /**
+     * Get some marks from a copy of a chip in station flash memory.
+     *
+     * @param teamNumber Team number
+     * @param initTime   Chip init time (for event creation)
+     * @param teamMask   Chip team mask (for event creation)
+     * @param fromMark   Starting position in marks list
+     * @param count      Number of marks to read
+     * @return True if succeeded, fills mChips with marks as chip events
+     */
+    public boolean fetchTeamMarks(final int teamNumber, final long initTime,
+                                  final int teamMask, final int fromMark,
+                                  final int count) {
+        if (count <= 0 || count > MAX_MARK_COUNT) {
+            mLastError = R.string.err_station_buffer_overflow;
+            return false;
+        }
+        // Prepare command payload
+        byte[] commandData = new byte[9];
+        commandData[0] = CMD_READ_FLASH;
+        final long marksZone = teamNumber * 1024L + 48L;
+        final long startAddress = marksZone + fromMark * 4L;
+        long2ByteArray(startAddress, commandData, 1, 4);
+        long2ByteArray(startAddress + count * 4L - 1, commandData, 5, 4);
+        // Send command to station
+        final byte[] response = new byte[4 + count * 4];
+        mChips.clear();
+        mChipRecordsN = 0;
+        if (!command(commandData, response)) return false;
+        // Check that read address in response is equal to read address in command
+        if (startAddress != byteArray2Long(response, 0, 3)) {
+            mLastError = R.string.err_bt_receive_bad_response;
+            return false;
+        }
+        // Get first byte of current time
+        final long timeCorrection = mStationTime & 0xff000000;
+        // Add new events
+        for (int i = 0; i < count; i++) {
+            final int pointNumber = response[4 + i * 4] & 0xFF;
+            final long pointTime =
+                    byteArray2Long(response, 5 + i * 4, 7 + i * 4) + timeCorrection;
+            // Check if the record is non-empty
+            if (pointNumber == 0xff && (pointTime - timeCorrection) == 0x00ffffff) break;
+            mChips.addNewEvent(this, initTime, teamNumber, teamMask, pointNumber, pointTime);
+        }
         return true;
     }
 
@@ -854,7 +910,7 @@ public final class Station {
         // Get station firmware
         mFirmware = response[0];
         // Get station mode
-        mMode = response[1];
+        mMode = (int) (response[1] & 0xFF);
         // Ignore all other parameters
         return true;
     }

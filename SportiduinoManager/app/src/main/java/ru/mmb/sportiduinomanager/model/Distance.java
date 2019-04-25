@@ -234,9 +234,10 @@ public final class Distance {
      */
     public String pointsNamesFromList(final List<Integer> list) {
         final int total = list.size();
+        // Shortcuts for specific cases
         if (total == 0) return "-";
         if (total == 1) return mPoints[list.get(0)].mName;
-        String result = "";
+        // Set continuous[i] flag to false for points which has skipped points before them
         boolean[] continuous = new boolean[list.size()];
         continuous[0] = true;
         for (int i = 1; i < total; i++) {
@@ -249,6 +250,8 @@ public final class Distance {
             }
             continuous[i] = noHole;
         }
+        // Build list as a sequence of continuous ranges consisting of 1,2 or more points
+        String result = "";
         int rangeStart = 0;
         for (int i = 1; i < total; i++) {
             if (!continuous[i]) {
@@ -261,6 +264,7 @@ public final class Distance {
                 rangeStart = i;
             }
         }
+        // Add the last range to the list
         final String range = rangeName(list, rangeStart, total - 1);
         if ("".equals(result)) {
             result = range;
@@ -268,6 +272,41 @@ public final class Distance {
             result = result.concat(",").concat(range);
         }
         return result;
+    }
+
+    /**
+     * Create list of skipped points from a list of visited points.
+     *
+     * @param visitedPoints List of visited points, can be empty
+     * @return List of skipped points, can be empty
+     */
+    public List<Integer> getSkippedPoints(final List<Integer> visitedPoints) {
+        final List<Integer> skippedPoints = new ArrayList<>();
+        // Return empty skipped list if the visited list is empty
+        if (visitedPoints.isEmpty()) return skippedPoints;
+        // Find all distance points between (but not including)
+        // the chip init point and last visited point which are not visited
+        final int maxPoint = visitedPoints.get(visitedPoints.size() - 1);
+        for (int i = 1; i < maxPoint; i++) {
+            if (mPoints[i] != null && !visitedPoints.contains(i)) {
+                skippedPoints.add(i);
+            }
+        }
+        return skippedPoints;
+    }
+
+    /**
+     * Checks if there are mandatory points in a list of skipped points.
+     *
+     * @param skippedPoints List of skipped points
+     * @return True, if a Start/SK/PF/F/OKP point is present in skipped list
+     */
+    public boolean mandatoryPointSkipped(final List<Integer> skippedPoints) {
+        for (final int number : skippedPoints) {
+            // All AP types except ordinary AP are mandatory
+            if (mPoints[number].mType < 5) return true;
+        }
+        return false;
     }
 
     /**

@@ -368,7 +368,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         final Spinner modeSpinner = findViewById(R.id.station_mode_spinner);
         final byte newMode = (byte) modeSpinner.getSelectedItemPosition();
         // Do nothing if numbers are the same
-        final byte currentNumber = station.getNumber();
+        final int currentNumber = station.getNumber();
         if (currentNumber == newNumber && newMode == station.getMode()) return;
         // TODO: Check if some teams data from station was not downloaded and download it
         // TODO: Show hourglass or something, reset takes long time

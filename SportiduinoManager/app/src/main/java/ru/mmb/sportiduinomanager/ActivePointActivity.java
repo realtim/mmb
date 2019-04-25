@@ -1,6 +1,7 @@
 package ru.mmb.sportiduinomanager;
 
 import android.os.Bundle;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -151,12 +152,21 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
         calendar.setTimeInMillis(teamTime * 1000L);
         final DateFormat format = new SimpleDateFormat("dd.MM  HH:mm:ss", Locale.getDefault());
         ((TextView) findViewById(R.id.ap_team_time)).setText(format.format(calendar.getTime()));
-        // Update lists of visited and skipped active points
+        // Update lists of visited points
         final List<Integer> visited = mChips.getChipMarks(teamNumber, mFlash.getInitTime(index),
                 mStation.getNumber(), mStation.getMACasLong(), mDistance.getMaxPoint());
         ((TextView) findViewById(R.id.ap_visited)).setText(getResources()
                 .getString(R.string.ap_visited, mDistance.pointsNamesFromList(visited)));
-        // TODO: update list of skipped points
+        // Update lists of skipped points
+        final List<Integer> skipped = mDistance.getSkippedPoints(visited);
+        final TextView skippedText = (TextView) findViewById(R.id.ap_skipped);
+        skippedText.setText(getResources().getString(R.string.ap_skipped,
+                mDistance.pointsNamesFromList(skipped)));
+        if (mDistance.mandatoryPointSkipped(skipped)) {
+            skippedText.setTextColor(ResourcesCompat.getColor(getResources(), R.color.bg_secondary, getTheme()));
+        } else {
+            skippedText.setTextColor(ResourcesCompat.getColor(getResources(), R.color.text_secondary, getTheme()));
+        }
         // Update number of team members
         final int teamMask = mFlash.getTeamMask(index);
         if (teamMask <= 0) {
@@ -230,6 +240,9 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
             if (!mStation.fetchTeamRecord(teamNumber)) continue;
             final Chips teamVisit = mStation.getChipEvents();
             if (teamVisit.size() == 0) continue;
+            if (teamNumber != teamVisit.getTeamNumber(0)) continue;
+            final long initTime = teamVisit.getInitTime(0);
+            final int teamMask = teamVisit.getTeamMask(0);
             // Update copy of station flash memory
             if (mFlash.merge(teamVisit)) {
                 flashChanged = true;
@@ -237,7 +250,22 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
             // Try to add team visit as new event
             if (mChips.join(teamVisit)) {
                 newEvents = true;
-                // TODO: read chip records at other points
+                // read marks from chip and to events list
+                final int marks = mStation.getChipRecordsN();
+                if (marks == 0) continue;
+                int fromMark = 0;
+                do {
+                    int toRead = marks;
+                    if (toRead > Station.MAX_MARK_COUNT) {
+                        toRead = Station.MAX_MARK_COUNT;
+                    }
+                    if (!mStation.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
+                        break;
+                    }
+                    fromMark += toRead;
+                    // Add fetched chip marks to local list of events
+                    mChips.join(mStation.getChipEvents());
+                } while (fromMark < marks);
             }
         }
         if (newEvents) {
