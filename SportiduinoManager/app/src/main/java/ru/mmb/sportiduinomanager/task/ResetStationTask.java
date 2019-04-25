@@ -1,6 +1,8 @@
 package ru.mmb.sportiduinomanager.task;
 
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -77,7 +79,10 @@ public class ResetStationTask extends AsyncTask<Byte, Void, Boolean> {
 
         if (result) {
             // Call new mode change from main UI thread.
-            activity.onStationNumberReset(mNewMode);
+            Log.d("BT_ACTIVITY", "reset station mode command sent");
+            // Wait some time for station reset
+            new Handler().postDelayed(new DelayedStationNumberReset(activity), 5000);
+            Log.d("BT_ACTIVITY", "wait 5 seconds for station reset");
         } else {
             // Show error message if station reset failed
             final Station station = mMainApplication.getStation();
@@ -86,6 +91,30 @@ public class ResetStationTask extends AsyncTask<Byte, Void, Boolean> {
             }
             activity.updateLayout(true);
             activity.updateMenuItems(mMainApplication, R.id.bluetooth);
+        }
+    }
+
+    /**
+     * Perform activity.onStationNumberReset() not immediately, but after small delay.
+     */
+    private class DelayedStationNumberReset implements Runnable {
+        /**
+         * Reference to parent activity (which can cease to exist in any moment).
+         */
+        private final WeakReference<BluetoothActivity> mActivityRef;
+
+        DelayedStationNumberReset(final BluetoothActivity context) {
+            super();
+            mActivityRef = new WeakReference<>(context);
+        }
+
+        @Override
+        public void run() {
+            // Get a reference to the activity if it is still there
+            final BluetoothActivity activity = mActivityRef.get();
+            if (activity == null || activity.isFinishing()) return;
+
+            activity.onStationNumberReset(mNewMode);
         }
     }
 }

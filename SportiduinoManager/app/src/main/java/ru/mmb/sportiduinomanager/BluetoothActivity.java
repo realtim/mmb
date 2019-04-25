@@ -13,6 +13,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -182,6 +183,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     @Override
     protected void onStart() {
         super.onStart();
+        Log.d("BT_ACTIVITY", "starting activity");
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.bluetooth).setChecked(true);
         // Disable startup animation

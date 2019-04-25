@@ -25,7 +25,7 @@
             android:title="@string/mode_team_list" />
         <item
             android:id="@+id/chip_info"
-            android:icon="@drawable/ic_chip_init"
+            android:icon="@drawable/ic_chip_info"
             android:title="@string/mode_chip_info" />
     </group>
 
