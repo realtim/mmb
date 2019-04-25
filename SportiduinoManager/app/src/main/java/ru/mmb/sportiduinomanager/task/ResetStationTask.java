@@ -1,11 +1,12 @@
 package ru.mmb.sportiduinomanager.task;
 
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ru.mmb.sportiduinomanager.BluetoothActivity;
 import ru.mmb.sportiduinomanager.MainApplication;
@@ -81,7 +82,7 @@ public class ResetStationTask extends AsyncTask<Byte, Void, Boolean> {
             // Call new mode change from main UI thread.
             Log.d("BT_ACTIVITY", "reset station mode command sent");
             // Wait some time for station reset
-            new Handler().postDelayed(new DelayedStationNumberReset(activity), 5000);
+            new Timer().schedule(new DelayedStationNumberReset(activity), 5000);
             Log.d("BT_ACTIVITY", "wait 5 seconds for station reset");
         } else {
             // Show error message if station reset failed
@@ -97,7 +98,7 @@ public class ResetStationTask extends AsyncTask<Byte, Void, Boolean> {
     /**
      * Perform activity.onStationNumberReset() not immediately, but after small delay.
      */
-    private class DelayedStationNumberReset implements Runnable {
+    private class DelayedStationNumberReset extends TimerTask {
         /**
          * Reference to parent activity (which can cease to exist in any moment).
          */
@@ -110,11 +111,10 @@ public class ResetStationTask extends AsyncTask<Byte, Void, Boolean> {
 
         @Override
         public void run() {
-            // Get a reference to the activity if it is still there
             final BluetoothActivity activity = mActivityRef.get();
             if (activity == null || activity.isFinishing()) return;
 
-            activity.onStationNumberReset(mNewMode);
+            activity.runOnUiThread(() -> activity.onStationNumberReset(mNewMode));
         }
     }
 }
