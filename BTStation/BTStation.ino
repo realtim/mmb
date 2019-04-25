@@ -11,10 +11,10 @@
 #include <SoftwareSerial.h>
 #endif
 
-#define UART_SPEED 9600
+#define UART_SPEED 38400
 
 //версия прошивки, номер пишется в чипы
-#define FW_VERSION						104
+#define FW_VERSION						105
 
 #ifdef DEBUG
 #define DEBUG_RX						2 //
@@ -193,6 +193,8 @@ uint8_t newTeamMask[8];
 SoftwareSerial DebugSerial(DEBUG_RX, DEBUG_TX);
 #endif
 
+void(*resetFunc) (void) = 0; //declare reset function @ address 0
+
 void setup()
 {
 	Serial.begin(UART_SPEED);
@@ -236,18 +238,18 @@ void setup()
 	else stationMode = MODE_INIT;
 
 	//читаем коэфф. пересчета напряжения
-
-	//читаем номер станции из памяти
 	union Convert
 	{
 		float number;
 		byte byte[4];
 	} p;
+	byte flag = 0;
 	for (byte i = 0; i < 4; i++)
 	{
 		p.byte[i] = eepromread(EEPROM_VOLTAGE_KOEFF + i * 3); //Read the station number from the EEPROM
+		if (p.byte[i] == 0xff) flag++;
 	}
-	voltageCoeff = p.number;
+	if (flag < 4) voltageCoeff = p.number;
 
 	LOG_LENGTH = (uint32_t)(SPIflash.getCapacity() / LOG_RECORD_LENGTH);
 
@@ -509,6 +511,8 @@ void resetStation()
 	}
 
 	sendData();
+	delay(100);
+	resetFunc();
 }
 
 // выдает статус: время на станции, номер станции, номер режима, число отметок, время последней страницы
@@ -822,6 +826,7 @@ void getTeamRecord()
 }
 
 //снимаем постраничный дамп с карты.
+//добавить проверку UID если он не нулевой
 void readCardPages()
 {
 	//Если номер станции не совпадает с присланным в пакете, то отказ
@@ -1115,7 +1120,6 @@ void writeCardPage()
 }
 
 //читаем флэш
-//добавить проверку UID если он не нулевой
 void readFlash()
 {
 	//Если номер станции не совпадает с присланным в пакете, то отказ
@@ -1250,6 +1254,10 @@ void eraseFlashSector()
 	uint32_t sectordNumber = uartBuffer[DATA_START_BYTE];
 	sectordNumber <<= 8;
 	sectordNumber += uartBuffer[DATA_START_BYTE + 1];
+#ifdef DEBUG
+	DebugSerial.print(F("erasing "));
+	DebugSerial.println(String(sectordNumber));
+#endif
 
 	if (!SPIflash.eraseSector(sectordNumber))
 	{
@@ -1720,7 +1728,7 @@ void sendData()
 }
 
 //запись страницы (4 байта) в чип
-bool ntagWritePage(uint8_t *dataBlock, uint8_t pageAdr)
+bool ntagWritePage(uint8_t * dataBlock, uint8_t pageAdr)
 {
 	const uint8_t sizePageNtag = 4;
 	status = (MFRC522::StatusCode) mfrc522.MIFARE_Ultralight_Write(pageAdr, dataBlock, sizePageNtag);
@@ -1877,47 +1885,50 @@ bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 	DebugSerial.println(F("basics wrote"));
 #endif
 
-	//copy card content to flash. все страницы не на чинающиеся с 0
+	//copy card content to flash. все страницы не начинающиеся с 0
 	pageFlash += 16;
 	uint8_t checkCount = 0;
-	uint8_t page = 0;
-	while (page < TAG_MAX_PAGE - 3)
+	uint8_t block = 0;
+	while (block < TAG_MAX_PAGE - 3)
 	{
 #ifdef DEBUG
 		DebugSerial.print(F("reading page: "));
 		DebugSerial.println(String(page));
 #endif
-		if (!ntagRead4pages(page))
+		if (!ntagRead4pages(block))
 		{
 			return false;
 		}
+		//4 pages in one read block
 		for (byte i = 0; i < 4; i++)
 		{
-			if (page < 8 || ntag_page[0 + i * 4]>0)
+			if (block < 8 || ntag_page[i * 4]>0)
 			{
-				SPIflash.writeByte(pageFlash + (uint32_t)page * (uint32_t)4, ntag_page[0 + i * 4]);
-				SPIflash.writeByte(pageFlash + (uint32_t)page * (uint32_t)4, ntag_page[1 + i * 4]);
-				SPIflash.writeByte(pageFlash + (uint32_t)page * (uint32_t)4, ntag_page[2 + i * 4]);
-				SPIflash.writeByte(pageFlash + (uint32_t)page * (uint32_t)4, ntag_page[3 + i * 4]);
-				page++;
+				SPIflash.writeByte(pageFlash + (uint32_t)block * (uint32_t)4 + (uint32_t)i * (uint32_t)4 + (uint32_t)0, ntag_page[0 + i * 4]);
+				SPIflash.writeByte(pageFlash + (uint32_t)block * (uint32_t)4 + (uint32_t)i * (uint32_t)4 + (uint32_t)1, ntag_page[1 + i * 4]);
+				SPIflash.writeByte(pageFlash + (uint32_t)block * (uint32_t)4 + (uint32_t)i * (uint32_t)4 + (uint32_t)2, ntag_page[2 + i * 4]);
+				SPIflash.writeByte(pageFlash + (uint32_t)block * (uint32_t)4 + (uint32_t)i * (uint32_t)4 + (uint32_t)3, ntag_page[3 + i * 4]);
+				checkCount++;
 #ifdef DEBUG
 				DebugSerial.print(F("write: "));
 				for (uint8_t i = 0; i < 16; i++)DebugSerial.print(String(ntag_page[i], HEX) + " ");
 				DebugSerial.println();
 #endif
 			}
-			if (ntag_page[0] == 0)
+			else
 			{
 #ifdef DEBUG
 				DebugSerial.print(F("chip end: "));
 				DebugSerial.println(String(page));
 #endif
+				block = TAG_MAX_PAGE;
 				break;
 			}
 		}
+		block += 4;
 	}
 	//add dump pages number
-	SPIflash.writeByte((uint32_t)((uint32_t)recordNum * (uint32_t)LOG_RECORD_LENGTH + (uint32_t)12), page);
+	SPIflash.writeByte((uint32_t)((uint32_t)recordNum * (uint32_t)LOG_RECORD_LENGTH + (uint32_t)12), checkCount);
 	return true;
 }
 
@@ -1999,7 +2010,7 @@ void addLastTeam(uint16_t number)
 
 }
 
-uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
+uint8_t crcCalc(uint8_t * dataArray, uint16_t startPosition, uint16_t dataEnd)
 {
 	uint8_t crc = 0x00;
 	uint16_t i = startPosition;
@@ -2021,12 +2032,12 @@ uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
 	return (crc);
 }
 
-void floatToByte(byte* bytes, float f)
+void floatToByte(byte * bytes, float f)
 {
 	int length = sizeof(float);
 
 	for (int i = 0; i < length; i++)
 	{
-		bytes[i] = ((byte*)&f)[i];
+		bytes[i] = ((byte*)& f)[i];
 	}
 }
