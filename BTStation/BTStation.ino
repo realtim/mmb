@@ -35,11 +35,15 @@
 #define BATTERY_PIN						A0 //замер напряжения батареи
 
 //номер станции в eeprom памяти
-#define EEPROM_STATION_NUMBER_ADDRESS	00
+#define EEPROM_STATION_NUMBER	00
 //номер режима в eeprom памяти
-#define EEPROM_STATION_MODE_ADDRESS		10
+#define EEPROM_STATION_MODE		10
 //коэфф. пересчета значения ADC в вольты = 0,00587
-#define EEPROM_VOLTAGE_KOEFF			20
+#define EEPROM_VOLTAGE_KOEFF	20
+//усиление сигнала RFID
+#define EEPROM_GAIN				40
+//тип чипа, с которым должна работать станция
+#define EEPROM_CHIP_TYPE				50
 
 //команды
 #define COMMAND_SET_MODE			0x80
@@ -57,6 +61,8 @@
 #define COMMAND_ERASE_FLASH_SECTOR	0x8c
 #define COMMAND_GET_CONFIG			0x8d
 #define COMMAND_SET_KOEFF			0x8e
+#define COMMAND_SET_GAIN			0x8f
+#define COMMAND_SET_CHIP_TYPE		0x90
 
 //размеры данных для команд
 #define DATA_LENGTH_SET_MODE			1
@@ -74,6 +80,8 @@
 #define DATA_LENGTH_ERASE_FLASH_SECTOR	2
 #define DATA_LENGTH_GET_CONFIG			0
 #define DATA_LENGTH_SET_KOEFF			4
+#define DATA_LENGTH_SET_GAIN			1
+#define DATA_LENGTH_SET_CHIP_TYPE		1
 
 //ответы станции
 #define REPLY_SET_MODE				0x90
@@ -91,6 +99,8 @@
 #define REPLY_ERASE_FLASH_SECTOR	0x9c
 #define REPLY_GET_CONFIG			0x9d
 #define REPLY_SET_KOEFF				0x9e
+#define REPLY_SET_GAIN				0x9f
+#define REPLY_SET_CHIP_TYPE		0xa0
 
 //режимы станции
 #define MODE_INIT		0
@@ -112,6 +122,7 @@
 #define NO_DATA			11
 #define WRONG_COMMAND	12
 #define ERASE_ERROR		13
+#define WRONG_CHIP_TYPE	14
 
 //страницы в чипе. 0-7 служебные, 8-... для отметок
 #define PAGE_UID		0
@@ -124,15 +135,11 @@
 #define PAGE_DATA_START	8
 
 //тип чипа
-#define NTAG_TYPE			215
-
-//параметры чипов
-
-//максимальное число страниц на чипе
-//#define NTAG213_MAX_PAGE	40
-//#define NTAG215_MAX_PAGE	130
-#define TAG_MAX_PAGE	130
-//#define NTAG216_MAX_PAGE	226
+uint8_t chipType = 0x3e;
+//отметка для карты
+uint8_t NTAG_MARK = 215;
+//размер чипа в страницах
+uint8_t TAG_MAX_PAGE = 130;
 
 //максимальное кол-во записей в логе
 uint16_t LOG_LENGTH = 4000;
@@ -174,6 +181,8 @@ SPIFlash SPIflash(FLASH_SS_PIN); //флэш-память
 //рфид-модуль
 MFRC522::StatusCode status;
 MFRC522 mfrc522(RFID_SS_PIN, RFID_RST_PIN); // Create MFRC522 instance
+//коэфф. усиления антенны - работают только биты 4,5,6
+byte gainCoeff = 0x70;
 
 //хранение времени
 struct ts systemTime;
@@ -221,14 +230,14 @@ void setup()
 	DS3231_get(&systemTime);
 
 	//читаем номер станции из памяти
-	stationNumber = eepromread(EEPROM_STATION_NUMBER_ADDRESS); //Read the station number from the EEPROM
+	stationNumber = eepromread(EEPROM_STATION_NUMBER);
 	if (stationNumber == 255 || stationNumber == -1)
 	{
 		stationNumber = 0;
 	}
 
 	//читаем номер режима из памяти
-	int c = eepromread(EEPROM_STATION_MODE_ADDRESS);
+	int c = eepromread(EEPROM_STATION_MODE);
 	if (c == -1)
 	{
 		beep(200, 20);
@@ -250,6 +259,17 @@ void setup()
 		if (p.byte[i] == 0xff) flag++;
 	}
 	if (flag < 4) voltageCoeff = p.number;
+
+	//читаем коэфф. усиления
+	gainCoeff = eepromread(EEPROM_GAIN);
+	if (gainCoeff == 255 || gainCoeff == -1)
+	{
+		gainCoeff = 0x70;
+	}
+
+	//читаем тип чипа
+	chipType = eepromread(EEPROM_CHIP_TYPE);
+	selectChipType(chipType);
 
 	LOG_LENGTH = (uint32_t)(SPIflash.getCapacity() / LOG_RECORD_LENGTH);
 
@@ -369,7 +389,16 @@ void executeCommand()
 		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_KOEFF) setVCoeff();
 		else errorLengthFlag = true;
 		break;
+	case COMMAND_SET_GAIN:
+		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_GAIN) setGain();
+		else errorLengthFlag = true;
+		break;
+	case COMMAND_SET_CHIP_TYPE:
+		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_CHIP_TYPE) setChipType();
+		else errorLengthFlag = true;
+		break;
 	}
+
 	uartBufferPosition = 0;
 	if (errorLengthFlag) sendError(WRONG_COMMAND, 0);
 
@@ -390,7 +419,7 @@ void setMode()
 
 	//0: новый номер режима
 	stationMode = uartBuffer[DATA_START_BYTE];
-	eepromwrite(EEPROM_STATION_MODE_ADDRESS, stationMode);
+	eepromwrite(EEPROM_STATION_MODE, stationMode);
 
 	//формирование пакета данных.
 	init_package(REPLY_SET_MODE);
@@ -492,9 +521,9 @@ void resetStation()
 	}
 
 	stationMode = 0;
-	eepromwrite(EEPROM_STATION_MODE_ADDRESS, stationMode);
+	eepromwrite(EEPROM_STATION_MODE, stationMode);
 	stationNumber = uartBuffer[DATA_START_BYTE + 6];
-	eepromwrite(EEPROM_STATION_NUMBER_ADDRESS, stationNumber);
+	eepromwrite(EEPROM_STATION_NUMBER, stationNumber);
 
 	SPIflash.eraseChip();
 
@@ -562,7 +591,8 @@ void getStatus()
 	sendData();
 }
 
-//инициализация чипа. временно отключена проверка UID
+//инициализация чипа
+//временно отключена проверка UID
 void initChip()
 {
 	//Если номер станции не совпадает с присланным в пакете, то отказ
@@ -574,8 +604,9 @@ void initChip()
 
 	SPI.begin();      // Init SPI bus
 	mfrc522.PCD_Init();   // Init MFRC522
+	mfrc522.PCD_SetAntennaGain(gainCoeff);
 
-   // Look for new cards
+	// Look for new cards
 	if (!mfrc522.PICC_IsNewCardPresent())
 	{
 		sendError(NO_CHIP, REPLY_INIT_CHIP);
@@ -665,7 +696,7 @@ void initChip()
 	//номер команды, тип чипа, версия прошивки станции	
 	dataBlock[0] = uartBuffer[DATA_START_BYTE];
 	dataBlock[1] = uartBuffer[DATA_START_BYTE + 1];
-	dataBlock[2] = NTAG_TYPE;
+	dataBlock[2] = NTAG_MARK;
 	dataBlock[3] = FW_VERSION;
 	if (!ntagWritePage(dataBlock, PAGE_CHIP_NUM))
 	{
@@ -825,8 +856,7 @@ void getTeamRecord()
 	sendData();
 }
 
-//снимаем постраничный дамп с карты.
-//добавить проверку UID если он не нулевой
+//читаем страницы с карты.
 void readCardPages()
 {
 	//Если номер станции не совпадает с присланным в пакете, то отказ
@@ -838,6 +868,8 @@ void readCardPages()
 
 	SPI.begin();      // Init SPI bus
 	mfrc522.PCD_Init();   // Init MFRC522
+	mfrc522.PCD_SetAntennaGain(gainCoeff);
+
 	// Look for new cards
 	if (!mfrc522.PICC_IsNewCardPresent())
 	{
@@ -945,6 +977,7 @@ void updateTeamMask()
 	{
 		SPI.begin();      // Init SPI bus
 		mfrc522.PCD_Init();   // Init MFRC522
+		mfrc522.PCD_SetAntennaGain(gainCoeff);
 
 		// Look for new cards
 		if (!mfrc522.PICC_IsNewCardPresent())
@@ -1048,6 +1081,7 @@ void writeCardPage()
 
 	SPI.begin();      // Init SPI bus
 	mfrc522.PCD_Init();   // Init MFRC522
+	mfrc522.PCD_SetAntennaGain(gainCoeff);
 
 	// Look for new cards
 	if (!mfrc522.PICC_IsNewCardPresent())
@@ -1190,7 +1224,8 @@ void readFlash()
 	sendData();
 }
 
-//пишем в флэш !!! сделать замену данных через стирание
+//пишем в флэш
+//!!! сделать замену данных через стирание
 bool writeFlash()
 {
 	//Если номер станции не совпадает с присланным в пакете, то отказ
@@ -1242,6 +1277,7 @@ bool writeFlash()
 }
 
 //стираем сектор флэша (4096 байт)
+//разобраться, почему старает только 0-й сектор.
 void eraseFlashSector()
 {
 	//Если номер станции не совпадает с присланным в пакете, то отказ
@@ -1275,7 +1311,8 @@ void eraseFlashSector()
 	sendData();
 }
 
-// выдает конфигурацию станции: номер станции, номер режима, коэфф. пересчета напряжения, размер флэша
+//выдает конфигурацию станции: номер станции, номер режима, коэфф. пересчета напряжения, размер флэша
+//возвращать коэфф. усиления RFID
 void getConfig()
 {
 	//0: код ошибки
@@ -1291,7 +1328,7 @@ void getConfig()
 	flag &= addData(OK);
 	flag &= addData(FW_VERSION);
 	flag &= addData(stationMode);
-	flag &= addData(NTAG_TYPE);
+	flag &= addData(NTAG_MARK);
 
 	uint32_t n = SPIflash.getCapacity();
 	flag &= addData((n & 0xFF000000) >> 24);
@@ -1312,6 +1349,8 @@ void getConfig()
 	flag &= addData(v[2]);
 	flag &= addData(v[3]);
 
+	flag &= addData(gainCoeff);
+	
 	if (!flag)
 	{
 		sendError(BUFFER_OVERFLOW, REPLY_GET_CONFIG);
@@ -1321,6 +1360,7 @@ void getConfig()
 	sendData();
 }
 
+//сохранить коэфф. пересчета ADC в напряжение для резисторного делителя 10кОм + 2.2кОм
 void setVCoeff()
 {
 	//Если номер станции не совпадает с присланным в пакете, то отказ
@@ -1356,6 +1396,59 @@ void setVCoeff()
 	sendData();
 }
 
+//сохранить коэфф. усиления для RFID
+void setGain()
+{
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_SET_GAIN);
+		return;
+	}
+
+	//0: коэфф.
+	gainCoeff = uartBuffer[DATA_START_BYTE] & 0x70;
+	eepromwrite(EEPROM_GAIN, gainCoeff); //Read the station number from the EEPROM
+
+	init_package(REPLY_SET_GAIN);
+	//0: код ошибки
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_SET_GAIN);
+		return;
+	}
+
+	sendData();
+}
+
+//сохранить коэфф. усиления для RFID
+void setChipType()
+{
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_SET_CHIP_TYPE);
+		return;
+	}
+
+	//0: тип чипа
+	chipType = uartBuffer[DATA_START_BYTE];
+	bool e = selectChipType(chipType);
+	if (e) eepromwrite(EEPROM_CHIP_TYPE, chipType); //Read the station number from the EEPROM
+
+	init_package(REPLY_SET_CHIP_TYPE);
+	//0: код ошибки
+	byte error = OK;
+	if (e) error = WRONG_CHIP_TYPE;
+	if (!addData(error))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_SET_CHIP_TYPE);
+		return;
+	}
+
+	sendData();
+}
+
 //Обработка поднесенного чипа
 void processRfidCard()
 {
@@ -1365,6 +1458,7 @@ void processRfidCard()
 	//включаем SPI ищем карту вблизи. Если не находим выходим из функции чтения чипов
 	SPI.begin();      // Init SPI bus
 	mfrc522.PCD_Init();    // Init MFRC522
+	mfrc522.PCD_SetAntennaGain(gainCoeff);
 
 	// Look for new cards
 	if (!mfrc522.PICC_IsNewCardPresent())
@@ -1696,9 +1790,10 @@ void init_package(uint8_t command)
 }
 
 //добавление данных в буфер
+//проверить срабатывание переполнения
 bool addData(uint8_t data)
 {
-	if (uartBufferPosition > 255)
+	if (uartBufferPosition > 254)
 	{
 		//sendError(BUFFER_OVERFLOW, uartBuffer[COMMAND_BYTE]);
 		return false;
@@ -1789,9 +1884,35 @@ bool writeCheckPointToCard(uint8_t newPage, uint32_t tempT)
 	return true;
 }
 
-// !!! Поиск последней записанной страницы на карточке. Переписать на двоичный поиск
+//Поиск последней записанной страницы на карточке.
+//разобраться в алгоритме Саши
 uint8_t findNewPage()
 {
+	/*uint8_t page = TAG_MAX_PAGE - 4;
+	while (page >= PAGE_DATA_START)
+	{
+		if (!ntagRead4pages(page))
+		{
+			return 0;
+		}
+		for (int n = 3; n >= 0; n--)
+		{
+			if (ntag_page[0 + n * 4] != 0)
+			{
+				if (stationMode == MODE_FINISH_KP && ntag_page[0 + n * 4] == stationNumber)
+				{
+					return page;
+				}
+				else
+				{
+					return ++page;
+				}
+			}
+			page--;
+		}
+	}
+	return TAG_MAX_PAGE;*/
+
 	uint8_t page = PAGE_DATA_START;
 	while (page < TAG_MAX_PAGE)
 	{
@@ -1803,14 +1924,24 @@ uint8_t findNewPage()
 		{
 			//1) текущая страница пустая
 			//2) равна номеру станции
-			if (ntag_page[0 + n * 4] == 0 || ntag_page[0 + n * 4] == stationNumber) return page;
+			if (ntag_page[n * 4] == 0)
+			{
+				if (!ntagRead4pages(page - 1))
+				{
+					return 0;
+				}
+				if (ntag_page[0] == stationNumber) page--;
+				return page;
+			}
 			//2) равна номеру станции, а след. страница пустая
 			//if (ntag_page[0 + n * 4] == 0 || (ntag_page[0 + n * 4] == stationNumber && ntag_page[0 + 4 + n * 4] == 0)) return page;
 			page++;
 		}
 	}
 	return TAG_MAX_PAGE;
-	/*uint8_t finishpage = NTAG215_MAX_PAGE - 2;
+
+
+	/*uint8_t finishpage = TAG_MAX_PAGE - 1;
 	uint8_t startpage = PAGE_DATA_START;
 	uint8_t page = (finishpage + startpage) / 2;
 
@@ -1839,7 +1970,8 @@ uint8_t findNewPage()
 	}*/
 }
 
-//пишем дамп карты в лог !!! сделать замену данных через стирание. Стирает блоками по 4кб
+//пишем дамп карты в лог
+//!!! сделать замену данных через стирание. Стирает блоками по 4кб
 bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 {
 	//адрес хранения в каталоге
@@ -1853,7 +1985,7 @@ bool writeDumpToFlash(uint16_t recordNum, uint32_t tempT)
 	//Проблемы: 1) не стирается страница для перезаписи; 2) неправильно пишутся/считаются страницы (надо по 4 байта, а не по 16) - исправил, проверить
 	if (stationMode == MODE_FINISH_KP && SPIflash.readByte(pageFlash) != 255)
 	{
-		SPIflash.eraseSector((long)((float)pageFlash / 4096));
+		//SPIflash.eraseSector((long)((float)pageFlash / 4096));
 #ifdef DEBUG
 		DebugSerial.print(F("erased sector: "));
 		DebugSerial.println(String((uint32_t)((uint32_t)pageFlash / (uint32_t)256)));
@@ -2040,4 +2172,32 @@ void floatToByte(byte * bytes, float f)
 	{
 		bytes[i] = ((byte*)& f)[i];
 	}
+}
+
+bool selectChipType(byte type)
+{
+	//#define NTAG213_MAX_PAGE	40; 0x12
+	//#define NTAG215_MAX_PAGE	130; 0x3e
+	//#define NTAG216_MAX_PAGE	226; 0x6d
+
+	if (chipType == 0x12)
+	{
+		chipType = type;
+		NTAG_MARK = 213;
+		TAG_MAX_PAGE = 40;
+	}
+	else if (chipType == 0x6d)
+	{
+		chipType = type;
+		NTAG_MARK = 216;
+		TAG_MAX_PAGE = 226;
+	}
+	else
+	{
+		chipType = 0x3e;
+		NTAG_MARK = 215;
+		TAG_MAX_PAGE = 130;
+		return false;
+	}
+	return true;
 }
