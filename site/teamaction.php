@@ -1170,7 +1170,6 @@ elseif ($action == "ClearUnionTeams")  {
                 SET union_status = 0, teamunionlog_hide = 1
 		where teamunionlog_hide = 0 
                       and union_status = 1
-		      and teamunionlog_hide = 0
 		      "; 
                 
 		//echo 'sql '.$sql;
@@ -1451,7 +1450,7 @@ elseif ($action == "UnionTeams")  {
 			    select  tul.team_id
 		            from  TeamUnionLogs tul
   			    where tul.teamunionlog_hide = 0 
-	                          and tul.union_status = 1
+	                          and tul.union_status = 3
 			          and tul.team_parentid = $TeamId
 			    group by  tul.team_id
 			   )  a
