@@ -56,10 +56,12 @@ if (!isset($MyPHPScript)) return;
 	// Функция проверки e-mail
 	function CheckEmail(email)
 	{
-		var template = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-\_\.]+\.[A-Za-z0-9]{2,6}$/;
+		
+		var template = /^[a-z0-9_\.\-]+@[a-z0-9\-\_\.]+\.[a-z0-9]{2,6}$/i; 
+//		var template = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-\_\.]+\.[A-Za-z0-9]{2,6}$/;
 //		var template = /^[A-Za-z0-9_\.]+@[A-Za-z0-9]+\.[A-Za-z0-9]{2,6}$/;
 //		var template = /^[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z])+$/;
-		if (template.test(email))
+		if (template.test(trimBoth(email)))
 		{
 			return true;
 		}
