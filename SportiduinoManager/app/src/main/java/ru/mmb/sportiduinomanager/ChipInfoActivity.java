@@ -24,6 +24,14 @@ import static ru.mmb.sportiduinomanager.model.Station.UID_SIZE;
  */
 public final class ChipInfoActivity extends MainActivity {
     /**
+     * Chip info request not running now.
+     */
+    public static final int INFO_REQUEST_OFF = 0;
+    /**
+     * Chip info request is in progress.
+     */
+    public static final int INFO_REQUEST_ON = 1;
+    /**
      * Date format for time print.
      */
     private static final ThreadLocal<DateFormat> DATE_FORMAT = new ThreadLocal<DateFormat>() {
@@ -32,17 +40,6 @@ public final class ChipInfoActivity extends MainActivity {
             return new SimpleDateFormat("dd.MM.yyyy  HH:mm:ss", Locale.getDefault());
         }
     };
-
-    /**
-     * Chip info request not running now.
-     */
-    public static final int INFO_REQUEST_OFF = 0;
-
-    /**
-     * Chip info request is in progress.
-     */
-    public static final int INFO_REQUEST_ON = 1;
-
     /**
      * Main application thread with persistent data.
      */
@@ -149,6 +146,22 @@ public final class ChipInfoActivity extends MainActivity {
     }
 
     /**
+     * Convert byte array section to int.
+     *
+     * @param array Array of bytes
+     * @param start Starting position of byte sequence which will be converted to int
+     * @param end   Ending position of byte sequence
+     * @return Long representation of byte sequence
+     */
+    private long byteArray2Long(final byte[] array, final int start, final int end) {
+        long result = 0;
+        for (int i = start; i <= end; i++) {
+            result = result | (array[i] & 0xFF) << ((end - i) * 8);
+        }
+        return result;
+    }
+
+    /**
      * Build info for teamNumber, Ntag and software version.
      *
      * @param chipInfo read_card_page response
@@ -157,7 +170,7 @@ public final class ChipInfoActivity extends MainActivity {
      * @return decoded team number
      */
     private int buildPage4DecodedInfo(final byte[] chipInfo, final StringBuilder builder, final int pos) {
-        final int teamNum = Station.byteArray2Int(chipInfo, pos + 1, pos + 2);
+        final int teamNum = (int) byteArray2Long(chipInfo, pos + 1, pos + 2);
         final int ntag = chipInfo[pos + 3] & 0xFF;
         final int version = chipInfo[pos + 4] & 0xFF;
         builder.append(String.format("\n\tTeam# %d, Ntag %d, version %d", teamNum, ntag, version));
@@ -172,7 +185,7 @@ public final class ChipInfoActivity extends MainActivity {
      * @param pos      current page start position
      */
     private void buildPage5DecodedInfo(final byte[] chipInfo, final StringBuilder builder, final int pos) {
-        final int initTime = Station.byteArray2Int(chipInfo, pos + 1, pos + 4);
+        final long initTime = byteArray2Long(chipInfo, pos + 1, pos + 4);
         builder.append("\n\tInitTime: ").append(DATE_FORMAT.get().format(new Date(initTime * 1000L)));
     }
 
@@ -186,7 +199,7 @@ public final class ChipInfoActivity extends MainActivity {
      */
     private void buildPage6DecodedInfo(final byte[] chipInfo, final StringBuilder builder,
                                        final int teamNum, final int pos) {
-        final int teamMask = Station.byteArray2Int(chipInfo, pos + 1, pos + 2);
+        final int teamMask = (int) byteArray2Long(chipInfo, pos + 1, pos + 2);
         builder.append("\n\tTeamMask [").append(Integer.toBinaryString(teamMask))
                 .append("] to members:");
         buildTeamMembersInfo(builder, teamNum, teamMask);
@@ -221,7 +234,7 @@ public final class ChipInfoActivity extends MainActivity {
         final int pointNumber = chipInfo[pos + 1] & 0xFF;
         final int todayUnix = (int) (System.currentTimeMillis() / 1000L);
         final int todayUpperByte = todayUnix & 0xFF000000;
-        final int pointTime = Station.byteArray2Int(chipInfo, pos + 2, pos + 4) + todayUpperByte;
+        final long pointTime = byteArray2Long(chipInfo, pos + 2, pos + 4) + todayUpperByte;
         builder.append("\n\tKP# ").append(pointNumber).append(", PointTime: ")
                 .append(DATE_FORMAT.get().format(new Date(pointTime * 1000L)));
     }

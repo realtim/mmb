@@ -13,7 +13,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -60,14 +59,13 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      */
     private static final int BT_SEARCH_ON = 1;
     /**
-     * Station reset not running now.
+     * Station reset is not running now.
      */
-    public static final int RESET_STATION_OFF = 0;
+    private static final int RESET_STATION_OFF = 0;
     /**
      * Station reset is in progress.
      */
-    public static final int RESET_STATION_ON = 1;
-
+    private static final int RESET_STATION_ON = 1;
     /**
      * RecyclerView with discovered Bluetooth devices and connect buttons.
      */
@@ -183,7 +181,6 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d("BT_ACTIVITY", "starting activity");
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.bluetooth).setChecked(true);
         // Disable startup animation
@@ -309,25 +306,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         // Mark clicked device as being connected
         mAdapter.setConnectedDevice(deviceClicked.getAddress(), true);
         // Try to connect to device in background thread
-        new ConnectDeviceTask(this).execute(deviceClicked);
-    }
-
-    /**
-     * Get device list adapter for ConnectDeviceTask.
-     *
-     * @return local device list adapter
-     */
-    public BTDeviceListAdapter getDeviceListAdapter() {
-        return mAdapter;
-    }
-
-    /**
-     * Accessor method to change mResetStation from AsyncTask.
-     *
-     * @param newState new state RESET_STATION_ON or RESET_STATION_OFF
-     */
-    public void setResetStationState(final int newState) {
-        mResetStation = newState;
+        new ConnectDeviceTask(this, mAdapter).execute(deviceClicked);
     }
 
     /**
@@ -379,12 +358,6 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         // Get the station we work with
         final Station station = mMainApplication.getStation();
         if (station == null) return;
-        // Get the distance
-        final Distance distance = mMainApplication.getDistance();
-        if (distance == null) {
-            Toast.makeText(getApplicationContext(), R.string.err_db_no_distance_loaded, Toast.LENGTH_LONG).show();
-            return;
-        }
         // Get new station number
         final Spinner pointSpinner = findViewById(R.id.station_point_spinner);
         final byte newNumber = (byte) pointSpinner.getSelectedItemPosition();
@@ -394,45 +367,48 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         // Do nothing if numbers are the same
         final int currentNumber = station.getNumber();
         if (currentNumber == newNumber && newMode == station.getMode()) return;
-        // TODO: Check if some teams data from station was not downloaded and download it
-        // Reset station to change it's number
         if (currentNumber != newNumber) {
-            new ResetStationTask(this, newMode).execute(newNumber, newMode);
+            // Change reset station state
+            mResetStation = RESET_STATION_ON;
+            // Update activity layout
+            updateLayout(false);
+            // Reset station to change it's number (and mode if needed)
+            new ResetStationTask(this).execute(newNumber, newMode);
             return;
         }
-        // If no station reset needed, then just call station mode change
-        onStationNumberReset(newMode);
+        // If no station reset is needed,
+        // then just call station mode change and display result
+        onStationResetResult(station.newMode(newMode));
     }
 
     /**
-     * Call station mode change when station reset finished.
-     * Perform all short-running operations on station mode change
-     * right in main UI thread.
+     * Called when station reset of station mode change is finished.
      *
-     * @param newMode new station mode to set
+     * @param result Result of previously called station reset / mode change
      */
-    public void onStationNumberReset(final byte newMode) {
+    public void onStationResetResult(final boolean result) {
+        // Turn RESET_STATION UI mode off
+        mResetStation = RESET_STATION_OFF;
+        // Save response time of last command (it'll be overwritten by getStatus)
         final Station station = mMainApplication.getStation();
-        if (station == null) return;
-        long responseTime = station.getResponseTime();
-        // Set new station mode
-        if (newMode != station.getMode()) {
-            if (!station.newMode(newMode)) {
-                Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
-                updateLayout(false);
-                updateMenuItems(mMainApplication, R.id.bluetooth);
-                ((TextView) findViewById(R.id.station_response_time)).setText(getResources()
-                        .getString(R.string.response_time, responseTime + station.getResponseTime()));
-                return;
-            }
-            // Compute total response time for two calls
-            responseTime += station.getResponseTime();
+        if (station == null) {
+            updateLayout(false);
+            updateMenuItems(mMainApplication, R.id.bluetooth);
+            return;
         }
-        // Get current station status (just in case) and update layout
-        updateLayout(true);
-        updateMenuItems(mMainApplication, R.id.bluetooth);
-        responseTime += station.getResponseTime();
-        // Set correct response time for sum of three commands responses
+        long responseTime = station.getResponseTime();
+        // Update layout
+        if (result) {
+            // Make update with call to getStatus (just in case)
+            updateLayout(true);
+            updateMenuItems(mMainApplication, R.id.bluetooth);
+            responseTime += station.getResponseTime();
+        } else {
+            updateLayout(false);
+            updateMenuItems(mMainApplication, R.id.bluetooth);
+            Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
+        }
+        // Set correct response time as the sum of two last commands responses
         ((TextView) findViewById(R.id.station_response_time)).setText(getResources()
                 .getString(R.string.response_time, responseTime));
     }
@@ -462,8 +438,13 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      *                    to get it's current status
      */
     public void updateLayout(final boolean fetchStatus) {
+        // Hide station reset progress if station reset is not running
+        if (mResetStation == RESET_STATION_OFF) {
+            findViewById(R.id.station_reset_progress).setVisibility(View.GONE);
+        }
+
         // Show BT search button / progress
-        if (mBluetoothSearch == BT_SEARCH_OFF && mResetStation == RESET_STATION_OFF) {
+        if (mBluetoothSearch == BT_SEARCH_OFF) {
             findViewById(R.id.device_search_progress).setVisibility(View.INVISIBLE);
             findViewById(R.id.device_search).setVisibility(View.VISIBLE);
         } else {
@@ -480,12 +461,33 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         }
         findViewById(R.id.device_list).setVisibility(View.VISIBLE);
 
-        // Don'try to update station status during BT search or running station reset
-        if (mBluetoothSearch == BT_SEARCH_ON || mResetStation == RESET_STATION_ON) {
+        // If station reset is running - show it's progress and hide everything else
+        if (mResetStation == RESET_STATION_ON) {
+            findViewById(R.id.device_search).setVisibility(View.GONE);
+            findViewById(R.id.device_search_progress).setVisibility(View.GONE);
+            findViewById(R.id.device_list).setVisibility(View.GONE);
+            findViewById(R.id.station_status).setVisibility(View.GONE);
+            findViewById(R.id.station_reset_progress).setVisibility(View.VISIBLE);
+            return;
+        }
+
+        // Don'try to update station status during BT search
+        if (mBluetoothSearch == BT_SEARCH_ON) {
             findViewById(R.id.station_status).setVisibility(View.GONE);
             return;
         }
 
+        // Show station status block
+        showStationStatus(fetchStatus);
+    }
+
+    /**
+     * Update station status block in layout.
+     *
+     * @param fetchStatus True if we need to send command to station
+     *                    to get it's current status
+     */
+    private void showStationStatus(final boolean fetchStatus) {
         // Show station status block
         final Station station = mMainApplication.getStation();
         // Station was not connected yet
@@ -551,6 +553,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         ((TextView) findViewById(R.id.station_last_chip_time)).setText(station.getLastChipTimeString());
         // Show status block
         findViewById(R.id.station_status).setVisibility(View.VISIBLE);
+
     }
 
     /**

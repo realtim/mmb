@@ -43,7 +43,10 @@ public final class Station {
      * Max number of chip marks that we can get in one request from station.
      */
     public static final int MAX_MARK_COUNT = 61;
-
+    /**
+     * Size of chip UID in communication packet.
+     */
+    public static final int UID_SIZE = 8;
     /**
      * Timeout (im ms) while waiting for station response.
      */
@@ -56,11 +59,6 @@ public final class Station {
      * Size of header in communication packet.
      */
     private static final int HEADER_SIZE = 6;
-    /**
-     * Size of chip UID in communication packet.
-     */
-    public static final int UID_SIZE = 8;
-
     /**
      * Protocol signature in all headers.
      */
@@ -115,9 +113,9 @@ public final class Station {
      */
     private static final byte CMD_TEAM_RECORD = (byte) 0x86;
     /**
-     * Code of readCardPage station command CMD_READ_CARD_PAGE.
+     * Code of readCardPage station command.
      */
-    private static final byte CMD_CHIP_INFO = (byte) 0x87;
+    private static final byte CMD_READ_CARD = (byte) 0x87;
     /**
      * Code of readFlash station command.
      */
@@ -404,7 +402,7 @@ public final class Station {
     }
 
     /**
-     * Get result of CMD_READ_CARD_PAGE.
+     * Get data from chip fetched in fetchChipInfo.
      *
      * @return response byte array
      */
@@ -519,7 +517,7 @@ public final class Station {
                 }
                 // stop waiting for more data if we got whole packet
                 if (response.length >= HEADER_SIZE && response.length
-                        >= ((int) (response[HEADER_SIZE - 2] & 0xFF) + HEADER_SIZE + 1)) {
+                        >= ((response[HEADER_SIZE - 2] & 0xFF) + HEADER_SIZE + 1)) {
                     return response;
                 }
             }
@@ -548,7 +546,7 @@ public final class Station {
         // check if response has at minimum 1 byte payload
         if (len < HEADER_SIZE) return new byte[]{REC_BAD_RESPONSE};
         // check buffer length
-        if ((int) (receiveBuffer[HEADER_SIZE - 2] & 0xFF) != len - HEADER_SIZE - 1) {
+        if ((receiveBuffer[HEADER_SIZE - 2] & 0xFF) != len - HEADER_SIZE - 1) {
             return new byte[]{REC_BAD_RESPONSE};
         }
         // check header
@@ -563,7 +561,7 @@ public final class Station {
         }
         // update station number for getStatus command
         if (sendBuffer[0] == CMD_GET_STATUS) {
-            mNumber = (int) (receiveBuffer[3] & 0xFF);
+            mNumber = receiveBuffer[3] & 0xFF;
         }
         // check crc
         if (receiveBuffer[len - 1] != crc8(receiveBuffer, len - 1)) {
@@ -689,7 +687,6 @@ public final class Station {
         return (byte) (crc & 0xFF);
     }
 
-
     /**
      * Convert byte array section to int.
      *
@@ -698,7 +695,7 @@ public final class Station {
      * @param end   Ending position of byte sequence
      * @return Long representation of byte sequence
      */
-    public static long byteArray2Long(final byte[] array, final int start, final int end) {
+    private long byteArray2Long(final byte[] array, final int start, final int end) {
         long result = 0;
         for (int i = start; i <= end; i++) {
             result = result | (array[i] & 0xFF) << ((end - i) * 8);
@@ -730,6 +727,8 @@ public final class Station {
      * @return True if we got valid response from station, check mLastError otherwise
      */
     public boolean newMode(final int mode) {
+        // Zero number is only for chip initialization
+        if (mNumber == 0 && mode != MODE_INIT_CHIPS) return false;
         final byte[] response = new byte[0];
         if (command(new byte[]{CMD_SET_MODE, (byte) mode}, response)) {
             mMode = mode;
@@ -771,6 +770,9 @@ public final class Station {
      * @return True if we got valid response from station, check mLastError otherwise
      */
     public boolean resetStation(final byte number) {
+        // Don't allow 0xFF station number
+        if (mNumber == 0xFF) return false;
+        // Prepare command payload
         byte[] commandData = new byte[8];
         commandData[0] = CMD_RESET_STATION;
         long2ByteArray(mChipsRegistered, commandData, 1, 2);
@@ -934,28 +936,27 @@ public final class Station {
         // Get station firmware
         mFirmware = response[0];
         // Get station mode
-        mMode = (int) (response[1] & 0xFF);
+        mMode = response[1] & 0xFF;
         // Ignore all other parameters
         return true;
     }
 
     /**
-     * Read chip information from 0 to 20 pages.<br>
-     * Then pretty print it to human readable format.
+     * Read chip information from 0 to 20 pages to mChipInfo byte array.
      *
      * @param pagesInRequest must be 20
      * @param requestsCount  multiplier by 20 to get reasonable pages count
      * @return true if succeeded
      */
     public boolean readCardPage(final byte pagesInRequest, final int requestsCount) {
-        mChipInfo = new byte[] {};
+        mChipInfo = new byte[]{};
         final byte[] concatResponse = new byte[UID_SIZE + (pagesInRequest * requestsCount + 1) * 5];
         for (int i = 0; i < requestsCount; i++) {
             final byte pageFrom = (byte) (i * pagesInRequest);
             final byte pageTo = (byte) (pageFrom + pagesInRequest);
             // Prepare command payload
             byte[] commandData = new byte[3];
-            commandData[0] = CMD_CHIP_INFO;
+            commandData[0] = CMD_READ_CARD;
             commandData[1] = pageFrom;
             commandData[2] = pageTo;
             final int expectedSize = UID_SIZE + (pageTo - pageFrom + 1) * 5;

@@ -33,26 +33,15 @@ public class ChipInitTask extends AsyncTask<Integer, Void, Boolean> {
     }
 
     /**
-     * Hide all team data info before chip init start.
+     * Run initChip command at connected station.
+     *
+     * @param teamParams Tam number and mask
+     * @return True if succeeded
      */
-    protected void onPreExecute() {
-        // Get a reference to the activity if it is still there
-        final ChipInitActivity activity = mActivityRef.get();
-        if (activity == null || activity.isFinishing()) return;
-        // Change chip init state
-        activity.setChipInitState(ChipInitActivity.CHIP_INIT_ON);
-        // Update activity layout
-        activity.updateKeyboardState();
-        activity.loadTeam(false);
-    }
-
-    @Override
     protected Boolean doInBackground(final Integer... teamParams) {
         final Station station = mMainApplication.getStation();
-        // If there is no connected station, then return success immediately
-        // This case is hardly possible, as check is performed before reset station call
-        if (station == null) return true;
-
+        if (station == null) return false;
+        // Send the command to station
         final int teamNumber = teamParams[0];
         final int teamMask = teamParams[1];
         return station.initChip(teamNumber, teamMask);
@@ -67,9 +56,7 @@ public class ChipInitTask extends AsyncTask<Integer, Void, Boolean> {
         // Get a reference to the activity if it is still there
         final ChipInitActivity activity = mActivityRef.get();
         if (activity == null || activity.isFinishing()) return;
-
-        activity.setChipInitState(ChipInitActivity.CHIP_INIT_OFF);
-
+        // Process initialization result in UI activity
         activity.onChipInitResult(result);
     }
 

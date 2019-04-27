@@ -6,6 +6,7 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
+import ru.mmb.sportiduinomanager.BTDeviceListAdapter;
 import ru.mmb.sportiduinomanager.BluetoothActivity;
 import ru.mmb.sportiduinomanager.MainApplication;
 import ru.mmb.sportiduinomanager.R;
@@ -23,16 +24,22 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
      * Reference to main application thread.
      */
     private final MainApplication mMainApplication;
+    /**
+     * RecyclerView with discovered Bluetooth devices and connect buttons.
+     */
+    private final BTDeviceListAdapter mAdapter;
 
     /**
      * Retain only a weak reference to the activity.
      *
      * @param context Context of calling activity
+     * @param adapter RecyclerView adapter with device list
      */
-    public ConnectDeviceTask(final BluetoothActivity context) {
+    public ConnectDeviceTask(final BluetoothActivity context, final BTDeviceListAdapter adapter) {
         super();
         mActivityRef = new WeakReference<>(context);
         mMainApplication = (MainApplication) context.getApplication();
+        mAdapter = adapter;
     }
 
     /**
@@ -82,12 +89,12 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
         if (result) {
             final Station station = mMainApplication.getStation();
             if (station == null) {
-                activity.getDeviceListAdapter().setConnectedDevice(null, false);
+                mAdapter.setConnectedDevice(null, false);
             } else {
-                activity.getDeviceListAdapter().setConnectedDevice(station.getAddress(), false);
+                mAdapter.setConnectedDevice(station.getAddress(), false);
             }
         } else {
-            activity.getDeviceListAdapter().setConnectedDevice(null, false);
+            mAdapter.setConnectedDevice(null, false);
         }
         // Update activity layout
         activity.updateLayout(true);

@@ -67,7 +67,6 @@ import ru.mmb.sportiduinomanager.model.Teams;
         httpMethod = HttpSender.Method.POST)
 @AcraToast(resText = R.string.acra_toast_text)
 
-@SuppressWarnings("WeakerAccess")
 public final class MainApplication extends Application {
 
     /**

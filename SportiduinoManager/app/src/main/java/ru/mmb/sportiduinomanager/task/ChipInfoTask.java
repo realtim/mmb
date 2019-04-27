@@ -45,11 +45,15 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
         activity.updateLayout();
     }
 
-    @Override
+    /**
+     * Read data from chip at the connected station.
+     *
+     * @param params No parameters are sent to this function
+     * @return True if succeeded
+     */
     protected Boolean doInBackground(final Void... params) {
         final Station station = mMainApplication.getStation();
-        if (station == null) return true;
-
+        if (station == null) return false;
         return station.readCardPage((byte) 20, 5);
     }
 

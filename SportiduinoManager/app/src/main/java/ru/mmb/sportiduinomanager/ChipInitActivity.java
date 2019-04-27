@@ -6,7 +6,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,20 +23,17 @@ import ru.mmb.sportiduinomanager.task.ChipInitTask;
  */
 public final class ChipInitActivity extends MainActivity implements MemberListAdapter.OnItemClicked {
     /**
-     * Max number of symbols in mTeamNumber string.
-     */
-    private static final int TEAM_MEMBER_LEN = 4;
-
-    /**
      * Chip init not running now.
      */
-    public static final int CHIP_INIT_OFF = 0;
-
+    private static final int CHIP_INIT_OFF = 0;
     /**
      * Chip init is in progress.
      */
-    public static final int CHIP_INIT_ON = 1;
-
+    private static final int CHIP_INIT_ON = 1;
+    /**
+     * Max number of symbols in mTeamNumber string.
+     */
+    private static final int TEAM_MEMBER_LEN = 4;
     /**
      * Main application thread with persistent data.
      */
@@ -129,18 +125,8 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         if (teamMembersCount == 0) {
             showError(false, R.string.err_init_empty_team);
         } else {
-            findViewById(R.id.init_error).setVisibility(View.GONE);
-            findViewById(R.id.init_team_chip_frame).setVisibility(View.VISIBLE);
+            findViewById(R.id.init_error).setVisibility(View.INVISIBLE);
         }
-    }
-
-    /**
-     * Accessor method to change mChipInit from AsyncTask.
-     *
-     * @param newState new state CHIP_INIT_ON or CHIP_INIT_OFF
-     */
-    public void setChipInitState(final int newState) {
-        mChipInit = newState;
     }
 
     /**
@@ -207,7 +193,11 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         // Check team number, mask and station presence
         if (mTeamNumber.length() == 0 || mTeamMask == 0 || mStation == null) return;
         final int teamNumber = Integer.parseInt(mTeamNumber);
-        // Send command to station and check result
+        // Change chip init state
+        mChipInit = CHIP_INIT_ON;
+        // Update activity layout
+        loadTeam(false);
+        // Send command to station
         new ChipInitTask(this).execute(teamNumber, mTeamMask);
     }
 
@@ -217,8 +207,8 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * @param initResult success or error
      */
     public void onChipInitResult(final boolean initResult) {
-        // Check team number, mask and station presence
-        if (mTeamNumber.length() == 0 || mTeamMask == 0 || mStation == null) return;
+        // Change chip init state
+        mChipInit = CHIP_INIT_OFF;
         if (initResult) {
             // Create new chip init event and save it into local database
             final int teamNumber = Integer.parseInt(mTeamNumber);
@@ -232,26 +222,28 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
                 // Update onscreen keyboard and "load" empty team
                 updateKeyboardState();
                 loadTeam(true);
-                Toast.makeText(getApplicationContext(), getString(R.string.response_time,
+                Toast.makeText(mMainApplication, getString(R.string.response_time,
                         mStation.getResponseTime()), Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainApplication, result, Toast.LENGTH_LONG).show();
             }
             // Copy changed list of chips events to main application
             mMainApplication.setChips(mChips, false);
         } else {
-            Toast.makeText(getApplicationContext(), mStation.getLastError(),
-                    Toast.LENGTH_LONG).show();
+            // Chip initialization failed
+            if (mStation == null) {
+                Toast.makeText(mMainApplication, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(mMainApplication, mStation.getLastError(), Toast.LENGTH_LONG).show();
+            }
         }
-        updateKeyboardState();
-        loadTeam(false);
     }
 
     /**
      * Enable/disable virtual keyboard buttons
      * according to number of symbols in mTeamNumber.
      */
-    public void updateKeyboardState() {
+    private void updateKeyboardState() {
         if (mTeamNumber.length() < TEAM_MEMBER_LEN) {
             changeKeyState(R.id.key_1, true);
             changeKeyState(R.id.key_2, true);
@@ -307,7 +299,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * @param isNew True if the team was selected right now,
      *              False if it is being reloaded after activity restart.
      */
-    public void loadTeam(final boolean isNew) {
+    private void loadTeam(final boolean isNew) {
         // Parse integer team number from string
         int teamNumber;
         if (mTeamNumber.length() > 0) {
@@ -319,8 +311,6 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         if (isNew) {
             mMainApplication.setTeamNumber(teamNumber);
         }
-        // No errors found yet
-        findViewById(R.id.init_error).setVisibility(View.GONE);
         // Check if we can send initialization command to a station
         if (mStation == null) {
             showError(true, R.string.err_init_no_station);
@@ -330,26 +320,28 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             showError(true, R.string.err_init_wrong_mode);
             return;
         }
+        // No errors found yet
+        findViewById(R.id.init_error).setVisibility(View.INVISIBLE);
         // Save layout elements views for future usage
-        final FrameLayout initButtonFrame = findViewById(R.id.init_team_chip_frame);
+        final Button initButton = findViewById(R.id.init_team_chip);
+        final ProgressBar initProgress = findViewById(R.id.init_team_chip_progress);
         final TextView teamNumberText = findViewById(R.id.init_team_number);
         final Group teamData = findViewById(R.id.init_team_data);
         // Hide all if no number was entered yet
         if (teamNumber == 0) {
+            initButton.setVisibility(View.INVISIBLE);
+            initProgress.setVisibility(View.INVISIBLE);
             teamNumberText.setText(getResources().getString(R.string.team_number));
-            initButtonFrame.setVisibility(View.GONE);
             teamData.setVisibility(View.GONE);
             return;
         }
-        final Button initButton = findViewById(R.id.init_team_chip);
-        final ProgressBar initProgress = findViewById(R.id.init_team_chip_progress);
-        // Show just progress if chip init is running
+        // Show button or progress (if chip init task is running)
         if (mChipInit == CHIP_INIT_ON) {
-            initButtonFrame.setVisibility(View.VISIBLE);
-            initButton.setVisibility(View.GONE);
+            initButton.setVisibility(View.INVISIBLE);
             initProgress.setVisibility(View.VISIBLE);
-            teamData.setVisibility(View.GONE);
-            return;
+        } else {
+            initButton.setVisibility(View.VISIBLE);
+            initProgress.setVisibility(View.INVISIBLE);
         }
         // Update team number on screen
         teamNumberText.setText(mTeamNumber);
@@ -392,9 +384,6 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             showError(false, R.string.err_init_empty_team);
             return;
         }
-        initButtonFrame.setVisibility(View.VISIBLE);
-        initButton.setVisibility(View.VISIBLE);
-        initProgress.setVisibility(View.GONE);
         // Make all team data visible
         teamData.setVisibility(View.VISIBLE);
     }
@@ -406,15 +395,12 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * @param errorId      Message resource id
      */
     private void showError(final boolean teamNotFound, final int errorId) {
-        final FrameLayout initButtonFrame = findViewById(R.id.init_team_chip_frame);
-        final Group teamData = findViewById(R.id.init_team_data);
-        final TextView errorText = findViewById(R.id.init_error);
+        findViewById(R.id.init_team_chip).setVisibility(View.INVISIBLE);
+        findViewById(R.id.init_team_chip_progress).setVisibility(View.INVISIBLE);
         if (teamNotFound) {
-            initButtonFrame.setVisibility(View.GONE);
-            teamData.setVisibility(View.GONE);
-        } else {
-            initButtonFrame.setVisibility(View.GONE);
+            findViewById(R.id.init_team_data).setVisibility(View.GONE);
         }
+        final TextView errorText = findViewById(R.id.init_error);
         errorText.setText(getResources().getString(errorId));
         errorText.setVisibility(View.VISIBLE);
     }

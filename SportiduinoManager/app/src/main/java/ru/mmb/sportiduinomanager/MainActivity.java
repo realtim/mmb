@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
             activePointItem.setTitle(getResources().getString(R.string.mode_active_point_name,
                     pointName));
         }
-        // Update 'Chip Info' menu item, title not changes
+        // Update 'Chip Info' menu item
         final MenuItem chipInfoItem = mNavigationView.getMenu().findItem(R.id.chip_info);
         if (station == null || station.getMode() != Station.MODE_INIT_CHIPS) {
             chipInfoItem.setEnabled(false);

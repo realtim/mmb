@@ -31,6 +31,12 @@
 <!---->        <exclude name="NPathComplexity"/>
 <!---->        <exclude name="ExcessiveParameterList"/>
     </rule>
+    <rule ref="category/java/design.xml/TooManyMethods">
+       <properties>
+            <property name="maxmethods" value="16"/>
+        </properties>
+    </rule>
+
 
     <rule ref="category/java/errorprone.xml">
 <!---->        <exclude name="DataflowAnomalyAnalysis"/>

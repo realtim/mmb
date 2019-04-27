@@ -159,7 +159,7 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
                 .getString(R.string.ap_visited, mDistance.pointsNamesFromList(visited)));
         // Update lists of skipped points
         final List<Integer> skipped = mDistance.getSkippedPoints(visited);
-        final TextView skippedText = (TextView) findViewById(R.id.ap_skipped);
+        final TextView skippedText = findViewById(R.id.ap_skipped);
         skippedText.setText(getResources().getString(R.string.ap_skipped,
                 mDistance.pointsNamesFromList(skipped)));
         if (mDistance.mandatoryPointSkipped(skipped)) {
