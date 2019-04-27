@@ -1601,7 +1601,7 @@ elseif ($action == "CancelUnionTeams")  {
 
                 // Ставим изменения в лог
 
-		$sql = " update TeamUnionLogs set union_status = 3
+		$sql = " update TeamUnionLogs set union_status = 0, team_parentid = null, teamunionlog_hide = 1
 			 where teamunionlog_hide = 0 
                                and union_status = 2
 			       and team_parentid = $pParentTeamId";
@@ -1629,6 +1629,15 @@ elseif ($action == "CancelUnionTeams")  {
 	
 	mysql_free_result($Result);
 
+	 // Сбрасываем команду, в которую объединяли
+
+		$sql = " update Teams t
+ 		         set t.team_parentid = null 
+                         where t.team_parentid = $pParentTeamId";
+
+		//echo $sql;
+		MySqlQuery($sql);
+	
 	CMmb::setResult('Объединение отменено', 'ViewRaidTeams');
 }
 // ============ Никаких действий не требуется =================================
