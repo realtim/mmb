@@ -2,6 +2,7 @@ package ru.mmb.sportiduinomanager;
 
 import android.os.Bundle;
 import android.support.constraint.Group;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -21,7 +22,7 @@ import ru.mmb.sportiduinomanager.task.ChipInitTask;
  * Provides ability to select a team, mark team members as absent,
  * init a chip for the team and save this data in local database.
  */
-public final class ChipInitActivity extends MainActivity implements MemberListAdapter.OnItemClicked {
+public final class ChipInitActivity extends MainActivity implements MemberListAdapter.OnMemberClicked {
     /**
      * Chip init not running now.
      */
@@ -60,10 +61,13 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
     private String mTeamNumber;
 
     /**
-     * Team members mask
-     * (it can be modified after loading from db and before saving to chip).
+     * User modified team members mask (it can be saved to chip and to local db).
      */
     private int mTeamMask;
+    /**
+     * Original team members mask (with all registered members present).
+     */
+    private int mOriginalMask;
 
     /**
      * Current state of chip init.
@@ -80,14 +84,17 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         mTeamNumber = Integer.toString(mMainApplication.getTeamNumber());
         if ("0".equals(mTeamNumber)) mTeamNumber = "";
         mTeamMask = mMainApplication.getTeamMask();
-        // Prepare recycler view of device list
+        mOriginalMask = 0;
+        // Prepare recycler view of members list
         final RecyclerView recyclerView = findViewById(R.id.member_list);
         // use a linear layout manager
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         // specify an RecyclerView adapter
         // and copy saved device list from main application
-        mAdapter = new MemberListAdapter(this);
+        mAdapter = new MemberListAdapter(this,
+                ResourcesCompat.getColor(getResources(), R.color.text_secondary, getTheme()),
+                ResourcesCompat.getColor(getResources(), R.color.bg_secondary, getTheme()));
         recyclerView.setAdapter(mAdapter);
     }
 
@@ -108,25 +115,28 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
     }
 
     /**
-     * The onClick implementation of the RecyclerView item click.
+     * The onClick implementation of the RecyclerView team member click.
      */
     @Override
-    public void onItemClick(final int position) {
+    public void onMemberClick(final int position) {
         // Update team mask
-        mTeamMask = mTeamMask ^ (1 << position);
+        final int newMask = mTeamMask ^ (1 << position);
+        if (newMask == 0) {
+            Toast.makeText(mMainApplication,
+                    R.string.err_init_empty_team, Toast.LENGTH_LONG).show();
+            mAdapter.notifyItemChanged(position);
+            return;
+        }
+        mTeamMask = newMask;
         // Save it to main application
         mMainApplication.setTeamMask(mTeamMask);
+        // Update list item
+        mAdapter.setMask(mTeamMask);
+        mAdapter.notifyItemChanged(position);
         // Display new team members count
         final int teamMembersCount = Teams.getMembersCount(mTeamMask);
         ((TextView) findViewById(R.id.init_members_count)).setText(getResources()
-                .getString(R.string.team_members_count, teamMembersCount,
-                        Integer.toString(mTeamMask, 2)));
-        // Hide init chip button if user has deselected all team members
-        if (teamMembersCount == 0) {
-            showError(false, R.string.err_init_empty_team);
-        } else {
-            findViewById(R.id.init_error).setVisibility(View.INVISIBLE);
-        }
+                .getString(R.string.team_members_count, teamMembersCount));
     }
 
     /**
@@ -219,6 +229,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
                 // Clear team number and mask to start again
                 mTeamNumber = "";
                 mTeamMask = 0;
+                mOriginalMask = 0;
                 // Update onscreen keyboard and "load" empty team
                 updateKeyboardState();
                 loadTeam(true);
@@ -236,6 +247,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             } else {
                 Toast.makeText(mMainApplication, mStation.getLastError(), Toast.LENGTH_LONG).show();
             }
+            loadTeam(false);
         }
     }
 
@@ -364,21 +376,22 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
                 .getString(R.string.team_maps_count, teams.getTeamMaps(teamNumber)));
         // Get list of team members
         final List<String> teamMembers = teams.getMembersNames(teamNumber);
+        // Compute original mask (where all team members are present)
+        mOriginalMask = 0;
+        for (int i = 0; i < teamMembers.size(); i++) {
+            mOriginalMask = mOriginalMask | (1 << i);
+        }
         // Mark all members as selected for new team,
         // leave mask untouched for old team being reloaded
         if (isNew) {
-            mTeamMask = 0;
-            for (int i = 0; i < teamMembers.size(); i++) {
-                mTeamMask = mTeamMask | (1 << i);
-            }
+            mTeamMask = mOriginalMask;
             mMainApplication.setTeamMask(mTeamMask);
         }
         // Update team members list
-        mAdapter.fillList(teamMembers, mTeamMask);
+        mAdapter.updateList(teamMembers, mOriginalMask, mTeamMask);
         // Update number of members in the team
         ((TextView) findViewById(R.id.init_members_count)).setText(getResources()
-                .getString(R.string.team_members_count, Teams.getMembersCount(mTeamMask),
-                        Integer.toString(mTeamMask, 2)));
+                .getString(R.string.team_members_count, Teams.getMembersCount(mTeamMask)));
         // Check if some team members were selected as present
         if (mTeamMask == 0) {
             showError(false, R.string.err_init_empty_team);

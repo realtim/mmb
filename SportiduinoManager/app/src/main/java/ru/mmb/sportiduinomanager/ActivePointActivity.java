@@ -5,6 +5,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,7 +23,8 @@ import ru.mmb.sportiduinomanager.model.Teams;
  * Provides ability to get chip events from station, mark team members as absent,
  * update team members mask in a chip and save this data in local database.
  */
-public final class ActivePointActivity extends MainActivity implements TeamListAdapter.OnItemClicked {
+public final class ActivePointActivity extends MainActivity
+        implements TeamListAdapter.OnTeamClicked, MemberListAdapter.OnMemberClicked {
     /**
      * Main application thread with persistent data.
      */
@@ -51,9 +53,23 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
     private Distance mDistance;
 
     /**
+     * User modified team members mask (it can be saved to chip and to local db).
+     */
+    private int mTeamMask;
+    /**
+     * Original team mask received from chip at last visit
+     * or changed and saved previously.
+     */
+    private int mOriginalMask;
+
+    /**
+     * RecyclerView with team members.
+     */
+    private MemberListAdapter mMemberAdapter;
+    /**
      * RecyclerView with list of teams visited the station.
      */
-    private TeamListAdapter mAdapter;
+    private TeamListAdapter mTeamAdapter;
 
     /**
      * Timer of background thread for communication with the station.
@@ -75,6 +91,7 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
         getMenuItem(R.id.active_point).setChecked(true);
         // Disable startup animation
         overridePendingTransition(0, 0);
+
         // Get connected station from main application thread
         mStation = mMainApplication.getStation();
         // Get teams and members from main application thread
@@ -87,14 +104,26 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
         }
         // Get distance
         mDistance = mMainApplication.getDistance();
+        // Initialize masks
+        mTeamMask = mMainApplication.getTeamMask();
+        mOriginalMask = 0;
+        // Prepare recycler view of members list
+        final RecyclerView membersList = findViewById(R.id.ap_member_list);
+        final RecyclerView.LayoutManager membersLM = new LinearLayoutManager(this);
+        membersList.setLayoutManager(membersLM);
+        // specify an RecyclerView adapter and initialize it
+        mMemberAdapter = new MemberListAdapter(this,
+                ResourcesCompat.getColor(getResources(), R.color.text_secondary, getTheme()),
+                ResourcesCompat.getColor(getResources(), R.color.bg_secondary, getTheme()));
+        membersList.setAdapter(mMemberAdapter);
         // Prepare recycler view of team list
-        final RecyclerView recyclerView = findViewById(R.id.ap_team_list);
-        // Use a linear layout manager
-        final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
+        final RecyclerView teamsList = findViewById(R.id.ap_team_list);
+        final RecyclerView.LayoutManager teamsLM = new LinearLayoutManager(this);
+        teamsList.setLayoutManager(teamsLM);
         // Specify an RecyclerView adapter and initialize it
-        mAdapter = new TeamListAdapter(this, mTeams, mFlash);
-        recyclerView.setAdapter(mAdapter);
+        mTeamAdapter = new TeamListAdapter(this, mTeams, mFlash);
+        teamsList.setAdapter(mTeamAdapter);
+
         // Update activity layout
         updateLayout();
         // Start background querying of connected station
@@ -102,16 +131,55 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
     }
 
     /**
-     * The onClick implementation of the RecyclerView item click.
+     * The onClick implementation of TeamListAdapter RecyclerView item click.
      */
     @Override
-    public void onItemClick(final int position) {
-        final int oldPosition = mAdapter.getPosition();
-        mAdapter.setPosition(position);
+    public void onTeamClick(final int position) {
+        final int oldPosition = mTeamAdapter.getPosition();
+        mTeamAdapter.setPosition(position);
         // TODO: save new position in main application
-        mAdapter.notifyItemChanged(oldPosition);
-        mAdapter.notifyItemChanged(position);
+        mTeamAdapter.notifyItemChanged(oldPosition);
+        mTeamAdapter.notifyItemChanged(position);
         updateLayout();
+    }
+
+    /**
+     * The onClick implementation of the RecyclerView team member click.
+     */
+    @Override
+    public void onMemberClick(final int position) {
+        // Update team mask
+        final int newMask = mTeamMask ^ (1 << position);
+        if (newMask == 0) {
+            Toast.makeText(mMainApplication,
+                    R.string.err_init_empty_team, Toast.LENGTH_LONG).show();
+            mMemberAdapter.notifyItemChanged(position);
+            return;
+        }
+        mTeamMask = newMask;
+        // Save it to main application
+        mMainApplication.setTeamMask(mTeamMask);
+        // Update list item
+        mMemberAdapter.setMask(mTeamMask);
+        mMemberAdapter.notifyItemChanged(position);
+        // Display new team members count
+        final int teamMembersCount = Teams.getMembersCount(mTeamMask);
+        ((TextView) findViewById(R.id.ap_members_count)).setText(getResources()
+                .getString(R.string.team_members_count, teamMembersCount));
+    }
+
+    /**
+     * Save changed team mask to chip amd to local database.
+     *
+     * @param view View of button clicked
+     */
+    public void saveTeamMask(final View view) {
+        // Check team mask and station presence
+        if (mTeamMask == 0 || mStation == null) return;
+        // Disable button (it'll be enabled when team mask will change again)
+        view.setAlpha(MainApplication.DISABLED_BUTTON);
+        view.setClickable(false);
+        // TODO: Send command to station
     }
 
     /**
@@ -128,7 +196,7 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
             return;
         }
         // Get index in mFlash team visits list to display
-        final int index = mFlash.size() - 1 - mAdapter.getPosition();
+        final int index = mFlash.size() - 1 - mTeamAdapter.getPosition();
         // Update team number and name
         final int teamNumber = mFlash.getTeamNumber(index);
         if (teamNumber <= 0 || mTeams == null) {
@@ -155,14 +223,31 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
         } else {
             skippedText.setTextColor(ResourcesCompat.getColor(getResources(), R.color.text_secondary, getTheme()));
         }
-        // Update number of team members
-        final int teamMask = mFlash.getTeamMask(index);
-        if (teamMask <= 0) {
+        // Get original mask from last team visit
+        mOriginalMask = mFlash.getTeamMask(index);
+        if (mOriginalMask <= 0) {
             findViewById(R.id.ap_team_data).setVisibility(View.GONE);
             return;
         }
+        // TODO: do it only for new team
+        mTeamMask = mOriginalMask;
+        mMainApplication.setTeamMask(mTeamMask);
+        // Update saveTeamMask button state
+        final Button saveMaskButton = findViewById(R.id.ap_save_mask);
+        if (mTeamMask == mOriginalMask) {
+            saveMaskButton.setAlpha(MainApplication.DISABLED_BUTTON);
+            saveMaskButton.setClickable(false);
+        } else {
+            saveMaskButton.setAlpha(MainApplication.ENABLED_BUTTON);
+            saveMaskButton.setClickable(true);
+        }
+        // Get list of team members
+        final List<String> teamMembers = mTeams.getMembersNames(teamNumber);
+        // Update list of team members and their selection
+        mMemberAdapter.updateList(teamMembers, mOriginalMask, mTeamMask);
+        // Update number of team members
         ((TextView) findViewById(R.id.ap_members_count)).setText(getResources()
-                .getString(R.string.ap_members_count, Teams.getMembersCount(teamMask)));
+                .getString(R.string.team_members_count, Teams.getMembersCount(mTeamMask)));
         // Show last team block
         findViewById(R.id.ap_team_data).setVisibility(View.VISIBLE);
     }
@@ -303,7 +388,7 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
                     }
                     if (newTeam) {
                         // Got new team, update activity layout
-                        mAdapter.notifyDataSetChanged();
+                        mTeamAdapter.notifyDataSetChanged();
                         updateLayout();
                     }
                 });

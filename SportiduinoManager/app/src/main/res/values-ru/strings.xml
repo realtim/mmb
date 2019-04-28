@@ -74,7 +74,6 @@
         <item quantity="many">%1$d секунд до завершения</item>
     </plurals>
 
-
     <string name="team_number_title">Номер команды</string>
     <string name="key_1">1</string>
     <string name="key_2">2</string>
@@ -90,14 +89,14 @@
     <string name="key_clear">\u00d7</string>
     <string name="team_number">-</string>
     <string name="team_maps_count">Карт: %1$d</string>
-    <string name="team_members_count">Участников: %1$d (%2$s)</string>
+    <string name="team_members_count">Участников: %1$d</string>
     <string name="init_team_chip">Записать чип</string>
 
     <string name="ap_total_teams">Команд: %1$d</string>
     <string name="ap_team_name">№%1$d %2$s</string>
     <string name="ap_visited">Взяты: %1$s</string>
     <string name="ap_skipped">Пропущены: %1$s</string>
-    <string name="ap_members_count">Участников: %1$d</string>
+    <string name="ap_save_mask">Зарегистрировать сход</string>
     <string name="list_team_count">%1$d</string>
     <string name="list_team_time">%1$s</string>
 

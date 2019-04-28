@@ -88,11 +88,37 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_padding"
         android:scrollHorizontally="false"
-        android:text="@string/ap_members_count"
+        android:text="@string/team_members_count"
         android:textAppearance="@style/AppTheme.TextMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ap_skipped" />
+
+    <Button
+        android:id="@+id/ap_save_mask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/default_padding"
+        android:onClick="saveTeamMask"
+        android:text="@string/ap_save_mask"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ap_members_count" />
+
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/ap_member_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:choiceMode="multipleChoice"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ap_save_mask"
+        tools:itemCount="4"
+        tools:listitem="@layout/member_list_item" />
 
     <View
         android:id="@+id/ap_divider_2"
@@ -100,7 +126,7 @@
         android:layout_margin="@dimen/default_padding"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ap_members_count" />
+        app:layout_constraintTop_toBottomOf="@+id/ap_member_list" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/ap_team_list"

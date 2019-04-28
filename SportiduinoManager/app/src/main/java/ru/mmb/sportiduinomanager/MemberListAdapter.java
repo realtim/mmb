@@ -17,26 +17,46 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
     /**
      * Interface for list item click processing.
      */
-    private final OnItemClicked mOnClick;
+    private final OnMemberClicked mOnClick;
+    /**
+     * Color of member name in the list which presence has not been changed.
+     */
+    private final int mOriginalColor;
+    /**
+     * Color of member name in the list which presence has been changed.
+     */
+    private final int mChangedColor;
     /**
      * List team member names.
      */
     private List<String> mNamesList;
     /**
-     * Mask of team members present at active point.
+     * Current mask of team members present at active point,
+     * it could be changed by operator.
      */
     private int mMask;
+    /**
+     * Original mask of team members present at active point,
+     * received from chip or local database before operator actions.
+     */
+    private int mOriginalMask;
 
     /**
      * Adapter constructor.
      *
-     * @param onClick Interface for click processing in calling activity.
+     * @param onClick       Interface for click processing in calling activity.
+     * @param originalColor Color of members which presence has not been changed.
+     * @param changedColor  Color of members which presence has been changed.
      */
-    MemberListAdapter(final OnItemClicked onClick) {
+    MemberListAdapter(final OnMemberClicked onClick, final int originalColor,
+                      final int changedColor) {
         super();
         mOnClick = onClick;
         mNamesList = new ArrayList<>();
         mMask = 0;
+        mOriginalMask = 0;
+        mOriginalColor = originalColor;
+        mChangedColor = changedColor;
     }
 
     /**
@@ -57,11 +77,19 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
     public void onBindViewHolder(@NonNull final MemberHolder holder, final int position) {
         // Get team member at this position
         final String name = mNamesList.get(position);
+        // Get original and current presence flag
+        final boolean original = (mOriginalMask & (1 << position)) != 0;
+        final boolean current = (mMask & (1 << position)) != 0;
         // Update the contents of the view with that member
         holder.mMember.setText(name);
-        holder.mMember.setChecked((mMask & (1 << position)) != 0);
+        holder.mMember.setChecked(current);
+        if (current == original) {
+            holder.mMember.setTextColor(mOriginalColor);
+        } else {
+            holder.mMember.setTextColor(mChangedColor);
+        }
         // Set my listener for the team member checkbox
-        holder.mMember.setOnClickListener(view -> mOnClick.onItemClick(holder.getAdapterPosition()));
+        holder.mMember.setOnClickListener(view -> mOnClick.onMemberClick(holder.getAdapterPosition()));
     }
 
     /**
@@ -75,25 +103,36 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
     /**
      * Fill list of members after selecting new team.
      *
-     * @param names List of team members names
-     * @param mask  Bit mask with team members presence at active point
+     * @param names        List of team members names
+     * @param originalMask Original mask with team members presence at active point
+     * @param mask         Current mask which could be changed by operator
      */
-    void fillList(final List<String> names, final int mask) {
+    void updateList(final List<String> names, final int originalMask, final int mask) {
         mNamesList = names;
         mMask = mask;
+        mOriginalMask = originalMask;
         notifyDataSetChanged();
+    }
+
+    /**
+     * Update current team members mask.
+     *
+     * @param mask New mask value
+     */
+    void setMask(final int mask) {
+        mMask = mask;
     }
 
     /**
      * Declare interface for click processing.
      */
-    public interface OnItemClicked {
+    public interface OnMemberClicked {
         /**
-         * Implemented in BluetoothActivity class.
+         * Implemented in ChipInitActivity class.
          *
-         * @param position Position of clicked device in the list of discovered devices
+         * @param position Position of clicked member in a members list
          */
-        void onItemClick(int position);
+        void onMemberClick(int position);
     }
 
     /**

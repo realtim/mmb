@@ -40,6 +40,10 @@
         <item name="android:minWidth">96dp</item>
     </style>
 
+    <style name="AppTheme.CheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="buttonTint">@color/bg_primary</item>
+    </style>
+
     <style name="SpinnerItem" parent="@android:style/Widget.TextView.SpinnerItem">
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body1</item>
         <item name="android:layout_width">match_parent</item>

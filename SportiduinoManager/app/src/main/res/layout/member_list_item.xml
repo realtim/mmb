@@ -5,16 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
+    android:minHeight="?android:listPreferredItemHeight"
     android:orientation="horizontal"
     android:theme="@style/AppTheme">
-    <!--    android:minHeight="?android:listPreferredItemHeight"-->
 
     <CheckBox
         android:id="@+id/check_member"
+        style="@style/AppTheme.CheckBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_margin="@dimen/default_padding"
+        android:layout_marginStart="@dimen/default_padding"
+        android:checked="true"
         android:focusable="false"
         android:textAppearance="@style/AppTheme.TextMedium"
         tools:text="Member XXX" />

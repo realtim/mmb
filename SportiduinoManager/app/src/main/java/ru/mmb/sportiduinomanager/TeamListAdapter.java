@@ -17,7 +17,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
     /**
      * Interface for list item click processing.
      */
-    private final OnItemClicked mOnClick;
+    private final OnTeamClicked mOnClick;
     /**
      * All teams registered for the raid.
      */
@@ -39,7 +39,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
      * @param teams   List of all registered teams from ActivePointActivity
      * @param flash   List of all team visits from ActivePointActivity
      */
-    TeamListAdapter(final OnItemClicked onClick, final Teams teams, final Chips flash) {
+    TeamListAdapter(final OnTeamClicked onClick, final Teams teams, final Chips flash) {
         super();
         mOnClick = onClick;
         mTeams = teams;
@@ -94,7 +94,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
         // Highlight row if it is selected
         holder.itemView.setSelected(mSelectedPos == position);
         // Set my listener for all elements of list item
-        holder.itemView.setOnClickListener(view -> mOnClick.onItemClick(holder.getAdapterPosition()));
+        holder.itemView.setOnClickListener(view -> mOnClick.onTeamClick(holder.getAdapterPosition()));
     }
 
     /**
@@ -126,13 +126,13 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
     /**
      * Declare interface for click processing.
      */
-    public interface OnItemClicked {
+    public interface OnTeamClicked {
         /**
          * Implemented in BluetoothActivity class.
          *
          * @param position Position of clicked device in the list of discovered devices
          */
-        void onItemClick(int position);
+        void onTeamClick(int position);
     }
 
     /**
