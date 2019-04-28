@@ -6,13 +6,12 @@ import android.bluetooth.BluetoothSocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -195,9 +194,13 @@ public final class Station {
      */
     private int mFirmware;
     /**
-     * Station battery voltage received from getStatus.
+     * Station battery voltage in Volts.
      */
-    private int mVoltage;
+    private float mVoltage;
+    /**
+     * Station battery voltage coefficient to convert to Volts from getStatus.
+     */
+    private float mVCoeff;
     /**
      * Station temperature received from getStatus.
      */
@@ -222,6 +225,7 @@ public final class Station {
         mLastChipTime = 0;
         mFirmware = 0;
         mVoltage = 0;
+        mVCoeff = 0.00_587f;
         mTemperature = 0;
         mLastTeams = new ArrayList<>();
         mChips = new Chips(0);
@@ -337,9 +341,9 @@ public final class Station {
     /**
      * Get station battery voltage.
      *
-     * @return Battery voltage as 0..1023
+     * @return Battery voltage in Volts
      */
-    public int getVoltage() {
+    public float getVoltage() {
         return mVoltage;
     }
 
@@ -386,19 +390,6 @@ public final class Station {
      */
     public int getChipRecordsN() {
         return mChipRecordsN;
-    }
-
-    /**
-     * Get the time of last chip registration as a formatted string.
-     *
-     * @return Text representation of time of last chip registration in local timezone
-     */
-    public String getLastChipTimeString() {
-        if (mLastChipTime == 0) return "-";
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(mLastChipTime * 1000L);
-        final DateFormat format = new SimpleDateFormat("dd.MM.yyyy  HH:mm:ss", Locale.getDefault());
-        return format.format(calendar.getTime());
     }
 
     /**
@@ -747,7 +738,7 @@ public final class Station {
         byte[] commandData = new byte[7];
         commandData[0] = CMD_SET_TIME;
         // Get current UTC time
-        final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
         commandData[1] = (byte) (calendar.get(Calendar.YEAR) - 2000);
         commandData[2] = (byte) (calendar.get(Calendar.MONTH) + 1);
         commandData[3] = (byte) calendar.get(Calendar.DAY_OF_MONTH);
@@ -803,8 +794,10 @@ public final class Station {
         mChipsRegistered = (int) byteArray2Long(response, 4, 5);
         // Get last chips registration time
         mLastChipTime = byteArray2Long(response, 6, 9);
-        // Get station battery voltage
-        mVoltage = (int) byteArray2Long(response, 10, 11);
+        // Get station battery voltage in "parrots"
+        final int voltage = (int) byteArray2Long(response, 10, 11);
+        // Convert value to Volts
+        mVoltage = voltage * mVCoeff;
         // Get station temperature
         mTemperature = (int) byteArray2Long(response, 12, 13);
         return true;
@@ -856,6 +849,7 @@ public final class Station {
      * @param teamNumber Number of team to fetch
      * @return True if succeeded
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchTeamRecord(final int teamNumber) {
         // Prepare command payload
         byte[] commandData = new byte[3];
@@ -886,6 +880,7 @@ public final class Station {
      * @param count      Number of marks to read
      * @return True if succeeded, fills mChips with marks as chip events
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchTeamMarks(final int teamNumber, final long initTime,
                                   final int teamMask, final int fromMark,
                                   final int count) {
@@ -937,6 +932,8 @@ public final class Station {
         mFirmware = response[0];
         // Get station mode
         mMode = response[1] & 0xFF;
+        // Get voltage coefficient
+        mVCoeff = ByteBuffer.wrap(response, 11, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
         // Ignore all other parameters
         return true;
     }

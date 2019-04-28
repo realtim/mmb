@@ -36,6 +36,10 @@
         <item name="android:textColor">?android:textColorPrimaryInverse</item>
     </style>
 
+    <style name="AppTheme.ProgressBar" parent="Widget.AppCompat.ProgressBar.Horizontal">
+        <item name="android:minWidth">96dp</item>
+    </style>
+
     <style name="SpinnerItem" parent="@android:style/Widget.TextView.SpinnerItem">
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body1</item>
         <item name="android:layout_width">match_parent</item>

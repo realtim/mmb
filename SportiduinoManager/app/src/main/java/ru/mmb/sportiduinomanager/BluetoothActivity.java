@@ -16,6 +16,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.task.ConnectDeviceTask;
@@ -432,6 +434,19 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     }
 
     /**
+     * Update status of station reset process in activity layout.
+     *
+     * @param percents          Task percents already completed
+     * @param secondsToComplete Estimated number of seconds to completion
+     */
+    public void updateResetProgress(final int percents, final int secondsToComplete) {
+        ((ProgressBar) findViewById(R.id.station_reset_percents)).setProgress(percents);
+        ((TextView) findViewById(R.id.station_reset_time)).setText(getResources()
+                .getQuantityString(R.plurals.station_reset_time, secondsToComplete,
+                        secondsToComplete));
+    }
+
+    /**
      * Update layout according to activity state.
      *
      * @param fetchStatus True if we need to send command to station
@@ -550,7 +565,8 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
                 .getString(R.string.station_time_drift, station.getTimeDrift()));
         ((TextView) findViewById(R.id.station_chips_registered_value))
                 .setText(String.format(Locale.getDefault(), "%d", station.getChipsRegistered()));
-        ((TextView) findViewById(R.id.station_last_chip_time)).setText(station.getLastChipTimeString());
+        ((TextView) findViewById(R.id.station_last_chip_time)).setText(
+                Chips.printTime(station.getLastChipTime(), "dd.MM.yyyy  HH:mm:ss"));
         // Show status block
         findViewById(R.id.station_status).setVisibility(View.VISIBLE);
 

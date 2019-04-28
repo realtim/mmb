@@ -264,16 +264,35 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/station_last_chip" />
 
-        <ProgressBar
+
+        <android.support.constraint.Group
             android:id="@+id/station_reset_progress"
-            style="?android:attr/progressBarStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
+            app:constraint_referenced_ids="station_reset_percents,station_reset_time" />
+
+        <ProgressBar
+            android:id="@+id/station_reset_percents"
+            style="@style/AppTheme.ProgressBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_padding"
+            android:progress="0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/station_last_chip_time" />
+            app:layout_constraintTop_toBottomOf="@+id/station_last_chip_time"
+            app:layout_constraintWidth_percent="0.8" />
 
+        <TextView
+            android:id="@+id/station_reset_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/default_padding"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/station_reset_percents" />
 
     </android.support.constraint.ConstraintLayout>
 

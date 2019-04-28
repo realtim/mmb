@@ -2,9 +2,14 @@ package ru.mmb.sportiduinomanager.model;
 
 import android.database.sqlite.SQLiteException;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Handling chip data (initialization event and check ins at active points).
@@ -33,6 +38,24 @@ public final class Chips {
     Chips(final long timeDownloaded) {
         mEvents = new ArrayList<>();
         mTimeDownloaded = timeDownloaded;
+    }
+
+    /**
+     * Convert unixtime to string using fixed UTC+3 locale.
+     *
+     * @param time   Unixtime to print
+     * @param format Print format such as "dd.MM  HH:mm:ss"
+     * @return String representation of time
+     */
+    public static String printTime(final long time, final String format) {
+        if (time <= 0) return "-";
+        // Use fixed +3 hours offset
+        final TimeZone raidTimezone = TimeZone.getTimeZone("GMT+3");
+        final Calendar calendar = Calendar.getInstance(raidTimezone);
+        calendar.setTimeInMillis(time * 1000L);
+        final DateFormat dateFormat = new SimpleDateFormat(format, Locale.getDefault());
+        dateFormat.setTimeZone(raidTimezone);
+        return dateFormat.format(calendar.getTime());
     }
 
     /**

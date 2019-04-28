@@ -8,12 +8,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -118,7 +114,6 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
         updateLayout();
     }
 
-
     /**
      * Update layout according to activity state.
      */
@@ -143,15 +138,8 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
         ((TextView) findViewById(R.id.ap_team_name)).setText(getResources()
                 .getString(R.string.ap_team_name, teamNumber, mTeams.getTeamName(teamNumber)));
         // Update team time
-        final long teamTime = mFlash.getTeamTime(index);
-        if (teamTime <= 0) {
-            findViewById(R.id.ap_team_data).setVisibility(View.GONE);
-            return;
-        }
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(teamTime * 1000L);
-        final DateFormat format = new SimpleDateFormat("dd.MM  HH:mm:ss", Locale.getDefault());
-        ((TextView) findViewById(R.id.ap_team_time)).setText(format.format(calendar.getTime()));
+        ((TextView) findViewById(R.id.ap_team_time)).setText(
+                Chips.printTime(mFlash.getTeamTime(index), "dd.MM  HH:mm:ss"));
         // Update lists of visited points
         final List<Integer> visited = mChips.getChipMarks(teamNumber, mFlash.getInitTime(index),
                 mStation.getNumber(), mStation.getMACasLong(), mDistance.getMaxPoint());
@@ -250,7 +238,7 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
             // Try to add team visit as new event
             if (mChips.join(teamVisit)) {
                 newEvents = true;
-                // read marks from chip and to events list
+                // Read marks from chip and to events list
                 final int marks = mStation.getChipRecordsN();
                 if (marks == 0) continue;
                 int fromMark = 0;
@@ -306,11 +294,8 @@ public final class ActivePointActivity extends MainActivity implements TeamListA
                 // Update activity objects
                 ActivePointActivity.this.runOnUiThread(() -> {
                     // Update station clock in UI
-                    final Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(mStation.getStationTime() * 1000);
-                    final DateFormat format = new SimpleDateFormat("dd.MM  HH:mm:ss",
-                            Locale.getDefault());
-                    ((TextView) findViewById(R.id.station_clock)).setText(format.format(calendar.getTime()));
+                    ((TextView) findViewById(R.id.station_clock)).setText(
+                            Chips.printTime(mStation.getStationTime(), "dd.MM  HH:mm:ss"));
                     // Display station communication error (if any)
                     if (mStation.getLastError() != 0) {
                         Toast.makeText(getApplicationContext(), mStation.getLastError(),

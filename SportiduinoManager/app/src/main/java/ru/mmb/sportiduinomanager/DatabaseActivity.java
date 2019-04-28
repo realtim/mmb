@@ -216,7 +216,7 @@ public final class DatabaseActivity extends MainActivity {
                 }
                 ((TextView) findViewById(R.id.distance_version)).setText(getResources()
                         .getString(R.string.database_distance_version, siteName,
-                                mDistance.getDownloadDate()));
+                                Chips.printTime(mDistance.getTimeDownloaded(), "dd.MM.yyyy HH:mm")));
                 ((TextView) findViewById(R.id.distance_name)).setText(mDistance.getRaidName());
                 // Set chip events statistic
                 final List<Integer> statistic = mChips.getStatistic();

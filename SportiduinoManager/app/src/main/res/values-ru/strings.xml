@@ -51,12 +51,12 @@
     <string name="device_connect_description">Нажмите для подключения к станции</string>
     <string name="connected_station">Подключенная станция</string>
     <string name="station_firmware">Версия прошивки %1$d</string>
-    <string name="station_voltage">Напряжение батареи %1$d, температура %2$d°C</string>
+    <string name="station_voltage">Напряжение батареи %1$.2fВ, температура %2$d°C</string>
     <string name="response_time">Время отклика %1$dмс</string>
     <string name="station_mode">Текущий режим</string>
     <string name="station_mode_value_0">Инициализация чипов на точке %1$s</string>
-    <string name="station_mode_value_1">Обычный КП %1$s</string>
-    <string name="station_mode_value_2">Финишный КП %1$s</string>
+    <string name="station_mode_value_1">Обычный %1$s</string>
+    <string name="station_mode_value_2">Финишный %1$s</string>
     <string name="station_mode_unknown">Неизвестный режим</string>
     <string name="station_new_point">Новая точка</string>
     <string name="station_new_mode">Новый режим</string>
@@ -68,6 +68,12 @@
     <string name="station_sync_time">Синхронизировать</string>
     <string name="station_chips_registered">Отметок</string>
     <string name="station_last_chip">Последняя отметка</string>
+    <plurals name="station_reset_time">
+        <item quantity="one">%1$d секунда до завершения</item>
+        <item quantity="few">%1$d секунды до завершения</item>
+        <item quantity="many">%1$d секунд до завершения</item>
+    </plurals>
+
 
     <string name="team_number_title">Номер команды</string>
     <string name="key_1">1</string>

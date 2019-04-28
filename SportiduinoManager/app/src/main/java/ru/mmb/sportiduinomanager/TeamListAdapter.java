@@ -7,11 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-
 import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Teams;
 
@@ -89,17 +84,13 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
         } else {
             teamMembersCount = Teams.getMembersCount(teamMask);
         }
-        final long teamTime = mFlash.getTeamTime(index);
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(teamTime * 1000L);
-        final DateFormat format = new SimpleDateFormat("dd.MM  HH:mm:ss", Locale.getDefault());
         // Update the contents of the view with that team
         holder.mName.setText(holder.itemView.getResources().getString(R.string.ap_team_name,
                 teamNumber, teamName));
         holder.mCount.setText(holder.itemView.getResources().getString(R.string.list_team_count,
                 teamMembersCount));
         holder.mTime.setText(holder.itemView.getResources().getString(R.string.list_team_time,
-                format.format(calendar.getTime())));
+                Chips.printTime(mFlash.getTeamTime(index), "dd.MM  HH:mm:ss")));
         // Highlight row if it is selected
         holder.itemView.setSelected(mSelectedPos == position);
         // Set my listener for all elements of list item

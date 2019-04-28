@@ -1,11 +1,7 @@
 package ru.mmb.sportiduinomanager.model;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Support of distance parameters, points lists and discounts.
@@ -115,7 +111,7 @@ public final class Distance {
      *
      * @return Unixtime
      */
-    long getTimeDownloaded() {
+    public long getTimeDownloaded() {
         return mTimeDownloaded;
     }
 
@@ -171,18 +167,6 @@ public final class Distance {
      */
     void setLastResultId(final long lastResultId) {
         mLastResultId = lastResultId;
-    }
-
-    /**
-     * Get time of downloading distance from site as a string.
-     *
-     * @return Formatted datetime
-     */
-    public String getDownloadDate() {
-        final Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(mTimeDownloaded * 1000);
-        final DateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
-        return format.format(calendar.getTime());
     }
 
     /**

@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.acra.ACRA;
-import org.acra.BuildConfig;
 import org.acra.annotation.AcraCore;
 import org.acra.annotation.AcraHttpSender;
 import org.acra.annotation.AcraToast;
