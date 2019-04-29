@@ -213,7 +213,7 @@ public final class ChipInfoActivity extends MainActivity {
             if ((teamMask & (1 << i)) == 0) {
                 memberActivity = "(-)";
             } else {
-                memberActivity = "(-)";
+                memberActivity = "(+)";
             }
             builder.append("\n\t\t").append(teamMember).append(' ').append(memberActivity);
         }
