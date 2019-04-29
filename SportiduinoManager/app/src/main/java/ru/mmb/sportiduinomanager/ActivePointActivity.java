@@ -199,16 +199,25 @@ public final class ActivePointActivity extends MainActivity
         final int index = mFlash.size() - 1 - mTeamAdapter.getPosition();
         // Update team number and name
         final int teamNumber = mFlash.getTeamNumber(index);
-        if (teamNumber <= 0 || mTeams == null) {
-            findViewById(R.id.ap_team_data).setVisibility(View.GONE);
-            return;
+        String teamName;
+        if (mTeams == null) {
+            teamName = "";
+        } else {
+            teamName = mTeams.getTeamName(teamNumber);
         }
         ((TextView) findViewById(R.id.ap_team_name)).setText(getResources()
-                .getString(R.string.ap_team_name, teamNumber, mTeams.getTeamName(teamNumber)));
+                .getString(R.string.ap_team_name, teamNumber, teamName));
         // Update team time
         ((TextView) findViewById(R.id.ap_team_time)).setText(
                 Chips.printTime(mFlash.getTeamTime(index), "dd.MM  HH:mm:ss"));
         // Update lists of visited points
+        if (mDistance == null) {
+            // TODO: show simplified list of visited points
+            findViewById(R.id.ap_visited).setVisibility(View.GONE);
+            findViewById(R.id.ap_skipped).setVisibility(View.GONE);
+            findViewById(R.id.ap_save_mask).setVisibility(View.GONE);
+            return;
+        }
         final List<Integer> visited = mChips.getChipMarks(teamNumber, mFlash.getInitTime(index),
                 mStation.getNumber(), mStation.getMACasLong(), mDistance.getMaxPoint());
         ((TextView) findViewById(R.id.ap_visited)).setText(getResources()

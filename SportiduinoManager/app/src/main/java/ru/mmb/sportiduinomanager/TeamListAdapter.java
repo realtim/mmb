@@ -72,9 +72,14 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
         // Get team number at this position
         final int teamNumber = mFlash.getTeamNumber(index);
         // Get team name for this number
-        String teamName = mTeams.getTeamName(teamNumber);
-        if (teamName == null) {
-            teamName = holder.itemView.getResources().getString(R.string.unknown);
+        String teamName;
+        if (mTeams == null) {
+            teamName = "";
+        } else {
+            teamName = mTeams.getTeamName(teamNumber);
+            if (teamName == null) {
+                teamName = holder.itemView.getResources().getString(R.string.unknown);
+            }
         }
         // Get members count and team time
         final int teamMask = mFlash.getTeamMask(index);

@@ -365,7 +365,6 @@ public final class MainApplication extends Application {
         }
         // Try to load distance amd teams from database if it is not empty
         if (mDatabase.getDbStatus() == Database.DB_STATE_OK) {
-            // Try to load distance, teams and chip events from database
             try {
                 final Distance distance =
                         mDatabase.loadDistance(context.getString(R.string.mode_chip_init));
@@ -380,6 +379,16 @@ public final class MainApplication extends Application {
                 if (teams != null && !teams.hasErrors()) {
                     mTeams = teams;
                 }
+                final Chips chips = mDatabase.loadChips();
+                if (chips != null) mChips = chips;
+            } catch (SQLiteException e) {
+                mStartupError = e.getMessage();
+            }
+        }
+        // Try to load chip events from database
+        if (mDatabase.getDbStatus() == Database.DB_STATE_OK
+                || mDatabase.getDbStatus() == Database.DB_STATE_EMPTY) {
+            try {
                 final Chips chips = mDatabase.loadChips();
                 if (chips != null) mChips = chips;
             } catch (SQLiteException e) {

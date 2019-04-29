@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         }
         // Get the name of the point which is selected in connected station
         String pointName = "";
-        if (station != null) {
+        if (station != null && distance != null) {
             pointName = distance.getPointName(station.getNumber(),
                     getResources().getString(R.string.active_point_prefix));
         }

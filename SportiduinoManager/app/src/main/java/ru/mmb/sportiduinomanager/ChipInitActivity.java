@@ -331,6 +331,12 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             showError(true, R.string.err_init_wrong_mode);
             return;
         }
+        // Check if local database was loaded
+        final Teams teams = mMainApplication.getTeams();
+        if (teams == null) {
+            showError(true, R.string.err_db_no_distance_loaded);
+            return;
+        }
         // No errors found yet
         findViewById(R.id.init_error).setVisibility(View.INVISIBLE);
         // Save layout elements views for future usage
@@ -356,12 +362,6 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         }
         // Update team number on screen
         teamNumberText.setText(mTeamNumber);
-        // Check if local database was loaded
-        final Teams teams = mMainApplication.getTeams();
-        if (teams == null) {
-            showError(true, R.string.err_db_no_distance_loaded);
-            return;
-        }
         // Try to find team with entered number in local database
         final String teamName = teams.getTeamName(teamNumber);
         if (teamName == null) {
