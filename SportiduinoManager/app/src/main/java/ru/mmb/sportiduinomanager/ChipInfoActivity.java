@@ -7,12 +7,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.model.Teams;
 import ru.mmb.sportiduinomanager.task.ChipInfoTask;
@@ -31,15 +29,6 @@ public final class ChipInfoActivity extends MainActivity {
      * Chip info request is in progress.
      */
     public static final int INFO_REQUEST_ON = 1;
-    /**
-     * Date format for time print.
-     */
-    private static final ThreadLocal<DateFormat> DATE_FORMAT = new ThreadLocal<DateFormat>() {
-        @Override
-        protected DateFormat initialValue() {
-            return new SimpleDateFormat("dd.MM.yyyy  HH:mm:ss", Locale.getDefault());
-        }
-    };
     /**
      * Main application thread with persistent data.
      */
@@ -127,8 +116,9 @@ public final class ChipInfoActivity extends MainActivity {
         int teamNum = -1;
         for (int i = 0; i < pagesCount; i++) {
             final int pos = UID_SIZE + i * 5;
-            builder.append(String.format("Page#%2d: %02X %02X %02X %02X", chipInfo[pos],
-                    chipInfo[pos + 1], chipInfo[pos + 2], chipInfo[pos + 3], chipInfo[pos + 4]));
+            builder.append(String.format(Locale.getDefault(), "Page#%2d: %02X %02X %02X %02X",
+                    chipInfo[pos], chipInfo[pos + 1], chipInfo[pos + 2], chipInfo[pos + 3],
+                    chipInfo[pos + 4]));
             if (i == 4) {
                 teamNum = buildPage4DecodedInfo(chipInfo, builder, pos);
             } else if (i == 5) {
@@ -173,7 +163,8 @@ public final class ChipInfoActivity extends MainActivity {
         final int teamNum = (int) byteArray2Long(chipInfo, pos + 1, pos + 2);
         final int ntag = chipInfo[pos + 3] & 0xFF;
         final int version = chipInfo[pos + 4] & 0xFF;
-        builder.append(String.format("\n\tTeam# %d, Ntag %d, version %d", teamNum, ntag, version));
+        builder.append(String.format(Locale.getDefault(), "\n\tTeam# %d, Ntag %d, version %d",
+                teamNum, ntag, version));
         return teamNum;
     }
 
@@ -186,7 +177,7 @@ public final class ChipInfoActivity extends MainActivity {
      */
     private void buildPage5DecodedInfo(final byte[] chipInfo, final StringBuilder builder, final int pos) {
         final long initTime = byteArray2Long(chipInfo, pos + 1, pos + 4);
-        builder.append("\n\tInitTime: ").append(DATE_FORMAT.get().format(new Date(initTime * 1000L)));
+        builder.append("\n\tInitTime: ").append(Chips.printTime(initTime, "dd.MM.yyyy  HH:mm:ss"));
     }
 
     /**
@@ -218,7 +209,12 @@ public final class ChipInfoActivity extends MainActivity {
         if (teamMembers.isEmpty()) return;
         for (int i = 0; i < teamMembers.size(); i++) {
             final String teamMember = teamMembers.get(i);
-            final String memberActivity = ((teamMask & (1 << i)) == 0) ? "(-)" : "(+)";
+            String memberActivity;
+            if ((teamMask & (1 << i)) == 0) {
+                memberActivity = "(-)";
+            } else {
+                memberActivity = "(-)";
+            }
             builder.append("\n\t\t").append(teamMember).append(' ').append(memberActivity);
         }
     }
@@ -236,7 +232,7 @@ public final class ChipInfoActivity extends MainActivity {
         final int todayUpperByte = todayUnix & 0xFF000000;
         final long pointTime = byteArray2Long(chipInfo, pos + 2, pos + 4) + todayUpperByte;
         builder.append("\n\tKP# ").append(pointNumber).append(", PointTime: ")
-                .append(DATE_FORMAT.get().format(new Date(pointTime * 1000L)));
+                .append(Chips.printTime(pointTime, "dd.MM.yyyy  HH:mm:ss"));
     }
 
     /**

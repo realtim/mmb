@@ -362,10 +362,10 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         if (station == null) return;
         // Get new station number
         final Spinner pointSpinner = findViewById(R.id.station_point_spinner);
-        final byte newNumber = (byte) pointSpinner.getSelectedItemPosition();
+        final int newNumber = pointSpinner.getSelectedItemPosition();
         // Get new station mode
         final Spinner modeSpinner = findViewById(R.id.station_mode_spinner);
-        final byte newMode = (byte) modeSpinner.getSelectedItemPosition();
+        final int newMode = modeSpinner.getSelectedItemPosition();
         // Do nothing if numbers are the same
         final int currentNumber = station.getNumber();
         if (currentNumber == newNumber && newMode == station.getMode()) return;
@@ -380,7 +380,8 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         }
         // If no station reset is needed,
         // then just call station mode change and display result
-        onStationResetResult(station.newMode(newMode));
+        station.newMode(newMode);
+        onStationResetResult(station.getLastError());
     }
 
     /**
@@ -388,7 +389,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      *
      * @param result Result of previously called station reset / mode change
      */
-    public void onStationResetResult(final boolean result) {
+    public void onStationResetResult(final int result) {
         // Turn RESET_STATION UI mode off
         mResetStation = RESET_STATION_OFF;
         // Save response time of last command (it'll be overwritten by getStatus)
@@ -400,7 +401,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         }
         long responseTime = station.getResponseTime();
         // Update layout
-        if (result) {
+        if (result == 0) {
             // Make update with call to getStatus (just in case)
             updateLayout(true);
             updateMenuItems(mMainApplication, R.id.bluetooth);
@@ -408,7 +409,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         } else {
             updateLayout(false);
             updateMenuItems(mMainApplication, R.id.bluetooth);
-            Toast.makeText(getApplicationContext(), station.getLastError(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show();
         }
         // Set correct response time as the sum of two last commands responses
         ((TextView) findViewById(R.id.station_response_time)).setText(getResources()

@@ -91,6 +91,7 @@
     <string name="team_maps_count">Maps: %1$d</string>
     <string name="team_members_count">Members: %1$d</string>
     <string name="init_team_chip">Init chip</string>
+    <string name="init_success">Chip was initialized</string>
 
     <string name="ap_total_teams">Teams: %1$d</string>
     <string name="ap_team_name">№%1$d %2$s</string>

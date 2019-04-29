@@ -233,8 +233,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
                 // Update onscreen keyboard and "load" empty team
                 updateKeyboardState();
                 loadTeam(true);
-                Toast.makeText(mMainApplication, getString(R.string.response_time,
-                        mStation.getResponseTime()), Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainApplication, R.string.init_success, Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(mMainApplication, result, Toast.LENGTH_LONG).show();
             }

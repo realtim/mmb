@@ -9,6 +9,7 @@
     <string name="err_db_reading_response">Ошибка чтения при обработке ответа сервера</string>
     <string name="err_db_bad_response">Некорректное содержимое в ответе сервера</string>
     <string name="err_db_internal_error">Неожиданная внутренняя ошибка</string>
+    <string name="err_db_sql_error">Внутренняя ошибка базы данных</string>
     <string name="err_db_no_distance_loaded">Не загружена дистанция с сайта</string>
 
     <string name="err_bt_absent">Устройство не поддерживает Bluetooth</string>
@@ -25,7 +26,7 @@
         станции</string>
     <string name="err_init_wrong_mode">Переключите станцию в режим инициализации чипов</string>
 
-    <string name="err_station_wrong">Некорректный номер станции в команде к ней</string>
+    <string name="err_station_wrong_number">Некорректный номер станции в команде к ней</string>
     <string name="err_station_read">Ошибка чтения данных из чипа</string>
     <string name="err_station_write">Ошибка записи данных в чип</string>
     <string name="err_station_init_chip">Этот чип уже был недавно инициализирован</string>
@@ -36,7 +37,17 @@
     <string name="err_station_reset_impossible">Смена номера станции невозможна, в ней
         имеются несохраненные данные</string>
     <string name="err_station_incorrect_uid">Некорректный UID чипа</string>
+    <string name="err_station_wrong_team">Некорректный номер команды</string>
+    <string name="err_station_no_data">Отсутствуют данные по команде</string>
+    <string name="err_station_bad_command">Неподдерживаемая станцией функций</string>
+    <string name="err_station_erase_flash">Ошибка перезаписи флеш-памяти станции</string>
+    <string name="err_station_bad_chip_type">Некорректный тип чипа</string>
+
+    <string name="err_station_absent">Станция не подключена по BT</string>
     <string name="err_station_unknown">Станция вернула неизвестный код ошибки</string>
+    <string name="err_station_team_changed">Неправильный номер команды в ответе станции</string>
+    <string name="err_station_address_changed">Неправильный адрес флеш-памяти в ответе
+        станции</string>
 
     <string name="err_todo_team_list">Режим просмотра результатов команд еще не
         поддерживается</string>

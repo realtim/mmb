@@ -332,7 +332,7 @@ public final class Station {
     /**
      * Get station firmware version.
      *
-     * @return Firmware version as byte
+     * @return Firmware version
      */
     public int getFirmware() {
         return mFirmware;
@@ -604,7 +604,7 @@ public final class Station {
                     mLastError = R.string.err_bt_receive_bad_response;
                     return false;
                 case REC_COMMAND_ERROR + 1:
-                    mLastError = R.string.err_station_wrong;
+                    mLastError = R.string.err_station_wrong_number;
                     return false;
                 case REC_COMMAND_ERROR + 2:
                     mLastError = R.string.err_station_read;
@@ -630,6 +630,21 @@ public final class Station {
                 case REC_COMMAND_ERROR + 9:
                     mLastError = R.string.err_station_incorrect_uid;
                     return false;
+                case REC_COMMAND_ERROR + 10:
+                    mLastError = R.string.err_station_wrong_team;
+                    return false;
+                case REC_COMMAND_ERROR + 11:
+                    mLastError = R.string.err_station_no_data;
+                    return false;
+                case REC_COMMAND_ERROR + 12:
+                    mLastError = R.string.err_station_bad_command;
+                    return false;
+                case REC_COMMAND_ERROR + 13:
+                    mLastError = R.string.err_station_erase_flash;
+                    return false;
+                case REC_COMMAND_ERROR + 14:
+                    mLastError = R.string.err_station_bad_chip_type;
+                    return false;
                 default:
                     mLastError = R.string.err_station_unknown;
                     return false;
@@ -646,12 +661,14 @@ public final class Station {
     }
 
     /**
-     * Get the last communication error.
+     * Get the last communication error and reset it to zero.
      *
      * @return Code of last error or zero (if no errors occurred)
      */
     public int getLastError() {
-        return mLastError;
+        final int error = mLastError;
+        mLastError = 0;
+        return error;
     }
 
     /**
@@ -719,7 +736,10 @@ public final class Station {
      */
     public boolean newMode(final int mode) {
         // Zero number is only for chip initialization
-        if (mNumber == 0 && mode != MODE_INIT_CHIPS) return false;
+        if (mNumber == 0 && mode != MODE_INIT_CHIPS) {
+            mLastError = R.string.err_init_wrong_mode;
+            return false;
+        }
         final byte[] response = new byte[0];
         if (command(new byte[]{CMD_SET_MODE, (byte) mode}, response)) {
             mMode = mode;
@@ -760,15 +780,18 @@ public final class Station {
      * @param number New station number
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean resetStation(final byte number) {
+    public boolean resetStation(final int number) {
         // Don't allow 0xFF station number
-        if (mNumber == 0xFF) return false;
+        if (number < 0 || number >= 0xFF) {
+            mLastError = R.string.err_station_wrong_number;
+            return false;
+        }
         // Prepare command payload
         byte[] commandData = new byte[8];
         commandData[0] = CMD_RESET_STATION;
         long2ByteArray(mChipsRegistered, commandData, 1, 2);
         long2ByteArray((int) mLastChipTime, commandData, 3, 4);
-        commandData[7] = number;
+        commandData[7] = (byte) number;
         // Send it to station
         final byte[] response = new byte[0];
         if (!command(commandData, response)) return false;
@@ -861,12 +884,15 @@ public final class Station {
         mChipRecordsN = 0;
         if (!command(commandData, response)) return false;
         final int checkTeamNumber = (int) byteArray2Long(response, 0, 1);
-        if (checkTeamNumber != teamNumber) return false;
+        if (checkTeamNumber != teamNumber) {
+            mLastError = R.string.err_station_team_changed;
+            return false;
+        }
         final long initTime = byteArray2Long(response, 2, 5);
         final int teamMask = (int) byteArray2Long(response, 6, 7);
         final long teamTime = byteArray2Long(response, 8, 11);
         mChips.addNewEvent(this, initTime, teamNumber, teamMask, mNumber, teamTime);
-        mChipRecordsN = response[12];
+        mChipRecordsN = response[12] & 0xFF;
         return true;
     }
 
@@ -902,18 +928,18 @@ public final class Station {
         if (!command(commandData, response)) return false;
         // Check that read address in response is equal to read address in command
         if (startAddress != byteArray2Long(response, 0, 3)) {
-            mLastError = R.string.err_bt_receive_bad_response;
+            mLastError = R.string.err_station_address_changed;
             return false;
         }
         // Get first byte of current time
-        final long timeCorrection = mStationTime & 0xff000000;
+        final long timeCorrection = mStationTime & 0xFF000000;
         // Add new events
         for (int i = 0; i < count; i++) {
             final int pointNumber = response[4 + i * 4] & 0xFF;
             final long pointTime =
                     byteArray2Long(response, 5 + i * 4, 7 + i * 4) + timeCorrection;
             // Check if the record is non-empty
-            if (pointNumber == 0xff && (pointTime - timeCorrection) == 0x00ffffff) break;
+            if (pointNumber == 0xFF && (pointTime - timeCorrection) == 0x00FFFFFF) break;
             mChips.addNewEvent(this, initTime, teamNumber, teamMask, pointNumber, pointTime);
         }
         return true;
@@ -926,7 +952,7 @@ public final class Station {
      */
     public boolean fetchConfig() {
         // Get response from station
-        final byte[] response = new byte[15];
+        final byte[] response = new byte[16];
         if (!command(new byte[]{CMD_GET_CONFIG}, response)) return false;
         // Get station firmware
         mFirmware = response[0];
