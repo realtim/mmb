@@ -124,6 +124,7 @@
 #define WRONG_COMMAND	12
 #define ERASE_ERROR		13
 #define WRONG_CHIP_TYPE	14
+#define WRONG_MODE		15
 
 //страницы в чипе. 0-7 служебные, 8-... для отметок
 #define PAGE_UID		0
@@ -413,6 +414,11 @@ void executeCommand()
 //установка режима
 void setMode()
 {
+	if (stationNumber == 0 || stationNumber == 0xff)
+	{
+		sendError(WRONG_MODE, REPLY_SET_MODE);
+		return;
+	}
 	//Если номер станции не совпадает с присланным в пакете, то отказ
 	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
 	{
@@ -1498,6 +1504,7 @@ void setChipType()
 //Обработка поднесенного чипа
 void processRfidCard()
 {
+	if (stationNumber == 0 || stationNumber == 0xff) return;
 	DS3231_get(&systemTime);
 	uint32_t tempT = systemTime.unixtime;
 
@@ -1517,7 +1524,7 @@ void processRfidCard()
 	if (!mfrc522.PICC_ReadCardSerial())
 	{
 		SPI.end();
-		errorBeep();
+		//errorBeep();
 		return;
 	}
 
@@ -1775,14 +1782,15 @@ bool readUart()
 //чтение заряда батареи
 uint16_t getBatteryLevel()
 {
-	uint16_t AverageValue = 0;
+	uint32_t AverageValue = 0;
 	uint8_t MeasurementsToAverage = 16;
 	for (uint8_t i = 0; i < MeasurementsToAverage; ++i)
 	{
-		AverageValue += analogRead(BATTERY_PIN);
-		delay(1);
+		uint16_t val = analogRead(BATTERY_PIN);
+		AverageValue += val * val;
+		//delay(1);
 	}
-	return AverageValue / MeasurementsToAverage;
+	return sqrt((double)AverageValue / (double)MeasurementsToAverage);
 }
 
 //запись в память с мажоритальным резервированием
@@ -1902,7 +1910,15 @@ void sendData()
 bool ntagWritePage(uint8_t * dataBlock, uint8_t pageAdr)
 {
 	const uint8_t sizePageNtag = 4;
-	status = (MFRC522::StatusCode) mfrc522.MIFARE_Ultralight_Write(pageAdr, dataBlock, sizePageNtag);
+
+	uint8_t n = 0;
+	status = MFRC522::STATUS_ERROR;
+	while (status != MFRC522::STATUS_OK && n < 3)
+	{
+		status = (MFRC522::StatusCode) mfrc522.MIFARE_Ultralight_Write(pageAdr, dataBlock, sizePageNtag);
+		n++;
+	}
+
 	if (status != MFRC522::STATUS_OK)
 	{
 		return false;
@@ -1911,7 +1927,14 @@ bool ntagWritePage(uint8_t * dataBlock, uint8_t pageAdr)
 	uint8_t buffer[18];
 	uint8_t size = sizeof(buffer);
 
-	status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(pageAdr, buffer, &size);
+
+	n = 0;
+	status = MFRC522::STATUS_ERROR;
+	while (status != MFRC522::STATUS_OK && n < 3)
+	{
+		status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(pageAdr, buffer, &size);
+		n++;
+	}
 	if (status != MFRC522::STATUS_OK)
 	{
 		return false;
@@ -1934,7 +1957,14 @@ bool ntagRead4pages(uint8_t pageAdr)
 	uint8_t size = 18;
 	uint8_t buffer[18];
 
-	status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(pageAdr, buffer, &size);
+	uint8_t n = 0;
+	status = MFRC522::STATUS_ERROR;
+	while (status != MFRC522::STATUS_OK && n < 3)
+	{
+		status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(pageAdr, buffer, &size);
+		n++;
+	}
+
 	if (status != MFRC522::STATUS_OK)
 	{
 		errorBeep();
@@ -2209,7 +2239,7 @@ void sendError(uint8_t errorCode, uint8_t commandCode)
 	uartBuffer[DATA_START_BYTE] = errorCode;
 	uartBufferPosition = DATA_START_BYTE + 1;
 	sendData();
-	errorBeep();
+	//errorBeep();
 }
 
 //добавляем номер в буфер последних команд
