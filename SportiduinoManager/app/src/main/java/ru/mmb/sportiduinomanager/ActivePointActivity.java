@@ -123,11 +123,28 @@ public final class ActivePointActivity extends MainActivity
         // Specify an RecyclerView adapter and initialize it
         mTeamAdapter = new TeamListAdapter(this, mTeams, mFlash);
         teamsList.setAdapter(mTeamAdapter);
-
-        // Update activity layout
+        // Restore team list position and update activity layout
+        int restoredPosition = mMainApplication.getTeamListPosition();
+        if (restoredPosition > mFlash.size()) {
+            restoredPosition = mFlash.size();
+            mMainApplication.setTeamListPosition(restoredPosition);
+        }
+        updateMasks(true, restoredPosition);
+        mTeamAdapter.setPosition(restoredPosition);
         updateLayout();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         // Start background querying of connected station
         runStationQuerying();
+    }
+
+    @Override
+    protected void onPause() {
+        stopStationQuerying();
+        super.onPause();
     }
 
     /**
@@ -135,11 +152,18 @@ public final class ActivePointActivity extends MainActivity
      */
     @Override
     public void onTeamClick(final int position) {
+        // Set masks for selected team
+        updateMasks(false, position);
+        // Change position in team list
         final int oldPosition = mTeamAdapter.getPosition();
         mTeamAdapter.setPosition(position);
-        // TODO: save new position in main application
+        // Save new position and mask in main application
+        mMainApplication.setTeamListPosition(position);
+        mMainApplication.setTeamMask(mTeamMask);
+        // Update team list
         mTeamAdapter.notifyItemChanged(oldPosition);
         mTeamAdapter.notifyItemChanged(position);
+        // Update layout to display new selected team
         updateLayout();
     }
 
@@ -148,7 +172,7 @@ public final class ActivePointActivity extends MainActivity
      */
     @Override
     public void onMemberClick(final int position) {
-        // Update team mask
+        // Compute new team mask
         final int newMask = mTeamMask ^ (1 << position);
         if (newMask == 0) {
             Toast.makeText(mMainApplication,
@@ -157,7 +181,7 @@ public final class ActivePointActivity extends MainActivity
             return;
         }
         mTeamMask = newMask;
-        // Save it to main application
+        // Save it in main application
         mMainApplication.setTeamMask(mTeamMask);
         // Update list item
         mMemberAdapter.setMask(mTeamMask);
@@ -166,6 +190,8 @@ public final class ActivePointActivity extends MainActivity
         final int teamMembersCount = Teams.getMembersCount(mTeamMask);
         ((TextView) findViewById(R.id.ap_members_count)).setText(getResources()
                 .getString(R.string.team_members_count, teamMembersCount));
+        // Enable 'Save mask' button if new mask differs from original
+        updateMaskButton();
     }
 
     /**
@@ -175,11 +201,77 @@ public final class ActivePointActivity extends MainActivity
      */
     public void saveTeamMask(final View view) {
         // Check team mask and station presence
-        if (mTeamMask == 0 || mStation == null) return;
-        // Disable button (it'll be enabled when team mask will change again)
-        view.setAlpha(MainApplication.DISABLED_BUTTON);
-        view.setClickable(false);
-        // TODO: Send command to station
+        if (mTeamMask == 0 || mStation == null || mFlash == null || mFlash.size() == 0) {
+            Toast.makeText(mMainApplication,
+                    R.string.err_internal_error, Toast.LENGTH_LONG).show();
+            return;
+        }
+        // Get team number
+        final int index = mFlash.size() - 1 - mTeamAdapter.getPosition();
+        final int teamNumber = mFlash.getTeamNumber(index);
+        // Add new event to global list with same point time and new mask
+        if (!mChips.updateTeamMask(teamNumber, mTeamMask, mStation, mMainApplication.getDatabase(),
+                false)) {
+            Toast.makeText(mMainApplication,
+                    R.string.err_internal_error, Toast.LENGTH_LONG).show();
+            return;
+        }
+        mMainApplication.setChips(mChips, false);
+        // Replace event in copy of station memory
+        if (!mFlash.updateTeamMask(teamNumber, mTeamMask, mStation, mMainApplication.getDatabase(),
+                true)) {
+            Toast.makeText(mMainApplication,
+                    R.string.err_internal_error, Toast.LENGTH_LONG).show();
+            return;
+        }
+        // Send command to station
+        stopStationQuerying();
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        if (!mStation.updateTeamMask(teamNumber, mFlash.getInitTime(index), mTeamMask)) {
+            Toast.makeText(mMainApplication,
+                    mStation.getLastError(), Toast.LENGTH_LONG).show();
+            runStationQuerying();
+            return;
+
+        }
+        runStationQuerying();
+        // Rebuild masks class members
+        updateMasks(false, mTeamAdapter.getPosition());
+        // Disable button after successful saving of new mask
+        updateMaskButton();
+        // Update list of team members and their selection
+        final List<String> teamMembers = mTeams.getMembersNames(teamNumber);
+        mMemberAdapter.updateList(teamMembers, mOriginalMask, mTeamMask);
+    }
+
+    /**
+     * Update mOriginalMask and mTeamMask for selected team.
+     *
+     * @param restore  True if we are starting to work with new team,
+     *                 False if we are restoring mask after activity restart
+     * @param position Position of selected team in the list
+     */
+    private void updateMasks(final boolean restore, final int position) {
+        // Get the original mask of selected team
+        final int index = mFlash.size() - 1 - position;
+        mOriginalMask = mFlash.getTeamMask(index);
+        if (restore) {
+            // Restore current mask from main application
+            mTeamMask = mMainApplication.getTeamMask();
+            // Set it to original if the mask in main application was not initialized
+            if (mTeamMask == 0) {
+                mTeamMask = mOriginalMask;
+                mMainApplication.setTeamMask(mTeamMask);
+            }
+        } else {
+            // Set current mask equal to original from database
+            mTeamMask = mOriginalMask;
+            mMainApplication.setTeamMask(mTeamMask);
+        }
     }
 
     /**
@@ -232,24 +324,8 @@ public final class ActivePointActivity extends MainActivity
         } else {
             skippedText.setTextColor(ResourcesCompat.getColor(getResources(), R.color.text_secondary, getTheme()));
         }
-        // Get original mask from last team visit
-        mOriginalMask = mFlash.getTeamMask(index);
-        if (mOriginalMask <= 0) {
-            findViewById(R.id.ap_team_data).setVisibility(View.GONE);
-            return;
-        }
-        // TODO: do it only for new team
-        mTeamMask = mOriginalMask;
-        mMainApplication.setTeamMask(mTeamMask);
         // Update saveTeamMask button state
-        final Button saveMaskButton = findViewById(R.id.ap_save_mask);
-        if (mTeamMask == mOriginalMask) {
-            saveMaskButton.setAlpha(MainApplication.DISABLED_BUTTON);
-            saveMaskButton.setClickable(false);
-        } else {
-            saveMaskButton.setAlpha(MainApplication.ENABLED_BUTTON);
-            saveMaskButton.setClickable(true);
-        }
+        updateMaskButton();
         // Get list of team members
         final List<String> teamMembers = mTeams.getMembersNames(teamNumber);
         // Update list of team members and their selection
@@ -259,6 +335,20 @@ public final class ActivePointActivity extends MainActivity
                 .getString(R.string.team_members_count, Teams.getMembersCount(mTeamMask)));
         // Show last team block
         findViewById(R.id.ap_team_data).setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Enable "Register dismiss" button if team mask was changed by user.
+     */
+    private void updateMaskButton() {
+        final Button saveMaskButton = findViewById(R.id.ap_save_mask);
+        if (mTeamMask == mOriginalMask) {
+            saveMaskButton.setAlpha(MainApplication.DISABLED_BUTTON);
+            saveMaskButton.setClickable(false);
+        } else {
+            saveMaskButton.setAlpha(MainApplication.ENABLED_BUTTON);
+            saveMaskButton.setClickable(true);
+        }
     }
 
     /**
@@ -391,13 +481,19 @@ public final class ActivePointActivity extends MainActivity
                     ((TextView) findViewById(R.id.station_clock)).setText(
                             Chips.printTime(mStation.getStationTime(), "dd.MM  HH:mm:ss"));
                     // Display station communication error (if any)
-                    if (mStation.getLastError() != 0) {
-                        Toast.makeText(getApplicationContext(), mStation.getLastError(),
-                                Toast.LENGTH_SHORT).show();
+                    final int error = mStation.getLastError();
+                    if (error != 0) {
+                        Toast.makeText(getApplicationContext(), error, Toast.LENGTH_SHORT).show();
                     }
                     if (newTeam) {
-                        // Got new team, update activity layout
+                        // Reset current mask if we at first item of team list
+                        // as it is replaced with new team just arrived
+                        if (mTeamAdapter.getPosition() == 0) {
+                            updateMasks(false, 0);
+                        }
+                        // Update team list as we have a new team in it
                         mTeamAdapter.notifyDataSetChanged();
+                        // Update activity layout as some elements has been changed
                         updateLayout();
                     }
                 });
@@ -413,11 +509,5 @@ public final class ActivePointActivity extends MainActivity
             mTimer.cancel();
             mTimer.purge();
         }
-    }
-
-    @Override
-    protected void onStop() {
-        stopStationQuerying();
-        super.onStop();
     }
 }

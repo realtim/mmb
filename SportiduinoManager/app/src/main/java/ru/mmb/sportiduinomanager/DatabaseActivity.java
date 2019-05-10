@@ -407,7 +407,7 @@ public final class DatabaseActivity extends MainActivity {
                     mMainApplication.setChips(mMainApplication.getDatabase().loadChips(), true);
                     return R.string.send_results_failure;
                 case SiteRequest.LOAD_FATAL_ERROR:
-                    return R.string.err_db_internal_error;
+                    return R.string.err_internal_error;
                 case SiteRequest.LOAD_CUSTOM_ERROR:
                     mCustomError = request[0].getCustomError();
                     return -1;
@@ -425,10 +425,10 @@ public final class DatabaseActivity extends MainActivity {
                         case SiteRequest.TYPE_DL_RESULTS:
                             return R.string.unknown;
                         default:
-                            return R.string.err_db_internal_error;
+                            return R.string.err_internal_error;
                     }
                 default:
-                    return R.string.err_db_internal_error;
+                    return R.string.err_internal_error;
             }
         }
 

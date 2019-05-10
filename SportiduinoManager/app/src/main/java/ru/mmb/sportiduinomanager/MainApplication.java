@@ -132,9 +132,14 @@ public final class MainApplication extends Application {
     private int mTeamNumber;
 
     /**
-     * Current members selection mask at chip initialization.
+     * Current members selection mask at chip initialization / active point.
      */
     private int mTeamMask;
+
+    /**
+     * Current position in team list at active point.
+     */
+    private int mTeamListPosition;
 
     /**
      * Get main application context.
@@ -326,21 +331,40 @@ public final class MainApplication extends Application {
     }
 
     /**
-     * Get the current team mask during chip initialization.
+     * Get the current team mask at chip initialization / active point.
      *
-     * @return Team number as string
+     * @return Team mask
      */
     public int getTeamMask() {
         return mTeamMask;
     }
 
     /**
-     * Save the current team mask during chip initialization.
+     * Save the current team mask at chip initialization / active point.
      *
      * @param teamMask Team mask
      */
     public void setTeamMask(final int teamMask) {
         mTeamMask = teamMask;
+    }
+
+    /**
+     * Get the current position in team list.
+     *
+     * @return Zero-based position
+     */
+    public int getTeamListPosition() {
+        return mTeamListPosition;
+    }
+
+    /**
+     * Save the current position in team list.
+     *
+     * @param teamListPosition Zero-based position
+     */
+    public void setTeamListPosition(final int teamListPosition) {
+        mTeamListPosition =
+                teamListPosition;
     }
 
 

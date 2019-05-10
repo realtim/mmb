@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <resources>
+    <string name="err_internal_error">Неожиданная внутренняя ошибка</string>
+
     <string name="err_db_cant_create_dir">Для базы данных не удалось создать директорию </string>
     <string name="err_db_empty_email">Email не может быть пустым</string>
     <string name="err_db_bad_email">Некорректный Email</string>
@@ -8,7 +10,6 @@
     <string name="err_db_download_waiting">Предыдущий запрос к сайту еще не завершен</string>
     <string name="err_db_reading_response">Ошибка чтения при обработке ответа сервера</string>
     <string name="err_db_bad_response">Некорректное содержимое в ответе сервера</string>
-    <string name="err_db_internal_error">Неожиданная внутренняя ошибка</string>
     <string name="err_db_sql_error">Внутренняя ошибка базы данных</string>
     <string name="err_db_no_distance_loaded">Не загружена дистанция с сайта</string>
 

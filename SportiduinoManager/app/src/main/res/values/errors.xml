@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <resources>
+    <string name="err_internal_error">Unexpected internal error</string>
+
     <string name="err_db_cant_create_dir">Can\'t create database directory </string>
     <string name="err_db_empty_email">Email can not be empty</string>
     <string name="err_db_bad_email">Bad Email format</string>
@@ -8,7 +10,6 @@
     <string name="err_db_download_waiting">Previous request has not completed yet</string>
     <string name="err_db_reading_response">I/O error while reading server response</string>
     <string name="err_db_bad_response">Error in response format</string>
-    <string name="err_db_internal_error">Unexpected internal error</string>
     <string name="err_db_sql_error">Internal SQL database error</string>
     <string name="err_db_no_distance_loaded">Distance was not loaded from site</string>
 

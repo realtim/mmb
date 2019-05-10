@@ -178,6 +178,59 @@ public final class Chips {
     }
 
     /**
+     * Replace team mask in last team visit event
+     * or add it as a new event with old point time
+     * and new mask and station parameters.
+     *
+     * @param teamNumber Team number
+     * @param newMask    New team mask
+     * @param station    Connected station to get point number and other parameters
+     * @param database   Local database for saving changes in events
+     * @param replace    True if replace old event, false if add it as new event
+     * @return True if succeeded
+     */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean updateTeamMask(final int teamNumber, final int newMask,
+                                  final Station station, final Database database,
+                                  final boolean replace) {
+        // Find last event for this team at this point
+        final int pointNumber = station.getNumber();
+        int last = -1;
+        long pointTime = 0;
+        long stationTime = 0;
+        for (int i = 0; i < mEvents.size(); i++) {
+            final ChipEvent event = mEvents.get(i);
+            if (event.mTeamNumber == teamNumber && event.mPointNumber == pointNumber
+                    && (event.mPointTime > pointTime
+                    || event.mPointTime == pointTime && event.mStationTime > stationTime)) {
+                last = i;
+                pointTime = event.mPointTime;
+                stationTime = event.mStationTime;
+            }
+        }
+        // Return if the teams has not visited the point
+        if (last < 0) return false;
+        // Don't replace mask if it is the same
+        //if (mEvents.get(last).mTeamMask == newMask) return false;
+        // Create a copy of original event with new mask and new station parameters
+        final ChipEvent oldEvent = mEvents.get(last);
+        final ChipEvent newEvent = new ChipEvent(station.getMACasLong(),
+                station.getStationTime(), station.getTimeDrift(), pointNumber, station.getMode(),
+                oldEvent.mInitTime, teamNumber, newMask, pointNumber, oldEvent.mPointTime,
+                ChipEvent.STATUS_NEW);
+        // Add new event or replace old one with new
+        if (replace) {
+            // Just replace mask for local copy of station memory
+            mEvents.set(last, newEvent);
+            return true;
+        } else {
+            // Add it to global list of events and save it in local db
+            mEvents.add(newEvent);
+            return SUCCESS.equals(this.saveNewEvents(database));
+        }
+    }
+
+    /**
      * Get number of chip events.
      *
      * @return Number of events
@@ -336,9 +389,12 @@ public final class Chips {
                     }
                 }
                 if (index >= 0) {
+                    final ChipEvent previous = visits.get(index);
                     // Replace previous visit of the same team with new visit
                     // if the time of new visit is greater then old
-                    if (event.mPointTime > visits.get(index).mPointTime) {
+                    if (event.mPointTime > previous.mPointTime
+                            || event.mPointTime == previous.mPointTime
+                            && event.mStationTime > previous.mStationTime) {
                         visits.remove(index);
                         visits.add(event);
                     }

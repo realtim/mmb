@@ -116,6 +116,10 @@ public final class Station {
      */
     private static final byte CMD_READ_CARD = (byte) 0x87;
     /**
+     * Code of updateTeamMask station command.
+     */
+    private static final byte CMD_UPDATE_MASK = (byte) 0x88;
+    /**
      * Code of readFlash station command.
      */
     private static final byte CMD_READ_FLASH = (byte) 0x8a;
@@ -583,7 +587,6 @@ public final class Station {
      * @return True if there was no communication or command execution errors
      */
     private boolean command(final byte[] commandContent, final byte[] responseContent) {
-        mLastError = 0;
         // Save time at the beginning of command processing
         mStartTime = System.currentTimeMillis();
         // Communicate with the station
@@ -996,4 +999,24 @@ public final class Station {
         return true;
     }
 
+    /**
+     * Update team mask in station.
+     *
+     * @param teamNumber Number of team to update
+     * @param initTime   Chip init time
+     *                   (along with team number it is the primary key of a chip)
+     * @param teamMask   New team members mask
+     * @return true if succeeded
+     */
+    public boolean updateTeamMask(final int teamNumber, final long initTime, final int teamMask) {
+        // Prepare command payload
+        byte[] commandData = new byte[9];
+        commandData[0] = CMD_UPDATE_MASK;
+        long2ByteArray(teamNumber, commandData, 1, 2);
+        long2ByteArray(initTime, commandData, 3, 4);
+        long2ByteArray(teamMask, commandData, 7, 2);
+        // Send command to station
+        final byte[] response = new byte[0];
+        return command(commandData, response);
+    }
 }
