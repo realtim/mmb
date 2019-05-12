@@ -98,7 +98,8 @@ public final class ChipInfoActivity extends MainActivity {
         if (requestResult) {
             chipInfoText.setText(convertResponseToText(mStation.getChipInfo()));
         } else {
-            Toast.makeText(getApplicationContext(), mStation.getLastError(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), mStation.getLastError(true),
+                    Toast.LENGTH_LONG).show();
         }
         updateLayout();
     }

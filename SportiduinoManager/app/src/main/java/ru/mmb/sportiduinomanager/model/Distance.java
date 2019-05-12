@@ -191,6 +191,53 @@ public final class Distance {
     }
 
     /**
+     * Get point number from position in the list of all points in a distance.
+     *
+     * @param position Zero-based position in the list
+     * @return Point number at this position
+     */
+    public int getNumberFromPosition(final int position) {
+        int counter = 0;
+        for (int i = 0; i < mPoints.length; i++) {
+            if (mPoints[i] == null) continue;
+            if (position == counter) return i;
+            counter++;
+        }
+        return 0;
+    }
+
+    /**
+     * Get position in the list of distance points for a point with specific number.
+     *
+     * @param number Point number
+     * @return Zero-based position in the list
+     */
+    public int getPositionFromNumber(final int number) {
+        if (number < 0 || number >= mPoints.length) return 0;
+        int counter = 0;
+        for (int i = 0; i < number; i++) {
+            if (mPoints[i] != null) {
+                counter++;
+            }
+        }
+        return counter;
+    }
+
+    /**
+     * Get name of a point which number is held at 'index' position in a list.
+     *
+     * @param list  Whole list of points
+     * @param index Position in the list
+     * @return String with point name from the distance, '#N' name or '?' name
+     */
+    private String pointFromList(final List<Integer> list, final int index) {
+        if (index < 0 || index > list.size()) return "?";
+        final int number = list.get(index);
+        if (number < 0 || number > mPoints.length || mPoints[number] == null) return "#" + number;
+        return mPoints[number].mName;
+    }
+
+    /**
      * Builds the text representation of the from-to range of points.
      *
      * @param list      Whole list of points
@@ -200,12 +247,12 @@ public final class Distance {
      */
     private String rangeName(final List<Integer> list, final int fromIndex, final int toIndex) {
         if (toIndex == fromIndex) {
-            return mPoints[list.get(fromIndex)].mName;
+            return pointFromList(list, fromIndex);
         } else {
             if (toIndex == fromIndex + 1) {
-                return mPoints[list.get(fromIndex)].mName + "," + mPoints[list.get(toIndex)].mName;
+                return pointFromList(list, fromIndex) + "," + pointFromList(list, toIndex);
             } else {
-                return mPoints[list.get(fromIndex)].mName + "-" + mPoints[list.get(toIndex)].mName;
+                return pointFromList(list, fromIndex) + "-" + pointFromList(list, toIndex);
             }
         }
     }
@@ -220,7 +267,7 @@ public final class Distance {
         final int total = list.size();
         // Shortcuts for specific cases
         if (total == 0) return "-";
-        if (total == 1) return mPoints[list.get(0)].mName;
+        if (total == 1) return pointFromList(list, 0);
         // Set continuous[i] flag to false for points which has skipped points before them
         boolean[] continuous = new boolean[list.size()];
         continuous[0] = true;
@@ -268,9 +315,16 @@ public final class Distance {
         final List<Integer> skippedPoints = new ArrayList<>();
         // Return empty skipped list if the visited list is empty
         if (visitedPoints.isEmpty()) return skippedPoints;
+        // Find last point from the distance which was visited
+        int maxPoint = 0;
+        for (final int number : visitedPoints) {
+            if (number >= 0 && number < mPoints.length && mPoints[number] != null
+                    && number > maxPoint) {
+                maxPoint = number;
+            }
+        }
         // Find all distance points between (but not including)
         // the chip init point and last visited point which are not visited
-        final int maxPoint = visitedPoints.get(visitedPoints.size() - 1);
         for (int i = 1; i < maxPoint; i++) {
             if (mPoints[i] != null && !visitedPoints.contains(i)) {
                 skippedPoints.add(i);
@@ -345,15 +399,6 @@ public final class Distance {
     }
 
     /**
-     * Get max index of mPoints array.
-     *
-     * @return Max point number for the distance
-     */
-    public int getMaxPoint() {
-        return mPoints.length - 1;
-    }
-
-    /**
      * Get name of the point.
      *
      * @param number Point number
@@ -361,7 +406,7 @@ public final class Distance {
      * @return Point name
      */
     public String getPointName(final int number, final String prefix) {
-        if (number < 0 || number >= mPoints.length || mPoints[number] == null) return "";
+        if (number < 0 || number >= mPoints.length || mPoints[number] == null) return "#" + number;
         final String name = mPoints[number].mName;
         if (name.charAt(0) >= '0' && name.charAt(0) <= '9') {
             return prefix + name;

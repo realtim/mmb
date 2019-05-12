@@ -455,8 +455,8 @@ public final class Station {
         buffer[0] = HEADER_SIGNATURE;
         buffer[1] = HEADER_SIGNATURE;
         buffer[2] = HEADER_SIGNATURE;
-        buffer[3] = (byte) mNumber;
-        buffer[4] = (byte) (len - 1);
+        buffer[3] = (byte) (mNumber & 0xFF);
+        buffer[4] = (byte) ((len - 1) & 0xFF);
         System.arraycopy(command, 0, buffer, 5, len);
         buffer[len + HEADER_SIZE - 1] = crc8(buffer, len + HEADER_SIZE - 1);
         try {
@@ -551,7 +551,8 @@ public final class Station {
         }
         // check station number
         if (sendBuffer[0] != CMD_GET_STATUS && sendBuffer[0] != CMD_GET_CONFIG
-                && sendBuffer[0] != CMD_RESET_STATION && receiveBuffer[3] != mNumber) {
+                && sendBuffer[0] != CMD_RESET_STATION
+                && (receiveBuffer[3] & 0xFF) != mNumber) {
             return new byte[]{REC_BAD_RESPONSE};
         }
         // update station number for getStatus command
@@ -666,11 +667,14 @@ public final class Station {
     /**
      * Get the last communication error and reset it to zero.
      *
+     * @param resetError Reset error to "no error" after returning its value
      * @return Code of last error or zero (if no errors occurred)
      */
-    public int getLastError() {
+    public int getLastError(final boolean resetError) {
         final int error = mLastError;
-        mLastError = 0;
+        if (resetError) {
+            mLastError = 0;
+        }
         return error;
     }
 

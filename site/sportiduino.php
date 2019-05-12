@@ -229,9 +229,17 @@ function ReceiveResults(PDO $pdo, $user_id)
     list($db_dl_time, $n_events) = explode("\t", $lines[0]);
     if (!isset($db_dl_time) || !isset($n_events)) die("Некорректная первая строка запроса '" . $lines[0] ."'");
     if (intval($n_events) != (count($lines) - 1)) die("Некорректное количество данных из чипов '$n_events'");
-    // Готовим запрос на вставку присланных данных в таблицу
+
+    // Получаем текущий максимальный id в таблице сырых данных, чтобы потом понимать, какие строчки в нее добавились
+    $sql = $pdo->prepare("SELECT MAX(sportiduinochips_id) FROM SportiduinoChips");
+    $sql->execute();
+    $row = $sql->fetch(PDO::FETCH_NUM);
+    $max_id = intval($row[0]);
+    $sql = null;
+
+    // Готовим запрос на вставку присланных данных в таблицу сырых данных
     $sql = $pdo->prepare("INSERT IGNORE INTO SportiduinoChips (user_id, sportiduino_dbdate, sportiduino_stationmac, sportiduino_stationtime, sportiduino_stationdrift, sportiduino_stationnumber, sportiduino_stationmode, sportiduino_inittime, team_num, sportiduino_teammask, levelpoint_order, teamlevelpoint_datetime) VALUES (?, FROM_UNIXTIME(?), ?, FROM_UNIXTIME(?), ?, ?, ?, FROM_UNIXTIME(?), ?, ?, ?, FROM_UNIXTIME(?))");
-    // Готовим транзакцию
+    // Выполняем транзакцию по добавлению всех присланных данных в таблицу
     try {
         $pdo->beginTransaction();
         // В цикле сканируем все строки с данными из чипов и добавляем их в транзакцию
@@ -252,8 +260,16 @@ function ReceiveResults(PDO $pdo, $user_id)
         $pdo->rollback();
         die($e);
     }
-    // Завершаем работу с базой
     $sql = null;
+
+    // Копируем упрощенную версию присланных результатов в таблицу с результатами
+    $sql = $pdo->prepare("INSERT INTO SportiduinoResults(team_num, sportiduino_teammask, levelpoint_order, teamlevelpoint_datetime) SELECT team_num, MIN(sportiduino_teammask), levelpoint_order, MAX(teamlevelpoint_datetime) FROM SportiduinoChips WHERE sportiduinochips_id > :max_id GROUP BY team_num, levelpoint_order");
+    $sql ->bindParam("max_id", $max_id, PDO::PARAM_INT);
+    $sql->execute();
+    $sql = null;
+
+    // TODO: Обновить маску и время на точках, где работали судейские станции на основе всех данных, а не только полученных прямо сейчас
+
     // Сообщаем  о количестве обработанных данных
     // (количество добавленных в таблицу не проверяется и может быть меньше количества обработанных из-за дублей)
     echo "\n$n_events";

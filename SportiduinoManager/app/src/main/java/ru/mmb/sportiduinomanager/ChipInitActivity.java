@@ -79,7 +79,6 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         super.onCreate(instanceState);
         mMainApplication = (MainApplication) getApplication();
         setContentView(R.layout.activity_chipinit);
-        updateMenuItems(mMainApplication, R.id.chip_init);
         // Load last entered team number and mask from main application
         mTeamNumber = Integer.toString(mMainApplication.getTeamNumber());
         if ("0".equals(mTeamNumber)) mTeamNumber = "";
@@ -103,6 +102,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.chip_init).setChecked(true);
+        updateMenuItems(mMainApplication, R.id.chip_init);
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Get connected station from main application thread
@@ -244,7 +244,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             if (mStation == null) {
                 Toast.makeText(mMainApplication, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(mMainApplication, mStation.getLastError(), Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainApplication, mStation.getLastError(true), Toast.LENGTH_LONG).show();
             }
             loadTeam(false);
         }

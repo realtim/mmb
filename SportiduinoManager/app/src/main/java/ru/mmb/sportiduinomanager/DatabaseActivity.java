@@ -120,7 +120,6 @@ public final class DatabaseActivity extends MainActivity {
         mTeams = mMainApplication.getTeams();
         mChips = mMainApplication.getChips();
         setContentView(R.layout.activity_database);
-        updateMenuItems(mMainApplication, R.id.database);
     }
 
     @Override
@@ -128,6 +127,7 @@ public final class DatabaseActivity extends MainActivity {
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.database).setChecked(true);
+        updateMenuItems(mMainApplication, R.id.database);
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Update layout elements

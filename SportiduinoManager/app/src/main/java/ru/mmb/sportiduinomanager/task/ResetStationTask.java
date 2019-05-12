@@ -46,7 +46,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
         final Station station = mMainApplication.getStation();
         if (station == null) return R.string.err_station_absent;
         // Update station status to get number of visited team and last time visit
-        if (!station.fetchStatus()) return station.getLastError();
+        if (!station.fetchStatus()) return station.getLastError(true);
         // Check if some teams has been visited the station while it had it's old number
         final int chipsRegistered = station.getChipsRegistered();
         final Teams teams = mMainApplication.getTeams();
@@ -66,7 +66,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
         publishProgress(estimateTimeToComplete(0, 0, station.getNumber()), totalTime);
         // Reset station to change it's number
         final int newNumber = newNumbers[0];
-        if (!station.resetStation(newNumber)) return station.getLastError();
+        if (!station.resetStation(newNumber)) return station.getLastError(true);
         // Sleep for 0.5 second while station is rebooting after reset
         try {
             Thread.sleep(500);
@@ -77,7 +77,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
         publishProgress(0L, totalTime);
         final int newMode = newNumbers[1];
         if (newMode != station.getMode() && !station.newMode(newMode)) {
-            return station.getLastError();
+            return station.getLastError(true);
         }
         return 0;
     }
@@ -102,7 +102,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
                     chipsRegistered - teamsRescanned, station.getNumber()), totalTime);
             // Fetch data for the team visit to station
             if (!station.fetchTeamRecord(teamNumber)) {
-                final int error = station.getLastError();
+                final int error = station.getLastError(true);
                 if (error == R.string.err_station_no_data) continue;
                 return error;
             }
@@ -122,7 +122,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
                     toRead = Station.MAX_MARK_COUNT;
                 }
                 if (!station.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
-                    return station.getLastError();
+                    return station.getLastError(true);
                 }
                 fromMark += toRead;
                 // Add fetched chip marks to local list of events

@@ -81,7 +81,6 @@ public final class ActivePointActivity extends MainActivity
         super.onCreate(instanceState);
         mMainApplication = (MainApplication) getApplication();
         setContentView(R.layout.activity_activepoint);
-        updateMenuItems(mMainApplication, R.id.active_point);
     }
 
     @Override
@@ -89,6 +88,7 @@ public final class ActivePointActivity extends MainActivity
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.active_point).setChecked(true);
+        updateMenuItems(mMainApplication, R.id.active_point);
         // Disable startup animation
         overridePendingTransition(0, 0);
 
@@ -99,7 +99,7 @@ public final class ActivePointActivity extends MainActivity
         //Get chips events from main application thread
         mChips = mMainApplication.getChips();
         // Create filtered chip events for current station and point
-        if (mChips != null) {
+        if (mChips != null && mStation != null) {
             mFlash = mChips.getChipsAtPoint(mStation.getNumber(), mStation.getMACasLong());
         }
         // Get distance
@@ -233,7 +233,7 @@ public final class ActivePointActivity extends MainActivity
         }
         if (!mStation.updateTeamMask(teamNumber, mFlash.getInitTime(index), mTeamMask)) {
             Toast.makeText(mMainApplication,
-                    mStation.getLastError(), Toast.LENGTH_LONG).show();
+                    mStation.getLastError(true), Toast.LENGTH_LONG).show();
             runStationQuerying();
             return;
 
@@ -311,7 +311,7 @@ public final class ActivePointActivity extends MainActivity
             return;
         }
         final List<Integer> visited = mChips.getChipMarks(teamNumber, mFlash.getInitTime(index),
-                mStation.getNumber(), mStation.getMACasLong(), mDistance.getMaxPoint());
+                mStation.getNumber(), mStation.getMACasLong(), 255);
         ((TextView) findViewById(R.id.ap_visited)).setText(getResources()
                 .getString(R.string.ap_visited, mDistance.pointsNamesFromList(visited)));
         // Update lists of skipped points
@@ -409,7 +409,14 @@ public final class ActivePointActivity extends MainActivity
         boolean newEvents = false;
         for (final int teamNumber : fetchTeams) {
             // Fetch data for the team visit to station
-            if (!mStation.fetchTeamRecord(teamNumber)) continue;
+            if (!mStation.fetchTeamRecord(teamNumber)) {
+                // Abort scanning if there is no data for visited team
+                if (mStation.getLastError(false) == R.string.err_station_no_data
+                        && !prevLastTeams.contains(teamNumber)) {
+                    continue;
+                }
+                return false;
+            }
             final Chips teamVisit = mStation.getChipEvents();
             if (teamVisit.size() == 0) continue;
             if (teamNumber != teamVisit.getTeamNumber(0)) continue;
@@ -440,12 +447,11 @@ public final class ActivePointActivity extends MainActivity
                 } while (fromMark < marks);
             }
         }
+
         if (newEvents) {
             // Save new events in local database
             final String result = mChips.saveNewEvents(mMainApplication.getDatabase());
-            if (!"".equals(result)) {
-                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show();
-            }
+            if (!"".equals(result)) return false;
             // Copy changed list of chips events to main application
             mMainApplication.setChips(mChips, false);
         }
@@ -453,13 +459,14 @@ public final class ActivePointActivity extends MainActivity
             // Sort visits by their time
             mFlash.sort();
         }
-        return newEvents || flashChanged;
+        return newEvents || flashChanged && mStation.getLastError(true) == 0;
     }
 
     /**
      * Background thread for periodic querying of connected station.
      */
     private void runStationQuerying() {
+        stopStationQuerying();
         mTimer = new Timer();
         mTimer.scheduleAtFixedRate(new TimerTask() {
             /**
@@ -476,12 +483,12 @@ public final class ActivePointActivity extends MainActivity
                 // Fetch new new teams visits
                 final boolean newTeam = fetchTeamsVisits();
                 // Update activity objects
-                ActivePointActivity.this.runOnUiThread(() -> {
+                runOnUiThread(() -> {
                     // Update station clock in UI
                     ((TextView) findViewById(R.id.station_clock)).setText(
                             Chips.printTime(mStation.getStationTime(), "dd.MM  HH:mm:ss"));
                     // Display station communication error (if any)
-                    final int error = mStation.getLastError();
+                    final int error = mStation.getLastError(true);
                     if (error != 0) {
                         Toast.makeText(getApplicationContext(), error, Toast.LENGTH_SHORT).show();
                     }
