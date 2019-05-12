@@ -103,7 +103,8 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
             // Fetch data for the team visit to station
             if (!station.fetchTeamRecord(teamNumber)) {
                 final int error = station.getLastError(true);
-                if (error == R.string.err_station_no_data) continue;
+                if (error == R.string.err_station_no_data
+                        || error == R.string.err_station_flash_empty) continue;
                 return error;
             }
             final Chips teamVisit = station.getChipEvents();
@@ -122,7 +123,8 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
                     toRead = Station.MAX_MARK_COUNT;
                 }
                 if (!station.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
-                    return station.getLastError(true);
+                    final int error = station.getLastError(true);
+                    if (error != R.string.err_station_flash_empty) return error;
                 }
                 fromMark += toRead;
                 // Add fetched chip marks to local list of events

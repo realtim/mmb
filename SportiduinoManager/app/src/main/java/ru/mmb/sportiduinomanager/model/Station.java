@@ -805,6 +805,10 @@ public final class Station {
         // Update station number and mode in class object
         mNumber = number;
         mMode = MODE_INIT_CHIPS;
+        // Forget all team visits which have been occurred before reset
+        mLastTeams.clear();
+        mChips.clear();
+        mChipRecordsN = 0;
         return true;
     }
 
@@ -900,6 +904,13 @@ public final class Station {
         final long teamTime = byteArray2Long(response, 8, 11);
         mChips.addNewEvent(this, initTime, teamNumber, teamMask, mNumber, teamTime);
         mChipRecordsN = response[12] & 0xFF;
+        // Check if we have a valid number of mark in chip copy in flash memory
+        if (mChipRecordsN <= 9 || mChipRecordsN >= 0xFF) {
+            mChipRecordsN = 0;
+            mLastError = R.string.err_station_flash_empty;
+            return false;
+        }
+        mChipRecordsN -= 8;
         return true;
     }
 
@@ -949,7 +960,13 @@ public final class Station {
             if (pointNumber == 0xFF && (pointTime - timeCorrection) == 0x00FFFFFF) break;
             mChips.addNewEvent(this, initTime, teamNumber, teamMask, pointNumber, pointTime);
         }
-        return true;
+        // Check number of actually read marks
+        if (mChips.size() == count) {
+            return true;
+        } else {
+            mLastError = R.string.err_station_flash_empty;
+            return false;
+        }
     }
 
     /**

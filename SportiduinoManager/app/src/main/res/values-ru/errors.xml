@@ -49,6 +49,7 @@
     <string name="err_station_team_changed">Неправильный номер команды в ответе станции</string>
     <string name="err_station_address_changed">Неправильный адрес флеш-памяти в ответе
         станции</string>
+    <string name="err_station_flash_empty">Чип не был скопирован в память станции</string>
 
     <string name="err_todo_team_list">Режим просмотра результатов команд еще не
         поддерживается</string>

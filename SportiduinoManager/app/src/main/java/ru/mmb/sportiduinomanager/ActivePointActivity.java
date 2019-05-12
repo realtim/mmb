@@ -354,18 +354,21 @@ public final class ActivePointActivity extends MainActivity
     /**
      * Get all events for all new teams
      * which has been visited the station after the last check.
+     * Returns -1 if some new teams has been visited the station,
+     * 0 if no new teams has been fetched,
+     * > 0 indicates an error code.
      *
-     * @return True if some new teams has been visited the station
+     * @return -1/0/error code
      */
-    private boolean fetchTeamsVisits() {
+    private int fetchTeamsVisits() {
         // Do nothing if no teams visited us yet
-        if (mStation.getChipsRegistered() == 0) return false;
+        if (mStation.getChipsRegistered() == 0) return 0;
         // Number of team visits at local db and at station are the same?
         // Time of last visit in local db and at station is the same?
         // (it can change without changing of number of teams)
         if (mFlash.size() == mStation.getChipsRegistered()
                 && mFlash.getTeamTime(mFlash.size() - 1) == mStation.getLastChipTime()) {
-            return false;
+            return 0;
         }
         // Ok, we have some new team visits
         boolean fullDownload = false;
@@ -411,11 +414,11 @@ public final class ActivePointActivity extends MainActivity
             // Fetch data for the team visit to station
             if (!mStation.fetchTeamRecord(teamNumber)) {
                 // Abort scanning if there is no data for visited team
-                if (mStation.getLastError(false) == R.string.err_station_no_data
-                        && !prevLastTeams.contains(teamNumber)) {
+                final int error = mStation.getLastError(false);
+                if (error == R.string.err_station_no_data && !prevLastTeams.contains(teamNumber)) {
                     continue;
                 }
-                return false;
+                if (error != R.string.err_station_flash_empty) return error;
             }
             final Chips teamVisit = mStation.getChipEvents();
             if (teamVisit.size() == 0) continue;
@@ -439,7 +442,7 @@ public final class ActivePointActivity extends MainActivity
                         toRead = Station.MAX_MARK_COUNT;
                     }
                     if (!mStation.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
-                        break;
+                        return mStation.getLastError(true);
                     }
                     fromMark += toRead;
                     // Add fetched chip marks to local list of events
@@ -451,7 +454,7 @@ public final class ActivePointActivity extends MainActivity
         if (newEvents) {
             // Save new events in local database
             final String result = mChips.saveNewEvents(mMainApplication.getDatabase());
-            if (!"".equals(result)) return false;
+            if (!"".equals(result)) return R.string.err_db_sql_error;
             // Copy changed list of chips events to main application
             mMainApplication.setChips(mChips, false);
         }
@@ -459,7 +462,11 @@ public final class ActivePointActivity extends MainActivity
             // Sort visits by their time
             mFlash.sort();
         }
-        return newEvents || flashChanged && mStation.getLastError(true) == 0;
+        if (newEvents || flashChanged) {
+            return -1;
+        } else {
+            return mStation.getLastError(true);
+        }
     }
 
     /**
@@ -481,18 +488,16 @@ public final class ActivePointActivity extends MainActivity
                 // Fetch current station status
                 mStation.fetchStatus();
                 // Fetch new new teams visits
-                final boolean newTeam = fetchTeamsVisits();
+                final int result = fetchTeamsVisits();
                 // Update activity objects
                 runOnUiThread(() -> {
                     // Update station clock in UI
                     ((TextView) findViewById(R.id.station_clock)).setText(
                             Chips.printTime(mStation.getStationTime(), "dd.MM  HH:mm:ss"));
                     // Display station communication error (if any)
-                    final int error = mStation.getLastError(true);
-                    if (error != 0) {
-                        Toast.makeText(getApplicationContext(), error, Toast.LENGTH_SHORT).show();
-                    }
-                    if (newTeam) {
+                    if (result > 0) {
+                        Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+                    } else if (result < 0) {
                         // Reset current mask if we at first item of team list
                         // as it is replaced with new team just arrived
                         if (mTeamAdapter.getPosition() == 0) {
@@ -502,6 +507,12 @@ public final class ActivePointActivity extends MainActivity
                         mTeamAdapter.notifyDataSetChanged();
                         // Update activity layout as some elements has been changed
                         updateLayout();
+                        // Display error if some station request set an error
+                        final int error = mStation.getLastError(true);
+                        if (error > 0) {
+                            Toast.makeText(getApplicationContext(), error, Toast.LENGTH_SHORT).show();
+                        }
+
                     }
                 });
             }

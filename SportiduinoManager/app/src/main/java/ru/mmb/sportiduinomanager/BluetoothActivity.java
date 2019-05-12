@@ -372,6 +372,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
             // Change reset station state
             mResetStation = RESET_STATION_ON;
             // Update activity layout
+            updateResetProgress(0, 24);
             updateLayout(false);
             // Reset station to change it's number (and mode if needed)
             new ResetStationTask(this).execute(newNumber, newMode);
