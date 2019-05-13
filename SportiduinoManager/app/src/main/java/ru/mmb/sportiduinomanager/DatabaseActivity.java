@@ -207,6 +207,9 @@ public final class DatabaseActivity extends MainActivity {
                 }
                 // Always allow to download results from site
                 getResultsButton.setVisibility(View.VISIBLE);
+                // TODO: Enable 'Download results' button after download implementation
+                getResultsButton.setAlpha(MainApplication.DISABLED_BUTTON);
+                getResultsButton.setClickable(false);
                 // Set distance description
                 String siteName;
                 if (mDistance.getTestSite() == 0) {
@@ -417,6 +420,8 @@ public final class DatabaseActivity extends MainActivity {
                             // Copy loaded distance and teams to persistent memory
                             mMainApplication.setDistance(request[0].getDistance());
                             mMainApplication.setTeams(request[0].getTeams());
+                            // Recreate chip events list from local database
+                            mMainApplication.setChips(mMainApplication.getDatabase().loadChips(), true);
                             return R.string.download_distance_success;
                         case SiteRequest.TYPE_UL_CHIPS:
                             // Update chip events in persistent memory
