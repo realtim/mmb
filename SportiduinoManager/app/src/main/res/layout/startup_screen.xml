@@ -4,11 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
+    <WebView
         android:id="@+id/startup_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/start_page_text"
+        android:padding="@dimen/default_padding"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

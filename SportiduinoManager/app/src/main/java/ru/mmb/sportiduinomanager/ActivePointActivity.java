@@ -381,7 +381,7 @@ public final class ActivePointActivity extends MainActivity
         final List<Integer> currLastTeams = mStation.lastTeams();
         // Check if teams from previous list were copied from flash
         for (final int team : prevLastTeams) {
-            if (!mFlash.contains(team)) {
+            if (!mFlash.contains(team, mStation.getNumber())) {
                 // Something strange has been happened, do full download of all teams
                 fullDownload = true;
             }
@@ -520,6 +520,9 @@ public final class ActivePointActivity extends MainActivity
                     stopStationQuerying();
                     return;
                 }
+                // Save currently selected team
+                final int selectedTeamN = mFlash.getTeamNumber(mFlash.size() - 1
+                        - mTeamAdapter.getPosition());
                 // Fetch current station status
                 mStation.fetchStatus();
                 // Fetch new new teams visits
@@ -531,10 +534,20 @@ public final class ActivePointActivity extends MainActivity
                             Chips.printTime(mStation.getStationTime(), "dd.MM  HH:mm:ss"));
                     // Update layout if new data has been arrived and/or error has been occurred
                     if (result != 0) {
-                        // Reset current mask if we at first item of team list
-                        // as it is replaced with new team just arrived
                         if (mTeamAdapter.getPosition() == 0) {
+                            // Reset current mask if we at first item of team list
+                            // as it is replaced with new team just arrived
                             updateMasks(false, 0);
+                        } else {
+                            // Change position in the list to keep current team selected
+                            int newPosition = 0;
+                            for (int i = 0; i < mFlash.size(); i++) {
+                                if (mFlash.getTeamNumber(i) == selectedTeamN) {
+                                    newPosition = mFlash.size() - i - 1;
+                                    break;
+                                }
+                            }
+                            mTeamAdapter.setPosition(newPosition);
                         }
                         // Update team list as we have a new team in it
                         mTeamAdapter.notifyDataSetChanged();

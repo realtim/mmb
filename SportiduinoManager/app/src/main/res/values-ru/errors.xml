@@ -26,6 +26,7 @@
     <string name="err_init_no_station">Для инициализации чипов подключитесь сначала к
         станции</string>
     <string name="err_init_wrong_mode">Переключите станцию в режим инициализации чипов</string>
+    <string name="err_init_already_initialized">Этой команде уже был выдан чип</string>
 
     <string name="err_station_wrong_number">Некорректный номер станции в команде к ней</string>
     <string name="err_station_read">Ошибка чтения данных из чипа</string>

@@ -238,6 +238,17 @@
         </FrameLayout>
 
         <TextView
+            android:id="@+id/init_already"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/err_init_already_initialized"
+            android:textColor="@color/bg_secondary"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/init_team_chip_frame" />
+
+        <TextView
             android:id="@+id/init_members_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -247,7 +258,7 @@
             android:textAppearance="@style/AppTheme.TextMedium"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/init_team_chip_frame" />
+            app:layout_constraintTop_toBottomOf="@+id/init_already" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/member_list"

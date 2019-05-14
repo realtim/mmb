@@ -339,6 +339,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         }
         // No errors found yet
         findViewById(R.id.init_error).setVisibility(View.INVISIBLE);
+        findViewById(R.id.init_already).setVisibility(View.GONE);
         // Save layout elements views for future usage
         final Button initButton = findViewById(R.id.init_team_chip);
         final ProgressBar initProgress = findViewById(R.id.init_team_chip_progress);
@@ -368,7 +369,11 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             showError(true, R.string.err_init_no_such_team);
             return;
         }
-        // TODO: check if we already initialized a chip for this team
+        // Show warning if a chip was already initialized for a team with this number
+        // TODO: Search in mResults, not in mChips
+        if (mChips.contains(teamNumber, 0)) {
+            findViewById(R.id.init_already).setVisibility(View.VISIBLE);
+        }
         // Update team name and map count
         ((TextView) findViewById(R.id.init_team_name)).setText(teamName);
         ((TextView) findViewById(R.id.init_team_maps)).setText(getResources()
@@ -409,6 +414,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
     private void showError(final boolean teamNotFound, final int errorId) {
         findViewById(R.id.init_team_chip).setVisibility(View.INVISIBLE);
         findViewById(R.id.init_team_chip_progress).setVisibility(View.INVISIBLE);
+        findViewById(R.id.init_already).setVisibility(View.GONE);
         if (teamNotFound) {
             findViewById(R.id.init_team_data).setVisibility(View.GONE);
         }

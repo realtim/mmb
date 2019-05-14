@@ -247,14 +247,15 @@ public final class Chips {
     }
 
     /**
-     * Checks if the list of events contains an event for specific team.
+     * Checks if the list of events contains an event for specific team and point.
      *
-     * @param team Team number to search
-     * @return true if an event for the team has been found
+     * @param team  Team number to search
+     * @param point Point number to search
+     * @return true if an event for the team at the point has been found
      */
-    public boolean contains(final int team) {
+    public boolean contains(final int team, final int point) {
         for (final ChipEvent event : mEvents) {
-            if (event.mTeamNumber == team) return true;
+            if (event.mTeamNumber == team && event.mPointNumber == point) return true;
         }
         return false;
     }

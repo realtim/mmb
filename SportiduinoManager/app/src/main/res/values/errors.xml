@@ -25,6 +25,8 @@
     <string name="err_init_empty_team">A team should consist of 1 or more members</string>
     <string name="err_init_no_station">Connect to a station to be able to init chips</string>
     <string name="err_init_wrong_mode">Switch the station to chip init mode</string>
+    <string name="err_init_already_initialized">A chip was already initialized for this
+        team</string>
 
     <string name="err_station_wrong_number">Wrong station number in the command</string>
     <string name="err_station_read">A error while reading chip data</string>

@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -101,6 +102,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(instanceState);
         // Show startup screen, overload this method to show another view
         setContentView(R.layout.startup_screen);
+        final String html = getResources().getString(R.string.app_usage);
+        //((TextView) findViewById(R.id.startup_message)).setText(Html.fromHtml(html));
+        ((WebView) findViewById(R.id.startup_message)).loadDataWithBaseURL(null, html, "text/html",
+                "utf-8", null);
         // Show error from application onCreate (if any)
         final MainApplication mainApplication = (MainApplication) getApplication();
         final String startupError = mainApplication.getStartupError();

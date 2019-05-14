@@ -21,8 +21,6 @@
     <string name="mode_team_list">Просмотр результатов</string>
     <string name="mode_chip_info">Информация о чипе</string>
 
-    <string name="start_page_text">Здесь будет описание работы с приложением</string>
-
     <string name="database_status_unknown">Состояние базы неизвестно</string>
     <string name="database_fatal_error">Критическая ошибка открытия базы, что-то пошло не так</string>
     <string name="database_empty">Локальная база пуста, загрузите данные с сайта</string>

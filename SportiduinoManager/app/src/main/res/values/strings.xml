@@ -21,8 +21,6 @@
     <string name="mode_team_list">Browse team results</string>
     <string name="mode_chip_info">Chip info</string>
 
-    <string name="start_page_text">Description of work with the App</string>
-
     <string name="database_status_unknown">Database status unknown</string>
     <string name="database_fatal_error">Database fatal error, something gone wrong</string>
     <string name="database_empty">Local database is empty, download data from site</string>
