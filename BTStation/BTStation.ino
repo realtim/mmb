@@ -1675,7 +1675,7 @@ bool readUart()
 #endif
 			uartBufferPosition = 0;
 			receivingData = false;
-			errorBeepMs(50, 1);
+			//errorBeepMs(50, 1);
 			return false;
 		}
 		//0 byte = FE
