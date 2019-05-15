@@ -2135,7 +2135,7 @@ byte writeDumpToFlash(uint16_t recordNum, uint32_t checkTime)
 	//Проблемы: 1) не стирается страница для перезаписи; 2) неправильно пишутся/считаются страницы (надо по 4 байта, а не по 16) - исправил, проверить
 	if (stationMode == MODE_FINISH_KP && SPIflash.readByte(teamFlashAddress) != 255)
 	{
-		SPIflash.eraseSector(teamFlashAddress);
+		//SPIflash.eraseSector(teamFlashAddress);
 #ifdef DEBUG
 		DebugSerial.print(F("erased sector: "));
 		DebugSerial.println(String((uint32_t)((uint32_t)pageFlash / (uint32_t)256)));
