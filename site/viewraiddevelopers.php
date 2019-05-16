@@ -26,7 +26,7 @@ if (!isset($MyPHPScript)) return;
 		
                  
 		$sql = "select u.user_id
-		 , CASE WHEN COALESCE(u.user_noshow, 0) = 1 and user_id <> $UserId THEN '$Anonimus' ELSE u.user_name END as user_name
+		 , CASE WHEN COALESCE(u.user_noshow, 0) = 1 and u.user_id <> $UserId THEN '$Anonimus' ELSE u.user_name END as user_name
 		 , rd.raiddeveloper_id 
 		        from  Users u
 			      inner join RaidDevelopers rd
