@@ -14,7 +14,7 @@
 #define UART_SPEED 38400
 
 //версия прошивки, номер пишется в чипы
-#define FW_VERSION						105
+#define FW_VERSION						106
 
 #ifdef DEBUG
 #define DEBUG_RX						2 //
