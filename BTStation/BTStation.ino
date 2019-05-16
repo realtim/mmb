@@ -1660,6 +1660,7 @@ void processRfidCard()
 		DebugSerial.print(F("record# "));
 		DebugSerial.println(String(chipNum));
 #endif
+		if (stationMode == MODE_FINISH_KP) delay(5000);
 	}
 }
 
