@@ -28,6 +28,7 @@
     <string name="database_damaged">Дистаниция/команды повреждены, загрузите их повторно!</string>
     <string name="download_results">Получить все результаты с сайта</string>
     <string name="send_results">Отправить мои результаты на сайт</string>
+    <string name="send_database">Отправить базу для отладки</string>
     <string name="download_distance">Получить дистанцию+участников</string>
     <string name="email">EMail</string>
     <string name="password">Пароль</string>
@@ -36,6 +37,7 @@
     <string name="send_results_success">Данные с чипов успешно отправлены на сайт</string>
     <string name="send_results_failure">Появились новые данные, повторите отправку
         результатов</string>
+    <string name="send_database_success">Файл с базой успешно отправлен на сайт</string>
     <string name="database_distance_version">Дистанция/участники с %1$s сайта, версия от %2$s</string>
     <string name="database_local_init">Выдано чипов мной: %1$d (%2$d отправлено на сайт)</string>
     <string name="database_local_results">Зарегистрировано результатов мной: %1$d (%2$d отправлено

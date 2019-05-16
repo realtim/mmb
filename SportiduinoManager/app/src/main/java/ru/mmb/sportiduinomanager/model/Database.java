@@ -64,17 +64,7 @@ public final class Database {
      * @throws SQLiteException All SQL exceptions while working with SQLite database
      */
     public Database(final Context context) throws IOException, SQLiteException {
-        // Get default path to application databases
-        // and create databases folder if not exist
-        final File databasePath = context.getDatabasePath(DB_NAME);
-        final File folder = databasePath.getParentFile();
-        if (folder != null && !folder.exists()) {
-            final boolean success = folder.mkdir();
-            if (!success) {
-                throw new IOException(folder.getAbsolutePath());
-            }
-        }
-        mPath = databasePath.getAbsolutePath();
+        mPath = getDatabasePath(context);
         // Try to open database (it will be created if it does not exist)
         final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath,
                 null, SQLiteDatabase.CREATE_IF_NECESSARY);
@@ -125,6 +115,34 @@ public final class Database {
      */
     public int getDbStatus() {
         return mDbStatus;
+    }
+
+    /**
+     * Get path to database file.
+     *
+     * @param context Application context to detect database path
+     * @return Database filename
+     * @throws IOException Thrown when database folder can't be created
+     */
+    private String getDatabasePath(final Context context) throws IOException {
+        final File databasePath = context.getDatabasePath(DB_NAME);
+        final File folder = databasePath.getParentFile();
+        if (folder != null && !folder.exists()) {
+            final boolean success = folder.mkdir();
+            if (!success) {
+                throw new IOException(folder.getAbsolutePath());
+            }
+        }
+        return databasePath.getAbsolutePath();
+    }
+
+    /**
+     * Get path to database file.
+     *
+     * @return Database filename
+     */
+    public String getDatabasePath() {
+        return mPath;
     }
 
     /**

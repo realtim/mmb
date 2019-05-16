@@ -172,6 +172,7 @@ public final class DatabaseActivity extends MainActivity {
         final MenuItem databaseItem = getMenuItem(R.id.database);
         final Button sendChipsButton = findViewById(R.id.send_results);
         final Button getResultsButton = findViewById(R.id.get_results);
+        final Button sendDatabaseButton = findViewById(R.id.send_database);
         final LinearLayout dlDistance = findViewById(R.id.download_distance_layout);
         final Group dbContent = findViewById(R.id.database_content_group);
         switch (dbStatus) {
@@ -185,6 +186,7 @@ public final class DatabaseActivity extends MainActivity {
                 getResultsButton.setVisibility(View.GONE);
                 dlDistance.setVisibility(View.VISIBLE);
                 dbContent.setVisibility(View.GONE);
+                sendDatabaseButton.setVisibility(View.GONE);
                 break;
             case Database.DB_STATE_OK:
                 // Don't allow to reload database if it can contain important data
@@ -205,8 +207,9 @@ public final class DatabaseActivity extends MainActivity {
                     sendChipsButton.setAlpha(MainApplication.ENABLED_BUTTON);
                     sendChipsButton.setClickable(true);
                 }
-                // Always allow to download results from site
+                // Always allow to download results from site and upload database
                 getResultsButton.setVisibility(View.VISIBLE);
+                sendDatabaseButton.setVisibility(View.VISIBLE);
                 // TODO: Enable 'Download results' button after download implementation
                 getResultsButton.setAlpha(MainApplication.DISABLED_BUTTON);
                 getResultsButton.setClickable(false);
@@ -354,6 +357,33 @@ public final class DatabaseActivity extends MainActivity {
         new AsyncSiteRequest(mContext).execute(siteRequest);
     }
 
+
+    /**
+     * Start upload of local db for testing purposes.
+     *
+     * @param view View of button clicked
+     */
+    public void startDatabaseUpload(final View view) {
+        // Check if we have another transfer waiting
+        if (mTransferActive) {
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_db_download_waiting),
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        // Show progress bar instead of status text
+        mTransferActive = true;
+        findViewById(R.id.database_status_description).setVisibility(View.INVISIBLE);
+        findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
+        // Start download
+        final SiteRequest siteRequest =
+                SiteRequest.builder().userEmail(mMainApplication.getUserEmail())
+                        .userPassword(mMainApplication.getUserPassword())
+                        .testSite(mMainApplication.getTestSite())
+                        .database(mMainApplication.getDatabase())
+                        .type(SiteRequest.TYPE_UL_DATABASE).build();
+        new AsyncSiteRequest(mContext).execute(siteRequest);
+    }
+
     /**
      * Separate thread for async parsing of downloaded file with a distance.
      */
@@ -429,6 +459,8 @@ public final class DatabaseActivity extends MainActivity {
                             return R.string.send_results_success;
                         case SiteRequest.TYPE_DL_RESULTS:
                             return R.string.unknown;
+                        case SiteRequest.TYPE_UL_DATABASE:
+                            return R.string.send_database_success;
                         default:
                             return R.string.err_internal_error;
                     }

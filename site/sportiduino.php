@@ -89,6 +89,9 @@ switch ($request["X-Sportiduino-Action"]) {
     case 3:
         SendResults($pdo, $raid_id, $request);
         break;
+    case 4:
+        ReceiveDatabase($pdo, $user_id);
+        break;
     default:
         die("Неизвестный код операции");
 }
@@ -282,4 +285,25 @@ function SendResults(PDO $pdo, $raid_id, $request)
     die("Функция еще не реализована");
 }
 
+function ReceiveDatabase(PDO $pdo, $user_id)
+{
+    // Проверяем корректность первой строки с именем отправленного файла
+    if (!isset($_POST["data"])) die("Запрос клиента некорректно сформирован");
+
+    // Распаковываем содержимое файла
+    $base64 = str_replace("_", "/", str_replace("-", "+", $_POST["data"]));
+    $content = base64_decode($base64);
+    if ($content === FALSE) die("Ошибка распаковки файла");
+
+    // Сохраняем файл
+    $fullname = "/var/www/clients/client5/web3/web/logs/mmb.sqlite.$user_id." . date("c");
+    $file = fopen($fullname, "w");
+    if ($file === FALSE) die("Ошибка создания файла '" . $fullname . "'");
+    $result = fwrite($file, $content);
+    if ($result === FALSE) die("Ошибка записи в файл");
+    fclose($file);
+
+    // Сообщаем  пустой строкой об успехе
+    echo "\n";
+}
 ?>

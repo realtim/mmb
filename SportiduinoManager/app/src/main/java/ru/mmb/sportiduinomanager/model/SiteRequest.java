@@ -1,8 +1,13 @@
 package ru.mmb.sportiduinomanager.model;
 
 import android.database.sqlite.SQLiteException;
+import android.util.Base64;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -52,6 +57,10 @@ public final class SiteRequest {
      * Request type for results download.
      */
     public static final int TYPE_DL_RESULTS = 3;
+    /**
+     * Request type for database upload.
+     */
+    public static final int TYPE_UL_DATABASE = 4;
 
     /**
      * URL of test database interaction script.
@@ -194,6 +203,8 @@ public final class SiteRequest {
                 return sendChipEvents();
             case TYPE_DL_RESULTS:
                 return loadResults();
+            case TYPE_UL_DATABASE:
+                return sendDatabase();
             default:
                 return LOAD_FATAL_ERROR;
         }
@@ -482,6 +493,44 @@ public final class SiteRequest {
         // TODO: mDistance is null, save it in future mResults object
         mDistance.setLastResultId(lastResultId);
         // TODO: parse teams results
+        return LOAD_OK;
+    }
+
+    /**
+     * Send local database file for testing purposes.
+     *
+     * @return One of LOAD result constants, mCustomError can be also set
+     * @throws IOException Unexpected end of file
+     */
+    private int sendDatabase() throws IOException {
+        // Prepare connection to site
+        final HttpURLConnection connection = prepareConnection();
+        if (connection == null) return LOAD_READ_ERROR;
+        // Get database filename
+        final String filename = mDatabase.getDatabasePath();
+        // Read database binary content
+        final File file = new File(filename);
+        final byte[] content = new byte[(int) file.length()];
+        final DataInputStream dataInputStream =
+                new DataInputStream(new BufferedInputStream(new FileInputStream(filename)));
+        dataInputStream.readFully(content);
+        dataInputStream.close();
+        // Prepare data to send
+        final String data = "data=" + Base64.encodeToString(content, Base64.NO_WRAP | Base64.URL_SAFE);
+        // Send data to site
+        final int result = makeConnection(connection, data);
+        if (result != LOAD_OK) return result;
+        // Read script response
+        final BufferedReader reader =
+                new BufferedReader(new InputStreamReader(connection.getInputStream(),
+                        StandardCharsets.UTF_8));
+        // Non-empty first line contains server error
+        final String error = reader.readLine();
+        if (!"".equals(error)) {
+            mCustomError = error;
+            return LOAD_CUSTOM_ERROR;
+        }
+        // Finish parsing of server response
         return LOAD_OK;
     }
 

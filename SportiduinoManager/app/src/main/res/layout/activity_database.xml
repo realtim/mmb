@@ -66,6 +66,15 @@
                 android:padding="@dimen/default_padding"
                 android:text="@string/download_results" />
 
+            <Button
+                android:id="@+id/send_database"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:onClick="startDatabaseUpload"
+                android:padding="@dimen/default_padding"
+                android:text="@string/send_database" />
+
             <LinearLayout
                 android:id="@+id/download_distance_layout"
                 android:layout_width="match_parent"

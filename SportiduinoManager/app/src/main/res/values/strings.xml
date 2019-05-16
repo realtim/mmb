@@ -28,6 +28,7 @@
     <string name="database_damaged">Database is damaged, download race and teams again!</string>
     <string name="download_results">Download results from site</string>
     <string name="send_results">Send my results to site</string>
+    <string name="send_database">Send database for testing</string>
     <string name="download_distance">Download race and teams</string>
     <string name="email">EMail</string>
     <string name="password">Password</string>
@@ -36,6 +37,7 @@
     <string name="send_results_success">Chip data were successfully sent to site</string>
     <string name="send_results_failure">Local chips data has been changed, please, resend
         it</string>
+    <string name="send_database_success">Database file was successfully sent to site</string>
     <string name="database_distance_version">Race/teams from %1$s site, downloaded %2$s</string>
     <string name="database_local_init">Local chips initialized: %1$d (%2$d of them were
         uploaded)</string>

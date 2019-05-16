@@ -548,6 +548,7 @@ public final class ActivePointActivity extends MainActivity
                                 }
                             }
                             mTeamAdapter.setPosition(newPosition);
+                            mMainApplication.setTeamListPosition(newPosition);
                         }
                         // Update team list as we have a new team in it
                         mTeamAdapter.notifyDataSetChanged();
