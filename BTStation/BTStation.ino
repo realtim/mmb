@@ -14,7 +14,7 @@
 #define UART_SPEED 38400
 
 //версия прошивки, номер пишется в чипы
-#define FW_VERSION						105
+#define FW_VERSION						106
 
 #ifdef DEBUG
 #define DEBUG_RX						2 //
@@ -184,7 +184,6 @@ uint8_t ntag_page[16]; //буфер для чтения из карты чере
 SPIFlash SPIflash(FLASH_SS_PIN); //флэш-память
 
 //рфид-модуль
-MFRC522::StatusCode status;
 MFRC522 mfrc522(RFID_SS_PIN, RFID_RST_PIN);
 //коэфф. усиления антенны - работают только биты 4,5,6
 byte gainCoeff = 0x70;
@@ -1539,7 +1538,6 @@ void processRfidCard()
 	if (!ntagRead4pages(PAGE_CHIP_NUM))
 	{
 		SPI.end();
-		//errorBeep(2);
 		return;
 	}
 
@@ -1561,7 +1559,7 @@ void processRfidCard()
 	if ((systemTime.unixtime - timeInit) > maxTimeInit)
 	{
 		SPI.end();
-		//errorBeep(3);
+		errorBeep(2);
 		return;
 	}
 
@@ -1570,7 +1568,7 @@ void processRfidCard()
 	if (chipNum < 1 || chipNum >= LOG_LENGTH)
 	{
 		SPI.end();
-		//errorBeep(4);
+		errorBeep(3);
 		return;
 	}
 
@@ -1594,7 +1592,7 @@ void processRfidCard()
 				//sendError(WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
 				SPI.end();
 				digitalWrite(LED_PIN, LOW);
-				errorBeep(5);
+				errorBeep(4);
 				return;
 			}
 		}
@@ -1629,7 +1627,7 @@ void processRfidCard()
 		{
 			SPI.end();
 			digitalWrite(LED_PIN, LOW);
-			errorBeepMs(1000, 2);
+			errorBeep(5);
 			return;
 		}
 
@@ -1638,7 +1636,7 @@ void processRfidCard()
 		{
 			SPI.end();
 			digitalWrite(LED_PIN, LOW);
-			errorBeepMs(1000, 3);
+			errorBeep(6);
 			return;
 		}
 
@@ -1652,7 +1650,7 @@ void processRfidCard()
 		{
 			SPI.end();
 			digitalWrite(LED_PIN, LOW);
-			errorBeepMs(1000, 4);
+			errorBeep(7);
 			return;
 		}
 		SPI.end();
@@ -1662,6 +1660,7 @@ void processRfidCard()
 		DebugSerial.print(F("record# "));
 		DebugSerial.println(String(chipNum));
 #endif
+		if (stationMode == MODE_FINISH_KP) delay(5000);
 	}
 }
 
@@ -1677,7 +1676,7 @@ bool readUart()
 #endif
 			uartBufferPosition = 0;
 			receivingData = false;
-			errorBeepMs(50, 1);
+			//errorBeepMs(50, 1);
 			return false;
 		}
 		//0 byte = FE
@@ -1868,7 +1867,7 @@ void errorBeepMs(uint16_t ms, uint8_t n)
 		digitalWrite(ERROR_LED_PIN, HIGH);
 		tone(BUZZER_PIN, 500, ms);
 		digitalWrite(ERROR_LED_PIN, LOW);
-		if ((n - i) != 0)
+		if ((n - i) > 0)
 		{
 			delay(ms);
 		}
@@ -1884,7 +1883,7 @@ void errorBeep(uint8_t n)
 		//tone(BUZZER_PIN, 500, ms);
 		tone(BUZZER_PIN, 500, ms);
 		digitalWrite(ERROR_LED_PIN, LOW);
-		if ((n - i) != 0)
+		if ((n - i) > 0)
 		{
 			delay(ms);
 		}
@@ -1939,12 +1938,19 @@ bool ntagWritePage(uint8_t * dataBlock, uint8_t pageAdr)
 	const uint8_t sizePageNtag = 4;
 
 	uint8_t n = 0;
+	MFRC522::StatusCode status;
+
 	status = MFRC522::STATUS_ERROR;
 	while (status != MFRC522::STATUS_OK && n < 3)
 	{
 		status = (MFRC522::StatusCode) mfrc522.MIFARE_Ultralight_Write(pageAdr, dataBlock, sizePageNtag);
 		n++;
-		if (!status) delay(10);
+		if (status != MFRC522::STATUS_OK)
+		{
+			mfrc522.PCD_Init();
+			mfrc522.PICC_IsNewCardPresent();
+			mfrc522.PICC_ReadCardSerial();
+		}
 	}
 
 	if (status != MFRC522::STATUS_OK)
@@ -1986,12 +1992,19 @@ bool ntagRead4pages(uint8_t pageAdr)
 	uint8_t buffer[18];
 
 	uint8_t n = 0;
+	MFRC522::StatusCode status;
+
 	status = MFRC522::STATUS_ERROR;
 	while (status != MFRC522::STATUS_OK && n < 3)
 	{
 		status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(pageAdr, buffer, &size);
+		if (status != MFRC522::STATUS_OK)
+		{
+			mfrc522.PCD_Init();
+			mfrc522.PICC_IsNewCardPresent();
+			mfrc522.PICC_ReadCardSerial();
+		}
 		n++;
-		if (!status) delay(10);
 	}
 
 	if (status != MFRC522::STATUS_OK)
@@ -2123,7 +2136,7 @@ byte writeDumpToFlash(uint16_t recordNum, uint32_t checkTime)
 	//Проблемы: 1) не стирается страница для перезаписи; 2) неправильно пишутся/считаются страницы (надо по 4 байта, а не по 16) - исправил, проверить
 	if (stationMode == MODE_FINISH_KP && SPIflash.readByte(teamFlashAddress) != 255)
 	{
-		//SPIflash.eraseSector((long)((float)pageFlash / 4096));
+		//SPIflash.eraseSector(teamFlashAddress);
 #ifdef DEBUG
 		DebugSerial.print(F("erased sector: "));
 		DebugSerial.println(String((uint32_t)((uint32_t)pageFlash / (uint32_t)256)));
