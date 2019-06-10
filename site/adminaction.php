@@ -306,6 +306,13 @@ elseif ($action == 'LoadRaidDataFile')
 //	$statustext = $statustext.'</br>'.$n_new.' результатов добавлено, '.$n_updated.' изменено, '.$n_unchanged.' являются дубликатами';
 	$view = "ViewAdminDataPage";
 }
+// =============== Импорт данных Sportiduino =======
+elseif ($action == 'SportiduinoImport')
+{
+	if (!$Administrator && !$Moderator) return;
+	include('sportiduino_import.php');
+	$view = "ViewAdminDataPage";
+}
 // =============== Пересчет результатов ММБ администратором ===================
 elseif ($action == 'RecalcRaidResults')
 {

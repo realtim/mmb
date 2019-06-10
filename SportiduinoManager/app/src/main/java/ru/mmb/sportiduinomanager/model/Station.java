@@ -856,6 +856,9 @@ public final class Station {
         if (!command(commandData, response)) return false;
         // Get init time from station response
         mLastInitTime = byteArray2Long(response, 0, 3);
+        // Update station time and drift
+        mStationTime = mLastInitTime;
+        mTimeDrift = (int) (mStationTime - mStartTime);
         // Chip UID (bytes 4-11) is ignored right now
         return true;
     }

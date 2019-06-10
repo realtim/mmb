@@ -48,6 +48,12 @@ if (!isset($MyPHPScript)) return;
 		document.AdminForm.submit();
 	}
 
+	function SportiduinoImport()
+	{
+		document.AdminForm.action.value = "SportiduinoImport";
+		document.AdminForm.submit();
+	}
+
 	function JSON()
 	{ 
 		document.AdminForm.action.value = "JSON";
@@ -151,7 +157,7 @@ if (!isset($MyPHPScript)) return;
           //print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><a href = "?action=JSON&sessionid='.$SessionId.'" target = "_blank">JSON dump</a></td></tr>'."\r\n");
 
 	// убрать потом  нужно только для лета 2016
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RankRecalc" value="Пересчитать рейтинг"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:195px;" name="RankRecalc" value="Пересчитать рейтинг"
                           onclick = "javascript: RaidUserRankRecalc();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
@@ -160,7 +166,7 @@ if (!isset($MyPHPScript)) return;
 	if (CRights::canDeliveryInvitation($UserId, $RaidId, 1))
 	{
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RankInvitations" value="Пригласить по рейтингу"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:195px;" name="RankInvitations" value="Пригласить по рейтингу"
                           onclick = "javascript: RaidRankInvitations();"
                           tabindex = "'.(++$TabIndex).'">'."\r\n");
                           
@@ -182,7 +188,7 @@ if (!isset($MyPHPScript)) return;
 	{
 
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="LottoInvitations" value="Пригласить по лотерее"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:195px;" name="LottoInvitations" value="Пригласить по лотерее"
                           onclick = "javascript: RaidLottoInvitations();"
                           tabindex = "'.(++$TabIndex).'">'."\r\n");
                    print(' приглашений <input type="text" name="LottoInvitationsCount" size="4" maxlength="3" value="0" tabindex="'.(++$TabIndex).'"'
@@ -198,7 +204,7 @@ if (!isset($MyPHPScript)) return;
 	{
 
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="OutOfRangeTeamsDelete" value="Удалить вне зачета"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:195px;" name="OutOfRangeTeamsDelete" value="Удалить вне зачета"
                           onclick = "javascript: RaidDeleteOutOfRangeTeams();"
                           tabindex = "'.(++$TabIndex).'">'."\r\n");
 
@@ -206,29 +212,31 @@ if (!isset($MyPHPScript)) return;
 
 	}
 	
-	  print('<tr><td style = "padding-top: 25px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="Cardsdump" value="Получить карточки"
+	  print('<tr><td style = "padding-top: 25px; padding-bottom: 5px;"><input type="button" style = "width:195px;" name="Cardsdump" value="Получить карточки"
                           onclick = "javascript: RaidCardsExport();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="JSONdump" value="Список участников"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:195px;" name="JSONdump" value="Список участников"
                           onclick = "javascript: RaidTeamUsersExport();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RTUdump" value="Получить дамп"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:195px;" name="RTUdump" value="Получить дамп"
                           onclick = "javascript: JSON();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
 	  print('<tr><td style = "padding-top: 10px; padding-bottom: 10px;">Файл с данными:<br/><input  type="file" name="android" /> &nbsp;
-                 <input type="button"  style = "width:185px;" name = "LoadRaidDataFileButton"  value="Загрузить"  onclick = "javascript: LoadRaidDataFile(); "  tabindex = "'.(++$TabIndex).'"  /></td></tr>'."\r\n");
+                 <input type="button"  style = "width:195px;" name = "LoadRaidDataFileButton"  value="Загрузить"  onclick = "javascript: LoadRaidDataFile(); "  tabindex = "'.(++$TabIndex).'"  /></td></tr>'."\r\n");
 
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:195px;" name="SportiduinoImportButton" value="Импорт электронной отметки"
+                          onclick = "javascript: SportiduinoImport();"
+                          tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="RecalcRaidResultsButton" value="Пересчитать результаты"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:195px;" name="RecalcRaidResultsButton" value="Пересчитать результаты"
                           onclick = "javascript: RecalcRaidResults();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
-
-	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:185px;" name="FindRaidErrorsButton" value="Найти ошибки"
+	  print('<tr><td style = "padding-top: 5px; padding-bottom: 5px;"><input type="button" style = "width:195px;" name="FindRaidErrorsButton" value="Найти ошибки"
                           onclick = "javascript: FindRaidErrors();"
                           tabindex = "'.(++$TabIndex).'"></td></tr>'."\r\n");
 
