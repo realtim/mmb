@@ -499,6 +499,23 @@ $statustext = ob_get_clean();
 // Удаление старых "публичных" результатов
 // ---------------------------------------
 
+// Временно отключаем индексы и проверки
+$sql = $pdo->prepare("ALTER TABLE TeamLevelPoints DISABLE KEYS");
+$sql->execute();
+$sql = null;
+$sql = $pdo->prepare("ALTER TABLE TeamLevelDismiss DISABLE KEYS");
+$sql->execute();
+$sql = null;
+$sql = $pdo->prepare("SET FOREIGN_KEY_CHECKS = 0");
+$sql->execute();
+$sql = null;
+$sql = $pdo->prepare("SET UNIQUE_CHECKS = 0");
+$sql->execute();
+$sql = null;
+$sql = $pdo->prepare("SET AUTOCOMMIT = 0");
+$sql->execute();
+$sql = null;
+
 // Удаляем отметки команд на точках
 $sql = $pdo->prepare("DELETE TeamLevelPoints FROM TeamLevelPoints INNER JOIN LevelPoints WHERE TeamLevelPoints.levelpoint_id = LevelPoints.levelpoint_id AND distance_id = :distance_id");
 $sql ->bindParam("distance_id", $distance_id, PDO::PARAM_INT);
@@ -538,6 +555,23 @@ foreach ($teams as $n => $team) {
        $sql->execute();
     }
 }
+$sql = null;
+
+// Включаем индексы и проверки назад
+$sql = $pdo->prepare("SET UNIQUE_CHECKS = 1");
+$sql->execute();
+$sql = null;
+$sql = $pdo->prepare("SET FOREIGN_KEY_CHECKS = 1");
+$sql->execute();
+$sql = null;
+$sql = $pdo->prepare("COMMIT");
+$sql->execute();
+$sql = null;
+$sql = $pdo->prepare("ALTER TABLE TeamLevelPoints ENABLE KEYS");
+$sql->execute();
+$sql = null;
+$sql = $pdo->prepare("ALTER TABLE TeamLevelDismiss ENABLE KEYS");
+$sql->execute();
 $sql = null;
 
 // Готовим репорт о проведенном импорте
