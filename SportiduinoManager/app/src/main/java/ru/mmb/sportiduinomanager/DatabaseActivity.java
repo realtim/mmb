@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Locale;
 
 import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Database;
@@ -94,10 +95,7 @@ public final class DatabaseActivity extends MainActivity {
             // Create Hex String
             final StringBuilder hexString = new StringBuilder();
             for (final byte aMessageDigest : messageDigest) {
-                final String hexNumber = Integer.toHexString(0xFF & aMessageDigest);
-                if (hexNumber.length() < 2) {
-                    hexString.append('0');
-                }
+                final String hexNumber = String.format(Locale.ROOT, "%02x", aMessageDigest);
                 hexString.append(hexNumber);
             }
             return hexString.toString();
