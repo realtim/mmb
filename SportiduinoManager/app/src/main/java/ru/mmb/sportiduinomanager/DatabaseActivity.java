@@ -51,10 +51,7 @@ public final class DatabaseActivity extends MainActivity {
      * Main application thread with persistent data.
      */
     private MainApplication mMainApplication;
-    /**
-     * Copy of activity context for AsyncTask.
-     */
-    private DatabaseActivity mContext;
+
     /**
      * True when download/upload async task is active.
      */
@@ -113,7 +110,6 @@ public final class DatabaseActivity extends MainActivity {
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
-        mContext = this;
         mTransferActive = false;
         mMainApplication = (MainApplication) getApplication();
         mDistance = mMainApplication.getDistance();
@@ -301,7 +297,7 @@ public final class DatabaseActivity extends MainActivity {
                         .testSite(testSite).chipInitName(chipInitName)
                         .database(mMainApplication.getDatabase())
                         .type(SiteRequest.TYPE_DL_DISTANCE).build();
-        new AsyncSiteRequest(mContext).execute(siteRequest);
+        new AsyncSiteRequest(this).execute(siteRequest);
     }
 
     /**
@@ -328,7 +324,7 @@ public final class DatabaseActivity extends MainActivity {
                         .database(mMainApplication.getDatabase())
                         .chips(mChips)
                         .type(SiteRequest.TYPE_UL_CHIPS).build();
-        new AsyncSiteRequest(mContext).execute(siteRequest);
+        new AsyncSiteRequest(this).execute(siteRequest);
     }
 
     /**
@@ -354,9 +350,8 @@ public final class DatabaseActivity extends MainActivity {
                         .testSite(mMainApplication.getTestSite())
                         .database(mMainApplication.getDatabase())
                         .type(SiteRequest.TYPE_DL_RESULTS).build();
-        new AsyncSiteRequest(mContext).execute(siteRequest);
+        new AsyncSiteRequest(this).execute(siteRequest);
     }
-
 
     /**
      * Start upload of local db for testing purposes.
@@ -381,7 +376,7 @@ public final class DatabaseActivity extends MainActivity {
                         .testSite(mMainApplication.getTestSite())
                         .database(mMainApplication.getDatabase())
                         .type(SiteRequest.TYPE_UL_DATABASE).build();
-        new AsyncSiteRequest(mContext).execute(siteRequest);
+        new AsyncSiteRequest(this).execute(siteRequest);
     }
 
     /**
@@ -416,7 +411,7 @@ public final class DatabaseActivity extends MainActivity {
          * Process server response and save distance and teams to SQLite database.
          *
          * @param request Previously prepared request to the site
-         * @return True if succeeded
+         * @return String id of message or -1 if custom error occurred
          */
         protected Integer doInBackground(final SiteRequest... request) {
             int result;
@@ -472,7 +467,7 @@ public final class DatabaseActivity extends MainActivity {
         /**
          * Show parsing result, delete the file and update screen layout.
          *
-         * @param message False if connection attempt failed
+         * @param message String id of message or -1 if custom error occurred
          */
         protected void onPostExecute(final Integer message) {
             // Show parsing result
