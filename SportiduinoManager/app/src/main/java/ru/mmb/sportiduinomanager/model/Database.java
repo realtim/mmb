@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
+import android.support.annotation.NonNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -274,9 +275,10 @@ public final class Database {
     /**
      * Load chips events from local SQLite database.
      *
-     * @return New Chips object with loaded data or null in case of an error
+     * @return New Chips object with loaded data
      * @throws SQLiteException All SQL exceptions while working with SQLite database
      */
+    @NonNull
     public Chips loadChips() throws SQLiteException {
         // Open local database
         final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath, null,

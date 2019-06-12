@@ -1,6 +1,7 @@
 package ru.mmb.sportiduinomanager.model;
 
 import android.database.sqlite.SQLiteException;
+import android.support.annotation.Nullable;
 import android.util.Base64;
 
 import java.io.BufferedInputStream;
@@ -183,6 +184,7 @@ public final class SiteRequest {
      *
      * @return Chips object
      */
+    @Nullable
     public Chips getChips() {
         return mChips;
     }

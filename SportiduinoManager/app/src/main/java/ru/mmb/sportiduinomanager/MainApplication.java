@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteException;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -115,6 +117,7 @@ public final class MainApplication extends Application {
     /**
      * List of chip events received from a station or loaded from local database.
      */
+    @Nullable
     private Chips mChips;
 
     /**
@@ -250,6 +253,7 @@ public final class MainApplication extends Application {
      *
      * @return Chips events
      */
+    @Nullable
     public Chips getChips() {
         return mChips;
     }
@@ -260,7 +264,7 @@ public final class MainApplication extends Application {
      * @param chips Chips events to save
      * @param force Force replacing of old chip events with new
      */
-    public void setChips(final Chips chips, final boolean force) {
+    public void setChips(@NonNull final Chips chips, final boolean force) {
         if (force || mChips == null) {
             // Forget old chip events and replace them with new
             mChips = chips;
@@ -403,8 +407,7 @@ public final class MainApplication extends Application {
                 if (teams != null && !teams.hasErrors()) {
                     mTeams = teams;
                 }
-                final Chips chips = mDatabase.loadChips();
-                if (chips != null) mChips = chips;
+                mChips = mDatabase.loadChips();
             } catch (SQLiteException e) {
                 mStartupError = e.getMessage();
             }
@@ -413,8 +416,7 @@ public final class MainApplication extends Application {
         if (mDatabase.getDbStatus() == Database.DB_STATE_OK
                 || mDatabase.getDbStatus() == Database.DB_STATE_EMPTY) {
             try {
-                final Chips chips = mDatabase.loadChips();
-                if (chips != null) mChips = chips;
+                mChips = mDatabase.loadChips();
             } catch (SQLiteException e) {
                 mStartupError = e.getMessage();
             }

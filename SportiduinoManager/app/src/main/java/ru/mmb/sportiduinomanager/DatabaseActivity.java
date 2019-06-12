@@ -3,6 +3,7 @@ package ru.mmb.sportiduinomanager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.constraint.Group;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.SwitchCompat;
@@ -46,6 +47,7 @@ public final class DatabaseActivity extends MainActivity {
     /**
      * Local copy of chips events.
      */
+    @Nullable
     private Chips mChips;
 
     /**
@@ -219,13 +221,15 @@ public final class DatabaseActivity extends MainActivity {
                                 Chips.printTime(mDistance.getTimeDownloaded(), "dd.MM.yyyy HH:mm")));
                 ((TextView) findViewById(R.id.distance_name)).setText(mDistance.getRaidName());
                 // Set chip events statistic
-                final List<Integer> statistic = mChips.getStatistic();
-                ((TextView) findViewById(R.id.database_local_init)).setText(getResources()
-                        .getString(R.string.database_local_init, statistic.get(0),
-                                statistic.get(1)));
-                ((TextView) findViewById(R.id.database_local_results)).setText(getResources()
-                        .getString(R.string.database_local_results, statistic.get(2),
-                                statistic.get(3)));
+                if (mChips != null) {
+                    final List<Integer> statistic = mChips.getStatistic();
+                    ((TextView) findViewById(R.id.database_local_init)).setText(getResources()
+                            .getString(R.string.database_local_init, statistic.get(0),
+                                    statistic.get(1)));
+                    ((TextView) findViewById(R.id.database_local_results)).setText(getResources()
+                            .getString(R.string.database_local_results, statistic.get(2),
+                                    statistic.get(3)));
+                }
                 // Show database content
                 dbContent.setVisibility(View.VISIBLE);
                 // Update main menu item
@@ -448,7 +452,10 @@ public final class DatabaseActivity extends MainActivity {
                             return R.string.download_distance_success;
                         case SiteRequest.TYPE_UL_CHIPS:
                             // Update chip events in persistent memory
-                            mMainApplication.setChips(request[0].getChips(), false);
+                            Chips chips = request[0].getChips();
+                            if (chips != null) {
+                                mMainApplication.setChips(chips, false);
+                            }
                             return R.string.send_results_success;
                         case SiteRequest.TYPE_DL_RESULTS:
                             return R.string.unknown;

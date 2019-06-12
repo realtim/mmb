@@ -1,6 +1,7 @@
 package ru.mmb.sportiduinomanager.task;
 
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -93,7 +94,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
      * @return R.string error code or zero if succeeded
      */
     private int rescanTeams(final Station station, final List<Integer> teamList,
-                            final Chips chips, final int chipsRegistered, final long totalTime) {
+                            @NonNull final Chips chips, final int chipsRegistered, final long totalTime) {
         // Rescan all teams from the list
         int teamsRescanned = 0;
         for (int i = 0; i < teamList.size(); i++) {

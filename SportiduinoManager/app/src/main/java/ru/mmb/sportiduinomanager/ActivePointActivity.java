@@ -1,6 +1,7 @@
 package ru.mmb.sportiduinomanager;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -41,6 +42,7 @@ public final class ActivePointActivity extends MainActivity
     /**
      * Chips events received from all stations.
      */
+    @Nullable
     private Chips mChips;
     /**
      * Filtered list of events with teams visiting connected station at current point.
@@ -201,7 +203,8 @@ public final class ActivePointActivity extends MainActivity
      */
     public void saveTeamMask(final View view) {
         // Check team mask and station presence
-        if (mTeamMask == 0 || mStation == null || mFlash == null || mFlash.size() == 0) {
+        if (mTeamMask == 0 || mChips == null || mStation == null ||
+                mFlash == null || mFlash.size() == 0) {
             Toast.makeText(mMainApplication,
                     R.string.err_internal_error, Toast.LENGTH_LONG).show();
             return;
@@ -210,8 +213,8 @@ public final class ActivePointActivity extends MainActivity
         final int index = mFlash.size() - 1 - mTeamAdapter.getPosition();
         final int teamNumber = mFlash.getTeamNumber(index);
         // Add new event to global list with same point time and new mask
-        if (!mChips.updateTeamMask(teamNumber, mTeamMask, mStation, mMainApplication.getDatabase(),
-                false)) {
+        if (!mChips.updateTeamMask(teamNumber, mTeamMask, mStation,
+                mMainApplication.getDatabase(),false)) {
             Toast.makeText(mMainApplication,
                     R.string.err_internal_error, Toast.LENGTH_LONG).show();
             return;
@@ -310,19 +313,21 @@ public final class ActivePointActivity extends MainActivity
             findViewById(R.id.ap_save_mask).setVisibility(View.GONE);
             return;
         }
-        final List<Integer> visited = mChips.getChipMarks(teamNumber, mFlash.getInitTime(index),
-                mStation.getNumber(), mStation.getMACasLong(), 255);
-        ((TextView) findViewById(R.id.ap_visited)).setText(getResources()
-                .getString(R.string.ap_visited, mDistance.pointsNamesFromList(visited)));
-        // Update lists of skipped points
-        final List<Integer> skipped = mDistance.getSkippedPoints(visited);
-        final TextView skippedText = findViewById(R.id.ap_skipped);
-        skippedText.setText(getResources().getString(R.string.ap_skipped,
-                mDistance.pointsNamesFromList(skipped)));
-        if (mDistance.mandatoryPointSkipped(skipped)) {
-            skippedText.setTextColor(ResourcesCompat.getColor(getResources(), R.color.bg_secondary, getTheme()));
-        } else {
-            skippedText.setTextColor(ResourcesCompat.getColor(getResources(), R.color.text_secondary, getTheme()));
+        if (mChips != null) {
+            final List<Integer> visited = mChips.getChipMarks(teamNumber, mFlash.getInitTime(index),
+                    mStation.getNumber(), mStation.getMACasLong(), 255);
+            ((TextView) findViewById(R.id.ap_visited)).setText(getResources()
+                    .getString(R.string.ap_visited, mDistance.pointsNamesFromList(visited)));
+            // Update lists of skipped points
+            final List<Integer> skipped = mDistance.getSkippedPoints(visited);
+            final TextView skippedText = findViewById(R.id.ap_skipped);
+            skippedText.setText(getResources().getString(R.string.ap_skipped,
+                    mDistance.pointsNamesFromList(skipped)));
+            if (mDistance.mandatoryPointSkipped(skipped)) {
+                skippedText.setTextColor(ResourcesCompat.getColor(getResources(), R.color.bg_secondary, getTheme()));
+            } else {
+                skippedText.setTextColor(ResourcesCompat.getColor(getResources(), R.color.text_secondary, getTheme()));
+            }
         }
         // Update saveTeamMask button state
         updateMaskButton();
@@ -451,7 +456,7 @@ public final class ActivePointActivity extends MainActivity
                 flashChanged = true;
             }
             // Try to add team visit as new event
-            if (mChips.join(teamVisit)) {
+            if (mChips != null && mChips.join(teamVisit)) {
                 newEvents = true;
                 // Read marks from chip and to events list
                 final int marks = mStation.getChipRecordsN();
@@ -481,7 +486,7 @@ public final class ActivePointActivity extends MainActivity
             }
         }
         // Save new events (if any) to local db and to main memory
-        if (newEvents) {
+        if (mChips != null && newEvents) {
             // Save new events in local database
             final String result = mChips.saveNewEvents(mMainApplication.getDatabase());
             if (!"".equals(result)) return R.string.err_db_sql_error;

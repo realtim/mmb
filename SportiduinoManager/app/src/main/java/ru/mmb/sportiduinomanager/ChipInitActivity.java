@@ -100,6 +100,13 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
     @Override
     protected void onStart() {
         super.onStart();
+        //Get chips events from main application thread
+        mChips = mMainApplication.getChips();
+        if (mChips == null) {
+            Toast.makeText(mMainApplication, R.string.err_internal_error, Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.chip_init).setChecked(true);
         updateMenuItems(mMainApplication, R.id.chip_init);
@@ -107,8 +114,6 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         overridePendingTransition(0, 0);
         // Get connected station from main application thread
         mStation = mMainApplication.getStation();
-        //Get chips events from main application thread
-        mChips = mMainApplication.getChips();
         // Update screen layout
         updateKeyboardState();
         loadTeam(false);
