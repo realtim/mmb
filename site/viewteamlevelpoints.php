@@ -337,6 +337,11 @@ print('<tr class="head gray">
 // Запрашиваем данные о точках. 
 // можно добавить условие на то, что текущее время должно быть больше времени закрытия точки
 
+$sql = "select count(tlp.teamlevelpoint_id) as cnt
+	from TeamLevelPoints tlp
+ 	where tlp.team_id = $TeamId and (tlp.teamlevelpoint_datetime is null or tlp.teamlevelpoint_datetime <= 0)";
+$TeamNoTimePointsNumber = CSql::singleValue($sql, 'cnt');
+
 $sql = "select tlp.teamlevelpoint_id, lp.levelpoint_id, lp.levelpoint_name, 
 	DATE_FORMAT(tlp.teamlevelpoint_datetime,    '%d.%m %H:%i') as tlp_datetime,
 	tlp.teamlevelpoint_comment,
@@ -353,7 +358,13 @@ $sql = "select tlp.teamlevelpoint_id, lp.levelpoint_id, lp.levelpoint_name,
 	where tlp.team_id = $TeamId";
 
 //$sql = $sql." and COALESCE(lp.levelpoint_endtime, now()) <= now() ";
-$sql = $sql." order by lp.levelpoint_order ASC ";
+if ($TeamNoTimePointsNumber)
+{	
+	$sql = $sql." order by lp.levelpoint_order ASC ";
+} else 
+{
+	$sql = $sql." order by tlp.teamlevelpoint_datetime ASC ";
+}
 //echo  $sql;
 
 $Result = MySqlQuery($sql);
