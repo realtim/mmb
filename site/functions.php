@@ -3629,7 +3629,10 @@ function FindErrors($raid_id, $team_id)
 							    on t.team_id = tlp.team_id
 							    inner join Distances d
 							    on t.distance_id = d.distance_id
+							    inner join LevelPoints lp
+							    on tlp.levelpoint_id = lp.levelpoint_id
 						where  COALESCE(tlp.teamlevelpoint_datetime, 0) > 0
+							and lp.pointtype_id in (1,4,2)
 		                       and $teamRaidCondition
 						group by tlp.team_id
                       ) a
