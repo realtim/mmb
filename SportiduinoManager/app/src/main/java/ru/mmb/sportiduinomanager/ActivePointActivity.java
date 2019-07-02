@@ -1,6 +1,12 @@
 package ru.mmb.sportiduinomanager;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -9,15 +15,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.model.Teams;
+
+import static ru.mmb.sportiduinomanager.StationPoolingService.NOTIFICATION_ID;
 
 /**
  * Provides ability to get chip events from station, mark team members as absent,
@@ -34,19 +39,6 @@ public final class ActivePointActivity extends MainActivity
      * Station which was previously paired via Bluetooth.
      */
     private Station mStation;
-    /**
-     * List of teams and team members from local database.
-     */
-    private Teams mTeams;
-    /**
-     * Chips events received from all stations.
-     */
-    private Chips mChips;
-    /**
-     * Filtered list of events with teams visiting connected station at current point.
-     * One event per team only. Should be equal to records in station flash memory.
-     */
-    private Chips mFlash;
     /**
      * Local copy of distance (downloaded from site or loaded from local database).
      */
@@ -71,16 +63,46 @@ public final class ActivePointActivity extends MainActivity
      */
     private TeamListAdapter mTeamAdapter;
 
-    /**
-     * Timer of background thread for communication with the station.
-     */
-    private Timer mTimer;
-
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
         mMainApplication = (MainApplication) getApplication();
+        mStation = mMainApplication.getStation();
         setContentView(R.layout.activity_activepoint);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(NOTIFICATION_ID));
+
+        // Start background querying of connected station
+        runStationQuerying();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        stopStationQuerying();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+    }
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            onStationDataUpdated();
+        }
+    };
+
+    @Nullable
+    // Create filtered chip events for current station and point
+    private Chips getFlash() {
+        //Get chips events from main application thread
+        Chips chips = mMainApplication.getChips();
+
+        if (chips != null && mStation != null) {
+            return chips.getChipsAtPoint(mStation.getNumber(), mStation.getMACasLong());
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -92,16 +114,10 @@ public final class ActivePointActivity extends MainActivity
         // Disable startup animation
         overridePendingTransition(0, 0);
 
-        // Get connected station from main application thread
-        mStation = mMainApplication.getStation();
-        // Get teams and members from main application thread
-        mTeams = mMainApplication.getTeams();
-        //Get chips events from main application thread
-        mChips = mMainApplication.getChips();
-        // Create filtered chip events for current station and point
-        if (mChips != null && mStation != null) {
-            mFlash = mChips.getChipsAtPoint(mStation.getNumber(), mStation.getMACasLong());
-        }
+        Chips flash = getFlash();
+        if (flash == null) return;
+        Teams teams = mMainApplication.getTeams();
+
         // Get distance
         mDistance = mMainApplication.getDistance();
         // Initialize masks
@@ -121,30 +137,17 @@ public final class ActivePointActivity extends MainActivity
         final RecyclerView.LayoutManager teamsLM = new LinearLayoutManager(this);
         teamsList.setLayoutManager(teamsLM);
         // Specify an RecyclerView adapter and initialize it
-        mTeamAdapter = new TeamListAdapter(this, mTeams, mFlash);
+        mTeamAdapter = new TeamListAdapter(this, teams, flash);
         teamsList.setAdapter(mTeamAdapter);
         // Restore team list position and update activity layout
         int restoredPosition = mMainApplication.getTeamListPosition();
-        if (restoredPosition > mFlash.size()) {
-            restoredPosition = mFlash.size();
+        if (restoredPosition > flash.size()) {
+            restoredPosition = flash.size();
             mMainApplication.setTeamListPosition(restoredPosition);
         }
         updateMasks(true, restoredPosition);
         mTeamAdapter.setPosition(restoredPosition);
         updateLayout();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Start background querying of connected station
-        runStationQuerying();
-    }
-
-    @Override
-    protected void onPause() {
-        stopStationQuerying();
-        super.onPause();
     }
 
     /**
@@ -200,25 +203,32 @@ public final class ActivePointActivity extends MainActivity
      * @param view View of button clicked
      */
     public void saveTeamMask(final View view) {
+
+        //Get chips events from main application thread
+        Chips chips = mMainApplication.getChips();
+        Teams teams = mMainApplication.getTeams();
+        // Create filtered chip events for current station and point
+        Chips flash = getFlash();
+
         // Check team mask and station presence
-        if (mTeamMask == 0 || mStation == null || mFlash == null || mFlash.size() == 0) {
+        if (mTeamMask == 0 || mStation == null || flash == null || flash.size() == 0) {
             Toast.makeText(mMainApplication,
                     R.string.err_internal_error, Toast.LENGTH_LONG).show();
             return;
         }
         // Get team number
-        final int index = mFlash.size() - 1 - mTeamAdapter.getPosition();
-        final int teamNumber = mFlash.getTeamNumber(index);
+        final int index = flash.size() - 1 - mTeamAdapter.getPosition();
+        final int teamNumber = flash.getTeamNumber(index);
         // Add new event to global list with same point time and new mask
-        if (!mChips.updateTeamMask(teamNumber, mTeamMask, mStation, mMainApplication.getDatabase(),
+        if (!chips.updateTeamMask(teamNumber, mTeamMask, mStation, mMainApplication.getDatabase(),
                 false)) {
             Toast.makeText(mMainApplication,
                     R.string.err_internal_error, Toast.LENGTH_LONG).show();
             return;
         }
-        mMainApplication.setChips(mChips, false);
+        mMainApplication.setChips(chips, false);
         // Replace event in copy of station memory
-        if (!mFlash.updateTeamMask(teamNumber, mTeamMask, mStation, mMainApplication.getDatabase(),
+        if (!flash.updateTeamMask(teamNumber, mTeamMask, mStation, mMainApplication.getDatabase(),
                 true)) {
             Toast.makeText(mMainApplication,
                     R.string.err_internal_error, Toast.LENGTH_LONG).show();
@@ -231,7 +241,7 @@ public final class ActivePointActivity extends MainActivity
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        if (!mStation.updateTeamMask(teamNumber, mFlash.getInitTime(index), mTeamMask)) {
+        if (!mStation.updateTeamMask(teamNumber, flash.getInitTime(index), mTeamMask)) {
             Toast.makeText(mMainApplication,
                     mStation.getLastError(true), Toast.LENGTH_LONG).show();
             runStationQuerying();
@@ -244,7 +254,7 @@ public final class ActivePointActivity extends MainActivity
         // Disable button after successful saving of new mask
         updateMaskButton();
         // Update list of team members and their selection
-        final List<String> teamMembers = mTeams.getMembersNames(teamNumber);
+        final List<String> teamMembers = teams.getMembersNames(teamNumber);
         mMemberAdapter.updateList(teamMembers, mOriginalMask, mTeamMask);
     }
 
@@ -256,9 +266,11 @@ public final class ActivePointActivity extends MainActivity
      * @param position Position of selected team in the list
      */
     private void updateMasks(final boolean restore, final int position) {
+        Chips flash = getFlash();
+        if (flash == null) return;
         // Get the original mask of selected team
-        final int index = mFlash.size() - 1 - position;
-        mOriginalMask = mFlash.getTeamMask(index);
+        final int index = flash.size() - 1 - position;
+        mOriginalMask = flash.getTeamMask(index);
         if (restore) {
             // Restore current mask from main application
             mTeamMask = mMainApplication.getTeamMask();
@@ -278,30 +290,35 @@ public final class ActivePointActivity extends MainActivity
      * Update layout according to activity state.
      */
     private void updateLayout() {
+        // Get teams and members from main application thread
+        Teams teams = mMainApplication.getTeams();
+        Chips chips = mMainApplication.getChips();
+        Chips flash = getFlash();
+        if (flash == null) return;
         // Update number of teams visited this active point
         // (station clock will be updated in background thread)
         ((TextView) findViewById(R.id.ap_total_teams)).setText(getResources()
-                .getString(R.string.ap_total_teams, mFlash.size()));
+                .getString(R.string.ap_total_teams, flash.size()));
         // Hide last team block when no teams have been visited the station
-        if (mFlash == null || mFlash.size() == 0) {
+        if (flash.size() == 0) {
             findViewById(R.id.ap_team_data).setVisibility(View.GONE);
             return;
         }
         // Get index in mFlash team visits list to display
-        final int index = mFlash.size() - 1 - mTeamAdapter.getPosition();
+        final int index = flash.size() - 1 - mTeamAdapter.getPosition();
         // Update team number and name
-        final int teamNumber = mFlash.getTeamNumber(index);
+        final int teamNumber = flash.getTeamNumber(index);
         String teamName;
-        if (mTeams == null) {
+        if (teams == null) {
             teamName = "";
         } else {
-            teamName = mTeams.getTeamName(teamNumber);
+            teamName = teams.getTeamName(teamNumber);
         }
         ((TextView) findViewById(R.id.ap_team_name)).setText(getResources()
                 .getString(R.string.ap_team_name, teamNumber, teamName));
         // Update team time
         ((TextView) findViewById(R.id.ap_team_time)).setText(
-                Chips.printTime(mFlash.getTeamTime(index), "dd.MM  HH:mm:ss"));
+                Chips.printTime(flash.getTeamTime(index), "dd.MM  HH:mm:ss"));
         // Update lists of visited points
         if (mDistance == null) {
             // TODO: show simplified list of visited points
@@ -310,7 +327,7 @@ public final class ActivePointActivity extends MainActivity
             findViewById(R.id.ap_save_mask).setVisibility(View.GONE);
             return;
         }
-        final List<Integer> visited = mChips.getChipMarks(teamNumber, mFlash.getInitTime(index),
+        final List<Integer> visited = chips.getChipMarks(teamNumber, flash.getInitTime(index),
                 mStation.getNumber(), mStation.getMACasLong(), 255);
         ((TextView) findViewById(R.id.ap_visited)).setText(getResources()
                 .getString(R.string.ap_visited, mDistance.pointsNamesFromList(visited)));
@@ -327,7 +344,7 @@ public final class ActivePointActivity extends MainActivity
         // Update saveTeamMask button state
         updateMaskButton();
         // Get list of team members
-        final List<String> teamMembers = mTeams.getMembersNames(teamNumber);
+        final List<String> teamMembers = teams.getMembersNames(teamNumber);
         // Update list of team members and their selection
         mMemberAdapter.updateList(teamMembers, mOriginalMask, mTeamMask);
         // Update number of team members
@@ -351,228 +368,54 @@ public final class ActivePointActivity extends MainActivity
         }
     }
 
-    /**
-     * Get all events for all new teams
-     * which has been visited the station after the last check.
-     * Returns -1 if some new teams has been visited the station,
-     * 0 if no new teams has been fetched,
-     * > 0 indicates an error code.
-     *
-     * @return -1/0/error code
-     */
-    private int fetchTeamsVisits() {
-        // Do nothing if no teams visited us yet
-        if (mStation.getChipsRegistered() == 0) return 0;
-        // Number of team visits at local db and at station are the same?
-        // Time of last visit in local db and at station is the same?
-        // (it can change without changing of number of teams)
-        if (mFlash.size() == mStation.getChipsRegistered()
-                && mFlash.getTeamTime(mFlash.size() - 1) == mStation.getLastChipTime()) {
-            return 0;
-        }
-        // Ok, we have some new team visits
-        boolean fullDownload = false;
-        // Clone previous teams list from station
-        final List<Integer> prevLastTeams = new ArrayList<>(mStation.lastTeams());
-        // Ask station for new list
-        if (!mStation.fetchLastTeams()) {
-            fullDownload = true;
-        }
-        final List<Integer> currLastTeams = mStation.lastTeams();
-        // Check if teams from previous list were copied from flash
-        for (final int team : prevLastTeams) {
-            if (!mFlash.contains(team, mStation.getNumber())) {
-                // Something strange has been happened, do full download of all teams
-                fullDownload = true;
-            }
-        }
-        // Start building the final list of teams to fetch
-        List<Integer> fetchTeams = new ArrayList<>();
-        for (final int team : currLastTeams) {
-            if (!prevLastTeams.contains(team)) {
-                fetchTeams.add(team);
-            }
-        }
-        // If all members of last teams buffer are new to us,
-        // then we need to make a full rescan
-        if (fetchTeams.size() == Station.LAST_TEAMS_LEN) {
-            fullDownload = true;
-        }
-        // If all last teams are the same but last team time has been changed
-        // then we need to rescan all teams from the buffer
-        if (fetchTeams.isEmpty()) {
-            fetchTeams = currLastTeams;
-        }
-        // For full rescan of all teams make a list of all registered teams
-        if (fullDownload) {
-            fetchTeams = mTeams.getTeamList();
-        }
-        // Get visit parameters for all teams in fetch list
-        boolean flashChanged = false;
-        boolean newEvents = false;
-        int stationError = 0;
-        for (final int teamNumber : fetchTeams) {
-            // Fetch data for the team visit to station
-            int newError = 0;
-            if (!mStation.fetchTeamRecord(teamNumber)) {
-                newError = mStation.getLastError(true);
-                // Ignore data absence for teams which are not in last teams list
-                // Most probable these teams did not visited the station at all
-                if (newError == R.string.err_station_no_data
-                        && !currLastTeams.contains(teamNumber)) {
-                    continue;
-                }
-                // Abort scanning in case of serious error
-                // Continue scanning in case of problems with copying data from chip to memory
-                if (newError != R.string.err_station_flash_empty
-                        && newError != R.string.err_station_no_data) {
-                    return newError;
-                }
-            }
-            // Get team visit as an event
-            final Chips teamVisit = mStation.getChipEvents();
-            if (teamVisit.size() == 0) {
-                // Team visit was not registered at all due to string.err_station_no_data error
-                // Create synthetic team visit with zero chip init time
-                final List<String> teamMembers = mTeams.getMembersNames(teamNumber);
-                int originalMask = 0;
-                for (int i = 0; i < teamMembers.size(); i++) {
-                    originalMask = originalMask | (1 << i);
-                }
-                teamVisit.addNewEvent(mStation, 0, teamNumber, originalMask,
-                        mStation.getNumber(), mStation.getLastChipTime());
-            }
-            // Prepare to clone init time and mask from this event to marks from the chip
-            if (teamNumber != teamVisit.getTeamNumber(0)) return R.string.err_station_team_changed;
-            final long initTime = teamVisit.getInitTime(0);
-            final int teamMask = teamVisit.getTeamMask(0);
-            // Update copy of station flash memory
-            if (mFlash.merge(teamVisit)) {
-                flashChanged = true;
-            }
-            // Try to add team visit as new event
-            if (mChips.join(teamVisit)) {
-                newEvents = true;
-                // Read marks from chip and to events list
-                final int marks = mStation.getChipRecordsN();
-                int fromMark = 0;
-                do {
-                    if (marks <= 0) break;
-                    int toRead = marks;
-                    if (toRead > Station.MAX_MARK_COUNT) {
-                        toRead = Station.MAX_MARK_COUNT;
-                    }
-                    if (!mStation.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
-                        return mStation.getLastError(true);
-                    }
-                    fromMark += toRead;
-                    // Add fetched chip marks to local list of events
-                    mChips.join(mStation.getChipEvents());
-                } while (fromMark < marks);
-            } else {
-                // Ignore recurrent problem with copying data from chip to memory
-                // as we already created synthetic team visit and warned a user
-                newError = 0;
-            }
-            // Save non-fatal station error
-            if (newError == R.string.err_station_flash_empty
-                    || newError == R.string.err_station_no_data) {
-                stationError = newError;
-            }
-        }
-        // Save new events (if any) to local db and to main memory
-        if (newEvents) {
-            // Save new events in local database
-            final String result = mChips.saveNewEvents(mMainApplication.getDatabase());
-            if (!"".equals(result)) return R.string.err_db_sql_error;
-            // Copy changed list of chips events to main application
-            mMainApplication.setChips(mChips, false);
-        }
-        // Sort visits by their time
-        if (flashChanged) {
-            mFlash.sort();
-        }
-        // Report non-fatal errors which has been occurred during scanning
-        if (stationError != 0) {
-            return stationError;
-        }
-        // Report 'data changed' for updating UI
-        if (newEvents || flashChanged) {
-            return -1;
+    private void onStationDataUpdated() {
+        Chips flash = getFlash();
+        if (flash == null) return;
+
+        // Save currently selected team
+        final int selectedTeamN = flash.getTeamNumber(flash.size() - 1
+                - mTeamAdapter.getPosition());
+
+        // Update station clock in UI
+        ((TextView) findViewById(R.id.station_clock)).setText(
+                Chips.printTime(mStation.getStationTime(), "dd.MM  HH:mm:ss"));
+        // Update layout if new data has been arrived and/or error has been occurred
+
+        if (mTeamAdapter.getPosition() == 0) {
+            // Reset current mask if we at first item of team list
+            // as it is replaced with new team just arrived
+            updateMasks(false, 0);
         } else {
-            return 0;
+            // Change position in the list to keep current team selected
+            int newPosition = 0;
+            for (int i = 0; i < flash.size(); i++) {
+                if (flash.getTeamNumber(i) == selectedTeamN) {
+                    newPosition = flash.size() - i - 1;
+                    break;
+                }
+            }
+            mTeamAdapter.setPosition(newPosition);
+            mMainApplication.setTeamListPosition(newPosition);
         }
+        // Update team list as we have a new team in it
+        mTeamAdapter.notifyDataSetChanged();
+        // Update activity layout as some elements has been changed
+        updateLayout();
+        // Menu should be changed if we have new event unsent to site
+        updateMenuItems(mMainApplication, R.id.active_point);
     }
 
     /**
      * Background thread for periodic querying of connected station.
      */
     private void runStationQuerying() {
-        stopStationQuerying();
-        mTimer = new Timer();
-        mTimer.scheduleAtFixedRate(new TimerTask() {
-            /**
-             * Run every 1s, get station status and get new team data (if any).
-             */
-            public void run() {
-                // Station was not connected yet
-                if (mStation == null) {
-                    stopStationQuerying();
-                    return;
-                }
-                // Save currently selected team
-                final int selectedTeamN = mFlash.getTeamNumber(mFlash.size() - 1
-                        - mTeamAdapter.getPosition());
-                // Fetch current station status
-                mStation.fetchStatus();
-                // Fetch new new teams visits
-                final int result = fetchTeamsVisits();
-                // Update activity objects
-                runOnUiThread(() -> {
-                    // Update station clock in UI
-                    ((TextView) findViewById(R.id.station_clock)).setText(
-                            Chips.printTime(mStation.getStationTime(), "dd.MM  HH:mm:ss"));
-                    // Update layout if new data has been arrived and/or error has been occurred
-                    if (result != 0) {
-                        if (mTeamAdapter.getPosition() == 0) {
-                            // Reset current mask if we at first item of team list
-                            // as it is replaced with new team just arrived
-                            updateMasks(false, 0);
-                        } else {
-                            // Change position in the list to keep current team selected
-                            int newPosition = 0;
-                            for (int i = 0; i < mFlash.size(); i++) {
-                                if (mFlash.getTeamNumber(i) == selectedTeamN) {
-                                    newPosition = mFlash.size() - i - 1;
-                                    break;
-                                }
-                            }
-                            mTeamAdapter.setPosition(newPosition);
-                            mMainApplication.setTeamListPosition(newPosition);
-                        }
-                        // Update team list as we have a new team in it
-                        mTeamAdapter.notifyDataSetChanged();
-                        // Update activity layout as some elements has been changed
-                        updateLayout();
-                        // Menu should be changed if we have new event unsent to site
-                        updateMenuItems(mMainApplication, R.id.active_point);
-                    }
-                    // Display station communication error (if any)
-                    if (result > 0) {
-                        Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        }, 1000, 1000);
+        startService(new Intent(ActivePointActivity.this, StationPoolingService.class));
     }
 
     /**
      * Stops rescheduling of periodic station query.
      */
     private void stopStationQuerying() {
-        if (mTimer != null) {
-            mTimer.cancel();
-            mTimer.purge();
-        }
+        stopService(new Intent(ActivePointActivity.this, StationPoolingService.class));
     }
 }
