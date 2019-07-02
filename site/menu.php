@@ -338,7 +338,7 @@ echo '4 ';
 	if ($Administrator || $Moderator )
 	{
 		print('<tr><td><a href="javascript:ViewLevelPoints();" title="Список точек (КП) для выбранного выше ММБ">Точки (КП)</a></td></tr>'."\r\n");
-		print('<tr><td><a href="javascript:ViewScanPoints();" title="Список точек сканирования для выбранного выше ММБ">Скан-точки</a></td></tr>'."\r\n");
+	//	print('<tr><td><a href="javascript:ViewScanPoints();" title="Список точек сканирования для выбранного выше ММБ">Скан-точки</a></td></tr>'."\r\n");
 		print('<tr><td><a href="javascript:ViewLevelPointDiscounts();" title="Интервалы КП с амнистией">Амнистия</a></td></tr>'."\r\n");
 		print('<tr><td><a href="javascript:ViewAdminDataPage();" title="Экспорт-импорт данных с планшетов">Обмен данными</a></td></tr>'."\r\n");
 		print('<tr><td><a href="javascript:ViewAdminUnionPage();" title="Управление объединением команд">Объединение команд</a></td></tr>'."\r\n");
