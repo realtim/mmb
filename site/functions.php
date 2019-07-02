@@ -3013,7 +3013,7 @@ function FindErrors($raid_id, $team_id)
 				$points[$id]['min_time'] = $Row['levelpoint_mindatetime'];
 			if ($Row['levelpoint_maxdatetime'] && ($Row['levelpoint_maxdatetime'] != "0000-00-00 00:00:00"))
 				$points[$id]['max_time'] = $Row['levelpoint_maxdatetime'];
-			if ($Row['scanpoint_id']) $points[$id]['scanpoint'] = $Row['scanpoint_id'];
+			//if ($Row['scanpoint_id']) $points[$id]['scanpoint'] = $Row['scanpoint_id'];
 			// У точек С, Ф, ОКП (со сканерами) и СК должно быть корретное время работы
 			if (($points[$id]['pointtype'] == 1) || ($points[$id]['pointtype'] == 2) || (($points[$id]['pointtype'] == 3) && isset($points[$id]['scanpoint'])) || ($points[$id]['pointtype'] == 4))
 			{
@@ -3022,22 +3022,22 @@ function FindErrors($raid_id, $team_id)
 				if ($points[$id]['max_time'] < $points[$id]['max_time']) die("У точки $id некорректный диапазон работы");
 			}
 			// На точках С, Ф и СК должно быть сканеры
-			if (($points[$id]['pointtype'] == 1) || ($points[$id]['pointtype'] == 2) || ($points[$id]['pointtype'] == 4))
-			{
-				if (!isset($points[$id]['scanpoint'])) die("У точки $id не указан scanpoint_id");
-			}
+			//if (($points[$id]['pointtype'] == 1) || ($points[$id]['pointtype'] == 2) || ($points[$id]['pointtype'] == 4))
+			//{
+			//	if (!isset($points[$id]['scanpoint'])) die("У точки $id не указан scanpoint_id");
+			//}
 			// На обычном КП не должно быть сканеров и времени работы точки
-			if ($points[$id]['pointtype'] == 5)
-			{
-				if (isset($points[$id]['min_time']) || isset($points[$id]['max_time'])) die("У точки $id не должно быть времени работы");
-				if (isset($points[$id]['scanpoint'])) die("На точке $id не должно быть сканеров");
-			}
+			//if ($points[$id]['pointtype'] == 5)
+			//{
+			//	if (isset($points[$id]['min_time']) || isset($points[$id]['max_time'])) die("У точки $id не должно быть времени работы");
+			//	if (isset($points[$id]['scanpoint'])) die("На точке $id не должно быть сканеров");
+			//}
 			// Остальные типы точек не поддерживаем
 			if (($points[$id]['pointtype'] < 1) || ($points[$id]['pointtype'] > 5)) die("Неподдерживаемый тип точки $id");
 			// Добавляем обязательные точки в отдельный массив
 			if (($points[$id]['pointtype'] >= 1) && ($points[$id]['pointtype'] <= 4)) $mandatory[$id] = $points[$id];
 			// Добавляем точки со сканерами в отдельный массив
-			if (isset($points[$id]['scanpoint'])) $scanners[$id] = $points[$id];
+			//if (isset($points[$id]['scanpoint'])) $scanners[$id] = $points[$id];
 			// Формируем массив с "карточками" по виртуальным этапам
 			if ($points[$id]['pointtype'] == 1)
 			{
@@ -3087,13 +3087,13 @@ function FindErrors($raid_id, $team_id)
 				// Команда посетила точку, не принадлежащую дистанции
 				if (!$errors[$id] && !isset($points[$id])) $errors[$id] = 21;
 				// На КП без сканера не может быть записи со временем посещения точки
-				if (!$errors[$id] && !isset($scanners[$id]) && $team_time) $errors[$id] = 22;
+				//if (!$errors[$id] && !isset($scanners[$id]) && $team_time) $errors[$id] = 22;
 				// На КП со сканером не может быть записи о посещении без времени
-				if (!$errors[$id] && isset($scanners[$id]) && !$team_time)
-				{
+				//if (!$errors[$id] && isset($scanners[$id]) && !$team_time)
+				//{
 					// для ОКП - предупреждение, для остальных типов КП - ошибка
-					if ($points[$id]['pointtype'] == 3) $errors[$id] = -3; else $errors[$id] = 23;
-				}
+				//	if ($points[$id]['pointtype'] == 3) $errors[$id] = -3; else $errors[$id] = 23;
+				//}
 				// Время посещения точки должно быть в интервале работы точки
 				if (!$errors[$id] && $team_time &&
 					(($team_time < $points[$id]['min_time']) || ($team_time > $points[$id]['max_time']))) $errors[$id] = 24;
@@ -3133,15 +3133,15 @@ function FindErrors($raid_id, $team_id)
 				$errors[$last_visited_id] = 27;
 
 			// Время посещение точек со сканерами должно возрастать от точки к точке
-			$prev_time = -1;
-			foreach ($scanners as $id => $point)
-				if (isset($results[$id]))
-				{
-					if ($results[$id]['team_time'] == "") continue;
-					$curr_time = strtotime($results[$id]['team_time']);
-					if (($prev_time <> -1) && !$errors[$id] && ($curr_time <= $prev_time)) $errors[$id] = 28;
-					$prev_time = $curr_time;
-				}
+			//$prev_time = -1;
+			//foreach ($scanners as $id => $point)
+			//	if (isset($results[$id]))
+			//	{
+			//		if ($results[$id]['team_time'] == "") continue;
+			//		$curr_time = strtotime($results[$id]['team_time']);
+			//		if (($prev_time <> -1) && !$errors[$id] && ($curr_time <= $prev_time)) $errors[$id] = 28;
+			//		$prev_time = $curr_time;
+			//	}
 
 			// Анализируем КП, расположенные на одной карточке (то есть на одном этапе в старой идеологии)
 			foreach ($cards as $card)
