@@ -906,7 +906,7 @@ elseif ($action == 'AddLevelPoint')
         $pPointName = $_POST['PointName'];
         $pPointPenalty = mmb_validateInt($_POST, 'PointPenalty');
 
-	$pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
+	//$pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
 //	$pLevelId = $_POST['LevelId'];
 
 	$MinYDTs = CSql::timeString2($_POST, 'MinYear', 'MinDate', 'MinTime');
@@ -943,9 +943,9 @@ elseif ($action == 'AddLevelPoint')
 	     
 	$sql = "insert into LevelPoints (distance_id, levelpoint_name, pointtype_id,
 		levelpoint_penalty, levelpoint_order, levelpoint_hide,
-		levelpoint_mindatetime, levelpoint_maxdatetime, scanpoint_id)
+		levelpoint_mindatetime, levelpoint_maxdatetime)
 		values ($pDistanceId, '$pPointName', $pPointTypeId,
-		        $pPointPenalty , ".($LastOrder + 1).", 0, $MinYDTs, $MaxYDTs, $pScanPointId)";
+		        $pPointPenalty , ".($LastOrder + 1).", 0, $MinYDTs, $MaxYDTs)";
 
 	// При insert должен вернуться послений id - это реализовано в MySqlQuery
 	$LevelPointId = MySqlQuery($sql);
@@ -998,7 +998,7 @@ elseif ($action == 'LevelPointChange')
         $pPointName = trim($_POST['PointName']);
         $pPointPenalty = mmb_validateInt($_POST, 'PointPenalty');
 
-	$pScanPointId = $_POST['ScanPointId'];		// todo почему где-то оно -- int, а где-то -- строка
+	//$pScanPointId = $_POST['ScanPointId'];		// todo почему где-то оно -- int, а где-то -- строка
 //	$pLevelId = $_POST['LevelId'];
 
 	$MinYDTs = CSql::timeString2($_POST, 'MinYear', 'MinDate', 'MinTime');
@@ -1020,9 +1020,9 @@ elseif ($action == 'LevelPointChange')
 
 
 //	                                ,level_id = '".$pLevelId."'
+	 // ,scanpoint_id = '$pScanPointId'
 		
         $sql = "update LevelPoints  set pointtype_id = $pPointTypeId
-	                                ,scanpoint_id = '$pScanPointId'
 	                                ,levelpoint_name = '$pPointName'
 	                                ,levelpoint_penalty = $pPointPenalty
 	                                ,levelpoint_mindatetime = $MinYDTs
