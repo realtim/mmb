@@ -14,37 +14,41 @@
 #define UART_SPEED 38400
 
 //версия прошивки, номер пишется в чипы
-#define FW_VERSION						106
+#define FW_VERSION					106
 
 #ifdef DEBUG
-#define DEBUG_RX						2 //
-#define DEBUG_TX						6 //
+#define DEBUG_RX					2 //
+#define DEBUG_TX					6 //
 #endif
 
-#define BUZZER_PIN						3 //пищалка
-#define LED_PIN							4 //светодиод синий
-#define RTC_ENABLE_PIN					5 //питание часов кроме батарейного
+#define BUZZER_PIN					3 //пищалка
+#define LED_PIN						4 //светодиод синий
+#define RTC_ENABLE_PIN				5 //питание часов кроме батарейного
 
-#define FLASH_ENABLE_PIN				7 //SPI enable pin
-#define FLASH_SS_PIN					8 //SPI SELECT pin
-#define RFID_RST_PIN					9 //рфид модуль reset
-#define RFID_SS_PIN						10 //рфид модуль chip_select
-//#define RFID_MOSI_PIN					11 //рфид модуль
-//#define RFID_MISO_PIN					12 //рфид модуль
-//#define RFID_SCK_PIN					13 //рфид модуль
-#define BATTERY_PIN						A0 //замер напряжения батареи
-#define ERROR_LED_PIN					A1 //светодиод ошибки (красный)
+#define FLASH_ENABLE_PIN			7 //SPI enable pin
+#define FLASH_SS_PIN				8 //SPI SELECT pin
+#define RFID_RST_PIN				9 //рфид модуль reset
+#define RFID_SS_PIN					10 //рфид модуль chip_select
+//#define RFID_MOSI_PIN				11 //рфид модуль
+//#define RFID_MISO_PIN				12 //рфид модуль
+//#define RFID_SCK_PIN				13 //рфид модуль
+#define BATTERY_PIN					A0 //замер напряжения батареи
+#define ERROR_LED_PIN				A1 //светодиод ошибки (красный)
 
 //номер станции в eeprom памяти
-#define EEPROM_STATION_NUMBER	00
+#define EEPROM_STATION_NUMBER		00
 //номер режима в eeprom памяти
-#define EEPROM_STATION_MODE		10
+#define EEPROM_STATION_MODE			10
 //коэфф. пересчета значения ADC в вольты = 0,00587
-#define EEPROM_VOLTAGE_KOEFF	20
+#define EEPROM_VOLTAGE_KOEFF		20
 //усиление сигнала RFID
-#define EEPROM_GAIN				40
+#define EEPROM_GAIN					40
 //тип чипа, с которым должна работать станция
-#define EEPROM_CHIP_TYPE				50
+#define EEPROM_CHIP_TYPE			50
+//размер блока на флэше под данные команды
+#define EEPROM_TEAM_BLOCK_SIZE				60
+//размер стираемого блока на флэше
+#define EEPROM_FLASH_BLOCK_SIZE				70
 
 //команды
 #define COMMAND_SET_MODE			0x80
@@ -64,6 +68,8 @@
 #define COMMAND_SET_KOEFF			0x8e
 #define COMMAND_SET_GAIN			0x8f
 #define COMMAND_SET_CHIP_TYPE		0x90
+#define COMMAND_SET_TEAM_FLASH_SIZE	0x91
+#define COMMAND_SET_FLASH_BLOCK_SIZE	0x92
 
 //размеры данных для команд
 #define DATA_LENGTH_SET_MODE			1
@@ -83,6 +89,8 @@
 #define DATA_LENGTH_SET_KOEFF			4
 #define DATA_LENGTH_SET_GAIN			1
 #define DATA_LENGTH_SET_CHIP_TYPE		1
+#define DATA_LENGTH_SET_TEAM_FLASH_SIZE	2
+#define DATA_LENGTH_SET_FLASH_BLOCK_SIZE	2
 
 //ответы станции
 #define REPLY_SET_MODE				0x90
@@ -101,30 +109,33 @@
 #define REPLY_GET_CONFIG			0x9d
 #define REPLY_SET_KOEFF				0x9e
 #define REPLY_SET_GAIN				0x9f
-#define REPLY_SET_CHIP_TYPE		0xa0
+#define REPLY_SET_CHIP_TYPE			0xa0
+#define REPLY_SET_TEAM_FLASH_SIZE	0xa1
+#define REPLY_SET_FLASH_BLOCK_SIZE	0xa2
 
 //режимы станции
-#define MODE_INIT		0
-#define MODE_START_KP	1
-#define MODE_FINISH_KP	2
+#define MODE_INIT					0
+#define MODE_START_KP				1
+#define MODE_FINISH_KP				2
 
 //коды ошибок станции
-#define OK				0
-#define WRONG_STATION	1
-#define READ_ERROR		2
-#define WRITE_ERROR		3
-#define LOW_INIT_TIME	4
-#define WRONG_CHIP		5
-#define NO_CHIP			6
-#define BUFFER_OVERFLOW	7
-#define WRONG_DATA		8
-#define WRONG_UID		9
-#define WRONG_TEAM		10
-#define NO_DATA			11
-#define WRONG_COMMAND	12
-#define ERASE_ERROR		13
-#define WRONG_CHIP_TYPE	14
-#define WRONG_MODE		15
+#define OK							0
+#define WRONG_STATION				1
+#define READ_ERROR					2
+#define WRITE_ERROR					3
+#define LOW_INIT_TIME				4
+#define WRONG_CHIP					5
+#define NO_CHIP						6
+#define BUFFER_OVERFLOW				7
+#define WRONG_DATA					8
+#define WRONG_UID					9
+#define WRONG_TEAM					10
+#define NO_DATA						11
+#define WRONG_COMMAND				12
+#define ERASE_ERROR					13
+#define WRONG_CHIP_TYPE				14
+#define WRONG_MODE					15
+#define WRONG_SIZE					16
 
 //страницы в чипе. 0-7 служебные, 8-... для отметок
 #define PAGE_UID		0
@@ -145,14 +156,14 @@ uint8_t TAG_MAX_PAGE = 130;
 
 
 //размер записи лога (на 1 чип)
-#define LOG_RECORD_LENGTH	1024
-#define ERASE_BLOCK_LENGTH 4096
+uint16_t TEAM_FLASH_SIZE = 1024;
+uint16_t FLASH_BLOCK_SIZE = 4096;
 
-uint32_t tmpBufferStart = 4 * 1024 * 1024 - ERASE_BLOCK_LENGTH;
 //максимальное кол-во записей в логе
-uint32_t LOG_LENGTH = 4 * 1024 - ERASE_BLOCK_LENGTH / LOG_RECORD_LENGTH;
+uint32_t maxTeamNumber = 1; // = 4 * 1024 - FLASH_BLOCK_SIZE / TEAM_FLASH_SIZE;
 
 //описание протокола
+#define PACKET_ID	2
 #define STATION_NUMBER_BYTE	3
 #define LENGTH_BYTE			4
 #define COMMAND_BYTE		5
@@ -260,10 +271,10 @@ void setup()
 	byte flag = 0;
 	for (byte i = 0; i < 4; i++)
 	{
-		p.byte[i] = eepromread(EEPROM_VOLTAGE_KOEFF + i * 3); //Read the station number from the EEPROM
+		p.byte[i] = eepromread(EEPROM_VOLTAGE_KOEFF + i * 3);
 		if (p.byte[i] == 0xff) flag++;
 	}
-	if (flag < 4) voltageCoeff = p.number;
+	voltageCoeff = p.number;
 
 	//читаем коэфф. усиления
 	gainCoeff = eepromread(EEPROM_GAIN);
@@ -278,8 +289,22 @@ void setup()
 
 	uint32_t flashSize = SPIflash.getCapacity();
 
-	tmpBufferStart = flashSize - ERASE_BLOCK_LENGTH;
-	LOG_LENGTH = (flashSize - ERASE_BLOCK_LENGTH) / LOG_RECORD_LENGTH;
+	//читаем размер блока команды
+	byte n[2];
+	for (byte i = 0; i < 2; i++)
+	{
+		n[i] = eepromread(EEPROM_TEAM_BLOCK_SIZE + i * 3);
+	}
+	TEAM_FLASH_SIZE = n[0] * 256 + n[1];
+
+	//читаем размер стираемого блока
+	for (byte i = 0; i < 2; i++)
+	{
+		n[i] = eepromread(EEPROM_FLASH_BLOCK_SIZE + i * 3);
+	}
+	FLASH_BLOCK_SIZE = n[0] * 256 + n[1];
+
+	maxTeamNumber = (flashSize - FLASH_BLOCK_SIZE) / TEAM_FLASH_SIZE - 1;
 
 	totalChipsChecked = refreshChipCounter();
 
@@ -387,7 +412,7 @@ void executeCommand()
 		else errorLengthFlag = true;
 		break;
 	case COMMAND_ERASE_FLASH_SECTOR:
-		if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_ERASE_FLASH_SECTOR) eraseFlashSector();
+		if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_ERASE_FLASH_SECTOR) eraseTeamFlash();
 		else errorLengthFlag = true;
 		break;
 	case COMMAND_GET_CONFIG:
@@ -404,6 +429,14 @@ void executeCommand()
 		break;
 	case COMMAND_SET_CHIP_TYPE:
 		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_CHIP_TYPE) setChipType();
+		else errorLengthFlag = true;
+		break;
+	case COMMAND_SET_TEAM_FLASH_SIZE:
+		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_TEAM_FLASH_SIZE) setTeamFlashSize();
+		else errorLengthFlag = true;
+		break;
+	case COMMAND_SET_FLASH_BLOCK_SIZE:
+		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_FLASH_BLOCK_SIZE) setFlashBlockSize();
 		else errorLengthFlag = true;
 		break;
 	}
@@ -662,34 +695,40 @@ void initChip()
 		return;
 	}
 
+	//читаем блок информации
+	if (!ntagRead4pages(PAGE_UID))
+	{
+		SPI.end();
+		return;
+	}
+
+	/*Фильтруем
+1 - неправильный тип чипа*/
+	if (ntag_page[14] != chipType)
+	{
+		SPI.end();
+		errorBeep(2);
+		return;
+	}
+
+	//читаем блок информации
+	if (!ntagRead4pages(PAGE_CHIP_NUM))
+	{
+		SPI.end();
+		return;
+	}
+
+	/*	Фильтруем
+	1 - неправильный тип чипа	*/
+	if (ntag_page[2] != NTAG_MARK)
+	{
+		SPI.end();
+		errorBeep(2);
+		return;
+	}
+
 	//0-1: номер команды
 	//2-3 : маска участников
-	//ПОСЛЕ ММБ!!! 4 - 11: UID чипа
-
-	//проверяем UID карты
-	/*if (!ntagRead4pages(PAGE_UID))
-	{
-		SPI.end();
-	digitalWrite(LED_PIN, LOW);
-		sendError(READ_ERROR, REPLY_INIT_CHIP);
-		return;
-	}
-	bool flag = true;
-	for (uint8_t i = 0; i <= 7; i++)
-	{
-		if (ntag_page[i] != uartBuffer[DATA_START_BYTE + 4 + i])
-		{
-			flag = false;
-			break;
-		}
-	}
-	if (!flag)
-	{
-		SPI.end();
-	digitalWrite(LED_PIN, LOW);
-		sendError(WRONG_UID, REPLY_INIT_CHIP);
-		return;
-	}*/
 
 	//заполняем карту 0xFF
 	uint8_t dataBlock[4] = { 255,255,255,255 };
@@ -845,7 +884,7 @@ void getTeamRecord()
 	recordNumber <<= 8;
 	recordNumber += uartBuffer[DATA_START_BYTE + 1];
 
-	if (recordNumber < 1 || recordNumber >= LOG_LENGTH)
+	if (recordNumber < 1 || recordNumber > maxTeamNumber)
 	{
 		sendError(WRONG_TEAM, REPLY_GET_TEAM_RECORD);
 		return;
@@ -870,11 +909,8 @@ void getTeamRecord()
 	//3-6 : время инициализации
 	//7-8: маска команды	
 	//9-12 : время последней отметки на станции
-	//13: счетчик сохраненных страниц
-	//13-14: счетчик сохраненных страниц for 2 byte version
-	bool flag = true;
-	//for (uint8_t i = 0; i < 14; i++)
-	for (uint8_t i = 0; i < 13; i++)
+	//13-14: счетчик сохраненных байт for 2 byte version
+	for (uint8_t i = 0; i < 14; i++)
 	{
 		if (!addData(ntag_page[i]))
 		{
@@ -1330,11 +1366,12 @@ bool writeFlash()
 	}
 
 	sendData();
+	return true;
 }
 
 //стираем сектор флэша (4096 байт)
 //разобраться, почему старает только 0-й сектор.
-void eraseFlashSector()
+void eraseTeamFlash()
 {
 	//Если номер станции не совпадает с присланным в пакете, то отказ
 	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
@@ -1343,15 +1380,16 @@ void eraseFlashSector()
 		return;
 	}
 
-	uint32_t sectordNumber = uartBuffer[DATA_START_BYTE];
-	sectordNumber <<= 8;
-	sectordNumber += uartBuffer[DATA_START_BYTE + 1];
+	uint32_t teamNumber = uartBuffer[DATA_START_BYTE];
+	teamNumber <<= 8;
+	teamNumber += uartBuffer[DATA_START_BYTE + 1];
 #ifdef DEBUG
 	DebugSerial.print(F("erasing "));
-	DebugSerial.println(String(sectordNumber));
+	DebugSerial.println(String(teamNumber));
 #endif
 
-	if (!SPIflash.eraseSector(sectordNumber))
+	//if (!SPIflash.eraseSector(teamNumber))
+	if (!eraseTeamFromFlash(teamNumber))
 	{
 		sendError(ERASE_ERROR, REPLY_ERASE_FLASH_SECTOR);
 		return;
@@ -1378,6 +1416,8 @@ void getConfig()
 	//4-7: емкость флэш - памяти
 	//8-11: размер сектора флэш - памяти
 	//12-15: коэффициент пересчета напряжения(float, 4 bytes) - просто умножаешь коэффициент на полученное в статусе число и будет температура
+	//16: коэффициент усиления антенны RFID
+	//17-18: размер блока хранения команды
 	init_package(REPLY_GET_CONFIG);
 
 	bool flag = true;
@@ -1406,6 +1446,12 @@ void getConfig()
 	flag &= addData(v[3]);
 
 	flag &= addData(gainCoeff);
+
+	flag &= addData(TEAM_FLASH_SIZE >> 8);
+	flag &= addData(TEAM_FLASH_SIZE & 0x00FF);
+
+	flag &= addData(FLASH_BLOCK_SIZE >> 8);
+	flag &= addData(FLASH_BLOCK_SIZE & 0x00FF);
 
 	if (!flag)
 	{
@@ -1436,7 +1482,11 @@ void setVCoeff()
 	for (byte i = 0; i < 4; i++)
 	{
 		p.byte[i] = uartBuffer[DATA_START_BYTE + i];
-		if (!eepromwrite(EEPROM_VOLTAGE_KOEFF + i * 3, uartBuffer[DATA_START_BYTE + i])) errorBeep(1); //Read the station number from the EEPROM
+		if (!eepromwrite(EEPROM_VOLTAGE_KOEFF + i * 3, uartBuffer[DATA_START_BYTE + i]))
+		{
+			errorBeep(1); //Read the station number from the EEPROM
+			sendError(WRITE_ERROR, REPLY_SET_KOEFF);
+		}
 	}
 	voltageCoeff = p.number;
 
@@ -1464,7 +1514,11 @@ void setGain()
 
 	//0: коэфф.
 	gainCoeff = uartBuffer[DATA_START_BYTE] & 0x70;
-	if (!eepromwrite(EEPROM_GAIN, gainCoeff)) errorBeep(1); //Read the station number from the EEPROM
+	if (!eepromwrite(EEPROM_GAIN, gainCoeff))
+	{
+		errorBeep(1);
+		sendError(WRITE_ERROR, REPLY_SET_GAIN);
+	}
 
 	init_package(REPLY_SET_GAIN);
 	//0: код ошибки
@@ -1477,7 +1531,7 @@ void setGain()
 	sendData();
 }
 
-//сохранить коэфф. усиления для RFID
+//сохранить тип чипа
 void setChipType()
 {
 	//Если номер станции не совпадает с присланным в пакете, то отказ
@@ -1489,19 +1543,107 @@ void setChipType()
 
 	//0: тип чипа
 	chipType = uartBuffer[DATA_START_BYTE];
-	bool e = selectChipType(chipType);
-	if (e)
+
+	if (!selectChipType(chipType))
 	{
-		if (!eepromwrite(EEPROM_CHIP_TYPE, chipType)) errorBeep(1); //Read the station number from the EEPROM
+		errorBeep(1);
+		sendError(WRONG_CHIP_TYPE, REPLY_SET_CHIP_TYPE);
+	}
+	if (!eepromwrite(EEPROM_CHIP_TYPE, chipType))
+	{
+		errorBeep(1);
+		sendError(WRITE_ERROR, REPLY_SET_CHIP_TYPE);
 	}
 
 	init_package(REPLY_SET_CHIP_TYPE);
 	//0: код ошибки
-	byte error = OK;
-	if (e) error = WRONG_CHIP_TYPE;
-	if (!addData(error))
+	if (!addData(OK))
 	{
 		sendError(BUFFER_OVERFLOW, REPLY_SET_CHIP_TYPE);
+		return;
+	}
+
+	sendData();
+}
+
+//сохранить размер блока команды
+void setTeamFlashSize()
+{
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_SET_TEAM_FLASH_SIZE);
+		return;
+	}
+
+	//0-1: размер блока
+	uint16_t n = uartBuffer[DATA_START_BYTE] * 256 + uartBuffer[DATA_START_BYTE + 1];
+
+	if (TEAM_FLASH_SIZE < 14)
+	{
+		errorBeep(1);
+		sendError(WRONG_SIZE, REPLY_SET_TEAM_FLASH_SIZE);
+	}
+	TEAM_FLASH_SIZE = n;
+
+	if (!eepromwrite(EEPROM_TEAM_BLOCK_SIZE, uartBuffer[DATA_START_BYTE]))
+	{
+		errorBeep(1);
+		sendError(WRITE_ERROR, REPLY_SET_TEAM_FLASH_SIZE);
+	}
+	if (!eepromwrite(EEPROM_TEAM_BLOCK_SIZE + 3, uartBuffer[DATA_START_BYTE + 1]))
+	{
+		errorBeep(1);
+		sendError(WRITE_ERROR, REPLY_SET_TEAM_FLASH_SIZE);
+	}
+
+	init_package(REPLY_SET_TEAM_FLASH_SIZE);
+	//0: код ошибки
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_SET_TEAM_FLASH_SIZE);
+		return;
+	}
+
+	sendData();
+}
+
+//сохранить размер стираемого блока
+void setFlashBlockSize()
+{
+	//Если номер станции не совпадает с присланным в пакете, то отказ
+	if (stationNumber != uartBuffer[STATION_NUMBER_BYTE])
+	{
+		sendError(WRONG_STATION, REPLY_SET_FLASH_BLOCK_SIZE);
+		return;
+	}
+
+	//0-1: размер блока
+	uint16_t n = uartBuffer[DATA_START_BYTE] * 256 + uartBuffer[DATA_START_BYTE + 1];
+
+	if (TEAM_FLASH_SIZE < 14)
+	{
+		errorBeep(1);
+		sendError(WRONG_SIZE, REPLY_SET_FLASH_BLOCK_SIZE);
+	}
+	TEAM_FLASH_SIZE = n;
+
+	if (!eepromwrite(EEPROM_FLASH_BLOCK_SIZE, uartBuffer[DATA_START_BYTE]))
+	{
+		errorBeep(1);
+		sendError(WRITE_ERROR, REPLY_SET_FLASH_BLOCK_SIZE);
+	}
+	if (!eepromwrite(EEPROM_FLASH_BLOCK_SIZE + 3, uartBuffer[DATA_START_BYTE + 1]))
+	{
+		errorBeep(1);
+		sendError(WRITE_ERROR, REPLY_SET_FLASH_BLOCK_SIZE);
+	}
+
+	init_package(REPLY_SET_FLASH_BLOCK_SIZE);
+	//0: код ошибки
+	if (!addData(OK))
+	{
+		sendError(BUFFER_OVERFLOW, REPLY_SET_FLASH_BLOCK_SIZE);
 		return;
 	}
 
@@ -1534,6 +1676,33 @@ void processRfidCard()
 		return;
 	}
 
+	/*
+Фильтруем
+1 - неправильный тип чипа
+*/
+//читаем блок информации
+	if (!ntagRead4pages(PAGE_UID))
+	{
+		SPI.end();
+		return;
+	}
+
+	//неправильный тип чипа	
+	if (ntag_page[14] != chipType)
+	{
+		SPI.end();
+		errorBeep(2);
+		return;
+	}
+
+	/*
+	Фильтруем
+	1 - неправильный тип чипа
+	2 - чип от другой прошивки
+	3 - чип более недельной давности инициализации
+	4 - чипы с командой №0 или >maxTeamNumber
+	5 - чип, который совпадает с уже отмеченным (в lastTeams[])
+	*/
 	//читаем блок информации
 	if (!ntagRead4pages(PAGE_CHIP_NUM))
 	{
@@ -1541,12 +1710,21 @@ void processRfidCard()
 		return;
 	}
 
-	/*
-	Фильтруем
-	1 - чипы с командой №0 или > LOG_LENGTH
-	2 - чип, который совпадает с уже отмеченным (в lastTeams[])
-	3 - чип более недельной давности инициализации
-	*/
+	//неправильный тип чипа
+	if (ntag_page[2] != NTAG_MARK)
+	{
+		SPI.end();
+		errorBeep(2);
+		return;
+	}
+
+	//чип от другой прошивки
+	if (ntag_page[3] != FW_VERSION)
+	{
+		SPI.end();
+		errorBeep(2);
+		return;
+	}
 
 	//Не слишком ли старый чип? Недельной давности и более
 	uint32_t timeInit = ntag_page[4];
@@ -1563,9 +1741,9 @@ void processRfidCard()
 		return;
 	}
 
-	//Не равен ли номер чипа 0 или >= LOG_LENGTH
+	//Если номер чипа =0 или >maxTeamNumber
 	uint16_t chipNum = (ntag_page[0] << 8) + ntag_page[1];
-	if (chipNum < 1 || chipNum >= LOG_LENGTH)
+	if (chipNum < 1 || chipNum > maxTeamNumber)
 	{
 		SPI.end();
 		errorBeep(3);
@@ -1613,7 +1791,7 @@ void processRfidCard()
 	}
 
 	//Есть ли чип на флэше
-	if (!flag && SPIflash.readByte((uint32_t)((uint32_t)chipNum * (uint32_t)LOG_RECORD_LENGTH)) != 255) flag = true;
+	if (!flag && SPIflash.readByte((uint32_t)((uint32_t)chipNum * (uint32_t)TEAM_FLASH_SIZE)) != 255) flag = true;
 
 	//если новый чип или финишный КП
 	if (!flag || stationMode == MODE_FINISH_KP)
@@ -1704,19 +1882,8 @@ bool readUart()
 			uartBuffer[uartBufferPosition] = (byte)c;
 			uartBufferPosition++;
 		}
-		//2nd byte = FE
-		else if (uartBufferPosition == 2 && c == 0xfe)
-		{
-#ifdef DEBUG
-			/*DebugSerial.print(F("byte2"));
-			if (c < 0x10) DebugSerial.print(F("0"));
-			DebugSerial.println(String(byte(c), HEX));*/
-#endif
-			uartBuffer[uartBufferPosition] = (byte)c;
-			uartBufferPosition++;
-		}
-		//4th byte = command, length and data
-		else if (uartBufferPosition >= STATION_NUMBER_BYTE)
+		//2nd byte = command, length and data
+		else if (uartBufferPosition >= PACKET_ID)
 		{
 			uartBuffer[uartBufferPosition] = (byte)c;
 #ifdef DEBUG
@@ -1746,7 +1913,7 @@ bool readUart()
 				/*DebugSerial.print(F("received packet expected CRC="));
 				DebugSerial.println(String(crcCalc(uartBuffer, STATION_NUMBER_BYTE, uartBufferPosition - 1), HEX));*/
 #endif
-				if (uartBuffer[uartBufferPosition] == crcCalc(uartBuffer, STATION_NUMBER_BYTE, uartBufferPosition - 1))
+				if (uartBuffer[uartBufferPosition] == crcCalc(uartBuffer, PACKET_ID, uartBufferPosition - 1))
 				{
 #ifdef DEBUG
 					/*DebugSerial.print(F("Command received:"));
@@ -1893,7 +2060,7 @@ void errorBeep(uint8_t n)
 //инициализация пакета данных
 void init_package(uint8_t command)
 {
-	uartBuffer[0] = uartBuffer[1] = uartBuffer[2] = 0xFE;
+	uartBuffer[0] = uartBuffer[1] = 0xFE;
 	uartBuffer[3] = stationNumber;
 	uartBuffer[COMMAND_BYTE] = command;
 	uartBufferPosition = DATA_START_BYTE;
@@ -1913,11 +2080,11 @@ bool addData(uint8_t data)
 	return true;
 }
 
-//передача пакета данных.
+//передача пакета данных
 void sendData()
 {
 	uartBuffer[LENGTH_BYTE] = uartBufferPosition - COMMAND_BYTE - 1;
-	uartBuffer[uartBufferPosition] = crcCalc(uartBuffer, STATION_NUMBER_BYTE, uartBufferPosition - 1);
+	uartBuffer[uartBufferPosition] = crcCalc(uartBuffer, PACKET_ID, uartBufferPosition - 1);
 #ifdef DEBUG
 	/*DebugSerial.print(F("Sending:"));
 	for (uint8_t i = 0; i < uartBufferPosition; i++)
@@ -1933,7 +2100,7 @@ void sendData()
 }
 
 //запись страницы (4 байта) в чип
-bool ntagWritePage(uint8_t * dataBlock, uint8_t pageAdr)
+bool ntagWritePage(uint8_t* dataBlock, uint8_t pageAdr)
 {
 	const uint8_t sizePageNtag = 4;
 
@@ -2122,24 +2289,23 @@ uint8_t findNewPage()
 }
 
 //пишем дамп карты в лог
-//!!! сделать замену данных через стирание. Стирает блоками по 4кб
-byte writeDumpToFlash(uint16_t recordNum, uint32_t checkTime)
+byte writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 {
 	//адрес хранения в каталоге
-	uint32_t teamFlashAddress = (uint32_t)(uint32_t(recordNum) * (uint32_t)LOG_RECORD_LENGTH);
+	uint32_t teamFlashAddress = (uint32_t)(uint32_t(teamNumber) * (uint32_t)TEAM_FLASH_SIZE);
 #ifdef DEBUG
 	DebugSerial.print(F("Flash address: "));
-	DebugSerial.println(String(pageFlash));
+	DebugSerial.println(String(teamFlashAddress));
 #endif
 
 	//если режим финишной станции, то, возможно, надо переписать содержимое.
 	//Проблемы: 1) не стирается страница для перезаписи; 2) неправильно пишутся/считаются страницы (надо по 4 байта, а не по 16) - исправил, проверить
 	if (stationMode == MODE_FINISH_KP && SPIflash.readByte(teamFlashAddress) != 255)
 	{
-		//SPIflash.eraseSector(teamFlashAddress);
+		eraseTeamFromFlash(teamNumber);
 #ifdef DEBUG
-		DebugSerial.print(F("erased sector: "));
-		DebugSerial.println(String((uint32_t)((uint32_t)pageFlash / (uint32_t)256)));
+		DebugSerial.print(F("erased team: "));
+		DebugSerial.println(String((uint32_t)((uint32_t)teamNumber / (uint32_t)256)));
 #endif
 	}
 
@@ -2178,7 +2344,7 @@ byte writeDumpToFlash(uint16_t recordNum, uint32_t checkTime)
 	{
 #ifdef DEBUG
 		DebugSerial.print(F("reading page: "));
-		DebugSerial.println(String(page));
+		DebugSerial.println(String(block));
 #endif
 		if (!ntagRead4pages(block))
 		{
@@ -2210,37 +2376,88 @@ byte writeDumpToFlash(uint16_t recordNum, uint32_t checkTime)
 				{
 #ifdef DEBUG
 					DebugSerial.print(F("chip end: "));
-					DebugSerial.println(String(page));
+					DebugSerial.println(String(block));
 #endif
 					block = TAG_MAX_PAGE;
 					break;
+				}
 			}
 		}
-	}
 		block += 4;
-}
+	}
 	//add dump pages number
 	if (checkCount > 0)
 	{
-		SPIflash.writeByte(teamFlashAddress + 12, checkCount & 0x000000FF);
-		//SPIflash.writeByte(teamFlashAddress + 12, (checkCount & 0x0000FF00) >> 8);
-		//SPIflash.writeByte(teamFlashAddress + 13, checkCount & 0x000000FF);
+		//SPIflash.writeByte(teamFlashAddress + 12, checkCount & 0x000000FF);
+		checkCount = checkCount * 4 + 16;
+		SPIflash.writeByte(teamFlashAddress + 12, checkCount >> 8);
+		SPIflash.writeByte(teamFlashAddress + 13, checkCount & 0x00FF);
 	}
+	return flag;
+}
+
+//сохраняем весь блок, стираем весь блок и возвращаем назад все, кроме переписываемой команды
+bool eraseTeamFromFlash(uint16_t teamNumber)
+{
+	//TEAM_FLASH_SIZE = 1024;
+	//FLASH_BLOCK_SIZE = 4096
+	//uint32_t teamFlashAddress = (uint32_t)(uint32_t(teamNumber) * (uint32_t)TEAM_FLASH_SIZE);
+	bool flag = true;
+	uint32_t tmpBufferStart = (maxTeamNumber + 1) * TEAM_FLASH_SIZE;
+	uint32_t blockFlashAddress = (uint32_t)(teamNumber * TEAM_FLASH_SIZE / FLASH_BLOCK_SIZE);
+	blockFlashAddress *= (uint32_t)FLASH_BLOCK_SIZE;
+	uint8_t teamInBlock = ((uint32_t)(uint32_t(teamNumber) * (uint32_t)TEAM_FLASH_SIZE) - blockFlashAddress) / TEAM_FLASH_SIZE;
+#ifdef DEBUG
+	DebugSerial.print(F("tmpBufferStart="));
+	DebugSerial.println(String(tmpBufferStart));
+	DebugSerial.print(F("blockFlashAddress="));
+	DebugSerial.println(String(blockFlashAddress));
+	DebugSerial.print(F("teamInBlock="));
+	DebugSerial.println(String(teamInBlock));
+#endif
+
+	//erase sector
+	flag &= SPIflash.eraseSector(tmpBufferStart);
+
+	//backup Flash Block
+	for (uint32_t i = 0; i < FLASH_BLOCK_SIZE; i++)
+	{
+		//не копировать перезаписываемую запись
+		if (i < teamInBlock * TEAM_FLASH_SIZE || i >= (teamInBlock + 1) * TEAM_FLASH_SIZE)
+		{
+			byte b = SPIflash.readByte(blockFlashAddress + i);
+			flag &= SPIflash.writeByte(tmpBufferStart + i, b);
+		}
+	}
+
+	//erase sector
+	flag &= SPIflash.eraseSector(blockFlashAddress);
+
+	//restore Flash Block
+	for (uint32_t i = 0; i < FLASH_BLOCK_SIZE; i++)
+	{
+		//не копировать перезаписываемую запись
+		//if (i < teamInBlock * TEAM_FLASH_SIZE && i >= (teamInBlock + 1) * TEAM_FLASH_SIZE)
+		{
+			byte b = SPIflash.readByte(tmpBufferStart + i);
+			if (b!=0xff) flag &= SPIflash.writeByte(blockFlashAddress + i, b);
+		}
+	}
+
 	return flag;
 }
 
 //получаем сведения о команде из лога
 bool readTeamFromFlash(uint16_t recordNum)
 {
-	uint32_t addr = (uint32_t)((uint32_t)recordNum * (uint32_t)LOG_RECORD_LENGTH);
+	uint32_t addr = (uint32_t)((uint32_t)recordNum * (uint32_t)TEAM_FLASH_SIZE);
 	if (SPIflash.readByte(addr) == 0xff) return false;
 	//#команды
 	//время инициализации
 	//маска
 	//время отметки
 	//счетчик страниц на чипе
-	//for (uint8_t i = 0; i < 14; i++)
-	for (uint8_t i = 0; i < 13; i++)
+	for (uint8_t i = 0; i < 14; i++)
 	{
 		ntag_page[i] = SPIflash.readByte(addr + (uint32_t)i);
 	}
@@ -2253,9 +2470,9 @@ uint16_t refreshChipCounter()
 	uint16_t chips = 0;
 
 	uint32_t addr;
-	for (uint16_t i = 1; i < LOG_LENGTH; i++)
+	for (uint16_t i = 1; i <= maxTeamNumber; i++)
 	{
-		addr = (uint32_t)((uint32_t)i * (uint32_t)LOG_RECORD_LENGTH);
+		addr = (uint32_t)((uint32_t)i * (uint32_t)TEAM_FLASH_SIZE);
 		if (SPIflash.readByte(addr) != 255)
 		{
 			chips++;
@@ -2275,14 +2492,14 @@ uint16_t refreshChipCounter()
 #ifdef DEBUG			
 			DebugSerial.println(String(i));
 #endif
-			}
+		}
 	}
 #ifdef DEBUG
 	DebugSerial.print(F("chip counter="));
 	DebugSerial.println(String(chips));
 #endif
 	return chips;
-		}
+}
 
 //обработка ошибок. формирование пакета с сообщением о ошибке
 void sendError(uint8_t errorCode, uint8_t commandCode)
@@ -2309,7 +2526,7 @@ void addLastTeam(uint16_t number)
 
 }
 
-uint8_t crcCalc(uint8_t * dataArray, uint16_t startPosition, uint16_t dataEnd)
+uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
 {
 	uint8_t crc = 0x00;
 	uint16_t i = startPosition;
@@ -2331,7 +2548,7 @@ uint8_t crcCalc(uint8_t * dataArray, uint16_t startPosition, uint16_t dataEnd)
 	return (crc);
 }
 
-void floatToByte(byte * bytes, float f)
+void floatToByte(byte* bytes, float f)
 {
 	int length = sizeof(float);
 
@@ -2364,7 +2581,7 @@ bool selectChipType(byte type)
 		chipType = 0x3e;
 		NTAG_MARK = 215;
 		TAG_MAX_PAGE = 130;
-		return false;
+		if (chipType != 0x3e) return false;
 	}
 	return true;
 }
