@@ -76,9 +76,9 @@ public final class ChipInfoActivity extends MainActivity {
     /**
      * Read chip info.
      *
-     * @param view View of button clicked
+     * @param view View of button clicked (unused)
      */
-    public void readChipInfo(final View view) {
+    public void readChipInfo(@SuppressWarnings("unused") final View view) {
         final TextView chipInfoText = findViewById(R.id.chip_info_text);
         chipInfoText.setText("");
         // Check station presence

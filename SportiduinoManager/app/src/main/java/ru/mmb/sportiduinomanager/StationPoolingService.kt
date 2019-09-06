@@ -19,11 +19,17 @@ import ru.mmb.sportiduinomanager.model.Chips
 import ru.mmb.sportiduinomanager.model.Station
 import java.util.concurrent.TimeUnit
 
-
+/**
+ * Provides foreground service for querying connected station every second
+ * for new chips visits.
+ */
 class StationPoolingService : Service() {
 
     companion object {
-        const val NOTIFICATION_ID = "data-from-station-updated"
+        /**
+         * ID of notification messages for ActivePointActivity.
+         */
+        const val NOTIFICATION_ID: String = "data-from-station-updated"
     }
 
     private lateinit var application: MainApplication
@@ -88,7 +94,7 @@ class StationPoolingService : Service() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel(channelId: String) {
 
-        val channelName = "My sportiduinomanager Service"
+        val channelName = "SportiduinoManager Station Service"
         val chan = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_NONE)
         chan.lightColor = Color.BLUE
         chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
@@ -100,7 +106,7 @@ class StationPoolingService : Service() {
 
         val notificationIntent = Intent(application.context, ActivePointActivity::class.java)
 
-        val channelId = "com.sportiduinomanager"
+        val channelId = "ru.mmb.sportiduinomanager"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(channelId)
         }
@@ -287,13 +293,17 @@ class StationPoolingService : Service() {
         return if (newEvents || flashChanged) -1 else 0
     }
 
-
+    /**
+     * Stop querying connected station on service destroy.
+     */
     override fun onDestroy() {
         super.onDestroy()
-
         bluetoothPoolingSubscription.dispose()
     }
 
+    /**
+     * Create simple unbound service.
+     */
     override fun onBind(intent: Intent): IBinder? {
         return null
     }

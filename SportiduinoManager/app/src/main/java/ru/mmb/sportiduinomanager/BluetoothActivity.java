@@ -307,9 +307,9 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     /**
      * Search for available Bluetooth devices.
      *
-     * @param view View of button clicked
+     * @param view View of button clicked (unused)
      */
-    public void searchForDevices(final View view) {
+    public void searchForDevices(@SuppressWarnings("unused") final View view) {
         // Don't try to search without Bluetooth
         if (mBluetoothAdapter == null) return;
         if (!mBluetoothAdapter.isEnabled()) {
@@ -347,9 +347,9 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     /**
      * Set new mode and number for the station.
      *
-     * @param view View of button clicked
+     * @param view View of button clicked (unused)
      */
-    public void changeStationMode(final View view) {
+    public void changeStationMode(@SuppressWarnings("unused") final View view) {
         // Get the station we work with
         final Station station = mMainApplication.getStation();
         if (station == null) return;
@@ -419,9 +419,9 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
     /**
      * Synchronize station clock with Android clock.
      *
-     * @param view View of button clicked
+     * @param view View of button clicked (unused)
      */
-    public void syncStationClock(final View view) {
+    public void syncStationClock(@SuppressWarnings("unused") final View view) {
         final Station station = mMainApplication.getStation();
         if (station == null) return;
         if (station.syncTime()) {

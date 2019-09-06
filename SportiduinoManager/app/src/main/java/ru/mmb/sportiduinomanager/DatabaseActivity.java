@@ -307,9 +307,9 @@ public final class DatabaseActivity extends MainActivity {
     /**
      * Start upload of new chip events to site.
      *
-     * @param view View of button clicked
+     * @param view View of button clicked (unused)
      */
-    public void startChipEventsUpload(final View view) {
+    public void startChipEventsUpload(@SuppressWarnings("unused") final View view) {
         // Check if we have another transfer waiting
         if (mTransferActive) {
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_db_download_waiting),
@@ -334,9 +334,9 @@ public final class DatabaseActivity extends MainActivity {
     /**
      * Start download of new results from site.
      *
-     * @param view View of button clicked
+     * @param view View of button clicked (unused)
      */
-    public void startResultsDownload(final View view) {
+    public void startResultsDownload(@SuppressWarnings("unused") final View view) {
         // Check if we have another transfer waiting
         if (mTransferActive) {
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_db_download_waiting),
@@ -361,9 +361,9 @@ public final class DatabaseActivity extends MainActivity {
     /**
      * Start upload of local db for testing purposes.
      *
-     * @param view View of button clicked
+     * @param view View of button clicked (unused)
      */
-    public void startDatabaseUpload(final View view) {
+    public void startDatabaseUpload(@SuppressWarnings("unused") final View view) {
         // Check if we have another transfer waiting
         if (mTransferActive) {
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_db_download_waiting),
@@ -439,8 +439,6 @@ public final class DatabaseActivity extends MainActivity {
                     // and forget about sending some events to site
                     mMainApplication.setChips(mMainApplication.getDatabase().loadChips(), true);
                     return R.string.send_results_failure;
-                case SiteRequest.LOAD_FATAL_ERROR:
-                    return R.string.err_internal_error;
                 case SiteRequest.LOAD_CUSTOM_ERROR:
                     mCustomError = request[0].getCustomError();
                     return -1;
@@ -464,6 +462,7 @@ public final class DatabaseActivity extends MainActivity {
                         default:
                             return R.string.err_internal_error;
                     }
+                case SiteRequest.LOAD_FATAL_ERROR:
                 default:
                     return R.string.err_internal_error;
             }

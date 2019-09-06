@@ -197,9 +197,9 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
     /**
      * Init chip for the selected team.
      *
-     * @param view View of button clicked
+     * @param view View of button clicked (unused)
      */
-    public void initChip(final View view) {
+    public void initChip(@SuppressWarnings("unused") final View view) {
         // Check team number, mask and station presence
         if (mTeamNumber.length() == 0 || mTeamMask == 0 || mStation == null) return;
         final int teamNumber = Integer.parseInt(mTeamNumber);

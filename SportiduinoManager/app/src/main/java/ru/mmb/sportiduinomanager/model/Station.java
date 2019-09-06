@@ -229,7 +229,7 @@ public final class Station {
         mLastChipTime = 0;
         mFirmware = 0;
         mVoltage = 0;
-        mVCoeff = 0.00_587f;
+        mVCoeff = 0.005_870f;
         mTemperature = 0;
         mLastTeams = new ArrayList<>();
         mChips = new Chips(0);
@@ -817,6 +817,7 @@ public final class Station {
      *
      * @return True if we got valid response from station, check mLastError otherwise
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchStatus() {
         // Get response from station
         final byte[] response = new byte[14];

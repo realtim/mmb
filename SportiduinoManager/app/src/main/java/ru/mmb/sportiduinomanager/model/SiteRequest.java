@@ -195,7 +195,7 @@ public final class SiteRequest {
      * @throws NumberFormatException          A field does not contain integer/long
      * @throws ArrayIndexOutOfBoundsException Number of fields in a line is too small
      */
-    public int makeRequest() throws IOException, NumberFormatException, ArrayIndexOutOfBoundsException {
+    public int makeRequest() throws IOException {
         switch (mType) {
             case TYPE_DL_DISTANCE:
                 return loadDistance();
@@ -276,8 +276,7 @@ public final class SiteRequest {
      * @throws NumberFormatException          A field does not contain integer/long
      * @throws ArrayIndexOutOfBoundsException Number of fields in a line is too small
      */
-    private int loadDistance()
-            throws IOException, NumberFormatException, ArrayIndexOutOfBoundsException {
+    private int loadDistance() throws IOException {
         // Prepare and open connection to site
         final HttpURLConnection connection = prepareConnection();
         if (connection == null) return LOAD_READ_ERROR;
