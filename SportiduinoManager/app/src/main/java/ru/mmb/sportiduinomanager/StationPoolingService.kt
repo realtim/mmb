@@ -124,9 +124,9 @@ class StationPoolingService : Service() {
                                         notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder.setSmallIcon(R.drawable.ic_launcher)
+            builder.setSmallIcon(R.drawable.ic_notification)
         } else {
-            builder.setSmallIcon(R.drawable.ic_launcher)
+            builder.setSmallIcon(R.drawable.ic_notification)
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
