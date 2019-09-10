@@ -20,7 +20,10 @@ class CRights
         // уже есть команда, но не админ / мод
         if (CSql::userTeamId($userId, $raidId) and !CSql::userAdmin($userId) and !CSql::userModerator($userId, $raidId))
             return false;
-
+	//  лотерея проведена
+        if (CSql::lotteryStatus($raidId) == "LOT_END")
+            return false;
+    	    
         $raidStage = CSql::raidStage($raidId);
         return ($raidStage >= 1 and $raidStage < 2);
     }
