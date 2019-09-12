@@ -1699,6 +1699,25 @@ send_mime_mail('Автор письма',
 	  $CheckString = "Некорректность в точке $LevelPointName";
 	}
 	
+	    
+	$sql =  "select  lp.levelpoint_id, lp.levelpoint_name, lp.pointtype_id, lp.predpointtype_id
+		from LevelPoints lp
+		where lp.distance_id = $distanceid
+		       and  lp.levelpoint_hide = 0
+		       and lp.levelpoint_mindatetime >= p.levelpoint_maxdatetime
+		order by 1";
+
+       //  echo $sql;
+
+	$Row = CSql::singleRow($sql);
+	$LevelPointId = $Row['levelpoint_id'];
+	$LevelPointName = $Row['levelpoint_name'];
+
+        if (!empty($LevelPointId))
+	{
+	  $CheckString .= "Время или дата конца работы меньше времени начала в точке $LevelPointName";
+	}
+
 	$sql = " select lpd.levelpointdiscount_id, lpd.levelpointdiscount_start, lpd.levelpointdiscount_finish 
 	         from LevelPoints lp
 		      inner join  LevelPointDiscounts lpd
