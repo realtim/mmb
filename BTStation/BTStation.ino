@@ -567,7 +567,6 @@ void processRfidCard()
 		digitalWrite(LED_PIN, HIGH);
 		// ищем свободную страницу на чипе
 		uint8_t newPage = findNewPage();
-		if (already_checked) findStationPage(stationNumber, newPage);
 
 		// ошибка чтения или больше максимума... Наверное, переполнен???
 		if (newPage < PAGE_DATA_START || newPage >= TAG_MAX_PAGE)
@@ -2115,13 +2114,18 @@ bool setBtName(String name)
 	digitalWrite(BT_COMMAND_ENABLE, HIGH);
 	delay(200);
 	//AT+NAME=<nameArray> [1-32]
-	Serial.println("AT+NAME=" + name);
+	Serial.println("AT+NAME=" + name);	
+	//uint8_t* buf = &uartBuffer[DATA_START_BYTE];
+	//Serial.write("AT+NAME=");
+	//Serial.write(buf, uartBuffer[LENGTH_BYTE]);
+	//Serial.write("\r\n");
 	char reply[2] = { 0,0 };
 	delay(200);
 	Serial.readBytes(reply, 2);
 	while (Serial.available()) Serial.read();
 	// "AT+RESET"
 	//Serial.println("AT+RESET");
+	//Serial.write("AT+RESET\r\n");
 	digitalWrite(BT_COMMAND_ENABLE, LOW);
 	delay(200);
 	while (Serial.available()) Serial.read();
@@ -2134,16 +2138,19 @@ bool setBtName(String name)
 }
 
 // поменять пин-код BT адаптера
-// Переделать на работу с указателем
-// !!! не работает
+// Переделать на работу с указателем на 
 bool setBtPinCode(String code)
 {
 	bool result = false;
 	digitalWrite(BT_COMMAND_ENABLE, HIGH);
-	delay(200);
-	//AT+PSWD=<nameArray> [1-16] for HC-05
+	delay(200);	
 	//AT+PSWD:"<nameArray>" [1-16] for HC-06
-	Serial.println("AT+PSWD=" + code);
+	//AT+PSWD=<nameArray> [1-16] for HC-05
+	Serial.println("AT+PSWD:\"" + code + "\"");
+	//uint8_t* buf = &uartBuffer[DATA_START_BYTE];
+	//Serial.write("AT+PSWD:\"");
+	//Serial.write(buf, uartBuffer[LENGTH_BYTE]);
+	//Serial.write("\"\r\n");
 	char reply[2] = { 0,0 };
 	delay(200);
 	Serial.readBytes(reply, 2);
@@ -2154,7 +2161,10 @@ bool setBtPinCode(String code)
 	}
 	else
 	{
-		Serial.println("AT+PSWD:\"" + code + "\"");
+		Serial.println("AT+PSWD=" + code);
+		//Serial.write("AT+PSWD=");
+		//Serial.write(buf, uartBuffer[LENGTH_BYTE]);
+		//Serial.write("\r\n");
 		char reply[2] = { 0,0 };
 		delay(200);
 		Serial.readBytes(reply, 2);
@@ -2167,59 +2177,13 @@ bool setBtPinCode(String code)
 
 	// "AT+RESET"
 	//Serial.println("AT+RESET");
+	//Serial.write("AT+RESET\r\n");
 	digitalWrite(BT_COMMAND_ENABLE, LOW);
 	delay(200);
 
 	while (Serial.available()) Serial.read();
 	return result;
 }
-
-/*bool setBtName(uint8_t* nameArray, uint8_t nameLength)
-{
-	digitalWrite(BT_COMMAND_ENABLE, HIGH);
-	delay(200);
-	digitalWrite(BT_COMMAND_ENABLE, LOW);
-	//AT+NAME=<nameArray> [1-32]
-	Serial.write("AT+NAME=", 9);
-	Serial.write(nameArray, nameLength);
-	Serial.write("\r\n", 2);
-	char reply[2] = { 0,0 };
-	delay(200);
-	Serial.readBytes(reply, 2);
-	Serial.write("AT + RESET\r\n", 13);
-	delay(200);
-	Serial.flush();
-	if (reply[0] == 'O' && reply[1] == 'K')
-	{
-		// "AT+RESET"
-		return true;
-	}
-	return false;
-}
-
-// поменять пин-код BT адаптера
-bool setBtPinCode(uint8_t* codeArray, uint8_t codeLength)
-{
-	digitalWrite(BT_COMMAND_ENABLE, HIGH);
-	delay(200);
-	digitalWrite(BT_COMMAND_ENABLE, LOW);
-	//AT+PSWD=<Param> [1-16]
-	Serial.write("AT+PSWD=", 9);
-	Serial.write(codeArray, codeLength);
-	Serial.write("\r\n", 2);
-	char reply[2] = { 0,0 };
-	delay(200);
-	Serial.readBytes(reply, 2);
-	// "AT + RESET"
-	Serial.write("AT+RESET\r\n", 13);
-	delay(200);
-	Serial.flush();
-	if (reply[0] == 'O' && reply[1] == 'K')
-	{
-		return true;
-	}
-	return false;
-}*/
 
 // заполнить буфер смены маски
 void saveNewMask()
@@ -2524,7 +2488,7 @@ bool writeCheckPointToCard(uint8_t newPage, uint32_t checkTime)
 	return true;
 }
 
-// Поиск последней записанной страницы на чипе.
+// Поиск  на чипе.
 // !!! разобраться в алгоритме Саши или сделать свой бинарный поиск
 uint8_t findNewPage()
 {
@@ -2609,12 +2573,6 @@ uint8_t findNewPage()
 		}
 	}*/
 }
-
-uint8_t findStationPage(uint8_t stationNum, uint8_t lastPage)
-{
-
-}
-
 
 // пишем дамп чипа в лог
 uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
