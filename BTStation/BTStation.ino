@@ -203,7 +203,7 @@ SPIFlash SPIflash(FLASH_SS_PIN); // флэш-память
 // рфид-модуль
 MFRC522 mfrc522(RFID_SS_PIN, RFID_RST_PIN);
 // коэфф. усиления антенны - работают только биты 4,5,6
-byte gainCoeff = 0x70;
+uint8_t gainCoeff = 0x70;
 
 // хранение времени
 struct ts systemTime;
@@ -274,10 +274,10 @@ void setup()
 	union Convert
 	{
 		float number;
-		byte byte[4];
+		uint8_t byte[4];
 	} p;
-	byte flag = 0;
-	for (byte i = 0; i < 4; i++)
+	uint8_t flag = 0;
+	for (uint8_t i = 0; i < 4; i++)
 	{
 		p.byte[i] = eepromread(EEPROM_VOLTAGE_KOEFF + i * 3);
 		if (p.byte[i] == 0xff) flag++;
@@ -298,15 +298,15 @@ void setup()
 	uint32_t flashSize = SPIflash.getCapacity();
 
 	//читаем размер блока команды
-	byte n[2];
-	for (byte i = 0; i < 2; i++)
+	uint8_t n[2];
+	for (uint8_t i = 0; i < 2; i++)
 	{
 		n[i] = eepromread(EEPROM_TEAM_BLOCK_SIZE + i * 3);
 	}
 	TEAM_FLASH_SIZE = n[0] * 256 + n[1];
 
 	//читаем размер стираемого блока
-	for (byte i = 0; i < 2; i++)
+	for (uint8_t i = 0; i < 2; i++)
 	{
 		n[i] = eepromread(EEPROM_FLASH_BLOCK_SIZE + i * 3);
 	}
@@ -353,7 +353,7 @@ void loop()
 	}
 
 	//если режим КП то отметить чип автоматом
-	if (stationMode != 0)
+	if (stationMode != MODE_INIT)
 	{
 		processRfidCard();
 	}
@@ -538,25 +538,28 @@ void processRfidCard()
 		return;
 	}
 
-	bool flag = false;
-	if (stationMode != MODE_FINISH_KP)
+	bool already_checked = false;
+	if (stationMode == MODE_START_KP)
 	{
 		// сравнить с буфером последних команд
 		for (uint8_t i = 0; i < lastTeamsLength * 2; i = i + 2)
 		{
 			if (lastTeams[i] == ntag_page[0] && lastTeams[i + 1] == ntag_page[1])
 			{
-				flag = true;
+				already_checked = true;
 				break;
 			}
 		}
 	}
 
 	// Есть ли чип на флэше
-	if (!flag && SPIflash.readByte((uint32_t)((uint32_t)chipNum * (uint32_t)TEAM_FLASH_SIZE)) != 255) flag = true;
+	if (!already_checked && SPIflash.readByte((uint32_t)((uint32_t)chipNum * (uint32_t)TEAM_FLASH_SIZE)) != 255)
+	{
+		already_checked = true;
+	}
 
 	// если новый чип или финишный КП
-	if (!flag || stationMode == MODE_FINISH_KP)
+	if (!already_checked || stationMode == MODE_FINISH_KP)
 	{
 #ifdef DEBUG
 		Serial.print(F("!!!checking chip"));
@@ -564,6 +567,7 @@ void processRfidCard()
 		digitalWrite(LED_PIN, HIGH);
 		// ищем свободную страницу на чипе
 		uint8_t newPage = findNewPage();
+		if (already_checked) findStationPage(stationNumber, newPage);
 
 		// ошибка чтения или больше максимума... Наверное, переполнен???
 		if (newPage < PAGE_DATA_START || newPage >= TAG_MAX_PAGE)
@@ -592,7 +596,7 @@ void processRfidCard()
 		// добавляем в буфер последних команд
 		addLastTeam(chipNum);
 		lastTimeChecked = checkTime;
-		if (!flag) totalChipsChecked++;
+		if (!already_checked) totalChipsChecked++;
 
 		// Пишем дамп чипа во флэш
 		if (!writeDumpToFlash(chipNum, checkTime))
@@ -1826,7 +1830,7 @@ void getConfig()
 	flag &= addData((n & 0x0000FF00) >> 8);
 	flag &= addData(n & 0x000000FF);
 
-	byte v[4];
+	uint8_t v[4];
 	floatToByte(v, voltageCoeff);
 	flag &= addData(v[0]);
 	flag &= addData(v[1]);
@@ -1857,10 +1861,10 @@ void setVCoeff()
 	union Convert
 	{
 		float number;
-		byte byte[4];
+		uint8_t byte[4];
 	} p;
 
-	for (byte i = 0; i < 4; i++)
+	for (uint8_t i = 0; i < 4; i++)
 	{
 		p.byte[i] = uartBuffer[DATA_START_BYTE + i];
 		if (!eepromwrite(EEPROM_VOLTAGE_KOEFF + i * 3, uartBuffer[DATA_START_BYTE + i]))
@@ -2030,10 +2034,10 @@ void setNewBtName()
 	//uint8_t* buf = &uartBuffer[DATA_START_BYTE];
 
 	String buf;
-	buf.reserve(uartBuffer[LENGTH_BYTE] + 2);
-	for (int i = 0; i < uartBuffer[LENGTH_BYTE]; i++)
+	buf.reserve(32);
+	for (uint16_t i = 0; i < uartBuffer[LENGTH_BYTE]; i++)
 	{
-		buf = buf + String((char)uartBuffer[DATA_START_BYTE + i]);
+		buf += String((char)uartBuffer[DATA_START_BYTE + i]);
 	}
 
 	if (!setBtName(buf))
@@ -2074,10 +2078,10 @@ void setNewBtPinCode()
 	//uint8_t* buf = &uartBuffer[DATA_START_BYTE];
 
 	String buf;
-	buf.reserve(uartBuffer[LENGTH_BYTE] + 2);
-	for (int i = 0; i < uartBuffer[LENGTH_BYTE]; i++)
+	buf.reserve(16);
+	for (uint16_t i = 0; i < uartBuffer[LENGTH_BYTE]; i++)
 	{
-		buf = buf + String((char)uartBuffer[DATA_START_BYTE + i]);
+		buf += String((char)uartBuffer[DATA_START_BYTE + i]);
 	}
 
 	if (!setBtPinCode(buf))
@@ -2107,24 +2111,26 @@ void setNewBtPinCode()
 // Переделать на работу с указателем
 bool setBtName(String name)
 {
+	bool result = false;
 	digitalWrite(BT_COMMAND_ENABLE, HIGH);
 	delay(200);
-	digitalWrite(BT_COMMAND_ENABLE, LOW);
 	//AT+NAME=<nameArray> [1-32]
-	Serial.print("AT+NAME=");
-	Serial.println(name);
+	Serial.println("AT+NAME=" + name);
 	char reply[2] = { 0,0 };
 	delay(200);
 	Serial.readBytes(reply, 2);
+	while (Serial.available()) Serial.read();
 	// "AT+RESET"
-	Serial.write("AT+RESET\r\n", 13);
+	//Serial.println("AT+RESET");
+	digitalWrite(BT_COMMAND_ENABLE, LOW);
 	delay(200);
-	Serial.flush();
+	while (Serial.available()) Serial.read();
+
 	if (reply[0] == 'O' && reply[1] == 'K')
 	{
-		return true;
+		result = true;
 	}
-	return false;
+	return result;
 }
 
 // поменять пин-код BT адаптера
@@ -2132,27 +2138,43 @@ bool setBtName(String name)
 // !!! не работает
 bool setBtPinCode(String code)
 {
+	bool result = false;
 	digitalWrite(BT_COMMAND_ENABLE, HIGH);
 	delay(200);
-	digitalWrite(BT_COMMAND_ENABLE, LOW);
-	//AT+NAME=<nameArray> [1-16]
-	Serial.print("AT+PSWD=");
-	Serial.println(code);
+	//AT+PSWD=<nameArray> [1-16] for HC-05
+	//AT+PSWD:"<nameArray>" [1-16] for HC-06
+	Serial.println("AT+PSWD=" + code);
 	char reply[2] = { 0,0 };
 	delay(200);
 	Serial.readBytes(reply, 2);
-	// "AT+RESET"
-	Serial.write("AT+RESET\r\n", 13);
-	delay(200);
-	Serial.flush();
+	while (Serial.available()) Serial.read();
 	if (reply[0] == 'O' && reply[1] == 'K')
 	{
-		return true;
+		result = true;
 	}
-	return false;
+	else
+	{
+		Serial.println("AT+PSWD:\"" + code + "\"");
+		char reply[2] = { 0,0 };
+		delay(200);
+		Serial.readBytes(reply, 2);
+		while (Serial.available()) Serial.read();
+		if (reply[0] == 'O' && reply[1] == 'K')
+		{
+			result = true;
+		}
+	}
+
+	// "AT+RESET"
+	//Serial.println("AT+RESET");
+	digitalWrite(BT_COMMAND_ENABLE, LOW);
+	delay(200);
+
+	while (Serial.available()) Serial.read();
+	return result;
 }
 
-/*bool setBtName(uint8_t* nameArray, byte nameLength)
+/*bool setBtName(uint8_t* nameArray, uint8_t nameLength)
 {
 	digitalWrite(BT_COMMAND_ENABLE, HIGH);
 	delay(200);
@@ -2176,7 +2198,7 @@ bool setBtPinCode(String code)
 }
 
 // поменять пин-код BT адаптера
-bool setBtPinCode(uint8_t* codeArray, byte codeLength)
+bool setBtPinCode(uint8_t* codeArray, uint8_t codeLength)
 {
 	digitalWrite(BT_COMMAND_ENABLE, HIGH);
 	delay(200);
@@ -2588,8 +2610,14 @@ uint8_t findNewPage()
 	}*/
 }
 
+uint8_t findStationPage(uint8_t stationNum, uint8_t lastPage)
+{
+
+}
+
+
 // пишем дамп чипа в лог
-byte writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
+uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 {
 	// адрес хранения в каталоге
 	uint32_t teamFlashAddress = (uint32_t)(uint32_t(teamNumber) * (uint32_t)TEAM_FLASH_SIZE);
@@ -2614,7 +2642,7 @@ byte writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 		return false;
 	}
 	bool flag = true;
-	byte basic_record[12];
+	uint8_t basic_record[12];
 	// 1-2: номер команды
 	basic_record[0] = ntag_page[0];
 	basic_record[1] = ntag_page[1];
@@ -2654,7 +2682,7 @@ byte writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 		else
 		{
 			//4 pages in one read block
-			for (byte i = 0; i < 4; i++)
+			for (uint8_t i = 0; i < 4; i++)
 			{
 				if (block < 8 || ntag_page[i * 4]>0)
 				{
@@ -2715,7 +2743,7 @@ bool eraseTeamFromFlash(uint16_t teamNumber)
 
 	// erase sector
 	flag &= SPIflash.eraseSector(tmpBufferStart);
-	byte b;
+	uint8_t b;
 	// backup Flash Block
 	/*for (uint32_t i = 0; i < teamInBlock * TEAM_FLASH_SIZE; i++)
 	{
@@ -2877,16 +2905,16 @@ uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
 
 void floatToByte(byte* bytes, float f)
 {
-	int length = sizeof(float);
+	uint16_t length = sizeof(float);
 
-	for (int i = 0; i < length; i++)
+	for (uint16_t i = 0; i < length; i++)
 	{
 		bytes[i] = ((byte*)& f)[i];
 	}
 }
 
 // check chip type consistence
-bool selectChipType(byte type)
+bool selectChipType(uint8_t type)
 {
 	if (chipType == 0x12)
 	{
