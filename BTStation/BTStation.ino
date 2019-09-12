@@ -254,21 +254,25 @@ void setup()
 	DS3231_get(&systemTime);
 
 	//читаем номер станции из памяти
-	stationNumber = eepromread(EEPROM_STATION_NUMBER);
-	if (stationNumber == 255 || stationNumber == -1)
+	int c = eepromread(EEPROM_STATION_NUMBER);
+	if (c == 255 || c == -1)
 	{
+		Serial.print(F("!!! StationNumber"));
+		errorBeepMs(10, 200);
 		stationNumber = 0;
 	}
+	else stationNumber = c;
 
 	//читаем номер режима из памяти
-	int c = eepromread(EEPROM_STATION_MODE);
-	if (c == -1)
+	c = eepromread(EEPROM_STATION_MODE);
+	if (c == MODE_INIT) stationMode = MODE_INIT;
+	else if (c == MODE_START_KP) stationMode = MODE_START_KP;
+	else if (c == MODE_FINISH_KP) stationMode = MODE_FINISH_KP;
+	else
 	{
+		Serial.print(F("!!! StationMode"));
 		errorBeepMs(10, 200);
 	}
-	if (c == MODE_START_KP) stationMode = MODE_START_KP;
-	else if (c == MODE_FINISH_KP) stationMode = MODE_FINISH_KP;
-	else stationMode = MODE_INIT;
 
 	//читаем коэфф. пересчета напряжения
 	union Convert
@@ -279,38 +283,67 @@ void setup()
 	uint8_t flag = 0;
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		p.byte[i] = eepromread(EEPROM_VOLTAGE_KOEFF + i * 3);
-		if (p.byte[i] == 0xff) flag++;
+		c = eepromread(EEPROM_VOLTAGE_KOEFF + i * 3);
+		p.byte[i] = c;
+		if (c == 0xff || c == -1) flag++;
 	}
-	voltageCoeff = p.number;
+	if (flag < 4) voltageCoeff = p.number;
+	else
+	{
+		Serial.print(F("!!! VoltageKoeff"));
+		errorBeepMs(10, 200);
+	}
 
 	//читаем коэфф. усиления
-	gainCoeff = eepromread(EEPROM_GAIN);
-	if (gainCoeff == 255 || gainCoeff == -1)
+	c = eepromread(EEPROM_GAIN);
+	if (c != 255 && c != -1) gainCoeff = c;
+	else
 	{
-		gainCoeff = 0x70;
+		Serial.print(F("!!! AntennaGain"));
+		errorBeepMs(10, 200);
 	}
 
 	//читаем тип чипа
-	chipType = eepromread(EEPROM_CHIP_TYPE);
-	selectChipType(chipType);
+	c = eepromread(EEPROM_CHIP_TYPE);
+	if (c != 255 && c != -1) selectChipType(chipType);
+	else
+	{
+		Serial.print(F("!!! ChipType"));
+		errorBeepMs(10, 200);
+	}
 
 	uint32_t flashSize = SPIflash.getCapacity();
 
 	//читаем размер блока команды
 	uint8_t n[2];
+	flag = 0;
 	for (uint8_t i = 0; i < 2; i++)
 	{
-		n[i] = eepromread(EEPROM_TEAM_BLOCK_SIZE + i * 3);
+		c = eepromread(EEPROM_TEAM_BLOCK_SIZE + i * 3);
+		if (c == 0xff || c == -1) flag++;
+		n[i] = c;
 	}
-	TEAM_FLASH_SIZE = n[0] * 256 + n[1];
+	if (flag < 2) TEAM_FLASH_SIZE = n[0] * 256 + n[1];
+	else
+	{
+		Serial.print(F("!!! TeamSize"));
+		errorBeepMs(10, 200);
+	}
 
 	//читаем размер стираемого блока
+	flag = 0;
 	for (uint8_t i = 0; i < 2; i++)
 	{
-		n[i] = eepromread(EEPROM_FLASH_BLOCK_SIZE + i * 3);
+		c = eepromread(EEPROM_FLASH_BLOCK_SIZE + i * 3);
+		if (c == 0xff || c == -1) flag++;
+		n[i] = c;
 	}
-	FLASH_BLOCK_SIZE = n[0] * 256 + n[1];
+	if (flag < 2) FLASH_BLOCK_SIZE = n[0] * 256 + n[1];
+	else
+	{
+		Serial.print(F("!!! EraseSize"));
+		errorBeepMs(10, 200);
+	}
 
 	maxTeamNumber = (flashSize - FLASH_BLOCK_SIZE) / TEAM_FLASH_SIZE - 1;
 
@@ -827,6 +860,7 @@ void executeCommand()
 	case COMMAND_SET_FLASH_BLOCK_SIZE:
 		if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_FLASH_BLOCK_SIZE) setFlashBlockSize();
 		else errorLengthFlag = true;
+		break;
 	case COMMAND_SET_BT_NAME:
 		if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_SET_BT_NAME) setNewBtName();
 		else errorLengthFlag = true;
@@ -2114,7 +2148,7 @@ bool setBtName(String name)
 	digitalWrite(BT_COMMAND_ENABLE, HIGH);
 	delay(200);
 	//AT+NAME=<nameArray> [1-32]
-	Serial.println("AT+NAME=" + name);	
+	Serial.println("AT+NAME=" + name);
 	//uint8_t* buf = &uartBuffer[DATA_START_BYTE];
 	//Serial.write("AT+NAME=");
 	//Serial.write(buf, uartBuffer[LENGTH_BYTE]);
@@ -2143,7 +2177,7 @@ bool setBtPinCode(String code)
 {
 	bool result = false;
 	digitalWrite(BT_COMMAND_ENABLE, HIGH);
-	delay(200);	
+	delay(200);
 	//AT+PSWD:"<nameArray>" [1-16] for HC-06
 	//AT+PSWD=<nameArray> [1-16] for HC-05
 	Serial.println("AT+PSWD:\"" + code + "\"");
@@ -2433,7 +2467,7 @@ bool ntagWritePage(uint8_t* dataBlock, uint8_t pageAdr)
 	}
 
 	return true;
-}
+	}
 
 // чтение 4-х страниц (16 байт) из чипа
 bool ntagRead4pages(uint8_t pageAdr)
@@ -2470,7 +2504,7 @@ bool ntagRead4pages(uint8_t pageAdr)
 		ntag_page[i] = buffer[i];
 	}
 	return true;
-}
+	}
 
 // пишет на чип время и станцию отметки
 bool writeCheckPointToCard(uint8_t newPage, uint32_t checkTime)
@@ -2526,24 +2560,15 @@ uint8_t findNewPage()
 		}
 		for (uint8_t n = 0; n < 4; n++)
 		{
-			// 1) текущая страница пустая
-			// 2) равна номеру станции
-			if (ntag_page[n * 4] == 0)
+			if ((stationMode == MODE_START_KP && ntag_page[n * 4] == 0)
+				|| (stationMode == MODE_FINISH_KP && ntag_page[n * 4] == stationNumber))
 			{
-				if (!ntagRead4pages(page - 1))
-				{
-					return 0;
-				}
-				if (ntag_page[0] == stationNumber) page--;
 				return page;
 			}
-			// 2) равна номеру станции, а след. страница пустая
-			// if (ntag_page[0 + n * 4] == 0 || (ntag_page[0 + n * 4] == stationNumber && ntag_page[0 + 4 + n * 4] == 0)) return page;
 			page++;
 		}
 	}
 	return TAG_MAX_PAGE;
-
 
 	/*uint8_t finishpage = TAG_MAX_PAGE - 1;
 	uint8_t startpage = PAGE_DATA_START;
@@ -2592,7 +2617,7 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 		Serial.print(F("!!!erased team #"));
 		Serial.println(String((uint32_t)((uint32_t)teamNumber / (uint32_t)256)));
 #endif
-	}
+}
 
 	// save basic parameters
 	if (!ntagRead4pages(PAGE_CHIP_NUM))
@@ -2666,10 +2691,10 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 					block = TAG_MAX_PAGE;
 					break;
 				}
+				}
 			}
-		}
 		block += 4;
-	}
+		}
 	// add dump pages number
 	if (checkCount > 0)
 	{
@@ -2679,7 +2704,7 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 		SPIflash.writeByte(teamFlashAddress + 13, checkCount & 0x00FF);
 	}
 	return flag;
-}
+	}
 
 // сохраняем весь блок, стираем весь блок и возвращаем назад все, кроме переписываемой команды
 // оптимизировать чтение и запись флэш (блоками)
@@ -2812,7 +2837,7 @@ uint16_t refreshChipCounter()
 	Serial.println(String(chips));
 #endif
 	return chips;
-}
+		}
 
 // обработка ошибок. формирование пакета с сообщением о ошибке
 void sendError(uint8_t errorCode, uint8_t commandCode)
