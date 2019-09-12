@@ -1704,7 +1704,7 @@ send_mime_mail('Автор письма',
 		from LevelPoints lp
 		where lp.distance_id = $distanceid
 		       and  lp.levelpoint_hide = 0
-		       and lp.levelpoint_mindatetime >= p.levelpoint_maxdatetime
+		       and lp.levelpoint_mindatetime >= lp.levelpoint_maxdatetime
 		order by 1";
 
        //  echo $sql;
