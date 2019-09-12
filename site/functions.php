@@ -1639,6 +1639,7 @@ send_mime_mail('Автор письма',
     function CheckLevelPoints($distanceid)
     {
      
+	    
        $CheckString = "";
        // Важно, что в "правой" таблице берутся только точки с типом 1,2,4 (старт,финиш, смена карт)
        // условия
@@ -1699,6 +1700,7 @@ send_mime_mail('Автор письма',
 	  $CheckString = "Некорректность в точке $LevelPointName";
 	}
 	
+	//  Проверка, что дата и время начала работы точки строго раньше датыи времени конца работы
 	    
 	$sql =  "select  lp.levelpoint_id, lp.levelpoint_name, lp.pointtype_id
 		from LevelPoints lp
@@ -1718,6 +1720,43 @@ send_mime_mail('Автор письма',
 	  $CheckString .= "Время или дата конца работы меньше времени начала в точке $LevelPointName";
 	}
 
+	 //  для базовых точек проверка на соответвие порядка точек и их  дат и времени :
+	  $sql =  "
+		 select  a.levelpoint_id,  a.levelpoint_name,   
+		         a.levelpoint_mindatetime, a.levelpoint_maxdatetime,
+			 COALESCE(b.levelpoint_mindatetime, 0) as  levelpoint_predmindatetime,
+			 COALESCE(b.levelpoint_maxdatetime, 0) as  levelpoint_predmaxdatetime
+		 from 
+			(
+			 select  levelpoint_id, levelpoint_name, levelpoint_order, pointtype_id, levelpoint_mindatetime, levelpoint_maxdatetime
+			 from LevelPoints lp
+			 where distance_id = $distanceid
+			       and  levelpoint_hide = 0
+			       and  pointtype_id in (1,2,3,4)
+			) a
+			left outer join
+			(
+			 select  levelpoint_id, levelpoint_name, levelpoint_order, pointtype_id, levelpoint_mindatetime, levelpoint_maxdatetime
+			 from LevelPoints lp
+			 where distance_id = $distanceid
+			       and  levelpoint_hide = 0
+			       and  pointtype_id in (1,2,3,4)
+			) b
+			on a.levelpoint_order > b.levelpoint_order
+		 where a.levelpoint_mindatetime <  b.levelpoint_mindatetime or a.levelpoint_maxdatetime <  b.levelpoint_maxdatetime
+		 order by 1";
+
+       //  echo $sql;
+
+	$Row = CSql::singleRow($sql);
+	$LevelPointId = $Row['levelpoint_id'];
+	$LevelPointName = $Row['levelpoint_name'];
+
+        if (!empty($LevelPointId))
+	{
+	  $CheckString .= "Время или дата начала работы не соответствует порядку в точке $LevelPointName";
+	}
+	//  проверка амнистии
 	$sql = " select lpd.levelpointdiscount_id, lpd.levelpointdiscount_start, lpd.levelpointdiscount_finish 
 	         from LevelPoints lp
 		      inner join  LevelPointDiscounts lpd
