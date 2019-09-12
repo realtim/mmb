@@ -1700,7 +1700,7 @@ send_mime_mail('Автор письма',
 	}
 	
 	    
-	$sql =  "select  lp.levelpoint_id, lp.levelpoint_name, lp.pointtype_id, lp.predpointtype_id
+	$sql =  "select  lp.levelpoint_id, lp.levelpoint_name, lp.pointtype_id
 		from LevelPoints lp
 		where lp.distance_id = $distanceid
 		       and  lp.levelpoint_hide = 0
