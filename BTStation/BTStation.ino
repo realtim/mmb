@@ -7,173 +7,176 @@
 #include <EEPROM.h>
 #include <SPIFlash.h>
 
-#ifdef DEBUG
-//#include <SoftwareSerial.h>
-#endif
-
 #define UART_SPEED 38400
 
 // версия прошивки, номер пишется в чипы
-#define FW_VERSION					107
-
-#ifdef DEBUG
-//#define DEBUG_RX					2 //
-//#define DEBUG_TX					6 //
-#endif
+#define FW_VERSION				107
 
 #define BT_COMMAND_ENABLE		2 // светодиод ошибки (красный)
-#define BUZZER_PIN					3 // пищалка
-#define LED_PIN							4 // светодиод синий
+#define BUZZER_PIN				3 // пищалка
+#define LED_PIN					4 // светодиод синий
 #define RTC_ENABLE_PIN			5 // питание часов кроме батарейного
 #define FLASH_ENABLE_PIN		7 // SPI enable pin
-#define FLASH_SS_PIN				8 // SPI SELECT pin
-#define RFID_RST_PIN				9 // рфид модуль reset
-#define RFID_SS_PIN					10 // рфид модуль chip_select
+#define FLASH_SS_PIN			8 // SPI SELECT pin
+#define RFID_RST_PIN			9 // рфид модуль reset
+#define RFID_SS_PIN				10 // рфид модуль chip_select
 //#define RFID_MOSI_PIN			11 // рфид модуль
 //#define RFID_MISO_PIN			12 // рфид модуль
 //#define RFID_SCK_PIN			13 // рфид модуль
-#define BATTERY_PIN					A0 // замер напряжения батареи
-#define ERROR_LED_PIN				A1 // светодиод ошибки (красный)
+#define BATTERY_PIN				A0 // замер напряжения батареи
+#define ERROR_LED_PIN			A1 // светодиод ошибки (красный)
 
 // номер станции в eeprom памяти
-#define EEPROM_STATION_NUMBER		00
+#define EEPROM_STATION_NUMBER	00
 // номер режима в eeprom памяти
-#define EEPROM_STATION_MODE			10
+#define EEPROM_STATION_MODE		10
 // коэфф. пересчета значения ADC в вольты = 0,00587
-#define EEPROM_VOLTAGE_KOEFF		20
+#define EEPROM_VOLTAGE_KOEFF	20
 // усиление сигнала RFID
-#define EEPROM_GAIN							40
+#define EEPROM_GAIN				40
 // тип чипа, с которым должна работать станция
-#define EEPROM_CHIP_TYPE				50
+#define EEPROM_CHIP_TYPE		50
 // размер блока на флэше под данные команды
 #define EEPROM_TEAM_BLOCK_SIZE	60
 // размер стираемого блока на флэше
 #define EEPROM_FLASH_BLOCK_SIZE	70
 
 // команды
-#define COMMAND_SET_MODE							0x80
-#define COMMAND_SET_TIME							0x81
-#define COMMAND_RESET_STATION					0x82
-#define COMMAND_GET_STATUS						0x83
-#define COMMAND_INIT_CHIP							0x84
-#define COMMAND_GET_LAST_TEAMS				0x85
-#define COMMAND_GET_TEAM_RECORD				0x86
-#define COMMAND_READ_CARD_PAGE				0x87
-#define COMMAND_UPDATE_TEAM_MASK			0x88
-#define COMMAND_WRITE_CARD_PAGE				0x89
-#define COMMAND_READ_FLASH						0x8a
-#define COMMAND_WRITE_FLASH						0x8b
+#define COMMAND_SET_MODE				0x80
+#define COMMAND_SET_TIME				0x81
+#define COMMAND_RESET_STATION			0x82
+#define COMMAND_GET_STATUS				0x83
+#define COMMAND_INIT_CHIP				0x84
+#define COMMAND_GET_LAST_TEAMS			0x85
+#define COMMAND_GET_TEAM_RECORD			0x86
+#define COMMAND_READ_CARD_PAGE			0x87
+#define COMMAND_UPDATE_TEAM_MASK		0x88
+#define COMMAND_WRITE_CARD_PAGE			0x89
+#define COMMAND_READ_FLASH				0x8a
+#define COMMAND_WRITE_FLASH				0x8b
 #define COMMAND_ERASE_FLASH_SECTOR		0x8c
-#define COMMAND_GET_CONFIG						0x8d
-#define COMMAND_SET_KOEFF							0x8e
-#define COMMAND_SET_GAIN							0x8f
-#define COMMAND_SET_CHIP_TYPE					0x90
+#define COMMAND_GET_CONFIG				0x8d
+#define COMMAND_SET_KOEFF				0x8e
+#define COMMAND_SET_GAIN				0x8f
+#define COMMAND_SET_CHIP_TYPE			0x90
 #define COMMAND_SET_TEAM_FLASH_SIZE		0x91
 #define COMMAND_SET_FLASH_BLOCK_SIZE	0x92
-#define COMMAND_SET_BT_NAME						0x93
-#define COMMAND_SET_BT_PIN						0x94
+#define COMMAND_SET_BT_NAME				0x93
+#define COMMAND_SET_BT_PIN				0x94
 
 // размеры данных для команд
-#define DATA_LENGTH_SET_MODE							1
-#define DATA_LENGTH_SET_TIME							6
-#define DATA_LENGTH_RESET_STATION					7
-#define DATA_LENGTH_GET_STATUS						0
-#define DATA_LENGTH_INIT_CHIP							4
-#define DATA_LENGTH_GET_LAST_TEAMS				0
-#define DATA_LENGTH_GET_TEAM_RECORD				2
-#define DATA_LENGTH_READ_CARD_PAGE				2
-#define DATA_LENGTH_UPDATE_TEAM_MASK			8
-#define DATA_LENGTH_WRITE_CARD_PAGE				13
-#define DATA_LENGTH_READ_FLASH						5
-#define DATA_LENGTH_WRITE_FLASH						4  // and more according to data length
+#define DATA_LENGTH_SET_MODE				1
+#define DATA_LENGTH_SET_TIME				6
+#define DATA_LENGTH_RESET_STATION			7
+#define DATA_LENGTH_GET_STATUS				0
+#define DATA_LENGTH_INIT_CHIP				4
+#define DATA_LENGTH_GET_LAST_TEAMS			0
+#define DATA_LENGTH_GET_TEAM_RECORD			2
+#define DATA_LENGTH_READ_CARD_PAGE			2
+#define DATA_LENGTH_UPDATE_TEAM_MASK		8
+#define DATA_LENGTH_WRITE_CARD_PAGE			13
+#define DATA_LENGTH_READ_FLASH				5
+#define DATA_LENGTH_WRITE_FLASH				4  // and more according to data length
 #define DATA_LENGTH_ERASE_FLASH_SECTOR		2
-#define DATA_LENGTH_GET_CONFIG						0
-#define DATA_LENGTH_SET_KOEFF							4
-#define DATA_LENGTH_SET_GAIN							1
-#define DATA_LENGTH_SET_CHIP_TYPE					1
+#define DATA_LENGTH_GET_CONFIG				0
+#define DATA_LENGTH_SET_KOEFF				4
+#define DATA_LENGTH_SET_GAIN				1
+#define DATA_LENGTH_SET_CHIP_TYPE			1
 #define DATA_LENGTH_SET_TEAM_FLASH_SIZE		2
 #define DATA_LENGTH_SET_FLASH_BLOCK_SIZE	2
-#define DATA_LENGTH_SET_BT_NAME						1
-#define DATA_LENGTH_SET_BT_PIN						1
+#define DATA_LENGTH_SET_BT_NAME				1
+#define DATA_LENGTH_SET_BT_PIN				1
 
 // ответы станции
-#define REPLY_SET_MODE							0x90
-#define REPLY_SET_TIME							0x91
-#define REPLY_RESET_STATION					0x92
-#define REPLY_GET_STATUS						0x93
-#define REPLY_INIT_CHIP							0x94
-#define REPLY_GET_LAST_TEAMS				0x95
-#define REPLY_GET_TEAM_RECORD				0x96
-#define REPLY_READ_CARD_PAGE				0x97
-#define REPLY_UPDATE_TEAM_MASK			0x98
-#define REPLY_WRITE_CARD_PAGE				0x99
-#define REPLY_READ_FLASH						0x9a
-#define REPLY_WRITE_FLASH						0x9b
-#define REPLY_ERASE_FLASH_SECTOR		0x9c
-#define REPLY_GET_CONFIG						0x9d
-#define REPLY_SET_KOEFF							0x9e
-#define REPLY_SET_GAIN							0x9f
-#define REPLY_SET_CHIP_TYPE					0xa0
-#define REPLY_SET_TEAM_FLASH_SIZE		0xa1
+#define REPLY_SET_MODE				0x90
+#define REPLY_SET_TIME				0x91
+#define REPLY_RESET_STATION			0x92
+#define REPLY_GET_STATUS			0x93
+#define REPLY_INIT_CHIP				0x94
+#define REPLY_GET_LAST_TEAMS		0x95
+#define REPLY_GET_TEAM_RECORD		0x96
+#define REPLY_READ_CARD_PAGE		0x97
+#define REPLY_UPDATE_TEAM_MASK		0x98
+#define REPLY_WRITE_CARD_PAGE		0x99
+#define REPLY_READ_FLASH			0x9a
+#define REPLY_WRITE_FLASH			0x9b
+#define REPLY_ERASE_FLASH_SECTOR	0x9c
+#define REPLY_GET_CONFIG			0x9d
+#define REPLY_SET_KOEFF				0x9e
+#define REPLY_SET_GAIN				0x9f
+#define REPLY_SET_CHIP_TYPE			0xa0
+#define REPLY_SET_TEAM_FLASH_SIZE	0xa1
 #define REPLY_SET_FLASH_BLOCK_SIZE	0xa2
-#define REPLY_SET_BT_NAME						0xa3
-#define REPLY_SET_BT_PIN						0xa4
+#define REPLY_SET_BT_NAME			0xa3
+#define REPLY_SET_BT_PIN			0xa4
 
 
 // режимы станции
-#define MODE_INIT				0
-#define MODE_START_KP		1
+#define MODE_INIT		0
+#define MODE_START_KP	1
 #define MODE_FINISH_KP	2
 
 // коды ошибок станции
-#define OK							0
-#define WRONG_STATION		1
-#define READ_ERROR			2
-#define WRITE_ERROR			3
-#define LOW_INIT_TIME		4
-#define WRONG_CHIP			5
-#define NO_CHIP					6
+#define OK				0
+#define WRONG_STATION	1
+#define READ_ERROR		2
+#define WRITE_ERROR		3
+#define LOW_INIT_TIME	4
+#define WRONG_CHIP		5
+#define NO_CHIP			6
 #define BUFFER_OVERFLOW	7
-#define WRONG_DATA			8
-#define WRONG_UID				9
-#define WRONG_TEAM			10
-#define NO_DATA					11
-#define WRONG_COMMAND		12
-#define ERASE_ERROR			13
+#define WRONG_DATA		8
+#define WRONG_UID		9
+#define WRONG_TEAM		10
+#define NO_DATA			11
+#define WRONG_COMMAND	12
+#define ERASE_ERROR		13
 #define WRONG_CHIP_TYPE	14
-#define WRONG_MODE			15
-#define WRONG_SIZE			16
+#define WRONG_MODE		15
+#define WRONG_SIZE		16
 
 // страницы в чипе. 0-7 служебные, 8-... для отметок
 #define PAGE_UID		0
-// номер_чипа + тип_чипа + версия_прошивки
-#define PAGE_CHIP_NUM	4
-// время инициализации
-#define PAGE_INIT_TIME	5
-#define PAGE_TEAM_MASK	6
-#define PAGE_RESERVED2	7
-#define PAGE_DATA_START	8
+#define PAGE_CHIP_NUM	3 // system[2] + тип_чипа[1] + system[1]
+#define PAGE_CHIP_NUM	4 // номер_чипа[2] + тип_чипа[1] + версия_прошивки[1]
+#define PAGE_INIT_TIME	5 // время инициализации[4]
+#define PAGE_TEAM_MASK	6 // маска команды[2] + resserved[2]
+#define PAGE_RESERVED2	7 // reserved for future use[4]
+#define PAGE_DATA_START	8 // 1st data page: номер КП[1] + время посещения КП[3]
+
+#define NTAG213_ID			0x12
+#define NTAG213_MARK		213
+#define NTAG213_MAX_PAGE	40
+
+#define NTAG215_ID			0x3e
+#define NTAG215_MARK		215
+#define NTAG215_MAX_PAGE	130
+
+#define NTAG216_ID			0x6d
+#define NTAG216_MARK		216
+#define NTAG216_MAX_PAGE	226
+
 
 // тип чипа
-uint8_t chipType = 0x3e;
+uint8_t chipType = NTAG215_ID;
 // отметка для чипа
-uint8_t NTAG_MARK = 215;
+uint8_t NTAG_MARK = NTAG215_MARK;
 // размер чипа в страницах
-uint8_t TAG_MAX_PAGE = 130;
+uint8_t TAG_MAX_PAGE = NTAG215_MAX_PAGE;
 
 // размер записи лога (на 1 чип)
 uint16_t TEAM_FLASH_SIZE = 1024;
 uint16_t FLASH_BLOCK_SIZE = 4096;
 
 // максимальное кол-во записей в логе
-uint32_t maxTeamNumber = 1; // = 4 * 1024 - FLASH_BLOCK_SIZE / TEAM_FLASH_SIZE;
+uint32_t maxTeamNumber = 1; // = (flashSize - FLASH_BLOCK_SIZE) / TEAM_FLASH_SIZE - 1;
 
 // описание протокола
-#define PACKET_ID						2
+#define PACKET_ID			2
 #define STATION_NUMBER_BYTE	3
-#define LENGTH_BYTE					4
-#define COMMAND_BYTE				5
-#define DATA_START_BYTE			6
+#define LENGTH_BYTE			4
+#define COMMAND_BYTE		5
+#define DATA_START_BYTE		6
 
 // тайм-аут приема команды с момента начала
 #define receiveTimeOut 1000
@@ -1155,7 +1158,7 @@ void initChip()
 	uint8_t dataBlock[4] = { 255,255,255,255 };
 
 	// заполняем чип 0xFF
-	/*for (uint8_t page = PAGE_CHIP_NUM; page < NTAG215_MAX_PAGE; page++)
+	/*for (uint8_t page = PAGE_CHIP_NUM; page < TAG_MAX_PAGE; page++)
 	{
 		if (!ntagWritePage(dataBlock, page))
 		{
@@ -2467,7 +2470,7 @@ bool ntagWritePage(uint8_t* dataBlock, uint8_t pageAdr)
 	}
 
 	return true;
-	}
+}
 
 // чтение 4-х страниц (16 байт) из чипа
 bool ntagRead4pages(uint8_t pageAdr)
@@ -2504,7 +2507,7 @@ bool ntagRead4pages(uint8_t pageAdr)
 		ntag_page[i] = buffer[i];
 	}
 	return true;
-	}
+}
 
 // пишет на чип время и станцию отметки
 bool writeCheckPointToCard(uint8_t newPage, uint32_t checkTime)
@@ -2617,7 +2620,7 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 		Serial.print(F("!!!erased team #"));
 		Serial.println(String((uint32_t)((uint32_t)teamNumber / (uint32_t)256)));
 #endif
-}
+	}
 
 	// save basic parameters
 	if (!ntagRead4pages(PAGE_CHIP_NUM))
@@ -2691,10 +2694,10 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 					block = TAG_MAX_PAGE;
 					break;
 				}
-				}
 			}
-		block += 4;
 		}
+		block += 4;
+	}
 	// add dump pages number
 	if (checkCount > 0)
 	{
@@ -2704,7 +2707,7 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 		SPIflash.writeByte(teamFlashAddress + 13, checkCount & 0x00FF);
 	}
 	return flag;
-	}
+}
 
 // сохраняем весь блок, стираем весь блок и возвращаем назад все, кроме переписываемой команды
 // оптимизировать чтение и запись флэш (блоками)
@@ -2837,7 +2840,7 @@ uint16_t refreshChipCounter()
 	Serial.println(String(chips));
 #endif
 	return chips;
-		}
+}
 
 // обработка ошибок. формирование пакета с сообщением о ошибке
 void sendError(uint8_t errorCode, uint8_t commandCode)
@@ -2899,24 +2902,24 @@ void floatToByte(byte* bytes, float f)
 // check chip type consistence
 bool selectChipType(uint8_t type)
 {
-	if (chipType == 0x12)
+	if (type == NTAG213_ID) //NTAG213
 	{
 		chipType = type;
-		NTAG_MARK = 213;
-		TAG_MAX_PAGE = 40;
+		NTAG_MARK = NTAG213_MARK;
+		TAG_MAX_PAGE = NTAG213_MAX_PAGE;
 	}
-	else if (chipType == 0x6d)
+	else if (type == NTAG216_ID) //NTAG216
 	{
 		chipType = type;
-		NTAG_MARK = 216;
-		TAG_MAX_PAGE = 226;
+		NTAG_MARK = NTAG216_MARK;
+		TAG_MAX_PAGE = NTAG216_MAX_PAGE;
 	}
-	else
+	else //NTAG215
 	{
-		chipType = 0x3e;
-		NTAG_MARK = 215;
-		TAG_MAX_PAGE = 130;
-		if (chipType != 0x3e) return false;
+		chipType = NTAG215_ID;
+		NTAG_MARK = NTAG215_MARK;
+		TAG_MAX_PAGE = NTAG215_MAX_PAGE;
+		if (chipType != NTAG215_ID) return false;
 	}
 	return true;
 }
