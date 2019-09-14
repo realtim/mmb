@@ -206,7 +206,7 @@ SPIFlash SPIflash(FLASH_SS_PIN); // флэш-память
 // рфид-модуль
 MFRC522 mfrc522(RFID_SS_PIN, RFID_RST_PIN);
 // коэфф. усиления антенны - работают только биты 4,5,6
-uint8_t gainCoeff = 0x70;
+uint8_t gainCoeff = 0x40; // [0, 16, 32, 48, 64, 80, 96, 112]
 
 // хранение времени
 struct ts systemTime;
@@ -629,9 +629,6 @@ void processRfidCard()
 		}
 
 		// добавляем в буфер последних команд
-		addLastTeam(chipNum);
-		lastTimeChecked = checkTime;
-		if (!already_checked) totalChipsChecked++;
 
 		// Пишем дамп чипа во флэш
 		if (!writeDumpToFlash(chipNum, checkTime))
@@ -645,6 +642,9 @@ void processRfidCard()
 			return;
 		}
 		SPI.end();
+		addLastTeam(chipNum);
+		lastTimeChecked = checkTime;
+		if (!already_checked) totalChipsChecked++;
 		lastTeamFlag = chipNum;
 		digitalWrite(LED_PIN, LOW);
 		beep(1, 200);
@@ -2175,7 +2175,7 @@ bool setBtName(String name)
 }
 
 // поменять пин-код BT адаптера
-// Переделать на работу с указателем на 
+// Переделать на работу с указателем 
 bool setBtPinCode(String code)
 {
 	bool result = false;
@@ -2221,6 +2221,39 @@ bool setBtPinCode(String code)
 	while (Serial.available()) Serial.read();
 	return result;
 }
+
+/*bool getBtParams()
+{
+	bool result = false;
+	digitalWrite(BT_COMMAND_ENABLE, HIGH);
+	delay(200);
+	//AT+PSWD? [1-16] for HC-06
+	Serial.println("AT+PSWD?");
+	delay(200);
+	char reply[2] = { 0,0 };
+	Serial.readBytes(reply, 2);
+	while (Serial.available()) Serial.read();
+
+	delay(200);
+	//AT+PSWD? [1-16] for HC-06
+	Serial.println("AT+PSWD?");
+	delay(200);
+	reply[2] = { 0,0 };
+	Serial.readBytes(reply, 2);
+	while (Serial.available()) Serial.read();
+
+	delay(200);
+	//AT+PSWD? [1-16] for HC-06
+	Serial.println("AT+PSWD?");
+	delay(200);
+	reply[2] = { 0,0 };
+	Serial.readBytes(reply, 2);
+	while (Serial.available()) Serial.read();
+
+	digitalWrite(BT_COMMAND_ENABLE, LOW);
+	delay(200);
+	return result;
+}*/
 
 // заполнить буфер смены маски
 void saveNewMask()
