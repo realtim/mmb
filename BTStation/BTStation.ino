@@ -602,10 +602,10 @@ void processRfidCard()
 #endif
 		digitalWrite(LED_PIN, HIGH);
 		// ищем свободную страницу на чипе
-		uint8_t newPage = findNewPage();
+		int newPage = findNewPage();
 
 		// ошибка чтения или больше максимума... Наверное, переполнен???
-		if (newPage < PAGE_DATA_START || newPage >= TAG_MAX_PAGE)
+		if (newPage != -1 && (newPage < PAGE_DATA_START || newPage >= TAG_MAX_PAGE))
 		{
 			SPI.end();
 			digitalWrite(LED_PIN, LOW);
@@ -617,7 +617,7 @@ void processRfidCard()
 		}
 
 		// Пишем на чип отметку
-		if (!writeCheckPointToCard(newPage, checkTime))
+		if (newPage != -1 && !writeCheckPointToCard(newPage, checkTime))
 		{
 			SPI.end();
 			digitalWrite(LED_PIN, LOW);
@@ -627,8 +627,6 @@ void processRfidCard()
 #endif
 			return;
 		}
-
-		// добавляем в буфер последних команд
 
 		// Пишем дамп чипа во флэш
 		if (!writeDumpToFlash(chipNum, checkTime))
@@ -642,6 +640,8 @@ void processRfidCard()
 			return;
 		}
 		SPI.end();
+
+		// добавляем в буфер последних команд
 		addLastTeam(chipNum);
 		lastTimeChecked = checkTime;
 		if (!already_checked) totalChipsChecked++;
@@ -2560,7 +2560,7 @@ bool writeCheckPointToCard(uint8_t newPage, uint32_t checkTime)
 
 // Поиск  на чипе.
 // !!! разобраться в алгоритме Саши или сделать свой бинарный поиск
-uint8_t findNewPage()
+int findNewPage()
 {
 	/*uint8_t page = TAG_MAX_PAGE - 4;
 	while (page >= PAGE_DATA_START)
@@ -2587,7 +2587,7 @@ uint8_t findNewPage()
 	}
 	return TAG_MAX_PAGE;*/
 
-	uint8_t page = PAGE_DATA_START;
+	int page = PAGE_DATA_START;
 	while (page < TAG_MAX_PAGE)
 	{
 		if (!ntagRead4pages(page))
@@ -2596,8 +2596,12 @@ uint8_t findNewPage()
 		}
 		for (uint8_t n = 0; n < 4; n++)
 		{
-			if ((stationMode == MODE_START_KP && ntag_page[n * 4] == 0)
-				|| (stationMode == MODE_FINISH_KP && ntag_page[n * 4] == stationNumber))
+			if (stationMode == MODE_START_KP && ntag_page[n * 4] == stationNumber)
+			{
+				return -1;
+			}
+			if ((stationMode == MODE_START_KP && ntag_page[n * 4] == 0) ||
+				(stationMode == MODE_FINISH_KP && ntag_page[n * 4] == stationNumber))
 			{
 				return page;
 			}
@@ -2727,10 +2731,10 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 					block = TAG_MAX_PAGE;
 					break;
 				}
+				}
 			}
-		}
 		block += 4;
-	}
+		}
 	// add dump pages number
 	if (checkCount > 0)
 	{
@@ -2740,7 +2744,7 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 		SPIflash.writeByte(teamFlashAddress + 13, checkCount & 0x00FF);
 	}
 	return flag;
-}
+	}
 
 // сохраняем весь блок, стираем весь блок и возвращаем назад все, кроме переписываемой команды
 // оптимизировать чтение и запись флэш (блоками)
@@ -2873,7 +2877,7 @@ uint16_t refreshChipCounter()
 	Serial.println(String(chips));
 #endif
 	return chips;
-}
+		}
 
 // обработка ошибок. формирование пакета с сообщением о ошибке
 void sendError(uint8_t errorCode, uint8_t commandCode)
