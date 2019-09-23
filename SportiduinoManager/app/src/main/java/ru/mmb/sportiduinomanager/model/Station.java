@@ -687,7 +687,7 @@ public final class Station {
      */
     private byte crc8(final byte[] array, final int end) {
         byte crc = 0x00;
-        for (int i = 3; i < end; i++) {
+        for (int i = 2; i < end; i++) {
             byte extract = array[i];
             for (byte tempI = 8; tempI != 0; tempI--) {
                 byte sum = (byte) ((crc & 0xFF) ^ (extract & 0xFF));
