@@ -127,6 +127,7 @@ function SendDistance(PDO $pdo, $raid_id)
     $sql->execute();
     $result = $sql->fetchAll(PDO::FETCH_ASSOC);
     if (!count($result)) die("На дистанции отсутствуют точки");
+    if (count($result) < 2) die("На дистанции отсутствует финиш");
     foreach ($result as $row) {
         if (isset($points["p" . $row["levelpoint_order"]])) die("На дистанции две точки с номером " . $row["levelpoint_order"]);
         if ($raid_start == -1) {

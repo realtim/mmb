@@ -980,7 +980,7 @@ public final class Station {
      */
     public boolean fetchConfig() {
         // Get response from station
-        final byte[] response = new byte[16];
+        final byte[] response = new byte[20];
         if (!command(new byte[]{CMD_GET_CONFIG}, response)) return false;
         // Get station firmware
         mFirmware = response[0];

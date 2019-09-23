@@ -288,6 +288,7 @@ public final class SiteRequest {
                         StandardCharsets.UTF_8));
         // check for error message from server
         String line = reader.readLine();
+        if (line == null) return LOAD_READ_ERROR;
         if (!"".equals(line)) {
             mCustomError = line;
             return LOAD_CUSTOM_ERROR;
