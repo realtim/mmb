@@ -146,13 +146,14 @@ function SendDistance(PDO $pdo, $raid_id)
     // Генерируем отсутствующие времена закрытия точек
     $raid_end = -1;
     $prev_end = -1;
-    $keys = array_keys($points);
-    for ($n = end($keys); $n > 0; $n--) {
+    $last = intval(substr(end(array_keys($points)), 1));
+    for ($n = $last; $n > 0; $n--) {
+        $index = "p" . $n;
         if ($raid_end == -1) {
-            if (!$points[$n]["end"]) die("Точка финиша последнего этапа без времени окончания работы");
-            $raid_end = $points[$n]["end"];
+            if (!$points[$index]["end"]) die("Точка финиша последнего этапа без времени окончания работы");
+            $raid_end = $points[$index]["end"];
         }
-        if (!$points[$n]["end"]) $points[$n]["end"] = $prev_end; else $prev_end = $points[$n]["end"];
+        if (!$points[$index]["end"]) $points[$index]["end"] = $prev_end; else $prev_end = $points[$index]["end"];
     }
 
     // Получаем амнистии

@@ -907,6 +907,7 @@ public final class Station {
         final int teamMask = (int) byteArray2Long(response, 6, 7);
         final long teamTime = byteArray2Long(response, 8, 11);
         mChips.addNewEvent(this, initTime, teamNumber, teamMask, mNumber, teamTime);
+        // TODO: process bytes instead of number of records
         mChipRecordsN = response[12] & 0xFF;
         // Check if we have a valid number of mark in chip copy in flash memory
         if (mChipRecordsN <= 9 || mChipRecordsN >= 0xFF) {
@@ -915,80 +916,6 @@ public final class Station {
             return false;
         }
         mChipRecordsN -= 8;
-        return true;
-    }
-
-    /**
-     * Get some marks from a copy of a chip in station flash memory.
-     *
-     * @param teamNumber Team number
-     * @param initTime   Chip init time (for event creation)
-     * @param teamMask   Chip team mask (for event creation)
-     * @param fromMark   Starting position in marks list
-     * @param count      Number of marks to read
-     * @return True if succeeded, fills mChips with marks as chip events
-     */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean fetchTeamMarks(final int teamNumber, final long initTime,
-                                  final int teamMask, final int fromMark,
-                                  final int count) {
-        if (count <= 0 || count > MAX_MARK_COUNT) {
-            mLastError = R.string.err_station_buffer_overflow;
-            return false;
-        }
-        // Prepare command payload
-        byte[] commandData = new byte[9];
-        commandData[0] = CMD_READ_FLASH;
-        final long marksZone = teamNumber * 1024L + 48L;
-        final long startAddress = marksZone + fromMark * 4L;
-        long2ByteArray(startAddress, commandData, 1, 4);
-        long2ByteArray(startAddress + count * 4L - 1, commandData, 5, 4);
-        // Send command to station
-        final byte[] response = new byte[4 + count * 4];
-        mChips.clear();
-        mChipRecordsN = 0;
-        if (!command(commandData, response)) return false;
-        // Check that read address in response is equal to read address in command
-        if (startAddress != byteArray2Long(response, 0, 3)) {
-            mLastError = R.string.err_station_address_changed;
-            return false;
-        }
-        // Get first byte of current time
-        final long timeCorrection = mStationTime & 0xFF000000;
-        // Add new events
-        for (int i = 0; i < count; i++) {
-            final int pointNumber = response[4 + i * 4] & 0xFF;
-            final long pointTime =
-                    byteArray2Long(response, 5 + i * 4, 7 + i * 4) + timeCorrection;
-            // Check if the record is non-empty
-            if (pointNumber == 0xFF && (pointTime - timeCorrection) == 0x00FFFFFF) break;
-            mChips.addNewEvent(this, initTime, teamNumber, teamMask, pointNumber, pointTime);
-        }
-        // Check number of actually read marks
-        if (mChips.size() == count) {
-            return true;
-        } else {
-            mLastError = R.string.err_station_flash_empty;
-            return false;
-        }
-    }
-
-    /**
-     * Get station firmware version and configuration.
-     *
-     * @return True if succeeded
-     */
-    public boolean fetchConfig() {
-        // Get response from station
-        final byte[] response = new byte[20];
-        if (!command(new byte[]{CMD_GET_CONFIG}, response)) return false;
-        // Get station firmware
-        mFirmware = response[0];
-        // Get station mode
-        mMode = response[1] & 0xFF;
-        // Get voltage coefficient
-        mVCoeff = ByteBuffer.wrap(response, 11, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-        // Ignore all other parameters
         return true;
     }
 
@@ -1043,5 +970,80 @@ public final class Station {
         // Send command to station
         final byte[] response = new byte[0];
         return command(commandData, response);
+    }
+
+    /**
+     * Get some marks from a copy of a chip in station flash memory.
+     *
+     * @param teamNumber Team number
+     * @param initTime   Chip init time (for event creation)
+     * @param teamMask   Chip team mask (for event creation)
+     * @param fromMark   Starting position in marks list
+     * @param count      Number of marks to read
+     * @return True if succeeded, fills mChips with marks as chip events
+     */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean fetchTeamMarks(final int teamNumber, final long initTime,
+                                  final int teamMask, final int fromMark,
+                                  final int count) {
+        if (count <= 0 || count > MAX_MARK_COUNT) {
+            mLastError = R.string.err_station_buffer_overflow;
+            return false;
+        }
+        // Prepare command payload
+        byte[] commandData = new byte[9];
+        commandData[0] = CMD_READ_FLASH;
+        final long marksZone = teamNumber * 1024L + 48L;
+        final long startAddress = marksZone + fromMark * 4L;
+        long2ByteArray(startAddress, commandData, 1, 4);
+        long2ByteArray(startAddress + count * 4L - 1, commandData, 5, 4);
+        // Send command to station
+        final byte[] response = new byte[4 + count * 4];
+        mChips.clear();
+        mChipRecordsN = 0;
+        if (!command(commandData, response)) return false;
+        // Check that read address in response is equal to read address in command
+        // TODO: Station API is broken here
+        if (startAddress != byteArray2Long(response, 0, 3)) {
+            mLastError = R.string.err_station_address_changed;
+            return false;
+        }
+        // Get first byte of current time
+        final long timeCorrection = mStationTime & 0xFF000000;
+        // Add new events
+        for (int i = 0; i < count; i++) {
+            final int pointNumber = response[4 + i * 4] & 0xFF;
+            final long pointTime =
+                    byteArray2Long(response, 5 + i * 4, 7 + i * 4) + timeCorrection;
+            // Check if the record is non-empty
+            if (pointNumber == 0xFF && (pointTime - timeCorrection) == 0x00FFFFFF) break;
+            mChips.addNewEvent(this, initTime, teamNumber, teamMask, pointNumber, pointTime);
+        }
+        // Check number of actually read marks
+        if (mChips.size() == count) {
+            return true;
+        } else {
+            mLastError = R.string.err_station_flash_empty;
+            return false;
+        }
+    }
+
+    /**
+     * Get station firmware version and configuration.
+     *
+     * @return True if succeeded
+     */
+    public boolean fetchConfig() {
+        // Get response from station
+        final byte[] response = new byte[20];
+        if (!command(new byte[]{CMD_GET_CONFIG}, response)) return false;
+        // Get station firmware
+        mFirmware = response[0];
+        // Get station mode
+        mMode = response[1] & 0xFF;
+        // Get voltage coefficient
+        mVCoeff = ByteBuffer.wrap(response, 11, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+        // Ignore all other parameters
+        return true;
     }
 }
