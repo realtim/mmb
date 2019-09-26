@@ -147,11 +147,11 @@
 
 // страницы в чипе. 0-7 служебные, 8-... для отметок
 #define PAGE_UID    0
-#define PAGE_CHIP_NUM 3 // system[2] + тип_чипа[1] + system[1]
+#define PAGE_CHIP_SYS 3 // system[2] + тип_чипа[1] + system[1]
 #define PAGE_CHIP_NUM 4 // номер_чипа[2] + тип_чипа[1] + версия_прошивки[1]
 #define PAGE_INIT_TIME  5 // время инициализации[4]
 #define PAGE_TEAM_MASK  6 // маска команды[2] + resserved[2]
-#define PAGE_RESERVED2  7 // reserved for future use[4]
+//#define PAGE_RESERVED2  7 // reserved for future use[4]
 #define PAGE_DATA_START 8 // 1st data page: номер КП[1] + время посещения КП[3]
 
 #define NTAG213_ID      0x12
@@ -487,23 +487,23 @@ void processRfidCard()
 #ifdef DEBUG
     Serial.println(F("!!!fail to select card"));
 #endif
-    errorBeep(1);
+    //errorBeep(1);
     return;
   }
 
   // читаем блок информации
-  if (!ntagRead4pages(PAGE_UID))
+  if (!ntagRead4pages(PAGE_CHIP_SYS))
   {
     SPI.end();
 #ifdef DEBUG
     Serial.println(F("!!!failed to read chip"));
 #endif
-    errorBeep(1);
+    //errorBeep(1);
     return;
   }
 
   //неправильный тип чипа 
-  if (ntag_page[14] != chipType)
+  if (ntag_page[2] != chipType)
   {
     SPI.end();
 #ifdef DEBUG
@@ -523,7 +523,7 @@ void processRfidCard()
   */
 
   // читаем блок информации
-  if (!ntagRead4pages(PAGE_CHIP_NUM))
+  /*if (!ntagRead4pages(PAGE_CHIP_NUM))
   {
     SPI.end();
 #ifdef DEBUG
@@ -531,10 +531,10 @@ void processRfidCard()
 #endif
     errorBeep(1);
     return;
-  }
+  }*/
 
   // неправильный тип чипа
-  if (ntag_page[2] != NTAG_MARK)
+  if (ntag_page[6] != NTAG_MARK)
   {
     SPI.end();
 #ifdef DEBUG
@@ -545,7 +545,7 @@ void processRfidCard()
   }
 
   // чип от другой прошивки
-  if (ntag_page[3] != FW_VERSION)
+  if (ntag_page[7] != FW_VERSION)
   {
     SPI.end();
 #ifdef DEBUG
@@ -556,13 +556,13 @@ void processRfidCard()
   }
 
   // Не слишком ли старый чип? Недельной давности и более
-  uint32_t timeInit = ntag_page[4];
+  uint32_t timeInit = ntag_page[8];
   timeInit = timeInit << 8;
-  timeInit += ntag_page[5];
+  timeInit += ntag_page[9];
   timeInit = timeInit << 8;
-  timeInit += ntag_page[6];
+  timeInit += ntag_page[10];
   timeInit = timeInit << 8;
-  timeInit += ntag_page[7];
+  timeInit += ntag_page[11];
   if ((systemTime.unixtime - timeInit) > maxTimeInit)
   {
     SPI.end();
@@ -573,10 +573,9 @@ void processRfidCard()
     return;
   }
 
-  uint16_t chipNum = (ntag_page[0] << 8) + ntag_page[1];
 
   // Если номер чипа =0 или >maxTeamNumber
-
+  uint16_t chipNum = (ntag_page[4] << 8) + ntag_page[5];
   if (chipNum < 1 || chipNum > maxTeamNumber)
   {
     SPI.end();
@@ -593,20 +592,20 @@ void processRfidCard()
   // 2-5: время выдачи чипа
   // 6-7: маска участников
   if (newTeamMask[0] + newTeamMask[1] != 0
-    && ntag_page[0] == newTeamMask[0]
-    && ntag_page[1] == newTeamMask[1]
-    && ntag_page[4] == newTeamMask[2]
-    && ntag_page[5] == newTeamMask[3]
-    && ntag_page[6] == newTeamMask[4]
-    && ntag_page[7] == newTeamMask[5])
+    && ntag_page[4] == newTeamMask[0]
+    && ntag_page[5] == newTeamMask[1]
+    && ntag_page[8] == newTeamMask[2]
+    && ntag_page[9] == newTeamMask[3]
+    && ntag_page[10] == newTeamMask[4]
+    && ntag_page[11] == newTeamMask[5])
   {
 #ifdef DEBUG
     Serial.print(F("!!!updating mask"));
 #endif
-    if (ntag_page[8] != newTeamMask[6] || ntag_page[9] != newTeamMask[7])
+    if (ntag_page[12] != newTeamMask[6] || ntag_page[13] != newTeamMask[7])
     {
       digitalWrite(LED_PIN, HIGH);
-      uint8_t dataBlock[4] = { newTeamMask[6], newTeamMask[7], ntag_page[10], ntag_page[11] };
+      uint8_t dataBlock[4] = { newTeamMask[6], newTeamMask[7], ntag_page[14], ntag_page[15] };
       if (!ntagWritePage(dataBlock, PAGE_TEAM_MASK))
       {
         SPI.end();
@@ -677,15 +676,9 @@ void processRfidCard()
 #endif
       return;
     }
-    else if (newPage == 0)
-    {
-      errorBeep(4);
-#ifdef DEBUG
-      Serial.print(F("!!!chip already marked"));
-#endif
-      return;
-    }
-    else if (newPage < PAGE_DATA_START || newPage >= TAG_MAX_PAGE)
+
+    // переполнен
+    if (newPage < PAGE_DATA_START || newPage >= TAG_MAX_PAGE)
     {
       SPI.end();
       digitalWrite(LED_PIN, LOW);
@@ -697,16 +690,26 @@ void processRfidCard()
       return;
     }
 
-    // Пишем на чип отметку
-    if (newPage != -1 && !writeCheckPointToCard(newPage, checkTime))
+    // chip was not checked by another station with the same number
+    if (newPage != -1)
     {
-      SPI.end();
-      digitalWrite(LED_PIN, LOW);
-      errorBeep(1);
+    // Пишем на чип отметку
+      if (!writeCheckPointToCard(newPage, checkTime))
+      {
+        SPI.end();
+        digitalWrite(LED_PIN, LOW);
+        errorBeep(1);
 #ifdef DEBUG
-      Serial.print(F("!!!failed to write chip"));
+        Serial.print(F("!!!failed to write chip"));
 #endif
-      return;
+        return;
+      }
+    }
+    else
+    {
+#ifdef DEBUG
+      Serial.print(F("!!!chip marked by another station"));
+#endif
     }
 
     // Пишем дамп чипа во флэш
@@ -801,7 +804,7 @@ bool readUart()
       }
 
       // packet is received
-      if (uartBufferPosition > LENGTH_BYTE && uartBufferPosition >= DATA_START_BYTE + uartBuffer[LENGTH_BYTE])
+      if (uartBufferPosition > LENGTH_BYTE&& uartBufferPosition >= DATA_START_BYTE + uartBuffer[LENGTH_BYTE])
       {
         // crc matching
 #ifdef DEBUG
@@ -2716,6 +2719,7 @@ int findNewPage()
 #ifdef DEBUG      
       Serial.println(F("Can't read chip"));
 #endif
+      // chip read error
       return 0;
     }
     for (uint8_t n = 0; n < 4; n++)
@@ -2725,16 +2729,19 @@ int findNewPage()
 #ifdef DEBUG      
         Serial.println(F("Chip checked already"));
 #endif
+        // chip was checked by another station with the same number
         return -1;
       }
       if (ntag_page[n * 4] == 0 ||
         (stationMode == MODE_FINISH_KP && ntag_page[n * 4] == stationNumber))
       {
+        // free page found
         return page;
       }
       page++;
     }
   }
+  // чип заполнен
   return TAG_MAX_PAGE;
 
   /*uint8_t finishpage = TAG_MAX_PAGE - 1;
@@ -2816,7 +2823,7 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 #endif
 
   // copy card content to flash. все страницы не начинающиеся с 0
-  uint16_t checkCount = 0;
+  uint8_t checkCount = 0;
   uint8_t block = 0;
   while (block < TAG_MAX_PAGE)
   {
@@ -2865,8 +2872,8 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
   // add dump pages number
   if (checkCount > 0)
   {
+    SPIflash.writeByte(teamFlashAddress + 12, checkCount);
     //checkCount = checkCount * 4 + 16;
-    SPIflash.writeShort(teamFlashAddress + 12, checkCount);
     //SPIflash.writeByte(teamFlashAddress + 12, checkCount >> 8);
     //SPIflash.writeByte(teamFlashAddress + 13, checkCount & 0x00FF);
   }
@@ -3059,7 +3066,7 @@ void floatToByte(byte* bytes, float f)
 
   for (uint16_t i = 0; i < length; i++)
   {
-    bytes[i] = ((byte*)& f)[i];
+    bytes[i] = ((byte*)&f)[i];
   }
 }
 
