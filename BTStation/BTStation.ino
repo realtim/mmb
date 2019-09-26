@@ -1412,8 +1412,8 @@ void getTeamRecord()
   // 3-6 : время инициализации
   // 7-8: маска команды 
   // 9-12 : время последней отметки на станции
-  // 13-14: счетчик сохраненных байт for 2 byte version
-  for (uint8_t i = 0; i < 14; i++)
+  // 13: счетчик сохраненных страниц
+  for (uint8_t i = 0; i < 13; i++)
   {
     if (!addData(ntag_page[i]))
     {
@@ -2954,7 +2954,7 @@ bool readTeamFromFlash(uint16_t recordNum)
   // маска
   // время отметки
   // счетчик страниц на чипе
-  SPIflash.readByteArray(addr, ntag_page, 14);
+  SPIflash.readByteArray(addr, ntag_page, 13);
   /*for (uint8_t i = 0; i < 14; i++)
   {
     ntag_page[i] = SPIflash.readByte(addr + (uint32_t)i);
