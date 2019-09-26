@@ -1465,6 +1465,7 @@ void readCardPages()
     return;
   }
 
+  // читаем UID
   if (!ntagRead4pages(PAGE_UID))
   {
     SPI.end();
@@ -1472,6 +1473,8 @@ void readCardPages()
     sendError(RFID_READ_ERROR, REPLY_READ_CARD_PAGE);
     return;
   }
+
+  // пишем UID в буфер ответа
   for (uint8_t i = 0; i <= 7; i++)
   {
     if (!addData(ntag_page[i]))
@@ -1483,9 +1486,16 @@ void readCardPages()
     }
   }
 
+  // начальная страница
+  if (!addData(pageFrom))
+  {
+    SPI.end();
+    digitalWrite(LED_PIN, LOW);
+    sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
+    return;
+  }
   while (pageFrom <= pageTo)
   {
-    // 0: какую страницу чипа
     if (!ntagRead4pages(pageFrom))
     {
       SPI.end();
@@ -1497,13 +1507,6 @@ void readCardPages()
     if (n > 4) n = 4;
     for (uint8_t i = 0; i < n; i++)
     {
-      if (!addData(pageFrom))
-      {
-        SPI.end();
-        digitalWrite(LED_PIN, LOW);
-        sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
-        return;
-      }
       for (uint8_t j = 0; j < 4; j++)
       {
         if (!addData(ntag_page[i * 4 + j]))
@@ -2862,10 +2865,10 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
   // add dump pages number
   if (checkCount > 0)
   {
-    checkCount = checkCount * 4 + 16;
-    //SPIflash.writeShort(teamFlashAddress + 12, checkCount);
-    SPIflash.writeByte(teamFlashAddress + 12, checkCount >> 8);
-    SPIflash.writeByte(teamFlashAddress + 13, checkCount & 0x00FF);
+    //checkCount = checkCount * 4 + 16;
+    SPIflash.writeShort(teamFlashAddress + 12, checkCount);
+    //SPIflash.writeByte(teamFlashAddress + 12, checkCount >> 8);
+    //SPIflash.writeByte(teamFlashAddress + 13, checkCount & 0x00FF);
   }
   return flag;
 }
