@@ -156,7 +156,7 @@ class StationPoolingService : Service() {
     private fun fetchTeamsVisits(station: Station): Int {
         // Do nothing if no teams visited us yet
         if (station.chipsRegistered == 0) return 0
-        val flash = getFlash(station) ?: return 10101
+        val flash = getFlash(station) ?: return R.string.err_internal_error
         val chips = application.chips
 
         // Number of team visits at local db and at station are the same?

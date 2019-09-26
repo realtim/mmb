@@ -141,7 +141,7 @@ public final class Database {
      *
      * @return Database filename
      */
-    public String getDatabasePath() {
+    String getDatabasePath() {
         return mPath;
     }
 

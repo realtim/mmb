@@ -513,7 +513,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
             return;
         }
         // Update station data if asked
-        if (fetchStatus && (!station.fetchConfig() || !station.fetchStatus())) {
+        if (fetchStatus && !(station.fetchConfig() && station.fetchStatus())) {
             Toast.makeText(getApplicationContext(), station.getLastError(true),
                     Toast.LENGTH_LONG).show();
             findViewById(R.id.station_status).setVisibility(View.GONE);

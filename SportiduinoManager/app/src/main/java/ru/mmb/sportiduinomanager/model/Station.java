@@ -817,7 +817,6 @@ public final class Station {
      *
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchStatus() {
         // Get response from station
         final byte[] response = new byte[14];
@@ -887,7 +886,6 @@ public final class Station {
      * @param teamNumber Number of team to fetch
      * @return True if succeeded
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchTeamRecord(final int teamNumber) {
         // Prepare command payload
         byte[] commandData = new byte[3];
@@ -898,6 +896,7 @@ public final class Station {
         mChips.clear();
         mChipRecordsN = 0;
         if (!command(commandData, response)) return false;
+        // Parse response
         final int checkTeamNumber = (int) byteArray2Long(response, 0, 1);
         if (checkTeamNumber != teamNumber) {
             mLastError = R.string.err_station_team_changed;
@@ -907,10 +906,9 @@ public final class Station {
         final int teamMask = (int) byteArray2Long(response, 6, 7);
         final long teamTime = byteArray2Long(response, 8, 11);
         mChips.addNewEvent(this, initTime, teamNumber, teamMask, mNumber, teamTime);
-        // TODO: process bytes instead of number of records
         mChipRecordsN = response[12] & 0xFF;
         // Check if we have a valid number of mark in chip copy in flash memory
-        if (mChipRecordsN <= 9 || mChipRecordsN >= 0xFF) {
+        if (mChipRecordsN <= 8 || mChipRecordsN >= 0xFF) {
             mChipRecordsN = 0;
             mLastError = R.string.err_station_flash_empty;
             return false;
@@ -927,6 +925,7 @@ public final class Station {
      * @return true if succeeded
      */
     public boolean readCardPage(final byte pagesInRequest, final int requestsCount) {
+        // TODO: rewrite function for new API
         mChipInfo = new byte[]{};
         final byte[] concatResponse = new byte[UID_SIZE + (pagesInRequest * requestsCount + 1) * 5];
         for (int i = 0; i < requestsCount; i++) {
@@ -982,7 +981,6 @@ public final class Station {
      * @param count      Number of marks to read
      * @return True if succeeded, fills mChips with marks as chip events
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchTeamMarks(final int teamNumber, final long initTime,
                                   final int teamMask, final int fromMark,
                                   final int count) {
@@ -991,19 +989,18 @@ public final class Station {
             return false;
         }
         // Prepare command payload
-        byte[] commandData = new byte[9];
+        byte[] commandData = new byte[6];
         commandData[0] = CMD_READ_FLASH;
         final long marksZone = teamNumber * 1024L + 48L;
         final long startAddress = marksZone + fromMark * 4L;
         long2ByteArray(startAddress, commandData, 1, 4);
-        long2ByteArray(startAddress + count * 4L - 1, commandData, 5, 4);
+        commandData[5] = (byte) ((count * 4) & 0xFF);
         // Send command to station
         final byte[] response = new byte[4 + count * 4];
         mChips.clear();
         mChipRecordsN = 0;
         if (!command(commandData, response)) return false;
         // Check that read address in response is equal to read address in command
-        // TODO: Station API is broken here
         if (startAddress != byteArray2Long(response, 0, 3)) {
             mLastError = R.string.err_station_address_changed;
             return false;
@@ -1042,7 +1039,7 @@ public final class Station {
         // Get station mode
         mMode = response[1] & 0xFF;
         // Get voltage coefficient
-        mVCoeff = ByteBuffer.wrap(response, 11, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+        mVCoeff = ByteBuffer.wrap(response, 7, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
         // Ignore all other parameters
         return true;
     }

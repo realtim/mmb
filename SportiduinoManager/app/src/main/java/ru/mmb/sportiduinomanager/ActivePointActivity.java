@@ -81,34 +81,6 @@ public final class ActivePointActivity extends MainActivity
         mMainApplication = (MainApplication) getApplication();
         mStation = mMainApplication.getStation();
         setContentView(R.layout.activity_activepoint);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(NOTIFICATION_ID));
-        // Start background querying of connected station
-        runStationQuerying();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        stopStationQuerying();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-    }
-
-    /**
-     * Create filtered chip events for current station and point.
-     *
-     * @return List of chips visited the point with number of connected station
-     */
-    @Nullable
-    private Chips getFlash() {
-        // Get all chips events from main application thread
-        final Chips chips = mMainApplication.getChips();
-        // Return events registered and connected station point number
-        if (chips == null || mStation == null) {
-            return null;
-        } else {
-            return chips.getChipsAtPoint(mStation.getNumber(), mStation.getMACasLong());
-        }
     }
 
     @Override
@@ -153,6 +125,22 @@ public final class ActivePointActivity extends MainActivity
         updateMasks(true, restoredPosition);
         mTeamAdapter.setPosition(restoredPosition);
         updateLayout();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Start background querying of connected station
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(NOTIFICATION_ID));
+        runStationQuerying();
+    }
+
+    @Override
+    protected void onPause() {
+        stopStationQuerying();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        super.onPause();
     }
 
     /**
@@ -200,6 +188,23 @@ public final class ActivePointActivity extends MainActivity
                 .getString(R.string.team_members_count, teamMembersCount));
         // Enable 'Save mask' button if new mask differs from original
         updateMaskButton();
+    }
+
+    /**
+     * Create filtered chip events for current station and point.
+     *
+     * @return List of chips visited the point with number of connected station
+     */
+    @Nullable
+    private Chips getFlash() {
+        // Get all chips events from main application thread
+        final Chips chips = mMainApplication.getChips();
+        // Return events registered and connected station point number
+        if (chips == null || mStation == null) {
+            return null;
+        } else {
+            return chips.getChipsAtPoint(mStation.getNumber(), mStation.getMACasLong());
+        }
     }
 
     /**
