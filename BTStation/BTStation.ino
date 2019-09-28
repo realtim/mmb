@@ -693,7 +693,7 @@ void processRfidCard()
     // chip was not checked by another station with the same number
     if (newPage != -1)
     {
-    // Пишем на чип отметку
+      // Пишем на чип отметку
       if (!writeCheckPointToCard(newPage, checkTime))
       {
         SPI.end();
@@ -745,6 +745,7 @@ bool readUart()
   while (Serial.available())
   {
     int c = Serial.read();
+
     if (c == -1) // can't read stream
     {
 #ifdef DEBUG
@@ -754,9 +755,10 @@ bool readUart()
       receivingData = false;
       // errorBeepMs(1, 50);
       return false;
-    }
+  }
+
     // 0 byte = FE
-    else if (uartBufferPosition == 0 && c == 0xfe)
+    if (uartBufferPosition == 0 && c == 0xfe)
     {
 #ifdef DEBUG
       Serial.print(F("!!!byte0="));
@@ -768,7 +770,7 @@ bool readUart()
       uartBufferPosition++;
       // refresh timeout
       receiveStartTime = millis();
-    }
+}
     // 1st byte = FE
     else if (uartBufferPosition == 1 && c == 0xfe)
     {
@@ -847,7 +849,7 @@ bool readUart()
 #endif
       receivingData = false;
       uartBufferPosition = 0;
-      errorBeepMs(3, 50);
+      //errorBeepMs(3, 50);
     }
   }
   return false;
@@ -1621,7 +1623,7 @@ void updateTeamMask()
 #endif
       sendError(WRONG_CHIP_TYPE, REPLY_UPDATE_TEAM_MASK);
       return;
-    }
+  }
 
     // чип от другой прошивки
     if (ntag_page[3] != FW_VERSION)
@@ -1632,7 +1634,7 @@ void updateTeamMask()
 #endif
       sendError(WRONG_FW_VERSION, REPLY_UPDATE_TEAM_MASK);
       return;
-    }
+}
 
     // Не слишком ли старый чип? Недельной давности и более
     uint32_t timeInit = ntag_page[4];
@@ -1693,7 +1695,7 @@ void updateTeamMask()
           sendError(RFID_WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
           return;
         }
-      }
+    }
       SPI.end();
       clearNewMask();
       digitalWrite(LED_PIN, LOW);
@@ -1855,7 +1857,7 @@ void readFlash()
   }
 
   sendData();
-}
+  }
 
 // пишем в флэш
 void writeFlash()
@@ -2183,7 +2185,7 @@ void setNewBtName()
     return;
   }
   sendData();
-}
+  }
 
 // поменять пин-код BT адаптера
 void setNewBtPinCode()
@@ -2225,7 +2227,7 @@ void setNewBtPinCode()
   }
 
   sendData();
-}
+  }
 
 void setBatteryLimit()
 {
@@ -2557,7 +2559,7 @@ void sendData()
     Serial.print(F(" "));
     if (uartBuffer[i] < 0x10) Serial.print(F("0"));
     Serial.print(String(uartBuffer[i], HEX));
-  }
+}
   Serial.println();
 #endif
   Serial.write(uartBuffer, uartBufferPosition);
@@ -2592,7 +2594,7 @@ bool ntagWritePage(uint8_t* dataBlock, uint8_t pageAdr)
 #endif
 
     return false;
-  }
+}
 
   uint8_t buffer[18];
   uint8_t size = sizeof(buffer);
@@ -2623,7 +2625,7 @@ bool ntagWritePage(uint8_t* dataBlock, uint8_t pageAdr)
 #endif
 
       return false;
-    }
+  }
   }
 
   return true;
@@ -2657,7 +2659,7 @@ bool ntagRead4pages(uint8_t pageAdr)
     Serial.println(F("!!!card read failed"));
 #endif
     return false;
-  }
+}
 
   for (uint8_t i = 0; i < 16; i++)
   {
@@ -2721,7 +2723,7 @@ int findNewPage()
 #endif
       // chip read error
       return 0;
-    }
+  }
     for (uint8_t n = 0; n < 4; n++)
     {
       if (stationMode == MODE_START_KP && ntag_page[n * 4] == stationNumber)
@@ -2731,7 +2733,7 @@ int findNewPage()
 #endif
         // chip was checked by another station with the same number
         return -1;
-      }
+    }
       if (ntag_page[n * 4] == 0 ||
         (stationMode == MODE_FINISH_KP && ntag_page[n * 4] == stationNumber))
       {
@@ -2739,7 +2741,7 @@ int findNewPage()
         return page;
       }
       page++;
-    }
+}
   }
   // чип заполнен
   return TAG_MAX_PAGE;
@@ -2791,7 +2793,7 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
     Serial.print(F("!!!erased team #"));
     Serial.println(String((uint32_t)((uint32_t)teamNumber / (uint32_t)256)));
 #endif
-  }
+}
 
   // save basic parameters
   if (!ntagRead4pages(PAGE_CHIP_NUM))
@@ -2864,8 +2866,8 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 #endif
           block = TAG_MAX_PAGE;
           break;
-        }
       }
+    }
     }
     block += 4;
   }
@@ -3011,7 +3013,7 @@ uint16_t refreshChipCounter()
   Serial.println(String(chips));
 #endif
   return chips;
-}
+      }
 
 // обработка ошибок. формирование пакета с сообщением о ошибке
 void sendError(uint8_t errorCode, uint8_t commandCode)
