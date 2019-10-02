@@ -1,6 +1,6 @@
 <?
 //
-// Дамп таблицы SportiduinoChips для тестирования
+// Дамп таблицы SportiduinoRecords для тестирования
 // ----------------------------------------------
 
 // Проверка того, что скрипт запущен напрямую, а не включен куда-то через include
@@ -23,11 +23,11 @@ header("Content-Type: application/force-download");
 header("Content-Type: application/octet-stream");
 header("Content-Type: application/download");
 header('Content-Type: text/x-csv');
-header("Content-Disposition: attachment;filename=SportiduinoChips.csv");
+header("Content-Disposition: attachment;filename=SportiduinoRecords.csv");
 header("Connection: close");
 
 // Выводим всю таблицу в виде csv
-$sql = $pdo->prepare("SELECT * FROM SportiduinoChips ORDER BY sportiduinochips_id ASC");
+$sql = $pdo->prepare("SELECT * FROM SportiduinoRecords ORDER BY sportiduinorecord_id ASC");
 $sql->execute();
 $result = $sql->fetchAll(PDO::FETCH_ASSOC);
 foreach ($result[0] as $key => $value)

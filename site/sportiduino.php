@@ -237,14 +237,14 @@ function ReceiveResults(PDO $pdo, $user_id)
     if (intval($n_events) != (count($lines) - 1)) die("Некорректное количество данных из чипов '$n_events'");
 
     // Получаем текущий максимальный id в таблице сырых данных, чтобы потом понимать, какие строчки в нее добавились
-    $sql = $pdo->prepare("SELECT MAX(sportiduinochips_id) FROM SportiduinoChips");
+    $sql = $pdo->prepare("SELECT MAX(sportiduinorecord_id) FROM SportiduinoRecords");
     $sql->execute();
     $row = $sql->fetch(PDO::FETCH_NUM);
     $max_id = intval($row[0]);
     $sql = null;
 
     // Готовим запрос на вставку присланных данных в таблицу сырых данных
-    $sql = $pdo->prepare("INSERT IGNORE INTO SportiduinoChips (user_id, sportiduino_dbdate, sportiduino_stationmac, sportiduino_stationtime, sportiduino_stationdrift, sportiduino_stationnumber, sportiduino_stationmode, sportiduino_inittime, team_num, sportiduino_teammask, levelpoint_order, teamlevelpoint_datetime) VALUES (?, FROM_UNIXTIME(?), ?, FROM_UNIXTIME(?), ?, ?, ?, FROM_UNIXTIME(?), ?, ?, ?, FROM_UNIXTIME(?))");
+    $sql = $pdo->prepare("INSERT IGNORE INTO SportiduinoRecords (user_id, sportiduino_dbdate, sportiduino_stationmac, sportiduino_stationtime, sportiduino_stationdrift, sportiduino_stationnumber, sportiduino_stationmode, sportiduino_inittime, team_num, sportiduino_teammask, levelpoint_order, teamlevelpoint_datetime) VALUES (?, FROM_UNIXTIME(?), ?, FROM_UNIXTIME(?), ?, ?, ?, FROM_UNIXTIME(?), ?, ?, ?, FROM_UNIXTIME(?))");
     // Выполняем транзакцию по добавлению всех присланных данных в таблицу
     try {
         $pdo->beginTransaction();
@@ -269,7 +269,7 @@ function ReceiveResults(PDO $pdo, $user_id)
     $sql = null;
 
     // Копируем упрощенную версию присланных результатов в таблицу с результатами
-    $sql = $pdo->prepare("INSERT INTO SportiduinoResults(team_num, sportiduino_teammask, levelpoint_order, teamlevelpoint_datetime) SELECT team_num, MIN(sportiduino_teammask), levelpoint_order, MAX(teamlevelpoint_datetime) FROM SportiduinoChips WHERE sportiduinochips_id > :max_id GROUP BY team_num, levelpoint_order");
+    $sql = $pdo->prepare("INSERT INTO SportiduinoResults(team_num, sportiduino_teammask, levelpoint_order, teamlevelpoint_datetime) SELECT team_num, MIN(sportiduino_teammask), levelpoint_order, MAX(teamlevelpoint_datetime) FROM SportiduinoRecords WHERE sportiduinorecord_id > :max_id GROUP BY team_num, levelpoint_order");
     $sql ->bindParam("max_id", $max_id, PDO::PARAM_INT);
     $sql->execute();
     $sql = null;

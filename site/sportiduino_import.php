@@ -1,6 +1,6 @@
 <?php
 //
-// Импорт данных с проверкой из SportiduinoChips в основные таблицы
+// Импорт данных с проверкой из SportiduinoRecords в основные таблицы
 // ----------------------------------------------------------------
 
 // Проверяем, что скрипт запущен из интерфейса
@@ -119,7 +119,7 @@ foreach ($teams as $n => $team) {
 $MAX_MASK = array(0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191, 16383, 32767, 65535);
 
 // Проверяем, что все номера станций соответствуют точкам нашей дистанции
-$sql = $pdo->prepare("SELECT levelpoint_order FROM SportiduinoChips GROUP BY levelpoint_order WHERE teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end");
+$sql = $pdo->prepare("SELECT levelpoint_order FROM SportiduinoRecords GROUP BY levelpoint_order WHERE teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end");
 $sql ->bindParam("raid_start", $raid_start, PDO::PARAM_STR);
 $sql ->bindParam("raid_end", $raid_end, PDO::PARAM_STR);
 $sql->execute();
@@ -130,7 +130,7 @@ foreach ($result as $row) {
 $sql = null;
 
 // Отмечаем точки с судейскими станциями
-$sql = $pdo->prepare("SELECT sportiduino_stationnumber FROM SportiduinoChips WHERE sportiduino_stationnumber > 0 AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end GROUP BY sportiduino_stationnumber");
+$sql = $pdo->prepare("SELECT sportiduino_stationnumber FROM SportiduinoRecords WHERE sportiduino_stationnumber > 0 AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end GROUP BY sportiduino_stationnumber");
 $sql ->bindParam("raid_start", $raid_start, PDO::PARAM_STR);
 $sql ->bindParam("raid_end", $raid_end, PDO::PARAM_STR);
 $sql->execute();
@@ -147,7 +147,7 @@ $sql = null;
 $errors = array();
 
 // Собираем времена инициализации чипов, которые были официально выданы командам
-$sql = $pdo->prepare("SELECT team_num, sportiduino_inittime FROM SportiduinoChips WHERE sportiduino_inittime = teamlevelpoint_datetime AND sportiduino_stationmode = 0 AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end GROUP BY team_num, sportiduino_inittime ORDER BY team_num ASC, sportiduino_inittime ASC");
+$sql = $pdo->prepare("SELECT team_num, sportiduino_inittime FROM SportiduinoRecords WHERE sportiduino_inittime = teamlevelpoint_datetime AND sportiduino_stationmode = 0 AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end GROUP BY team_num, sportiduino_inittime ORDER BY team_num ASC, sportiduino_inittime ASC");
 $sql ->bindParam("raid_start", $raid_start, PDO::PARAM_STR);
 $sql ->bindParam("raid_end", $raid_end, PDO::PARAM_STR);
 $sql->execute();
@@ -166,7 +166,7 @@ $chips_lost = array();
 foreach ($teams as $n => $team)
     if (count($team["init"]) > 1) {
         $chips_lost[] = $n;
-        $sql = $pdo->prepare("SELECT sportiduino_inittime, MAX(teamlevelpoint_datetime) AS max_result FROM SportiduinoChips WHERE team_num = :team_num AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end GROUP BY team_num, sportiduino_inittime ORDER BY sportiduino_inittime ASC");
+        $sql = $pdo->prepare("SELECT sportiduino_inittime, MAX(teamlevelpoint_datetime) AS max_result FROM SportiduinoRecords WHERE team_num = :team_num AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end GROUP BY team_num, sportiduino_inittime ORDER BY sportiduino_inittime ASC");
         $sql ->bindParam("team_num", $n, PDO::PARAM_INT);
         $sql ->bindParam("raid_start", $raid_start, PDO::PARAM_STR);
         $sql ->bindParam("raid_end", $raid_end, PDO::PARAM_STR);
@@ -184,7 +184,7 @@ foreach ($teams as $n => $team)
     }
 
 // Проверяем, что в результатах нет незаявленных команд и участников
-$sql = $pdo->prepare("SELECT team_num, MAX(sportiduino_teammask) AS max_mask, MIN(sportiduino_teammask) AS min_mask FROM SportiduinoChips WHERE teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end GROUP BY team_num");
+$sql = $pdo->prepare("SELECT team_num, MAX(sportiduino_teammask) AS max_mask, MIN(sportiduino_teammask) AS min_mask FROM SportiduinoRecords WHERE teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end GROUP BY team_num");
 $sql ->bindParam("raid_start", $raid_start, PDO::PARAM_STR);
 $sql ->bindParam("raid_end", $raid_end, PDO::PARAM_STR);
 $sql->execute();
@@ -212,7 +212,7 @@ foreach ($teams as $n => $team)
 
 // Регистририуем неявки участников на выдачу чипов
 $nteams_members_absent = 0;
-$sql = $pdo->prepare("SELECT team_num, sportiduino_teammask FROM SportiduinoChips WHERE levelpoint_order = 0 AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end");
+$sql = $pdo->prepare("SELECT team_num, sportiduino_teammask FROM SportiduinoRecords WHERE levelpoint_order = 0 AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end");
 $sql ->bindParam("raid_start", $raid_start, PDO::PARAM_STR);
 $sql ->bindParam("raid_end", $raid_end, PDO::PARAM_STR);
 $sql->execute();
@@ -238,7 +238,7 @@ foreach ($teams as $n => $team)
         $masks = array();
         $index = 0;
         $last_point = -1;
-        $sql = $pdo->prepare("SELECT levelpoint_order, sportiduino_teammask FROM SportiduinoChips WHERE team_num = :team_num AND sportiduino_stationnumber = levelpoint_order AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end ORDER BY teamlevelpoint_datetime ASC, sportiduino_stationtime ASC");
+        $sql = $pdo->prepare("SELECT levelpoint_order, sportiduino_teammask FROM SportiduinoRecords WHERE team_num = :team_num AND sportiduino_stationnumber = levelpoint_order AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end ORDER BY teamlevelpoint_datetime ASC, sportiduino_stationtime ASC");
         $sql ->bindParam("team_num", $n, PDO::PARAM_INT);
         $sql ->bindParam("raid_start", $raid_start, PDO::PARAM_STR);
         $sql ->bindParam("raid_end", $raid_end, PDO::PARAM_STR);
@@ -316,7 +316,7 @@ foreach ($teams as $n => $team)
 // Общая корректность проверена, загружаем массив результатов на точках
 // --------------------------------------------------------------------
 
-$sql = $pdo->prepare("SELECT team_num, levelpoint_order, teamlevelpoint_datetime, sportiduino_inittime, sportiduino_stationnumber, sportiduino_stationmac FROM SportiduinoChips WHERE levelpoint_order > 0 AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end ORDER BY teamlevelpoint_datetime ASC");
+$sql = $pdo->prepare("SELECT team_num, levelpoint_order, teamlevelpoint_datetime, sportiduino_inittime, sportiduino_stationnumber, sportiduino_stationmac FROM SportiduinoRecords WHERE levelpoint_order > 0 AND teamlevelpoint_datetime >= :raid_start AND teamlevelpoint_datetime <= :raid_end ORDER BY teamlevelpoint_datetime ASC");
 $sql ->bindParam("raid_start", $raid_start, PDO::PARAM_STR);
 $sql ->bindParam("raid_end", $raid_end, PDO::PARAM_STR);
 $sql->execute();
