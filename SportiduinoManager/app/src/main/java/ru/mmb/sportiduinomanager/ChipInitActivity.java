@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.model.Teams;
 import ru.mmb.sportiduinomanager.task.ChipInitTask;
@@ -35,20 +34,11 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      * Max number of symbols in mTeamNumber string.
      */
     private static final int TEAM_MEMBER_LEN = 4;
+
     /**
      * Main application thread with persistent data.
      */
-    private MainApplication mMainApplication;
-
-    /**
-     * Station which was previously paired via Bluetooth.
-     */
-    private Station mStation;
-
-    /**
-     * Chips events received from stations.
-     */
-    private Chips mChips;
+    private MainApp mMainApplication;
 
     /**
      * RecyclerView with team members.
@@ -77,7 +67,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
-        mMainApplication = (MainApplication) getApplication();
+        mMainApplication = (MainApp) getApplication();
         setContentView(R.layout.activity_chipinit);
         // Load last entered team number and mask from main application
         mTeamNumber = Integer.toString(mMainApplication.getTeamNumber());
@@ -102,13 +92,9 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.chip_init).setChecked(true);
-        updateMenuItems(mMainApplication, R.id.chip_init);
+        updateMenuItems(R.id.chip_init);
         // Disable startup animation
         overridePendingTransition(0, 0);
-        // Get connected station from main application thread
-        mStation = mMainApplication.getStation();
-        //Get chips events from main application thread
-        mChips = mMainApplication.getChips();
         // Update screen layout
         updateKeyboardState();
         loadTeam(false);
@@ -201,7 +187,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
      */
     public void initChip(@SuppressWarnings("unused") final View view) {
         // Check team number, mask and station presence
-        if (mTeamNumber.length() == 0 || mTeamMask == 0 || mStation == null) return;
+        if (mTeamNumber.length() == 0 || mTeamMask == 0 || MainApp.mStation == null) return;
         final int teamNumber = Integer.parseInt(mTeamNumber);
         // Change chip init state
         mChipInit = CHIP_INIT_ON;
@@ -220,11 +206,12 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         // Change chip init state
         mChipInit = CHIP_INIT_OFF;
         if (initResult) {
-            // Create new chip init event and save it into local database
+            // Create new chip init record and save it into local database
             final int teamNumber = Integer.parseInt(mTeamNumber);
-            mChips.addNewEvent(mStation, mStation.getLastInitTime(), teamNumber, mTeamMask,
-                    mStation.getNumber(), mStation.getLastInitTime());
-            final String result = mChips.saveNewEvents(mMainApplication.getDatabase());
+            MainApp.mAllRecords.addRecord(MainApp.mStation,
+                    MainApp.mStation.getLastInitTime(), teamNumber, mTeamMask,
+                    MainApp.mStation.getNumber(), MainApp.mStation.getLastInitTime());
+            final String result = MainApp.mAllRecords.saveNewRecords(MainApp.mDatabase);
             if ("".equals(result)) {
                 // Clear team number and mask to start again
                 mTeamNumber = "";
@@ -237,14 +224,12 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             } else {
                 Toast.makeText(mMainApplication, result, Toast.LENGTH_LONG).show();
             }
-            // Copy changed list of chips events to main application
-            mMainApplication.setChips(mChips, false);
         } else {
             // Chip initialization failed
-            if (mStation == null) {
+            if (MainApp.mStation == null) {
                 Toast.makeText(mMainApplication, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(mMainApplication, mStation.getLastError(true), Toast.LENGTH_LONG).show();
+                Toast.makeText(mMainApplication, MainApp.mStation.getLastError(true), Toast.LENGTH_LONG).show();
             }
             loadTeam(false);
         }
@@ -296,10 +281,10 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         final boolean enabled = isEnabled && mChipInit == CHIP_INIT_OFF;
         final Button getResultsButton = findViewById(buttonId);
         if (enabled) {
-            getResultsButton.setAlpha(MainApplication.ENABLED_BUTTON);
+            getResultsButton.setAlpha(MainApp.ENABLED_BUTTON);
             getResultsButton.setClickable(true);
         } else {
-            getResultsButton.setAlpha(MainApplication.DISABLED_BUTTON);
+            getResultsButton.setAlpha(MainApp.DISABLED_BUTTON);
             getResultsButton.setClickable(false);
         }
     }
@@ -323,18 +308,12 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             mMainApplication.setTeamNumber(teamNumber);
         }
         // Check if we can send initialization command to a station
-        if (mStation == null) {
+        if (MainApp.mStation == null) {
             showError(true, R.string.err_init_no_station);
             return;
         }
-        if (mStation.getMode() != Station.MODE_INIT_CHIPS) {
+        if (MainApp.mStation.getMode() != Station.MODE_INIT_CHIPS) {
             showError(true, R.string.err_init_wrong_mode);
-            return;
-        }
-        // Check if local database was loaded
-        final Teams teams = mMainApplication.getTeams();
-        if (teams == null) {
-            showError(true, R.string.err_db_no_distance_loaded);
             return;
         }
         // No errors found yet
@@ -364,22 +343,22 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         // Update team number on screen
         teamNumberText.setText(mTeamNumber);
         // Try to find team with entered number in local database
-        final String teamName = teams.getTeamName(teamNumber);
+        final String teamName = MainApp.mTeams.getTeamName(teamNumber);
         if (teamName == null) {
             showError(true, R.string.err_init_no_such_team);
             return;
         }
         // Show warning if a chip was already initialized for a team with this number
-        // TODO: Search in mResults, not in mChips
-        if (mChips.contains(teamNumber, 0)) {
+        // TODO: Search in mResults, not in mAllRecords
+        if (MainApp.mAllRecords.contains(teamNumber, 0)) {
             findViewById(R.id.init_already).setVisibility(View.VISIBLE);
         }
         // Update team name and map count
         ((TextView) findViewById(R.id.init_team_name)).setText(teamName);
         ((TextView) findViewById(R.id.init_team_maps)).setText(getResources()
-                .getString(R.string.team_maps_count, teams.getTeamMaps(teamNumber)));
+                .getString(R.string.team_maps_count, MainApp.mTeams.getTeamMaps(teamNumber)));
         // Get list of team members
-        final List<String> teamMembers = teams.getMembersNames(teamNumber);
+        final List<String> teamMembers = MainApp.mTeams.getMembersNames(teamNumber);
         // Compute original mask (where all team members are present)
         mOriginalMask = 0;
         for (int i = 0; i < teamMembers.size(); i++) {

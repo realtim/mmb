@@ -68,10 +68,10 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
         }
         // Disable button while connecting to this/other device
         if (mIsConnecting) {
-            holder.mConnectButton.setAlpha(MainApplication.DISABLED_BUTTON);
+            holder.mConnectButton.setAlpha(MainApp.DISABLED_BUTTON);
             holder.mConnectButton.setClickable(false);
         } else {
-            holder.mConnectButton.setAlpha(MainApplication.ENABLED_BUTTON);
+            holder.mConnectButton.setAlpha(MainApp.ENABLED_BUTTON);
             holder.mConnectButton.setClickable(true);
             // Set my listener for Connect button
             holder.mConnectButton
@@ -156,22 +156,22 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
     /**
      * Custom ViewHolder for device_list_item layout.
      */
-    static class DeviceHolder extends RecyclerView.ViewHolder {
+    static final class DeviceHolder extends RecyclerView.ViewHolder {
         /**
          * Name of the Bluetooth device.
          */
-        final TextView mName;
+        private final TextView mName;
         /**
          * Icon to show to the right of the name.
          */
-        final ImageButton mConnectButton;
+        private final ImageButton mConnectButton;
 
         /**
          * View holder for a list item with device name and Connect button.
          *
          * @param view View of this list item
          */
-        DeviceHolder(final View view) {
+        private DeviceHolder(final View view) {
             super(view);
             mName = view.findViewById(R.id.device_name);
             mConnectButton = view.findViewById(R.id.device_connect);

@@ -16,8 +16,8 @@
     <string name="mode_bluetooth_set">Configure station %1$s</string>
     <string name="mode_chip_init">Init Chips</string>
     <string name="mode_chip_init_name">Init Chips at %1$s</string>
-    <string name="mode_active_point">Active point</string>
-    <string name="mode_active_point_name">Active point %1$s</string>
+    <string name="mode_control_point">Control point</string>
+    <string name="mode_control_point_name">Control point %1$s</string>
     <string name="mode_team_list">Browse team results</string>
     <string name="mode_chip_info">Chip info</string>
 
@@ -45,7 +45,7 @@
         uploaded)</string>
     <string name="site_name_test">test</string>
     <string name="site_name_main">main</string>
-    <string name="active_point_prefix">AP</string>
+    <string name="control_point_prefix">CP</string>
 
     <string name="device_search">Search for BT devices</string>
     <string name="device_name">%1$s (%2$s)</string>
@@ -93,11 +93,11 @@
     <string name="init_team_chip">Init chip</string>
     <string name="init_success">Chip was initialized</string>
 
-    <string name="ap_total_teams">Teams: %1$d</string>
-    <string name="ap_team_name">№%1$d %2$s</string>
-    <string name="ap_visited">Visited: %1$s</string>
-    <string name="ap_skipped">Skipped: %1$s</string>
-    <string name="ap_save_mask">Register dismissal</string>
+    <string name="cp_total_teams">Teams: %1$d</string>
+    <string name="cp_team_name">№%1$d %2$s</string>
+    <string name="cp_punched">Punched: %1$s</string>
+    <string name="cp_skipped">Skipped: %1$s</string>
+    <string name="cp_save_mask">Register dismissal</string>
     <string name="list_team_count">%1$d</string>
     <string name="list_team_time">%1$s</string>
 

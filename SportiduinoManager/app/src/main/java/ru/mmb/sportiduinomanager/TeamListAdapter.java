@@ -7,11 +7,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import ru.mmb.sportiduinomanager.model.Chips;
+import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.Teams;
 
 /**
- * Provides the list of teams visited a station.
+ * Provides the list of teams punched at a station.
  */
 public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHolder> {
     /**
@@ -23,9 +23,9 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
      */
     private final Teams mTeams;
     /**
-     * All team visits for connected station (sorted, one last visit per team).
+     * All team punches at connected station (sorted, one last punch per team).
      */
-    private final Chips mFlash;
+    private final Records mRecords;
 
     /**
      * Last clicked position in team list.
@@ -37,13 +37,13 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
      *
      * @param onClick Interface for click processing in calling activity.
      * @param teams   List of all registered teams from ActivePointActivity
-     * @param flash   List of all team visits from ActivePointActivity
+     * @param records List of all team punches from ActivePointActivity
      */
-    TeamListAdapter(final OnTeamClicked onClick, final Teams teams, final Chips flash) {
+    TeamListAdapter(final OnTeamClicked onClick, final Teams teams, final Records records) {
         super();
         mOnClick = onClick;
         mTeams = teams;
-        mFlash = flash;
+        mRecords = records;
         mSelectedPos = 0;
     }
 
@@ -65,12 +65,12 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
     @Override
     public void onBindViewHolder(@NonNull final TeamHolder holder, final int position) {
         // Get index of element of mFlash list to display at this position
-        int index = mFlash.size() - position - 1;
+        int index = mRecords.size() - position - 1;
         if (index < 0) {
             index = 0;
         }
         // Get team number at this position
-        final int teamNumber = mFlash.getTeamNumber(index);
+        final int teamNumber = mRecords.getTeamNumber(index);
         // Get team name for this number
         String teamName;
         if (mTeams == null) {
@@ -82,7 +82,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
             }
         }
         // Get members count and team time
-        final int teamMask = mFlash.getTeamMask(index);
+        final int teamMask = mRecords.getTeamMask(index);
         int teamMembersCount;
         if (teamMask < 0) {
             teamMembersCount = 0;
@@ -90,12 +90,12 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
             teamMembersCount = Teams.getMembersCount(teamMask);
         }
         // Update the contents of the view with that team
-        holder.mName.setText(holder.itemView.getResources().getString(R.string.ap_team_name,
+        holder.mName.setText(holder.itemView.getResources().getString(R.string.cp_team_name,
                 teamNumber, teamName));
         holder.mCount.setText(holder.itemView.getResources().getString(R.string.list_team_count,
                 teamMembersCount));
         holder.mTime.setText(holder.itemView.getResources().getString(R.string.list_team_time,
-                Chips.printTime(mFlash.getTeamTime(index), "dd.MM  HH:mm:ss")));
+                Records.printTime(mRecords.getTeamTime(index), "dd.MM  HH:mm:ss")));
         // Highlight row if it is selected
         holder.itemView.setSelected(mSelectedPos == position);
         // Set my listener for all elements of list item
@@ -107,7 +107,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
      */
     @Override
     public int getItemCount() {
-        return mFlash.size();
+        return mRecords.size();
     }
 
     /**
@@ -143,26 +143,26 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
     /**
      * Custom ViewHolder for team_list_item layout.
      */
-    class TeamHolder extends RecyclerView.ViewHolder {
+    final class TeamHolder extends RecyclerView.ViewHolder {
         /**
          * Team number and name.
          */
-        final TextView mName;
+        private final TextView mName;
         /**
          * Current number of members computed from team mask.
          */
-        final TextView mCount;
+        private final TextView mCount;
         /**
-         * Time of last visit for the team.
+         * Time of last punch for the team.
          */
-        final TextView mTime;
+        private final TextView mTime;
 
         /**
          * Holder for list element containing checkbox with team member name.
          *
          * @param view View of list item
          */
-        TeamHolder(final View view) {
+        private TeamHolder(final View view) {
             super(view);
             mName = view.findViewById(R.id.list_team_name);
             mCount = view.findViewById(R.id.list_team_count);

@@ -7,7 +7,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
-import android.support.annotation.RequiresApi
+import android.support.v4.app.NotificationCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.content.res.ResourcesCompat
 import android.widget.Toast
@@ -15,13 +15,12 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposables
 import io.reactivex.schedulers.Schedulers
-import ru.mmb.sportiduinomanager.model.Chips
 import ru.mmb.sportiduinomanager.model.Station
 import java.util.concurrent.TimeUnit
 
 /**
  * Provides foreground service for querying connected station every second
- * for new chips visits.
+ * for new chips punches.
  */
 class StationPoolingService : Service() {
 
@@ -32,45 +31,26 @@ class StationPoolingService : Service() {
         const val NOTIFICATION_ID: String = "data-from-station-updated"
     }
 
-    private lateinit var application: MainApplication
+    private lateinit var application: MainApp
 
     private var bluetoothPoolingSubscription = Disposables.disposed()
 
     /**
-     * var station: Station
-     * Station which was previously paired via Bluetooth.
-     */
-
-    /**
-     * var chips: Chips
-     * Chips events received from all stations.
-     */
-    /**
-     * var flash: Chips
-     * Filtered list of events with teams visiting connected station at current point.
-     * One event per team only. Should be equal to records in station flash memory.
-     */
-    /**
-     * var teams: Teams
-     * List of teams and team members from local database.
-     */
-
+     * Create foreground service.
+     **/
     override fun onCreate() {
         super.onCreate()
-
-        application = getApplication() as MainApplication
-
+        application = getApplication() as MainApp
         startForeground()
-
         bluetoothPoolingSubscription =
                 // make following operations on the background thread once a second
                 Observable.interval(1, TimeUnit.SECONDS, Schedulers.io())
                         .map {
                             // check if station is available
-                            application.station?.let { station ->
+                            MainApp.mStation?.let {
                                 // get latest data
-                                station.fetchStatus()
-                                fetchTeamsVisits(station)
+                                MainApp.mStation.fetchStatus()
+                                fetchTeamsPunches()
                             } ?: Int.MIN_VALUE
                         }
                         // if station not available do nothing
@@ -79,10 +59,10 @@ class StationPoolingService : Service() {
                         .retry()
                         // handle operations result on UI thread
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe({ fetchTeamsVisitsResult ->
+                        .subscribe({ fetchTeamsPunchesResult ->
                             // show error message if needed
-                            if (fetchTeamsVisitsResult > 0) {
-                                Toast.makeText(applicationContext, fetchTeamsVisitsResult, Toast.LENGTH_SHORT).show()
+                            if (fetchTeamsPunchesResult > 0) {
+                                Toast.makeText(applicationContext, fetchTeamsPunchesResult, Toast.LENGTH_SHORT).show()
                             } else {
                                 // send notification to ActivePointActivity - time to update UI
                                 LocalBroadcastManager.getInstance(this)
@@ -91,92 +71,64 @@ class StationPoolingService : Service() {
                         }, { it.printStackTrace() })
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel(channelId: String) {
-
-        val channelName = "SportiduinoManager Station Service"
-        val chan = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_NONE)
-        chan.lightColor = Color.BLUE
-        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.createNotificationChannel(chan)
-    }
-
     private fun startForeground() {
-
-        val notificationIntent = Intent(application.context, ActivePointActivity::class.java)
-
+        val notificationIntent = Intent(getApplication(), ActivePointActivity::class.java)
         val channelId = "ru.mmb.sportiduinomanager"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel(channelId)
+            val channelName = "SportiduinoManager Station Service"
+            val chan = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_NONE)
+            chan.lightColor = Color.BLUE
+            chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.createNotificationChannel(chan)
         }
-
-        val builder =
-                (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    Notification.Builder(this, channelId)
-                else Notification.Builder(this))
-                        .setContentTitle(application.context.getString(R.string.app_name))
-                        .setContentText("Station pooling")
-                        .setLargeIcon(BitmapFactory.decodeResource(resources, R.drawable.ic_launcher))
-                        .setContentIntent(
-                                PendingIntent.getActivity(
-                                        application.context, 0,
-                                        notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT))
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder.setSmallIcon(R.drawable.ic_notification)
-        } else {
-            builder.setSmallIcon(R.drawable.ic_notification)
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder.setColor(ResourcesCompat.getColor(resources, R.color.bg_primary, null))
-        }
-
+        val builder = NotificationCompat.Builder(this, channelId)
+                .setContentTitle(getApplication().getString(R.string.app_name))
+                .setContentText("Station pooling")
+                .setColor(ResourcesCompat.getColor(resources, R.color.bg_primary, null))
+                .setSmallIcon(R.drawable.ic_notification)
+                .setLargeIcon(BitmapFactory.decodeResource(resources, R.drawable.ic_launcher))
+                .setContentIntent(
+                        PendingIntent.getActivity(getApplication(), 0, notificationIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT))
         val notification = builder.build()
-
         val anyForegroundServiceId = 798
-
         startForeground(anyForegroundServiceId, notification)
     }
 
-    private fun getFlash(station: Station): Chips? {
-        return application.chips?.getChipsAtPoint(station.number, station.maCasLong)
-    }
-
     /**
-     * Get all events for all new teams
-     * which has been visited the station after the last check.
-     * Returns -1 if some new teams has been visited the station,
-     * 0 if no new teams has been fetched,
+     * Get all punches for all new teams
+     * which has been punched at the station after the last check.
+     * Returns -1 if some new teams has been punched at the station,
+     * 0 if no new teams has been punched,
      * > 0 indicates an error code.
      *
      * @return -1/0/error code
      */
-    private fun fetchTeamsVisits(station: Station): Int {
-        // Do nothing if no teams visited us yet
-        if (station.chipsRegistered == 0) return 0
-        val flash = getFlash(station) ?: return R.string.err_internal_error
-        val chips = application.chips
+    private fun fetchTeamsPunches(): Int {
+        // Do nothing if no teams has been punched yet
+        if (MainApp.mStation.chipsRegistered == 0) return 0
 
-        // Number of team visits at local db and at station are the same?
-        // Time of last visit in local db and at station is the same?
+        // Number of team punches at local db and at station are the same?
+        // Time of last punch in local db and at station is the same?
         // (it can change without changing of number of teams)
-        if (flash.size() == station.chipsRegistered && flash.getTeamTime(flash.size() - 1) == station.lastChipTime) {
+        if (MainApp.mPointPunches.size() == MainApp.mStation.chipsRegistered
+                && MainApp.mPointPunches.getTeamTime(MainApp.mPointPunches.size() - 1)
+                == MainApp.mStation.lastPunchTime) {
             return 0
         }
-        // Ok, we have some new team visits
+        // Ok, we have some new punches
         var fullDownload = false
         // Clone previous teams list from station
-        val prevLastTeams = station.lastTeams()
+        val prevLastTeams = MainApp.mStation.lastTeams
         // Ask station for new list
-        if (!station.fetchLastTeams()) {
+        if (!MainApp.mStation.fetchLastTeams()) {
             fullDownload = true
         }
-        val currLastTeams = station.lastTeams()
+        val currLastTeams = MainApp.mStation.lastTeams
         // Check if teams from previous list were copied from flash
         for (team in prevLastTeams) {
-            if (!flash.contains(team, station.number)) {
+            if (!MainApp.mPointPunches.contains(team, MainApp.mStation.number)) {
                 // Something strange has been happened, do full download of all teams
                 fullDownload = true
             }
@@ -200,19 +152,19 @@ class StationPoolingService : Service() {
         }
         // For full rescan of all teams make a list of all registered teams
         if (fullDownload) {
-            fetchTeams = application.teams.teamList
+            fetchTeams = MainApp.mTeams.teamList
         }
-        // Get visit parameters for all teams in fetch list
+        // Get Sportiduino records for all teams in fetch list
         var flashChanged = false
-        var newEvents = false
+        var newRecords = false
         var stationError = 0
         for (teamNumber in fetchTeams) {
-            // Fetch data for the team visit to station
+            // Fetch data for the team punched at the station
             var newError = 0
-            if (!station.fetchTeamRecord(teamNumber)) {
-                newError = station.getLastError(true)
+            if (!MainApp.mStation.fetchTeamRecord(teamNumber)) {
+                newError = MainApp.mStation.getLastError(true)
                 // Ignore data absence for teams which are not in last teams list
-                // Most probable these teams did not visited the station at all
+                // Most probable these teams did not punched at the station at all
                 if (newError == R.string.err_station_no_data && !currLastTeams.contains(teamNumber)) {
                     continue
                 }
@@ -222,33 +174,33 @@ class StationPoolingService : Service() {
                     return newError
                 }
             }
-            // Get team visit as an event
-            val teamVisit = station.chipEvents
-            if (teamVisit.size() == 0) {
-                // Team visit was not registered at all due to string.err_station_no_data error
-                // Create synthetic team visit with zero chip init time
-                val teamMembers = application.teams.getMembersNames(teamNumber)
+            // Get team punches as a Sportiduino record list
+            val teamPunches = MainApp.mStation.teamPunches
+            if (teamPunches.size() == 0) {
+                // Team punch was not registered at all due to string.err_station_no_data error
+                // Create synthetic team punch with zero chip init time
+                val teamMembers = MainApp.mTeams.getMembersNames(teamNumber)
                 var originalMask = 0
                 for (i in teamMembers.indices) {
                     originalMask = originalMask or (1 shl i)
                 }
-                teamVisit.addNewEvent(station, 0, teamNumber, originalMask,
-                        station.number, station.lastChipTime)
+                teamPunches.addRecord(MainApp.mStation, 0, teamNumber, originalMask,
+                        MainApp.mStation.number, MainApp.mStation.lastPunchTime)
             }
-            // Prepare to clone init time and mask from this event to marks from the chip
-            if (teamNumber != teamVisit.getTeamNumber(0)) return R.string.err_station_team_changed
-            val initTime = teamVisit.getInitTime(0)
-            val teamMask = teamVisit.getTeamMask(0)
+            // Prepare to clone init time and mask from this record to punches from the chip
+            if (teamNumber != teamPunches.getTeamNumber(0)) return R.string.err_station_team_changed
+            val initTime = teamPunches.getInitTime(0)
+            val teamMask = teamPunches.getTeamMask(0)
             // Update copy of station flash memory
-            if (flash.merge(teamVisit)) {
+            if (MainApp.mPointPunches.merge(teamPunches)) {
                 flashChanged = true
             }
 
-            // Try to add team visit as new event
-            if (chips.join(teamVisit)) {
-                newEvents = true
-                // Read marks from chip and to events list
-                val marks = station.chipRecordsN
+            // Try to add team punches as new records
+            if (MainApp.mAllRecords.join(teamPunches)) {
+                newRecords = true
+                // Read punches from chip and to record list
+                val marks = MainApp.mStation.chipRecordsN
                 var fromMark = 0
                 do {
                     if (marks <= 0) break
@@ -256,16 +208,16 @@ class StationPoolingService : Service() {
                     if (toRead > Station.MAX_MARK_COUNT) {
                         toRead = Station.MAX_MARK_COUNT
                     }
-                    if (!station.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
-                        return station.getLastError(true)
+                    if (!MainApp.mStation.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
+                        return MainApp.mStation.getLastError(true)
                     }
                     fromMark += toRead
-                    // Add fetched chip marks to local list of events
-                    chips.join(station.chipEvents)
+                    // Add fetched punches to application list of records
+                    MainApp.mAllRecords.join(MainApp.mStation.teamPunches)
                 } while (fromMark < marks)
             } else {
                 // Ignore recurrent problem with copying data from chip to memory
-                // as we already created synthetic team visit and warned a user
+                // as we already created synthetic team punch and warned a user
                 newError = 0
             }
             // Save non-fatal station error
@@ -273,24 +225,22 @@ class StationPoolingService : Service() {
                 stationError = newError
             }
         }
-        // Save new events (if any) to local db and to main memory
-        if (newEvents) {
+        // Save new records (if any) to local db
+        if (newRecords) {
             // Save new events in local database
-            val result = chips.saveNewEvents(application.database)
+            val result = MainApp.mAllRecords.saveNewRecords(MainApp.mDatabase)
             if ("" != result) return R.string.err_db_sql_error
-            // Copy changed list of chips events to main application
-            application.setChips(chips, false)
         }
-        // Sort visits by their time
+        // Sort punches by their time
         if (flashChanged) {
-            flash.sort()
+            MainApp.mPointPunches.sort()
         }
         // Report non-fatal errors which has been occurred during scanning
         if (stationError != 0) {
             return stationError
         }
         // Report 'data changed' for updating UI
-        return if (newEvents || flashChanged) -1 else 0
+        return if (newRecords || flashChanged) -1 else 0
     }
 
     /**

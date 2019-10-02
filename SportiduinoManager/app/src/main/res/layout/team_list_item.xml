@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:layout_marginStart="@dimen/default_padding"
         android:gravity="start|center_vertical"
-        android:text="@string/ap_team_name"
+        android:text="@string/cp_team_name"
         app:layout_constraintEnd_toStartOf="@id/list_team_count"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

@@ -50,7 +50,7 @@ public final class SiteRequest {
      */
     public static final int TYPE_DL_DISTANCE = 1;
     /**
-     * Request type for chips events upload.
+     * Request type for Sportiduino records upload.
      */
     public static final int TYPE_UL_CHIPS = 2;
     /**
@@ -100,9 +100,9 @@ public final class SiteRequest {
      */
     private final Database mDatabase;
     /**
-     * List of chips events for sending unsent events to site.
+     * List of all Sportiduino records for sending unsent records to site.
      */
-    private final Chips mChips;
+    private final Records mRecords;
 
     /**
      * Custom error from first line of downloaded file or from SQLite exception.
@@ -130,7 +130,7 @@ public final class SiteRequest {
         this.mType = srb.mType;
         this.mChipInitName = srb.mChipInitName;
         this.mDatabase = srb.mDatabase;
-        this.mChips = srb.mChips;
+        this.mRecords = srb.mRecords;
     }
 
     /**
@@ -179,12 +179,12 @@ public final class SiteRequest {
     }
 
     /**
-     * Get updated chip events with status changed from SAVED to SENT.
+     * Get updated records with status changed from SAVED to SENT.
      *
-     * @return Chips object
+     * @return Records object
      */
-    public Chips getChips() {
-        return mChips;
+    public Records getRecords() {
+        return mRecords;
     }
 
     /**
@@ -200,7 +200,7 @@ public final class SiteRequest {
             case TYPE_DL_DISTANCE:
                 return loadDistance();
             case TYPE_UL_CHIPS:
-                return sendChipEvents();
+                return sendRecords();
             case TYPE_DL_RESULTS:
                 return loadResults();
             case TYPE_UL_DATABASE:
@@ -384,7 +384,7 @@ public final class SiteRequest {
         if (distance == null || teams == null) return LOAD_PARSE_ERROR;
         // Validate loaded distance and teams
         if (distance.hasErrors() || teams.hasErrors()) {
-            // Downloaded distance had errors, use old distance from persistent memory
+            // Downloaded distance or teams have errors, through them away
             return LOAD_PARSE_ERROR;
         }
         // Copy parsed distance and teams to class members
@@ -402,23 +402,23 @@ public final class SiteRequest {
     }
 
     /**
-     * Send all unsent chip events from local database to site database.
+     * Send all unsent records from local database to site database.
      *
      * @return One of LOAD result constants, mCustomError can be also set
      * @throws IOException Unexpected end of file
      */
-    private int sendChipEvents() throws IOException {
+    private int sendRecords() throws IOException {
         // Prepare connection to site
         final HttpURLConnection connection = prepareConnection();
         if (connection == null) return LOAD_READ_ERROR;
         // Prepare data to send
-        final List<String> events = mChips.getUnsentEvents();
+        final List<String> records = mRecords.getUnsentRecords();
         final StringBuilder builder = new StringBuilder();
-        for (final String event : events) {
-            builder.append('\n').append(event);
+        for (final String record : records) {
+            builder.append('\n').append(record);
         }
         final String data =
-                "data=" + mChips.getTimeDownloaded() + '\t' + events.size() + builder.toString();
+                "data=" + mRecords.getTimeDownloaded() + '\t' + records.size() + builder.toString();
         // Send data to site
         final int result = makeConnection(connection, data);
         if (result != LOAD_OK) return result;
@@ -432,11 +432,11 @@ public final class SiteRequest {
             mCustomError = error;
             return LOAD_CUSTOM_ERROR;
         }
-        // Check that all chip events were received by server
+        // Check that all records were received by server
         final String header = reader.readLine();
         if (header == null) return LOAD_READ_ERROR;
         try {
-            if (Integer.parseInt(header) != events.size()) return LOAD_PARSE_ERROR;
+            if (Integer.parseInt(header) != records.size()) return LOAD_PARSE_ERROR;
         } catch (NumberFormatException e) {
             // This line can contain php error, show it to user
             mCustomError = header;
@@ -444,10 +444,10 @@ public final class SiteRequest {
         }
         // Finish parsing of server response
         connection.disconnect();
-        // Update chip events status in local database
-        if (mDatabase.markChipsSent(events.size())) {
-            // Update chip events status in memory
-            if (mChips.markChipsSent(events.size())) {
+        // Update records status in local database
+        if (mDatabase.markRecordsSent(records.size())) {
+            // Update records status in memory
+            if (mRecords.markRecordsSent(records.size())) {
                 return LOAD_OK;
             } else {
                 return LOAD_DATA_CHANGED;
@@ -541,31 +541,31 @@ public final class SiteRequest {
         /**
          * User email for authorization.
          */
-        String mUserEmail;
+        private String mUserEmail;
         /**
          * MD5 of user password for authorization.
          */
-        String mUserPassword;
+        private String mUserPassword;
         /**
          * Selection of main/test version of the site.
          */
-        int mTestSite;
+        private int mTestSite;
         /**
          * Type of site request (see TYPE_* constants).
          */
-        int mType;
+        private int mType;
         /**
          * Localized name for chip init active point.
          */
-        String mChipInitName;
+        private String mChipInitName;
         /**
          * Database object for saving downloaded data.
          */
-        Database mDatabase;
+        private Database mDatabase;
         /**
-         * List of chips events for sending unsent events to site.
+         * List of all Sportiduino records for sending unsent records to site.
          */
-        Chips mChips;
+        private Records mRecords;
 
         /**
          * Use the static method SiteRequest.builder() to get an instance.
@@ -640,13 +640,13 @@ public final class SiteRequest {
         }
 
         /**
-         * Set a list of chips events for sending unsent events to site.
+         * Set a list of all records for sending unsent records to site.
          *
-         * @param chips Chip events
+         * @param records Sportiduino records
          * @return this
          */
-        public SiteRequestBuilder chips(final Chips chips) {
-            this.mChips = chips;
+        public SiteRequestBuilder records(final Records records) {
+            this.mRecords = records;
             return this;
         }
 

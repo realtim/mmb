@@ -137,13 +137,13 @@ public final class Station {
      */
     private final BluetoothDevice mDevice;
     /**
-     * List of last teams which visited the station.
+     * List of last teams which punched at the station.
      */
     private final List<Integer> mLastTeams;
     /**
      * Result of getTeamRecord call.
      */
-    private final Chips mChips;
+    private final Records mTeamPunches;
     /**
      * Number of used pages in chips from getTeamRecord call.
      */
@@ -190,9 +190,9 @@ public final class Station {
      */
     private int mChipsRegistered;
     /**
-     * Text representation of time of last chip registration in local timezone.
+     * Time of last punch.
      */
-    private long mLastChipTime;
+    private long mLastPunchTime;
     /**
      * Station firmware version received from getConfig.
      */
@@ -226,13 +226,13 @@ public final class Station {
         mMode = 0;
         mNumber = 0;
         mChipsRegistered = 0;
-        mLastChipTime = 0;
+        mLastPunchTime = 0;
         mFirmware = 0;
         mVoltage = 0;
         mVCoeff = 0.005_870f;
         mTemperature = 0;
         mLastTeams = new ArrayList<>();
-        mChips = new Chips(0);
+        mTeamPunches = new Records(0);
         mChipRecordsN = 0;
         // Create client socket with default Bluetooth UUID
         try {
@@ -361,30 +361,31 @@ public final class Station {
     }
 
     /**
-     * Get list of last teams visits.
+     * Get list of last teams punched at the station.
      *
-     * @return Array of teams numbers
+     * @return Copy of mLastTeams array containing last teams numbers
      */
-    public List<Integer> lastTeams() {
-        return mLastTeams;
+    @SuppressWarnings("UnusedReturnValue")
+    public List<Integer> getLastTeams() {
+        return new ArrayList<>(mLastTeams);
     }
 
     /**
-     * Get the time of last chip registration.
+     * Get the time of last punch.
      *
-     * @return Unixtime of last chip event
+     * @return Unixtime of last punch
      */
-    public long getLastChipTime() {
-        return mLastChipTime;
+    public long getLastPunchTime() {
+        return mLastPunchTime;
     }
 
     /**
      * Get result of getTeamRecord call.
      *
-     * @return List of ChipEvent object inside Chips object
+     * @return List of all records read from team chip
      */
-    public Chips getChipEvents() {
-        return mChips;
+    public Records getTeamPunches() {
+        return mTeamPunches;
     }
 
     /**
@@ -797,7 +798,7 @@ public final class Station {
         byte[] commandData = new byte[8];
         commandData[0] = CMD_RESET_STATION;
         long2ByteArray(mChipsRegistered, commandData, 1, 2);
-        long2ByteArray((int) mLastChipTime, commandData, 3, 4);
+        long2ByteArray((int) mLastPunchTime, commandData, 3, 4);
         commandData[7] = (byte) number;
         // Send it to station
         final byte[] response = new byte[0];
@@ -805,9 +806,9 @@ public final class Station {
         // Update station number and mode in class object
         mNumber = number;
         mMode = MODE_INIT_CHIPS;
-        // Forget all team visits which have been occurred before reset
+        // Forget all teams and their punches which have been occurred before reset
         mLastTeams.clear();
-        mChips.clear();
+        mTeamPunches.clear();
         mChipRecordsN = 0;
         return true;
     }
@@ -827,7 +828,7 @@ public final class Station {
         // Get number of chips registered by station
         mChipsRegistered = (int) byteArray2Long(response, 4, 5);
         // Get last chips registration time
-        mLastChipTime = byteArray2Long(response, 6, 9);
+        mLastPunchTime = byteArray2Long(response, 6, 9);
         // Get station battery voltage in "parrots"
         final int voltage = (int) byteArray2Long(response, 10, 11);
         // Convert value to Volts
@@ -864,10 +865,11 @@ public final class Station {
     }
 
     /**
-     * Get list of last LAST_TEAMS_LEN teams which has been visited the station.
+     * Get list of last LAST_TEAMS_LEN teams which has been punched at the station.
      *
      * @return True if succeeded
      */
+    @SuppressWarnings("UnusedReturnValue")
     public boolean fetchLastTeams() {
         // Get response from station
         final byte[] response = new byte[LAST_TEAMS_LEN * 2];
@@ -881,11 +883,12 @@ public final class Station {
     }
 
     /**
-     * Get info about team with teamNumber number visiting the station.
+     * Get info about team with teamNumber number punched at the station.
      *
      * @param teamNumber Number of team to fetch
      * @return True if succeeded
      */
+    @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "RedundantSuppression"})
     public boolean fetchTeamRecord(final int teamNumber) {
         // Prepare command payload
         byte[] commandData = new byte[3];
@@ -893,7 +896,7 @@ public final class Station {
         long2ByteArray(teamNumber, commandData, 1, 2);
         // Send command to station
         final byte[] response = new byte[13];
-        mChips.clear();
+        mTeamPunches.clear();
         mChipRecordsN = 0;
         if (!command(commandData, response)) return false;
         // Parse response
@@ -905,7 +908,7 @@ public final class Station {
         final long initTime = byteArray2Long(response, 2, 5);
         final int teamMask = (int) byteArray2Long(response, 6, 7);
         final long teamTime = byteArray2Long(response, 8, 11);
-        mChips.addNewEvent(this, initTime, teamNumber, teamMask, mNumber, teamTime);
+        mTeamPunches.addRecord(this, initTime, teamNumber, teamMask, mNumber, teamTime);
         mChipRecordsN = response[12] & 0xFF;
         // Check if we have a valid number of mark in chip copy in flash memory
         if (mChipRecordsN <= 8 || mChipRecordsN >= 0xFF) {
@@ -975,12 +978,13 @@ public final class Station {
      * Get some marks from a copy of a chip in station flash memory.
      *
      * @param teamNumber Team number
-     * @param initTime   Chip init time (for event creation)
-     * @param teamMask   Chip team mask (for event creation)
+     * @param initTime   Chip init time (for creation of new punch records)
+     * @param teamMask   Chip team mask (for creation of new punch records)
      * @param fromMark   Starting position in marks list
      * @param count      Number of marks to read
-     * @return True if succeeded, fills mChips with marks as chip events
+     * @return True if succeeded, fills mTeamPunches with punches as Record instances
      */
+    @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "RedundantSuppression"})
     public boolean fetchTeamMarks(final int teamNumber, final long initTime,
                                   final int teamMask, final int fromMark,
                                   final int count) {
@@ -997,7 +1001,7 @@ public final class Station {
         commandData[5] = (byte) ((count * 4) & 0xFF);
         // Send command to station
         final byte[] response = new byte[4 + count * 4];
-        mChips.clear();
+        mTeamPunches.clear();
         mChipRecordsN = 0;
         if (!command(commandData, response)) return false;
         // Check that read address in response is equal to read address in command
@@ -1007,17 +1011,17 @@ public final class Station {
         }
         // Get first byte of current time
         final long timeCorrection = mStationTime & 0xFF000000;
-        // Add new events
+        // Add new records
         for (int i = 0; i < count; i++) {
             final int pointNumber = response[4 + i * 4] & 0xFF;
             final long pointTime =
                     byteArray2Long(response, 5 + i * 4, 7 + i * 4) + timeCorrection;
             // Check if the record is non-empty
             if (pointNumber == 0xFF && (pointTime - timeCorrection) == 0x00FFFFFF) break;
-            mChips.addNewEvent(this, initTime, teamNumber, teamMask, pointNumber, pointTime);
+            mTeamPunches.addRecord(this, initTime, teamNumber, teamMask, pointNumber, pointTime);
         }
-        // Check number of actually read marks
-        if (mChips.size() == count) {
+        // Check number of actually read punches
+        if (mTeamPunches.size() == count) {
             return true;
         } else {
             mLastError = R.string.err_station_flash_empty;

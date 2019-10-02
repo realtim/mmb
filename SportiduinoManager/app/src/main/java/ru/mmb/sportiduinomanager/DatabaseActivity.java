@@ -22,39 +22,18 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Database;
-import ru.mmb.sportiduinomanager.model.Distance;
+import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.SiteRequest;
-import ru.mmb.sportiduinomanager.model.Teams;
 
 /**
  * Provides interaction with database at http://mmb.progressor.ru site.
  */
 public final class DatabaseActivity extends MainActivity {
     /**
-     * Local copy of distance (downloaded from site or loaded from local database).
-     */
-    private Distance mDistance;
-
-    /**
-     * Local copy of teams with members (from site or local database).
-     */
-    private Teams mTeams;
-
-    /**
-     * Local copy of chips events.
-     */
-    private Chips mChips;
-
-    /**
      * Main application thread with persistent data.
      */
-    private MainApplication mMainApplication;
-    /**
-     * Copy of activity context for AsyncTask.
-     */
-    private DatabaseActivity mContext;
+    private MainApp mAppContext;
     /**
      * True when download/upload async task is active.
      */
@@ -113,12 +92,8 @@ public final class DatabaseActivity extends MainActivity {
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
-        mContext = this;
         mTransferActive = false;
-        mMainApplication = (MainApplication) getApplication();
-        mDistance = mMainApplication.getDistance();
-        mTeams = mMainApplication.getTeams();
-        mChips = mMainApplication.getChips();
+        mAppContext = (MainApp) getApplicationContext();
         setContentView(R.layout.activity_database);
     }
 
@@ -127,7 +102,7 @@ public final class DatabaseActivity extends MainActivity {
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.database).setChecked(true);
-        updateMenuItems(mMainApplication, R.id.database);
+        updateMenuItems(R.id.database);
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Update layout elements
@@ -140,14 +115,13 @@ public final class DatabaseActivity extends MainActivity {
      */
     private void updateLayout() {
         int dbStatus;
-        // Get database from persistent memory
-        final Database database = mMainApplication.getDatabase();
-        // Find its status
-        if (database == null) {
+        // Find database status
+        if (MainApp.mDatabase == null) {
             dbStatus = Database.DB_STATE_FAILED;
         } else {
-            dbStatus = database.getDbStatus();
-            if (dbStatus == Database.DB_STATE_OK && (mDistance == null || mTeams == null)) {
+            dbStatus = MainApp.mDatabase.getDbStatus();
+            if (dbStatus == Database.DB_STATE_OK
+                    && (MainApp.mDistance.hasErrors() || MainApp.mTeams.hasErrors())) {
                 dbStatus = Database.DB_STATE_DAMAGED;
             }
         }
@@ -172,7 +146,7 @@ public final class DatabaseActivity extends MainActivity {
         final MenuItem databaseItem = getMenuItem(R.id.database);
         final Button sendChipsButton = findViewById(R.id.send_results);
         final Button getResultsButton = findViewById(R.id.get_results);
-        final Button sendDatabaseButton = findViewById(R.id.send_database);
+        final Button sendDbButton = findViewById(R.id.send_database);
         final LinearLayout dlDistance = findViewById(R.id.download_distance_layout);
         final Group dbContent = findViewById(R.id.database_content_group);
         switch (dbStatus) {
@@ -186,46 +160,47 @@ public final class DatabaseActivity extends MainActivity {
                 getResultsButton.setVisibility(View.GONE);
                 dlDistance.setVisibility(View.VISIBLE);
                 dbContent.setVisibility(View.GONE);
-                sendDatabaseButton.setVisibility(View.GONE);
+                sendDbButton.setVisibility(View.GONE);
                 break;
             case Database.DB_STATE_OK:
                 // Don't allow to reload database if it can contain important data
-                if (mDistance.canBeReloaded()) {
+                if (MainApp.mDistance.canBeReloaded()) {
                     dlDistance.setVisibility(View.VISIBLE);
                     // set user email and test db flag from local database
-                    ((EditText) findViewById(R.id.user_email)).setText(mMainApplication.getUserEmail());
-                    ((SwitchCompat) findViewById(R.id.test_database)).setChecked(mMainApplication.getTestSite() == 1);
+                    ((EditText) findViewById(R.id.user_email)).setText(mAppContext.getUserEmail());
+                    ((SwitchCompat) findViewById(R.id.test_database))
+                            .setChecked(mAppContext.getTestSite() == 1);
                 } else {
                     dlDistance.setVisibility(View.GONE);
                 }
-                // Check if we have some unsent event
+                // Check if we have some unsent records
                 sendChipsButton.setVisibility(View.VISIBLE);
-                if (mChips == null || !mChips.hasUnsentEvents()) {
-                    sendChipsButton.setAlpha(MainApplication.DISABLED_BUTTON);
+                if (MainApp.mAllRecords.hasUnsentRecords()) {
+                    sendChipsButton.setAlpha(MainApp.DISABLED_BUTTON);
                     sendChipsButton.setClickable(false);
                 } else {
-                    sendChipsButton.setAlpha(MainApplication.ENABLED_BUTTON);
+                    sendChipsButton.setAlpha(MainApp.ENABLED_BUTTON);
                     sendChipsButton.setClickable(true);
                 }
                 // Always allow to download results from site and upload database
                 getResultsButton.setVisibility(View.VISIBLE);
-                sendDatabaseButton.setVisibility(View.VISIBLE);
+                sendDbButton.setVisibility(View.VISIBLE);
                 // TODO: Enable 'Download results' button after download implementation
-                getResultsButton.setAlpha(MainApplication.DISABLED_BUTTON);
+                getResultsButton.setAlpha(MainApp.DISABLED_BUTTON);
                 getResultsButton.setClickable(false);
                 // Set distance description
                 String siteName;
-                if (mDistance.getTestSite() == 0) {
+                if (MainApp.mDistance.getTestSite() == 0) {
                     siteName = (String) getResources().getText(R.string.site_name_main);
                 } else {
                     siteName = (String) getResources().getText(R.string.site_name_test);
                 }
                 ((TextView) findViewById(R.id.distance_version)).setText(getResources()
                         .getString(R.string.database_distance_version, siteName,
-                                Chips.printTime(mDistance.getTimeDownloaded(), "dd.MM.yyyy HH:mm")));
-                ((TextView) findViewById(R.id.distance_name)).setText(mDistance.getRaidName());
-                // Set chip events statistic
-                final List<Integer> statistic = mChips.getStatistic();
+                                Records.printTime(MainApp.mDistance.getTimeDownloaded(), "dd.MM.yyyy HH:mm")));
+                ((TextView) findViewById(R.id.distance_name)).setText(MainApp.mDistance.getRaidName());
+                // Set Sportiduino records statistic
+                final List<Integer> statistic = MainApp.mAllRecords.getStatistic();
                 ((TextView) findViewById(R.id.database_local_init)).setText(getResources()
                         .getString(R.string.database_local_init, statistic.get(0),
                                 statistic.get(1)));
@@ -281,7 +256,7 @@ public final class DatabaseActivity extends MainActivity {
         }
         // Save email/password/site in main application
         // (as this activity can be recreated loosing these value)
-        mMainApplication.setAuthorizationParameters(sUserEmail, userPassword, testSite);
+        mAppContext.setAuthorizationParameters(sUserEmail, userPassword, testSite);
         // Clean password field to require to enter it again for next distance download
         etUserPassword.setText("");
         // Hide virtual keyboard
@@ -295,21 +270,21 @@ public final class DatabaseActivity extends MainActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // start download
         final String chipInitName =
-                mMainApplication.getContext().getResources().getString(R.string.mode_chip_init);
+                getApplication().getResources().getString(R.string.mode_chip_init);
         final SiteRequest siteRequest =
                 SiteRequest.builder().userEmail(sUserEmail).userPassword(userPassword)
                         .testSite(testSite).chipInitName(chipInitName)
-                        .database(mMainApplication.getDatabase())
+                        .database(MainApp.mDatabase)
                         .type(SiteRequest.TYPE_DL_DISTANCE).build();
-        new AsyncSiteRequest(mContext).execute(siteRequest);
+        new AsyncSiteRequest(this).execute(siteRequest);
     }
 
     /**
-     * Start upload of new chip events to site.
+     * Start upload of new Sportiduino records to site.
      *
      * @param view View of button clicked (unused)
      */
-    public void startChipEventsUpload(@SuppressWarnings("unused") final View view) {
+    public void startRecordsUpload(@SuppressWarnings("unused") final View view) {
         // Check if we have another transfer waiting
         if (mTransferActive) {
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_db_download_waiting),
@@ -322,13 +297,13 @@ public final class DatabaseActivity extends MainActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // Start upload
         final SiteRequest siteRequest =
-                SiteRequest.builder().userEmail(mMainApplication.getUserEmail())
-                        .userPassword(mMainApplication.getUserPassword())
-                        .testSite(mMainApplication.getTestSite())
-                        .database(mMainApplication.getDatabase())
-                        .chips(mChips)
+                SiteRequest.builder().userEmail(mAppContext.getUserEmail())
+                        .userPassword(mAppContext.getUserPassword())
+                        .testSite(mAppContext.getTestSite())
+                        .database(MainApp.mDatabase)
+                        .records(MainApp.mAllRecords)
                         .type(SiteRequest.TYPE_UL_CHIPS).build();
-        new AsyncSiteRequest(mContext).execute(siteRequest);
+        new AsyncSiteRequest(this).execute(siteRequest);
     }
 
     /**
@@ -349,12 +324,12 @@ public final class DatabaseActivity extends MainActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // Start download
         final SiteRequest siteRequest =
-                SiteRequest.builder().userEmail(mMainApplication.getUserEmail())
-                        .userPassword(mMainApplication.getUserPassword())
-                        .testSite(mMainApplication.getTestSite())
-                        .database(mMainApplication.getDatabase())
+                SiteRequest.builder().userEmail(mAppContext.getUserEmail())
+                        .userPassword(mAppContext.getUserPassword())
+                        .testSite(mAppContext.getTestSite())
+                        .database(MainApp.mDatabase)
                         .type(SiteRequest.TYPE_DL_RESULTS).build();
-        new AsyncSiteRequest(mContext).execute(siteRequest);
+        new AsyncSiteRequest(this).execute(siteRequest);
     }
 
 
@@ -376,26 +351,22 @@ public final class DatabaseActivity extends MainActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // Start download
         final SiteRequest siteRequest =
-                SiteRequest.builder().userEmail(mMainApplication.getUserEmail())
-                        .userPassword(mMainApplication.getUserPassword())
-                        .testSite(mMainApplication.getTestSite())
-                        .database(mMainApplication.getDatabase())
+                SiteRequest.builder().userEmail(mAppContext.getUserEmail())
+                        .userPassword(mAppContext.getUserPassword())
+                        .testSite(mAppContext.getTestSite())
+                        .database(MainApp.mDatabase)
                         .type(SiteRequest.TYPE_UL_DATABASE).build();
-        new AsyncSiteRequest(mContext).execute(siteRequest);
+        new AsyncSiteRequest(this).execute(siteRequest);
     }
 
     /**
      * Separate thread for async parsing of downloaded file with a distance.
      */
-    private static class AsyncSiteRequest extends AsyncTask<SiteRequest, Void, Integer> {
+    private static final class AsyncSiteRequest extends AsyncTask<SiteRequest, Void, Integer> {
         /**
          * Reference to parent activity (which can cease to exist in any moment).
          */
         private final WeakReference<DatabaseActivity> mActivityRef;
-        /**
-         * Reference to main application thread.
-         */
-        private final MainApplication mMainApplication;
         /**
          * Custom string which cannot be loaded from resources.
          */
@@ -406,10 +377,9 @@ public final class DatabaseActivity extends MainActivity {
          *
          * @param context Calling activity context
          */
-        AsyncSiteRequest(final DatabaseActivity context) {
+        private AsyncSiteRequest(final DatabaseActivity context) {
             super();
             mActivityRef = new WeakReference<>(context);
-            mMainApplication = (MainApplication) context.getApplication();
         }
 
         /**
@@ -434,10 +404,10 @@ public final class DatabaseActivity extends MainActivity {
                 case SiteRequest.LOAD_PARSE_ERROR:
                     return R.string.err_db_bad_response;
                 case SiteRequest.LOAD_DATA_CHANGED:
-                    // New events has been added during events upload
-                    // Force events reload from local database
-                    // and forget about sending some events to site
-                    mMainApplication.setChips(mMainApplication.getDatabase().loadChips(), true);
+                    // New records has been added during upload
+                    // Force reload of records from local database
+                    // and forget about sending some records to site
+                    MainApp.setAllRecords(MainApp.mDatabase.loadRecords(), true);
                     return R.string.send_results_failure;
                 case SiteRequest.LOAD_CUSTOM_ERROR:
                     mCustomError = request[0].getCustomError();
@@ -446,14 +416,14 @@ public final class DatabaseActivity extends MainActivity {
                     switch (request[0].getRequestType()) {
                         case SiteRequest.TYPE_DL_DISTANCE:
                             // Copy loaded distance and teams to persistent memory
-                            mMainApplication.setDistance(request[0].getDistance());
-                            mMainApplication.setTeams(request[0].getTeams());
-                            // Recreate chip events list from local database
-                            mMainApplication.setChips(mMainApplication.getDatabase().loadChips(), true);
+                            MainApp.setDistance(request[0].getDistance());
+                            MainApp.setTeams(request[0].getTeams());
+                            // Recreate list of records from local database
+                            MainApp.setAllRecords(MainApp.mDatabase.loadRecords(), true);
                             return R.string.download_distance_success;
                         case SiteRequest.TYPE_UL_CHIPS:
-                            // Update chip events in persistent memory
-                            mMainApplication.setChips(request[0].getChips(), false);
+                            // Update records in application memory
+                            MainApp.setAllRecords(request[0].getRecords(), false);
                             return R.string.send_results_success;
                         case SiteRequest.TYPE_DL_RESULTS:
                             return R.string.unknown;
@@ -474,23 +444,19 @@ public final class DatabaseActivity extends MainActivity {
          * @param message False if connection attempt failed
          */
         protected void onPostExecute(final Integer message) {
-            // Show parsing result
-            if (mCustomError == null) {
-                Toast.makeText(mMainApplication, message, Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(mMainApplication, mCustomError, Toast.LENGTH_LONG).show();
-            }
             // Get a reference to the activity if it is still there
             final DatabaseActivity activity = mActivityRef.get();
             if (activity == null || activity.isFinishing()) return;
-            // Update local copy of distance/teams/chip class members
-            activity.mDistance = mMainApplication.getDistance();
-            activity.mTeams = mMainApplication.getTeams();
-            activity.mChips = mMainApplication.getChips();
+            // Show parsing result
+            if (mCustomError == null) {
+                Toast.makeText(activity.mAppContext, message, Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(activity.mAppContext, mCustomError, Toast.LENGTH_LONG).show();
+            }
             // Update activity layout
             activity.mTransferActive = false;
             activity.updateLayout();
-            activity.updateMenuItems(mMainApplication, R.id.database);
+            activity.updateMenuItems(R.id.database);
         }
     }
 

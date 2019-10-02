@@ -17,7 +17,7 @@ public final class Teams {
      *
      * @param maxNumber Max index in team array
      */
-    Teams(final int maxNumber) {
+    public Teams(final int maxNumber) {
         mTeams = new SingleTeam[maxNumber + 1];
     }
 
@@ -214,19 +214,19 @@ public final class Teams {
     /**
      * A team parameters.
      */
-    private class SingleTeam {
+    private static final class SingleTeam {
         /**
          * Number of maps printed for the team.
          */
-        final int mMaps;
+        private final int mMaps;
         /**
          * Team name.
          */
-        final String mName;
+        private final String mName;
         /**
          * List of team members.
          */
-        final Member[] mMembers;
+        private final Member[] mMembers;
 
         /**
          * Constructor for Team class.
@@ -235,7 +235,7 @@ public final class Teams {
          * @param mapsCount    Number of ordered maps
          * @param name         Team name
          */
-        SingleTeam(final int membersCount, final int mapsCount, final String name) {
+        private SingleTeam(final int membersCount, final int mapsCount, final String name) {
             mMaps = mapsCount;
             mName = name;
             mMembers = new Member[membersCount];
@@ -245,19 +245,19 @@ public final class Teams {
     /**
      * A member of a team.
      */
-    private class Member {
+    private static final class Member {
         /**
          * Member id.
          */
-        final long mId;
+        private final long mId;
         /**
          * Member first name, last name and year of birth.
          */
-        final String mName;
+        private final String mName;
         /**
          * Member phone (can be empty).
          */
-        final String mPhone;
+        private final String mPhone;
 
         /**
          * Constructor for Member class.
@@ -266,7 +266,7 @@ public final class Teams {
          * @param name     Member name and birth date
          * @param phone    Member phone
          */
-        Member(final long memberId, final String name, final String phone) {
+        private Member(final long memberId, final String name, final String phone) {
             mId = memberId;
             mName = name;
             mPhone = phone;

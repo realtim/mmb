@@ -53,6 +53,21 @@ public final class Distance {
     private long mLastResultId;
 
     /**
+     * Construct dummy empty distance for Application.mDistance initialization.
+     **/
+    public Distance() {
+        mRaidId = 0;
+        mRaidName = "";
+        mTimeDownloaded = 0;
+        mTimeReadonly = 0;
+        mTimeFinish = 0;
+        mUserEmail = "";
+        mUserPassword = "";
+        mTestSite = 1;
+        mLastResultId = 0;
+    }
+
+    /**
      * Construct distance from imported data.
      *
      * @param userEmail      Email of the user downloading the raid
@@ -177,13 +192,15 @@ public final class Distance {
      */
     public List<String> getPointNames(final String prefix) {
         final List<String> names = new ArrayList<>();
-        for (final Point point : mPoints) {
-            if (point != null) {
-                final String name = point.mName;
-                if (name.charAt(0) >= '0' && name.charAt(0) <= '9') {
-                    names.add(prefix + name);
-                } else {
-                    names.add(name);
+        if (mPoints != null) {
+            for (final Point point : mPoints) {
+                if (point != null) {
+                    final String name = point.mName;
+                    if (name.charAt(0) >= '0' && name.charAt(0) <= '9') {
+                        names.add(prefix + name);
+                    } else {
+                        names.add(name);
+                    }
                 }
             }
         }
@@ -197,6 +214,7 @@ public final class Distance {
      * @return Point number at this position
      */
     public int getNumberFromPosition(final int position) {
+        if (mPoints == null) return 0;
         int counter = 0;
         for (int i = 0; i < mPoints.length; i++) {
             if (mPoints[i] == null) continue;
@@ -213,7 +231,7 @@ public final class Distance {
      * @return Zero-based position in the list
      */
     public int getPositionFromNumber(final int number) {
-        if (number < 0 || number >= mPoints.length) return 0;
+        if (mPoints == null || number < 0 || number >= mPoints.length) return 0;
         int counter = 0;
         for (int i = 0; i < number; i++) {
             if (mPoints[i] != null) {
@@ -233,7 +251,7 @@ public final class Distance {
     private String pointFromList(final List<Integer> list, final int index) {
         if (index < 0 || index > list.size()) return "?";
         final int number = list.get(index);
-        if (number < 0 || number > mPoints.length || mPoints[number] == null) return "#" + number;
+        if (mPoints == null || number < 0 || number > mPoints.length || mPoints[number] == null) return "#" + number;
         return mPoints[number].mName;
     }
 
@@ -274,7 +292,7 @@ public final class Distance {
         for (int i = 1; i < total; i++) {
             boolean noHole = true;
             for (int index = list.get(i - 1) + 1; index < list.get(i); index++) {
-                if (mPoints[index] != null) {
+                if (mPoints != null && mPoints[index] != null) {
                     noHole = false;
                 }
                 if (!noHole) break;
@@ -306,27 +324,27 @@ public final class Distance {
     }
 
     /**
-     * Create list of skipped points from a list of visited points.
+     * Create list of skipped points from a list of punched points.
      *
-     * @param visitedPoints List of visited points, can be empty
+     * @param punchedPoints List of punched points, can be empty
      * @return List of skipped points, can be empty
      */
-    public List<Integer> getSkippedPoints(final List<Integer> visitedPoints) {
+    public List<Integer> getSkippedPoints(final List<Integer> punchedPoints) {
         final List<Integer> skippedPoints = new ArrayList<>();
-        // Return empty skipped list if the visited list is empty
-        if (visitedPoints.isEmpty()) return skippedPoints;
-        // Find last point from the distance which was visited
+        // Return empty skipped list if the punched list is empty
+        if (punchedPoints.isEmpty()) return skippedPoints;
+        // Find last point from the distance which was punched
         int maxPoint = 0;
-        for (final int number : visitedPoints) {
-            if (number >= 0 && number < mPoints.length && mPoints[number] != null
+        for (final int number : punchedPoints) {
+            if (number >= 0 && mPoints != null && number < mPoints.length && mPoints[number] != null
                     && number > maxPoint) {
                 maxPoint = number;
             }
         }
         // Find all distance points between (but not including)
-        // the chip init point and last visited point which are not visited
+        // the chip init point and last punched point which are not punched
         for (int i = 1; i < maxPoint; i++) {
-            if (mPoints[i] != null && !visitedPoints.contains(i)) {
+            if (mPoints != null && mPoints[i] != null && !punchedPoints.contains(i)) {
                 skippedPoints.add(i);
             }
         }
@@ -342,7 +360,7 @@ public final class Distance {
     public boolean mandatoryPointSkipped(final List<Integer> skippedPoints) {
         for (final int number : skippedPoints) {
             // All AP types except ordinary AP are mandatory
-            if (mPoints[number].mType < 5) return true;
+            if (mPoints != null && mPoints[number].mType < 5) return true;
         }
         return false;
     }
@@ -360,6 +378,7 @@ public final class Distance {
     void fillPointsLists(final List<Integer> numbers, final List<Integer> types,
                          final List<Integer> penalties, final List<Long> startTimes,
                          final List<Long> endTimes, final List<String> names) {
+        if (mPoints == null) return;
         for (int i = 1; i < mPoints.length; i++) {
             if (mPoints[i] == null) continue;
             numbers.add(i);
@@ -380,6 +399,7 @@ public final class Distance {
      */
     void fillDiscountsLists(final List<Integer> minutes, final List<Integer> fromN,
                             final List<Integer> toN) {
+        if (mDiscounts == null) return;
         for (final Discount discount : mDiscounts) {
             minutes.add(discount.mMinutes);
             fromN.add(discount.mFrom);
@@ -394,7 +414,7 @@ public final class Distance {
      * @return Point type
      */
     public int getPointType(final int number) {
-        if (number < 0 || number >= mPoints.length || mPoints[number] == null) return -1;
+        if (number < 0 || mPoints == null || number >= mPoints.length || mPoints[number] == null) return -1;
         return mPoints[number].mType;
     }
 
@@ -406,7 +426,7 @@ public final class Distance {
      * @return Point name
      */
     public String getPointName(final int number, final String prefix) {
-        if (number < 0 || number >= mPoints.length || mPoints[number] == null) return "#" + number;
+        if (number < 0 || mPoints == null || number >= mPoints.length || mPoints[number] == null) return "#" + number;
         final String name = mPoints[number].mName;
         if (name.charAt(0) >= '0' && name.charAt(0) <= '9') {
             return prefix + name;
@@ -550,27 +570,27 @@ public final class Distance {
     /**
      * An active point parameters.
      */
-    private class Point {
+    private static final class Point {
         /**
          * Point type (start, finish, etc).
          */
-        final int mType;
+        private final int mType;
         /**
          * Penalty in minutes for missing the point.
          */
-        final int mPenalty;
+        private final int mPenalty;
         /**
          * Unixtime when the point starts to work.
          */
-        final long mStart;
+        private final long mStart;
         /**
          * Unixtime when the point ends working.
          */
-        final long mEnd;
+        private final long mEnd;
         /**
          * Point name.
          */
-        final String mName;
+        private final String mName;
 
         /**
          * Constructor for Point class.
@@ -581,7 +601,7 @@ public final class Distance {
          * @param end     Time at which this point stop working
          * @param name    Point name
          */
-        Point(final int type, final int penalty, final long start, final long end, final String name) {
+        private Point(final int type, final int penalty, final long start, final long end, final String name) {
             mType = type;
             mPenalty = penalty;
             mStart = start;
@@ -593,19 +613,19 @@ public final class Distance {
     /**
      * Discount for missing some points.
      */
-    private class Discount {
+    private static final class Discount {
         /**
          * The discount in minutes.
          */
-        final int mMinutes;
+        private final int mMinutes;
         /**
          * First point of the distance part where discount is active.
          */
-        final int mFrom;
+        private final int mFrom;
         /**
          * Last point of the interval.
          */
-        final int mTo;
+        private final int mTo;
 
         /**
          * Constructor for Discount class.
@@ -614,7 +634,7 @@ public final class Distance {
          * @param fromPoint Starting point for discount interval
          * @param toPoint   Ending point for discount interval
          */
-        Discount(final int minutes, final int fromPoint, final int toPoint) {
+        private Discount(final int minutes, final int fromPoint, final int toPoint) {
             mMinutes = minutes;
             mFrom = fromPoint;
             mTo = toPoint;

@@ -5,8 +5,7 @@ import android.os.AsyncTask;
 import java.lang.ref.WeakReference;
 
 import ru.mmb.sportiduinomanager.ChipInfoActivity;
-import ru.mmb.sportiduinomanager.MainApplication;
-import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.MainApp;
 
 /**
  * Run long read chip info in separate thread.
@@ -16,10 +15,6 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
      * Reference to parent activity (which can cease to exist in any moment).
      */
     private final WeakReference<ChipInfoActivity> mActivityRef;
-    /**
-     * Reference to main application thread.
-     */
-    private final MainApplication mMainApplication;
 
     /**
      * Retain only a weak reference to the activity.
@@ -29,7 +24,6 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
     public ChipInfoTask(final ChipInfoActivity context) {
         super();
         mActivityRef = new WeakReference<>(context);
-        mMainApplication = (MainApplication) context.getApplication();
     }
 
     /**
@@ -52,9 +46,8 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
      * @return True if succeeded
      */
     protected Boolean doInBackground(final Void... params) {
-        final Station station = mMainApplication.getStation();
-        if (station == null) return false;
-        return station.readCardPage((byte) 20, 5);
+        if (MainApp.mStation == null) return false;
+        return MainApp.mStation.readCardPage((byte) 20, 5);
     }
 
     /**

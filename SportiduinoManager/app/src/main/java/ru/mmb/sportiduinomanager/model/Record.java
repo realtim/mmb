@@ -1,20 +1,20 @@
 package ru.mmb.sportiduinomanager.model;
 
 /**
- * A chip event (initialization or check in).
+ * A Sportiduino record (chip initialization or station punch).
  */
-final class ChipEvent implements Comparable<ChipEvent> {
+final class Record implements Comparable<Record> {
     /**
-     * Chip event status: new, exists only in app memory.
+     * Record status: new, exists only in app memory.
      */
     static final int STATUS_NEW = 0;
     /**
-     * Chip event status: saved to local SQLite database.
+     * Record status: saved to local SQLite database.
      */
     static final int STATUS_SAVED = 1;
 
     /**
-     * Chip event status: sent to site.
+     * Record status: sent to site.
      */
     static final int STATUS_SENT = 2;
 
@@ -24,7 +24,7 @@ final class ChipEvent implements Comparable<ChipEvent> {
     final long mStationMAC;
 
     /**
-     * Station time at the moment when event was received by app.
+     * Station time at the moment when the record was received by app.
      */
     final long mStationTime;
 
@@ -39,7 +39,7 @@ final class ChipEvent implements Comparable<ChipEvent> {
     final int mStationNumber;
 
     /**
-     * Station mode (initialization or active point).
+     * Station mode (initialization or control point).
      */
     final int mStationMode;
 
@@ -59,39 +59,39 @@ final class ChipEvent implements Comparable<ChipEvent> {
     final int mTeamMask;
 
     /**
-     * Active point for registered event.
+     * Control point at which the chip was initialized or punched.
      */
     final int mPointNumber;
 
     /**
-     * Time of registered event.
+     * Time of initialization/punch.
      */
     final long mPointTime;
 
     /**
-     * Status of event processing (new, saved, sent).
+     * Status of record processing (new, saved, sent).
      */
     private int mStatus;
 
     /**
-     * Constructor for ChipEvent class.
+     * Constructor for Record class.
      *
      * @param stationMAC    Station Bluetooth adapter MAC as long integer
-     * @param stationTime   Station time at the moment when event was received by app
+     * @param stationTime   Station time when the record was received by app
      * @param stationDrift  Time difference between station and Android
      * @param stationNumber Current number of the paired station
-     * @param stationMode   Station mode (initialization or active point)
+     * @param stationMode   Station mode (initialization or control point)
      * @param initTime      Initialization time of the chip
      * @param teamNumber    Team number from the chip
      * @param teamMask      Team members mask from the chip
-     * @param pointNumber   Active point for registered event
-     * @param pointTime     Time of registered event
-     * @param status        Status of event processing (new, saved, sent)
+     * @param pointNumber   Control point at which the chip was initialized or punched
+     * @param pointTime     Time of initialization/punch
+     * @param status        Status of record processing (new, saved, sent)
      */
-    ChipEvent(final long stationMAC, final long stationTime, final int stationDrift,
-              final int stationNumber, final int stationMode, final long initTime,
-              final int teamNumber, final int teamMask, final int pointNumber,
-              final long pointTime, final int status) {
+    Record(final long stationMAC, final long stationTime, final int stationDrift,
+           final int stationNumber, final int stationMode, final long initTime,
+           final int teamNumber, final int teamMask, final int pointNumber,
+           final long pointTime, final int status) {
         mStationMAC = stationMAC;
         mStationTime = stationTime;
         mStationDrift = stationDrift;
@@ -106,26 +106,26 @@ final class ChipEvent implements Comparable<ChipEvent> {
     }
 
     /**
-     * Get current chip event status.
+     * Get current record status.
      *
-     * @return Event status (new, saved, sent)
+     * @return Record status (new, saved, sent)
      */
     int getStatus() {
         return mStatus;
     }
 
     /**
-     * Set new chip event status.
+     * Set new status for the record.
      *
-     * @param status Event status (new, saved, sent)
+     * @param status Record status (new, saved, sent)
      */
     void setStatus(final int status) {
         mStatus = status;
     }
 
     /**
-     * Get station mode for the chip event
-     * to distinguish between chip init and active point check in.
+     * Get station mode for the record
+     * to distinguish between initialization and control point punch.
      *
      * @return See Station.MODE_* constants
      */
@@ -134,15 +134,15 @@ final class ChipEvent implements Comparable<ChipEvent> {
     }
 
     @Override
-    public int compareTo(final ChipEvent compareEvent) {
+    public int compareTo(final Record compareRecord) {
         // For ascending order
-        return (int) (this.mPointTime - compareEvent.mPointTime);
+        return (int) (this.mPointTime - compareRecord.mPointTime);
     }
 
     /**
-     * Get string representation of chip event for sending to site.
+     * Get string representation of the record for sending to site.
      *
-     * @return Chip event converted to string
+     * @return Record converted to string
      */
     public String toString() {
         return Long.toString(mStationMAC) + '\t' + mStationTime + '\t' + mStationDrift + '\t'

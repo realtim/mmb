@@ -138,18 +138,18 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
     /**
      * Custom ViewHolder for member_list_item layout.
      */
-    class MemberHolder extends RecyclerView.ViewHolder {
+    final class MemberHolder extends RecyclerView.ViewHolder {
         /**
          * Checkbox with team name.
          */
-        final CheckBox mMember;
+        private final CheckBox mMember;
 
         /**
          * Holder for list element containing checkbox with team member name.
          *
          * @param view View of list item
          */
-        MemberHolder(final View view) {
+        private MemberHolder(final View view) {
             super(view);
             mMember = view.findViewById(R.id.check_member);
         }

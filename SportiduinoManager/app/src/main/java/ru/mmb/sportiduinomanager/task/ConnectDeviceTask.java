@@ -8,7 +8,7 @@ import java.lang.ref.WeakReference;
 
 import ru.mmb.sportiduinomanager.BTDeviceListAdapter;
 import ru.mmb.sportiduinomanager.BluetoothActivity;
-import ru.mmb.sportiduinomanager.MainApplication;
+import ru.mmb.sportiduinomanager.MainApp;
 import ru.mmb.sportiduinomanager.R;
 import ru.mmb.sportiduinomanager.model.Station;
 
@@ -23,7 +23,7 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
     /**
      * Reference to main application thread.
      */
-    private final MainApplication mMainApplication;
+    private final MainApp mMainApplication;
     /**
      * RecyclerView with discovered Bluetooth devices and connect buttons.
      */
@@ -38,7 +38,7 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
     public ConnectDeviceTask(final BluetoothActivity context, final BTDeviceListAdapter adapter) {
         super();
         mActivityRef = new WeakReference<>(context);
-        mMainApplication = (MainApplication) context.getApplication();
+        mMainApplication = (MainApp) context.getApplication();
         mAdapter = adapter;
     }
 
@@ -63,12 +63,12 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
         final Station station = new Station(device[0]);
         if (station.connect()) {
             // Save connected station in main application
-            mMainApplication.setStation(station);
+            MainApp.setStation(station);
+            // Create filtered list of punches at this station
+            MainApp.setPointPunches(MainApp.mAllRecords.getChipsAtPoint(station.getNumber(),
+                    station.getMACasLong()));
             return true;
         }
-        // Disconnect from station
-        station.disconnect();
-        mMainApplication.setStation(null);
         return false;
     }
 
@@ -87,11 +87,10 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
         if (activity == null || activity.isFinishing()) return;
         // Update device list in activity
         if (result) {
-            final Station station = mMainApplication.getStation();
-            if (station == null) {
+            if (MainApp.mStation == null) {
                 mAdapter.setConnectedDevice(null, false);
             } else {
-                mAdapter.setConnectedDevice(station.getAddress(), false);
+                mAdapter.setConnectedDevice(MainApp.mStation.getAddress(), false);
             }
         } else {
             mAdapter.setConnectedDevice(null, false);
@@ -99,6 +98,6 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
         // Update activity layout
         activity.updateLayout(true);
         // Update menu items only after station status request
-        activity.updateMenuItems(mMainApplication, R.id.bluetooth);
+        activity.updateMenuItems(R.id.bluetooth);
     }
 }

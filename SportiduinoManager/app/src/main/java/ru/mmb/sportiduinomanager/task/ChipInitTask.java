@@ -5,8 +5,7 @@ import android.os.AsyncTask;
 import java.lang.ref.WeakReference;
 
 import ru.mmb.sportiduinomanager.ChipInitActivity;
-import ru.mmb.sportiduinomanager.MainApplication;
-import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.MainApp;
 
 /**
  * Run long chip init in separate thread.
@@ -16,10 +15,6 @@ public class ChipInitTask extends AsyncTask<Integer, Void, Boolean> {
      * Reference to parent activity (which can cease to exist in any moment).
      */
     private final WeakReference<ChipInitActivity> mActivityRef;
-    /**
-     * Reference to main application thread.
-     */
-    private final MainApplication mMainApplication;
 
     /**
      * Retain only a weak reference to the activity.
@@ -29,7 +24,6 @@ public class ChipInitTask extends AsyncTask<Integer, Void, Boolean> {
     public ChipInitTask(final ChipInitActivity context) {
         super();
         mActivityRef = new WeakReference<>(context);
-        mMainApplication = (MainApplication) context.getApplication();
     }
 
     /**
@@ -39,12 +33,11 @@ public class ChipInitTask extends AsyncTask<Integer, Void, Boolean> {
      * @return True if succeeded
      */
     protected Boolean doInBackground(final Integer... teamParams) {
-        final Station station = mMainApplication.getStation();
-        if (station == null) return false;
+        if (MainApp.mStation == null) return false;
         // Send the command to station
         final int teamNumber = teamParams[0];
         final int teamMask = teamParams[1];
-        return station.initChip(teamNumber, teamMask);
+        return MainApp.mStation.initChip(teamNumber, teamMask);
     }
 
     /**

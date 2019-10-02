@@ -19,9 +19,9 @@ import org.acra.annotation.AcraToast;
 import org.acra.data.StringFormat;
 import org.acra.sender.HttpSender;
 
-import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
+import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.model.Teams;
 
@@ -66,8 +66,7 @@ import ru.mmb.sportiduinomanager.model.Teams;
         httpMethod = HttpSender.Method.POST)
 @AcraToast(resText = R.string.acra_toast_text)
 
-public final class MainApplication extends Application {
-
+public final class MainApp extends Application {
     /**
      * Alpha for disabled buttons appearance in the application.
      */
@@ -77,19 +76,34 @@ public final class MainApplication extends Application {
      */
     public static final float ENABLED_BUTTON = 1f;
     /**
-     * Copy of main application context.
+     * Distance downloaded from site or loaded from local database.
      */
-    private Context mContext;
+    public static Distance mDistance = new Distance();
+    /**
+     * Teams with members downloaded from site or loaded from local database.
+     */
+    public static Teams mTeams = new Teams(0);
+    /**
+     * Database object for loading/saving data to local SQLite database.
+     */
+    public static Database mDatabase;
+    /**
+     * Connected Bluetooth station.
+     */
+    public static Station mStation;
+    /**
+     * List of all Sportiduino records received from connected stations.
+     */
+    public static Records mAllRecords = new Records(0);
+    /**
+     * Filtered list of records with team punches at connected station.
+     * Last punch per team only. Should be equal to records in station flash memory.
+     */
+    public static Records mPointPunches = new Records(0);
     /**
      * Description of error occurred during application startup (if any).
      */
     private String mStartupError = "";
-
-    /**
-     * Database object for loading/saving data to local SQLite database.
-     */
-    private Database mDatabase;
-
     /**
      * Email of the user who authorized (or tried to authorize) at the site.
      */
@@ -103,29 +117,9 @@ public final class MainApplication extends Application {
      */
     private int mTestSite;
     /**
-     * Distance downloaded from site or loaded from local database.
-     */
-    private Distance mDistance;
-
-    /**
-     * Teams with members downloaded from site or loaded from local database.
-     */
-    private Teams mTeams;
-
-    /**
-     * List of chip events received from a station or loaded from local database.
-     */
-    private Chips mChips;
-
-    /**
      * List of previously discovered Bluetooth devices.
      */
     private List<BluetoothDevice> mBTDeviceList = new ArrayList<>();
-    /**
-     * Connected Bluetooth station.
-     */
-    private Station mStation;
-
     /**
      * Current team number at chip initialization.
      */
@@ -142,12 +136,71 @@ public final class MainApplication extends Application {
     private int mTeamListPosition;
 
     /**
-     * Get main application context.
+     * Save distance to persistent memory.
      *
-     * @return context
+     * @param distance The distance to save
      */
-    public Context getContext() {
-        return mContext;
+    public static void setDistance(final Distance distance) {
+        mDistance = distance;
+    }
+
+    /**
+     * Save database to persistent memory.
+     *
+     * @param database The database to save
+     */
+    private static void setDatabase(final Database database) {
+        mDatabase = database;
+    }
+
+    /**
+     * Save teams with members to persistent memory.
+     *
+     * @param teams The teams to save
+     */
+    public static void setTeams(final Teams teams) {
+        mTeams = teams;
+    }
+
+    /**
+     * Save the connected Bluetooth station.
+     *
+     * @param station Bluetooth device
+     */
+    public static void setStation(final Station station) {
+        mStation = station;
+    }
+
+    /**
+     * Save list of all Sportiduino records to application memory.
+     *
+     * @param records Records list to save
+     * @param force   Force replacing of old records with new
+     */
+    // TODO: remove 'force' parameter
+    public static void setAllRecords(final Records records, final boolean force) {
+        if (force || mAllRecords == null) {
+            // Forget old records and replace them with new
+            mAllRecords = records;
+            return;
+        }
+        // Check if old list has more records then new
+        if (mAllRecords.size() > records.size() && mDatabase != null) {
+            // Reload records from local database
+            // (it is better to lose some records statuses then the whole records)
+            mAllRecords = mDatabase.loadRecords();
+        } else {
+            mAllRecords = records;
+        }
+    }
+
+    /**
+     * Save list of team punches at connected station to application memory.
+     *
+     * @param records Records list to save
+     */
+    public static void setPointPunches(final Records records) {
+        mPointPunches = records;
     }
 
     /**
@@ -157,15 +210,6 @@ public final class MainApplication extends Application {
      */
     public String getStartupError() {
         return mStartupError;
-    }
-
-    /**
-     * Get database object.
-     *
-     * @return Database handler
-     */
-    public Database getDatabase() {
-        return mDatabase;
     }
 
     /**
@@ -210,73 +254,6 @@ public final class MainApplication extends Application {
     }
 
     /**
-     * Get distance loaded to persistent memory.
-     *
-     * @return The distance
-     */
-    public Distance getDistance() {
-        return mDistance;
-    }
-
-    /**
-     * Save distance to persistent memory.
-     *
-     * @param distance The distance to save
-     */
-    public void setDistance(final Distance distance) {
-        mDistance = distance;
-    }
-
-    /**
-     * Get teams with members loaded to persistent memory.
-     *
-     * @return Teams with members
-     */
-    public Teams getTeams() {
-        return mTeams;
-    }
-
-    /**
-     * Save teams with members to persistent memory.
-     *
-     * @param teams The teams to save
-     */
-    public void setTeams(final Teams teams) {
-        mTeams = teams;
-    }
-
-    /**
-     * Get chips events loaded to persistent memory.
-     *
-     * @return Chips events
-     */
-    public Chips getChips() {
-        return mChips;
-    }
-
-    /**
-     * Save chips events to persistent memory.
-     *
-     * @param chips Chips events to save
-     * @param force Force replacing of old chip events with new
-     */
-    public void setChips(final Chips chips, final boolean force) {
-        if (force || mChips == null) {
-            // Forget old chip events and replace them with new
-            mChips = chips;
-            return;
-        }
-        // Check if old list has more events then new
-        if (mChips.size() > chips.size()) {
-            // Reload chips events from local database
-            // (it is better to lose some events statuses then the whole events)
-            mChips = mDatabase.loadChips();
-        } else {
-            mChips = chips;
-        }
-    }
-
-    /**
      * Get the list of previously discovered Bluetooth devices.
      *
      * @return List od Bluetooth devices
@@ -292,24 +269,6 @@ public final class MainApplication extends Application {
      */
     public void setBTDeviceList(final List<BluetoothDevice> deviceList) {
         mBTDeviceList = deviceList;
-    }
-
-    /**
-     * Get the connected Bluetooth station.
-     *
-     * @return Bluetooth device
-     */
-    public Station getStation() {
-        return mStation;
-    }
-
-    /**
-     * Save the connected Bluetooth station.
-     *
-     * @param station Bluetooth device
-     */
-    public void setStation(final Station station) {
-        mStation = station;
     }
 
     /**
@@ -372,14 +331,13 @@ public final class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
         final Context context = getApplicationContext();
-        mContext = context;
         // Set russian locale for debug build type
         if (BuildConfig.DEBUG) {
             switchToRussian(context);
         }
         // Try to open/create local SQLite database
         try {
-            mDatabase = new Database(context);
+            setDatabase(new Database(context));
         } catch (IOException e) {
             mStartupError = context.getString(R.string.err_db_cant_create_dir).concat(e.getMessage());
             return;
@@ -393,7 +351,7 @@ public final class MainApplication extends Application {
                 final Distance distance =
                         mDatabase.loadDistance(context.getString(R.string.mode_chip_init));
                 if (distance != null && !distance.hasErrors()) {
-                    mDistance = distance;
+                    setDistance(distance);
                     // Get user email, password and test/main database flag from loaded distance
                     mUserEmail = mDistance.getUserEmail();
                     mUserPassword = mDistance.getUserPassword();
@@ -401,26 +359,22 @@ public final class MainApplication extends Application {
                 }
                 final Teams teams = mDatabase.loadTeams();
                 if (teams != null && !teams.hasErrors()) {
-                    mTeams = teams;
+                    setTeams(teams);
                 }
-                final Chips chips = mDatabase.loadChips();
-                if (chips != null) mChips = chips;
             } catch (SQLiteException e) {
                 mStartupError = e.getMessage();
             }
         }
-        // Try to load chip events from database
+        // Try to load records from database
         if (mDatabase.getDbStatus() == Database.DB_STATE_OK
                 || mDatabase.getDbStatus() == Database.DB_STATE_EMPTY) {
             try {
-                final Chips chips = mDatabase.loadChips();
-                if (chips != null) mChips = chips;
+                setAllRecords(mDatabase.loadRecords(), true);
             } catch (SQLiteException e) {
                 mStartupError = e.getMessage();
             }
         }
     }
-
 
     /**
      * Switch to russian locale in debug version.

@@ -17,9 +17,7 @@ import android.widget.Toast;
 
 import java.util.Objects;
 
-import ru.mmb.sportiduinomanager.model.Chips;
 import ru.mmb.sportiduinomanager.model.Database;
-import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Station;
 
 /**
@@ -107,13 +105,13 @@ public class MainActivity extends AppCompatActivity {
         ((WebView) findViewById(R.id.startup_message)).loadDataWithBaseURL(null, html, "text/html",
                 "utf-8", null);
         // Show error from application onCreate (if any)
-        final MainApplication mainApplication = (MainApplication) getApplication();
+        final MainApp mainApplication = (MainApp) getApplication();
         final String startupError = mainApplication.getStartupError();
         if (!"".equals(startupError)) {
             Toast.makeText(this, startupError, Toast.LENGTH_LONG).show();
         }
         // Update menu items
-        updateMenuItems(mainApplication, 0);
+        updateMenuItems(0);
     }
 
     @Override
@@ -150,25 +148,22 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Update menu titles and icons according to app state.
      *
-     * @param mainApplication Main application context
-     * @param activeItem      Currently selected menu item id or 0 for startup screen
+     * @param activeItem Currently selected menu item id or 0 for startup screen
      */
-    public void updateMenuItems(final MainApplication mainApplication, final int activeItem) {
-        // Get app state from main thread
-        final Database database = mainApplication.getDatabase();
-        final Distance distance = mainApplication.getDistance();
-        final Station station = mainApplication.getStation();
-        final Chips chips = mainApplication.getChips();
+    public void updateMenuItems(final int activeItem) {
+        // Get current data status
+        final boolean readyForWork = MainApp.mStation != null && MainApp.mStation.connect()
+                && MainApp.mDatabase != null && MainApp.mDistance.getTimeDownloaded() != 0;
         // Update 'Database' menu item
         final MenuItem databaseItem = mNavigationView.getMenu().findItem(R.id.database);
         int dbStatus;
-        if (database == null) {
+        if (MainApp.mDatabase == null) {
             dbStatus = Database.DB_STATE_FAILED;
         } else {
-            dbStatus = database.getDbStatus();
+            dbStatus = MainApp.mDatabase.getDbStatus();
         }
         if (dbStatus == Database.DB_STATE_OK) {
-            if (chips != null && chips.hasUnsentEvents()) {
+            if (MainApp.mAllRecords.hasUnsentRecords()) {
                 databaseItem.setTitle(getResources().getText(R.string.mode_cloud_upload));
                 databaseItem.setIcon(R.drawable.ic_cloud_upload);
             } else {
@@ -181,48 +176,53 @@ public class MainActivity extends AppCompatActivity {
         }
         // Update 'Bluetooth' menu item
         final MenuItem bluetoothItem = mNavigationView.getMenu().findItem(R.id.bluetooth);
-        if (station == null) {
+        if (MainApp.mStation == null) {
             bluetoothItem.setTitle(getResources().getText(R.string.mode_bluetooth_select));
         } else {
             bluetoothItem.setTitle(getResources().getString(R.string.mode_bluetooth_set,
-                    station.getName()));
+                    MainApp.mStation.getName()));
+        }
+        if (MainApp.mDatabase == null || MainApp.mDistance.getTimeDownloaded() == 0) {
+            bluetoothItem.setEnabled(false);
+        } else {
+            bluetoothItem.setEnabled(true);
         }
         // Get the name of the point which is selected in connected station
         String pointName = "";
-        if (station != null && distance != null) {
-            pointName = distance.getPointName(station.getNumber(),
-                    getResources().getString(R.string.active_point_prefix));
+        if (MainApp.mStation != null) {
+            pointName = MainApp.mDistance.getPointName(MainApp.mStation.getNumber(),
+                    getResources().getString(R.string.control_point_prefix));
         }
         // Update 'Chip Init' menu item
         final MenuItem chipInitItem = mNavigationView.getMenu().findItem(R.id.chip_init);
-        if (station == null || station.getMode() != Station.MODE_INIT_CHIPS) {
-            chipInitItem.setEnabled(false);
-            chipInitItem.setTitle(getResources().getText(R.string.mode_chip_init));
-        } else {
+        if (readyForWork && MainApp.mStation.getMode() == Station.MODE_INIT_CHIPS) {
             chipInitItem.setEnabled(true);
-            if (station.getNumber() == 0) {
+            if (MainApp.mStation.getNumber() == 0) {
                 chipInitItem.setTitle(getResources().getText(R.string.mode_chip_init));
             } else {
                 chipInitItem.setTitle(getResources().getString(R.string.mode_chip_init_name,
                         pointName));
             }
+        } else {
+            chipInitItem.setEnabled(false);
+            chipInitItem.setTitle(getResources().getText(R.string.mode_chip_init));
         }
         // Update 'Active Point' item
         final MenuItem activePointItem = mNavigationView.getMenu().findItem(R.id.active_point);
-        if (station == null || station.getMode() == Station.MODE_INIT_CHIPS) {
-            activePointItem.setEnabled(false);
-            activePointItem.setTitle(getResources().getText(R.string.mode_active_point));
-        } else {
+        if (readyForWork && MainApp.mStation.getMode() != Station.MODE_INIT_CHIPS) {
             activePointItem.setEnabled(true);
-            activePointItem.setTitle(getResources().getString(R.string.mode_active_point_name,
+            activePointItem.setTitle(getResources().getString(R.string.mode_control_point_name,
                     pointName));
+        } else {
+            activePointItem.setEnabled(false);
+            activePointItem.setTitle(getResources().getText(R.string.mode_control_point));
         }
         // Update 'Chip Info' menu item
         final MenuItem chipInfoItem = mNavigationView.getMenu().findItem(R.id.chip_info);
-        if (station == null || station.getMode() != Station.MODE_INIT_CHIPS) {
-            chipInfoItem.setEnabled(false);
-        } else {
+        if (readyForWork && MainApp.mStation.getMode() == Station.MODE_INIT_CHIPS) {
             chipInfoItem.setEnabled(true);
+        } else {
+            chipInfoItem.setEnabled(false);
         }
         // Update toolbar title
         if (activeItem != 0) {

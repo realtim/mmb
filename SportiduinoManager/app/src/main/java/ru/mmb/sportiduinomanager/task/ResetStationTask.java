@@ -6,11 +6,10 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 import ru.mmb.sportiduinomanager.BluetoothActivity;
-import ru.mmb.sportiduinomanager.MainApplication;
+import ru.mmb.sportiduinomanager.MainApp;
 import ru.mmb.sportiduinomanager.R;
-import ru.mmb.sportiduinomanager.model.Chips;
+import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.Station;
-import ru.mmb.sportiduinomanager.model.Teams;
 
 /**
  * Run long station reset in separate thread.
@@ -20,10 +19,6 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
      * Reference to parent activity (which can cease to exist in any moment).
      */
     private final WeakReference<BluetoothActivity> mActivityRef;
-    /**
-     * Reference to main application thread.
-     */
-    private final MainApplication mMainApplication;
 
     /**
      * Retain only a weak reference to the activity.
@@ -33,7 +28,6 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
     public ResetStationTask(final BluetoothActivity context) {
         super();
         mActivityRef = new WeakReference<>(context);
-        mMainApplication = (MainApplication) context.getApplication();
     }
 
     /**
@@ -43,30 +37,27 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
      * @return R.string error code or zero if succeeded
      */
     protected Integer doInBackground(final Integer... newNumbers) {
-        final Station station = mMainApplication.getStation();
-        if (station == null) return R.string.err_station_absent;
-        // Update station status to get number of visited team and last time visit
-        if (!station.fetchStatus()) return station.getLastError(true);
-        // Check if some teams has been visited the station while it had it's old number
-        final int chipsRegistered = station.getChipsRegistered();
-        final Teams teams = mMainApplication.getTeams();
-        final Chips chips = mMainApplication.getChips();
+        if (MainApp.mStation == null) return R.string.err_station_absent;
+        // Update station status to get number of punched teams and time of last punch
+        if (!MainApp.mStation.fetchStatus()) return MainApp.mStation.getLastError(true);
+        // Check if some teams punched at the station while it had it's old number
+        final int chipsRegistered = MainApp.mStation.getChipsRegistered();
         // Compute total time without teams scan
-        long totalTime = estimateTimeToComplete(0, 0, station.getNumber());
-        if (station.getNumber() != 0 && chipsRegistered > 0 && teams != null && chips != null) {
+        long totalTime = estimateTimeToComplete(0, 0, MainApp.mStation.getNumber());
+        if (MainApp.mStation.getNumber() != 0 && chipsRegistered > 0) {
             // Get all teams number from local database
-            final List<Integer> teamList = teams.getTeamList();
+            final List<Integer> teamList = MainApp.mTeams.getTeamList();
             // Update total time estimate
-            totalTime = estimateTimeToComplete(teamList.size(), chipsRegistered, station.getNumber());
+            totalTime = estimateTimeToComplete(teamList.size(), chipsRegistered, MainApp.mStation.getNumber());
             publishProgress(totalTime, totalTime);
             // Scan all teams from local database
-            final int error = rescanTeams(station, teamList, chips, chipsRegistered, totalTime);
+            final int error = rescanTeams(teamList, chipsRegistered, totalTime);
             if (error != 0) return error;
         }
-        publishProgress(estimateTimeToComplete(0, 0, station.getNumber()), totalTime);
+        publishProgress(estimateTimeToComplete(0, 0, MainApp.mStation.getNumber()), totalTime);
         // Reset station to change it's number
         final int newNumber = newNumbers[0];
-        if (!station.resetStation(newNumber)) return station.getLastError(true);
+        if (!MainApp.mStation.resetStation(newNumber)) return MainApp.mStation.getLastError(true);
         // Sleep for 0.5 second while station is rebooting after reset
         try {
             Thread.sleep(500);
@@ -76,8 +67,8 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
         // Update station mode if needed
         publishProgress(0L, totalTime);
         final int newMode = newNumbers[1];
-        if (newMode != station.getMode() && !station.newMode(newMode)) {
-            return station.getLastError(true);
+        if (newMode != MainApp.mStation.getMode() && !MainApp.mStation.newMode(newMode)) {
+            return MainApp.mStation.getLastError(true);
         }
         return 0;
     }
@@ -85,35 +76,32 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
     /**
      * Rescan station for all registered to the raid teams.
      *
-     * @param station         Connected station
      * @param teamList        List of all teams in local database
-     * @param chips           List of all chip events from local database
-     * @param chipsRegistered Number of teams which visited the station
+     * @param chipsRegistered Number of teams which has been punched at the station
      * @param totalTime       Estimated total time of station reset
      * @return R.string error code or zero if succeeded
      */
-    private int rescanTeams(final Station station, final List<Integer> teamList,
-                            final Chips chips, final int chipsRegistered, final long totalTime) {
+    private int rescanTeams(final List<Integer> teamList, final int chipsRegistered, final long totalTime) {
         // Rescan all teams from the list
         int teamsRescanned = 0;
         for (int i = 0; i < teamList.size(); i++) {
             final int teamNumber = teamList.get(i);
             publishProgress(estimateTimeToComplete(teamList.size() - i,
-                    chipsRegistered - teamsRescanned, station.getNumber()), totalTime);
-            // Fetch data for the team visit to station
-            if (!station.fetchTeamRecord(teamNumber)) {
-                final int error = station.getLastError(true);
+                    chipsRegistered - teamsRescanned, MainApp.mStation.getNumber()), totalTime);
+            // Fetch data for the team punch at the station
+            if (!MainApp.mStation.fetchTeamRecord(teamNumber)) {
+                final int error = MainApp.mStation.getLastError(true);
                 if (error == R.string.err_station_no_data
                         || error == R.string.err_station_flash_empty) continue;
                 return error;
             }
-            final Chips teamVisit = station.getChipEvents();
-            if (teamVisit.size() == 0) continue;
-            if (teamNumber != teamVisit.getTeamNumber(0)) continue;
-            final long initTime = teamVisit.getInitTime(0);
-            final int teamMask = teamVisit.getTeamMask(0);
-            // Read marks from chip and to events list
-            final int marks = station.getChipRecordsN();
+            final Records teamPunches = MainApp.mStation.getTeamPunches();
+            if (teamPunches.size() == 0) continue;
+            if (teamNumber != teamPunches.getTeamNumber(0)) continue;
+            final long initTime = teamPunches.getInitTime(0);
+            final int teamMask = teamPunches.getTeamMask(0);
+            // Read punches from chip and to the all records list in application memory
+            final int marks = MainApp.mStation.getChipRecordsN();
             if (marks == 0) continue;
             teamsRescanned++;
             int fromMark = 0;
@@ -122,22 +110,20 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
                 if (toRead > Station.MAX_MARK_COUNT) {
                     toRead = Station.MAX_MARK_COUNT;
                 }
-                if (!station.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
-                    final int error = station.getLastError(true);
+                if (!MainApp.mStation.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
+                    final int error = MainApp.mStation.getLastError(true);
                     if (error != R.string.err_station_flash_empty) return error;
                 }
                 fromMark += toRead;
-                // Add fetched chip marks to local list of events
-                chips.join(station.getChipEvents());
+                // Add fetched punches from the chip to local list of records
+                MainApp.mAllRecords.join(MainApp.mStation.getTeamPunches());
             } while (fromMark < marks);
-            // Stop scanned if we found all visited teams
+            // Stop scanned if we found all punched teams
             if (teamsRescanned == chipsRegistered) break;
         }
-        // Save fetched events in local database
-        final String result = chips.saveNewEvents(mMainApplication.getDatabase());
+        // Save fetched records in local database
+        final String result = MainApp.mAllRecords.saveNewRecords(MainApp.mDatabase);
         if (!"".equals(result)) return R.string.err_db_sql_error;
-        // Copy changed list of chips events to main application
-        mMainApplication.setChips(chips, false);
         return 0;
     }
 
@@ -173,15 +159,15 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
     /**
      * Estimates time in milliseconds left during station reset process.
      *
-     * @param teamsToScan     Number of teams to check with fetchTeamRecord
-     * @param teamsWithVisits Number of teams to check with fetchTeamMarks
-     * @param pointNumber     Point number (to estimate N of calls to fetchTeamMarks)
+     * @param teamsToScan      Number of teams to check with fetchTeamRecord
+     * @param teamsWithPunches Number of teams to check with fetchTeamMarks
+     * @param pointNumber      Point number (to estimate N of calls to fetchTeamMarks)
      * @return Estimated time in ms
      */
-    private long estimateTimeToComplete(final int teamsToScan, final int teamsWithVisits,
+    private long estimateTimeToComplete(final int teamsToScan, final int teamsWithPunches,
                                         final int pointNumber) {
         final int marksScans = pointNumber / (Station.MAX_MARK_COUNT - 1) + 1;
-        return teamsToScan * 150 + teamsWithVisits * marksScans * 150 + 24_000 + 500;
+        return teamsToScan * 150 + teamsWithPunches * marksScans * 150 + 24_000 + 500;
     }
 
 }

@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/default_padding"
         android:singleLine="true"
-        android:text="@string/ap_total_teams"
+        android:text="@string/cp_total_teams"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -38,7 +38,7 @@
         android:id="@+id/ap_team_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="ap_team_name,ap_team_time,ap_visited,ap_skipped,ap_members_count,ap_divider_2,ap_save_mask,ap_team_list" />
+        app:constraint_referenced_ids="ap_team_name,ap_team_time,cp_punched,ap_skipped,ap_members_count,ap_divider_2,ap_save_mask,ap_team_list" />
 
     <TextView
         android:id="@+id/ap_team_name"
@@ -46,7 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_padding"
         android:scrollHorizontally="false"
-        android:text="@string/ap_team_name"
+        android:text="@string/cp_team_name"
         android:textAppearance="@style/AppTheme.TextMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -63,11 +63,11 @@
         app:layout_constraintTop_toBottomOf="@+id/ap_team_name" />
 
     <TextView
-        android:id="@+id/ap_visited"
+        android:id="@+id/cp_punched"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_padding"
-        android:text="@string/ap_visited"
+        android:text="@string/cp_punched"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ap_team_time" />
@@ -77,10 +77,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_padding"
-        android:text="@string/ap_skipped"
+        android:text="@string/cp_skipped"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ap_visited" />
+        app:layout_constraintTop_toBottomOf="@+id/cp_punched" />
 
     <TextView
         android:id="@+id/ap_members_count"
@@ -100,7 +100,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_padding"
         android:onClick="saveTeamMask"
-        android:text="@string/ap_save_mask"
+        android:text="@string/cp_save_mask"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ap_members_count" />

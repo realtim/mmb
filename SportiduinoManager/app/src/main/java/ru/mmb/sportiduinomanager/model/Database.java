@@ -44,7 +44,7 @@ public final class Database {
     /**
      * Local database structure version.
      */
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 4;
 
     /**
      * Name of SQLite database file.
@@ -272,12 +272,12 @@ public final class Database {
     }
 
     /**
-     * Load chips events from local SQLite database.
+     * Load Sportiduino records from local SQLite database.
      *
-     * @return New Chips object with loaded data or null in case of an error
+     * @return New Records object with loaded records (number of records can be zero)
      * @throws SQLiteException All SQL exceptions while working with SQLite database
      */
-    public Chips loadChips() throws SQLiteException {
+    public Records loadRecords() throws SQLiteException {
         // Open local database
         final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath, null,
                 SQLiteDatabase.OPEN_READONLY);
@@ -290,28 +290,28 @@ public final class Database {
             timeDownloaded = 0;
         }
         result.close();
-        // Create chips object
-        final Chips chips = new Chips(timeDownloaded);
-        // Load chip events into it
+        // Create Records object
+        final Records records = new Records(timeDownloaded);
+        // Load record into it
         result = database.rawQuery("SELECT stationmac, stationtime, stationdrift,"
                 + " stationnumber, stationmode, inittime, team_num, teammask, levelpoint_order,"
-                + " teamlevelpoint_datetime, status FROM chips", null);
+                + " teamlevelpoint_datetime, status FROM records", null);
         if (!result.moveToFirst()) {
-            // No chips events in database yet
+            // No records in database yet
             result.close();
             database.close();
-            return chips;
+            return records;
         }
         do {
-            final ChipEvent event = new ChipEvent(result.getLong(0), result.getInt(1),
+            final Record record = new Record(result.getLong(0), result.getInt(1),
                     result.getInt(2), result.getInt(3), result.getInt(4), result.getInt(5),
                     result.getInt(6), result.getInt(7), result.getInt(8), result.getInt(9),
                     result.getInt(10));
-            chips.addEvent(event);
+            records.addRecord(record);
         } while (result.moveToNext());
         result.close();
         database.close();
-        return chips;
+        return records;
     }
 
 
@@ -378,8 +378,8 @@ public final class Database {
             statement.bindLong(3, toN.get(i));
             statement.execute();
         }
-        // Erase chip events from previous raid when loading new distance
-        database.execSQL("DELETE FROM chips");
+        // Erase Sportiduino records from previous raid when loading new distance
+        database.execSQL("DELETE FROM records");
         // Erase teams results from previous raid when loading new distance
         database.execSQL("DELETE FROM results");
         // process journal and clean up the database file
@@ -433,57 +433,57 @@ public final class Database {
     }
 
     /**
-     * Save chips events from custom list of events to local SQLite database.
+     * Save Sportiduino records from custom list of records to local SQLite database.
      *
-     * @param events List of chips events
+     * @param records List of records
      * @throws SQLiteException All SQL exceptions while working with SQLite database
      */
-    void saveChips(final List<ChipEvent> events) throws SQLiteException {
+    void saveRecords(final List<Record> records) throws SQLiteException {
         // Open local database
         final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath, null,
                 SQLiteDatabase.OPEN_READWRITE);
-        final SQLiteStatement statement = database.compileStatement("INSERT INTO chips"
+        final SQLiteStatement statement = database.compileStatement("INSERT INTO records"
                 + "(stationmac, stationtime, stationdrift, stationnumber, stationmode,"
                 + " inittime, team_num, teammask, levelpoint_order,"
                 + " teamlevelpoint_datetime, status) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        // Save all events from the unsaved list
-        for (final ChipEvent event : events) {
-            statement.bindLong(1, event.mStationMAC);
-            statement.bindLong(2, event.mStationTime);
-            statement.bindLong(3, event.mStationDrift);
-            statement.bindLong(4, event.mStationNumber);
-            statement.bindLong(5, event.mStationMode);
-            statement.bindLong(6, event.mInitTime);
-            statement.bindLong(7, event.mTeamNumber);
-            statement.bindLong(8, event.mTeamMask);
-            statement.bindLong(9, event.mPointNumber);
-            statement.bindLong(10, event.mPointTime);
-            statement.bindLong(11, ChipEvent.STATUS_SAVED);
+        // Save all records from the unsaved list
+        for (final Record record : records) {
+            statement.bindLong(1, record.mStationMAC);
+            statement.bindLong(2, record.mStationTime);
+            statement.bindLong(3, record.mStationDrift);
+            statement.bindLong(4, record.mStationNumber);
+            statement.bindLong(5, record.mStationMode);
+            statement.bindLong(6, record.mInitTime);
+            statement.bindLong(7, record.mTeamNumber);
+            statement.bindLong(8, record.mTeamMask);
+            statement.bindLong(9, record.mPointNumber);
+            statement.bindLong(10, record.mPointTime);
+            statement.bindLong(11, Record.STATUS_SAVED);
             statement.execute();
         }
         database.close();
     }
 
     /**
-     * Mark all unsent chip events in local database as sent.
+     * Mark all unsent records in local database as sent.
      *
-     * @param expectedUnsentN Number of chips events that should change status in db
-     * @return true if actual number of unsent events in db is equal to expected
+     * @param expectedUnsentN Number of records that should change status in db
+     * @return true if actual number of unsent records in db is equal to expected
      * @throws SQLiteException All SQL exceptions while working with SQLite database
      */
-    boolean markChipsSent(final int expectedUnsentN) throws SQLiteException {
+    boolean markRecordsSent(final int expectedUnsentN) throws SQLiteException {
         // Open local database
         final SQLiteDatabase database = SQLiteDatabase.openDatabase(mPath, null,
                 SQLiteDatabase.OPEN_READWRITE);
         // Change status to STATUS_SENT in a transaction
         database.beginTransaction();
         final ContentValues newValues = new ContentValues();
-        newValues.put("status", ChipEvent.STATUS_SENT);
+        newValues.put("status", Record.STATUS_SENT);
         // Update status and get the number of changed rows
-        final int changedRows = database.update("chips", newValues,
-                "status <> " + ChipEvent.STATUS_SENT, null);
-        // Rollback transaction if actual number of unsent events in db <> expected
+        final int changedRows = database.update("records", newValues,
+                "status <> " + Record.STATUS_SENT, null);
+        // Rollback transaction if actual number of unsent records in db <> expected
         if (expectedUnsentN == changedRows) database.setTransactionSuccessful();
         // End transaction and close the database
         database.endTransaction();
@@ -527,9 +527,9 @@ public final class Database {
         database.execSQL("DROP TABLE IF EXISTS discounts");
         database.execSQL("CREATE TABLE discounts(minutes INTEGER NOT NULL,"
                 + " from_point INTEGER NOT NULL, to_point INTEGER NOT NULL)");
-        // Create table with registered chips data
-        database.execSQL("DROP TABLE IF EXISTS chips");
-        database.execSQL("CREATE TABLE chips(stationmac INTEGER NOT NULL,"
+        // Create table with Sportiduino records received from stations
+        database.execSQL("DROP TABLE IF EXISTS records");
+        database.execSQL("CREATE TABLE records(stationmac INTEGER NOT NULL,"
                 + " stationtime INTEGER NOT NULL, stationdrift INTEGER NOT NULL,"
                 + " stationnumber INTEGER NOT NULL, stationmode INTEGER NOT NULL,"
                 + " inittime INTEGER NOT NULL, team_num INTEGER NOT NULL,"

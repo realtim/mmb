@@ -10,9 +10,7 @@ import android.widget.Toast;
 import java.util.List;
 import java.util.Locale;
 
-import ru.mmb.sportiduinomanager.model.Chips;
-import ru.mmb.sportiduinomanager.model.Station;
-import ru.mmb.sportiduinomanager.model.Teams;
+import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.task.ChipInfoTask;
 
 import static ru.mmb.sportiduinomanager.model.Station.UID_SIZE;
@@ -29,15 +27,6 @@ public final class ChipInfoActivity extends MainActivity {
      * Chip info request is in progress.
      */
     public static final int INFO_REQUEST_ON = 1;
-    /**
-     * Main application thread with persistent data.
-     */
-    private MainApplication mMainApplication;
-
-    /**
-     * Station which was previously paired via Bluetooth.
-     */
-    private Station mStation;
 
     /**
      * Current state of chip info request.
@@ -47,9 +36,8 @@ public final class ChipInfoActivity extends MainActivity {
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
-        mMainApplication = (MainApplication) getApplication();
         setContentView(R.layout.activity_chipinfo);
-        updateMenuItems(mMainApplication, R.id.chip_info);
+        updateMenuItems(R.id.chip_info);
     }
 
     @Override
@@ -59,8 +47,7 @@ public final class ChipInfoActivity extends MainActivity {
         getMenuItem(R.id.chip_info).setChecked(true);
         // Disable startup animation
         overridePendingTransition(0, 0);
-        // Get connected station from main application thread
-        mStation = mMainApplication.getStation();
+        // Update layout
         updateLayout();
     }
 
@@ -82,8 +69,7 @@ public final class ChipInfoActivity extends MainActivity {
         final TextView chipInfoText = findViewById(R.id.chip_info_text);
         chipInfoText.setText("");
         // Check station presence
-        if (mStation == null) return;
-
+        if (MainApp.mStation == null) return;
         // Send command to station and check result
         new ChipInfoTask(this).execute();
     }
@@ -96,9 +82,9 @@ public final class ChipInfoActivity extends MainActivity {
     public void onChipInfoRequestResult(final boolean requestResult) {
         final TextView chipInfoText = findViewById(R.id.chip_info_text);
         if (requestResult) {
-            chipInfoText.setText(convertResponseToText(mStation.getChipInfo()));
+            chipInfoText.setText(convertResponseToText(MainApp.mStation.getChipInfo()));
         } else {
-            Toast.makeText(getApplicationContext(), mStation.getLastError(true),
+            Toast.makeText(getApplicationContext(), MainApp.mStation.getLastError(true),
                     Toast.LENGTH_LONG).show();
         }
         updateLayout();
@@ -178,7 +164,7 @@ public final class ChipInfoActivity extends MainActivity {
      */
     private void buildPage5DecodedInfo(final byte[] chipInfo, final StringBuilder builder, final int pos) {
         final long initTime = byteArray2Long(chipInfo, pos + 1, pos + 4);
-        builder.append("\n\tInitTime: ").append(Chips.printTime(initTime, "dd.MM.yyyy  HH:mm:ss"));
+        builder.append("\n\tInitTime: ").append(Records.printTime(initTime, "dd.MM.yyyy  HH:mm:ss"));
     }
 
     /**
@@ -205,8 +191,7 @@ public final class ChipInfoActivity extends MainActivity {
      * @param teamMask active members mask
      */
     private void buildTeamMembersInfo(final StringBuilder builder, final int teamNum, final int teamMask) {
-        final Teams teams = mMainApplication.getTeams();
-        final List<String> teamMembers = teams.getMembersNames(teamNum);
+        final List<String> teamMembers = MainApp.mTeams.getMembersNames(teamNum);
         if (teamMembers.isEmpty()) return;
         for (int i = 0; i < teamMembers.size(); i++) {
             final String teamMember = teamMembers.get(i);
@@ -233,7 +218,7 @@ public final class ChipInfoActivity extends MainActivity {
         final int todayUpperByte = todayUnix & 0xFF000000;
         final long pointTime = byteArray2Long(chipInfo, pos + 2, pos + 4) + todayUpperByte;
         builder.append("\n\tKP# ").append(pointNumber).append(", PointTime: ")
-                .append(Chips.printTime(pointTime, "dd.MM.yyyy  HH:mm:ss"));
+                .append(Records.printTime(pointTime, "dd.MM.yyyy  HH:mm:ss"));
     }
 
     /**
