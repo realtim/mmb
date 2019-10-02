@@ -614,7 +614,7 @@ void processRfidCard()
   Serial.print(F("UID "));
   for (int i = 0; i < 8; i++)
   {
-    Serial.print(chipUid[i]);
+    Serial.print(String(chipUid[i], HEX));
     Serial.print(F(":"));
   }
 
