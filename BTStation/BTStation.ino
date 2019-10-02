@@ -1193,21 +1193,30 @@ void initChip()
     return;
   }
 
-  // инициализация сработает только если время инициализации записанное уже на чипе превышает неделю до текущего времени
-  if (!ntagRead4pages(PAGE_INIT_TIME))
+  // читаем блок информации
+  if (!ntagRead4pages(PAGE_CHIP_SYS))
   {
     SPI.end();
-    digitalWrite(LED_PIN, LOW);
     sendError(RFID_READ_ERROR, REPLY_INIT_CHIP);
     return;
   }
-  uint32_t initTime = ntag_page[0];
+
+  // Фильтруем неправильный тип чипа
+  if (ntag_page[2] != chipType)
+  {
+    SPI.end();
+    sendError(WRONG_CHIP_TYPE, REPLY_INIT_CHIP);
+    return;
+  }
+  
+  // инициализация сработает только если время инициализации записанное уже на чипе превышает неделю до текущего времени
+  uint32_t initTime = ntag_page[8];
   initTime <<= 8;
-  initTime += ntag_page[1];
+  initTime += ntag_page[9];
   initTime <<= 8;
-  initTime += ntag_page[2];
+  initTime += ntag_page[10];
   initTime <<= 8;
-  initTime += ntag_page[3];
+  initTime += ntag_page[11];
   DS3231_get(&systemTime);
   if ((systemTime.unixtime - initTime) < maxTimeInit)
   {
@@ -1217,57 +1226,8 @@ void initChip()
     return;
   }
 
-  // читаем блок информации
-  if (!ntagRead4pages(PAGE_UID))
-  {
-    SPI.end();
-    sendError(RFID_READ_ERROR, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // Фильтруем неправильный тип чипа
-  if (ntag_page[14] != chipType)
-  {
-    SPI.end();
-    sendError(WRONG_CHIP_TYPE, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // читаем блок из чипа
-  if (!ntagRead4pages(PAGE_CHIP_NUM))
-  {
-    SPI.end();
-    sendError(RFID_READ_ERROR, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // Фильтруем неправильный тип чипа
-  if (ntag_page[2] != NTAG_MARK)
-  {
-    SPI.end();
-    sendError(WRONG_CHIP_TYPE, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // 0-1: номер команды
-  // 2-3 : маска участников
-
-  uint8_t dataBlock[4] = { 255,255,255,255 };
-
-  // заполняем чип 0xFF
-  /*for (uint8_t page = PAGE_CHIP_NUM; page < TAG_MAX_PAGE; page++)
-  {
-    if (!ntagWritePage(dataBlock, page))
-    {
-      SPI.end();
-  digitalWrite(LED_PIN, LOW);
-      sendError(RFID_WRITE_ERROR, REPLY_INIT_CHIP);
-      return;
-    }
-  }*/
-
   // заполняем чип 0x00
-  for (uint8_t i = 0; i < 4; i++) dataBlock[i] = 0;
+  uint8_t dataBlock[4] = { 0,0,0,0 };
   for (uint8_t page = PAGE_CHIP_NUM; page < TAG_MAX_PAGE; page++)
   {
     if (!ntagWritePage(dataBlock, page))
@@ -1279,6 +1239,9 @@ void initChip()
     }
   }
 
+  // 0-1: номер команды
+  // 2-3 : маска участников
+ 
   // пишем данные на чип
   // номер команды, тип чипа, версия прошивки станции 
   dataBlock[0] = uartBuffer[DATA_START_BYTE];
