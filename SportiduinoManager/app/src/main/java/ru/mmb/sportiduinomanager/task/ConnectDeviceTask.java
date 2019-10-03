@@ -65,7 +65,7 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
             // Save connected station in main application
             MainApp.setStation(station);
             // Create filtered list of punches at this station
-            MainApp.setPointPunches(MainApp.mAllRecords.getChipsAtPoint(station.getNumber(),
+            MainApp.setPointPunches(MainApp.mAllRecords.getPunchesAtStation(station.getNumber(),
                     station.getMACasLong()));
             return true;
         }

@@ -26,7 +26,7 @@ import static ru.mmb.sportiduinomanager.StationPoolingService.NOTIFICATION_ID;
  * as absent, update team members mask in a chip and save this data
  * in local database.
  */
-public final class ActivePointActivity extends MainActivity
+public final class ControlPointActivity extends MainActivity
         implements TeamListAdapter.OnTeamClicked, MemberListAdapter.OnMemberClicked {
     /**
      * Main application thread with persistent data.
@@ -67,22 +67,22 @@ public final class ActivePointActivity extends MainActivity
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
         mMainApplication = (MainApp) getApplication();
-        setContentView(R.layout.activity_activepoint);
+        setContentView(R.layout.activity_controlpoint);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         // Set selection in drawer menu to current mode
-        getMenuItem(R.id.active_point).setChecked(true);
-        updateMenuItems(R.id.active_point);
+        getMenuItem(R.id.control_point).setChecked(true);
+        updateMenuItems(R.id.control_point);
         // Disable startup animation
         overridePendingTransition(0, 0);
         // Initialize masks
         mTeamMask = mMainApplication.getTeamMask();
         mOriginalMask = 0;
         // Prepare recycler view of members list
-        final RecyclerView membersList = findViewById(R.id.ap_member_list);
+        final RecyclerView membersList = findViewById(R.id.cp_member_list);
         final RecyclerView.LayoutManager membersLM = new LinearLayoutManager(this);
         membersList.setLayoutManager(membersLM);
         // specify an RecyclerView adapter and initialize it
@@ -91,7 +91,7 @@ public final class ActivePointActivity extends MainActivity
                 ResourcesCompat.getColor(getResources(), R.color.bg_secondary, getTheme()));
         membersList.setAdapter(mMemberAdapter);
         // Prepare recycler view of team list
-        final RecyclerView teamsList = findViewById(R.id.ap_team_list);
+        final RecyclerView teamsList = findViewById(R.id.cp_team_list);
         final RecyclerView.LayoutManager teamsLM = new LinearLayoutManager(this);
         teamsList.setLayoutManager(teamsLM);
         // Specify an RecyclerView adapter and initialize it
@@ -165,7 +165,7 @@ public final class ActivePointActivity extends MainActivity
         mMemberAdapter.notifyItemChanged(position);
         // Display new team members count
         final int teamMembersCount = Teams.getMembersCount(mTeamMask);
-        ((TextView) findViewById(R.id.ap_members_count)).setText(getResources()
+        ((TextView) findViewById(R.id.cp_members_count)).setText(getResources()
                 .getString(R.string.team_members_count, teamMembersCount));
         // Enable 'Save mask' button if new mask differs from original
         updateMaskButton();
@@ -256,11 +256,11 @@ public final class ActivePointActivity extends MainActivity
     private void updateLayout() {
         // Update number of teams punched at this control point
         // (station clock will be updated in background thread)
-        ((TextView) findViewById(R.id.ap_total_teams)).setText(getResources()
+        ((TextView) findViewById(R.id.cp_total_teams)).setText(getResources()
                 .getString(R.string.cp_total_teams, MainApp.mPointPunches.size()));
         // Hide last team block when no teams have been punched at the station
         if (MainApp.mPointPunches.size() == 0) {
-            findViewById(R.id.ap_team_data).setVisibility(View.GONE);
+            findViewById(R.id.cp_team_data).setVisibility(View.GONE);
             return;
         }
         // Get index of our team in mPointPunches team punches list
@@ -268,20 +268,20 @@ public final class ActivePointActivity extends MainActivity
         // Update team number and name
         final int teamNumber = MainApp.mPointPunches.getTeamNumber(index);
         final String teamName = MainApp.mTeams.getTeamName(teamNumber);
-        ((TextView) findViewById(R.id.ap_team_name)).setText(getResources()
+        ((TextView) findViewById(R.id.cp_team_name)).setText(getResources()
                 .getString(R.string.cp_team_name, teamNumber, teamName));
         // Update team time
-        ((TextView) findViewById(R.id.ap_team_time)).setText(
+        ((TextView) findViewById(R.id.cp_team_time)).setText(
                 Records.printTime(MainApp.mPointPunches.getTeamTime(index), "dd.MM  HH:mm:ss"));
         // Update lists of punched points
-        final List<Integer> punched = MainApp.mAllRecords.getChipMarks(teamNumber,
+        final List<Integer> punched = MainApp.mAllRecords.getChipPunches(teamNumber,
                 MainApp.mPointPunches.getInitTime(index), MainApp.mStation.getNumber(),
                 MainApp.mStation.getMACasLong(), 255);
         ((TextView) findViewById(R.id.cp_punched)).setText(getResources()
                 .getString(R.string.cp_punched, MainApp.mDistance.pointsNamesFromList(punched)));
         // Update lists of skipped points
         final List<Integer> skipped = MainApp.mDistance.getSkippedPoints(punched);
-        final TextView skippedText = findViewById(R.id.ap_skipped);
+        final TextView skippedText = findViewById(R.id.cp_skipped);
         skippedText.setText(getResources().getString(R.string.cp_skipped,
                 MainApp.mDistance.pointsNamesFromList(skipped)));
         if (MainApp.mDistance.mandatoryPointSkipped(skipped)) {
@@ -296,17 +296,17 @@ public final class ActivePointActivity extends MainActivity
         // Update list of team members and their selection
         mMemberAdapter.updateList(teamMembers, mOriginalMask, mTeamMask);
         // Update number of team members
-        ((TextView) findViewById(R.id.ap_members_count)).setText(getResources()
+        ((TextView) findViewById(R.id.cp_members_count)).setText(getResources()
                 .getString(R.string.team_members_count, Teams.getMembersCount(mTeamMask)));
         // Show last team block
-        findViewById(R.id.ap_team_data).setVisibility(View.VISIBLE);
+        findViewById(R.id.cp_team_data).setVisibility(View.VISIBLE);
     }
 
     /**
      * Enable "Register dismiss" button if team mask was changed by user.
      */
     private void updateMaskButton() {
-        final Button saveMaskButton = findViewById(R.id.ap_save_mask);
+        final Button saveMaskButton = findViewById(R.id.cp_save_mask);
         if (mTeamMask == mOriginalMask) {
             saveMaskButton.setAlpha(MainApp.DISABLED_BUTTON);
             saveMaskButton.setClickable(false);
@@ -348,7 +348,7 @@ public final class ActivePointActivity extends MainActivity
         // Update activity layout as some elements has been changed
         updateLayout();
         // Menu should be changed if we have new record which was not sent to site
-        updateMenuItems(R.id.active_point);
+        updateMenuItems(R.id.control_point);
     }
 
     /**

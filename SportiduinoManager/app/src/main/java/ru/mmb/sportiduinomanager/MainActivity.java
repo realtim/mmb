@@ -1,6 +1,7 @@
 package ru.mmb.sportiduinomanager;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
@@ -67,8 +68,8 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.chip_init:
                     activity = new Intent(getApplicationContext(), ChipInitActivity.class);
                     break;
-                case R.id.active_point:
-                    activity = new Intent(getApplicationContext(), ActivePointActivity.class);
+                case R.id.control_point:
+                    activity = new Intent(getApplicationContext(), ControlPointActivity.class);
                     break;
                 case R.id.team_list:
                     Toast.makeText(this, R.string.err_todo_team_list,
@@ -91,6 +92,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Set russian locale for all activities for debug build type.
+     *
+     * @param base Activity base context
+     */
+    @Override
+    protected void attachBaseContext(final Context base) {
+        if (BuildConfig.DEBUG) {
+            super.attachBaseContext(MainApp.switchToRussian(base));
+        } else {
+            super.attachBaseContext(base);
+        }
+    }
+
+    /**
      * Method called at the start of activity.
      *
      * @param instanceState Activity instance
@@ -101,7 +116,6 @@ public class MainActivity extends AppCompatActivity {
         // Show startup screen, overload this method to show another view
         setContentView(R.layout.startup_screen);
         final String html = getResources().getString(R.string.app_usage);
-        //((TextView) findViewById(R.id.startup_message)).setText(Html.fromHtml(html));
         ((WebView) findViewById(R.id.startup_message)).loadDataWithBaseURL(null, html, "text/html",
                 "utf-8", null);
         // Show error from application onCreate (if any)
@@ -207,15 +221,15 @@ public class MainActivity extends AppCompatActivity {
             chipInitItem.setEnabled(false);
             chipInitItem.setTitle(getResources().getText(R.string.mode_chip_init));
         }
-        // Update 'Active Point' item
-        final MenuItem activePointItem = mNavigationView.getMenu().findItem(R.id.active_point);
+        // Update 'Control Point' item
+        final MenuItem controlPointItem = mNavigationView.getMenu().findItem(R.id.control_point);
         if (readyForWork && MainApp.mStation.getMode() != Station.MODE_INIT_CHIPS) {
-            activePointItem.setEnabled(true);
-            activePointItem.setTitle(getResources().getString(R.string.mode_control_point_name,
+            controlPointItem.setEnabled(true);
+            controlPointItem.setTitle(getResources().getString(R.string.mode_control_point_name,
                     pointName));
         } else {
-            activePointItem.setEnabled(false);
-            activePointItem.setTitle(getResources().getText(R.string.mode_control_point));
+            controlPointItem.setEnabled(false);
+            controlPointItem.setTitle(getResources().getText(R.string.mode_control_point));
         }
         // Update 'Chip Info' menu item
         final MenuItem chipInfoItem = mNavigationView.getMenu().findItem(R.id.chip_info);

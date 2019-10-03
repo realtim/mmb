@@ -26,7 +26,7 @@ class StationPoolingService : Service() {
 
     companion object {
         /**
-         * ID of notification messages for ActivePointActivity.
+         * ID of notification messages for ControlPointActivity.
          */
         const val NOTIFICATION_ID: String = "data-from-station-updated"
     }
@@ -64,7 +64,7 @@ class StationPoolingService : Service() {
                             if (fetchTeamsPunchesResult > 0) {
                                 Toast.makeText(applicationContext, fetchTeamsPunchesResult, Toast.LENGTH_SHORT).show()
                             } else {
-                                // send notification to ActivePointActivity - time to update UI
+                                // send notification to ControlPointActivity - time to update UI
                                 LocalBroadcastManager.getInstance(this)
                                         .sendBroadcast(Intent(NOTIFICATION_ID))
                             }
@@ -72,7 +72,7 @@ class StationPoolingService : Service() {
     }
 
     private fun startForeground() {
-        val notificationIntent = Intent(getApplication(), ActivePointActivity::class.java)
+        val notificationIntent = Intent(getApplication(), ControlPointActivity::class.java)
         val channelId = "ru.mmb.sportiduinomanager"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelName = "SportiduinoManager Station Service"
@@ -200,21 +200,21 @@ class StationPoolingService : Service() {
             if (MainApp.mAllRecords.join(teamPunches)) {
                 newRecords = true
                 // Read punches from chip and to record list
-                val marks = MainApp.mStation.chipRecordsN
-                var fromMark = 0
+                val punchesN = MainApp.mStation.chipRecordsN
+                var fromPunch = 0
                 do {
-                    if (marks <= 0) break
-                    var toRead = marks
-                    if (toRead > Station.MAX_MARK_COUNT) {
-                        toRead = Station.MAX_MARK_COUNT
+                    if (punchesN <= 0) break
+                    var toRead = punchesN
+                    if (toRead > Station.MAX_PUNCH_COUNT) {
+                        toRead = Station.MAX_PUNCH_COUNT
                     }
-                    if (!MainApp.mStation.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
+                    if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask, fromPunch, toRead)) {
                         return MainApp.mStation.getLastError(true)
                     }
-                    fromMark += toRead
+                    fromPunch += toRead
                     // Add fetched punches to application list of records
                     MainApp.mAllRecords.join(MainApp.mStation.teamPunches)
-                } while (fromMark < marks)
+                } while (fromPunch < punchesN)
             } else {
                 // Ignore recurrent problem with copying data from chip to memory
                 // as we already created synthetic team punch and warned a user

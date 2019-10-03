@@ -24,7 +24,7 @@ public final class Distance {
      */
     private final long mTimeReadonly;
     /**
-     * Unixtime of last active point closing time.
+     * Unixtime of last control point closing time.
      */
     private final long mTimeFinish;
     /**
@@ -40,7 +40,7 @@ public final class Distance {
      */
     private final int mTestSite;
     /**
-     * Sparse array of active points, array index == point number.
+     * Sparse array of control points, array index == point number.
      */
     private Point[] mPoints;
     /**
@@ -77,7 +77,7 @@ public final class Distance {
      * @param raidName       ASCII raid name
      * @param timeDownloaded Time when the distance was download from site
      * @param timeReadonly   Time when the raid becomes readonly
-     * @param timeFinish     Time when the last active point is closed
+     * @param timeFinish     Time when the last control point is closed
      * @param lastResultId   Id of last result downloaded from site
      */
     Distance(final String userEmail, final String userPassword, final int testSite,
@@ -185,7 +185,7 @@ public final class Distance {
     }
 
     /**
-     * Get list of active points names.
+     * Get list of control points names.
      *
      * @param prefix 'AP' numeric point name prefix
      * @return List of names
@@ -276,7 +276,7 @@ public final class Distance {
     }
 
     /**
-     * Converts list of active points numbers to human-readable short list.
+     * Converts list of control points numbers to human-readable short list.
      *
      * @param list List of points numbers
      * @return String containing something like "1,3,4,6-8" or "-" for empty list
@@ -568,7 +568,7 @@ public final class Distance {
     }
 
     /**
-     * An active point parameters.
+     * A control point parameters.
      */
     private static final class Point {
         /**
@@ -619,7 +619,7 @@ public final class Distance {
          */
         private final int mMinutes;
         /**
-         * First point of the distance part where discount is active.
+         * First point of the distance part where discount is applied.
          */
         private final int mFrom;
         /**

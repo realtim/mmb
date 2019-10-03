@@ -151,6 +151,11 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         super.onCreate(instanceState);
         mMainApplication = (MainApp) getApplication();
         setContentView(R.layout.activity_bluetooth);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         // Start monitoring bluetooth changes
         registerReceiver(mBTStateMonitor, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
         // Prepare for Bluetooth device search
@@ -158,28 +163,27 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         registerReceiver(mSearchDevices, filter);
+        // Get default Bluetooth adapter
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Set selection in drawer menu to current mode
+        getMenuItem(R.id.bluetooth).setChecked(true);
+        updateMenuItems(R.id.bluetooth);
         // Prepare recycler view of device list
         final RecyclerView recyclerView = findViewById(R.id.device_list);
         // use a linear layout manager
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        // specify an RecyclerView adapter
-        // and copy saved device list from main application
+        // Create a RecyclerView adapter and set it with saved device list from main app
         mAdapter = new BTDeviceListAdapter(mMainApplication.getBTDeviceList(), this);
         if (MainApp.mStation != null) {
             mAdapter.setConnectedDevice(MainApp.mStation.getAddress(), false);
         }
         recyclerView.setAdapter(mAdapter);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Set selection in drawer menu to current mode
-        getMenuItem(R.id.bluetooth).setChecked(true);
-        updateMenuItems(R.id.bluetooth);
-        // Disable startup animation
-        overridePendingTransition(0, 0);
         // Initialize points and modes spinners
         final Spinner pointSpinner = findViewById(R.id.station_point_spinner);
         pointSpinner.setAdapter(getPointsAdapter());
@@ -187,35 +191,34 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         pointSpinner.setOnItemSelectedListener(onPointSelected);
         final Spinner modeSpinner = findViewById(R.id.station_mode_spinner);
         modeSpinner.setAdapter(getModesAdapter());
-        // Check if device supports Bluetooth
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        // Check if Bluetooth is turned on
         if (mBluetoothAdapter == null) {
-            // Device doesn't support Bluetooth
             mBluetoothState = BT_STATE_ABSENT;
-            updateLayout(false);
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_bt_absent),
                     Toast.LENGTH_LONG).show();
-            return;
-        }
-        // Check if Bluetooth was turned on
-        try {
-            if (!mBluetoothAdapter.isEnabled()) {
-                // Hide all elements and request Bluetooth
-                mBluetoothState = BT_STATE_OFF;
-                updateLayout(false);
-                final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                return;
+        } else {
+            try {
+                if (!mBluetoothAdapter.isEnabled()) {
+                    // Hide all elements and request Bluetooth
+                    mBluetoothState = BT_STATE_OFF;
+                    updateLayout(false);
+                    final Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    return;
+                }
+                mBluetoothState = BT_STATE_ON;
+            } catch (SecurityException e) {
+                // Bluetooth permission was withdrawn from the application
+                mBluetoothState = BT_STATE_ABSENT;
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_bt_forbidden),
+                        Toast.LENGTH_LONG).show();
             }
-        } catch (SecurityException e) {
-            // Bluetooth permission was withdrawn from the application
-            mBluetoothState = BT_STATE_ABSENT;
+        }
+        // Can't do anything if the tablet/phone does not supports Bluetooth
+        if (mBluetoothState == BT_STATE_ABSENT) {
             updateLayout(false);
-            Toast.makeText(getApplicationContext(), getResources().getString(R.string.err_bt_forbidden),
-                    Toast.LENGTH_LONG).show();
             return;
         }
-        mBluetoothState = BT_STATE_ON;
         // Get Bluetooth search state
         if (mBluetoothAdapter.isDiscovering()) {
             mBluetoothSearch = BT_SEARCH_ON;
@@ -232,7 +235,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      * @return Sorted list of all points of the distance
      */
     private ArrayAdapter<String> getPointsAdapter() {
-        // Get list of active points (if a distance was downloaded)
+        // Get list of control points (if a distance was downloaded)
         final List<String> points =
                 MainApp.mDistance.getPointNames(
                         getResources().getString(R.string.control_point_prefix));
@@ -254,10 +257,10 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         // Unregister Bluetooth state monitor
         unregisterReceiver(mBTStateMonitor);
         unregisterReceiver(mSearchDevices);
+        super.onDestroy();
     }
 
     /**
@@ -285,16 +288,17 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         // Disconnect from previous station
         if (MainApp.mStation != null) {
             MainApp.mStation.disconnect();
-            updateMenuItems(R.id.bluetooth);
             // If connected station is clicked, then just disconnect it
             if (MainApp.mStation.getAddress().equals(deviceClicked.getAddress())) {
                 mAdapter.setConnectedDevice(null, false);
                 MainApp.setStation(null);
                 // Remove station info
+                updateMenuItems(R.id.bluetooth);
                 updateLayout(false);
                 return;
             } else {
                 MainApp.setStation(null);
+                updateMenuItems(R.id.bluetooth);
             }
         }
         // Mark clicked device as being connected
@@ -333,6 +337,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         if (MainApp.mStation != null) {
             MainApp.mStation.disconnect();
             MainApp.setStation(null);
+            updateMenuItems(R.id.bluetooth);
         }
         // Start searching, API will return false if BT is turned off
         // (should not be the case but check it anyway)
@@ -391,7 +396,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         }
         // Create filtered list of punches for new station number
         MainApp.setPointPunches(MainApp.mAllRecords
-                .getChipsAtPoint(MainApp.mStation.getNumber(), MainApp.mStation.getMACasLong()));
+                .getPunchesAtStation(MainApp.mStation.getNumber(), MainApp.mStation.getMACasLong()));
         // Save response time of last command (it'll be overwritten by getStatus)
         long responseTime = MainApp.mStation.getResponseTime();
         // Update layout

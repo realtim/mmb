@@ -31,12 +31,12 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
      */
     private List<String> mNamesList;
     /**
-     * Current mask of team members present at active point,
+     * Current mask of team members present at control point,
      * it could be changed by operator.
      */
     private int mMask;
     /**
-     * Original mask of team members present at active point,
+     * Original mask of team members present at control point,
      * received from chip or local database before operator actions.
      */
     private int mOriginalMask;
@@ -104,7 +104,7 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
      * Fill list of members after selecting new team.
      *
      * @param names        List of team members names
-     * @param originalMask Original mask with team members presence at active point
+     * @param originalMask Original mask with team members presence at control point
      * @param mask         Current mask which could be changed by operator
      */
     void updateList(final List<String> names, final int originalMask, final int mask) {

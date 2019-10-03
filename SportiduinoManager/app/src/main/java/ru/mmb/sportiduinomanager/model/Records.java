@@ -84,7 +84,7 @@ public final class Records {
 
     /**
      * Get team number from 'index' element of mRecords list
-     * (mRecords should be previously filtered with getChipsAtPoint).
+     * (mRecords should be previously filtered with getPunchesAtStation).
      *
      * @param index Index in mRecords list array
      * @return Team number for element with this index
@@ -96,7 +96,7 @@ public final class Records {
 
     /**
      * Get punch/init time from 'index' element of mRecords list
-     * (mRecords should be previously filtered with getChipsAtPoint).
+     * (mRecords should be previously filtered with getPunchesAtStation).
      *
      * @param index Index in mRecords list array
      * @return Team punch unixtime for element with this index
@@ -108,7 +108,7 @@ public final class Records {
 
     /**
      * Get team members mask from 'index' element of mRecords list
-     * (mRecords should be previously filtered with getChipsAtPoint).
+     * (mRecords should be previously filtered with getPunchesAtStation).
      *
      * @param index Index in mRecords list array
      * @return Team mask for element with this index
@@ -120,7 +120,7 @@ public final class Records {
 
     /**
      * Get chip init time from 'index' element of mRecords list
-     * (mRecords should be previously filtered with getChipsAtPoint).
+     * (mRecords should be previously filtered with getPunchesAtStation).
      *
      * @param index Index in mRecords list array
      * @return Chip initialization unixtime for element with this index
@@ -131,7 +131,7 @@ public final class Records {
     }
 
     /**
-     * Get all punches at control points for the chip punched at connected station.
+     * Get all punched control points from the chip obtained by connected station.
      *
      * @param teamNumber     Team number in the chip
      * @param initTime       Initialization time of the chip
@@ -140,10 +140,10 @@ public final class Records {
      * @param maxPointNumber Max possible point number in current distance
      * @return List of points numbers
      */
-    public List<Integer> getChipMarks(final int teamNumber, final long initTime,
-                                      final int stationNumber, final long stationMAC,
-                                      final int maxPointNumber) {
-        // mark all punched points
+    public List<Integer> getChipPunches(final int teamNumber, final long initTime,
+                                        final int stationNumber, final long stationMAC,
+                                        final int maxPointNumber) {
+        // flag all punched points in the list of all distance points
         final boolean[] punched = new boolean[maxPointNumber + 1];
         for (final Record record : mRecords) {
             if (record.mTeamNumber == teamNumber && record.mInitTime == initTime
@@ -166,11 +166,11 @@ public final class Records {
      * Get records at current control point and station
      * (local punches only, not records copied from chips).
      *
-     * @param pointNumber Active point / station number
+     * @param pointNumber Control point / station number
      * @param stationMAC  Station MAC as long
      * @return New Records object with list of filtered records
      */
-    public Records getChipsAtPoint(final int pointNumber, final long stationMAC) {
+    public Records getPunchesAtStation(final int pointNumber, final long stationMAC) {
         final List<Record> punches = new ArrayList<>();
         // Filter records
         for (final Record record : mRecords) {
@@ -310,7 +310,7 @@ public final class Records {
         } catch (SQLiteException e) {
             return e.getMessage();
         }
-        // Mark all new records as saved
+        // flag all new records as saved
         for (int i = 0; i < mRecords.size(); i++) {
             final Record record = mRecords.get(i);
             if (record.getStatus() == Record.STATUS_NEW) {

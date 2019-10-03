@@ -7,7 +7,7 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/ap_total_teams"
+        android:id="@+id/cp_total_teams"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/default_padding"
@@ -27,7 +27,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
-        android:id="@+id/ap_divider"
+        android:id="@+id/cp_divider"
         style="@style/Divider"
         android:layout_margin="@dimen/default_padding"
         app:layout_constraintEnd_toEndOf="parent"
@@ -35,13 +35,13 @@
         app:layout_constraintTop_toBottomOf="@+id/station_clock" />
 
     <android.support.constraint.Group
-        android:id="@+id/ap_team_data"
+        android:id="@+id/cp_team_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="ap_team_name,ap_team_time,cp_punched,ap_skipped,ap_members_count,ap_divider_2,ap_save_mask,ap_team_list" />
+        app:constraint_referenced_ids="cp_team_name,cp_team_time,cp_punched,cp_skipped,cp_members_count,cp_divider_2,cp_save_mask,cp_team_list" />
 
     <TextView
-        android:id="@+id/ap_team_name"
+        android:id="@+id/cp_team_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_padding"
@@ -50,17 +50,17 @@
         android:textAppearance="@style/AppTheme.TextMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ap_divider" />
+        app:layout_constraintTop_toBottomOf="@+id/cp_divider" />
 
     <TextView
-        android:id="@+id/ap_team_time"
+        android:id="@+id/cp_team_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_padding"
         android:text="@string/unknown"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ap_team_name" />
+        app:layout_constraintTop_toBottomOf="@+id/cp_team_name" />
 
     <TextView
         android:id="@+id/cp_punched"
@@ -70,10 +70,10 @@
         android:text="@string/cp_punched"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ap_team_time" />
+        app:layout_constraintTop_toBottomOf="@+id/cp_team_time" />
 
     <TextView
-        android:id="@+id/ap_skipped"
+        android:id="@+id/cp_skipped"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_padding"
@@ -83,7 +83,7 @@
         app:layout_constraintTop_toBottomOf="@+id/cp_punched" />
 
     <TextView
-        android:id="@+id/ap_members_count"
+        android:id="@+id/cp_members_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_padding"
@@ -92,10 +92,10 @@
         android:textAppearance="@style/AppTheme.TextMedium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ap_skipped" />
+        app:layout_constraintTop_toBottomOf="@+id/cp_skipped" />
 
     <Button
-        android:id="@+id/ap_save_mask"
+        android:id="@+id/cp_save_mask"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/default_padding"
@@ -103,12 +103,11 @@
         android:text="@string/cp_save_mask"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ap_members_count" />
-
+        app:layout_constraintTop_toBottomOf="@+id/cp_members_count" />
 
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/ap_member_list"
+        android:id="@+id/cp_member_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -116,20 +115,20 @@
         android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ap_save_mask"
+        app:layout_constraintTop_toBottomOf="@+id/cp_save_mask"
         tools:itemCount="4"
         tools:listitem="@layout/member_list_item" />
 
     <View
-        android:id="@+id/ap_divider_2"
+        android:id="@+id/cp_divider_2"
         style="@style/Divider"
         android:layout_margin="@dimen/default_padding"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ap_member_list" />
+        app:layout_constraintTop_toBottomOf="@+id/cp_member_list" />
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/ap_team_list"
+        android:id="@+id/cp_team_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="@dimen/default_padding"
@@ -137,7 +136,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ap_divider_2"
+        app:layout_constraintTop_toBottomOf="@+id/cp_divider_2"
         tools:itemCount="5"
         tools:listitem="@layout/team_list_item" />
 

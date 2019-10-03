@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId "ru.mmb.sportiduinomanager"
-        minSdkVersion 19
+        minSdkVersion 14
         targetSdkVersion 28
         resConfigs "ru", "en"
     }

@@ -13,7 +13,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -44,7 +44,6 @@ public final class SiteRequest {
      * Member mCustomError contains custom text error message.
      */
     public static final int LOAD_CUSTOM_ERROR = 5;
-
     /**
      * Request type for distance download.
      */
@@ -61,7 +60,10 @@ public final class SiteRequest {
      * Request type for database upload.
      */
     public static final int TYPE_UL_DATABASE = 4;
-
+    /**
+     * Name of UTF-8 charset.
+     */
+    private static final String UTF8 = "UTF-8";
     /**
      * URL of test database interaction script.
      */
@@ -92,7 +94,7 @@ public final class SiteRequest {
      */
     private final int mType;
     /**
-     * Localized name for chip init active point.
+     * Localized name for chip init point.
      */
     private final String mChipInitName;
     /**
@@ -249,7 +251,7 @@ public final class SiteRequest {
         connection.setRequestProperty("X-Sportiduino-Action", String.valueOf(mType));
         if (postData != null) {
             connection.setDoOutput(true);
-            final byte[] postDataBytes = postData.getBytes(StandardCharsets.UTF_8);
+            final byte[] postDataBytes = postData.getBytes(Charset.forName(UTF8));
             final int length = postDataBytes.length;
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             connection.setRequestProperty("Content-Length", String.valueOf(length));
@@ -285,7 +287,7 @@ public final class SiteRequest {
         // Start reading server response
         final BufferedReader reader =
                 new BufferedReader(new InputStreamReader(connection.getInputStream(),
-                        StandardCharsets.UTF_8));
+                        Charset.forName(UTF8)));
         // check for error message from server
         String line = reader.readLine();
         if (line == null) return LOAD_READ_ERROR;
@@ -425,7 +427,7 @@ public final class SiteRequest {
         // Read script response
         final BufferedReader reader =
                 new BufferedReader(new InputStreamReader(connection.getInputStream(),
-                        StandardCharsets.UTF_8));
+                        Charset.forName(UTF8)));
         // Non-empty first line contains server error
         final String error = reader.readLine();
         if (!"".equals(error)) {
@@ -472,7 +474,7 @@ public final class SiteRequest {
         // Start reading server response
         final BufferedReader reader =
                 new BufferedReader(new InputStreamReader(connection.getInputStream(),
-                        StandardCharsets.UTF_8));
+                        Charset.forName(UTF8)));
         // check for error message from server
         final String error = reader.readLine();
         if (!"".equals(error)) {
@@ -523,7 +525,7 @@ public final class SiteRequest {
         // Read script response
         final BufferedReader reader =
                 new BufferedReader(new InputStreamReader(connection.getInputStream(),
-                        StandardCharsets.UTF_8));
+                        Charset.forName(UTF8)));
         // Non-empty first line contains server error
         final String error = reader.readLine();
         if (!"".equals(error)) {
@@ -555,7 +557,7 @@ public final class SiteRequest {
          */
         private int mType;
         /**
-         * Localized name for chip init active point.
+         * Localized name for chip init point.
          */
         private String mChipInitName;
         /**
@@ -618,7 +620,7 @@ public final class SiteRequest {
         }
 
         /**
-         * Set localized name for chip init active point.
+         * Set localized name for chip init point.
          *
          * @param chipInitName String with chip init name
          * @return this

@@ -37,7 +37,7 @@
         <activity android:name="BluetoothActivity" />
         <activity android:name="ChipInitActivity" />
         <activity android:name="ChipInfoActivity" />
-        <activity android:name="ActivePointActivity" />
+        <activity android:name="ControlPointActivity" />
         <service android:name="StationPoolingService" />
     </application>
 </manifest>

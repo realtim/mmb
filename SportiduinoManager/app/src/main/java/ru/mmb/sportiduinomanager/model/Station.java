@@ -26,11 +26,11 @@ public final class Station {
      */
     public static final int MODE_INIT_CHIPS = 0;
     /**
-     * Station mode for an ordinary active point.
+     * Station mode for an ordinary control point.
      */
     public static final int MODE_OTHER_POINT = 1;
     /**
-     * Station mode for active point at distance segment end.
+     * Station mode for control point at distance segment end.
      */
     public static final int MODE_FINISH_POINT = 2;
 
@@ -39,9 +39,9 @@ public final class Station {
      */
     public static final int LAST_TEAMS_LEN = 10;
     /**
-     * Max number of chip marks that we can get in one request from station.
+     * Max number of punches that we can get in one request from station.
      */
-    public static final int MAX_MARK_COUNT = 61;
+    public static final int MAX_PUNCH_COUNT = 61;
     /**
      * Size of chip UID in communication packet.
      */
@@ -182,7 +182,7 @@ public final class Station {
     private int mMode;
     /**
      * Configurable station number
-     * (an active point number to work at or zero for chip initialization).
+     * (an control point number to work at or zero for chip initialization).
      */
     private int mNumber;
     /**
@@ -298,9 +298,9 @@ public final class Station {
     }
 
     /**
-     * Get configurable station number (an active point number to work at).
+     * Get configurable station number (a control point number to work at).
      *
-     * @return Active point number, zero for chip initialization
+     * @return Control point number, zero for chip initialization point
      */
     public int getNumber() {
         return mNumber;
@@ -910,7 +910,7 @@ public final class Station {
         final long teamTime = byteArray2Long(response, 8, 11);
         mTeamPunches.addRecord(this, initTime, teamNumber, teamMask, mNumber, teamTime);
         mChipRecordsN = response[12] & 0xFF;
-        // Check if we have a valid number of mark in chip copy in flash memory
+        // Check if we have a valid number of punches in copy of the chip in flash memory
         if (mChipRecordsN <= 8 || mChipRecordsN >= 0xFF) {
             mChipRecordsN = 0;
             mLastError = R.string.err_station_flash_empty;
@@ -975,28 +975,28 @@ public final class Station {
     }
 
     /**
-     * Get some marks from a copy of a chip in station flash memory.
+     * Get some punches from a copy of a chip in station flash memory.
      *
      * @param teamNumber Team number
      * @param initTime   Chip init time (for creation of new punch records)
      * @param teamMask   Chip team mask (for creation of new punch records)
-     * @param fromMark   Starting position in marks list
-     * @param count      Number of marks to read
+     * @param fromPunch  Starting position in the list of punches
+     * @param count      Number of punches to read
      * @return True if succeeded, fills mTeamPunches with punches as Record instances
      */
     @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "RedundantSuppression"})
-    public boolean fetchTeamMarks(final int teamNumber, final long initTime,
-                                  final int teamMask, final int fromMark,
-                                  final int count) {
-        if (count <= 0 || count > MAX_MARK_COUNT) {
+    public boolean fetchTeamPunches(final int teamNumber, final long initTime,
+                                    final int teamMask, final int fromPunch,
+                                    final int count) {
+        if (count <= 0 || count > MAX_PUNCH_COUNT) {
             mLastError = R.string.err_station_buffer_overflow;
             return false;
         }
         // Prepare command payload
         byte[] commandData = new byte[6];
         commandData[0] = CMD_READ_FLASH;
-        final long marksZone = teamNumber * 1024L + 48L;
-        final long startAddress = marksZone + fromMark * 4L;
+        final long punchesZone = teamNumber * 1024L + 48L;
+        final long startAddress = punchesZone + fromPunch * 4L;
         long2ByteArray(startAddress, commandData, 1, 4);
         commandData[5] = (byte) ((count * 4) & 0xFF);
         // Send command to station

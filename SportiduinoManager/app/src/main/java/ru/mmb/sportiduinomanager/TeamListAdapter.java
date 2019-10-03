@@ -36,8 +36,8 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
      * Adapter constructor.
      *
      * @param onClick Interface for click processing in calling activity.
-     * @param teams   List of all registered teams from ActivePointActivity
-     * @param records List of all team punches from ActivePointActivity
+     * @param teams   List of all registered teams from ControlPointActivity
+     * @param records List of all team punches from ControlPointActivity
      */
     TeamListAdapter(final OnTeamClicked onClick, final Teams teams, final Records records) {
         super();

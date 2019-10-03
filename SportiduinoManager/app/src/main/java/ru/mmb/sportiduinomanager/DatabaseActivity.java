@@ -17,7 +17,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -70,7 +70,7 @@ public final class DatabaseActivity extends MainActivity {
         try {
             // Create MD5 Hash
             final MessageDigest digest = MessageDigest.getInstance("MD5");
-            digest.update(str.getBytes(StandardCharsets.UTF_8));
+            digest.update(str.getBytes(Charset.forName("UTF-8")));
             final byte[] messageDigest = digest.digest();
 
             // Create Hex String
@@ -98,15 +98,57 @@ public final class DatabaseActivity extends MainActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.database).setChecked(true);
         updateMenuItems(R.id.database);
-        // Disable startup animation
-        overridePendingTransition(0, 0);
         // Update layout elements
         updateLayout();
+    }
+
+    /**
+     * Update UL/DL buttons state and distance download block.
+     *
+     * @param distancePresent True if a valid distance is present in local db
+     */
+    private void updateButtons(final boolean distancePresent) {
+        final LinearLayout dlDistance = findViewById(R.id.download_distance_layout);
+        final Button sendRecordsButton = findViewById(R.id.send_results);
+        final Button getResultsButton = findViewById(R.id.get_results);
+        final Button sendDbButton = findViewById(R.id.send_database);
+        if (distancePresent) {
+            // Don't allow to reload database if it can contain important data
+            if (MainApp.mDistance.canBeReloaded()) {
+                dlDistance.setVisibility(View.VISIBLE);
+                // set user email and test db flag from local database
+                ((EditText) findViewById(R.id.user_email)).setText(mAppContext.getUserEmail());
+                ((SwitchCompat) findViewById(R.id.test_database))
+                        .setChecked(mAppContext.getTestSite() == 1);
+            } else {
+                dlDistance.setVisibility(View.GONE);
+            }
+            sendRecordsButton.setVisibility(View.VISIBLE);
+            // Check if we have some unsent records
+            if (MainApp.mAllRecords.hasUnsentRecords()) {
+                sendRecordsButton.setAlpha(MainApp.ENABLED_BUTTON);
+                sendRecordsButton.setClickable(true);
+            } else {
+                sendRecordsButton.setAlpha(MainApp.DISABLED_BUTTON);
+                sendRecordsButton.setClickable(false);
+            }
+            // Always allow to download results from site and upload database
+            getResultsButton.setVisibility(View.VISIBLE);
+            sendDbButton.setVisibility(View.VISIBLE);
+            // TODO: Enable 'Download results' button after download implementation
+            getResultsButton.setAlpha(MainApp.DISABLED_BUTTON);
+            getResultsButton.setClickable(false);
+        } else {
+            sendRecordsButton.setVisibility(View.GONE);
+            getResultsButton.setVisibility(View.GONE);
+            dlDistance.setVisibility(View.VISIBLE);
+            sendDbButton.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -144,10 +186,6 @@ public final class DatabaseActivity extends MainActivity {
         }
         // Detect what we will show or hide
         final MenuItem databaseItem = getMenuItem(R.id.database);
-        final Button sendChipsButton = findViewById(R.id.send_results);
-        final Button getResultsButton = findViewById(R.id.get_results);
-        final Button sendDbButton = findViewById(R.id.send_database);
-        final LinearLayout dlDistance = findViewById(R.id.download_distance_layout);
         final Group dbContent = findViewById(R.id.database_content_group);
         switch (dbStatus) {
             case Database.DB_STATE_FAILED:
@@ -156,38 +194,14 @@ public final class DatabaseActivity extends MainActivity {
                 // Database is empty/broken/damaged, need to download it from server
                 databaseItem.setTitle(getResources().getText(R.string.mode_cloud_download));
                 databaseItem.setIcon(R.drawable.ic_cloud_download);
-                sendChipsButton.setVisibility(View.GONE);
-                getResultsButton.setVisibility(View.GONE);
-                dlDistance.setVisibility(View.VISIBLE);
+                // Update buttons state
+                updateButtons(false);
+                // Hide distance description
                 dbContent.setVisibility(View.GONE);
-                sendDbButton.setVisibility(View.GONE);
                 break;
             case Database.DB_STATE_OK:
-                // Don't allow to reload database if it can contain important data
-                if (MainApp.mDistance.canBeReloaded()) {
-                    dlDistance.setVisibility(View.VISIBLE);
-                    // set user email and test db flag from local database
-                    ((EditText) findViewById(R.id.user_email)).setText(mAppContext.getUserEmail());
-                    ((SwitchCompat) findViewById(R.id.test_database))
-                            .setChecked(mAppContext.getTestSite() == 1);
-                } else {
-                    dlDistance.setVisibility(View.GONE);
-                }
-                // Check if we have some unsent records
-                sendChipsButton.setVisibility(View.VISIBLE);
-                if (MainApp.mAllRecords.hasUnsentRecords()) {
-                    sendChipsButton.setAlpha(MainApp.DISABLED_BUTTON);
-                    sendChipsButton.setClickable(false);
-                } else {
-                    sendChipsButton.setAlpha(MainApp.ENABLED_BUTTON);
-                    sendChipsButton.setClickable(true);
-                }
-                // Always allow to download results from site and upload database
-                getResultsButton.setVisibility(View.VISIBLE);
-                sendDbButton.setVisibility(View.VISIBLE);
-                // TODO: Enable 'Download results' button after download implementation
-                getResultsButton.setAlpha(MainApp.DISABLED_BUTTON);
-                getResultsButton.setClickable(false);
+                // Update buttons state
+                updateButtons(true);
                 // Set distance description
                 String siteName;
                 if (MainApp.mDistance.getTestSite() == 0) {
@@ -332,7 +346,6 @@ public final class DatabaseActivity extends MainActivity {
         new AsyncSiteRequest(this).execute(siteRequest);
     }
 
-
     /**
      * Start upload of local db for testing purposes.
      *
@@ -459,5 +472,4 @@ public final class DatabaseActivity extends MainActivity {
             activity.updateMenuItems(R.id.database);
         }
     }
-
 }

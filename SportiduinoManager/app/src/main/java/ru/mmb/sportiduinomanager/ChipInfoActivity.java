@@ -188,7 +188,7 @@ public final class ChipInfoActivity extends MainActivity {
      *
      * @param builder  target StringBuilder to append text
      * @param teamNum  team number, -1 - no team selected
-     * @param teamMask active members mask
+     * @param teamMask team members mask
      */
     private void buildTeamMembersInfo(final StringBuilder builder, final int teamNum, final int teamMask) {
         final List<String> teamMembers = MainApp.mTeams.getMembersNames(teamNum);
@@ -206,7 +206,7 @@ public final class ChipInfoActivity extends MainActivity {
     }
 
     /**
-     * Build active point decoded info.
+     * Build control point decoded info.
      *
      * @param chipInfo read_card_page response
      * @param builder  target StringBuilder to append text

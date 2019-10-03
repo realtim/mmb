@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteException;
+import android.os.Build;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -126,12 +127,12 @@ public final class MainApp extends Application {
     private int mTeamNumber;
 
     /**
-     * Current members selection mask at chip initialization / active point.
+     * Current members selection mask at chip initialization / control point.
      */
     private int mTeamMask;
 
     /**
-     * Current position in team list at active point.
+     * Current position in team list at control point.
      */
     private int mTeamListPosition;
 
@@ -201,6 +202,27 @@ public final class MainApp extends Application {
      */
     public static void setPointPunches(final Records records) {
         mPointPunches = records;
+    }
+
+    /**
+     * Switch to russian locale in debug version.
+     *
+     * @param context Application context
+     * @return Modified context with new russian locale
+     */
+    public static Context switchToRussian(final Context context) {
+        final Locale locale = new Locale("ru");
+        Locale.setDefault(locale);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            final Configuration configuration = context.getResources().getConfiguration();
+            configuration.setLocale(locale);
+            return context.createConfigurationContext(configuration);
+        }
+        final Resources resources = context.getResources();
+        final Configuration configuration = resources.getConfiguration();
+        configuration.locale = locale;
+        resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+        return context;
     }
 
     /**
@@ -290,7 +312,7 @@ public final class MainApp extends Application {
     }
 
     /**
-     * Get the current team mask at chip initialization / active point.
+     * Get the current team mask at chip initialization / control point.
      *
      * @return Team mask
      */
@@ -299,7 +321,7 @@ public final class MainApp extends Application {
     }
 
     /**
-     * Save the current team mask at chip initialization / active point.
+     * Save the current team mask at chip initialization / control point.
      *
      * @param teamMask Team mask
      */
@@ -326,15 +348,10 @@ public final class MainApp extends Application {
                 teamListPosition;
     }
 
-
     @Override
     public void onCreate() {
         super.onCreate();
         final Context context = getApplicationContext();
-        // Set russian locale for debug build type
-        if (BuildConfig.DEBUG) {
-            switchToRussian(context);
-        }
         // Try to open/create local SQLite database
         try {
             setDatabase(new Database(context));
@@ -376,23 +393,14 @@ public final class MainApp extends Application {
         }
     }
 
-    /**
-     * Switch to russian locale in debug version.
-     *
-     * @param context Application context
-     */
-    private void switchToRussian(final Context context) {
-        final Locale locale = new Locale("ru");
-        Locale.setDefault(locale);
-        final Resources res = context.getResources();
-        final Configuration config = new Configuration(res.getConfiguration());
-        config.setLocale(locale);
-        res.updateConfiguration(config, res.getDisplayMetrics());
-    }
-
     @Override
     protected void attachBaseContext(final Context base) {
-        super.attachBaseContext(base);
+        // Set russian locale for debug build type
+        if (BuildConfig.DEBUG) {
+            super.attachBaseContext(switchToRussian(base));
+        } else {
+            super.attachBaseContext(base);
+        }
         // The following line triggers the initialization of ACRA
         ACRA.init(this);
     }

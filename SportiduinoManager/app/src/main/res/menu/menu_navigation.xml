@@ -16,8 +16,8 @@
             android:icon="@drawable/ic_chip_init"
             android:title="@string/mode_chip_init" />
         <item
-            android:id="@+id/active_point"
-            android:icon="@drawable/ic_active_point"
+            android:id="@+id/control_point"
+            android:icon="@drawable/ic_control_point"
             android:title="@string/mode_control_point" />
         <item
             android:id="@+id/team_list"

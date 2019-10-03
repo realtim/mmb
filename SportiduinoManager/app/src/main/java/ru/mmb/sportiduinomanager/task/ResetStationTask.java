@@ -101,23 +101,23 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
             final long initTime = teamPunches.getInitTime(0);
             final int teamMask = teamPunches.getTeamMask(0);
             // Read punches from chip and to the all records list in application memory
-            final int marks = MainApp.mStation.getChipRecordsN();
-            if (marks == 0) continue;
+            final int punchesN = MainApp.mStation.getChipRecordsN();
+            if (punchesN == 0) continue;
             teamsRescanned++;
-            int fromMark = 0;
+            int fromPunch = 0;
             do {
-                int toRead = marks;
-                if (toRead > Station.MAX_MARK_COUNT) {
-                    toRead = Station.MAX_MARK_COUNT;
+                int toRead = punchesN;
+                if (toRead > Station.MAX_PUNCH_COUNT) {
+                    toRead = Station.MAX_PUNCH_COUNT;
                 }
-                if (!MainApp.mStation.fetchTeamMarks(teamNumber, initTime, teamMask, fromMark, toRead)) {
+                if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask, fromPunch, toRead)) {
                     final int error = MainApp.mStation.getLastError(true);
                     if (error != R.string.err_station_flash_empty) return error;
                 }
-                fromMark += toRead;
+                fromPunch += toRead;
                 // Add fetched punches from the chip to local list of records
                 MainApp.mAllRecords.join(MainApp.mStation.getTeamPunches());
-            } while (fromMark < marks);
+            } while (fromPunch < punchesN);
             // Stop scanned if we found all punched teams
             if (teamsRescanned == chipsRegistered) break;
         }
@@ -160,14 +160,13 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
      * Estimates time in milliseconds left during station reset process.
      *
      * @param teamsToScan      Number of teams to check with fetchTeamRecord
-     * @param teamsWithPunches Number of teams to check with fetchTeamMarks
-     * @param pointNumber      Point number (to estimate N of calls to fetchTeamMarks)
+     * @param teamsWithPunches Number of teams to check with fetchTeamPunches
+     * @param pointNumber      Point number to estimate N of calls to fetchTeamPunches
      * @return Estimated time in ms
      */
     private long estimateTimeToComplete(final int teamsToScan, final int teamsWithPunches,
                                         final int pointNumber) {
-        final int marksScans = pointNumber / (Station.MAX_MARK_COUNT - 1) + 1;
-        return teamsToScan * 150 + teamsWithPunches * marksScans * 150 + 24_000 + 500;
+        final int punchesScans = pointNumber / (Station.MAX_PUNCH_COUNT - 1) + 1;
+        return teamsToScan * 150 + teamsWithPunches * punchesScans * 150 + 24_000 + 500;
     }
-
 }
