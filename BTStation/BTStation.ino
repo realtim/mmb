@@ -561,7 +561,7 @@ void processRfidCard()
     errorBeep(4);
     return;
   }
-  
+
   // Если номер чипа =0 или >maxTeamNumber
   uint16_t chipNum = (ntag_page[4] << 8) + ntag_page[5];
   if (chipNum < 1 || chipNum > maxTeamNumber)
@@ -660,7 +660,7 @@ void processRfidCard()
     {
       SPI.end();
       digitalWrite(INFO_LED_PIN, LOW);
-      errorBeep(1);      
+      errorBeep(1);
 #ifdef DEBUG
       Serial.print(F("!!!Can't read chip"));
 #endif
@@ -2731,7 +2731,7 @@ int findNewPage()
 }
 
 // пишем дамп чипа в лог
-uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
+bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 {
   // адрес хранения в каталоге
   uint32_t teamFlashAddress = (uint32_t)(uint32_t(teamNumber) * (uint32_t)TEAM_FLASH_SIZE);
@@ -2739,17 +2739,19 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
   Serial.print(F("!!!Write flash address: "));
   Serial.println(String(teamFlashAddress));
 #endif
-
-  // если режим финишной станции, то надо переписать содержимое
-  if (stationMode == MODE_FINISH_KP && SPIflash.readByte(teamFlashAddress) != 255)
+  if (SPIflash.readByte(teamFlashAddress) != 0xff)
   {
-    eraseTeamFromFlash(teamNumber);
+    // если режим финишной станции, то надо переписать содержимое
+    if (stationMode == MODE_FINISH_KP)
+    {
+      eraseTeamFromFlash(teamNumber);
 #ifdef DEBUG
-    Serial.print(F("!!!erased team #"));
-    Serial.println(String((uint32_t)((uint32_t)teamNumber / (uint32_t)256)));
+      Serial.print(F("!!!erased team #"));
+      Serial.println(String((uint32_t)((uint32_t)teamNumber / (uint32_t)256)));
 #endif
+    }
+    else return false;
   }
-
   // save basic parameters
   if (!ntagRead4pages(PAGE_CHIP_NUM))
   {
@@ -2821,9 +2823,9 @@ uint8_t writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 #endif
           block = TAG_MAX_PAGE;
           break;
-        }
       }
     }
+}
     block += 4;
   }
   // add dump pages number
@@ -2960,7 +2962,7 @@ uint16_t refreshChipCounter()
       Serial.print(String(i));
       Serial.print(F(", "));
 #endif
-    }
+      }
   }
 #ifdef DEBUG
   Serial.println();
@@ -2968,7 +2970,7 @@ uint16_t refreshChipCounter()
   Serial.println(String(chips));
 #endif
   return chips;
-}
+    }
 
 // обработка ошибок. формирование пакета с сообщением о ошибке
 void sendError(uint8_t errorCode, uint8_t commandCode)
