@@ -10,6 +10,7 @@ import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.content.res.ResourcesCompat
+import android.util.Log
 import android.widget.Toast
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -39,6 +40,7 @@ class StationPoolingService : Service() {
      * Create foreground service.
      **/
     override fun onCreate() {
+        Log.d("SIM StationPooling", "Create")
         super.onCreate()
         application = getApplication() as MainApp
         startForeground()
@@ -48,9 +50,16 @@ class StationPoolingService : Service() {
                         .map {
                             // check if station is available
                             MainApp.mStation?.let {
-                                // get latest data
-                                MainApp.mStation.fetchStatus()
-                                fetchTeamsPunches()
+                                if (MainApp.mStation.isPoolingAllowed) {
+                                    // get latest data
+                                    MainApp.mStation.setPoolingActive(true)
+                                    MainApp.mStation.fetchStatus("StationPooling")
+                                    val result = fetchTeamsPunches()
+                                    MainApp.mStation.setPoolingActive(false)
+                                    result
+                                } else {
+                                    Log.d("SIM StationPooling", "Skip pooling")
+                                }
                             } ?: Int.MIN_VALUE
                         }
                         // if station not available do nothing
@@ -122,7 +131,7 @@ class StationPoolingService : Service() {
         // Clone previous teams list from station
         val prevLastTeams = MainApp.mStation.lastTeams
         // Ask station for new list
-        if (!MainApp.mStation.fetchLastTeams()) {
+        if (!MainApp.mStation.fetchLastTeams("StationPooling")) {
             fullDownload = true
         }
         val currLastTeams = MainApp.mStation.lastTeams
@@ -161,7 +170,7 @@ class StationPoolingService : Service() {
         for (teamNumber in fetchTeams) {
             // Fetch data for the team punched at the station
             var newError = 0
-            if (!MainApp.mStation.fetchTeamRecord(teamNumber)) {
+            if (!MainApp.mStation.fetchTeamRecord(teamNumber, "StationPooling")) {
                 newError = MainApp.mStation.getLastError(true)
                 // Ignore data absence for teams which are not in last teams list
                 // Most probable these teams did not punched at the station at all
@@ -208,7 +217,8 @@ class StationPoolingService : Service() {
                     if (toRead > Station.MAX_PUNCH_COUNT) {
                         toRead = Station.MAX_PUNCH_COUNT
                     }
-                    if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask, fromPunch, toRead)) {
+                    if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask,
+                                    fromPunch, toRead, "StationPooling")) {
                         return MainApp.mStation.getLastError(true)
                     }
                     fromPunch += toRead
@@ -247,8 +257,9 @@ class StationPoolingService : Service() {
      * Stop querying connected station on service destroy.
      */
     override fun onDestroy() {
-        super.onDestroy()
         bluetoothPoolingSubscription.dispose()
+        super.onDestroy()
+        Log.d("SIM StationPooling", "Destroy")
     }
 
     /**

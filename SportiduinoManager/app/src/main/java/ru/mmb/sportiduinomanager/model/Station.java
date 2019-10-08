@@ -2,6 +2,7 @@ package ru.mmb.sportiduinomanager.model;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -185,6 +186,8 @@ public final class Station {
      * (an control point number to work at or zero for chip initialization).
      */
     private int mNumber;
+    private boolean mPoolingAllowed;
+    private boolean mPoolingActive;
     /**
      * Number of teams who checked in.
      */
@@ -225,6 +228,8 @@ public final class Station {
         mTimeDrift = 0;
         mMode = 0;
         mNumber = 0;
+        mPoolingAllowed = false;
+        mPoolingActive = false;
         mChipsRegistered = 0;
         mLastPunchTime = 0;
         mFirmware = 0;
@@ -304,6 +309,29 @@ public final class Station {
      */
     public int getNumber() {
         return mNumber;
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    public boolean isPoolingAllowed() {
+        return mPoolingAllowed;
+    }
+
+    public void setPoolingAllowed(final boolean isAllowed) {
+        mPoolingAllowed = isAllowed;
+    }
+
+    public void setPoolingActive(final boolean isActive) {
+        mPoolingActive = isActive;
+    }
+
+    /**
+     * Wait for StationPooling cycle to finish (1.25s as hard limit).
+     */
+    public void waitForPooling2Stop() {
+        for (int i = 0; i < 50; i++) {
+            if (!mPoolingActive) return;
+            sleep();
+        }
     }
 
     /**
@@ -588,14 +616,21 @@ public final class Station {
      * @param responseContent Station response without service bytes
      * @return True if there was no communication or command execution errors
      */
-    private boolean command(final byte[] commandContent, final byte[] responseContent) {
+    private boolean command(final byte[] commandContent, final byte[] responseContent,
+                            final String caller) {
         // Save time at the beginning of command processing
         mStartTime = System.currentTimeMillis();
+        // TODO: remove debug output
+        Log.d("SIM " + caller,
+                "command " + String.format("%02x", commandContent[0]) + " started  at " + +mStartTime);
         // Communicate with the station
         final byte[] rawResponse = runCommand(commandContent);
         // Compute execution time
         final long now = System.currentTimeMillis();
         mResponseTime = now - mStartTime;
+        // TODO: remove debug output
+        Log.d("SIM " + caller,
+                "command " + String.format("%02x", commandContent[0]) + " finished  at " + +now);
         // Check for command execution errors and response parsing errors
         if (rawResponse[0] != ALL_OK) {
             switch (rawResponse[0]) {
@@ -742,14 +777,14 @@ public final class Station {
      * @param mode New station mode (chip initialization, ordinary or finish point)
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean newMode(final int mode) {
+    public boolean newMode(final int mode, final String caller) {
         // Zero number is only for chip initialization
         if (mNumber == 0 && mode != MODE_INIT_CHIPS) {
             mLastError = R.string.err_init_wrong_mode;
             return false;
         }
         final byte[] response = new byte[0];
-        if (command(new byte[]{CMD_SET_MODE, (byte) mode}, response)) {
+        if (command(new byte[]{CMD_SET_MODE, (byte) mode}, response, caller)) {
             mMode = mode;
             return true;
         } else {
@@ -762,7 +797,7 @@ public final class Station {
      *
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean syncTime() {
+    public boolean syncTime(final String caller) {
         byte[] commandData = new byte[7];
         commandData[0] = CMD_SET_TIME;
         // Get current UTC time
@@ -775,7 +810,7 @@ public final class Station {
         commandData[6] = (byte) (calendar.get(Calendar.SECOND));
         // Send it to station
         final byte[] response = new byte[4];
-        if (!command(commandData, response)) return false;
+        if (!command(commandData, response, caller)) return false;
         // Get new station time
         mStationTime = byteArray2Long(response, 0, 3);
         mTimeDrift = (int) (mStationTime - System.currentTimeMillis() / 1000L);
@@ -788,7 +823,7 @@ public final class Station {
      * @param number New station number
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean resetStation(final int number) {
+    public boolean resetStation(final int number, final String caller) {
         // Don't allow 0xFF station number
         if (number < 0 || number >= 0xFF) {
             mLastError = R.string.err_station_wrong_number;
@@ -802,7 +837,7 @@ public final class Station {
         commandData[7] = (byte) number;
         // Send it to station
         final byte[] response = new byte[0];
-        if (!command(commandData, response)) return false;
+        if (!command(commandData, response, caller)) return false;
         // Update station number and mode in class object
         mNumber = number;
         mMode = MODE_INIT_CHIPS;
@@ -818,10 +853,10 @@ public final class Station {
      *
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean fetchStatus() {
+    public boolean fetchStatus(final String caller) {
         // Get response from station
         final byte[] response = new byte[14];
-        if (!command(new byte[]{CMD_GET_STATUS}, response)) return false;
+        if (!command(new byte[]{CMD_GET_STATUS}, response, caller)) return false;
         // Get station time
         mStationTime = byteArray2Long(response, 0, 3);
         mTimeDrift = (int) (mStationTime - System.currentTimeMillis() / 1000L);
@@ -845,7 +880,7 @@ public final class Station {
      * @param teamMask   Mask of team members presence
      * @return True if succeeded
      */
-    public boolean initChip(final int teamNumber, final int teamMask) {
+    public boolean initChip(final int teamNumber, final int teamMask, final String caller) {
         // Note: last 4 byte are reserved and equal to zero now
         byte[] commandData = new byte[5];
         commandData[0] = CMD_INIT_CHIP;
@@ -854,7 +889,7 @@ public final class Station {
         long2ByteArray(teamMask, commandData, 3, 2);
         // Send command to station
         final byte[] response = new byte[12];
-        if (!command(commandData, response)) return false;
+        if (!command(commandData, response, caller)) return false;
         // Get init time from station response
         mLastInitTime = byteArray2Long(response, 0, 3);
         // Update station time and drift
@@ -870,10 +905,10 @@ public final class Station {
      * @return True if succeeded
      */
     @SuppressWarnings("UnusedReturnValue")
-    public boolean fetchLastTeams() {
+    public boolean fetchLastTeams(final String caller) {
         // Get response from station
         final byte[] response = new byte[LAST_TEAMS_LEN * 2];
-        if (!command(new byte[]{CMD_LAST_TEAMS}, response)) return false;
+        if (!command(new byte[]{CMD_LAST_TEAMS}, response, caller)) return false;
         mLastTeams.clear();
         for (int i = 0; i < LAST_TEAMS_LEN; i++) {
             final int teamNumber = (int) byteArray2Long(response, i * 2, i * 2 + 1);
@@ -889,7 +924,7 @@ public final class Station {
      * @return True if succeeded
      */
     @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "RedundantSuppression"})
-    public boolean fetchTeamRecord(final int teamNumber) {
+    public boolean fetchTeamRecord(final int teamNumber, final String caller) {
         // Prepare command payload
         byte[] commandData = new byte[3];
         commandData[0] = CMD_TEAM_RECORD;
@@ -898,7 +933,7 @@ public final class Station {
         final byte[] response = new byte[13];
         mTeamPunches.clear();
         mChipRecordsN = 0;
-        if (!command(commandData, response)) return false;
+        if (!command(commandData, response, caller)) return false;
         // Parse response
         final int checkTeamNumber = (int) byteArray2Long(response, 0, 1);
         if (checkTeamNumber != teamNumber) {
@@ -927,7 +962,7 @@ public final class Station {
      * @param requestsCount  multiplier by 20 to get reasonable pages count
      * @return true if succeeded
      */
-    public boolean readCardPage(final byte pagesInRequest, final int requestsCount) {
+    public boolean readCardPage(final byte pagesInRequest, final int requestsCount, final String caller) {
         // TODO: rewrite function for new API
         mChipInfo = new byte[]{};
         final byte[] concatResponse = new byte[UID_SIZE + (pagesInRequest * requestsCount + 1) * 5];
@@ -942,7 +977,7 @@ public final class Station {
             final int expectedSize = UID_SIZE + (pageTo - pageFrom + 1) * 5;
             // Send command to station
             final byte[] response = new byte[expectedSize];
-            if (!command(commandData, response)) return false;
+            if (!command(commandData, response, caller)) return false;
             if (pageFrom == 0) {
                 System.arraycopy(response, 0, concatResponse, 0, expectedSize);
             } else {
@@ -962,7 +997,7 @@ public final class Station {
      * @param teamMask   New team members mask
      * @return true if succeeded
      */
-    public boolean updateTeamMask(final int teamNumber, final long initTime, final int teamMask) {
+    public boolean updateTeamMask(final int teamNumber, final long initTime, final int teamMask, final String caller) {
         // Prepare command payload
         byte[] commandData = new byte[9];
         commandData[0] = CMD_UPDATE_MASK;
@@ -971,7 +1006,7 @@ public final class Station {
         long2ByteArray(teamMask, commandData, 7, 2);
         // Send command to station
         final byte[] response = new byte[0];
-        return command(commandData, response);
+        return command(commandData, response, caller);
     }
 
     /**
@@ -987,7 +1022,7 @@ public final class Station {
     @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "RedundantSuppression"})
     public boolean fetchTeamPunches(final int teamNumber, final long initTime,
                                     final int teamMask, final int fromPunch,
-                                    final int count) {
+                                    final int count, final String caller) {
         if (count <= 0 || count > MAX_PUNCH_COUNT) {
             mLastError = R.string.err_station_buffer_overflow;
             return false;
@@ -1003,7 +1038,7 @@ public final class Station {
         final byte[] response = new byte[4 + count * 4];
         mTeamPunches.clear();
         mChipRecordsN = 0;
-        if (!command(commandData, response)) return false;
+        if (!command(commandData, response, caller)) return false;
         // Check that read address in response is equal to read address in command
         if (startAddress != byteArray2Long(response, 0, 3)) {
             mLastError = R.string.err_station_address_changed;
@@ -1034,10 +1069,10 @@ public final class Station {
      *
      * @return True if succeeded
      */
-    public boolean fetchConfig() {
+    public boolean fetchConfig(final String caller) {
         // Get response from station
         final byte[] response = new byte[20];
-        if (!command(new byte[]{CMD_GET_CONFIG}, response)) return false;
+        if (!command(new byte[]{CMD_GET_CONFIG}, response, caller)) return false;
         // Get station firmware
         mFirmware = response[0];
         // Get station mode

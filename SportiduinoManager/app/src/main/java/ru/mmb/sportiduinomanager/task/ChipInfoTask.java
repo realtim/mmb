@@ -47,7 +47,7 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
      */
     protected Boolean doInBackground(final Void... params) {
         if (MainApp.mStation == null) return false;
-        return MainApp.mStation.readCardPage((byte) 20, 5);
+        return MainApp.mStation.readCardPage((byte) 20, 5, "ChipInfoTask");
     }
 
     /**

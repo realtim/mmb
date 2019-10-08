@@ -37,7 +37,7 @@ public class ChipInitTask extends AsyncTask<Integer, Void, Boolean> {
         // Send the command to station
         final int teamNumber = teamParams[0];
         final int teamMask = teamParams[1];
-        return MainApp.mStation.initChip(teamNumber, teamMask);
+        return MainApp.mStation.initChip(teamNumber, teamMask, "ChipInitTask");
     }
 
     /**

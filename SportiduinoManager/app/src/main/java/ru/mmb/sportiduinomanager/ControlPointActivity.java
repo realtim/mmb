@@ -9,6 +9,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -72,6 +73,7 @@ public final class ControlPointActivity extends MainActivity
 
     @Override
     protected void onStart() {
+        Log.d("SIM CPActivity", "Start");
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.control_point).setChecked(true);
@@ -110,6 +112,7 @@ public final class ControlPointActivity extends MainActivity
 
     @Override
     protected void onResume() {
+        Log.d("SIM CPActivity", "Resume");
         super.onResume();
         // Start background querying of connected station
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
@@ -121,6 +124,7 @@ public final class ControlPointActivity extends MainActivity
     protected void onPause() {
         stopStationQuerying();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        Log.d("SIM CPActivity", "Pause");
         super.onPause();
     }
 
@@ -207,8 +211,9 @@ public final class ControlPointActivity extends MainActivity
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+        MainApp.mStation.waitForPooling2Stop();
         if (!MainApp.mStation.updateTeamMask(teamNumber, MainApp.mPointPunches.getInitTime(index),
-                mTeamMask)) {
+                mTeamMask, "CPActivity")) {
             Toast.makeText(mMainApplication, MainApp.mStation.getLastError(true),
                     Toast.LENGTH_LONG).show();
             runStationQuerying();
@@ -355,6 +360,7 @@ public final class ControlPointActivity extends MainActivity
      * Background thread for periodic querying of connected station.
      */
     private void runStationQuerying() {
+        MainApp.mStation.setPoolingAllowed(true);
         startService(new Intent(this, StationPoolingService.class));
     }
 
@@ -362,6 +368,7 @@ public final class ControlPointActivity extends MainActivity
      * Stops rescheduling of periodic station query.
      */
     private void stopStationQuerying() {
+        MainApp.mStation.setPoolingAllowed(false);
         stopService(new Intent(this, StationPoolingService.class));
     }
 }
