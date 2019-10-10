@@ -48,6 +48,7 @@
 
     <rule ref="category/java/performance.xml">
 <!---->        <exclude name="AvoidInstantiatingObjectsInLoops" />
+<!---->        <exclude name="AvoidFileStream" />
     </rule>
 
     <rule ref="category/java/security.xml"/>

@@ -156,7 +156,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
 
     @Override
     protected void onStart() {
-        Log.d("SIM BluetoothActivity", "Start");
+        Log.d(Station.CALLER_BLUETOOTH, "Start");
         super.onStart();
         // Start monitoring bluetooth changes
         registerReceiver(mBTStateMonitor, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
@@ -171,7 +171,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
 
     @Override
     protected void onResume() {
-        Log.d("SIM BluetoothActivity", "Resume");
+        Log.d(Station.CALLER_BLUETOOTH, "Resume");
         super.onResume();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.bluetooth).setChecked(true);
@@ -260,7 +260,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
 
     @Override
     protected void onStop() {
-        Log.d("SIM BluetoothActivity", "Stop");
+        Log.d(Station.CALLER_BLUETOOTH, "Stop");
         super.onStop();
     }
 
@@ -269,7 +269,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         // Unregister Bluetooth state monitor
         unregisterReceiver(mBTStateMonitor);
         unregisterReceiver(mSearchDevices);
-        Log.d("SIM BluetoothActivity", "Destroy");
+        Log.d(Station.CALLER_BLUETOOTH, "Destroy");
         super.onDestroy();
     }
 
@@ -386,7 +386,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         }
         // If no station reset is needed,
         // then just call station mode change and display result
-        MainApp.mStation.newMode(newMode, "BluetoothActivity");
+        MainApp.mStation.newMode(newMode, Station.CALLER_BLUETOOTH);
         onStationResetResult(MainApp.mStation.getLastError(true));
     }
 
@@ -432,7 +432,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      */
     public void syncStationClock(@SuppressWarnings("unused") final View view) {
         if (MainApp.mStation == null) return;
-        if (MainApp.mStation.syncTime("BluetoothActivity")) {
+        if (MainApp.mStation.syncTime(Station.CALLER_BLUETOOTH)) {
             ((TextView) findViewById(R.id.station_response_time)).setText(getResources()
                     .getString(R.string.response_time, MainApp.mStation.getResponseTime()));
             ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
@@ -518,11 +518,11 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
             findViewById(R.id.station_status).setVisibility(View.GONE);
             return;
         }
-        // Wait for StationPooling service to stop
-        MainApp.mStation.waitForPooling2Stop();
+        // Wait for StationQuerying to stop
+        MainApp.mStation.waitForQuerying2Stop();
         // Update station data if asked
-        if (fetchStatus && !(MainApp.mStation.fetchConfig("BluetoothActivity") && MainApp.mStation.fetchStatus(
-                "BluetoothActivity"))) {
+        if (fetchStatus && !(MainApp.mStation.fetchConfig(Station.CALLER_BLUETOOTH) && MainApp.mStation.fetchStatus(
+                Station.CALLER_BLUETOOTH))) {
             Toast.makeText(getApplicationContext(), MainApp.mStation.getLastError(true),
                     Toast.LENGTH_LONG).show();
             findViewById(R.id.station_status).setVisibility(View.GONE);

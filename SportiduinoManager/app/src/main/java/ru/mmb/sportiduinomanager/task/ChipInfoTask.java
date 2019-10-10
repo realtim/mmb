@@ -6,6 +6,7 @@ import java.lang.ref.WeakReference;
 
 import ru.mmb.sportiduinomanager.ChipInfoActivity;
 import ru.mmb.sportiduinomanager.MainApp;
+import ru.mmb.sportiduinomanager.model.Station;
 
 /**
  * Run long read chip info in separate thread.
@@ -47,7 +48,7 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
      */
     protected Boolean doInBackground(final Void... params) {
         if (MainApp.mStation == null) return false;
-        return MainApp.mStation.readCardPage((byte) 20, 5, "ChipInfoTask");
+        return MainApp.mStation.readCardPage((byte) 20, 5, Station.CALLER_CHIP_INFO);
     }
 
     /**

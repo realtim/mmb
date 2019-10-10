@@ -11,7 +11,6 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name="MainApp"
@@ -38,6 +37,5 @@
         <activity android:name="ChipInitActivity" />
         <activity android:name="ChipInfoActivity" />
         <activity android:name="ControlPointActivity" />
-        <service android:name="StationPoolingService" />
     </application>
 </manifest>

@@ -39,7 +39,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
     protected Integer doInBackground(final Integer... newNumbers) {
         if (MainApp.mStation == null) return R.string.err_station_absent;
         // Update station status to get number of punched teams and time of last punch
-        if (!MainApp.mStation.fetchStatus("ResetStationTask")) return MainApp.mStation.getLastError(true);
+        if (!MainApp.mStation.fetchStatus(Station.CALLER_RESET)) return MainApp.mStation.getLastError(true);
         // Check if some teams punched at the station while it had it's old number
         final int chipsRegistered = MainApp.mStation.getChipsRegistered();
         // Compute total time without teams scan
@@ -57,7 +57,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
         publishProgress(estimateTimeToComplete(0, 0, MainApp.mStation.getNumber()), totalTime);
         // Reset station to change it's number
         final int newNumber = newNumbers[0];
-        if (!MainApp.mStation.resetStation(newNumber, "ResetStationTask")) return MainApp.mStation.getLastError(true);
+        if (!MainApp.mStation.resetStation(newNumber, Station.CALLER_RESET)) return MainApp.mStation.getLastError(true);
         // Sleep for 0.5 second while station is rebooting after reset
         try {
             Thread.sleep(500);
@@ -67,7 +67,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
         // Update station mode if needed
         publishProgress(0L, totalTime);
         final int newMode = newNumbers[1];
-        if (newMode != MainApp.mStation.getMode() && !MainApp.mStation.newMode(newMode, "ResetStationTask")) {
+        if (newMode != MainApp.mStation.getMode() && !MainApp.mStation.newMode(newMode, Station.CALLER_RESET)) {
             return MainApp.mStation.getLastError(true);
         }
         return 0;
@@ -89,7 +89,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
             publishProgress(estimateTimeToComplete(teamList.size() - i,
                     chipsRegistered - teamsRescanned, MainApp.mStation.getNumber()), totalTime);
             // Fetch data for the team punch at the station
-            if (!MainApp.mStation.fetchTeamRecord(teamNumber, "ResetStationTask")) {
+            if (!MainApp.mStation.fetchTeamRecord(teamNumber, Station.CALLER_RESET)) {
                 final int error = MainApp.mStation.getLastError(true);
                 if (error == R.string.err_station_no_data
                         || error == R.string.err_station_flash_empty) continue;
@@ -111,7 +111,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
                     toRead = Station.MAX_PUNCH_COUNT;
                 }
                 if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask, fromPunch, toRead,
-                        "ResetStationTask")) {
+                        Station.CALLER_RESET)) {
                     final int error = MainApp.mStation.getLastError(true);
                     if (error != R.string.err_station_flash_empty) return error;
                 }

@@ -15,7 +15,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -405,9 +404,6 @@ public final class DatabaseActivity extends MainActivity {
             int result;
             try {
                 result = request[0].makeRequest();
-            } catch (IOException e) {
-                result = SiteRequest.LOAD_READ_ERROR;
-
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                 result = SiteRequest.LOAD_PARSE_ERROR;
             }

@@ -408,7 +408,6 @@ public final class Records {
      * @param newRecords List of records to add
      * @return True if some records were added or replaced
      */
-    @SuppressWarnings("UnusedReturnValue")
     public boolean merge(final Records newRecords) {
         boolean dataChanged = false;
         for (final Record newRecord : newRecords.mRecords) {
@@ -449,7 +448,6 @@ public final class Records {
      * @param newRecords List of records to add
      * @return True if some records were added
      */
-    @SuppressWarnings("UnusedReturnValue")
     public boolean join(final Records newRecords) {
         boolean dataChanged = false;
         for (final Record newRecord : newRecords.mRecords) {

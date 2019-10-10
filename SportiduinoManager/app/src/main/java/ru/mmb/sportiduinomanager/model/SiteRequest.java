@@ -9,6 +9,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -112,6 +113,10 @@ public final class SiteRequest {
     private String mCustomError;
 
     /**
+     * Result of parsing of server response.
+     */
+    private int mParsingResult;
+    /**
      * A distance successfully loaded from downloaded file.
      */
     private Distance mDistance;
@@ -193,11 +198,8 @@ public final class SiteRequest {
      * Make one of download/upload request according to mType.
      *
      * @return One of LOAD result constants, mCustomError can be also set
-     * @throws IOException                    Input stream error
-     * @throws NumberFormatException          A field does not contain integer/long
-     * @throws ArrayIndexOutOfBoundsException Number of fields in a line is too small
      */
-    public int makeRequest() throws IOException {
+    public int makeRequest() {
         switch (mType) {
             case TYPE_DL_DISTANCE:
                 return loadDistance();
@@ -271,131 +273,152 @@ public final class SiteRequest {
     }
 
     /**
-     * Ask site for distance and teams data download.
+     * Parse one block of a distance downloaded from site.
      *
-     * @return One of LOAD result constants, mCustomError can be also set
-     * @throws IOException                    Unexpected end of file
-     * @throws NumberFormatException          A field does not contain integer/long
-     * @throws ArrayIndexOutOfBoundsException Number of fields in a line is too small
+     * @param firstLine First line of the block
+     * @param reader    Buffered reader of server response
+     * @return True if the block has been loaded successfully
      */
-    private int loadDistance() throws IOException {
-        // Prepare and open connection to site
-        final HttpURLConnection connection = prepareConnection();
-        if (connection == null) return LOAD_READ_ERROR;
-        final int result = makeConnection(connection, null);
-        if (result != LOAD_OK) return result;
-        // Start reading server response
-        final BufferedReader reader =
-                new BufferedReader(new InputStreamReader(connection.getInputStream(),
-                        Charset.forName(UTF8)));
-        // check for error message from server
-        String line = reader.readLine();
-        if (line == null) return LOAD_READ_ERROR;
-        if (!"".equals(line)) {
-            mCustomError = line;
-            return LOAD_CUSTOM_ERROR;
-        }
-        // read the response
-        Distance distance = null;
-        Teams teams = null;
-        String[] values;
-        char blockType;
-        do {
-            line = reader.readLine();
-            if (line == null) return LOAD_PARSE_ERROR;
-            blockType = line.charAt(0);
-            values = line.split("\t", -1);
+    private boolean parseDistanceBlock(final String firstLine, final BufferedReader reader) {
+        final char blockType = firstLine.charAt(0);
+        String[] values = firstLine.split("\t", -1);
+        String line;
+        try {
             switch (blockType) {
                 case 'R':
                     // get raid information
-                    distance = new Distance(mUserEmail, mUserPassword, mTestSite,
+                    mDistance = new Distance(mUserEmail, mUserPassword, mTestSite,
                             Integer.parseInt(values[1]), values[4],
                             System.currentTimeMillis() / 1000,
                             Long.parseLong(values[2]), Long.parseLong(values[3]), 0);
                     break;
                 case 'P':
                     // parse list of points
-                    if (distance == null) return LOAD_PARSE_ERROR;
+                    if (mDistance == null) return false;
                     final int nPoints = Integer.parseInt(values[1]);
-                    distance.initPointArray(Integer.parseInt(values[2]), mChipInitName);
+                    mDistance.initPointArray(Integer.parseInt(values[2]), mChipInitName);
                     for (int i = 0; i < nPoints; i++) {
                         line = reader.readLine();
-                        if (line == null) return LOAD_PARSE_ERROR;
+                        if (line == null) return false;
                         values = line.split("\t", -1);
-                        if (!distance.addPoint(Integer.parseInt(values[1]),
+                        if (!mDistance.addPoint(Integer.parseInt(values[1]),
                                 Integer.parseInt(values[2]), Integer.parseInt(values[3]),
                                 Long.parseLong(values[4]), Long.parseLong(values[5]), values[6])) {
-                            return LOAD_PARSE_ERROR;
+                            return false;
                         }
                     }
                     break;
                 case 'D':
                     // parse list of discounts
-                    if (distance == null) return LOAD_PARSE_ERROR;
+                    if (mDistance == null) return false;
                     final int nDiscounts = Integer.parseInt(values[1]);
-                    distance.initDiscountArray(nDiscounts);
+                    mDistance.initDiscountArray(nDiscounts);
                     for (int i = 0; i < nDiscounts; i++) {
                         line = reader.readLine();
-                        if (line == null) return LOAD_PARSE_ERROR;
+                        if (line == null) return false;
                         values = line.split("\t", -1);
-                        if (!distance.addDiscount(Integer.parseInt(values[1]),
+                        if (!mDistance.addDiscount(Integer.parseInt(values[1]),
                                 Integer.parseInt(values[2]), Integer.parseInt(values[3]))) {
-                            return LOAD_PARSE_ERROR;
+                            return false;
                         }
                     }
                     break;
                 case 'T':
                     // parse list of teams
                     final int nTeams = Integer.parseInt(values[1]);
-                    teams = new Teams(Integer.parseInt(values[2]));
+                    mTeams = new Teams(Integer.parseInt(values[2]));
                     for (int i = 0; i < nTeams; i++) {
                         line = reader.readLine();
-                        if (line == null) return LOAD_PARSE_ERROR;
+                        if (line == null) return false;
                         values = line.split("\t", -1);
-                        if (!teams.addTeam(Integer.parseInt(values[1]),
+                        if (!mTeams.addTeam(Integer.parseInt(values[1]),
                                 Integer.parseInt(values[2]), Integer.parseInt(values[3]),
                                 values[4])) {
-                            return LOAD_PARSE_ERROR;
+                            return false;
                         }
                     }
                     break;
                 case 'M':
                     // parse list of team members
-                    if (teams == null) return LOAD_PARSE_ERROR;
+                    if (mTeams == null) return false;
                     final int nMembers = Integer.parseInt(values[1]);
                     for (int i = 0; i < nMembers; i++) {
                         line = reader.readLine();
-                        if (line == null) return LOAD_PARSE_ERROR;
+                        if (line == null) return false;
                         values = line.split("\t", -1);
-                        if (!teams.addTeamMember(Long.parseLong(values[1]),
+                        if (!mTeams.addTeamMember(Long.parseLong(values[1]),
                                 Integer.parseInt(values[2]), values[3], values[4])) {
-                            return LOAD_PARSE_ERROR;
+                            return false;
                         }
                     }
                     break;
                 case 'E':
                     // End of distance data in server response
+                    mParsingResult = LOAD_OK;
                     break;
                 default:
-                    return LOAD_PARSE_ERROR;
+                    return false;
             }
-        } while (blockType != 'E');
-        reader.close();
-        connection.disconnect();
-        // check if all necessary data were present
-        if (distance == null || teams == null) return LOAD_PARSE_ERROR;
-        // Validate loaded distance and teams
-        if (distance.hasErrors() || teams.hasErrors()) {
-            // Downloaded distance or teams have errors, through them away
-            return LOAD_PARSE_ERROR;
+        } catch (IOException e) {
+            return false;
         }
-        // Copy parsed distance and teams to class members
-        mDistance = distance;
-        mTeams = teams;
+        return true;
+    }
+
+    /**
+     * Ask site for distance and teams data download.
+     *
+     * @return One of LOAD result constants, mCustomError can be also set
+     */
+    private int loadDistance() {
+        // Prepare and open connection to site
+        final HttpURLConnection connection = prepareConnection();
+        if (connection == null) return LOAD_READ_ERROR;
+        final int result = makeConnection(connection, null);
+        if (result != LOAD_OK) return result;
+        // Start reading server response
+        try (InputStream stream = connection.getInputStream()) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName(UTF8)))) {
+                // check for error message from server
+                String line = reader.readLine();
+                if (line == null) {
+                    reader.close();
+                    connection.disconnect();
+                    return LOAD_READ_ERROR;
+                }
+                if (!"".equals(line)) {
+                    reader.close();
+                    connection.disconnect();
+                    mCustomError = line;
+                    return LOAD_CUSTOM_ERROR;
+                }
+                // read the response
+                mParsingResult = LOAD_READ_ERROR;
+                do {
+                    line = reader.readLine();
+                    if (line == null) break;
+                    if (!parseDistanceBlock(line, reader)) break;
+                } while (mParsingResult != LOAD_OK);
+            } catch (IOException e) {
+                connection.disconnect();
+                return LOAD_READ_ERROR;
+            }
+        } catch (IOException e) {
+            connection.disconnect();
+            return LOAD_READ_ERROR;
+        }
+        // Finish reading server response
+        connection.disconnect();
+        // Validate loaded distance and teams
+        if (mParsingResult == LOAD_OK && (mDistance.hasErrors() || mTeams.hasErrors())) {
+            mParsingResult = LOAD_PARSE_ERROR;
+        }
+        // Reset distance and teams and return in case of parsing error
+        if (mParsingResult != LOAD_OK) return mParsingResult;
         // Save parsed distance and teams to local database
         try {
-            mDatabase.saveDistance(distance);
-            mDatabase.saveTeams(teams);
+            mDatabase.saveDistance(mDistance);
+            mDatabase.saveTeams(mTeams);
         } catch (SQLiteException e) {
             mCustomError = e.getMessage();
             return LOAD_CUSTOM_ERROR;
@@ -407,9 +430,8 @@ public final class SiteRequest {
      * Send all unsent records from local database to site database.
      *
      * @return One of LOAD result constants, mCustomError can be also set
-     * @throws IOException Unexpected end of file
      */
-    private int sendRecords() throws IOException {
+    private int sendRecords() {
         // Prepare connection to site
         final HttpURLConnection connection = prepareConnection();
         if (connection == null) return LOAD_READ_ERROR;
@@ -425,24 +447,39 @@ public final class SiteRequest {
         final int result = makeConnection(connection, data);
         if (result != LOAD_OK) return result;
         // Read script response
-        final BufferedReader reader =
-                new BufferedReader(new InputStreamReader(connection.getInputStream(),
-                        Charset.forName(UTF8)));
-        // Non-empty first line contains server error
-        final String error = reader.readLine();
-        if (!"".equals(error)) {
-            mCustomError = error;
-            return LOAD_CUSTOM_ERROR;
-        }
-        // Check that all records were received by server
-        final String header = reader.readLine();
-        if (header == null) return LOAD_READ_ERROR;
-        try {
-            if (Integer.parseInt(header) != records.size()) return LOAD_PARSE_ERROR;
-        } catch (NumberFormatException e) {
-            // This line can contain php error, show it to user
-            mCustomError = header;
-            return LOAD_CUSTOM_ERROR;
+        try (InputStream stream = connection.getInputStream()) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName(UTF8)))) {
+                // Non-empty first line contains server error
+                final String error = reader.readLine();
+                if (!"".equals(error)) {
+                    reader.close();
+                    connection.disconnect();
+                    mCustomError = error;
+                    return LOAD_CUSTOM_ERROR;
+                }
+                // Check that all records were received by server
+                final String header = reader.readLine();
+                if (header == null) {
+                    reader.close();
+                    connection.disconnect();
+                    return LOAD_READ_ERROR;
+                }
+                try {
+                    if (Integer.parseInt(header) != records.size()) return LOAD_PARSE_ERROR;
+                } catch (NumberFormatException e) {
+                    // This line can contain php error, show it to user
+                    reader.close();
+                    connection.disconnect();
+                    mCustomError = header;
+                    return LOAD_CUSTOM_ERROR;
+                }
+            } catch (IOException e) {
+                connection.disconnect();
+                return LOAD_READ_ERROR;
+            }
+        } catch (IOException e) {
+            connection.disconnect();
+            return LOAD_READ_ERROR;
         }
         // Finish parsing of server response
         connection.disconnect();
@@ -463,38 +500,42 @@ public final class SiteRequest {
      * Download new results from site database to local database.
      *
      * @return One of LOAD result constants, mCustomError can be also set
-     * @throws IOException Unexpected end of file
      */
-    private int loadResults() throws IOException {
+    private int loadResults() {
         // Prepare and open connection to site
         final HttpURLConnection connection = prepareConnection();
         if (connection == null) return LOAD_READ_ERROR;
         final int result = makeConnection(connection, null);
         if (result != LOAD_OK) return result;
         // Start reading server response
-        final BufferedReader reader =
-                new BufferedReader(new InputStreamReader(connection.getInputStream(),
-                        Charset.forName(UTF8)));
-        // check for error message from server
-        final String error = reader.readLine();
-        if (!"".equals(error)) {
-            mCustomError = error;
-            return LOAD_CUSTOM_ERROR;
+        try (InputStream stream = connection.getInputStream()) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName(UTF8)))) {
+                // check for error message from server
+                final String error = reader.readLine();
+                if (!"".equals(error)) {
+                    mCustomError = error;
+                    return LOAD_CUSTOM_ERROR;
+                }
+                // Get id of last result in site database
+                final String header = reader.readLine();
+                if (header == null) return LOAD_READ_ERROR;
+                long lastResultId;
+                try {
+                    lastResultId = Integer.parseInt(header);
+                } catch (NumberFormatException e) {
+                    // This line can contain php error, show it to user
+                    mCustomError = header;
+                    return LOAD_CUSTOM_ERROR;
+                }
+                // TODO: mDistance is null, save it in future mResults object
+                mDistance.setLastResultId(lastResultId);
+                // TODO: parse teams results
+            } catch (IOException e) {
+                return LOAD_READ_ERROR;
+            }
+        } catch (IOException e) {
+            return LOAD_READ_ERROR;
         }
-        // Get id of last result in site database
-        final String header = reader.readLine();
-        if (header == null) return LOAD_READ_ERROR;
-        long lastResultId;
-        try {
-            lastResultId = Integer.parseInt(header);
-        } catch (NumberFormatException e) {
-            // This line can contain php error, show it to user
-            mCustomError = header;
-            return LOAD_CUSTOM_ERROR;
-        }
-        // TODO: mDistance is null, save it in future mResults object
-        mDistance.setLastResultId(lastResultId);
-        // TODO: parse teams results
         return LOAD_OK;
     }
 
@@ -502,9 +543,8 @@ public final class SiteRequest {
      * Send local database file for testing purposes.
      *
      * @return One of LOAD result constants, mCustomError can be also set
-     * @throws IOException Unexpected end of file
      */
-    private int sendDatabase() throws IOException {
+    private int sendDatabase() {
         // Prepare connection to site
         final HttpURLConnection connection = prepareConnection();
         if (connection == null) return LOAD_READ_ERROR;
@@ -513,24 +553,31 @@ public final class SiteRequest {
         // Read database binary content
         final File file = new File(filename);
         final byte[] content = new byte[(int) file.length()];
-        final DataInputStream dataInputStream =
-                new DataInputStream(new BufferedInputStream(new FileInputStream(filename)));
-        dataInputStream.readFully(content);
-        dataInputStream.close();
+        try (FileInputStream fileInputStream = new FileInputStream(filename)) {
+            try (DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(fileInputStream))) {
+                dataInputStream.readFully(content);
+            } catch (IOException e) {
+                return LOAD_READ_ERROR;
+            }
+        } catch (IOException e) {
+            return LOAD_READ_ERROR;
+        }
         // Prepare data to send
         final String data = "data=" + Base64.encodeToString(content, Base64.NO_WRAP | Base64.URL_SAFE);
         // Send data to site
         final int result = makeConnection(connection, data);
         if (result != LOAD_OK) return result;
         // Read script response
-        final BufferedReader reader =
-                new BufferedReader(new InputStreamReader(connection.getInputStream(),
-                        Charset.forName(UTF8)));
-        // Non-empty first line contains server error
-        final String error = reader.readLine();
-        if (!"".equals(error)) {
-            mCustomError = error;
-            return LOAD_CUSTOM_ERROR;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(),
+                Charset.forName(UTF8)))) {
+            final String error = reader.readLine();
+            // Non-empty first line contains server error
+            if (!"".equals(error)) {
+                mCustomError = error;
+                return LOAD_CUSTOM_ERROR;
+            }
+        } catch (IOException e) {
+            return LOAD_READ_ERROR;
         }
         // Finish parsing of server response
         return LOAD_OK;

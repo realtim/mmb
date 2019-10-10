@@ -36,6 +36,31 @@ public final class Station {
     public static final int MODE_FINISH_POINT = 2;
 
     /**
+     * Caller of station command is BluetoothActivity.
+     */
+    public static final String CALLER_BLUETOOTH = "SiMan Bluetooth";
+    /**
+     * Caller of station command is ControlPointActivity.
+     */
+    public static final String CALLER_CP = "SiMan ControlPoint";
+    /**
+     * Caller of station command is StationQuerying task.
+     */
+    public static final String CALLER_QUERYING = "SiMan StationQuery";
+    /**
+     * Caller of station command is ChipInfoActivity.
+     */
+    public static final String CALLER_CHIP_INFO = "SiMan ChipInfo";
+    /**
+     * Caller of station command is ChipInitTask.
+     */
+    public static final String CALLER_CHIP_INIT = "SiMan ChipInit";
+    /**
+     * Caller of station command is StationResetTask.
+     */
+    public static final String CALLER_RESET = "SiMan StationReset";
+
+    /**
      * Size of last teams buffer in station.
      */
     public static final int LAST_TEAMS_LEN = 10;
@@ -186,8 +211,14 @@ public final class Station {
      * (an control point number to work at or zero for chip initialization).
      */
     private int mNumber;
-    private boolean mPoolingAllowed;
-    private boolean mPoolingActive;
+    /**
+     * True when StationQuerying is allowed by activity to send commands to station.
+     */
+    private boolean mQueryingAllowed;
+    /**
+     * True when StationQuerying is in the middle of sending commands to station.
+     */
+    private boolean mQueryingActive;
     /**
      * Number of teams who checked in.
      */
@@ -228,8 +259,8 @@ public final class Station {
         mTimeDrift = 0;
         mMode = 0;
         mNumber = 0;
-        mPoolingAllowed = false;
-        mPoolingActive = false;
+        mQueryingAllowed = false;
+        mQueryingActive = false;
         mChipsRegistered = 0;
         mLastPunchTime = 0;
         mFirmware = 0;
@@ -311,25 +342,39 @@ public final class Station {
         return mNumber;
     }
 
-    @SuppressWarnings("UnusedReturnValue")
-    public boolean isPoolingAllowed() {
-        return mPoolingAllowed;
-    }
-
-    public void setPoolingAllowed(final boolean isAllowed) {
-        mPoolingAllowed = isAllowed;
-    }
-
-    public void setPoolingActive(final boolean isActive) {
-        mPoolingActive = isActive;
+    /**
+     * Check if StationQuerying is allowed by activity to send commands to station.
+     *
+     * @return True if allowed
+     */
+    public boolean isQueryingAllowed() {
+        return mQueryingAllowed;
     }
 
     /**
-     * Wait for StationPooling cycle to finish (1.25s as hard limit).
+     * Allow/disallow StationQuerying to send commands to station.
+     *
+     * @param isAllowed True for allowing to send commands.
      */
-    public void waitForPooling2Stop() {
+    public void setQueryingAllowed(final boolean isAllowed) {
+        mQueryingAllowed = isAllowed;
+    }
+
+    /**
+     * Flag the beginning/end of sending commands to station by StationQuerying.
+     *
+     * @param isActive True if querying is going to start
+     */
+    public void setQueryingActive(final boolean isActive) {
+        mQueryingActive = isActive;
+    }
+
+    /**
+     * Wait for StationQuerying cycle to finish (1.25s as hard limit).
+     */
+    public void waitForQuerying2Stop() {
         for (int i = 0; i < 50; i++) {
-            if (!mPoolingActive) return;
+            if (!mQueryingActive) return;
             sleep();
         }
     }
@@ -393,7 +438,6 @@ public final class Station {
      *
      * @return Copy of mLastTeams array containing last teams numbers
      */
-    @SuppressWarnings("UnusedReturnValue")
     public List<Integer> getLastTeams() {
         return new ArrayList<>(mLastTeams);
     }
@@ -480,6 +524,7 @@ public final class Station {
     private boolean send(final byte[] command) {
         final int len = command.length;
         if (len == 0 || len > MAX_PACKET_SIZE) return false;
+        // prepare output buffer
         byte[] buffer = new byte[len + HEADER_SIZE];
         buffer[0] = HEADER_SIGNATURE;
         buffer[1] = HEADER_SIGNATURE;
@@ -488,8 +533,8 @@ public final class Station {
         buffer[4] = (byte) ((len - 1) & 0xFF);
         System.arraycopy(command, 0, buffer, 5, len);
         buffer[len + HEADER_SIZE - 1] = crc8(buffer, len + HEADER_SIZE - 1);
-        try {
-            final OutputStream output = mSocket.getOutputStream();
+        // send output buffer to station Bluetooth socket
+        try (OutputStream output = mSocket.getOutputStream()) {
             output.write(buffer);
             output.flush();
         } catch (IOException e) {
@@ -516,9 +561,10 @@ public final class Station {
      */
     private byte[] receive() {
         byte[] response = new byte[0];
+        // try to open Bluetooth socket input stream
+        // read from station Bluetooth socket
         final byte[] buffer = new byte[MAX_PACKET_SIZE];
-        try {
-            final InputStream input = mSocket.getInputStream();
+        try (InputStream input = mSocket.getInputStream()) {
             while (System.currentTimeMillis() - mStartTime < WAIT_TIMEOUT) {
                 // wait for data to appear in input stream
                 if (input.available() == 0) {
@@ -542,9 +588,11 @@ public final class Station {
                 // stop waiting for more data if we got whole packet
                 if (response.length >= HEADER_SIZE && response.length
                         >= ((response[HEADER_SIZE - 2] & 0xFF) + HEADER_SIZE + 1)) {
+                    input.close();
                     return response;
                 }
             }
+            input.close();
             return response;
         } catch (IOException e) {
             // station got disconnected
@@ -614,6 +662,7 @@ public final class Station {
      *
      * @param commandContent  Command payload sent to station
      * @param responseContent Station response without service bytes
+     * @param caller          Name of caller activity for Logcat
      * @return True if there was no communication or command execution errors
      */
     private boolean command(final byte[] commandContent, final byte[] responseContent,
@@ -621,16 +670,14 @@ public final class Station {
         // Save time at the beginning of command processing
         mStartTime = System.currentTimeMillis();
         // TODO: remove debug output
-        Log.d("SIM " + caller,
-                "command " + String.format("%02x", commandContent[0]) + " started  at " + +mStartTime);
+        Log.d(caller, " command " + String.format("%02x", commandContent[0]) + " started  at " + mStartTime);
         // Communicate with the station
         final byte[] rawResponse = runCommand(commandContent);
         // Compute execution time
         final long now = System.currentTimeMillis();
         mResponseTime = now - mStartTime;
         // TODO: remove debug output
-        Log.d("SIM " + caller,
-                "command " + String.format("%02x", commandContent[0]) + " finished  at " + +now);
+        Log.d(caller, " command " + String.format("%02x", commandContent[0]) + " finished  at " + now);
         // Check for command execution errors and response parsing errors
         if (rawResponse[0] != ALL_OK) {
             switch (rawResponse[0]) {
@@ -774,7 +821,8 @@ public final class Station {
     /**
      * Set station mode and number.
      *
-     * @param mode New station mode (chip initialization, ordinary or finish point)
+     * @param mode   New station mode (chip initialization, ordinary or finish point)
+     * @param caller Name of caller activity for Logcat
      * @return True if we got valid response from station, check mLastError otherwise
      */
     public boolean newMode(final int mode, final String caller) {
@@ -795,6 +843,7 @@ public final class Station {
     /**
      * Set station clock to Android local time converted to UTC timezone.
      *
+     * @param caller Name of caller activity for Logcat
      * @return True if we got valid response from station, check mLastError otherwise
      */
     public boolean syncTime(final String caller) {
@@ -821,6 +870,7 @@ public final class Station {
      * Reset station by giving it new number and erasing all data in it.
      *
      * @param number New station number
+     * @param caller Name of caller activity for Logcat
      * @return True if we got valid response from station, check mLastError otherwise
      */
     public boolean resetStation(final int number, final String caller) {
@@ -851,6 +901,7 @@ public final class Station {
     /**
      * Get station local time, mode, number, etc.
      *
+     * @param caller Name of caller activity for Logcat
      * @return True if we got valid response from station, check mLastError otherwise
      */
     public boolean fetchStatus(final String caller) {
@@ -878,6 +929,7 @@ public final class Station {
      *
      * @param teamNumber Team number
      * @param teamMask   Mask of team members presence
+     * @param caller     Name of caller activity for Logcat
      * @return True if succeeded
      */
     public boolean initChip(final int teamNumber, final int teamMask, final String caller) {
@@ -902,9 +954,9 @@ public final class Station {
     /**
      * Get list of last LAST_TEAMS_LEN teams which has been punched at the station.
      *
+     * @param caller Name of caller activity for Logcat
      * @return True if succeeded
      */
-    @SuppressWarnings("UnusedReturnValue")
     public boolean fetchLastTeams(final String caller) {
         // Get response from station
         final byte[] response = new byte[LAST_TEAMS_LEN * 2];
@@ -921,9 +973,10 @@ public final class Station {
      * Get info about team with teamNumber number punched at the station.
      *
      * @param teamNumber Number of team to fetch
+     * @param caller     Name of caller activity for Logcat
      * @return True if succeeded
      */
-    @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "RedundantSuppression"})
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchTeamRecord(final int teamNumber, final String caller) {
         // Prepare command payload
         byte[] commandData = new byte[3];
@@ -960,6 +1013,7 @@ public final class Station {
      *
      * @param pagesInRequest must be 20
      * @param requestsCount  multiplier by 20 to get reasonable pages count
+     * @param caller         Name of caller activity for Logcat
      * @return true if succeeded
      */
     public boolean readCardPage(final byte pagesInRequest, final int requestsCount, final String caller) {
@@ -995,6 +1049,7 @@ public final class Station {
      * @param initTime   Chip init time
      *                   (along with team number it is the primary key of a chip)
      * @param teamMask   New team members mask
+     * @param caller     Name of caller activity for Logcat
      * @return true if succeeded
      */
     public boolean updateTeamMask(final int teamNumber, final long initTime, final int teamMask, final String caller) {
@@ -1017,11 +1072,11 @@ public final class Station {
      * @param teamMask   Chip team mask (for creation of new punch records)
      * @param fromPunch  Starting position in the list of punches
      * @param count      Number of punches to read
+     * @param caller     Name of caller activity for Logcat
      * @return True if succeeded, fills mTeamPunches with punches as Record instances
      */
-    @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "RedundantSuppression"})
-    public boolean fetchTeamPunches(final int teamNumber, final long initTime,
-                                    final int teamMask, final int fromPunch,
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean fetchTeamPunches(final int teamNumber, final long initTime, final int teamMask, final int fromPunch,
                                     final int count, final String caller) {
         if (count <= 0 || count > MAX_PUNCH_COUNT) {
             mLastError = R.string.err_station_buffer_overflow;
@@ -1067,6 +1122,7 @@ public final class Station {
     /**
      * Get station firmware version and configuration.
      *
+     * @param caller Name of caller activity for Logcat
      * @return True if succeeded
      */
     public boolean fetchConfig(final String caller) {

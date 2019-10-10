@@ -1,11 +1,6 @@
 package ru.mmb.sportiduinomanager;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,12 +10,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ru.mmb.sportiduinomanager.model.Records;
+import ru.mmb.sportiduinomanager.model.Station;
 import ru.mmb.sportiduinomanager.model.Teams;
-
-import static ru.mmb.sportiduinomanager.StationPoolingService.NOTIFICATION_ID;
 
 /**
  * Provides ability to get Sportiduino records from station, mark team members
@@ -33,7 +30,6 @@ public final class ControlPointActivity extends MainActivity
      * Main application thread with persistent data.
      */
     private MainApp mMainApplication;
-
     /**
      * User modified team members mask (it can be saved to chip and to local db).
      */
@@ -48,21 +44,15 @@ public final class ControlPointActivity extends MainActivity
      * RecyclerView with team members.
      */
     private MemberListAdapter mMemberAdapter;
-
     /**
      * RecyclerView with list of teams punched at the station.
      */
     private TeamListAdapter mTeamAdapter;
 
     /**
-     * Receiver for messages from station pooling service.
+     * Timer of background thread for communication with the station.
      */
-    private final BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            onStationDataUpdated();
-        }
-    };
+    private Timer mTimer;
 
     @Override
     protected void onCreate(final Bundle instanceState) {
@@ -73,13 +63,14 @@ public final class ControlPointActivity extends MainActivity
 
     @Override
     protected void onStart() {
-        Log.d("SIM CPActivity", "Start");
+        Log.d(Station.CALLER_CP, "Start");
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.control_point).setChecked(true);
         updateMenuItems(R.id.control_point);
         // Disable startup animation
         overridePendingTransition(0, 0);
+
         // Initialize masks
         mTeamMask = mMainApplication.getTeamMask();
         mOriginalMask = 0;
@@ -112,19 +103,16 @@ public final class ControlPointActivity extends MainActivity
 
     @Override
     protected void onResume() {
-        Log.d("SIM CPActivity", "Resume");
+        Log.d(Station.CALLER_CP, "Resume");
         super.onResume();
         // Start background querying of connected station
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(NOTIFICATION_ID));
         runStationQuerying();
     }
 
     @Override
     protected void onPause() {
         stopStationQuerying();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-        Log.d("SIM CPActivity", "Pause");
+        Log.d(Station.CALLER_CP, "Pause");
         super.onPause();
     }
 
@@ -211,9 +199,9 @@ public final class ControlPointActivity extends MainActivity
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        MainApp.mStation.waitForPooling2Stop();
+        MainApp.mStation.waitForQuerying2Stop();
         if (!MainApp.mStation.updateTeamMask(teamNumber, MainApp.mPointPunches.getInitTime(index),
-                mTeamMask, "CPActivity")) {
+                mTeamMask, Station.CALLER_CP)) {
             Toast.makeText(mMainApplication, MainApp.mStation.getLastError(true),
                     Toast.LENGTH_LONG).show();
             runStationQuerying();
@@ -322,53 +310,242 @@ public final class ControlPointActivity extends MainActivity
     }
 
     /**
-     * Update layout with new data received from connected station.
+     * Get all punches for all new teams
+     * which has been punched at the station after the last check.
+     * Returns -1 if some new teams has been punched at the station,
+     * 0 if no new teams has been punched,
+     * > 0 indicates an error code.
+     *
+     * @return -1/0/error code
      */
-    private void onStationDataUpdated() {
-        // Save currently selected team
-        final int selectedTeamN = MainApp.mPointPunches.getTeamNumber(MainApp.mPointPunches.size() - 1
-                - mTeamAdapter.getPosition());
-        // Update station clock in UI
-        ((TextView) findViewById(R.id.station_clock)).setText(
-                Records.printTime(MainApp.mStation.getStationTime(), "dd.MM  HH:mm:ss"));
-        // Update layout if new data has been arrived and/or error has been occurred
-        if (mTeamAdapter.getPosition() == 0) {
-            // Reset current mask if we at first item of team list
-            // as it is replaced with new team just arrived
-            updateMasks(false, 0);
-        } else {
-            // Change position in the list to keep current team selected
-            int newPosition = 0;
-            for (int i = 0; i < MainApp.mPointPunches.size(); i++) {
-                if (MainApp.mPointPunches.getTeamNumber(i) == selectedTeamN) {
-                    newPosition = MainApp.mPointPunches.size() - i - 1;
-                    break;
+    private int fetchTeamsPunches() {
+        // Do nothing if no teams has been punched yet
+        if (MainApp.mStation.getChipsRegistered() == 0) return 0;
+        // Number of team punches at local db and at station are the same?
+        // Time of last punch in local db and at station is the same?
+        // (it can change without changing of number of teams)
+        if (MainApp.mPointPunches.size() == MainApp.mStation.getChipsRegistered()
+                && MainApp.mPointPunches.getTeamTime(MainApp.mPointPunches.size() - 1)
+                == MainApp.mStation.getLastPunchTime()) {
+            return 0;
+        }
+
+        // Ok, we have some new punches
+        boolean fullDownload = false;
+        // Clone previous teams list from station
+        final List<Integer> prevLastTeams = new ArrayList<>(MainApp.mStation.getLastTeams());
+        // Ask station for new list
+        if (!MainApp.mStation.fetchLastTeams(Station.CALLER_QUERYING)) {
+            fullDownload = true;
+        }
+        final List<Integer> currLastTeams = MainApp.mStation.getLastTeams();
+        // Check if teams from previous list were copied from flash
+        for (final int team : prevLastTeams) {
+            if (!MainApp.mPointPunches.contains(team, MainApp.mStation.getNumber())) {
+                // Something strange has been happened, do full download of all teams
+                fullDownload = true;
+            }
+        }
+        // Start building the final list of teams to fetch
+        List<Integer> fetchTeams = new ArrayList<>();
+        for (final int team : currLastTeams) {
+            if (!prevLastTeams.contains(team)) {
+                fetchTeams.add(team);
+            }
+        }
+        // If all members of last teams buffer are new to us,
+        // then we need to make a full rescan
+        if (fetchTeams.size() == Station.LAST_TEAMS_LEN) {
+            fullDownload = true;
+        }
+        // If all last teams are the same but last team time has been changed
+        // then we need to rescan all teams from the buffer
+        if (fetchTeams.isEmpty()) {
+            fetchTeams = currLastTeams;
+        }
+        // For full rescan of all teams make a list of all registered teams
+        if (fullDownload) {
+            fetchTeams = MainApp.mTeams.getTeamList();
+        }
+
+        // Get Sportiduino records for all teams in fetch list
+        boolean flashChanged = false;
+        boolean newRecords = false;
+        int stationError = 0;
+        for (final int teamNumber : fetchTeams) {
+            // Fetch data for the team punched at the station
+            int newError = 0;
+            if (!MainApp.mStation.fetchTeamRecord(teamNumber, Station.CALLER_QUERYING)) {
+                newError = MainApp.mStation.getLastError(true);
+                // Ignore data absence for teams which are not in last teams list
+                // Most probable these teams did not punched at the station at all
+                if (newError == R.string.err_station_no_data
+                        && !currLastTeams.contains(teamNumber)) {
+                    continue;
+                }
+                // Abort scanning in case of serious error
+                // Continue scanning in case of problems with copying data from chip to memory
+                if (newError != R.string.err_station_flash_empty
+                        && newError != R.string.err_station_no_data) {
+                    return newError;
                 }
             }
-            mTeamAdapter.setPosition(newPosition);
-            mMainApplication.setTeamListPosition(newPosition);
+            // Get team punches as a Sportiduino record list
+            final Records teamPunches = MainApp.mStation.getTeamPunches();
+            if (teamPunches.size() == 0) {
+                // Team punch was not registered at all due to err_station_no_data error
+                // Create synthetic team punch with zero chip init time
+                final List<String> teamMembers = MainApp.mTeams.getMembersNames(teamNumber);
+                int originalMask = 0;
+                for (int i = 0; i < teamMembers.size(); i++) {
+                    originalMask = originalMask | (1 << i);
+                }
+                teamPunches.addRecord(MainApp.mStation, 0, teamNumber, originalMask,
+                        MainApp.mStation.getNumber(), MainApp.mStation.getLastPunchTime());
+            }
+            // Prepare to clone init time and mask from this record to punches from the chip
+            if (teamNumber != teamPunches.getTeamNumber(0)) return R.string.err_station_team_changed;
+            final long initTime = teamPunches.getInitTime(0);
+            final int teamMask = teamPunches.getTeamMask(0);
+            // Update persistent list of punches at current control point
+            if (MainApp.mPointPunches.merge(teamPunches)) {
+                flashChanged = true;
+            }
+            // Try to add team punches as new records
+            if (MainApp.mAllRecords.join(teamPunches)) {
+                newRecords = true;
+                // Read punches from chip and to record list
+                final int marks = MainApp.mStation.getChipRecordsN();
+                int fromMark = 0;
+                do {
+                    if (marks <= 0) break;
+                    int toRead = marks;
+                    if (toRead > Station.MAX_PUNCH_COUNT) {
+                        toRead = Station.MAX_PUNCH_COUNT;
+                    }
+                    if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask, fromMark, toRead,
+                            Station.CALLER_QUERYING)) {
+                        return MainApp.mStation.getLastError(true);
+                    }
+                    fromMark += toRead;
+                    // Add fetched punches to application list of records
+                    MainApp.mAllRecords.join(MainApp.mStation.getTeamPunches());
+                } while (fromMark < marks);
+            } else {
+                // Ignore recurrent problem with copying data from chip to memory
+                // as we already created synthetic team punch and warned a user
+                newError = 0;
+            }
+            // Save non-fatal station error
+            if (newError == R.string.err_station_flash_empty
+                    || newError == R.string.err_station_no_data) {
+                stationError = newError;
+            }
         }
-        // Update team list as we have a new team in it
-        mTeamAdapter.notifyDataSetChanged();
-        // Update activity layout as some elements has been changed
-        updateLayout();
-        // Menu should be changed if we have new record which was not sent to site
-        updateMenuItems(R.id.control_point);
+
+        // We have asked station for all teams from fetch list
+        // Save new records (if any) to local db
+        if (newRecords) {
+            // Save new records in local database
+            final String result = MainApp.mAllRecords.saveNewRecords(MainApp.mDatabase);
+            if (!"".equals(result)) return R.string.err_db_sql_error;
+        }
+        // Sort punches by their time
+        if (flashChanged) {
+            MainApp.mPointPunches.sort();
+        }
+        // Report non-fatal errors which has been occurred during scanning
+        if (stationError != 0) {
+            return stationError;
+        }
+        // Report 'data changed' for updating UI
+        if (newRecords || flashChanged) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 
     /**
      * Background thread for periodic querying of connected station.
      */
     private void runStationQuerying() {
-        MainApp.mStation.setPoolingAllowed(true);
-        startService(new Intent(this, StationPoolingService.class));
+        stopStationQuerying();
+        MainApp.mStation.setQueryingAllowed(true);
+        mTimer = new Timer();
+        mTimer.scheduleAtFixedRate(new TimerTask() {
+            /**
+             * Run every 1s, get station status and get new team data (if any).
+             */
+            public void run() {
+                // Station was not connected yet
+                if (MainApp.mStation == null) {
+                    stopStationQuerying();
+                    return;
+                }
+                // Querying is scheduled to stop, return immediately
+                if (!MainApp.mStation.isQueryingAllowed()) {
+                    Log.d(Station.CALLER_QUERYING, "Skip querying");
+                    return;
+                }
+                // Inform other activities that service starts sending queries to station
+                MainApp.mStation.setQueryingActive(true);
+                // Save currently selected team
+                final int selectedTeamN = MainApp.mPointPunches.getTeamNumber(MainApp.mPointPunches.size() - 1
+                        - mTeamAdapter.getPosition());
+                // Fetch current station status
+                MainApp.mStation.fetchStatus(Station.CALLER_QUERYING);
+                // Get the latest data from connected station
+                final int result = fetchTeamsPunches();
+                // Inform other activities that service finished sending queries to station
+                MainApp.mStation.setQueryingActive(false);
+                // Update control point activity screen elements
+                runOnUiThread(() -> {
+                    // Update station clock in UI
+                    ((TextView) findViewById(R.id.station_clock)).setText(
+                            Records.printTime(MainApp.mStation.getStationTime(), "dd.MM  HH:mm:ss"));
+                    // Update layout if new data has been arrived and/or error has been occurred
+                    if (result != 0) {
+                        if (mTeamAdapter.getPosition() == 0) {
+                            // Reset current mask if we at first item of team list
+                            // as it is replaced with new team just arrived
+                            updateMasks(false, 0);
+                        } else {
+                            // Change position in the list to keep current team selected
+                            int newPosition = 0;
+                            for (int i = 0; i < MainApp.mPointPunches.size(); i++) {
+                                if (MainApp.mPointPunches.getTeamNumber(i) == selectedTeamN) {
+                                    newPosition = MainApp.mPointPunches.size() - i - 1;
+                                    break;
+                                }
+                            }
+                            mTeamAdapter.setPosition(newPosition);
+                            mMainApplication.setTeamListPosition(newPosition);
+                        }
+                        // Update team list as we have a new team in it
+                        mTeamAdapter.notifyDataSetChanged();
+                        // Update activity layout as some elements has been changed
+                        updateLayout();
+                        // Menu should be changed if we have new records unsent to site
+                        updateMenuItems(R.id.control_point);
+                    }
+                    // Display station communication error (if any)
+                    if (result > 0) {
+                        Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }, 1000, 1000);
     }
 
     /**
      * Stops rescheduling of periodic station query.
      */
     private void stopStationQuerying() {
-        MainApp.mStation.setPoolingAllowed(false);
-        stopService(new Intent(this, StationPoolingService.class));
+        MainApp.mStation.setQueryingAllowed(false);
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer.purge();
+        }
     }
 }
