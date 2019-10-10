@@ -485,7 +485,7 @@ void processRfidCard()
   {
     SPI.end();
 #ifdef DEBUG
-    Serial.println(F("!!!fail to select card"));
+    Serial.println(F("!!!fail to select chip"));
 #endif
     //errorBeep(1);
     return;
@@ -496,7 +496,7 @@ void processRfidCard()
   {
     SPI.end();
 #ifdef DEBUG
-    Serial.println(F("!!!failed to read chip"));
+    Serial.println(F("!!!fail to read chip"));
 #endif
     //errorBeep(1);
     return;
@@ -507,7 +507,7 @@ void processRfidCard()
   {
     SPI.end();
 #ifdef DEBUG
-    Serial.println(F("!!!incorrect chip type"));
+    Serial.println(F("!!!incorrect hw chip type"));
 #endif
     errorBeep(1);
     return;
@@ -527,7 +527,7 @@ void processRfidCard()
   {
     SPI.end();
 #ifdef DEBUG
-    Serial.println(F("!!!incorrect chip type"));
+    Serial.println(F("!!!incorrect sw chip type"));
 #endif
     errorBeep(2);
     return;
@@ -538,7 +538,7 @@ void processRfidCard()
   {
     SPI.end();
 #ifdef DEBUG
-    Serial.println(F("!!!incorrect fw"));
+    Serial.println(F("!!!incorrect fw ver."));
 #endif
     errorBeep(4);
     return;
@@ -568,7 +568,7 @@ void processRfidCard()
   {
     SPI.end();
 #ifdef DEBUG
-    Serial.print(F("!!!incorrect chip #"));
+    Serial.print(F("!!!incorrect chip #: "));
     Serial.println(String(chipNum));
 #endif
     errorBeep(4);
@@ -619,7 +619,7 @@ void processRfidCard()
   if (chipNum == lastTeamFlag)
   {
 #ifdef DEBUG
-    Serial.print(F("!!!chip still attached"));
+    Serial.print(F("!!!same chip attached"));
 #endif
     SPI.end();
     return;
@@ -634,6 +634,9 @@ void processRfidCard()
       if (lastTeams[i] == ntag_page[0] && lastTeams[i + 1] == ntag_page[1])
       {
         already_checked = true;
+#ifdef DEBUG
+        Serial.println(F("!!!chip already checked"));
+#endif
         break;
       }
     }
@@ -643,13 +646,16 @@ void processRfidCard()
   if (!already_checked && SPIflash.readByte((uint32_t)((uint32_t)chipNum * (uint32_t)TEAM_FLASH_SIZE)) != 255)
   {
     already_checked = true;
+#ifdef DEBUG
+    Serial.println(F("!!!chip already checked"));
+#endif
   }
 
   // если новый чип или финишный КП
   if (!already_checked || stationMode == MODE_FINISH_KP)
   {
 #ifdef DEBUG
-    Serial.print(F("!!!checking chip"));
+    Serial.println(F("!!!checking chip"));
 #endif
     digitalWrite(INFO_LED_PIN, HIGH);
     // ищем свободную страницу на чипе
@@ -662,7 +668,7 @@ void processRfidCard()
       digitalWrite(INFO_LED_PIN, LOW);
       errorBeep(1);
 #ifdef DEBUG
-      Serial.print(F("!!!Can't read chip"));
+      Serial.println(F("!!!Can't read chip"));
 #endif
       return;
     }
@@ -674,7 +680,7 @@ void processRfidCard()
       digitalWrite(INFO_LED_PIN, LOW);
       errorBeep(4);
 #ifdef DEBUG
-      Serial.print(F("!!!chip page incorrect: "));
+      Serial.print(F("!!!chip page# incorrect: "));
       Serial.println(String(newPage));
 #endif
       return;
@@ -683,6 +689,9 @@ void processRfidCard()
     // chip was not checked by another station with the same number
     if (newPage != -1)
     {
+#ifdef DEBUG
+      Serial.println(F("!!!writing to chip"));
+#endif
       // Пишем на чип отметку
       if (!writeCheckPointToCard(newPage, checkTime))
       {
@@ -709,7 +718,7 @@ void processRfidCard()
       digitalWrite(INFO_LED_PIN, LOW);
       errorBeep(2);
 #ifdef DEBUG
-      Serial.print(F("!!!failed to write chip"));
+      Serial.print(F("!!!failed to write dump"));
 #endif
       return;
     }
@@ -2361,22 +2370,13 @@ void saveNewMask()
 // очистить буфер смены маски
 void clearNewMask()
 {
-#ifdef DEBUG
-  Serial.print(F("!!!Mask cleared: "));
-#endif
-
   for (uint8_t i = 0; i < 8; i++)
   {
     newTeamMask[i] = 0;
-#ifdef DEBUG
-    Serial.print(String(newTeamMask[i], HEX));
-#endif
-
   }
 #ifdef DEBUG
-  Serial.println();
+  Serial.print(F("!!!Mask cleared: "));
 #endif
-
 }
 
 // чтение заряда батареи
@@ -2565,7 +2565,7 @@ bool ntagWritePage(uint8_t* dataBlock, uint8_t pageAdr)
   if (status != MFRC522::STATUS_OK)
   {
 #ifdef DEBUG
-    Serial.println(F("!!!chip verify read failed"));
+    Serial.println(F("!!!chip read failed"));
 #endif
 
     return false;
@@ -2578,7 +2578,6 @@ bool ntagWritePage(uint8_t* dataBlock, uint8_t pageAdr)
 #ifdef DEBUG
       Serial.println(F("!!!chip verify failed"));
 #endif
-
       return false;
     }
   }
@@ -2674,7 +2673,7 @@ int findNewPage()
     if (!ntagRead4pages(page))
     {
 #ifdef DEBUG      
-      Serial.println(F("Can't read chip"));
+      Serial.println(F("!!!Can't read chip"));
 #endif
       // chip read error
       return 0;
@@ -2684,7 +2683,7 @@ int findNewPage()
       if (stationMode == MODE_START_KP && ntag_page[n * 4] == stationNumber)
       {
 #ifdef DEBUG      
-        Serial.println(F("Chip checked already"));
+        Serial.println(F("!!!Chip checked already"));
 #endif
         // chip was checked by another station with the same number
         return -1;
@@ -2736,7 +2735,7 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
   // адрес хранения в каталоге
   uint32_t teamFlashAddress = (uint32_t)(uint32_t(teamNumber) * (uint32_t)TEAM_FLASH_SIZE);
 #ifdef DEBUG
-  Serial.print(F("!!!Write flash address: "));
+  Serial.print(F("!!!Write to flash address: "));
   Serial.println(String(teamFlashAddress));
 #endif
   if (SPIflash.readByte(teamFlashAddress) != 0xff)
@@ -2744,16 +2743,25 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
     // если режим финишной станции, то надо переписать содержимое
     if (stationMode == MODE_FINISH_KP)
     {
+#ifdef DEBUG
+      Serial.print(F("!!!erasing team #"));
+      Serial.println(String(teamNumber);
+#endif
       if (!eraseTeamFromFlash(teamNumber))
       {
+#ifdef DEBUG
+        Serial.println(F("!!!fail to erase"));
+#endif
         return false;
       }
-#ifdef DEBUG
-      Serial.print(F("!!!erased team #"));
-      Serial.println(String((uint32_t)((uint32_t)teamNumber / (uint32_t)256)));
-#endif
     }
-    else return false;
+    else
+    {
+#ifdef DEBUG
+      Serial.print(F("!!!team already saved"));
+#endif
+      return false;
+    }
   }
   // save basic parameters
   if (!ntagRead4pages(PAGE_CHIP_NUM))
@@ -2779,7 +2787,13 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
   basic_record[10] = (checkTime & 0x0000FF00) >> 8;
   basic_record[11] = checkTime & 0x000000FF;
   bool flag = SPIflash.writeByteArray(teamFlashAddress, basic_record, 12);
-  if (!flag) return false;
+  if (!flag)
+  {
+#ifdef DEBUG
+    Serial.println(F("!!!fail write flash"));
+#endif
+    return false;
+  }
 
 #ifdef DEBUG
   Serial.println(F("!!!basics wrote"));
@@ -2791,11 +2805,14 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
   while (block < TAG_MAX_PAGE)
   {
 #ifdef DEBUG
-    Serial.print(F("!!!reading page #"));
+    Serial.print(F("!!!reading 4 page fron #"));
     Serial.println(String(block));
 #endif
     if (!ntagRead4pages(block))
     {
+#ifdef DEBUG
+      Serial.println(F("!!!fail read chip"));
+#endif
       flag = false;
       break;
     }
@@ -2805,37 +2822,34 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
     {
       if (block < 8 || ntag_page[i * 4]>0)
       {
-        flag &= SPIflash.writeByteArray(teamFlashAddress + 16 + (uint32_t)block * (uint32_t)4 + (uint32_t)i * (uint32_t)4 + (uint32_t)0, &ntag_page[0 + i * 4], 4);
-        //flag &= SPIflash.writeByte(teamFlashAddress + 16 + (uint32_t)block * (uint32_t)4 + (uint32_t)i * (uint32_t)4 + (uint32_t)0, ntag_page[0 + i * 4]);
-        //flag &= SPIflash.writeByte(teamFlashAddress + 16 + (uint32_t)block * (uint32_t)4 + (uint32_t)i * (uint32_t)4 + (uint32_t)1, ntag_page[1 + i * 4]);
-        //flag &= SPIflash.writeByte(teamFlashAddress + 16 + (uint32_t)block * (uint32_t)4 + (uint32_t)i * (uint32_t)4 + (uint32_t)2, ntag_page[2 + i * 4]);
-        //flag &= SPIflash.writeByte(teamFlashAddress + 16 + (uint32_t)block * (uint32_t)4 + (uint32_t)i * (uint32_t)4 + (uint32_t)3, ntag_page[3 + i * 4]);
-        checkCount++;
 #ifdef DEBUG
-        Serial.print(F("!!!write: "));
-        for (uint8_t i = 0; i < 16; i++)Serial.print(String(ntag_page[i], HEX) + " ");
+        Serial.print(F("!!!writing to flash: "));
+        for (uint8_t k = 0; k < 16; k++)Serial.print(String(ntag_page[k], HEX) + " ");
         Serial.println();
 #endif
+        flag &= SPIflash.writeByteArray(teamFlashAddress + 16 + (uint32_t)block * (uint32_t)4 + (uint32_t)i * (uint32_t)4 + (uint32_t)0, &ntag_page[0 + i * 4], 4);
+        checkCount++;
       }
       else
       {
 #ifdef DEBUG
         Serial.print(F("!!!chip last block: "));
-        Serial.println(String(block));
+        Serial.println(String(block + i));
 #endif
         block = TAG_MAX_PAGE;
         break;
       }
     }
-
     block += 4;
   }
   // add dump pages number
-  SPIflash.writeByte(teamFlashAddress + 12, checkCount);
-  //checkCount = checkCount * 4 + 16;
-  //SPIflash.writeByte(teamFlashAddress + 12, checkCount >> 8);
-  //SPIflash.writeByte(teamFlashAddress + 13, checkCount & 0x00FF);
-
+  flag &= !SPIflash.writeByte(teamFlashAddress + 12, checkCount);
+#ifdef DEBUG
+  if (!flag)
+  {
+    Serial.println(F("!!!fail write flash"));
+  }
+#endif
   return flag;
 }
 
