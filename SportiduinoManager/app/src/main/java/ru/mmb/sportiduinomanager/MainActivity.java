@@ -19,7 +19,7 @@ import android.widget.Toast;
 import java.util.Objects;
 
 import ru.mmb.sportiduinomanager.model.Database;
-import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.model.StationAPI;
 
 /**
  * Provides left menu via NavigationDrawer.
@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
         }
         // Update 'Chip Init' menu item
         final MenuItem chipInitItem = mNavigationView.getMenu().findItem(R.id.chip_init);
-        if (readyForWork && MainApp.mStation.getMode() == Station.MODE_INIT_CHIPS) {
+        if (readyForWork && MainApp.mStation.getMode() == StationAPI.MODE_INIT_CHIPS) {
             chipInitItem.setEnabled(true);
             if (MainApp.mStation.getNumber() == 0) {
                 chipInitItem.setTitle(getResources().getText(R.string.mode_chip_init));
@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
         }
         // Update 'Control Point' item
         final MenuItem controlPointItem = mNavigationView.getMenu().findItem(R.id.control_point);
-        if (readyForWork && MainApp.mStation.getMode() != Station.MODE_INIT_CHIPS) {
+        if (readyForWork && MainApp.mStation.getMode() != StationAPI.MODE_INIT_CHIPS) {
             controlPointItem.setEnabled(true);
             controlPointItem.setTitle(getResources().getString(R.string.mode_control_point_name,
                     pointName));
@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
         }
         // Update 'Chip Info' menu item
         final MenuItem chipInfoItem = mNavigationView.getMenu().findItem(R.id.chip_info);
-        if (readyForWork && MainApp.mStation.getMode() == Station.MODE_INIT_CHIPS) {
+        if (readyForWork && MainApp.mStation.getMode() == StationAPI.MODE_INIT_CHIPS) {
             chipInfoItem.setEnabled(true);
         } else {
             chipInfoItem.setEnabled(false);

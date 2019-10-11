@@ -9,7 +9,7 @@ import ru.mmb.sportiduinomanager.BluetoothActivity;
 import ru.mmb.sportiduinomanager.MainApp;
 import ru.mmb.sportiduinomanager.R;
 import ru.mmb.sportiduinomanager.model.Records;
-import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.model.StationAPI;
 
 /**
  * Run long station reset in separate thread.
@@ -39,9 +39,9 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
     protected Integer doInBackground(final Integer... newNumbers) {
         if (MainApp.mStation == null) return R.string.err_station_absent;
         // Update station status to get number of punched teams and time of last punch
-        if (!MainApp.mStation.fetchStatus(Station.CALLER_RESET)) return MainApp.mStation.getLastError(true);
+        if (!MainApp.mStation.fetchStatus(StationAPI.CALLER_RESET)) return MainApp.mStation.getLastError(true);
         // Check if some teams punched at the station while it had it's old number
-        final int chipsRegistered = MainApp.mStation.getChipsRegistered();
+        final int chipsRegistered = MainApp.mStation.getTeamsPunched();
         // Compute total time without teams scan
         long totalTime = estimateTimeToComplete(0, 0, MainApp.mStation.getNumber());
         if (MainApp.mStation.getNumber() != 0 && chipsRegistered > 0) {
@@ -57,7 +57,9 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
         publishProgress(estimateTimeToComplete(0, 0, MainApp.mStation.getNumber()), totalTime);
         // Reset station to change it's number
         final int newNumber = newNumbers[0];
-        if (!MainApp.mStation.resetStation(newNumber, Station.CALLER_RESET)) return MainApp.mStation.getLastError(true);
+        if (!MainApp.mStation.resetStation(newNumber, StationAPI.CALLER_RESET)) {
+            return MainApp.mStation.getLastError(true);
+        }
         // Sleep for 0.5 second while station is rebooting after reset
         try {
             Thread.sleep(500);
@@ -67,7 +69,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
         // Update station mode if needed
         publishProgress(0L, totalTime);
         final int newMode = newNumbers[1];
-        if (newMode != MainApp.mStation.getMode() && !MainApp.mStation.newMode(newMode, Station.CALLER_RESET)) {
+        if (newMode != MainApp.mStation.getMode() && !MainApp.mStation.newMode(newMode, StationAPI.CALLER_RESET)) {
             return MainApp.mStation.getLastError(true);
         }
         return 0;
@@ -89,13 +91,13 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
             publishProgress(estimateTimeToComplete(teamList.size() - i,
                     chipsRegistered - teamsRescanned, MainApp.mStation.getNumber()), totalTime);
             // Fetch data for the team punch at the station
-            if (!MainApp.mStation.fetchTeamRecord(teamNumber, Station.CALLER_RESET)) {
+            if (!MainApp.mStation.fetchTeamHeader(teamNumber, StationAPI.CALLER_RESET)) {
                 final int error = MainApp.mStation.getLastError(true);
                 if (error == R.string.err_station_no_data
                         || error == R.string.err_station_flash_empty) continue;
                 return error;
             }
-            final Records teamPunches = MainApp.mStation.getTeamPunches();
+            final Records teamPunches = MainApp.mStation.getRecords();
             if (teamPunches.size() == 0) continue;
             if (teamNumber != teamPunches.getTeamNumber(0)) continue;
             final long initTime = teamPunches.getInitTime(0);
@@ -107,17 +109,17 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
             int fromPunch = 0;
             do {
                 int toRead = punchesN;
-                if (toRead > Station.MAX_PUNCH_COUNT) {
-                    toRead = Station.MAX_PUNCH_COUNT;
+                if (toRead > StationAPI.MAX_PUNCH_COUNT) {
+                    toRead = StationAPI.MAX_PUNCH_COUNT;
                 }
                 if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask, fromPunch, toRead,
-                        Station.CALLER_RESET)) {
+                        StationAPI.CALLER_RESET)) {
                     final int error = MainApp.mStation.getLastError(true);
                     if (error != R.string.err_station_flash_empty) return error;
                 }
                 fromPunch += toRead;
                 // Add fetched punches from the chip to local list of records
-                MainApp.mAllRecords.join(MainApp.mStation.getTeamPunches());
+                MainApp.mAllRecords.join(MainApp.mStation.getRecords());
             } while (fromPunch < punchesN);
             // Stop scanned if we found all punched teams
             if (teamsRescanned == chipsRegistered) break;
@@ -160,14 +162,14 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
     /**
      * Estimates time in milliseconds left during station reset process.
      *
-     * @param teamsToScan      Number of teams to check with fetchTeamRecord
+     * @param teamsToScan      Number of teams to check with fetchTeamHeader
      * @param teamsWithPunches Number of teams to check with fetchTeamPunches
      * @param pointNumber      Point number to estimate N of calls to fetchTeamPunches
      * @return Estimated time in ms
      */
     private long estimateTimeToComplete(final int teamsToScan, final int teamsWithPunches,
                                         final int pointNumber) {
-        final int punchesScans = pointNumber / (Station.MAX_PUNCH_COUNT - 1) + 1;
+        final int punchesScans = pointNumber / (StationAPI.MAX_PUNCH_COUNT - 1) + 1;
         return teamsToScan * 150 + teamsWithPunches * punchesScans * 150 + 24_000 + 500;
     }
 }

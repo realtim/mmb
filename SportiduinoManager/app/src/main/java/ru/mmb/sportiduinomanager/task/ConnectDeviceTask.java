@@ -10,7 +10,7 @@ import ru.mmb.sportiduinomanager.BTDeviceListAdapter;
 import ru.mmb.sportiduinomanager.BluetoothActivity;
 import ru.mmb.sportiduinomanager.MainApp;
 import ru.mmb.sportiduinomanager.R;
-import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.model.StationAPI;
 
 /**
  * Separate thread for async connecting to Bluetooth device.
@@ -60,7 +60,7 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
      * @return True if succeeded
      */
     protected Boolean doInBackground(final BluetoothDevice... device) {
-        final Station station = new Station(device[0]);
+        final StationAPI station = new StationAPI(device[0]);
         if (station.connect()) {
             // Save connected station in main application
             MainApp.setStation(station);

@@ -16,7 +16,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import ru.mmb.sportiduinomanager.model.Records;
-import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.model.StationAPI;
 import ru.mmb.sportiduinomanager.model.Teams;
 
 /**
@@ -63,7 +63,7 @@ public final class ControlPointActivity extends MainActivity
 
     @Override
     protected void onStart() {
-        Log.d(Station.CALLER_CP, "Start");
+        Log.d(StationAPI.CALLER_CP, "Start");
         super.onStart();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.control_point).setChecked(true);
@@ -103,7 +103,7 @@ public final class ControlPointActivity extends MainActivity
 
     @Override
     protected void onResume() {
-        Log.d(Station.CALLER_CP, "Resume");
+        Log.d(StationAPI.CALLER_CP, "Resume");
         super.onResume();
         // Start background querying of connected station
         runStationQuerying();
@@ -112,7 +112,7 @@ public final class ControlPointActivity extends MainActivity
     @Override
     protected void onPause() {
         stopStationQuerying();
-        Log.d(Station.CALLER_CP, "Pause");
+        Log.d(StationAPI.CALLER_CP, "Pause");
         super.onPause();
     }
 
@@ -201,7 +201,7 @@ public final class ControlPointActivity extends MainActivity
         }
         MainApp.mStation.waitForQuerying2Stop();
         if (!MainApp.mStation.updateTeamMask(teamNumber, MainApp.mPointPunches.getInitTime(index),
-                mTeamMask, Station.CALLER_CP)) {
+                mTeamMask, StationAPI.CALLER_CP)) {
             Toast.makeText(mMainApplication, MainApp.mStation.getLastError(true),
                     Toast.LENGTH_LONG).show();
             runStationQuerying();
@@ -320,11 +320,11 @@ public final class ControlPointActivity extends MainActivity
      */
     private int fetchTeamsPunches() {
         // Do nothing if no teams has been punched yet
-        if (MainApp.mStation.getChipsRegistered() == 0) return 0;
+        if (MainApp.mStation.getTeamsPunched() == 0) return 0;
         // Number of team punches at local db and at station are the same?
         // Time of last punch in local db and at station is the same?
         // (it can change without changing of number of teams)
-        if (MainApp.mPointPunches.size() == MainApp.mStation.getChipsRegistered()
+        if (MainApp.mPointPunches.size() == MainApp.mStation.getTeamsPunched()
                 && MainApp.mPointPunches.getTeamTime(MainApp.mPointPunches.size() - 1)
                 == MainApp.mStation.getLastPunchTime()) {
             return 0;
@@ -335,7 +335,7 @@ public final class ControlPointActivity extends MainActivity
         // Clone previous teams list from station
         final List<Integer> prevLastTeams = new ArrayList<>(MainApp.mStation.getLastTeams());
         // Ask station for new list
-        if (!MainApp.mStation.fetchLastTeams(Station.CALLER_QUERYING)) {
+        if (!MainApp.mStation.fetchLastTeams(StationAPI.CALLER_QUERYING)) {
             fullDownload = true;
         }
         final List<Integer> currLastTeams = MainApp.mStation.getLastTeams();
@@ -355,7 +355,7 @@ public final class ControlPointActivity extends MainActivity
         }
         // If all members of last teams buffer are new to us,
         // then we need to make a full rescan
-        if (fetchTeams.size() == Station.LAST_TEAMS_LEN) {
+        if (fetchTeams.size() == StationAPI.LAST_TEAMS_LEN) {
             fullDownload = true;
         }
         // If all last teams are the same but last team time has been changed
@@ -375,7 +375,7 @@ public final class ControlPointActivity extends MainActivity
         for (final int teamNumber : fetchTeams) {
             // Fetch data for the team punched at the station
             int newError = 0;
-            if (!MainApp.mStation.fetchTeamRecord(teamNumber, Station.CALLER_QUERYING)) {
+            if (!MainApp.mStation.fetchTeamHeader(teamNumber, StationAPI.CALLER_QUERYING)) {
                 newError = MainApp.mStation.getLastError(true);
                 // Ignore data absence for teams which are not in last teams list
                 // Most probable these teams did not punched at the station at all
@@ -391,7 +391,7 @@ public final class ControlPointActivity extends MainActivity
                 }
             }
             // Get team punches as a Sportiduino record list
-            final Records teamPunches = MainApp.mStation.getTeamPunches();
+            final Records teamPunches = MainApp.mStation.getRecords();
             if (teamPunches.size() == 0) {
                 // Team punch was not registered at all due to err_station_no_data error
                 // Create synthetic team punch with zero chip init time
@@ -420,16 +420,16 @@ public final class ControlPointActivity extends MainActivity
                 do {
                     if (marks <= 0) break;
                     int toRead = marks;
-                    if (toRead > Station.MAX_PUNCH_COUNT) {
-                        toRead = Station.MAX_PUNCH_COUNT;
+                    if (toRead > StationAPI.MAX_PUNCH_COUNT) {
+                        toRead = StationAPI.MAX_PUNCH_COUNT;
                     }
                     if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask, fromMark, toRead,
-                            Station.CALLER_QUERYING)) {
+                            StationAPI.CALLER_QUERYING)) {
                         return MainApp.mStation.getLastError(true);
                     }
                     fromMark += toRead;
                     // Add fetched punches to application list of records
-                    MainApp.mAllRecords.join(MainApp.mStation.getTeamPunches());
+                    MainApp.mAllRecords.join(MainApp.mStation.getRecords());
                 } while (fromMark < marks);
             } else {
                 // Ignore recurrent problem with copying data from chip to memory
@@ -485,7 +485,7 @@ public final class ControlPointActivity extends MainActivity
                 }
                 // Querying is scheduled to stop, return immediately
                 if (!MainApp.mStation.isQueryingAllowed()) {
-                    Log.d(Station.CALLER_QUERYING, "Skip querying");
+                    Log.d(StationAPI.CALLER_QUERYING, "Skip querying");
                     return;
                 }
                 // Inform other activities that service starts sending queries to station
@@ -494,7 +494,7 @@ public final class ControlPointActivity extends MainActivity
                 final int selectedTeamN = MainApp.mPointPunches.getTeamNumber(MainApp.mPointPunches.size() - 1
                         - mTeamAdapter.getPosition());
                 // Fetch current station status
-                MainApp.mStation.fetchStatus(Station.CALLER_QUERYING);
+                MainApp.mStation.fetchStatus(StationAPI.CALLER_QUERYING);
                 // Get the latest data from connected station
                 final int result = fetchTeamsPunches();
                 // Inform other activities that service finished sending queries to station

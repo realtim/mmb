@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Locale;
 
 import ru.mmb.sportiduinomanager.model.Records;
-import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.model.StationAPI;
 import ru.mmb.sportiduinomanager.task.ConnectDeviceTask;
 import ru.mmb.sportiduinomanager.task.ResetStationTask;
 
@@ -156,7 +156,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
 
     @Override
     protected void onStart() {
-        Log.d(Station.CALLER_BLUETOOTH, "Start");
+        Log.d(StationAPI.CALLER_BLUETOOTH, "Start");
         super.onStart();
         // Start monitoring bluetooth changes
         registerReceiver(mBTStateMonitor, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
@@ -171,7 +171,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
 
     @Override
     protected void onResume() {
-        Log.d(Station.CALLER_BLUETOOTH, "Resume");
+        Log.d(StationAPI.CALLER_BLUETOOTH, "Resume");
         super.onResume();
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.bluetooth).setChecked(true);
@@ -260,7 +260,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
 
     @Override
     protected void onStop() {
-        Log.d(Station.CALLER_BLUETOOTH, "Stop");
+        Log.d(StationAPI.CALLER_BLUETOOTH, "Stop");
         super.onStop();
     }
 
@@ -269,7 +269,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         // Unregister Bluetooth state monitor
         unregisterReceiver(mBTStateMonitor);
         unregisterReceiver(mSearchDevices);
-        Log.d(Station.CALLER_BLUETOOTH, "Destroy");
+        Log.d(StationAPI.CALLER_BLUETOOTH, "Destroy");
         super.onDestroy();
     }
 
@@ -386,7 +386,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         }
         // If no station reset is needed,
         // then just call station mode change and display result
-        MainApp.mStation.newMode(newMode, Station.CALLER_BLUETOOTH);
+        MainApp.mStation.newMode(newMode, StationAPI.CALLER_BLUETOOTH);
         onStationResetResult(MainApp.mStation.getLastError(true));
     }
 
@@ -432,7 +432,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
      */
     public void syncStationClock(@SuppressWarnings("unused") final View view) {
         if (MainApp.mStation == null) return;
-        if (MainApp.mStation.syncTime(Station.CALLER_BLUETOOTH)) {
+        if (MainApp.mStation.syncTime(StationAPI.CALLER_BLUETOOTH)) {
             ((TextView) findViewById(R.id.station_response_time)).setText(getResources()
                     .getString(R.string.response_time, MainApp.mStation.getResponseTime()));
             ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
@@ -522,8 +522,8 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         MainApp.mStation.waitForQuerying2Stop();
         // Update station data if asked
         if (fetchStatus
-                && !(MainApp.mStation.fetchConfig(Station.CALLER_BLUETOOTH)
-                && MainApp.mStation.fetchStatus(Station.CALLER_BLUETOOTH))) {
+                && !(MainApp.mStation.fetchConfig(StationAPI.CALLER_BLUETOOTH)
+                && MainApp.mStation.fetchStatus(StationAPI.CALLER_BLUETOOTH))) {
             Toast.makeText(getApplicationContext(), MainApp.mStation.getLastError(true),
                     Toast.LENGTH_LONG).show();
             findViewById(R.id.station_status).setVisibility(View.GONE);
@@ -541,15 +541,15 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         final String pointName = MainApp.mDistance.getPointName(MainApp.mStation.getNumber(),
                 getResources().getString(R.string.control_point_prefix));
         switch (MainApp.mStation.getMode()) {
-            case Station.MODE_INIT_CHIPS:
+            case StationAPI.MODE_INIT_CHIPS:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
                         .getString(R.string.station_mode_value_0, pointName));
                 break;
-            case Station.MODE_OTHER_POINT:
+            case StationAPI.MODE_OTHER_POINT:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
                         .getString(R.string.station_mode_value_1, pointName));
                 break;
-            case Station.MODE_FINISH_POINT:
+            case StationAPI.MODE_FINISH_POINT:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
                         .getString(R.string.station_mode_value_2, pointName));
                 break;
@@ -569,7 +569,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
                 .getString(R.string.station_time_drift, MainApp.mStation.getTimeDrift()));
         ((TextView) findViewById(R.id.station_chips_registered_value))
-                .setText(String.format(Locale.getDefault(), "%d", MainApp.mStation.getChipsRegistered()));
+                .setText(String.format(Locale.getDefault(), "%d", MainApp.mStation.getTeamsPunched()));
         ((TextView) findViewById(R.id.station_last_chip_time)).setText(
                 Records.printTime(MainApp.mStation.getLastPunchTime(), "dd.MM.yyyy  HH:mm:ss"));
         // Show status block
@@ -612,11 +612,11 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
                 case -1:
                     return -1;
                 case 0:
-                    return Station.MODE_INIT_CHIPS;
+                    return StationAPI.MODE_INIT_CHIPS;
                 case 2:
-                    return Station.MODE_FINISH_POINT;
+                    return StationAPI.MODE_FINISH_POINT;
                 default:
-                    return Station.MODE_OTHER_POINT;
+                    return StationAPI.MODE_OTHER_POINT;
             }
         }
 

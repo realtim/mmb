@@ -13,7 +13,7 @@ import java.util.Locale;
 import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.task.ChipInfoTask;
 
-import static ru.mmb.sportiduinomanager.model.Station.UID_SIZE;
+import static ru.mmb.sportiduinomanager.model.StationRaw.UID_SIZE;
 
 /**
  * Read chip info and display it.

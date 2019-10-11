@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.model.StationAPI;
 import ru.mmb.sportiduinomanager.model.Teams;
 import ru.mmb.sportiduinomanager.task.ChipInitTask;
 
@@ -312,7 +312,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
             showError(true, R.string.err_init_no_station);
             return;
         }
-        if (MainApp.mStation.getMode() != Station.MODE_INIT_CHIPS) {
+        if (MainApp.mStation.getMode() != StationAPI.MODE_INIT_CHIPS) {
             showError(true, R.string.err_init_wrong_mode);
             return;
         }

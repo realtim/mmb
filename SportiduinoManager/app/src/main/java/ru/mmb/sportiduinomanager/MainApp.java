@@ -23,7 +23,7 @@ import org.acra.sender.HttpSender;
 import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Records;
-import ru.mmb.sportiduinomanager.model.Station;
+import ru.mmb.sportiduinomanager.model.StationAPI;
 import ru.mmb.sportiduinomanager.model.Teams;
 
 /**
@@ -91,7 +91,7 @@ public final class MainApp extends Application {
     /**
      * Connected Bluetooth station.
      */
-    public static Station mStation;
+    public static StationAPI mStation;
     /**
      * List of all Sportiduino records received from connected stations.
      */
@@ -168,7 +168,7 @@ public final class MainApp extends Application {
      *
      * @param station Bluetooth device
      */
-    public static void setStation(final Station station) {
+    public static void setStation(final StationAPI station) {
         mStation = station;
     }
 

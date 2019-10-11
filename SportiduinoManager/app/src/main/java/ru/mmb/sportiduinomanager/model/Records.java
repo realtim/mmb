@@ -230,30 +230,24 @@ public final class Records {
     public List<Integer> getStatistic() {
         // Init counters
         final List<Integer> statistic = new ArrayList<>();
-        int initUnsent = 0;
+        int initAll = 0;
         int initSent = 0;
-        int punchUnsent = 0;
+        int punchAll = 0;
         int punchSent = 0;
         // Find number of each type of records
         for (final Record record : mRecords) {
-            if (record.getStatus() == Record.STATUS_SENT) {
-                if (record.getMode() == Station.MODE_INIT_CHIPS) {
-                    initSent++;
-                } else {
-                    punchSent++;
-                }
+            if (record.getMode() == StationAPI.MODE_INIT_CHIPS) {
+                initAll++;
+                if (record.getStatus() == Record.STATUS_SENT) initSent++;
             } else {
-                if (record.getMode() == Station.MODE_INIT_CHIPS) {
-                    initUnsent++;
-                } else {
-                    punchUnsent++;
-                }
+                punchAll++;
+                if (record.getStatus() == Record.STATUS_SENT) punchSent++;
             }
         }
         // Return all numbers as array
-        statistic.add(initUnsent);
+        statistic.add(initAll);
         statistic.add(initSent);
-        statistic.add(punchUnsent);
+        statistic.add(punchAll);
         statistic.add(punchSent);
         return statistic;
     }
@@ -279,7 +273,7 @@ public final class Records {
      * @param pointNumber Punched point number (can differ from station number)
      * @param pointTime   Control point punch time
      */
-    public void addRecord(final Station station, final long initTime, final int teamNumber,
+    public void addRecord(final StationAPI station, final long initTime, final int teamNumber,
                           final int teamMask, final int pointNumber, final long pointTime) {
         mRecords.add(new Record(station.getMACasLong(), station.getStationTime(),
                 station.getTimeDrift(), station.getNumber(), station.getMode(), initTime,
@@ -362,7 +356,7 @@ public final class Records {
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean updateTeamMask(final int teamNumber, final int newMask,
-                                  final Station station, final Database database,
+                                  final StationAPI station, final Database database,
                                   final boolean replace) {
         // Find the record for the last punch of this team at this control point
         final int pointNumber = station.getNumber();
