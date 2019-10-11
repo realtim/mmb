@@ -521,8 +521,9 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
         // Wait for StationQuerying to stop
         MainApp.mStation.waitForQuerying2Stop();
         // Update station data if asked
-        if (fetchStatus && !(MainApp.mStation.fetchConfig(Station.CALLER_BLUETOOTH) && MainApp.mStation.fetchStatus(
-                Station.CALLER_BLUETOOTH))) {
+        if (fetchStatus
+                && !(MainApp.mStation.fetchConfig(Station.CALLER_BLUETOOTH)
+                && MainApp.mStation.fetchStatus(Station.CALLER_BLUETOOTH))) {
             Toast.makeText(getApplicationContext(), MainApp.mStation.getLastError(true),
                     Toast.LENGTH_LONG).show();
             findViewById(R.id.station_status).setVisibility(View.GONE);

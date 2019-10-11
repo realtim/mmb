@@ -59,6 +59,10 @@ public final class Station {
      * Caller of station command is StationResetTask.
      */
     public static final String CALLER_RESET = "SiMan StationReset";
+    /**
+     * Internal messages inside station data exchange.
+     */
+    private static final String CALLER_INTERNAL = "SiMan Station";
 
     /**
      * Size of last teams buffer in station.
@@ -534,10 +538,15 @@ public final class Station {
         System.arraycopy(command, 0, buffer, 5, len);
         buffer[len + HEADER_SIZE - 1] = crc8(buffer, len + HEADER_SIZE - 1);
         // send output buffer to station Bluetooth socket
-        try (OutputStream output = mSocket.getOutputStream()) {
+        try {
+            @SuppressWarnings("PMD.CloseResource")
+            final OutputStream output = mSocket.getOutputStream();
             output.write(buffer);
             output.flush();
         } catch (IOException e) {
+            Log.d(CALLER_INTERNAL, "send: " + e.getMessage());
+            // station got disconnected
+            disconnect();
             return false;
         }
         return true;
@@ -564,7 +573,9 @@ public final class Station {
         // try to open Bluetooth socket input stream
         // read from station Bluetooth socket
         final byte[] buffer = new byte[MAX_PACKET_SIZE];
-        try (InputStream input = mSocket.getInputStream()) {
+        try {
+            @SuppressWarnings("PMD.CloseResource")
+            final InputStream input = mSocket.getInputStream();
             while (System.currentTimeMillis() - mStartTime < WAIT_TIMEOUT) {
                 // wait for data to appear in input stream
                 if (input.available() == 0) {
@@ -588,13 +599,12 @@ public final class Station {
                 // stop waiting for more data if we got whole packet
                 if (response.length >= HEADER_SIZE && response.length
                         >= ((response[HEADER_SIZE - 2] & 0xFF) + HEADER_SIZE + 1)) {
-                    input.close();
                     return response;
                 }
             }
-            input.close();
             return response;
         } catch (IOException e) {
+            Log.d(CALLER_INTERNAL, "receive: " + e.getMessage());
             // station got disconnected
             disconnect();
             return response;
