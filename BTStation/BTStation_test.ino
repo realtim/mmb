@@ -277,10 +277,11 @@ void setup()
   if (c == 255 || c == -1)
   {
 #ifdef DEBUG
-    Serial.print(F("!!! StationNumber"));
+    Serial.print(F("!!!StationNumber"));
 #endif
-    errorBeepMs(4, 200);
+    //errorBeepMs(4, 200);
     stationNumber = 0;
+    eepromwrite(EEPROM_STATION_NUMBER, stationNumber);
   }
   else stationNumber = c;
 
@@ -291,10 +292,12 @@ void setup()
   else if (c == MODE_FINISH_KP) stationMode = MODE_FINISH_KP;
   else
   {
+    stationMode = MODE_INIT;
+    eepromwrite(EEPROM_STATION_MODE, stationMode);
 #ifdef DEBUG
-    Serial.print(F("!!! StationMode"));
+    Serial.print(F("!!!StationMode"));
 #endif
-    errorBeepMs(4, 200);
+    //errorBeepMs(4, 200);
   }
 
   //читаем коэфф. пересчета напряжения
@@ -313,10 +316,15 @@ void setup()
   if (flag < 4) voltageCoeff = p.number;
   else
   {
+    p.number = 0.00578;
+    for (uint8_t i = 0; i < 4; i++)
+    {
+      eepromwrite(EEPROM_VOLTAGE_KOEFF + i * 3, p.byte[i]);
+    }
 #ifdef DEBUG
-    Serial.print(F("!!! VoltageKoeff"));
+    Serial.print(F("!!!VoltageKoeff"));
 #endif
-    errorBeepMs(4, 200);
+    //errorBeepMs(4, 200);
   }
 
   //читаем коэфф. усиления
@@ -324,10 +332,12 @@ void setup()
   if (c != 255 && c != -1) gainCoeff = c;
   else
   {
+    gainCoeff = 80;
+    eepromwrite(EEPROM_GAIN, gainCoeff);
 #ifdef DEBUG
-    Serial.print(F("!!! AntennaGain"));
+    Serial.print(F("!!!AntennaGain"));
 #endif
-    errorBeepMs(4, 200);
+    //errorBeepMs(4, 200);
   }
 
   //читаем тип чипа
@@ -335,10 +345,12 @@ void setup()
   if (c != 255 && c != -1) selectChipType(chipType);
   else
   {
+    chipType = NTAG215_ID;
+    eepromwrite(EEPROM_CHIP_TYPE, chipType);
 #ifdef DEBUG
-    Serial.print(F("!!! ChipType"));
+    Serial.print(F("!!!ChipType"));
 #endif
-    errorBeepMs(4, 200);
+    //errorBeepMs(4, 200);
   }
 
   uint32_t flashSize = SPIflash.getCapacity();
@@ -355,10 +367,15 @@ void setup()
   if (flag < 2) TEAM_FLASH_SIZE = n[0] * 256 + n[1];
   else
   {
+    TEAM_FLASH_SIZE = 1024;
+    n[0] = (TEAM_FLASH_SIZE & 0xFF00) >> 8;
+    n[1] = TEAM_FLASH_SIZE & 0x00FF;
+    eepromwrite(EEPROM_TEAM_BLOCK_SIZE, n[0]);
+    eepromwrite(EEPROM_TEAM_BLOCK_SIZE + 3, n[1]);
 #ifdef DEBUG
-    Serial.print(F("!!! TeamSize"));
+    Serial.print(F("!!!TeamSize"));
 #endif
-    errorBeepMs(4, 200);
+    //errorBeepMs(4, 200);
   }
 
   //читаем размер стираемого блока
@@ -372,10 +389,15 @@ void setup()
   if (flag < 2) FLASH_BLOCK_SIZE = n[0] * 256 + n[1];
   else
   {
+    FLASH_BLOCK_SIZE = 4096;
+    n[0] = (FLASH_BLOCK_SIZE & 0xFF00) >> 8;
+    n[1] = FLASH_BLOCK_SIZE & 0x00FF;
+    eepromwrite(EEPROM_FLASH_BLOCK_SIZE, n[0]);
+    eepromwrite(EEPROM_FLASH_BLOCK_SIZE + 3, n[1]);
 #ifdef DEBUG
-    Serial.print(F("!!! EraseSize"));
+    Serial.print(F("!!!EraseSize"));
 #endif
-    errorBeepMs(4, 200);
+    //errorBeepMs(4, 200);
   }
 
   //читаем минимальное напряжение батареи
@@ -389,15 +411,20 @@ void setup()
   if (flag < 4) batteryLimit = p.number;
   else
   {
+    p.number = 3.0;
+    for (uint8_t i = 0; i < 4; i++)
+    {
+      eepromwrite(EEPROM_BATTERY_LIMIT + i * 3, p.byte[i]);
+    }
 #ifdef DEBUG
-    Serial.print(F("!!! batteryLimit"));
+    Serial.print(F("!!!batteryLimit"));
 #endif
-    errorBeepMs(4, 200);
+    //errorBeepMs(4, 200);
   }
 
   maxTeamNumber = (flashSize - FLASH_BLOCK_SIZE) / TEAM_FLASH_SIZE - 1;
 
-  totalChipsChecked = refreshChipCounter();
+  //totalChipsChecked = refreshChipCounter();
 
   batteryLevel = analogRead(BATTERY_PIN);
 
@@ -527,15 +554,15 @@ void processRfidCard()
   for (int i = 0; i < 8; i++) chipUid[i] = ntag_page[i];
 
   int writeErrorCount = 0;
-  long writeTime=0;
-  
-  long verifyTime=0;
+  long writeTime = 0;
+
+  long verifyTime = 0;
   int readErrorCount = 0;
   int verifyErrorCount = 0;
 
-  long clearTime=0;
+  long clearTime = 0;
   int clearErrorCount = 0;
-  
+
   // start card write
   digitalWrite(LED_PIN, HIGH);
 
@@ -585,7 +612,7 @@ void processRfidCard()
     }
   }
   verifyTime = millis() - verifyTime;
-  
+
   //clear card
   dataBlock[0] = 0;
   dataBlock[1] = 0;
@@ -626,7 +653,7 @@ void processRfidCard()
     Serial.print(String(writeErrorCount));
   }
   else Serial.print(F(", OK"));
-  
+
   Serial.print(F("; "));
   Serial.print(verifyTime);
   if (readErrorCount > 0)
@@ -1099,7 +1126,7 @@ void initChip()
     return;
   }
 
-    // читаем блок информации
+  // читаем блок информации
   if (!ntagRead4pages(PAGE_CHIP_SYS))
   {
     SPI.end();
@@ -1114,7 +1141,7 @@ void initChip()
     sendError(WRONG_CHIP_TYPE, REPLY_INIT_CHIP);
     return;
   }
-  
+
   // инициализация сработает только если время инициализации записанное уже на чипе превышает неделю до текущего времени
   if (!ntagRead4pages(PAGE_INIT_TIME))
   {
@@ -1140,7 +1167,7 @@ void initChip()
   }
 
   // заполняем чип 0x00
-  uint8_t dataBlock[4] = { 0,0,0,0 };
+  uint8_t dataBlock[4] = { 0, 0, 0, 0 };
   for (uint8_t page = PAGE_CHIP_NUM; page < TAG_MAX_PAGE; page++)
   {
     if (!ntagWritePage(dataBlock, page))
@@ -1154,7 +1181,7 @@ void initChip()
 
   // 0-1: номер команды
   // 2-3 : маска участников
-  
+
   // пишем данные на чип
   // номер команды, тип чипа, версия прошивки станции
   dataBlock[0] = uartBuffer[DATA_START_BYTE];
