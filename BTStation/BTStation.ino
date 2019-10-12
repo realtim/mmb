@@ -999,7 +999,6 @@ void setMode()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_SET_MODE);
     return;
   }
   sendData();
@@ -1041,7 +1040,6 @@ void setTime()
   flag &= addData(tmpTime & 0x000000FF);
   if (!flag)
   {
-    sendError(BUFFER_OVERFLOW, REPLY_SET_TIME);
     return;
   }
   sendData();
@@ -1111,7 +1109,6 @@ void resetStation()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_RESET_STATION);
     return;
   }
 
@@ -1160,7 +1157,6 @@ void getStatus()
 
   if (!flag)
   {
-    sendError(BUFFER_OVERFLOW, REPLY_GET_STATUS);
     return;
   }
 
@@ -1298,7 +1294,6 @@ void initChip()
   init_package(REPLY_INIT_CHIP);
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_INIT_CHIP);
     return;
   }
 
@@ -1310,7 +1305,6 @@ void initChip()
   flag &= addData(tmpTime & 0x000000FF);
   if (!flag)
   {
-    sendError(BUFFER_OVERFLOW, REPLY_INIT_CHIP);
     return;
   }
 
@@ -1319,7 +1313,6 @@ void initChip()
   {
     if (!addData(ntag_page[i]))
     {
-      sendError(BUFFER_OVERFLOW, REPLY_INIT_CHIP);
       return;
     }
   }
@@ -1342,7 +1335,6 @@ void getLastTeams()
   }
   if (!flag)
   {
-    sendError(BUFFER_OVERFLOW, REPLY_GET_LAST_TEAMS);
     return;
   }
   sendData();
@@ -1366,7 +1358,6 @@ void getTeamRecord()
   // 0: код ошибки                            
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_GET_TEAM_RECORD);
     return;
   }
 
@@ -1386,7 +1377,6 @@ void getTeamRecord()
   {
     if (!addData(ntag_page[i]))
     {
-      sendError(BUFFER_OVERFLOW, REPLY_GET_LAST_TEAMS);
       return;
     }
   }
@@ -1430,7 +1420,6 @@ void readCardPages()
   {
     SPI.end();
     digitalWrite(INFO_LED_PIN, LOW);
-    sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
     return;
   }
 
@@ -1450,7 +1439,6 @@ void readCardPages()
     {
       SPI.end();
       digitalWrite(INFO_LED_PIN, LOW);
-      sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
       return;
     }
   }
@@ -1460,7 +1448,6 @@ void readCardPages()
   {
     SPI.end();
     digitalWrite(INFO_LED_PIN, LOW);
-    sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
     return;
   }
   while (pageFrom <= pageTo)
@@ -1482,7 +1469,6 @@ void readCardPages()
         {
           SPI.end();
           digitalWrite(INFO_LED_PIN, LOW);
-          sendError(BUFFER_OVERFLOW, REPLY_READ_CARD_PAGE);
           return;
         }
       }
@@ -1507,7 +1493,6 @@ void updateTeamMask()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_UPDATE_TEAM_MASK);
     return;
   }
   sendData();
@@ -1559,7 +1544,7 @@ void updateTeamMask()
 #endif
       sendError(WRONG_CHIP_TYPE, REPLY_UPDATE_TEAM_MASK);
       return;
-    }
+  }
 
     /*
     Фильтруем
@@ -1664,7 +1649,7 @@ void updateTeamMask()
       digitalWrite(INFO_LED_PIN, LOW);
       clearNewMask();
     }
-  }
+    }
 }
 
 // пишем присланные с ББ 4 байта в указанную страницу
@@ -1745,7 +1730,6 @@ void writeCardPage()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_WRITE_CARD_PAGE);
     return;
   }
   sendData();
@@ -1764,8 +1748,8 @@ void readFlash()
   startAddress <<= 8;
   startAddress += uartBuffer[DATA_START_BYTE + 3];
 
-  uint8_t length = uartBuffer[DATA_START_BYTE + 4];
-  if (length > (256 - 7 - DATA_LENGTH_READ_FLASH)) length = 256 - 7 - DATA_LENGTH_READ_FLASH;
+  uint16_t length = uartBuffer[DATA_START_BYTE + 4];
+  if (length > (256 - 7 - DATA_LENGTH_READ_FLASH - 1)) length = 256 - 7 - DATA_LENGTH_READ_FLASH - 1;
 
 #ifdef DEBUG
   Serial.print(F("!!!flash read="));
@@ -1783,7 +1767,6 @@ void readFlash()
   // 4-n: данные из флэша
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_READ_FLASH);
     return;
   }
 #ifdef DEBUG
@@ -1816,7 +1799,6 @@ void readFlash()
 
   if (!flag)
   {
-    sendError(BUFFER_OVERFLOW, REPLY_READ_FLASH);
     return;
   }
 
@@ -1862,12 +1844,10 @@ void writeFlash()
   // 1: кол-во записанных байт (для проверки)
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_WRITE_FLASH);
     return;
   }
   if (!addData(length))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_WRITE_FLASH);
     return;
   }
 
@@ -1895,7 +1875,6 @@ void eraseTeamFlash()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_ERASE_FLASH_SECTOR);
     return;
   }
   sendData();
@@ -1950,7 +1929,6 @@ void getConfig()
 
   if (!flag)
   {
-    sendError(BUFFER_OVERFLOW, REPLY_GET_CONFIG);
     return;
   }
 
@@ -1983,7 +1961,6 @@ void setVCoeff()
   // 1...: данные из флэша
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_SET_V_KOEFF);
     return;
   }
 
@@ -2005,7 +1982,6 @@ void setGain()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_SET_GAIN);
     return;
   }
 
@@ -2033,7 +2009,6 @@ void setChipType()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_SET_CHIP_TYPE);
     return;
   }
 
@@ -2068,7 +2043,6 @@ void setTeamFlashSize()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_SET_TEAM_FLASH_SIZE);
     return;
   }
 
@@ -2103,7 +2077,6 @@ void setFlashBlockSize()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_SET_FLASH_BLOCK_SIZE);
     return;
   }
 
@@ -2145,7 +2118,6 @@ void setNewBtName()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_SET_BT_NAME);
     return;
   }
   sendData();
@@ -2186,7 +2158,6 @@ void setNewBtPinCode()
   // 0: код ошибки
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_SET_BT_PIN);
     return;
   }
 
@@ -2218,7 +2189,6 @@ void setBatteryLimit()
   // 1...: данные из флэша
   if (!addData(OK))
   {
-    sendError(BUFFER_OVERFLOW, REPLY_SET_BATTERY_LIMIT);
     return;
   }
 
@@ -2494,6 +2464,7 @@ bool addData(uint8_t data)
 {
   if (uartBufferPosition > 254)
   {
+    sendError(BUFFER_OVERFLOW);
     return false;
   }
   uartBuffer[uartBufferPosition] = data;
@@ -2549,7 +2520,7 @@ bool ntagWritePage(uint8_t* dataBlock, uint8_t pageAdr)
 #endif
 
     return false;
-  }
+    }
 
   uint8_t buffer[18];
   uint8_t size = sizeof(buffer);
@@ -2579,7 +2550,7 @@ bool ntagWritePage(uint8_t* dataBlock, uint8_t pageAdr)
       Serial.println(F("!!!chip verify failed"));
 #endif
       return false;
-    }
+  }
   }
 
   return true;
@@ -2620,7 +2591,7 @@ bool ntagRead4pages(uint8_t pageAdr)
     ntag_page[i] = buffer[i];
   }
   return true;
-}
+  }
 
 // пишет на чип время и станцию отметки
 bool writeCheckPointToCard(uint8_t newPage, uint32_t checkTime)
@@ -2767,7 +2738,7 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
   if (!ntagRead4pages(PAGE_CHIP_NUM))
   {
     return false;
-  }
+}
 
   uint8_t basic_record[12];
   // 1-2: номер команды
@@ -2793,7 +2764,7 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
     Serial.println(F("!!!fail write flash"));
 #endif
     return false;
-  }
+}
 
 #ifdef DEBUG
   Serial.println(F("!!!basics wrote"));
@@ -2839,7 +2810,7 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
         block = TAG_MAX_PAGE;
         break;
       }
-    }
+  }
     block += 4;
   }
   // add dump pages number
@@ -2922,7 +2893,7 @@ bool eraseTeamFromFlash(uint16_t teamNumber)
   }
 
   return flag;
-}
+    }
 
 // получаем сведения о команде из лога
 bool readTeamFromFlash(uint16_t recordNum)
@@ -2977,19 +2948,26 @@ uint16_t refreshChipCounter()
       Serial.print(F(", "));
 #endif
     }
-  }
+    }
 #ifdef DEBUG
   Serial.println();
   Serial.print(F("!!!checked chip counter="));
   Serial.println(String(chips));
 #endif
   return chips;
-}
+  }
 
 // обработка ошибок. формирование пакета с сообщением о ошибке
 void sendError(uint8_t errorCode, uint8_t commandCode)
 {
   init_package(commandCode);
+  uartBuffer[DATA_START_BYTE] = errorCode;
+  uartBufferPosition = DATA_START_BYTE + 1;
+  sendData();
+}
+
+void sendError(uint8_t errorCode)
+{
   uartBuffer[DATA_START_BYTE] = errorCode;
   uartBufferPosition = DATA_START_BYTE + 1;
   sendData();
@@ -3005,11 +2983,11 @@ void addLastTeam(uint16_t number)
   {
     lastTeams[i] = lastTeams[i - 2];
     lastTeams[i - 1] = lastTeams[i - 3];
-  }
+}
   lastTeams[0] = (byte)(number >> 8);
   lastTeams[1] = (byte)number;
 
-}
+  }
 
 uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
 {
