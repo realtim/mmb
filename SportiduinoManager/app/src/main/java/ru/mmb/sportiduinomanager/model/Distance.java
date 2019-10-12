@@ -422,7 +422,7 @@ public final class Distance {
      * Get name of the point.
      *
      * @param number Point number
-     * @param prefix 'AP' numeric point name prefix
+     * @param prefix 'СP' numeric point name prefix
      * @return Point name
      */
     public String getPointName(final int number, final String prefix) {

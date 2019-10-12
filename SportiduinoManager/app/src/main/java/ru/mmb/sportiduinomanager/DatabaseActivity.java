@@ -283,7 +283,7 @@ public final class DatabaseActivity extends MainActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // start download
         final String chipInitName =
-                getApplication().getResources().getString(R.string.mode_chip_init);
+                getApplication().getResources().getString(R.string.init_point_name);
         final SiteRequest siteRequest =
                 SiteRequest.builder().userEmail(sUserEmail).userPassword(userPassword)
                         .testSite(testSite).chipInitName(chipInitName)

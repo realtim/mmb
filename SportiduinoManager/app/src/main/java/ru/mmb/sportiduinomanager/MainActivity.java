@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                             Toast.LENGTH_LONG).show();
                     break;
                 case R.id.chip_info:
-                    activity = new Intent(getApplicationContext(), ChipInfoActivity.class);
+                    //activity = new Intent(getApplicationContext(), ChipInfoActivity.class);
                     break;
                 default:
             }

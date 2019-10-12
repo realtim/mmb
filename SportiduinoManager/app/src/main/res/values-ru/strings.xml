@@ -9,17 +9,17 @@
     <string name="unknown">\?\?\?</string>
 
     <string name="menu_back">Назад</string>
-    <string name="mode_cloud_download">Получить дистанцию с сайта</string>
-    <string name="mode_cloud_upload">Отправить результаты на сайт</string>
-    <string name="mode_cloud_done">Обновить результаты с сайта</string>
+    <string name="mode_cloud_download">Получить дистанцию</string>
+    <string name="mode_cloud_upload">Отправить данные</string>
+    <string name="mode_cloud_done">Получить результаты</string>
     <string name="mode_bluetooth_select">Выбрать станцию</string>
-    <string name="mode_bluetooth_set">Настроить станцию %1$s</string>
+    <string name="mode_bluetooth_set">Настроить %1$s</string>
     <string name="mode_chip_init">Инициализация чипов</string>
-    <string name="mode_chip_init_name">Инициализация чипов на %1$s</string>
+    <string name="mode_chip_init_name">Инициализация на %1$s</string>
     <string name="mode_control_point">На активной точке</string>
-    <string name="mode_control_point_name">На активной точке %1$s</string>
+    <string name="mode_control_point_name">На точке %1$s</string>
     <string name="mode_team_list">Просмотр результатов</string>
-    <string name="mode_chip_info">Информация о чипе</string>
+    <string name="mode_chip_info">Содержимое чипа</string>
 
     <string name="database_status_unknown">Состояние базы неизвестно</string>
     <string name="database_fatal_error">Критическая ошибка открытия базы, что-то пошло не так</string>
@@ -33,6 +33,7 @@
     <string name="email">EMail</string>
     <string name="password">Пароль</string>
     <string name="use_test_site">Использовать тестовый сайт</string>
+    <string name="init_point_name">Инициализация</string>
     <string name="download_distance_success">Скачивание данных завершилось успешно</string>
     <string name="send_results_success">Данные с чипов успешно отправлены на сайт</string>
     <string name="send_results_failure">Появились новые данные, повторите отправку

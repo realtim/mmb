@@ -265,7 +265,7 @@ public class StationRaw {
      *
      * @param isAllowed True for allowing to send commands.
      */
-    public void setQueryingAllowed(final boolean isAllowed) {
+    synchronized public void setQueryingAllowed(final boolean isAllowed) {
         mQueryingAllowed = isAllowed;
     }
 
@@ -274,7 +274,7 @@ public class StationRaw {
      *
      * @param isActive True if querying is going to start
      */
-    public void setQueryingActive(final boolean isActive) {
+    synchronized public void setQueryingActive(final boolean isActive) {
         mQueryingActive = isActive;
     }
 
@@ -504,8 +504,8 @@ public class StationRaw {
      * @param caller          Name of caller activity for Logcat
      * @return True if there was no communication or command execution errors
      */
-    boolean command(final byte[] commandContent, final byte[] responseContent,
-                    final String caller) {
+    synchronized boolean command(final byte[] commandContent, final byte[] responseContent,
+                                 final String caller) {
         // Save time at the beginning of command processing
         mStartTime = System.currentTimeMillis();
         // TODO: remove debug output
