@@ -1,4 +1,4 @@
-#define DEBUG
+//#define DEBUG
 
 #include <Wire.h>
 #include "ds3231.h"
