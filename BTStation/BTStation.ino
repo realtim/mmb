@@ -1,4 +1,4 @@
-//#define DEBUG
+#define DEBUG
 
 #include <Wire.h>
 #include "ds3231.h"
@@ -2716,7 +2716,7 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
     {
 #ifdef DEBUG
       Serial.print(F("!!!erasing team #"));
-      Serial.println(String(teamNumber);
+      Serial.println(String(teamNumber));
 #endif
       if (!eraseTeamFromFlash(teamNumber))
       {
@@ -2761,7 +2761,7 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
   if (!flag)
   {
 #ifdef DEBUG
-    Serial.println(F("!!!fail write flash"));
+    Serial.println(F("!!!fail write flash1"));
 #endif
     return false;
 }
@@ -2814,11 +2814,11 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
     block += 4;
   }
   // add dump pages number
-  flag &= !SPIflash.writeByte(teamFlashAddress + 12, checkCount);
+  flag &= SPIflash.writeByte(teamFlashAddress + 12, checkCount);
 #ifdef DEBUG
   if (!flag)
   {
-    Serial.println(F("!!!fail write flash"));
+    Serial.println(F("!!!fail write flash2"));
   }
 #endif
   return flag;
