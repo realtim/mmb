@@ -102,6 +102,14 @@ public final class MainApp extends Application {
      */
     public static Records mPointPunches = new Records(0);
     /**
+     * Current position in team list at control point.
+     */
+    private static int mTeamListPosition;
+    /**
+     * Current members selection mask at chip initialization / control point.
+     */
+    private static int mTeamMask;
+    /**
      * Description of error occurred during application startup (if any).
      */
     private String mStartupError = "";
@@ -125,16 +133,6 @@ public final class MainApp extends Application {
      * Current team number at chip initialization.
      */
     private int mTeamNumber;
-
-    /**
-     * Current members selection mask at chip initialization / control point.
-     */
-    private int mTeamMask;
-
-    /**
-     * Current position in team list at control point.
-     */
-    private int mTeamListPosition;
 
     /**
      * Save distance to persistent memory.
@@ -226,6 +224,43 @@ public final class MainApp extends Application {
     }
 
     /**
+     * Get the current position in team list.
+     *
+     * @return Zero-based position
+     */
+    public static int getTeamListPosition() {
+        return mTeamListPosition;
+    }
+
+    /**
+     * Save the current position in team list.
+     *
+     * @param teamListPosition Zero-based position
+     */
+    public static void setTeamListPosition(final int teamListPosition) {
+        mTeamListPosition =
+                teamListPosition;
+    }
+
+    /**
+     * Get the current team mask at chip initialization / control point.
+     *
+     * @return Team mask
+     */
+    public static int getTeamMask() {
+        return mTeamMask;
+    }
+
+    /**
+     * Save the current team mask at chip initialization / control point.
+     *
+     * @param teamMask Team mask
+     */
+    public static void setTeamMask(final int teamMask) {
+        mTeamMask = teamMask;
+    }
+
+    /**
      * Get startup error message (if any).
      *
      * @return Error message string
@@ -309,43 +344,6 @@ public final class MainApp extends Application {
      */
     public void setTeamNumber(final int teamNumber) {
         mTeamNumber = teamNumber;
-    }
-
-    /**
-     * Get the current team mask at chip initialization / control point.
-     *
-     * @return Team mask
-     */
-    public int getTeamMask() {
-        return mTeamMask;
-    }
-
-    /**
-     * Save the current team mask at chip initialization / control point.
-     *
-     * @param teamMask Team mask
-     */
-    public void setTeamMask(final int teamMask) {
-        mTeamMask = teamMask;
-    }
-
-    /**
-     * Get the current position in team list.
-     *
-     * @return Zero-based position
-     */
-    public int getTeamListPosition() {
-        return mTeamListPosition;
-    }
-
-    /**
-     * Save the current position in team list.
-     *
-     * @param teamListPosition Zero-based position
-     */
-    public void setTeamListPosition(final int teamListPosition) {
-        mTeamListPosition =
-                teamListPosition;
     }
 
     @Override

@@ -62,13 +62,12 @@ spotbugs {
     toolVersion = '4.0.0-beta4'
 }
 tasks.withType(SpotBugsTask) {
+    dependsOn "compileDebugSources"
     group = "verification"
     ignoreFailures = true
     effort = "max"
     reportLevel = "high"
     classes = files("build/intermediates/javac/debug")
-    source 'src'
-    include '**/*.java'
     classpath = files()
     reports {
         xml.enabled = true

@@ -101,6 +101,7 @@
     <string name="cp_save_mask">Register dismissal</string>
     <string name="list_team_count">%1$d</string>
     <string name="list_team_time">%1$s</string>
+    <string name="monitoring_service">Monitoring connected station for new punches</string>
 
     <string name="chip_info_request">Read chip info</string>
 </resources>

@@ -15,7 +15,7 @@ import ru.mmb.sportiduinomanager.model.StationAPI;
 /**
  * Separate thread for async connecting to Bluetooth device.
  */
-public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean> {
+public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Integer> {
     /**
      * Reference to parent activity (which can cease to exist in any moment).
      */
@@ -59,17 +59,25 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
      * @param device Bluetooth device clicked
      * @return True if succeeded
      */
-    protected Boolean doInBackground(final BluetoothDevice... device) {
+    protected Integer doInBackground(final BluetoothDevice... device) {
         final StationAPI station = new StationAPI(device[0]);
         if (station.connect()) {
             // Save connected station in main application
             MainApp.setStation(station);
-            // Create filtered list of punches at this station
-            MainApp.setPointPunches(MainApp.mAllRecords.getPunchesAtStation(station.getNumber(),
-                    station.getMACasLong()));
-            return true;
+            // Set all station class instance variables
+            // by sending getConfig and getStatus commands to station
+            if (!MainApp.mStation.fetchConfig(StationAPI.CALLER_BLUETOOTH)) {
+                return MainApp.mStation.getLastError(true);
+            }
+            if (!MainApp.mStation.fetchStatus(StationAPI.CALLER_BLUETOOTH)) {
+                return MainApp.mStation.getLastError(true);
+            }
+            // Create filtered list of punches at station number control point
+            MainApp.setPointPunches(MainApp.mAllRecords.getPunchesAtStation(MainApp.mStation.getNumber(),
+                    MainApp.mStation.getMACasLong()));
+            return 0;
         }
-        return false;
+        return -1;
     }
 
     /**
@@ -77,16 +85,21 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
      *
      * @param result False if connection attempt failed
      */
-    protected void onPostExecute(final Boolean result) {
+    protected void onPostExecute(final Integer result) {
         // Show error message if connect attempt failed
-        if (!result) {
+        if (result < 0) {
+            // Connection to BT device failed
             Toast.makeText(mMainApplication, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
+        } else if (result > 0) {
+            // Station responded to getConfig/getStatus commands with an error,
+            // show this error to user
+            Toast.makeText(mMainApplication, result, Toast.LENGTH_LONG).show();
         }
         // Get a reference to the activity if it is still there
         final BluetoothActivity activity = mActivityRef.get();
         if (activity == null || activity.isFinishing()) return;
         // Update device list in activity
-        if (result) {
+        if (result == 0) {
             if (MainApp.mStation == null) {
                 mAdapter.setConnectedDevice(null, false);
             } else {
@@ -96,7 +109,7 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Boolean>
             mAdapter.setConnectedDevice(null, false);
         }
         // Update activity layout
-        activity.updateLayout(true);
+        activity.updateLayout(false);
         // Update menu items only after station status request
         activity.updateMenuItems(R.id.bluetooth);
     }

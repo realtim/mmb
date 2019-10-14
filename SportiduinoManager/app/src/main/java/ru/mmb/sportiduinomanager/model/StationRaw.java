@@ -265,8 +265,10 @@ public class StationRaw {
      *
      * @param isAllowed True for allowing to send commands.
      */
-    synchronized public void setQueryingAllowed(final boolean isAllowed) {
-        mQueryingAllowed = isAllowed;
+    public void setQueryingAllowed(final boolean isAllowed) {
+        synchronized (this) {
+            mQueryingAllowed = isAllowed;
+        }
     }
 
     /**
@@ -274,8 +276,10 @@ public class StationRaw {
      *
      * @param isActive True if querying is going to start
      */
-    synchronized public void setQueryingActive(final boolean isActive) {
-        mQueryingActive = isActive;
+    public void setQueryingActive(final boolean isActive) {
+        synchronized (this) {
+            mQueryingActive = isActive;
+        }
     }
 
     /**
@@ -504,85 +508,87 @@ public class StationRaw {
      * @param caller          Name of caller activity for Logcat
      * @return True if there was no communication or command execution errors
      */
-    synchronized boolean command(final byte[] commandContent, final byte[] responseContent,
-                                 final String caller) {
-        // Save time at the beginning of command processing
-        mStartTime = System.currentTimeMillis();
-        // TODO: remove debug output
-        Log.d(caller, " command " + String.format("%02x", commandContent[0]) + " started  at " + mStartTime);
-        // Communicate with the station
-        final byte[] rawResponse = runCommand(commandContent);
-        // Compute execution time
-        final long now = System.currentTimeMillis();
-        mResponseTime = now - mStartTime;
-        // TODO: remove debug output
-        Log.d(caller, " command " + String.format("%02x", commandContent[0]) + " finished  at " + now);
-        // Check for command execution errors and response parsing errors
-        if (rawResponse[0] != ALL_OK) {
-            switch (rawResponse[0]) {
-                case SEND_FAILED:
-                    mLastError = R.string.err_bt_send_failed;
-                    return false;
-                case REC_TIMEOUT:
-                    mLastError = R.string.err_bt_receive_timeout;
-                    return false;
-                case REC_BAD_RESPONSE:
-                    mLastError = R.string.err_bt_receive_bad_response;
-                    return false;
-                case REC_COMMAND_ERROR + 1:
-                    mLastError = R.string.err_station_wrong_number;
-                    return false;
-                case REC_COMMAND_ERROR + 2:
-                    mLastError = R.string.err_station_read;
-                    return false;
-                case REC_COMMAND_ERROR + 3:
-                    mLastError = R.string.err_station_write;
-                    return false;
-                case REC_COMMAND_ERROR + 4:
-                    mLastError = R.string.err_station_init_chip;
-                    return false;
-                case REC_COMMAND_ERROR + 5:
-                    mLastError = R.string.err_station_bad_chip;
-                    return false;
-                case REC_COMMAND_ERROR + 6:
-                    mLastError = R.string.err_station_no_chip;
-                    return false;
-                case REC_COMMAND_ERROR + 7:
-                    mLastError = R.string.err_station_buffer_overflow;
-                    return false;
-                case REC_COMMAND_ERROR + 8:
-                    mLastError = R.string.err_station_reset_impossible;
-                    return false;
-                case REC_COMMAND_ERROR + 9:
-                    mLastError = R.string.err_station_incorrect_uid;
-                    return false;
-                case REC_COMMAND_ERROR + 10:
-                    mLastError = R.string.err_station_wrong_team;
-                    return false;
-                case REC_COMMAND_ERROR + 11:
-                    mLastError = R.string.err_station_no_data;
-                    return false;
-                case REC_COMMAND_ERROR + 12:
-                    mLastError = R.string.err_station_bad_command;
-                    return false;
-                case REC_COMMAND_ERROR + 13:
-                    mLastError = R.string.err_station_erase_flash;
-                    return false;
-                case REC_COMMAND_ERROR + 14:
-                    mLastError = R.string.err_station_bad_chip_type;
-                    return false;
-                default:
-                    mLastError = R.string.err_station_unknown;
-                    return false;
+    boolean command(final byte[] commandContent, final byte[] responseContent,
+                    final String caller) {
+        synchronized (this) {
+            // Save time at the beginning of command processing
+            mStartTime = System.currentTimeMillis();
+            // TODO: remove debug output
+            Log.d(caller, " command " + String.format("%02x", commandContent[0]) + " started  at " + mStartTime);
+            // Communicate with the station
+            final byte[] rawResponse = runCommand(commandContent);
+            // Compute execution time
+            final long now = System.currentTimeMillis();
+            mResponseTime = now - mStartTime;
+            // TODO: remove debug output
+            Log.d(caller, " command " + String.format("%02x", commandContent[0]) + " finished  at " + now);
+            // Check for command execution errors and response parsing errors
+            if (rawResponse[0] != ALL_OK) {
+                switch (rawResponse[0]) {
+                    case SEND_FAILED:
+                        mLastError = R.string.err_bt_send_failed;
+                        return false;
+                    case REC_TIMEOUT:
+                        mLastError = R.string.err_bt_receive_timeout;
+                        return false;
+                    case REC_BAD_RESPONSE:
+                        mLastError = R.string.err_bt_receive_bad_response;
+                        return false;
+                    case REC_COMMAND_ERROR + 1:
+                        mLastError = R.string.err_station_wrong_number;
+                        return false;
+                    case REC_COMMAND_ERROR + 2:
+                        mLastError = R.string.err_station_read;
+                        return false;
+                    case REC_COMMAND_ERROR + 3:
+                        mLastError = R.string.err_station_write;
+                        return false;
+                    case REC_COMMAND_ERROR + 4:
+                        mLastError = R.string.err_station_init_chip;
+                        return false;
+                    case REC_COMMAND_ERROR + 5:
+                        mLastError = R.string.err_station_bad_chip;
+                        return false;
+                    case REC_COMMAND_ERROR + 6:
+                        mLastError = R.string.err_station_no_chip;
+                        return false;
+                    case REC_COMMAND_ERROR + 7:
+                        mLastError = R.string.err_station_buffer_overflow;
+                        return false;
+                    case REC_COMMAND_ERROR + 8:
+                        mLastError = R.string.err_station_reset_impossible;
+                        return false;
+                    case REC_COMMAND_ERROR + 9:
+                        mLastError = R.string.err_station_incorrect_uid;
+                        return false;
+                    case REC_COMMAND_ERROR + 10:
+                        mLastError = R.string.err_station_wrong_team;
+                        return false;
+                    case REC_COMMAND_ERROR + 11:
+                        mLastError = R.string.err_station_no_data;
+                        return false;
+                    case REC_COMMAND_ERROR + 12:
+                        mLastError = R.string.err_station_bad_command;
+                        return false;
+                    case REC_COMMAND_ERROR + 13:
+                        mLastError = R.string.err_station_erase_flash;
+                        return false;
+                    case REC_COMMAND_ERROR + 14:
+                        mLastError = R.string.err_station_bad_chip_type;
+                        return false;
+                    default:
+                        mLastError = R.string.err_station_unknown;
+                        return false;
+                }
             }
+            // Check if the actual response length is equal to expected length
+            if (rawResponse.length != responseContent.length + 1) {
+                mLastError = R.string.err_bt_response_wrong_length;
+                return false;
+            }
+            // Everything is OK, copy station response content
+            System.arraycopy(rawResponse, 1, responseContent, 0, responseContent.length);
+            return true;
         }
-        // Check if the actual response length is equal to expected length
-        if (rawResponse.length != responseContent.length + 1) {
-            mLastError = R.string.err_bt_response_wrong_length;
-            return false;
-        }
-        // Everything is OK, copy station response content
-        System.arraycopy(rawResponse, 1, responseContent, 0, responseContent.length);
-        return true;
     }
 }

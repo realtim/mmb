@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="ru.mmb.sportiduinomanager"
-    android:versionCode="13"
-    android:versionName="1.013">
+    android:versionCode="14"
+    android:versionName="1.014">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name="MainApp"
@@ -37,5 +38,6 @@
         <activity android:name="ChipInitActivity" />
         <activity android:name="ChipInfoActivity" />
         <activity android:name="ControlPointActivity" />
+        <service android:name="StationMonitorService"/>
     </application>
 </manifest>

@@ -72,7 +72,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         // Load last entered team number and mask from main application
         mTeamNumber = Integer.toString(mMainApplication.getTeamNumber());
         if ("0".equals(mTeamNumber)) mTeamNumber = "";
-        mTeamMask = mMainApplication.getTeamMask();
+        mTeamMask = MainApp.getTeamMask();
         mOriginalMask = 0;
         // Prepare recycler view of members list
         final RecyclerView recyclerView = findViewById(R.id.member_list);
@@ -115,7 +115,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         }
         mTeamMask = newMask;
         // Save it to main application
-        mMainApplication.setTeamMask(mTeamMask);
+        MainApp.setTeamMask(mTeamMask);
         // Update list item
         mAdapter.setMask(mTeamMask);
         mAdapter.notifyItemChanged(position);
@@ -368,7 +368,7 @@ public final class ChipInitActivity extends MainActivity implements MemberListAd
         // leave mask untouched for old team being reloaded
         if (isNew) {
             mTeamMask = mOriginalMask;
-            mMainApplication.setTeamMask(mTeamMask);
+            MainApp.setTeamMask(mTeamMask);
         }
         // Update team members list
         mAdapter.updateList(teamMembers, mOriginalMask, mTeamMask);
