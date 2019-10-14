@@ -485,6 +485,15 @@ public final class Records {
     }
 
     /**
+     * Check if list of records is empty.
+     *
+     * @return True if list is empty
+     */
+    public boolean isEmpty() {
+        return mRecords.isEmpty();
+    }
+
+    /**
      * Checks if the list of records contains a record for specific team and point.
      *
      * @param team  Team number to search

@@ -98,7 +98,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
                 return error;
             }
             final Records teamPunches = MainApp.mStation.getRecords();
-            if (teamPunches.size() == 0) continue;
+            if (teamPunches.isEmpty()) continue;
             if (teamNumber != teamPunches.getTeamNumber(0)) continue;
             final long initTime = teamPunches.getInitTime(0);
             final int teamMask = teamPunches.getTeamMask(0);

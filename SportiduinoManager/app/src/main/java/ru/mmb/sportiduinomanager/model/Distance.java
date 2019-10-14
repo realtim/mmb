@@ -282,9 +282,9 @@ public final class Distance {
      * @return String containing something like "1,3,4,6-8" or "-" for empty list
      */
     public String pointsNamesFromList(final List<Integer> list) {
-        final int total = list.size();
         // Shortcuts for specific cases
-        if (total == 0) return "-";
+        if (list.isEmpty()) return "-";
+        final int total = list.size();
         if (total == 1) return pointFromList(list, 0);
         // Set continuous[i] flag to false for points which has skipped points before them
         boolean[] continuous = new boolean[list.size()];

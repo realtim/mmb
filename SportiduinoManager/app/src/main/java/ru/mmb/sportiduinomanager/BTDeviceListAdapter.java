@@ -23,6 +23,7 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
     /**
      * List of discovered Bluetooth devices.
      */
+    // TODO: change to LinkedHashSet
     private List<BluetoothDevice> mBTDeviceList;
     /**
      * MAC of connected device (for showing list item with different icon for it).

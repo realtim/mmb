@@ -95,8 +95,10 @@ public final class ControlPointActivity extends MainActivity
         teamsList.setAdapter(mTeamAdapter);
         // Restore team list position and update activity layout
         int restoredPosition = MainApp.getTeamListPosition();
-        if (restoredPosition > MainApp.mPointPunches.size()) {
-            restoredPosition = MainApp.mPointPunches.size();
+        int maxPosition = MainApp.mPointPunches.size() - 1;
+        if (maxPosition < 0) maxPosition = 0;
+        if (restoredPosition > maxPosition) {
+            restoredPosition = maxPosition;
             MainApp.setTeamListPosition(restoredPosition);
         }
         updateMasks(true, restoredPosition);
@@ -196,7 +198,7 @@ public final class ControlPointActivity extends MainActivity
      */
     public void saveTeamMask(@SuppressWarnings("unused") final View view) {
         // Check team mask and station presence
-        if (mTeamMask == 0 || MainApp.mStation == null || MainApp.mPointPunches.size() == 0) {
+        if (mTeamMask == 0 || MainApp.mStation == null || MainApp.mPointPunches.isEmpty()) {
             Toast.makeText(getApplicationContext(), R.string.err_internal_error, Toast.LENGTH_LONG).show();
             return;
         }
@@ -289,9 +291,10 @@ public final class ControlPointActivity extends MainActivity
         } else {
             // Change position in the list to keep current team selected
             int newPosition = 0;
-            for (int i = 0; i < MainApp.mPointPunches.size(); i++) {
+            final int listSize = MainApp.mPointPunches.size();
+            for (int i = 0; i < listSize; i++) {
                 if (MainApp.mPointPunches.getTeamNumber(i) == selectedTeamN) {
-                    newPosition = MainApp.mPointPunches.size() - i - 1;
+                    newPosition = listSize - i - 1;
                     break;
                 }
             }
@@ -317,7 +320,7 @@ public final class ControlPointActivity extends MainActivity
         ((TextView) findViewById(R.id.cp_total_teams)).setText(getResources()
                 .getString(R.string.cp_total_teams, MainApp.mPointPunches.size()));
         // Hide last team block when no teams have been punched at the station
-        if (MainApp.mPointPunches.size() == 0) {
+        if (MainApp.mPointPunches.isEmpty()) {
             findViewById(R.id.cp_team_data).setVisibility(View.GONE);
             return;
         }

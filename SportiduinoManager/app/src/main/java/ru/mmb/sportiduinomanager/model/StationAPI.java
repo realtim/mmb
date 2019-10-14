@@ -64,6 +64,7 @@ public final class StationAPI extends StationRaw {
     /**
      * List of last teams (up to 10) which punched at the station.
      */
+    // TODO: change to LinkedHashSet
     private final List<Integer> mLastTeams;
     /**
      * Chip records received from fetchTeamHeader/fetchTeamPunches methods.

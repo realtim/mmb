@@ -150,7 +150,7 @@ public final class ChipInfoActivity extends MainActivity {
         final int teamNum = (int) byteArray2Long(chipInfo, pos + 1, pos + 2);
         final int ntag = chipInfo[pos + 3] & 0xFF;
         final int version = chipInfo[pos + 4] & 0xFF;
-        builder.append(String.format(Locale.getDefault(), "\n\tTeam# %d, Ntag %d, version %d",
+        builder.append(String.format(Locale.getDefault(), "%n\tTeam# %d, Ntag %d, version %d",
                 teamNum, ntag, version));
         return teamNum;
     }

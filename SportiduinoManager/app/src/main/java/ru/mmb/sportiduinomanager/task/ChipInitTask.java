@@ -34,11 +34,10 @@ public class ChipInitTask extends AsyncTask<Integer, Void, Boolean> {
      * @return True if succeeded
      */
     protected Boolean doInBackground(final Integer... teamParams) {
-        if (MainApp.mStation == null) return false;
-        // Send the command to station
         final int teamNumber = teamParams[0];
         final int teamMask = teamParams[1];
-        return MainApp.mStation.initChip(teamNumber, teamMask, StationAPI.CALLER_CHIP_INIT);
+        // Send the command to station
+        return MainApp.mStation != null && MainApp.mStation.initChip(teamNumber, teamMask, StationAPI.CALLER_CHIP_INIT);
     }
 
     /**

@@ -22,30 +22,6 @@ import java.util.List;
  */
 public final class SiteRequest {
     /**
-     * Downloaded data parsing was successful.
-     */
-    public static final int LOAD_OK = 0;
-    /**
-     * Some unexpected open/read error has been occurred.
-     */
-    public static final int LOAD_READ_ERROR = 1;
-    /**
-     * Downloaded data has an error in its format.
-     */
-    public static final int LOAD_PARSE_ERROR = 2;
-    /**
-     * Local data was changed during upload process.
-     */
-    public static final int LOAD_DATA_CHANGED = 3;
-    /**
-     * Something unexpected has been happened.
-     */
-    public static final int LOAD_FATAL_ERROR = 4;
-    /**
-     * Member mCustomError contains custom text error message.
-     */
-    public static final int LOAD_CUSTOM_ERROR = 5;
-    /**
      * Request type for distance download.
      */
     public static final int TYPE_DL_DISTANCE = 1;
@@ -77,7 +53,6 @@ public final class SiteRequest {
      * Website script API version supported by this application.
      */
     private static final String HTTP_API_VERSION = "1";
-
     /**
      * User email for authorization.
      */
@@ -106,16 +81,14 @@ public final class SiteRequest {
      * List of all Sportiduino records for sending unsent records to site.
      */
     private final Records mRecords;
-
     /**
      * Custom error from first line of downloaded file or from SQLite exception.
      */
     private String mCustomError;
-
     /**
      * Result of parsing of server response.
      */
-    private int mParsingResult;
+    private RequestResult mParsingResult;
     /**
      * A distance successfully loaded from downloaded file.
      */
@@ -199,7 +172,7 @@ public final class SiteRequest {
      *
      * @return One of LOAD result constants, mCustomError can be also set
      */
-    public int makeRequest() {
+    public RequestResult makeRequest() {
         switch (mType) {
             case TYPE_DL_DISTANCE:
                 return loadDistance();
@@ -210,7 +183,7 @@ public final class SiteRequest {
             case TYPE_UL_DATABASE:
                 return sendDatabase();
             default:
-                return LOAD_FATAL_ERROR;
+                return RequestResult.FATAL_ERROR;
         }
     }
 
@@ -247,7 +220,7 @@ public final class SiteRequest {
      * @param postData   string with POST parameters or null in case of GET request
      * @return One of LOAD result constants
      */
-    private int makeConnection(final HttpURLConnection connection, final String postData) {
+    private RequestResult makeConnection(final HttpURLConnection connection, final String postData) {
         connection.setRequestProperty("X-Sportiduino-Protocol", HTTP_API_VERSION);
         connection.setRequestProperty("X-Sportiduino-Auth", mUserEmail + "|" + mUserPassword);
         connection.setRequestProperty("X-Sportiduino-Action", String.valueOf(mType));
@@ -261,15 +234,15 @@ public final class SiteRequest {
             try {
                 connection.getOutputStream().write(postDataBytes);
             } catch (IOException e) {
-                return LOAD_READ_ERROR;
+                return RequestResult.READ_ERROR;
             }
         }
         try {
             connection.connect();
         } catch (IOException e) {
-            return LOAD_READ_ERROR;
+            return RequestResult.READ_ERROR;
         }
-        return LOAD_OK;
+        return RequestResult.OK;
     }
 
     /**
@@ -354,7 +327,7 @@ public final class SiteRequest {
                     break;
                 case 'E':
                     // End of distance data in server response
-                    mParsingResult = LOAD_OK;
+                    mParsingResult = RequestResult.OK;
                     break;
                 default:
                     return false;
@@ -370,12 +343,12 @@ public final class SiteRequest {
      *
      * @return One of LOAD result constants, mCustomError can be also set
      */
-    private int loadDistance() {
+    private RequestResult loadDistance() {
         // Prepare and open connection to site
         final HttpURLConnection connection = prepareConnection();
-        if (connection == null) return LOAD_READ_ERROR;
-        final int result = makeConnection(connection, null);
-        if (result != LOAD_OK) return result;
+        if (connection == null) return RequestResult.READ_ERROR;
+        final RequestResult result = makeConnection(connection, null);
+        if (result != RequestResult.OK) return result;
         // Start reading server response
         try (InputStream stream = connection.getInputStream()) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName(UTF8)))) {
@@ -384,46 +357,46 @@ public final class SiteRequest {
                 if (line == null) {
                     reader.close();
                     connection.disconnect();
-                    return LOAD_READ_ERROR;
+                    return RequestResult.READ_ERROR;
                 }
                 if (!"".equals(line)) {
                     reader.close();
                     connection.disconnect();
                     mCustomError = line;
-                    return LOAD_CUSTOM_ERROR;
+                    return RequestResult.CUSTOM_ERROR;
                 }
                 // read the response
-                mParsingResult = LOAD_READ_ERROR;
+                mParsingResult = RequestResult.READ_ERROR;
                 do {
                     line = reader.readLine();
                     if (line == null) break;
                     if (!parseDistanceBlock(line, reader)) break;
-                } while (mParsingResult != LOAD_OK);
+                } while (mParsingResult != RequestResult.OK);
             } catch (IOException e) {
                 connection.disconnect();
-                return LOAD_READ_ERROR;
+                return RequestResult.READ_ERROR;
             }
         } catch (IOException e) {
             connection.disconnect();
-            return LOAD_READ_ERROR;
+            return RequestResult.READ_ERROR;
         }
         // Finish reading server response
         connection.disconnect();
         // Validate loaded distance and teams
-        if (mParsingResult == LOAD_OK && (mDistance.hasErrors() || mTeams.hasErrors())) {
-            mParsingResult = LOAD_PARSE_ERROR;
+        if (mParsingResult == RequestResult.OK && (mDistance.hasErrors() || mTeams.hasErrors())) {
+            mParsingResult = RequestResult.PARSE_ERROR;
         }
         // Reset distance and teams and return in case of parsing error
-        if (mParsingResult != LOAD_OK) return mParsingResult;
+        if (mParsingResult != RequestResult.OK) return mParsingResult;
         // Save parsed distance and teams to local database
         try {
             mDatabase.saveDistance(mDistance);
             mDatabase.saveTeams(mTeams);
         } catch (SQLiteException e) {
             mCustomError = e.getMessage();
-            return LOAD_CUSTOM_ERROR;
+            return RequestResult.CUSTOM_ERROR;
         }
-        return LOAD_OK;
+        return RequestResult.OK;
     }
 
     /**
@@ -431,10 +404,10 @@ public final class SiteRequest {
      *
      * @return One of LOAD result constants, mCustomError can be also set
      */
-    private int sendRecords() {
+    private RequestResult sendRecords() {
         // Prepare connection to site
         final HttpURLConnection connection = prepareConnection();
-        if (connection == null) return LOAD_READ_ERROR;
+        if (connection == null) return RequestResult.READ_ERROR;
         // Prepare data to send
         final List<String> records = mRecords.getUnsentRecords();
         final StringBuilder builder = new StringBuilder();
@@ -444,8 +417,8 @@ public final class SiteRequest {
         final String data =
                 "data=" + mRecords.getTimeDownloaded() + '\t' + records.size() + builder.toString();
         // Send data to site
-        final int result = makeConnection(connection, data);
-        if (result != LOAD_OK) return result;
+        final RequestResult result = makeConnection(connection, data);
+        if (result != RequestResult.OK) return result;
         // Read script response
         try (InputStream stream = connection.getInputStream()) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName(UTF8)))) {
@@ -455,31 +428,31 @@ public final class SiteRequest {
                     reader.close();
                     connection.disconnect();
                     mCustomError = error;
-                    return LOAD_CUSTOM_ERROR;
+                    return RequestResult.CUSTOM_ERROR;
                 }
                 // Check that all records were received by server
                 final String header = reader.readLine();
                 if (header == null) {
                     reader.close();
                     connection.disconnect();
-                    return LOAD_READ_ERROR;
+                    return RequestResult.READ_ERROR;
                 }
                 try {
-                    if (Integer.parseInt(header) != records.size()) return LOAD_PARSE_ERROR;
+                    if (Integer.parseInt(header) != records.size()) return RequestResult.PARSE_ERROR;
                 } catch (NumberFormatException e) {
                     // This line can contain php error, show it to user
                     reader.close();
                     connection.disconnect();
                     mCustomError = header;
-                    return LOAD_CUSTOM_ERROR;
+                    return RequestResult.CUSTOM_ERROR;
                 }
             } catch (IOException e) {
                 connection.disconnect();
-                return LOAD_READ_ERROR;
+                return RequestResult.READ_ERROR;
             }
         } catch (IOException e) {
             connection.disconnect();
-            return LOAD_READ_ERROR;
+            return RequestResult.READ_ERROR;
         }
         // Finish parsing of server response
         connection.disconnect();
@@ -487,12 +460,12 @@ public final class SiteRequest {
         if (mDatabase.markRecordsSent(records.size())) {
             // Update records status in memory
             if (mRecords.markRecordsSent(records.size())) {
-                return LOAD_OK;
+                return RequestResult.OK;
             } else {
-                return LOAD_DATA_CHANGED;
+                return RequestResult.DATA_CHANGED;
             }
         } else {
-            return LOAD_DATA_CHANGED;
+            return RequestResult.DATA_CHANGED;
         }
     }
 
@@ -501,12 +474,12 @@ public final class SiteRequest {
      *
      * @return One of LOAD result constants, mCustomError can be also set
      */
-    private int loadResults() {
+    private RequestResult loadResults() {
         // Prepare and open connection to site
         final HttpURLConnection connection = prepareConnection();
-        if (connection == null) return LOAD_READ_ERROR;
-        final int result = makeConnection(connection, null);
-        if (result != LOAD_OK) return result;
+        if (connection == null) return RequestResult.READ_ERROR;
+        final RequestResult result = makeConnection(connection, null);
+        if (result != RequestResult.OK) return result;
         // Start reading server response
         try (InputStream stream = connection.getInputStream()) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName(UTF8)))) {
@@ -514,29 +487,29 @@ public final class SiteRequest {
                 final String error = reader.readLine();
                 if (!"".equals(error)) {
                     mCustomError = error;
-                    return LOAD_CUSTOM_ERROR;
+                    return RequestResult.CUSTOM_ERROR;
                 }
                 // Get id of last result in site database
                 final String header = reader.readLine();
-                if (header == null) return LOAD_READ_ERROR;
+                if (header == null) return RequestResult.READ_ERROR;
                 long lastResultId;
                 try {
                     lastResultId = Integer.parseInt(header);
                 } catch (NumberFormatException e) {
                     // This line can contain php error, show it to user
                     mCustomError = header;
-                    return LOAD_CUSTOM_ERROR;
+                    return RequestResult.CUSTOM_ERROR;
                 }
                 // TODO: mDistance is null, save it in future mResults object
                 mDistance.setLastResultId(lastResultId);
                 // TODO: parse teams results
             } catch (IOException e) {
-                return LOAD_READ_ERROR;
+                return RequestResult.READ_ERROR;
             }
         } catch (IOException e) {
-            return LOAD_READ_ERROR;
+            return RequestResult.READ_ERROR;
         }
-        return LOAD_OK;
+        return RequestResult.OK;
     }
 
     /**
@@ -544,10 +517,10 @@ public final class SiteRequest {
      *
      * @return One of LOAD result constants, mCustomError can be also set
      */
-    private int sendDatabase() {
+    private RequestResult sendDatabase() {
         // Prepare connection to site
         final HttpURLConnection connection = prepareConnection();
-        if (connection == null) return LOAD_READ_ERROR;
+        if (connection == null) return RequestResult.READ_ERROR;
         // Get database filename
         final String filename = mDatabase.getDatabasePath();
         // Read database binary content
@@ -557,16 +530,16 @@ public final class SiteRequest {
             try (DataInputStream dataInputStream = new DataInputStream(new BufferedInputStream(fileInputStream))) {
                 dataInputStream.readFully(content);
             } catch (IOException e) {
-                return LOAD_READ_ERROR;
+                return RequestResult.READ_ERROR;
             }
         } catch (IOException e) {
-            return LOAD_READ_ERROR;
+            return RequestResult.READ_ERROR;
         }
         // Prepare data to send
         final String data = "data=" + Base64.encodeToString(content, Base64.NO_WRAP | Base64.URL_SAFE);
         // Send data to site
-        final int result = makeConnection(connection, data);
-        if (result != LOAD_OK) return result;
+        final RequestResult result = makeConnection(connection, data);
+        if (result != RequestResult.OK) return result;
         // Read script response
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(),
                 Charset.forName(UTF8)))) {
@@ -574,13 +547,43 @@ public final class SiteRequest {
             // Non-empty first line contains server error
             if (!"".equals(error)) {
                 mCustomError = error;
-                return LOAD_CUSTOM_ERROR;
+                return RequestResult.CUSTOM_ERROR;
             }
         } catch (IOException e) {
-            return LOAD_READ_ERROR;
+            return RequestResult.READ_ERROR;
         }
         // Finish parsing of server response
-        return LOAD_OK;
+        return RequestResult.OK;
+    }
+
+    /**
+     * Request result codes.
+     */
+    public enum RequestResult {
+        /**
+         * Downloaded data parsing was successful.
+         */
+        OK,
+        /**
+         * Local data was changed during upload process.
+         */
+        DATA_CHANGED,
+        /**
+         * Some unexpected open/read error has been occurred.
+         */
+        READ_ERROR,
+        /**
+         * Downloaded data has an error in its format.
+         */
+        PARSE_ERROR,
+        /**
+         * Something unexpected has been happened.
+         */
+        FATAL_ERROR,
+        /**
+         * Member mCustomError contains custom text error message.
+         */
+        CUSTOM_ERROR
     }
 
     /**

@@ -207,11 +207,13 @@ public class StationRaw {
      * @return Code of last error or zero (if no errors occurred)
      */
     public int getLastError(final boolean resetError) {
-        final int error = mLastError;
-        if (resetError) {
-            mLastError = 0;
+        synchronized (this) {
+            final int error = mLastError;
+            if (resetError) {
+                mLastError = 0;
+            }
+            return error;
         }
-        return error;
     }
 
     /**
@@ -220,7 +222,9 @@ public class StationRaw {
      * @param error New error value (resource string id)
      */
     void setLastError(final int error) {
-        mLastError = error;
+        synchronized (this) {
+            mLastError = error;
+        }
     }
 
     /**

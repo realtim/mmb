@@ -155,9 +155,9 @@ public class StationMonitorService extends Service {
         // Number of team punches at local db and at station are the same?
         // Time of last punch in local db and at station is the same?
         // (it can change without changing of number of teams)
-        if (MainApp.mPointPunches.size() == MainApp.mStation.getTeamsPunched()
-                && MainApp.mPointPunches.getTeamTime(MainApp.mPointPunches.size() - 1)
-                == MainApp.mStation.getLastPunchTime()) {
+        final int teamListSize = MainApp.mPointPunches.size();
+        if (teamListSize == MainApp.mStation.getTeamsPunched()
+                && MainApp.mPointPunches.getTeamTime(teamListSize - 1) == MainApp.mStation.getLastPunchTime()) {
             return fetchTeams;
         }
 
@@ -235,7 +235,7 @@ public class StationMonitorService extends Service {
             }
             // Get team punches as a Sportiduino record list
             final Records teamPunches = MainApp.mStation.getRecords();
-            if (teamPunches.size() == 0) {
+            if (teamPunches.isEmpty()) {
                 // Team punch was not registered at all due to err_station_no_data error
                 // Create synthetic team punch with zero chip init time
                 final List<String> teamMembers = MainApp.mTeams.getMembersNames(teamNumber);

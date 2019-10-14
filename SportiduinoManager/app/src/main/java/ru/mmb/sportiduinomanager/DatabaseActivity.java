@@ -401,27 +401,27 @@ public final class DatabaseActivity extends MainActivity {
          * @return True if succeeded
          */
         protected Integer doInBackground(final SiteRequest... request) {
-            int result;
+            SiteRequest.RequestResult result;
             try {
                 result = request[0].makeRequest();
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                result = SiteRequest.LOAD_PARSE_ERROR;
+                result = SiteRequest.RequestResult.PARSE_ERROR;
             }
             switch (result) {
-                case SiteRequest.LOAD_READ_ERROR:
+                case READ_ERROR:
                     return R.string.err_db_reading_response;
-                case SiteRequest.LOAD_PARSE_ERROR:
+                case PARSE_ERROR:
                     return R.string.err_db_bad_response;
-                case SiteRequest.LOAD_DATA_CHANGED:
+                case DATA_CHANGED:
                     // New records has been added during upload
                     // Force reload of records from local database
                     // and forget about sending some records to site
                     MainApp.setAllRecords(MainApp.mDatabase.loadRecords(), true);
                     return R.string.send_results_failure;
-                case SiteRequest.LOAD_CUSTOM_ERROR:
+                case CUSTOM_ERROR:
                     mCustomError = request[0].getCustomError();
                     return -1;
-                case SiteRequest.LOAD_OK:
+                case OK:
                     switch (request[0].getRequestType()) {
                         case SiteRequest.TYPE_DL_DISTANCE:
                             // Copy loaded distance and teams to persistent memory
@@ -441,7 +441,6 @@ public final class DatabaseActivity extends MainActivity {
                         default:
                             return R.string.err_internal_error;
                     }
-                case SiteRequest.LOAD_FATAL_ERROR:
                 default:
                     return R.string.err_internal_error;
             }
