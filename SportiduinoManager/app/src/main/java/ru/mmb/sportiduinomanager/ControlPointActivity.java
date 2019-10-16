@@ -1,10 +1,12 @@
 package ru.mmb.sportiduinomanager;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -62,18 +64,38 @@ public final class ControlPointActivity extends MainActivity
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
+        Log.d(StationAPI.CALLER_CP, "Create");
         setContentView(R.layout.activity_controlpoint);
+        // Register receiver of messages from station monitoring service
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(DATA_UPDATED));
+        // Start foreground service for monitoring of connected station for new punches
+        startMonitoringService();
     }
 
     @Override
     protected void onStart() {
-        Log.d(StationAPI.CALLER_CP, "Start");
         super.onStart();
+        Log.d(StationAPI.CALLER_CP, "Start");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(StationAPI.CALLER_CP, "Resume");
+        // Wake the device (if the activity was started by monitoring service)
+        final PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        final PowerManager.WakeLock wakeLock =
+                powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                        getString(R.string.app_name));
+        wakeLock.acquire(5000);
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.control_point).setChecked(true);
         updateMenuItems(R.id.control_point);
         // Disable startup animation
         overridePendingTransition(0, 0);
+        // Set flag for monitoring service in main app
+        MainApp.setCPActivityActive(true);
         // Initialize masks
         mTeamMask = MainApp.getTeamMask();
         mOriginalMask = 0;
@@ -107,24 +129,27 @@ public final class ControlPointActivity extends MainActivity
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(StationAPI.CALLER_CP, "Resume");
-        // Register receiver of messages from station monitoring service
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(DATA_UPDATED));
-        // Start foreground service for monitoring of connected station for new punches
-        startMonitoringService();
+    protected void onPause() {
+        Log.d(StationAPI.CALLER_CP, "Pause");
+        // Set flag for monitoring service in main app
+        MainApp.setCPActivityActive(false);
+        super.onPause();
     }
 
     @Override
-    protected void onPause() {
+    protected void onStop() {
+        Log.d(StationAPI.CALLER_CP, "Stop");
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(StationAPI.CALLER_CP, "Destroy");
         // Stop monitoring service
         stopMonitoringService();
         // Unregister the receiver of messages from monitoring service
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-        Log.d(StationAPI.CALLER_CP, "Pause");
-        super.onPause();
+        super.onDestroy();
     }
 
     /**
@@ -178,6 +203,13 @@ public final class ControlPointActivity extends MainActivity
      */
     private void startMonitoringService() {
         MainApp.mStation.setQueryingAllowed(true);
+        // Return if the service is already running
+        final ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (final ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (StationMonitorService.class.getName().equals(service.service.getClassName())) return;
+        }
+        // Start the service
+        Log.d(StationAPI.CALLER_CP, "Start service");
         final Intent intent = new Intent(this, StationMonitorService.class);
         startService(intent);
     }
@@ -187,6 +219,7 @@ public final class ControlPointActivity extends MainActivity
      */
     private void stopMonitoringService() {
         MainApp.mStation.setQueryingAllowed(false);
+        Log.d(StationAPI.CALLER_CP, "Stop service");
         final Intent intent = new Intent(this, StationMonitorService.class);
         stopService(intent);
     }

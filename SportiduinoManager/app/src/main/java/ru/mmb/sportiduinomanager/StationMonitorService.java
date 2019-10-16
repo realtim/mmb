@@ -55,7 +55,7 @@ public class StationMonitorService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(StationAPI.CALLER_QUERYING, "Create");
+        Log.d(StationAPI.CALLER_QUERYING, "Starting service");
         // save service context for sending messages to activity
         mContext = this;
         // prepare notification that will be shown to user about service start
@@ -96,6 +96,7 @@ public class StationMonitorService extends Service {
      */
     @Override
     public int onStartCommand(final Intent intent, final int flags, final int startId) {
+        Log.d(StationAPI.CALLER_QUERYING, "onStartCommand");
         // Stop the timer if it was started already
         if (mTimer != null) {
             mTimer.cancel();
@@ -129,11 +130,21 @@ public class StationMonitorService extends Service {
                 final int result = fetchTeamsPunches();
                 // Inform other activities that service finished sending queries to station
                 MainApp.mStation.setQueryingActive(false);
-                // send notification to ControlPointActivity - time to update UI
+                // Send notification to ControlPointActivity - time to update UI
                 final Intent intent = new Intent(DATA_UPDATED);
                 intent.putExtra("result", result);
                 intent.putExtra("selectedTeamN", selectedTeamN);
                 LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                // Force ControlPointActivity into foreground in case of new data or error
+                if (result != 0 && !MainApp.isCPActivityActive()) {
+                    // Bring activity in foreground
+                    Log.d(StationAPI.CALLER_QUERYING, "Force activity back");
+                    final Intent activityIntent = new Intent(getApplicationContext(), ControlPointActivity.class);
+                    activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    getApplicationContext().startActivity(activityIntent);
+                    // Mark it already started in advance to prevent multiple start requests
+                    MainApp.setCPActivityActive(true);
+                }
             }
         }, 1000, 1000);
         // If we get killed, after returning from here, restart
@@ -322,7 +333,7 @@ public class StationMonitorService extends Service {
      */
     @Override
     public void onDestroy() {
-        Log.d(StationAPI.CALLER_QUERYING, "Destroy");
+        Log.d(StationAPI.CALLER_QUERYING, "Stopping service");
         if (mTimer != null) {
             mTimer.cancel();
             mTimer.purge();

@@ -156,8 +156,8 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
 
     @Override
     protected void onStart() {
-        Log.d(StationAPI.CALLER_BLUETOOTH, "Start");
         super.onStart();
+        Log.d(StationAPI.CALLER_BLUETOOTH, "Start");
         // Start monitoring bluetooth changes
         registerReceiver(mBTStateMonitor, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
         // Prepare for Bluetooth device search
@@ -171,8 +171,8 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
 
     @Override
     protected void onResume() {
-        Log.d(StationAPI.CALLER_BLUETOOTH, "Resume");
         super.onResume();
+        Log.d(StationAPI.CALLER_BLUETOOTH, "Resume");
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.bluetooth).setChecked(true);
         updateMenuItems(R.id.bluetooth);
@@ -380,6 +380,7 @@ public final class BluetoothActivity extends MainActivity implements BTDeviceLis
             // Update activity layout
             updateResetProgress(0, 24);
             updateLayout(false);
+            // TODO: add wake lock
             // Reset station to change it's number (and mode if needed)
             new ResetStationTask(this).execute(newNumber, newMode);
             return;

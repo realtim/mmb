@@ -101,7 +101,7 @@
     <string name="cp_save_mask">Зарегистрировать сход</string>
     <string name="list_team_count">%1$d</string>
     <string name="list_team_time">%1$s</string>
-    <string name="monitoring_service">Мониторинг подключенной станции на предмет новых отметок команд</string>
+    <string name="monitoring_service">Мониторинг отметок на станции</string>
 
     <string name="chip_info_request">Запрос информации о чипе</string>
 </resources>

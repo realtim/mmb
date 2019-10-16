@@ -110,6 +110,10 @@ public final class MainApp extends Application {
      */
     private static int mTeamMask;
     /**
+     * True if ControlPointActivity is running in foreground.
+     */
+    private static boolean mCPActivityActive;
+    /**
      * Description of error occurred during application startup (if any).
      */
     private String mStartupError = "";
@@ -184,7 +188,7 @@ public final class MainApp extends Application {
             return;
         }
         // Check if old list has more records then new
-        if (mAllRecords.size() > records.size() && mDatabase != null) {
+        if (mDatabase != null && mAllRecords.size() > records.size()) {
             // Reload records from local database
             // (it is better to lose some records statuses then the whole records)
             mAllRecords = mDatabase.loadRecords();
@@ -258,6 +262,24 @@ public final class MainApp extends Application {
      */
     public static void setTeamMask(final int teamMask) {
         mTeamMask = teamMask;
+    }
+
+    /**
+     * Get mCPActivityActive flag value.
+     *
+     * @return True if ControlPointActivity is running in foreground.
+     */
+    public static boolean isCPActivityActive() {
+        return mCPActivityActive;
+    }
+
+    /**
+     * Set mCPActivityActive flag value.
+     *
+     * @param isActive True if ControlPointActivity is/going to be in foreground
+     */
+    public static void setCPActivityActive(final boolean isActive) {
+        mCPActivityActive = isActive;
     }
 
     /**

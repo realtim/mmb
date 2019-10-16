@@ -243,5 +243,11 @@ public class MainActivity extends AppCompatActivity {
             Objects.requireNonNull(getSupportActionBar())
                     .setTitle(mNavigationView.getMenu().findItem(activeItem).getTitle());
         }
+        // Stop station monitoring service if we are not on control point screen
+        if (activeItem != R.id.control_point && MainApp.mStation != null) {
+            MainApp.mStation.setQueryingAllowed(false);
+            final Intent intent = new Intent(this, StationMonitorService.class);
+            stopService(intent);
+        }
     }
 }
