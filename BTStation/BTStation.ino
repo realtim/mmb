@@ -623,9 +623,9 @@ void processRfidCard()
   }
 
   bool already_checked = false;
+  // сравнить с буфером последних команд
   if (stationMode == MODE_START_KP)
   {
-    // сравнить с буфером последних команд
     for (uint8_t i = 0; i < lastTeamsLength * 2; i = i + 2)
     {
       if (lastTeams[i] == ntag_page[0] && lastTeams[i + 1] == ntag_page[1])
@@ -648,91 +648,101 @@ void processRfidCard()
 #endif
   }
 
-  // если новый чип или финишный КП
-  if (!already_checked || stationMode == MODE_FINISH_KP)
+  // если известный чип и стартовый КП
+  if (already_checked && stationMode == MODE_START_KP)
   {
 #ifdef DEBUG
-    Serial.println(F("!!!checking chip"));
+    Serial.println(F("!!!Can't read chip"));
 #endif
-    digitalWrite(INFO_LED_PIN, HIGH);
-    // ищем свободную страницу на чипе
-    int newPage = findNewPage();
-
-    // ошибка чтения чипа
-    if (newPage == 0)
-    {
-      SPI.end();
-      digitalWrite(INFO_LED_PIN, LOW);
-      errorBeep(1);
-#ifdef DEBUG
-      Serial.println(F("!!!Can't read chip"));
-#endif
-      return;
-    }
-
-    // больше/меньше нормы... Наверное, переполнен???
-    if (newPage != -1 && (newPage < PAGE_DATA_START || newPage >= TAG_MAX_PAGE))
-    {
-      SPI.end();
-      digitalWrite(INFO_LED_PIN, LOW);
-      errorBeep(4);
-#ifdef DEBUG
-      Serial.print(F("!!!chip page# incorrect: "));
-      Serial.println(String(newPage));
-#endif
-      return;
-    }
-
-    // chip was not checked by another station with the same number
-    if (newPage != -1)
-    {
-#ifdef DEBUG
-      Serial.println(F("!!!writing to chip"));
-#endif
-      // Пишем на чип отметку
-      if (!writeCheckPointToCard(newPage, checkTime))
-      {
-        SPI.end();
-        digitalWrite(INFO_LED_PIN, LOW);
-        errorBeep(1);
-#ifdef DEBUG
-        Serial.print(F("!!!failed to write chip"));
-#endif
-        return;
-      }
-    }
-    else
-    {
-#ifdef DEBUG
-      Serial.print(F("!!!chip marked by another station"));
-#endif
-    }
-
-    // Пишем дамп чипа во флэш
-    if (!writeDumpToFlash(chipNum, checkTime))
-    {
-      SPI.end();
-      digitalWrite(INFO_LED_PIN, LOW);
-      errorBeep(2);
-#ifdef DEBUG
-      Serial.print(F("!!!failed to write dump"));
-#endif
-      return;
-    }
     SPI.end();
-
-    // добавляем в буфер последних команд
-    addLastTeam(chipNum);
-    lastTimeChecked = checkTime;
-    if (!already_checked) totalChipsChecked++;
+    //digitalWrite(INFO_LED_PIN, LOW);
+    errorBeep(1);
     lastTeamFlag = chipNum;
-    digitalWrite(INFO_LED_PIN, LOW);
-    beep(1, 200);
-#ifdef DEBUG
-    Serial.print(F("!!!New record #"));
-    Serial.println(String(chipNum));
-#endif
+    return;
   }
+
+#ifdef DEBUG
+  Serial.println(F("!!!searching free page"));
+#endif
+  //digitalWrite(INFO_LED_PIN, HIGH);
+  // ищем свободную страницу на чипе
+  int newPage = findNewPage();
+
+  // ошибка чтения чипа
+  if (newPage == 0)
+  {
+    SPI.end();
+    //digitalWrite(INFO_LED_PIN, LOW);
+    errorBeep(1);
+#ifdef DEBUG
+    Serial.println(F("!!!Can't read chip"));
+#endif
+    return;
+  }
+
+  // больше/меньше нормы... Наверное, переполнен???
+  if (newPage != -1 && (newPage < PAGE_DATA_START || newPage >= TAG_MAX_PAGE))
+  {
+    SPI.end();
+    //digitalWrite(INFO_LED_PIN, LOW);
+    errorBeep(4);
+#ifdef DEBUG
+    Serial.print(F("!!!chip page# incorrect: "));
+    Serial.println(String(newPage));
+#endif
+    return;
+  }
+
+  // chip was not checked by another station with the same number
+  if (newPage == -1)
+  {
+#ifdef DEBUG
+    Serial.print(F("!!!chip marked by another station"));
+#endif
+    lastTeamFlag = chipNum;
+    //digitalWrite(INFO_LED_PIN, LOW);
+    return;
+  }
+
+#ifdef DEBUG
+  Serial.println(F("!!!writing to chip"));
+#endif
+  // Пишем на чип отметку
+  digitalWrite(INFO_LED_PIN, HIGH);
+  if (!writeCheckPointToCard(newPage, checkTime))
+  {
+    SPI.end();
+    digitalWrite(INFO_LED_PIN, LOW);
+    errorBeep(1);
+#ifdef DEBUG
+    Serial.print(F("!!!failed to write chip"));
+#endif
+    return;
+  }
+  // Пишем дамп чипа во флэш
+  if (!writeDumpToFlash(chipNum, checkTime))
+  {
+    SPI.end();
+    digitalWrite(INFO_LED_PIN, LOW);
+    errorBeep(2);
+#ifdef DEBUG
+    Serial.print(F("!!!failed to write dump"));
+#endif
+    return;
+  }
+  SPI.end();
+
+  // добавляем в буфер последних команд
+  addLastTeam(chipNum);
+  lastTimeChecked = checkTime;
+  if (!already_checked) totalChipsChecked++;
+  lastTeamFlag = chipNum;
+  digitalWrite(INFO_LED_PIN, LOW);
+  beep(1, 200);
+#ifdef DEBUG
+  Serial.print(F("!!!New record #"));
+  Serial.println(String(chipNum));
+#endif
 }
 
 // обработка входящих команд
