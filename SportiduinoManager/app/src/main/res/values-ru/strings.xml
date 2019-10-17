@@ -101,6 +101,11 @@
     <string name="cp_save_mask">Зарегистрировать сход</string>
     <string name="list_team_count">%1$d</string>
     <string name="list_team_time">%1$s</string>
+    <plurals name="cp_scan_time">
+        <item quantity="one">%1$d секунда до завершения</item>
+        <item quantity="few">%1$d секунды до завершения</item>
+        <item quantity="many">%1$d секунд до завершения</item>
+    </plurals>
     <string name="monitoring_service">Мониторинг отметок на станции</string>
 
     <string name="chip_info_request">Запрос информации о чипе</string>

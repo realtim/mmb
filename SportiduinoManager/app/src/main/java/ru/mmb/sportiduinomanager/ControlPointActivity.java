@@ -13,6 +13,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +25,7 @@ import ru.mmb.sportiduinomanager.model.Teams;
 
 import static ru.mmb.sportiduinomanager.StationMonitorService.DATA_UPDATED;
 import static ru.mmb.sportiduinomanager.StationMonitorService.NO_DATA_IN_MSG;
+import static ru.mmb.sportiduinomanager.StationMonitorService.PROGRESS_UPDATED;
 
 /**
  * Provides ability to get Sportiduino records from station, mark team members
@@ -41,7 +43,6 @@ public final class ControlPointActivity extends MenuActivity
      * or changed and saved previously.
      */
     private int mOriginalMask;
-
     /**
      * RecyclerView with team members.
      */
@@ -51,12 +52,21 @@ public final class ControlPointActivity extends MenuActivity
      */
     private TeamListAdapter mTeamAdapter;
     /**
-     * Receiver of messages from station monitoring service.
+     * Receiver of "data changed" messages from station monitoring service.
      */
-    private final BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mDataReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(final Context context, final Intent intent) {
             onStationDataUpdated(intent);
+        }
+    };
+    /**
+     * Receiver of "full scan" messages from station monitoring service.
+     */
+    private final BroadcastReceiver mProgressReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            onScanProgressChanged(intent);
         }
     };
 
@@ -66,8 +76,10 @@ public final class ControlPointActivity extends MenuActivity
         Log.d(StationAPI.CALLER_CP, "Create");
         setContentView(R.layout.activity_controlpoint);
         // Register receiver of messages from station monitoring service
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+        LocalBroadcastManager.getInstance(this).registerReceiver(mDataReceiver,
                 new IntentFilter(DATA_UPDATED));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mProgressReceiver,
+                new IntentFilter(PROGRESS_UPDATED));
         // Start foreground service for monitoring of connected station for new punches
         startMonitoringService();
     }
@@ -147,7 +159,8 @@ public final class ControlPointActivity extends MenuActivity
         // Stop monitoring service
         stopMonitoringService();
         // Unregister the receiver of messages from monitoring service
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mDataReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mProgressReceiver);
         super.onDestroy();
     }
 
@@ -315,6 +328,43 @@ public final class ControlPointActivity extends MenuActivity
         updateMenuItems(R.id.control_point);
         // Display station communication error (if any)
         if (result > 0) Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Update progress bar for full station scan.
+     *
+     * @param intent Intent with data sent from monitoring service
+     */
+    private void onScanProgressChanged(final Intent intent) {
+        // Extract data from the message received from monitoring service
+        final int currentTeam = intent.getIntExtra("current", NO_DATA_IN_MSG);
+        final int totalTeams = intent.getIntExtra("total", NO_DATA_IN_MSG);
+        if (currentTeam == NO_DATA_IN_MSG || totalTeams == NO_DATA_IN_MSG) {
+            Toast.makeText(getApplicationContext(), R.string.err_internal_error, Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (totalTeams == 0) {
+            // Scanning has been ended, hide the progress bar
+            findViewById(R.id.cp_full_scan).setVisibility(View.GONE);
+            findViewById(R.id.cp_team_data).setVisibility(View.VISIBLE);
+            return;
+        }
+        if (currentTeam == 0) {
+            // Scanning is starting, show the progress bar
+            findViewById(R.id.cp_team_data).setVisibility(View.GONE);
+            findViewById(R.id.cp_full_scan).setVisibility(View.VISIBLE);
+        }
+        // Compute progress in percents left
+        final int percents = (int) (100L * currentTeam / totalTeams);
+        // Compute approximate number of fetchTeamPunches calls per each team to scan
+        final int punchesScans = MainApp.mStation.getNumber() / (StationAPI.MAX_PUNCH_COUNT - 1) + 1;
+        // Estimate remaining time in seconds
+        final int secondsToComplete = (int) ((totalTeams - currentTeam) * (1 + punchesScans) * 150 / 1000L);
+        // Update progress bar and text message
+        ((ProgressBar) findViewById(R.id.cp_scan_percents)).setProgress(percents);
+        ((TextView) findViewById(R.id.cp_scan_time)).setText(getResources()
+                .getQuantityString(R.plurals.cp_scan_time, secondsToComplete,
+                        secondsToComplete));
     }
 
     /**

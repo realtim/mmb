@@ -101,6 +101,10 @@
     <string name="cp_save_mask">Register dismissal</string>
     <string name="list_team_count">%1$d</string>
     <string name="list_team_time">%1$s</string>
+    <plurals name="cp_scan_time">
+        <item quantity="one">%1$d second to complete</item>
+        <item quantity="other">%1$d seconds to complete</item>
+    </plurals>
     <string name="monitoring_service">Monitoring connected station for new punches</string>
 
     <string name="chip_info_request">Read chip info</string>

@@ -29,9 +29,14 @@ import ru.mmb.sportiduinomanager.model.StationAPI;
 public class StationMonitorService extends Service {
 
     /**
-     * ID of notification messages for ControlPointActivity.
+     * ID of "data updated" notification messages for ControlPointActivity.
      */
     static final String DATA_UPDATED = "data-from-station-updated";
+
+    /**
+     * ID of "progress bar updated" notification messages for ControlPointActivity.
+     */
+    static final String PROGRESS_UPDATED = "progress-bar-updated";
 
     /**
      * Default value for parsing messages from service
@@ -146,7 +151,7 @@ public class StationMonitorService extends Service {
                     MainApp.setCPActivityActive(true);
                 }
             }
-        }, 1000, 1000);
+        }, 0, 1000);
         // If we get killed, after returning from here, restart
         return START_STICKY;
     }
@@ -211,6 +216,13 @@ public class StationMonitorService extends Service {
         return fetchTeams;
     }
 
+    private void updateProgressBar(final int currentTeam, final int totalTeams) {
+        final Intent intent = new Intent(PROGRESS_UPDATED);
+        intent.putExtra("current", currentTeam);
+        intent.putExtra("total", totalTeams);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+    }
+
     /**
      * Get all punches for all new teams
      * which has been punched at the station after the last check.
@@ -225,13 +237,16 @@ public class StationMonitorService extends Service {
         final List<Integer> fetchTeams = getTeamsToFetch();
         if (fetchTeams.isEmpty()) return 0;
         final List<Integer> currLastTeams = MainApp.mStation.getLastTeams();
-
         // Get Sportiduino records for all teams in fetch list
         boolean flashChanged = false;
         boolean newRecords = false;
         int stationError = 0;
-        for (final int teamNumber : fetchTeams) {
+        final int teamListSize = fetchTeams.size();
+        for (int n = 0; n < teamListSize; n++) {
+            // Display progress bar in ControlPointActivity for long scans
+            if (teamListSize > 1) updateProgressBar(n, teamListSize);
             // Fetch data for the team punched at the station
+            final int teamNumber = fetchTeams.get(n);
             int newError = 0;
             if (!MainApp.mStation.fetchTeamHeader(teamNumber, StationAPI.CALLER_QUERYING)) {
                 newError = MainApp.mStation.getLastError(true);
@@ -295,7 +310,8 @@ public class StationMonitorService extends Service {
                 stationError = newError;
             }
         }
-
+        // Hide previously shown progress bar in ControlPointActivity for long scans
+        if (teamListSize > 1) updateProgressBar(0, 0);
         // We have asked station for all teams from fetch list
         // Save new records (if any) to local db
         if (newRecords) {
@@ -304,13 +320,9 @@ public class StationMonitorService extends Service {
             if (!"".equals(result)) return R.string.err_db_sql_error;
         }
         // Sort punches by their time
-        if (flashChanged) {
-            MainApp.mPointPunches.sort();
-        }
+        if (flashChanged) MainApp.mPointPunches.sort();
         // Report non-fatal errors which has been occurred during scanning
-        if (stationError != 0) {
-            return stationError;
-        }
+        if (stationError != 0) return stationError;
         // Report 'data changed' for updating UI
         if (newRecords || flashChanged) {
             return -1;

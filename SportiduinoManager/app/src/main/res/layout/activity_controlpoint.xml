@@ -140,4 +140,34 @@
         tools:itemCount="5"
         tools:listitem="@layout/team_list_item" />
 
+
+    <android.support.constraint.Group
+        android:id="@+id/cp_full_scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="cp_scan_percents,cp_scan_time" />
+
+    <ProgressBar
+        android:id="@+id/cp_scan_percents"
+        style="@style/AppTheme.ProgressBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/default_padding"
+        android:progress="0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cp_divider"
+        app:layout_constraintWidth_percent="0.8" />
+
+    <TextView
+        android:id="@+id/cp_scan_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/default_padding"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cp_scan_percents" />
+
 </android.support.constraint.ConstraintLayout>
