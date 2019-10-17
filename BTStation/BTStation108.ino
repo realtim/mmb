@@ -1,2922 +1,2769 @@
-//#define DEBUG
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-#include <Wire.h>
-#include "ds3231.h"
-#include <MFRC522.h>
-#include <EEPROM.h>
-#include <SPIFlash.h>
+using RFID_Station_control.Properties;
 
-#define UART_SPEED 38400
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.IO;
+using System.IO.Ports;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using RfidStationControl;
 
-// версия прошивки, номер пишется в чипы
-#define FW_VERSION        108
-
-#define BT_COMMAND_ENABLE   2 // светодиод ошибки (красный)
-#define BUZZER_PIN        3 // пищалка
-#define INFO_LED_PIN         4 // светодиод синий
-#define RTC_ENABLE_PIN      5 // питание часов кроме батарейного
-#define FLASH_ENABLE_PIN    7 // SPI enable pin
-#define FLASH_SS_PIN      8 // SPI SELECT pin
-#define RFID_RST_PIN      9 // рфид модуль reset
-#define RFID_SS_PIN       10 // рфид модуль chip_select
-//#define RFID_MOSI_PIN     11 // рфид модуль
-//#define RFID_MISO_PIN     12 // рфид модуль
-//#define RFID_SCK_PIN      13 // рфид модуль
-#define BATTERY_PIN       A0 // замер напряжения батареи
-#define ERROR_LED_PIN     A1 // светодиод ошибки (красный)
-
-// номер станции в eeprom памяти
-#define EEPROM_STATION_NUMBER 00 // 1 byte
-// номер режима в eeprom памяти
-#define EEPROM_STATION_MODE   10 // 1 byte
-// коэфф. пересчета значения ADC в вольты = 0,00587
-#define EEPROM_VOLTAGE_KOEFF  20 // 4 byte
-// усиление сигнала RFID
-#define EEPROM_GAIN       40 // 1 byte
-// тип чипа, с которым должна работать станция
-#define EEPROM_CHIP_TYPE    50 // 1 byte
-// размер блока на флэше под данные команды
-#define EEPROM_TEAM_BLOCK_SIZE  60 // 2 byte
-// размер стираемого блока на флэше
-#define EEPROM_FLASH_BLOCK_SIZE 70 // 2 byte
-// минимальное напряжение батареи
-#define EEPROM_BATTERY_LIMIT  80 // 4 byte
-
-// команды
-#define COMMAND_SET_MODE        0x80
-#define COMMAND_SET_TIME        0x81
-#define COMMAND_RESET_STATION     0x82
-#define COMMAND_GET_STATUS        0x83
-#define COMMAND_INIT_CHIP       0x84
-#define COMMAND_GET_LAST_TEAMS      0x85
-#define COMMAND_GET_TEAM_RECORD     0x86
-#define COMMAND_READ_CARD_PAGE      0x87
-#define COMMAND_UPDATE_TEAM_MASK    0x88
-#define COMMAND_WRITE_CARD_PAGE     0x89
-#define COMMAND_READ_FLASH        0x8a
-#define COMMAND_WRITE_FLASH       0x8b
-#define COMMAND_ERASE_FLASH_SECTOR    0x8c
-#define COMMAND_GET_CONFIG        0x8d
-#define COMMAND_SET_V_KOEFF       0x8e
-#define COMMAND_SET_GAIN        0x8f
-#define COMMAND_SET_CHIP_TYPE     0x90
-#define COMMAND_SET_TEAM_FLASH_SIZE   0x91
-#define COMMAND_SET_FLASH_BLOCK_SIZE  0x92
-#define COMMAND_SET_BT_NAME       0x93
-#define COMMAND_SET_BT_PIN        0x94
-#define COMMAND_SET_BATTERY_LIMIT       0x95
-#define COMMAND_SCAN_TEAMS       0x96
-#define COMMAND_SEND_BT_COMMAND       0x97
-
-// размеры данных для команд
-#define DATA_LENGTH_SET_MODE        1
-#define DATA_LENGTH_SET_TIME        6
-#define DATA_LENGTH_RESET_STATION     7
-#define DATA_LENGTH_GET_STATUS        0
-#define DATA_LENGTH_INIT_CHIP       4
-#define DATA_LENGTH_GET_LAST_TEAMS      0
-#define DATA_LENGTH_GET_TEAM_RECORD     2
-#define DATA_LENGTH_READ_CARD_PAGE      2
-#define DATA_LENGTH_UPDATE_TEAM_MASK    8
-#define DATA_LENGTH_WRITE_CARD_PAGE     13
-#define DATA_LENGTH_READ_FLASH        5
-#define DATA_LENGTH_WRITE_FLASH       4  // and more according to data length
-#define DATA_LENGTH_ERASE_FLASH_SECTOR    2
-#define DATA_LENGTH_GET_CONFIG        0
-#define DATA_LENGTH_SET_V_KOEFF       4
-#define DATA_LENGTH_SET_GAIN        1
-#define DATA_LENGTH_SET_CHIP_TYPE     1
-#define DATA_LENGTH_SET_TEAM_FLASH_SIZE   2
-#define DATA_LENGTH_SET_FLASH_BLOCK_SIZE  2
-#define DATA_LENGTH_SET_BT_NAME       1
-#define DATA_LENGTH_SET_BT_PIN        1
-#define DATA_LENGTH_SET_BATTERY_LIMIT       4
-#define DATA_LENGTH_SCAN_TEAMS 2
-#define DATA_LENGTH_SEND_BT_COMMAND 1
-
-// ответы станции
-#define REPLY_SET_MODE        0x90
-#define REPLY_SET_TIME        0x91
-#define REPLY_RESET_STATION     0x92
-#define REPLY_GET_STATUS      0x93
-#define REPLY_INIT_CHIP       0x94
-#define REPLY_GET_LAST_TEAMS    0x95
-#define REPLY_GET_TEAM_RECORD   0x96
-#define REPLY_READ_CARD_PAGE    0x97
-#define REPLY_UPDATE_TEAM_MASK    0x98
-#define REPLY_WRITE_CARD_PAGE   0x99
-#define REPLY_READ_FLASH      0x9a
-#define REPLY_WRITE_FLASH     0x9b
-#define REPLY_ERASE_FLASH_SECTOR  0x9c
-#define REPLY_GET_CONFIG      0x9d
-#define REPLY_SET_V_KOEFF       0x9e
-#define REPLY_SET_GAIN        0x9f
-#define REPLY_SET_CHIP_TYPE     0xa0
-#define REPLY_SET_TEAM_FLASH_SIZE 0xa1
-#define REPLY_SET_FLASH_BLOCK_SIZE  0xa2
-#define REPLY_SET_BT_NAME     0xa3
-#define REPLY_SET_BT_PIN      0xa4
-#define REPLY_SET_BATTERY_LIMIT     0xa5
-#define REPLY_SCAN_TEAMS     0xa6
-#define REPLY_SEND_BT_COMMAND 0xa7
-
-// режимы станции
-#define MODE_INIT   0
-#define MODE_START_KP 1
-#define MODE_FINISH_KP  2
-
-// коды ошибок станции
-#define OK        0
-#define WRONG_STATION 1
-#define RFID_READ_ERROR   2
-#define RFID_WRITE_ERROR    3
-#define LOW_INIT_TIME 4
-#define WRONG_CHIP    5
-#define NO_CHIP     6
-#define BUFFER_OVERFLOW 7
-#define WRONG_DATA    8
-#define WRONG_UID   9
-#define WRONG_TEAM    10
-#define NO_DATA     11
-#define WRONG_COMMAND 12
-#define ERASE_ERROR   13
-#define WRONG_CHIP_TYPE 14
-#define WRONG_MODE    15
-#define WRONG_SIZE    16
-#define WRONG_FW_VERSION  17
-#define WRONG_PACKET_LENGTH 18
-#define FLASH_READ_ERROR  19
-#define FLASH_WRITE_ERROR 20
-#define EEPROM_READ_ERROR 21
-#define EEPROM_WRITE_ERROR  22
-#define BT_ERROR  23
-
-// страницы в чипе. 0-7 служебные, 8-... для отметок
-#define PAGE_UID    0
-#define PAGE_CHIP_SYS 3 // system[2] + тип_чипа[1] + system[1]
-#define PAGE_CHIP_NUM 4 // номер_чипа[2] + тип_чипа[1] + версия_прошивки[1]
-#define PAGE_INIT_TIME  5 // время инициализации[4]
-#define PAGE_TEAM_MASK  6 // маска команды[2] + resserved[2]
-//#define PAGE_RESERVED2  7 // reserved for future use[4]
-#define PAGE_DATA_START 8 // 1st data page: номер КП[1] + время посещения КП[3]
-
-#define NTAG213_ID      0x12
-#define NTAG213_MARK    213
-#define NTAG213_MAX_PAGE  40
-
-#define NTAG215_ID      0x3e
-#define NTAG215_MARK    215
-#define NTAG215_MAX_PAGE  130
-
-#define NTAG216_ID      0x6d
-#define NTAG216_MARK    216
-#define NTAG216_MAX_PAGE  226
-
-// тип чипа
-uint8_t chipType = NTAG215_ID;
-// отметка для чипа
-uint8_t NTAG_MARK = NTAG215_MARK;
-// размер чипа в страницах
-uint8_t TAG_MAX_PAGE = NTAG215_MAX_PAGE;
-
-// размер записи лога (на 1 чип)
-uint16_t TEAM_FLASH_SIZE = 1024;
-uint16_t FLASH_BLOCK_SIZE = 4096;
-
-// максимальное кол-во записей в логе
-uint16_t maxTeamNumber = 1; // = (flashSize - FLASH_BLOCK_SIZE) / TEAM_FLASH_SIZE - 1;
-
-// описание протокола
-#define PACKET_ID     2
-#define STATION_NUMBER_BYTE 3
-#define LENGTH_BYTE     4
-#define COMMAND_BYTE    5
-#define DATA_START_BYTE   6
-
-// тайм-аут приема команды с момента начала
-#define receiveTimeOut 1000
-
-// размер буфера последних команд
-const uint8_t lastTeamsLength = 10;
-
-// станция запоминает последние команды сюда
-uint8_t lastTeams[lastTeamsLength * 2];
-uint32_t lastTimeChecked = 0;
-
-// количество отмеченных чипов в памяти.
-uint16_t totalChipsChecked = 0;
-
-// по умолчанию номер станции и режим.
-uint8_t stationNumber = 0;
-uint8_t stationMode = MODE_INIT;
-const uint32_t maxTimeInit = 600000UL; // одна неделя
-
-// коэфф. перевода значения АЦП в напряжение для делителя 10кОм/2.2кОм
-float voltageCoeff = 0.00578;
-
-// минимальное напряжение батареи
-float batteryLimit = 3;
-
-uint8_t ntag_page[16]; // буфер для чтения из чипа через ntagRead4pages()
-
-SPIFlash SPIflash(FLASH_SS_PIN); // флэш-память
-
-// рфид-модуль
-MFRC522 mfrc522(RFID_SS_PIN, RFID_RST_PIN);
-// коэфф. усиления антенны - работают только биты 4,5,6
-uint8_t gainCoeff = 0x40; // [0, 16, 32, 48, 64, 80, 96, 112]
-
-// хранение времени
-struct ts systemTime;
-
-// UART command buffer
-uint8_t uartBuffer[256];
-uint8_t uartBufferPosition = 0;
-bool uartReady = false;
-uint32_t uartTimeout = 1000;
-bool receivingData = false;
-uint32_t receiveStartTime = 0;
-uint16_t batteryLevel = 500;
-uint8_t batteryAlarmCount = 0;
-
-// новая маска для замены в чипе
-uint8_t newTeamMask[8];
-
-// флаг последней команды для отсечки двойной отметки
-uint16_t lastTeamFlag = 0;
-
-// сброс контроллера
-void(*resetFunc) () = 0; // declare reset function @ address 0
-
-void setup()
+namespace RFID_Station_control
 {
-  Serial.begin(UART_SPEED);
-
-  analogReference(INTERNAL);
-
-  pinMode(INFO_LED_PIN, OUTPUT);
-  pinMode(ERROR_LED_PIN, OUTPUT);
-  pinMode(BUZZER_PIN, OUTPUT);
-  pinMode(BT_COMMAND_ENABLE, OUTPUT);
-
-  digitalWrite(INFO_LED_PIN, LOW);
-  digitalWrite(ERROR_LED_PIN, LOW);
-  digitalWrite(BT_COMMAND_ENABLE, LOW);
-
-  //даем питание на флэш
-  pinMode(FLASH_ENABLE_PIN, OUTPUT);
-  digitalWrite(FLASH_ENABLE_PIN, HIGH);
-  delay(1);
-  SPIflash.begin();
-
-  //даем питание на часы
-  pinMode(RTC_ENABLE_PIN, OUTPUT);
-  digitalWrite(RTC_ENABLE_PIN, HIGH);
-  delay(1);
-  DS3231_init(DS3231_INTCN);
-  DS3231_get(&systemTime);
-
-  //читаем номер станции из памяти
-  int c = eepromread(EEPROM_STATION_NUMBER);
-  if (c == 255 || c == -1)
-  {
-#ifdef DEBUG
-    Serial.print(F("!!! StationNumber"));
-#endif
-    errorBeepMs(4, 200);
-    stationNumber = 0;
-  }
-  else stationNumber = c;
-
-  //читаем номер режима из памяти
-  c = eepromread(EEPROM_STATION_MODE);
-  if (c == MODE_INIT) stationMode = MODE_INIT;
-  else if (c == MODE_START_KP) stationMode = MODE_START_KP;
-  else if (c == MODE_FINISH_KP) stationMode = MODE_FINISH_KP;
-  else
-  {
-#ifdef DEBUG
-    Serial.print(F("!!! StationMode"));
-#endif
-    errorBeepMs(4, 200);
-  }
-
-  //читаем коэфф. пересчета напряжения
-  union Convert
-  {
-    float number;
-    uint8_t byte[4];
-  } p;
-  uint8_t flag = 0;
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    c = eepromread(EEPROM_VOLTAGE_KOEFF + i * 3);
-    p.byte[i] = c;
-    if (c == 0xff || c == -1) flag++;
-  }
-  if (flag < 4) voltageCoeff = p.number;
-  else
-  {
-#ifdef DEBUG
-    Serial.print(F("!!! VoltageKoeff"));
-#endif
-    errorBeepMs(4, 200);
-  }
-
-  //читаем коэфф. усиления
-  c = eepromread(EEPROM_GAIN);
-  if (c != 255 && c != -1) gainCoeff = c;
-  else
-  {
-#ifdef DEBUG
-    Serial.print(F("!!! AntennaGain"));
-#endif
-    errorBeepMs(4, 200);
-  }
-
-  //читаем тип чипа
-  c = eepromread(EEPROM_CHIP_TYPE);
-  if (c != 255 && c != -1) selectChipType(chipType);
-  else
-  {
-#ifdef DEBUG
-    Serial.print(F("!!! ChipType"));
-#endif
-    errorBeepMs(4, 200);
-  }
-
-  const uint32_t flashSize = SPIflash.getCapacity();
-
-  //читаем размер блока команды
-  uint8_t n[2];
-  flag = 0;
-  for (uint8_t i = 0; i < 2; i++)
-  {
-    c = eepromread(EEPROM_TEAM_BLOCK_SIZE + i * 3);
-    if (c == 0xff || c == -1) flag++;
-    n[i] = c;
-  }
-  if (flag < 2) TEAM_FLASH_SIZE = n[0] * 256 + n[1];
-  else
-  {
-#ifdef DEBUG
-    Serial.print(F("!!! TeamSize"));
-#endif
-    errorBeepMs(4, 200);
-  }
-
-  //читаем размер стираемого блока
-  flag = 0;
-  for (uint8_t i = 0; i < 2; i++)
-  {
-    c = eepromread(EEPROM_FLASH_BLOCK_SIZE + i * 3);
-    if (c == 0xff || c == -1) flag++;
-    n[i] = c;
-  }
-  if (flag < 2) FLASH_BLOCK_SIZE = n[0] * 256 + n[1];
-  else
-  {
-#ifdef DEBUG
-    Serial.print(F("!!! EraseSize"));
-#endif
-    errorBeepMs(4, 200);
-  }
-
-  //читаем минимальное напряжение батареи
-  flag = 0;
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    c = eepromread(EEPROM_BATTERY_LIMIT + i * 3);
-    p.byte[i] = c;
-    if (c == 0xff || c == -1) flag++;
-  }
-  if (flag < 4) batteryLimit = p.number;
-  else
-  {
-#ifdef DEBUG
-    Serial.print(F("!!! batteryLimit"));
-#endif
-    errorBeepMs(4, 200);
-  }
-
-  maxTeamNumber = (flashSize - FLASH_BLOCK_SIZE) / TEAM_FLASH_SIZE - 1;
-
-  totalChipsChecked = refreshChipCounter();
-
-  batteryLevel = analogRead(BATTERY_PIN);
-
-  beep(1, 800);
-}
-
-void loop()
-{
-  /*
-   * В цикле сначала считывааем данные из порта, если получили полный пакет,
-   * то ищем соответсвующую функцию и обабатываем её
-   * Если режим станци не нулевой, то станция работает также как кп - автоматически делает отметки на чипы
-   */
-
-   // check receive timeout
-  if (receivingData && millis() - receiveStartTime > receiveTimeOut)
-  {
-#ifdef DEBUG
-    //Serial.println(F("!!!receive timeout"));
-#endif
-    uartBufferPosition = 0;
-    uartReady = false;
-    receivingData = false;
-    //errorBeepMs(1, 50);
-  }
-
-  // check UART for data
-  if (Serial.available())
-  {
-    uartReady = readUart();
-  }
-
-  //обработать пришедшую команду
-  if (uartReady)
-  {
-    uartReady = false;
-    executeCommand();
-  }
-
-  //если режим КП то отметить чип автоматом
-  if (stationMode != MODE_INIT)
-  {
-    processRfidCard();
-  }
-
-  batteryLevel = (batteryLevel + getBatteryLevel()) / 2;
-  if (float(float(batteryLevel) * voltageCoeff) <= batteryLimit)
-  {
-    if (batteryAlarmCount > 100)
+    public partial class Form1 : Form
     {
-      digitalWrite(ERROR_LED_PIN, HIGH);
-      tone(BUZZER_PIN, 50, 50);
-      delay(50);
-      digitalWrite(ERROR_LED_PIN, LOW);
-    }
-    else batteryAlarmCount++;
-  }
-  else batteryAlarmCount = 0;
-}
+        private const int InputCodePage = 866;
+        private int _portSpeed = 38400;
+        private byte[] _uartBuffer = new byte[256];
+        private int _uartBufferPosition;
+        private readonly ulong receiveTimeOut = 1000;
 
-// Обработка поднесенного чипа
-void processRfidCard()
-{
-  if (stationNumber == 0 || stationNumber == 0xff) return;
-  DS3231_get(&systemTime);
-  uint32_t checkTime = systemTime.unixtime;
+        private bool _receivingData;
+        private byte _packageId;
 
-  // включаем SPI ищем чип вблизи. Если не находим выходим из функции чтения чипов
-  SPI.begin();      // Init SPI bus
-  mfrc522.PCD_Init();    // Init MFRC522
-  mfrc522.PCD_SetAntennaGain(gainCoeff);
+        private readonly object _serialReceiveThreadLock = new object();
+        private readonly object _serialSendThreadLock = new object();
+        private readonly object _textOutThreadLock = new object();
 
-  // Look for new cards
-  if (!mfrc522.PICC_IsNewCardPresent())
-  {
-    SPI.end();
-    lastTeamFlag = 0;
-    return;
-  }
-#ifdef DEBUG
-  Serial.println(F("!!!chip found"));
-#endif
+        private volatile int _asyncFlag;
+        private volatile bool _noTerminalOutputFlag;
+        private volatile bool needMore;
 
-  // Select one of the cards
-  if (!mfrc522.PICC_ReadCardSerial())
-  {
-    SPI.end();
-#ifdef DEBUG
-    Serial.println(F("!!!fail to select chip"));
-#endif
-    return;
-  }
 
-  // читаем блок информации
-  if (!ntagRead4pages(PAGE_CHIP_SYS))
-  {
-    SPI.end();
-#ifdef DEBUG
-    Serial.println(F("!!!fail to read chip"));
-#endif
-    //errorBeep(1);
-    return;
-  }
+        private int _logLinesLimit = 500;
+        private string _logAutoSaveFile = "";
+        private bool _logAutoSaveFlag;
 
-  //неправильный тип чипа
-  if (ntag_page[2] != chipType)
-  {
-    SPI.end();
-#ifdef DEBUG
-    Serial.println(F("!!!incorrect hw chip type"));
-#endif
-    errorBeep(1);
-    return;
-  }
+        private DateTime _receiveStartTime = DateTime.Now.ToUniversalTime().ToUniversalTime();
 
-  /*
-  Фильтруем
-  1 - неправильный тип чипа
-  2 - чип от другой прошивки
-  3 - чип более недельной давности инициализации
-  4 - чипы с командой №0 или >maxTeamNumber
-  5 - чип, который совпадает с уже отмеченным (в lastTeams[])
-  */
+        private UInt32 _selectedFlashSize = 4 * 1024 * 1024;
+        private UInt32 _bytesPerRow = 1024;
 
-  // неправильный тип чипа
-  if (ntag_page[6] != NTAG_MARK)
-  {
-    SPI.end();
-#ifdef DEBUG
-    Serial.println(F("!!!incorrect sw chip type"));
-#endif
-    errorBeep(2);
-    return;
-  }
-
-  // чип от другой прошивки
-  if (ntag_page[7] != FW_VERSION)
-  {
-    SPI.end();
-#ifdef DEBUG
-    Serial.println(F("!!!incorrect fw ver."));
-#endif
-    errorBeep(4);
-    return;
-  }
-
-  // Не слишком ли старый чип? Недельной давности и более
-  uint32_t timeInit = ntag_page[8];
-  timeInit = timeInit << 8;
-  timeInit += ntag_page[9];
-  timeInit = timeInit << 8;
-  timeInit += ntag_page[10];
-  timeInit = timeInit << 8;
-  timeInit += ntag_page[11];
-  if ((systemTime.unixtime - timeInit) > maxTimeInit)
-  {
-    SPI.end();
-#ifdef DEBUG
-    Serial.println(F("!!!outdated chip"));
-#endif
-    errorBeep(4);
-    return;
-  }
-
-  // Если номер чипа =0 или >maxTeamNumber
-  uint16_t chipNum = (ntag_page[4] << 8) + ntag_page[5];
-  if (chipNum < 1 || chipNum > maxTeamNumber)
-  {
-    SPI.end();
-#ifdef DEBUG
-    Serial.print(F("!!!incorrect chip #: "));
-    Serial.println(String(chipNum));
-#endif
-    errorBeep(4);
-    return;
-  }
-
-  // не надо ли обновить у чипа маску?
-  // 0-1: номер команды
-  // 2-5: время выдачи чипа
-  // 6-7: маска участников
-  if (newTeamMask[0] + newTeamMask[1] != 0
-    && ntag_page[4] == newTeamMask[0]
-    && ntag_page[5] == newTeamMask[1]
-    && ntag_page[8] == newTeamMask[2]
-    && ntag_page[9] == newTeamMask[3]
-    && ntag_page[10] == newTeamMask[4]
-    && ntag_page[11] == newTeamMask[5])
-  {
-#ifdef DEBUG
-    Serial.print(F("!!!updating mask"));
-#endif
-    if (ntag_page[12] != newTeamMask[6] || ntag_page[13] != newTeamMask[7])
-    {
-      digitalWrite(INFO_LED_PIN, HIGH);
-      uint8_t dataBlock[4] = { newTeamMask[6], newTeamMask[7], ntag_page[14], ntag_page[15] };
-      if (!ntagWritePage(dataBlock, PAGE_TEAM_MASK))
-      {
-        SPI.end();
-#ifdef DEBUG
-        Serial.print(F("!!!failed to write chip"));
-#endif
-        digitalWrite(INFO_LED_PIN, LOW);
-        errorBeep(1);
-        return;
-      }
-    }
-    SPI.end();
-    clearNewMask();
-    lastTeamFlag = chipNum;
-    digitalWrite(INFO_LED_PIN, LOW);
-#ifdef DEBUG
-    Serial.print(F("!!!mask updated"));
-#endif
-    return;
-  }
-
-  // Если это повторная отметка
-  if (chipNum == lastTeamFlag)
-  {
-#ifdef DEBUG
-    Serial.print(F("!!!same chip attached"));
-#endif
-    SPI.end();
-    return;
-  }
-
-  bool already_checked = false;
-  // сравнить с буфером последних команд
-  if (stationMode == MODE_START_KP)
-  {
-    for (uint8_t i = 0; i < lastTeamsLength * 2; i = i + 2)
-    {
-      if (lastTeams[i] == ntag_page[0] && lastTeams[i + 1] == ntag_page[1])
-      {
-        already_checked = true;
-#ifdef DEBUG
-        Serial.println(F("!!!chip already checked"));
-#endif
-        break;
-      }
-    }
-  }
-
-  // Есть ли чип на флэше
-  if (!already_checked && SPIflash.readByte(uint32_t(uint32_t(chipNum) * uint32_t(TEAM_FLASH_SIZE))) != 255)
-  {
-    already_checked = true;
-#ifdef DEBUG
-    Serial.println(F("!!!chip already checked"));
-#endif
-  }
-
-  // если известный чип и стартовый КП
-  if (already_checked && stationMode == MODE_START_KP)
-  {
-#ifdef DEBUG
-    Serial.println(F("!!!Can't read chip"));
-#endif
-    SPI.end();
-    //digitalWrite(INFO_LED_PIN, LOW);
-    errorBeep(1);
-    lastTeamFlag = chipNum;
-    return;
-  }
-
-#ifdef DEBUG
-  Serial.println(F("!!!searching free page"));
-#endif
-  //digitalWrite(INFO_LED_PIN, HIGH);
-  // ищем свободную страницу на чипе
-  int newPage = findNewPage();
-
-  // ошибка чтения чипа
-  if (newPage == 0)
-  {
-    SPI.end();
-    //digitalWrite(INFO_LED_PIN, LOW);
-    errorBeep(1);
-#ifdef DEBUG
-    Serial.println(F("!!!Can't read chip"));
-#endif
-    return;
-  }
-
-  // больше/меньше нормы... Наверное, переполнен???
-  if (newPage != -1 && (newPage < PAGE_DATA_START || newPage >= TAG_MAX_PAGE))
-  {
-    SPI.end();
-    //digitalWrite(INFO_LED_PIN, LOW);
-    errorBeep(4);
-#ifdef DEBUG
-    Serial.print(F("!!!chip page# incorrect: "));
-    Serial.println(String(newPage));
-#endif
-    return;
-  }
-
-  // chip was not checked by another station with the same number
-  if (newPage == -1)
-  {
-#ifdef DEBUG
-    Serial.print(F("!!!chip marked by another station"));
-#endif
-    lastTeamFlag = chipNum;
-    //digitalWrite(INFO_LED_PIN, LOW);
-    return;
-  }
-
-#ifdef DEBUG
-  Serial.println(F("!!!writing to chip"));
-#endif
-  // Пишем на чип отметку
-  digitalWrite(INFO_LED_PIN, HIGH);
-  if (!writeCheckPointToCard(newPage, checkTime))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    errorBeep(1);
-#ifdef DEBUG
-    Serial.print(F("!!!failed to write chip"));
-#endif
-    return;
-  }
-  // Пишем дамп чипа во флэш
-  if (!writeDumpToFlash(chipNum, checkTime))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    errorBeep(2);
-#ifdef DEBUG
-    Serial.print(F("!!!failed to write dump"));
-#endif
-    return;
-  }
-  SPI.end();
-
-  // добавляем в буфер последних команд
-  addLastTeam(chipNum);
-  lastTimeChecked = checkTime;
-  if (!already_checked) totalChipsChecked++;
-  lastTeamFlag = chipNum;
-  digitalWrite(INFO_LED_PIN, LOW);
-  beep(1, 200);
-#ifdef DEBUG
-  Serial.print(F("!!!New record #"));
-  Serial.println(String(chipNum));
-#endif
-}
-
-// обработка входящих команд
-bool readUart()
-{
-  while (Serial.available())
-  {
-    int c = Serial.read();
-
-    if (c == -1) // can't read stream
-    {
-#ifdef DEBUG
-      Serial.println(F("!!! UARTread error"));
-#endif
-      uartBufferPosition = 0;
-      receivingData = false;
-      return false;
-    }
-
-    // 0 byte = FE
-    if (uartBufferPosition == 0 && c == 0xfe)
-    {
-#ifdef DEBUG
-      Serial.print(F("!!!byte0="));
-      if (c < 0x10) Serial.print(F("0"));
-      Serial.println(String(uint8_t(c), HEX));
-#endif
-      receivingData = true;
-      uartBuffer[uartBufferPosition] = uint8_t(c);
-      uartBufferPosition++;
-      // refresh timeout
-      receiveStartTime = millis();
-    }
-    // 1st byte = FE
-    else if (uartBufferPosition == 1 && c == 0xfe)
-    {
-#ifdef DEBUG
-      Serial.print(F("!!!byte1"));
-      if (c < 0x10) Serial.print(F("0"));
-      Serial.println(String(uint8_t(c), HEX));
-#endif
-      uartBuffer[uartBufferPosition] = uint8_t(c);
-      uartBufferPosition++;
-    }
-    // 2nd byte = command, length and data
-    else if (uartBufferPosition >= PACKET_ID)
-    {
-      uartBuffer[uartBufferPosition] = uint8_t(c);
-#ifdef DEBUG
-      Serial.print(F("!!!byte"));
-      Serial.print(String(uartBufferPosition));
-      Serial.print(F("="));
-      if (c < 0x10) Serial.print(F("0"));
-      Serial.println(String(uint8_t(c), HEX));
-#endif
-      // incorrect length
-      if (uartBufferPosition == LENGTH_BYTE && uartBuffer[LENGTH_BYTE] > (254 - DATA_START_BYTE))
-      {
-#ifdef DEBUG
-        Serial.println(F("!!!incorrect length"));
-#endif
-        uartBufferPosition = 0;
-        receivingData = false;
-        errorBeepMs(3, 50);
-        return false;
-      }
-
-      // packet is received
-      if (uartBufferPosition > LENGTH_BYTE&& uartBufferPosition >= DATA_START_BYTE + uartBuffer[LENGTH_BYTE])
-      {
-        // crc matching
-#ifdef DEBUG
-        Serial.print(F("!!!received packet expected CRC="));
-        Serial.println(String(crcCalc(uartBuffer, STATION_NUMBER_BYTE, uartBufferPosition - 1), HEX));
-#endif
-        if (uartBuffer[uartBufferPosition] == crcCalc(uartBuffer, PACKET_ID, uartBufferPosition - 1))
+        private static Dictionary<string, long> FlashSizeLimit = new Dictionary<string, long>
         {
-#ifdef DEBUG
-          Serial.print(F("!!!Command received:"));
-          for (uint8_t i = 0; i <= uartBufferPosition; i++)
-          {
-            Serial.print(F(" "));
-            if (uartBuffer[i] < 0x10) Serial.print(F("0"));
-            Serial.print(String(uartBuffer[i], HEX));
-          }
-          Serial.println();
-#endif
-          uartBufferPosition = 0;
-          receivingData = false;
-          return true;
-        }
-        else // CRC not correct
+            {"32 kb", 32 * 1024},
+            { "64 kb" , 64 * 1024},
+            { "128 kb" , 128 * 1024},
+            { "256 kb" , 256 * 1024},
+            { "512 kb" , 512 * 1024},
+            { "1 Mb" , 1024 * 1024},
+            { "2 Mb" , 2048 * 1024},
+            { "4 Mb" , 4096 * 1024},
+            { "8 Mb" , 8192 * 1024}
+        };
+
+        public class StationSettings
         {
-#ifdef DEBUG
-          Serial.println(F("!!!incorrect crc"));
-#endif
-          uartBufferPosition = 0;
-          receivingData = false;
-          errorBeepMs(3, 50);
-          return false;
+            public byte FwVersion = 0;
+            public byte Number = 0;
+            public byte Mode = StationMode["Init"];
+            public float VoltageCoefficient = 0.00578F;
+            public float BatteryLimit = 3.0F;
+            public byte AntennaGain = Gain["Level 80"];
+            public byte ChipType = RfidContainer.ChipTypes.Types["NTAG215"];
+            public UInt32 FlashSize = 4 * 1024 * 1024;
+            public UInt32 TeamBlockSize = 1024;
+            public int EraseBlockSize = 4096;
+            public string BtName = "Sportduino-xx";
+            public string BtPin = "1111";
+
+            //режимы станции
+            public readonly static Dictionary<string, byte> StationMode = new Dictionary<string, byte>
+            {
+            {"Init" , 0},
+            { "Start" , 1},
+            { "Finish" , 2}
+            };
+
+            public readonly static Dictionary<string, byte> Gain = new Dictionary<string, byte>
+            {
+            {"Level 0", 0},
+            { "Level 16", 16},
+            { "Level 32", 32},
+            { "Level 48", 48},
+            { "Level 64", 64},
+            { "Level 80", 80},
+            { "Level 96", 96},
+            { "Level 112", 112}
+            };
         }
-      }
-      uartBufferPosition++;
-    }
-    else
-    {
-#ifdef DEBUG
-      Serial.println(F("!!!unexpected byte"));
-#endif
-      receivingData = false;
-      uartBufferPosition = 0;
-    }
-  }
-  return false;
-}
 
-// Commands processing
+        private DateTime _getStatusTime = DateTime.Now.ToUniversalTime();
 
-// поиск функции
-void executeCommand()
-{
-#ifdef DEBUG
-  Serial.print(F("!!!Command: "));
-  Serial.println(String(uartBuffer[COMMAND_BYTE], HEX));
-#endif
-  bool errorLengthFlag = false;
-  // Если номер станции не совпадает с присланным в пакете, то отказ
-  if (uartBuffer[COMMAND_BYTE] != COMMAND_GET_STATUS && uartBuffer[COMMAND_BYTE] != COMMAND_GET_CONFIG && stationNumber != uartBuffer[STATION_NUMBER_BYTE])
-  {
-    uartBufferPosition = 0;
-    sendError(WRONG_STATION, uartBuffer[COMMAND_BYTE]);
-    return;
-  }
-  switch (uartBuffer[COMMAND_BYTE])
-  {
-  case COMMAND_SET_MODE:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_MODE) setMode();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SET_TIME:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_TIME) setTime();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_RESET_STATION:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_RESET_STATION) resetStation();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_GET_STATUS:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_GET_STATUS) getStatus();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_INIT_CHIP:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_INIT_CHIP) initChip();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_GET_LAST_TEAMS:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_GET_LAST_TEAMS) getLastTeams();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_GET_TEAM_RECORD:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_GET_TEAM_RECORD) getTeamRecord();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_READ_CARD_PAGE:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_READ_CARD_PAGE) readCardPages();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_UPDATE_TEAM_MASK:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_UPDATE_TEAM_MASK) updateTeamMask();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_WRITE_CARD_PAGE:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_WRITE_CARD_PAGE) writeCardPage();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_READ_FLASH:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_READ_FLASH) readFlash();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_WRITE_FLASH:
-    if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_WRITE_FLASH) writeFlash();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_ERASE_FLASH_SECTOR:
-    if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_ERASE_FLASH_SECTOR) eraseTeamFlash();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_GET_CONFIG:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_GET_CONFIG) getConfig();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SET_V_KOEFF:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_V_KOEFF) setVCoeff();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SET_GAIN:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_GAIN) setGain();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SET_CHIP_TYPE:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_CHIP_TYPE) setChipType();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SET_TEAM_FLASH_SIZE:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_TEAM_FLASH_SIZE) setTeamFlashSize();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SET_FLASH_BLOCK_SIZE:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_FLASH_BLOCK_SIZE) setFlashBlockSize();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SET_BT_NAME:
-    if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_SET_BT_NAME) setNewBtName();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SET_BT_PIN:
-    if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_SET_BT_PIN) setNewBtPinCode();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SET_BATTERY_LIMIT:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SET_BATTERY_LIMIT) setBatteryLimit();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SCAN_TEAMS:
-    if (uartBuffer[LENGTH_BYTE] == DATA_LENGTH_SCAN_TEAMS) scanTeams();
-    else errorLengthFlag = true;
-    break;
-  case COMMAND_SEND_BT_COMMAND:
-    if (uartBuffer[LENGTH_BYTE] >= DATA_LENGTH_SEND_BT_COMMAND) sendBtCommand();
-    else errorLengthFlag = true;
-    break;
-  default:
-    sendError(WRONG_COMMAND, uartBuffer[COMMAND_BYTE]);
-    break;
-  }
-
-  uartBufferPosition = 0;
-  if (errorLengthFlag)
-  {
-#ifdef DEBUG
-    Serial.println(F("!!!Incorrect data length"));
-#endif
-    sendError(WRONG_PACKET_LENGTH, uartBuffer[COMMAND_BYTE]);
-  }
-}
-
-// установка режима
-void setMode()
-{
-  if (stationNumber == 0 || stationNumber == 0xff)
-  {
-    sendError(WRONG_STATION, REPLY_SET_MODE);
-    return;
-  }
-
-  // 0: новый номер режима
-  stationMode = uartBuffer[DATA_START_BYTE];
-  if (!eepromwrite(EEPROM_STATION_MODE, stationMode))
-  {
-    sendError(EEPROM_WRITE_ERROR, REPLY_SET_MODE);
-    return;
-  }
-
-  // формирование пакета данных.
-  init_package(REPLY_SET_MODE);
-
-  // 0: код ошибки
-  if (!addData(OK)) return;
-  sendData();
-}
-
-// обновление времени на станции
-void setTime()
-{
-  systemTime.year = uartBuffer[DATA_START_BYTE] + 2000;
-  systemTime.mon = uartBuffer[DATA_START_BYTE + 1];
-  systemTime.mday = uartBuffer[DATA_START_BYTE + 2];
-  systemTime.hour = uartBuffer[DATA_START_BYTE + 3];
-  systemTime.min = uartBuffer[DATA_START_BYTE + 4];
-  systemTime.sec = uartBuffer[DATA_START_BYTE + 5];
-
-#ifdef DEBUG
-  // Serial.print(F("!!!Time: "));
-  // for (uint8_t i = 0; i < 6; i++) Serial.println(String(uartBuffer[DATA_START_BYTE + i]) + " ");
-#endif
-
-  // 0-3: дата и время в unixtime
-
-  delay(1);
-  DS3231_set(systemTime); // correct time
-
-  DS3231_get(&systemTime);
-  uint32_t tmpTime = systemTime.unixtime;
-
-  init_package(REPLY_SET_TIME);
-
-  // 0: код ошибки
-  // 1-4: текущее время
-  bool flag = true;
-  flag &= addData(OK);
-  flag &= addData((tmpTime & 0xFF000000) >> 24);
-  flag &= addData((tmpTime & 0x00FF0000) >> 16);
-  flag &= addData((tmpTime & 0x0000FF00) >> 8);
-  flag &= addData(tmpTime & 0x000000FF);
-  if (!flag) return;
-  sendData();
-}
-
-// сброс настроек станции
-void resetStation()
-{
-  // 0-1: кол-во отмеченных чипов (для сверки)
-  // 2-5: время последней отметки(для сверки)
-  // 6 : новый номер станции
-  // проверить количество отметок
-  uint16_t checkCardNumber = uartBuffer[DATA_START_BYTE];
-  checkCardNumber <<= 8;
-  checkCardNumber += uartBuffer[DATA_START_BYTE + 1];
-
-  if (checkCardNumber != totalChipsChecked)
-  {
-    sendError(WRONG_DATA, REPLY_RESET_STATION);
-    return;
-  }
-
-  // проверить время последней отметки
-  uint32_t checkLastTime = uartBuffer[DATA_START_BYTE + 2];
-  checkLastTime <<= 8;
-  checkLastTime += uartBuffer[DATA_START_BYTE + 3];
-  checkLastTime <<= 8;
-  checkLastTime += uartBuffer[DATA_START_BYTE + 4];
-  checkLastTime <<= 8;
-  checkLastTime += uartBuffer[DATA_START_BYTE + 5];
-  if (checkLastTime != lastTimeChecked)
-  {
-    sendError(WRONG_DATA, REPLY_RESET_STATION);
-    return;
-  }
-
-  if (uartBuffer[DATA_START_BYTE + 6] == 0xff)
-  {
-    sendError(WRONG_STATION, REPLY_RESET_STATION);
-    return;
-  }
-  stationNumber = uartBuffer[DATA_START_BYTE + 6];
-  if (!eepromwrite(EEPROM_STATION_NUMBER, stationNumber))
-  {
-    sendError(EEPROM_WRITE_ERROR, REPLY_RESET_STATION);
-    return;
-  }
-
-  stationMode = 0;
-  if (!eepromwrite(EEPROM_STATION_MODE, stationMode))
-  {
-    sendError(EEPROM_WRITE_ERROR, REPLY_RESET_STATION);
-    return;
-  }
-
-  lastTimeChecked = 0;
-  totalChipsChecked = 0;
-
-  if (!SPIflash.eraseChip())
-  {
-    sendError(FLASH_WRITE_ERROR, REPLY_RESET_STATION);
-    return;
-  }
-
-  init_package(REPLY_RESET_STATION);
-
-  // 0: код ошибки
-  if (!addData(OK)) return;
-  sendData();
-  delay(100);
-  resetFunc();
-}
-
-// выдает статус: время на станции, номер станции, номер режима, число отметок, время последней страницы
-void getStatus()
-{
-  DS3231_get(&systemTime);
-  uint32_t tmpTime = systemTime.unixtime;
-
-  // 0: код ошибки
-  // 1 - 4: текущее время
-  // 5 - 6 : количество отметок на станции
-  // 7 - 10 : время последней отметки на станции
-  // 11 - 12 : напряжение батареи в условных единицах[0..1023] ~[0..1.1В]
-  // 13 - 14 : температура чипа DS3231(чуть выше окружающей среды)
-  init_package(REPLY_GET_STATUS);
-
-  bool flag = true;
-  flag &= addData(OK);
-
-  flag &= addData((tmpTime & 0xFF000000) >> 24);
-  flag &= addData((tmpTime & 0x00FF0000) >> 16);
-  flag &= addData((tmpTime & 0x0000FF00) >> 8);
-  flag &= addData(tmpTime & 0x000000FF);
-
-  flag &= addData((totalChipsChecked & 0xFF00) >> 8);
-  flag &= addData(totalChipsChecked & 0x00FF);
-
-  flag &= addData((lastTimeChecked & 0xFF000000) >> 24);
-  flag &= addData((lastTimeChecked & 0x00FF0000) >> 16);
-  flag &= addData((lastTimeChecked & 0x0000FF00) >> 8);
-  flag &= addData(lastTimeChecked & 0x000000FF);
-
-  //uint16_t batteryLevel = getBatteryLevel();
-  flag &= addData((batteryLevel & 0xFF00) >> 8);
-  flag &= addData(batteryLevel & 0x00FF);
-
-  int temperature = int(DS3231_get_treg());
-  flag &= addData((temperature & 0xFF00) >> 8);
-  flag &= addData(temperature & 0x00FF);
-
-  if (!flag) return;
-  sendData();
-}
-
-// инициализация чипа
-void initChip()
-{
-  digitalWrite(INFO_LED_PIN, HIGH);
-  SPI.begin();      // Init SPI bus
-  mfrc522.PCD_Init();   // Init MFRC522
-  mfrc522.PCD_SetAntennaGain(gainCoeff);
-
-  // Look for new cards
-  if (!mfrc522.PICC_IsNewCardPresent())
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(NO_CHIP, REPLY_INIT_CHIP);
-    return;
-  }
-  // Select one of the cards
-  if (!mfrc522.PICC_ReadCardSerial())
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_READ_ERROR, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // читаем блок информации
-  if (!ntagRead4pages(PAGE_CHIP_SYS))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_READ_ERROR, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // Фильтруем неправильный тип чипа
-  if (ntag_page[2] != chipType)
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(WRONG_CHIP_TYPE, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // инициализация сработает только если время инициализации записанное уже на чипе превышает неделю до текущего времени
-  uint32_t initTime = ntag_page[8];
-  initTime <<= 8;
-  initTime += ntag_page[9];
-  initTime <<= 8;
-  initTime += ntag_page[10];
-  initTime <<= 8;
-  initTime += ntag_page[11];
-  DS3231_get(&systemTime);
-  if ((systemTime.unixtime - initTime) < maxTimeInit)
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(LOW_INIT_TIME, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // заполняем чип 0x00
-  uint8_t dataBlock[4] = { 0,0,0,0 };
-  for (uint8_t page = PAGE_CHIP_NUM; page < TAG_MAX_PAGE; page++)
-  {
-    if (!ntagWritePage(dataBlock, page))
-    {
-      SPI.end();
-      digitalWrite(INFO_LED_PIN, LOW);
-      sendError(RFID_WRITE_ERROR, REPLY_INIT_CHIP);
-      return;
-    }
-  }
-
-  // 0-1: номер команды
-  // 2-3 : маска участников
-
-  // пишем данные на чип
-  // номер команды, тип чипа, версия прошивки станции
-  dataBlock[0] = uartBuffer[DATA_START_BYTE];
-  dataBlock[1] = uartBuffer[DATA_START_BYTE + 1];
-  dataBlock[2] = NTAG_MARK;
-  dataBlock[3] = FW_VERSION;
-  if (!ntagWritePage(dataBlock, PAGE_CHIP_NUM))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_WRITE_ERROR, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // пишем на чип текущее время
-  uint32_t tmpTime = systemTime.unixtime;
-  dataBlock[0] = (tmpTime & 0xFF000000) >> 24;
-  dataBlock[1] = (tmpTime & 0x00FF0000) >> 16;
-  dataBlock[2] = (tmpTime & 0x0000FF00) >> 8;
-  dataBlock[3] = tmpTime & 0x000000FF;
-  if (!ntagWritePage(dataBlock, PAGE_INIT_TIME))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_WRITE_ERROR, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // маска участников
-  dataBlock[0] = uartBuffer[DATA_START_BYTE + 2];
-  dataBlock[1] = uartBuffer[DATA_START_BYTE + 3];
-  dataBlock[2] = 0;
-  dataBlock[3] = 0;
-  if (!ntagWritePage(dataBlock, PAGE_TEAM_MASK))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_WRITE_ERROR, REPLY_INIT_CHIP);
-    return;
-  }
-
-  // получаем UID чипа
-  if (!ntagRead4pages(PAGE_UID))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_READ_ERROR, REPLY_INIT_CHIP);
-    return;
-  }
-  SPI.end();
-  digitalWrite(INFO_LED_PIN, LOW);
-
-  init_package(REPLY_INIT_CHIP);
-  if (!addData(OK)) return;
-
-  // добавляем в ответ время инициализации
-  bool flag = true;
-  flag &= addData((tmpTime & 0xFF000000) >> 24);
-  flag &= addData((tmpTime & 0x00FF0000) >> 16);
-  flag &= addData((tmpTime & 0x0000FF00) >> 8);
-  flag &= addData(tmpTime & 0x000000FF);
-  if (!flag) return;
-
-  // добавляем в ответ UID
-  for (uint8_t i = 0; i <= 7; i++)
-  {
-    if (!addData(ntag_page[i])) return;
-  }
-  sendData();
-}
-
-// получить последнюю отметившуюся команду
-void getLastTeams()
-{
-  init_package(REPLY_GET_LAST_TEAMS);
-
-  // 0: код ошибки
-  if (!addData(OK)) return;
-
-  // номера последних команд
-  bool flag = true;
-  for (uint8_t i = 0; i < lastTeamsLength * 2; i++)
-  {
-    if (!addData(lastTeams[i])) return;
-  }
-  sendData();
-}
-
-// получаем запись о команде из флэша
-void getTeamRecord()
-{
-  // 0-1: какую запись
-  uint16_t recordNumber = uartBuffer[DATA_START_BYTE];
-  recordNumber <<= 8;
-  recordNumber += uartBuffer[DATA_START_BYTE + 1];
-
-  if (recordNumber < 1 || recordNumber > maxTeamNumber)
-  {
-    sendError(WRONG_TEAM, REPLY_GET_TEAM_RECORD);
-    return;
-  }
-
-  init_package(REPLY_GET_TEAM_RECORD);
-  // 0: код ошибки
-  if (!addData(OK)) return;
-
-  // если ячейка лога пуста
-  if (!readTeamFromFlash(recordNumber))
-  {
-    sendError(NO_DATA, REPLY_GET_TEAM_RECORD);
-    return;
-  }
-
-  // 1-2: номер команды
-  // 3-6 : время инициализации
-  // 7-8: маска команды
-  // 9-12 : время последней отметки на станции
-  // 13: счетчик сохраненных страниц
-  for (uint8_t i = 0; i < 13; i++)
-  {
-    if (!addData(ntag_page[i])) return;
-  }
-  sendData();
-}
-
-// читаем страницы с чипа
-void readCardPages()
-{
-  digitalWrite(INFO_LED_PIN, HIGH);
-  SPI.begin();      // Init SPI bus
-  mfrc522.PCD_Init();   // Init MFRC522
-  mfrc522.PCD_SetAntennaGain(gainCoeff);
-
-  // Look for new cards
-  if (!mfrc522.PICC_IsNewCardPresent())
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(NO_CHIP, REPLY_READ_CARD_PAGE);
-    return;
-  }
-  // Select one of the cards
-  if (!mfrc522.PICC_ReadCardSerial())
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_READ_ERROR, REPLY_READ_CARD_PAGE);
-    return;
-  }
-
-  uint8_t pageFrom = uartBuffer[DATA_START_BYTE];
-  uint8_t pageTo = uartBuffer[DATA_START_BYTE + 1];
-
-  init_package(REPLY_READ_CARD_PAGE);
-
-  // 0: код ошибки
-  // 1-8: UID чипа
-  // 9-12: данные из страницы чипа(4 байта)
-  if (!addData(OK))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    return;
-  }
-
-  // читаем UID
-  if (!ntagRead4pages(PAGE_UID))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_READ_ERROR, REPLY_READ_CARD_PAGE);
-    return;
-  }
-
-  // пишем UID в буфер ответа
-  for (uint8_t i = 0; i <= 7; i++)
-  {
-    if (!addData(ntag_page[i]))
-    {
-      SPI.end();
-      digitalWrite(INFO_LED_PIN, LOW);
-      return;
-    }
-  }
-
-  // начальная страница
-  if (!addData(pageFrom))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    return;
-  }
-  while (pageFrom <= pageTo)
-  {
-    if (!ntagRead4pages(pageFrom))
-    {
-      SPI.end();
-      digitalWrite(INFO_LED_PIN, LOW);
-      sendError(RFID_READ_ERROR, REPLY_READ_CARD_PAGE);
-      return;
-    }
-    uint8_t n = (pageTo - pageFrom + 1);
-    if (n > 4) n = 4;
-    for (uint8_t i = 0; i < n; i++)
-    {
-      for (uint8_t j = 0; j < 4; j++)
-      {
-        if (!addData(ntag_page[i * 4 + j]))
+        //команды
+        private static class Command
         {
-          SPI.end();
-          digitalWrite(INFO_LED_PIN, LOW);
-          return;
+            public const byte SET_MODE = 0x80;
+            public const byte SET_TIME = 0x81;
+            public const byte RESET_STATION = 0x82;
+            public const byte GET_STATUS = 0x83;
+            public const byte INIT_CHIP = 0x84;
+            public const byte GET_LAST_TEAMS = 0x85;
+            public const byte GET_TEAM_RECORD = 0x86;
+            public const byte READ_CARD_PAGE = 0x87;
+            public const byte UPDATE_TEAM_MASK = 0x88;
+            public const byte WRITE_CARD_PAGE = 0x89;
+            public const byte READ_FLASH = 0x8a;
+            public const byte WRITE_FLASH = 0x8b;
+            public const byte ERASE_FLASH_SECTOR = 0x8c;
+            public const byte GET_CONFIG = 0x8d;
+            public const byte SET_V_COEFF = 0x8e;
+            public const byte SET_GAIN = 0x8f;
+            public const byte SET_CHIP_TYPE = 0x90;
+            public const byte SET_TEAM_FLASH_SIZE = 0x91;
+            public const byte SET_FLASH_BLOCK_SIZE = 0x92;
+            public const byte SET_BT_NAME = 0x93;
+            public const byte SET_BT_PIN = 0x94;
+            public const byte SET_BATTERY_LIMIT = 0x95;
+            public const byte SCAN_TEAMS = 0x96;
+            public const byte SEND_BT_COMMAND = 0x97;
         }
-      }
-      pageFrom++;
-    }
-  }
-  SPI.end();
-  digitalWrite(INFO_LED_PIN, LOW);
 
-  sendData();
-}
-
-// Обновить маску команды в буфере
-void updateTeamMask()
-{
-  // 0-1: номер команды
-  // 2-5: время выдачи чипа
-  // 6-7: маска участников
-  saveNewMask();
-
-  init_package(REPLY_UPDATE_TEAM_MASK);
-  // 0: код ошибки
-  if (!addData(OK)) return;
-  sendData();
-
-  if (stationMode == MODE_INIT)
-  {
-    // включаем SPI ищем чип вблизи. Если не находим выходим из функции чтения чипов
-    SPI.begin();      // Init SPI bus
-    mfrc522.PCD_Init();    // Init MFRC522
-    mfrc522.PCD_SetAntennaGain(gainCoeff);
-
-    // Look for new cards
-    if (!mfrc522.PICC_IsNewCardPresent())
-    {
-      SPI.end();
-      lastTeamFlag = 0;
-      sendError(NO_CHIP, REPLY_UPDATE_TEAM_MASK);
-      return;
-    }
-#ifdef DEBUG
-    Serial.println(F("!!!chip found"));
-#endif
-
-    // Select one of the cards
-    if (!mfrc522.PICC_ReadCardSerial())
-    {
-      SPI.end();
-      sendError(RFID_READ_ERROR, REPLY_UPDATE_TEAM_MASK);
-#ifdef DEBUG
-      Serial.println(F("!!!fail to select card"));
-#endif
-      return;
-    }
-
-    // читаем блок информации
-    if (!ntagRead4pages(PAGE_UID))
-    {
-      SPI.end();
-      sendError(RFID_READ_ERROR, REPLY_UPDATE_TEAM_MASK);
-      return;
-    }
-
-    //неправильный тип чипа
-    if (ntag_page[14] != chipType)
-    {
-      SPI.end();
-#ifdef DEBUG
-      Serial.println(F("!!!incorrect chip"));
-#endif
-      sendError(WRONG_CHIP_TYPE, REPLY_UPDATE_TEAM_MASK);
-      return;
-    }
-
-    /*
-    Фильтруем
-    1 - неправильный тип чипа
-    2 - чип от другой прошивки
-    3 - чип более недельной давности инициализации
-    4 - чипы с командой №0 или >maxTeamNumber
-    5 - чип, который совпадает с уже отмеченным (в lastTeams[])
-    */
-
-    // читаем блок информации
-    if (!ntagRead4pages(PAGE_CHIP_NUM))
-    {
-      SPI.end();
-      sendError(RFID_READ_ERROR, REPLY_UPDATE_TEAM_MASK);
-      return;
-    }
-
-    // неправильный тип чипа
-    if (ntag_page[2] != NTAG_MARK)
-    {
-      SPI.end();
-#ifdef DEBUG
-      Serial.println(F("!!!incorrect chip"));
-#endif
-      sendError(WRONG_CHIP_TYPE, REPLY_UPDATE_TEAM_MASK);
-      return;
-    }
-
-    // чип от другой прошивки
-    if (ntag_page[3] != FW_VERSION)
-    {
-      SPI.end();
-#ifdef DEBUG
-      Serial.println(F("!!!incorrect fw"));
-#endif
-      sendError(WRONG_FW_VERSION, REPLY_UPDATE_TEAM_MASK);
-      return;
-    }
-
-    // Не слишком ли старый чип? Недельной давности и более
-    uint32_t timeInit = ntag_page[4];
-    timeInit = timeInit << 8;
-    timeInit += ntag_page[5];
-    timeInit = timeInit << 8;
-    timeInit += ntag_page[6];
-    timeInit = timeInit << 8;
-    timeInit += ntag_page[7];
-    if ((systemTime.unixtime - timeInit) > maxTimeInit)
-    {
-      SPI.end();
-#ifdef DEBUG
-      Serial.println(F("!!!outdated chip"));
-#endif
-      sendError(LOW_INIT_TIME, REPLY_UPDATE_TEAM_MASK);
-      return;
-    }
-
-    uint16_t chipNum = (ntag_page[0] << 8) + ntag_page[1];
-
-    // Если номер чипа =0 или >maxTeamNumber
-
-    if (chipNum < 1 || chipNum > maxTeamNumber)
-    {
-      SPI.end();
-#ifdef DEBUG
-      Serial.print(F("!!!incorrect chip #"));
-      Serial.println(String(chipNum));
-#endif
-      sendError(WRONG_TEAM, REPLY_UPDATE_TEAM_MASK);
-      return;
-    }
-
-    // не надо ли обновить у чипа маску?
-    // 0-1: номер команды
-    // 2-5: время выдачи чипа
-    // 6-7: маска участников
-    if (newTeamMask[0] + newTeamMask[1] != 0
-      && ntag_page[0] == newTeamMask[0]
-      && ntag_page[1] == newTeamMask[1]
-      && ntag_page[4] == newTeamMask[2]
-      && ntag_page[5] == newTeamMask[3]
-      && ntag_page[6] == newTeamMask[4]
-      && ntag_page[7] == newTeamMask[5])
-    {
-      if (ntag_page[8] != newTeamMask[6] || ntag_page[9] != newTeamMask[7])
-      {
-#ifdef DEBUG
-        Serial.print(F("!!!updating mask"));
-#endif
-        digitalWrite(INFO_LED_PIN, HIGH);
-        uint8_t dataBlock[4] = { newTeamMask[6], newTeamMask[7], ntag_page[10], ntag_page[11] };
-        if (!ntagWritePage(dataBlock, PAGE_TEAM_MASK))
+        //минимальные размеры данных для команд header[6]+crc[1]+params[?]
+        private static class CommandDataLength
         {
-          SPI.end();
-          digitalWrite(INFO_LED_PIN, LOW);
-          sendError(RFID_WRITE_ERROR, REPLY_UPDATE_TEAM_MASK);
-          return;
+            public const byte SET_MODE = 7 + 1;
+            public const byte SET_TIME = 7 + 6;
+            public const byte RESET_STATION = 7 + 7;
+            public const byte GET_STATUS = 7 + 0;
+            public const byte INIT_CHIP = 7 + 4;
+            public const byte GET_LAST_TEAMS = 7 + 0;
+            public const byte GET_TEAM_RECORD = 7 + 2;
+            public const byte READ_CARD_PAGE = 7 + 2;
+            public const byte UPDATE_TEAM_MASK = 7 + 8;
+            public const byte WRITE_CARD_PAGE = 7 + 13;
+            public const byte READ_FLASH = 7 + 5;
+            public const byte WRITE_FLASH = 7 + 4;
+            public const byte ERASE_FLASH_SECTOR = 7 + 2;
+            public const byte GET_CONFIG = 7 + 0;
+            public const byte SET_V_COEFF = 7 + 4;
+            public const byte SET_GAIN = 7 + 1;
+            public const byte SET_CHIP_TYPE = 7 + 1;
+            public const byte SET_TEAM_FLASH_SIZE = 7 + 2;
+            public const byte SET_FLASH_BLOCK_SIZE = 7 + 2;
+            public const byte SET_BT_NAME = 7 + 1;
+            public const byte SET_BT_PIN = 7 + 1;
+            public const byte SET_BATTERY_LIMIT = 7 + 4;
+            public const byte SCAN_TEAMS = 7 + 2;
+            public const byte SEND_BT_COMMAND = 7 + 1;
         }
-      }
-      SPI.end();
-      digitalWrite(INFO_LED_PIN, LOW);
-      clearNewMask();
+
+        //ответы станции
+        private static class Reply
+        {
+            public const byte SET_MODE = 0x90;
+            public const byte SET_TIME = 0x91;
+            public const byte RESET_STATION = 0x92;
+            public const byte GET_STATUS = 0x93;
+            public const byte INIT_CHIP = 0x94;
+            public const byte GET_LAST_TEAMS = 0x95;
+            public const byte GET_TEAM_RECORD = 0x96;
+            public const byte READ_CARD_PAGE = 0x97;
+            public const byte UPDATE_TEAM_MASK = 0x98;
+            public const byte WRITE_CARD_PAGE = 0x99;
+            public const byte READ_FLASH = 0x9a;
+            public const byte WRITE_FLASH = 0x9b;
+            public const byte ERASE_FLASH_SECTOR = 0x9c;
+            public const byte GET_CONFIG = 0x9d;
+            public const byte SET_V_COEFF = 0x9e;
+            public const byte SET_GAIN = 0x9f;
+            public const byte SET_CHIP_TYPE = 0xa0;
+            public const byte SET_TEAM_FLASH_SIZE = 0xa1;
+            public const byte SET_FLASH_BLOCK_SIZE = 0xa2;
+            public const byte SET_BT_NAME = 0xa3;
+            public const byte SET_BT_PIN = 0xa4;
+            public const byte SET_BATTERY_LIMIT = 0xa5;
+            public const byte SCAN_TEAMS = 0xa6;
+            public const byte SEND_BT_COMMAND = 0xa7;
+        }
+
+        //размеры данных для ответов
+        private static class ReplyDataLength
+        {
+            public const byte SET_MODE = 1;
+            public const byte SET_TIME = 5;
+            public const byte RESET_STATION = 1;
+            public const byte GET_STATUS = 15;
+            public const byte INIT_CHIP = 13;
+            public const byte GET_LAST_TEAMS = 1;
+            public const byte GET_TEAM_RECORD = 14;
+            public const byte READ_CARD_PAGE = 14;
+            public const byte UPDATE_TEAM_MASK = 1;
+            public const byte WRITE_CARD_PAGE = 1;
+            public const byte READ_FLASH = 5;
+            public const byte WRITE_FLASH = 2;
+            public const byte ERASE_FLASH_SECTOR = 1;
+            public const byte GET_CONFIG = 21;
+            public const byte SET_V_COEFF = 1;
+            public const byte SET_GAIN = 1;
+            public const byte SET_CHIP_TYPE = 1;
+            public const byte SET_TEAM_FLASH_SIZE = 1;
+            public const byte SET_FLASH_BLOCK_SIZE = 1;
+            public const byte SET_BT_NAME = 1;
+            public const byte SET_BT_PIN = 1;
+            public const byte SET_BATTERY_LIMIT = 1;
+            public const byte SCAN_TEAMS = 1;
+            public const byte SEND_BT_COMMAND = 1;
+        }
+
+        //текстовые обозначения команд
+        private readonly string[] _replyStrings =
+        {
+            "SET_MODE",
+            "SET_TIME",
+            "RESET_STATION",
+            "GET_STATUS",
+            "INIT_CHIP",
+            "GET_LAST_TEAMS",
+            "GET_TEAM_RECORD",
+            "READ_CARD_PAGE",
+            "UPDATE_TEAM_MASK",
+            "WRITE_CARD_PAGE",
+            "READ_FLASH",
+            "WRITE_FLASH",
+            "ERASE_FLASH_SECTOR",
+            "GET_CONFIG",
+            "SET_V_COEFF",
+            "SET_GAIN",
+            "SET_CHIP_TYPE",
+            "SET_TEAM_FLASH_SIZE",
+            "SET_FLASH_BLOCK_SIZE",
+            "SET_BT_NAME",
+            "SET_BT_PIN",
+            "SET_BATTERY_LIMIT",
+            "SCAN_TEAMS",
+            "SEND_BT_COMMAND",
+        };
+
+        //коды ошибок станции
+        private readonly string[] _errorCodesStrings =
+        {
+            "OK",
+            "WRONG_STATION",
+            "RFID_READ_ERROR",
+            "RFID_WRITE_ERROR",
+            "LOW_INIT_TIME",
+            "WRONG_CHIP",
+            "NO_CHIP",
+            "BUFFER_OVERFLOW",
+            "WRONG_DATA",
+            "WRONG_UID",
+            "WRONG_TEAM",
+            "NO_DATA",
+            "WRONG_COMMAND",
+            "ERASE_ERROR",
+            "WRONG_CHIP_TYPE",
+            "WRONG_MODE",
+            "WRONG_SIZE",
+            "WRONG_FW_VERSION",
+            "WRONG_PACKET_LENGTH",
+            "FLASH_READ_ERROR",
+            "FLASH_WRITE_ERROR",
+            "EEPROM_READ_ERROR",
+            "EEPROM_WRITE_ERROR",
+            "BT_ERROR",
+        };
+
+        //header = 0xFE [0-2] + station#[3] + len[4] + cmd#[5] + uartBuffer[6]... + crc
+        private static class PacketBytes
+        {
+            public const byte PACKET_ID = 2;
+            public const byte STATION_NUMBER = 3;
+            public const byte LENGTH = 4;
+            public const byte COMMAND = 5;
+            public const byte DATA_START = 6;
+        }
+
+        private class Queue
+        {
+            public byte packetId;
+            public DateTime Time;
+            private byte[] data;
+        }
+        private List<Queue> _commandsList = new List<Queue>();
+        private List<Queue> _repliesList = new List<Queue>();
+
+        private StationSettings station;
+
+        private FlashContainer StationFlash;
+
+        private byte _selectedChipType = RfidContainer.ChipTypes.Types["NTAG215"];
+        private RfidContainer RfidCard;
+
+        private TeamsContainer Teams;
+
+        #region COM_port_handling
+
+        private void button_refresh_Click(object sender, EventArgs e)
+        {
+            comboBox_portName.Items.Clear();
+            comboBox_portName.Items.Add("None");
+            foreach (string portname in SerialPort.GetPortNames())
+            {
+                comboBox_portName.Items.Add(portname); //добавить порт в список
+            }
+
+            if (comboBox_portName.Items.Count == 1)
+            {
+                comboBox_portName.SelectedIndex = 0;
+                button_openPort.Enabled = false;
+            }
+            else
+                comboBox_portName.SelectedIndex = 0;
+
+
+            Hashtable PortNames;
+            string[] ports = SerialPort.GetPortNames();
+            if (ports.Length == 0)
+            {
+                textBox_terminal.Text += "ERROR: No COM ports exist\n\r";
+            }
+            else
+            {
+                PortNames = Accessory.BuildPortNameHash(ports);
+                foreach (String s in PortNames.Keys)
+                {
+                    textBox_terminal.Text += "\n\r" + PortNames[s] + ": " + s + "\n\r";
+                }
+            }
+
+
+
+        }
+
+        private void button_openPort_Click(object sender, EventArgs e)
+        {
+            if (comboBox_portName.SelectedIndex != 0)
+            {
+                serialPort1.PortName = comboBox_portName.Text;
+                serialPort1.BaudRate = _portSpeed;
+                serialPort1.DataBits = 8;
+                serialPort1.Parity = Parity.None;
+                serialPort1.StopBits = StopBits.One;
+                serialPort1.Handshake = Handshake.None;
+                serialPort1.ReadTimeout = 500;
+                serialPort1.WriteTimeout = 500;
+                try
+                {
+                    serialPort1.Open();
+                }
+                catch (Exception ex)
+                {
+                    SetText("Error opening port " + serialPort1.PortName + ": " + ex.Message);
+                }
+
+                if (!serialPort1.IsOpen)
+                    return;
+
+                button_getLastTeam.Enabled = true;
+                button_getTeamRecord.Enabled = true;
+                button_updTeamMask.Enabled = true;
+                button_initChip.Enabled = true;
+                button_readChipPage.Enabled = true;
+                button_writeChipPage.Enabled = true;
+
+                button_setMode.Enabled = true;
+                button_resetStation.Enabled = true;
+                button_setTime.Enabled = true;
+                button_getStatus.Enabled = true;
+                button_getStatus.Enabled = true;
+                button_readFlash.Enabled = true;
+                button_writeFlash.Enabled = true;
+                button_dumpTeams.Enabled = true;
+                button_dumpChip.Enabled = true;
+                button_dumpFlash.Enabled = true;
+                button_eraseFlashSector.Enabled = true;
+                button_getConfig.Enabled = true;
+                button_setKoeff.Enabled = true;
+                button_setGain.Enabled = true;
+                button_setChipType.Enabled = true;
+                button_eraseChip.Enabled = true;
+                button_setTeamFlashSize.Enabled = true;
+                button_setEraseBlock.Enabled = true;
+                button_SetBtName.Enabled = true;
+                button_SetBtPin.Enabled = true;
+                button_setBatteryLimit.Enabled = true;
+                button_getTeamsList.Enabled = true;
+                button_sendBtCommand.Enabled = true;
+                button_quickDump.Enabled = true;
+
+                button_closePort.Enabled = true;
+                button_openPort.Enabled = false;
+                button_refresh.Enabled = false;
+                comboBox_portName.Enabled = false;
+                //aTimer.Enabled = true;
+            }
+        }
+
+        private void button_closePort_Click(object sender, EventArgs e)
+        {
+            if (serialPort1.IsOpen)
+            {
+                try
+                {
+                    serialPort1.Close();
+                }
+                catch (Exception ex)
+                {
+                    SetText("Error closing port " + serialPort1.PortName + ": " + ex.Message);
+                }
+            }
+
+
+            button_getLastTeam.Enabled = false;
+            button_getTeamRecord.Enabled = false;
+            button_updTeamMask.Enabled = false;
+            button_initChip.Enabled = false;
+            button_readChipPage.Enabled = false;
+            button_writeChipPage.Enabled = false;
+
+            button_setMode.Enabled = false;
+            button_resetStation.Enabled = false;
+            button_setTime.Enabled = false;
+            button_getStatus.Enabled = false;
+            button_getStatus.Enabled = false;
+            button_readFlash.Enabled = false;
+            button_writeFlash.Enabled = false;
+            button_dumpTeams.Enabled = false;
+            button_dumpChip.Enabled = false;
+            button_dumpFlash.Enabled = false;
+            button_eraseFlashSector.Enabled = false;
+            button_getConfig.Enabled = false;
+            button_setKoeff.Enabled = false;
+            button_setGain.Enabled = false;
+            button_setChipType.Enabled = false;
+            button_eraseChip.Enabled = false;
+            button_setTeamFlashSize.Enabled = false;
+            button_setEraseBlock.Enabled = false;
+            button_SetBtName.Enabled = false;
+            button_SetBtPin.Enabled = false;
+            button_setBatteryLimit.Enabled = false;
+            button_getTeamsList.Enabled = false;
+            button_sendBtCommand.Enabled = false;
+            button_quickDump.Enabled = false;
+
+            button_closePort.Enabled = false;
+            button_openPort.Enabled = true;
+            button_refresh.Enabled = true;
+            comboBox_portName.Enabled = true;
+        }
+
+        //rewrite to validate packet runtime
+        private void serialPort1_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            lock (_serialReceiveThreadLock)
+            {
+                if (checkBox_portMon.Checked)
+                {
+                    if (_receivingData && DateTime.Now.ToUniversalTime().Subtract(_receiveStartTime).TotalMilliseconds > receiveTimeOut)
+                    {
+                        _uartBufferPosition = 0;
+                        _uartBuffer = new byte[256];
+                        _receivingData = false;
+                    }
+                    List<byte> input = new List<byte>();
+                    while (serialPort1.BytesToRead > 0)
+                    {
+                        int c;
+                        try
+                        {
+                            c = serialPort1.ReadByte();
+                            if (c != -1) input.Add((byte)c);
+                        }
+                        catch (Exception ex)
+                        {
+                            SetText("COM port read error: " + ex + "\r\n");
+                        }
+                    }
+                    ParsePackage(input);
+                }
+            }
+        }
+
+        private void ParsePackage(List<byte> input)
+        {
+            StringBuilder result = new StringBuilder();
+            List<byte> unrecognizedBytes = new List<byte>();
+            while (input.Count > 0)
+            {
+                //0 byte = FE
+                if (_uartBufferPosition == 0 && input[0] == 0xfe)
+                {
+                    _receiveStartTime = DateTime.Now.ToUniversalTime();
+                    _receivingData = true;
+                    _uartBuffer[_uartBufferPosition] = input[0];
+                    result.Append("<< ");
+                    _uartBufferPosition++;
+                }
+                //1st byte = FE
+                else if (_uartBufferPosition == 1 && input[0] == 0xfe)
+                {
+                    _uartBuffer[_uartBufferPosition] = input[0];
+                    _uartBufferPosition++;
+                }
+                //2nd byte = ID
+                else if (_uartBufferPosition == PacketBytes.PACKET_ID)
+                {
+                    _uartBuffer[_uartBufferPosition] = input[0];
+                    _uartBufferPosition++;
+                }
+                //3rd byte = station#, length, command, and data
+                else if (_uartBufferPosition >= PacketBytes.STATION_NUMBER)
+                {
+                    _uartBuffer[_uartBufferPosition] = input[0];
+                    //incorrect length
+                    if (_uartBufferPosition == PacketBytes.LENGTH &&
+                        _uartBuffer[PacketBytes.LENGTH] > 256 - 7)
+                    {
+                        result.Append(Accessory.ConvertByteArrayToHex(_uartBuffer, _uartBufferPosition));
+                        result.Append("\r\nIncorrect length\r\n");
+                        _receivingData = false;
+                        _uartBufferPosition = 0;
+                        _uartBuffer = new byte[256];
+                        input.RemoveAt(0);
+                        continue;
+                    }
+
+                    //packet is received
+                    if (_uartBufferPosition > PacketBytes.LENGTH && _uartBufferPosition >=
+                        PacketBytes.DATA_START + _uartBuffer[PacketBytes.LENGTH])
+                    {
+                        //crc matching
+                        byte crc = Accessory.CrcCalc(_uartBuffer, PacketBytes.PACKET_ID,
+                            _uartBufferPosition - 1);
+                        if (_uartBuffer[_uartBufferPosition] == crc)
+                        {
+                            result.Append(Accessory.ConvertByteArrayToHex(_uartBuffer, _uartBufferPosition + 1));
+                            result.Append("\r\nExecute time=" +
+                                    DateTime.Now.ToUniversalTime().Subtract(_getStatusTime).TotalMilliseconds + " ms.\r\n");
+                            string res = ParseReply(_uartBuffer);
+                            result.Append(res);
+                            _receivingData = true;
+                            _uartBufferPosition = 0;
+                            _uartBuffer = new byte[256];
+                            _asyncFlag--;
+                            input.RemoveAt(0);
+                            continue;
+                        }
+
+                        result.Append(Accessory.ConvertByteArrayToHex(_uartBuffer, _uartBufferPosition));
+                        result.Append("\r\nCRC not correct: " + _uartBuffer[_uartBufferPosition].ToString("X2") +
+                                " instead of " + crc.ToString("X2") + "\r\n");
+                        _receivingData = false;
+                        _uartBufferPosition = 0;
+                        _uartBuffer = new byte[256];
+                        input.RemoveAt(0);
+                        continue;
+                    }
+
+                    _uartBufferPosition++;
+                }
+                else
+                {
+                    if (_uartBufferPosition > 0)
+                    {
+                        List<byte> error = new List<byte>();
+                        for (int i = 0; i < _uartBufferPosition; i++)
+                        {
+                            error.Add(_uartBuffer[i]);
+                        }
+                        error.Add(input[0]);
+                        _receivingData = false;
+                        _uartBufferPosition = 0;
+                        _uartBuffer = new byte[256];
+                        SetText("\r\nIncorrect bytes: [" + Accessory.ConvertByteArrayToHex(error.ToArray()) + "]\r\n");
+                    }
+                    else unrecognizedBytes.Add(input[0]);
+                }
+                input.RemoveAt(0);
+            }
+
+            if (unrecognizedBytes.Count > 0)
+            {
+                SetText("Comment: " + Accessory.ConvertByteArrayToString(unrecognizedBytes.ToArray()) + "\r\n");
+            }
+            SetText(result.ToString());
+        }
+
+        private void serialPort1_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        {
+            SetText("COM port error: " + e + "\r\n");
+        }
+
+        private void SendCommand(byte[] command)
+        {
+            if (!serialPort1.IsOpen)
+                button_closePort_Click(this, EventArgs.Empty);
+            lock (_serialSendThreadLock)
+            {
+                command[0] = 0xFE;
+                command[1] = 0xFE;
+                command[PacketBytes.PACKET_ID] = _packageId++;
+                command[PacketBytes.STATION_NUMBER] = station.Number;
+                command[PacketBytes.LENGTH] = (byte)(command.Length - PacketBytes.DATA_START - 1);
+                command[command.Length - 1] =
+                    Accessory.CrcCalc(command, PacketBytes.PACKET_ID, command.Length - 2);
+                _getStatusTime = DateTime.Now.ToUniversalTime();
+                try
+                {
+                    serialPort1.Write(command, 0, command.Length);
+                }
+                catch (Exception e)
+                {
+                    SetText("COM port write error: " + e + "\r\n");
+                    return;
+                }
+
+                SetText("\r\n>> "
+                        + Accessory.ConvertByteArrayToHex(command)
+                        + "\r\n");
+            }
+        }
+
+        #endregion
+
+        #region Terminal_window
+
+        private void textBox_terminal_TextChanged(object sender, EventArgs e)
+        {
+            if (checkBox_autoScroll.Checked)
+            {
+                textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
+                textBox_terminal.ScrollToCaret();
+            }
+        }
+
+        private delegate void SetTextCallback1(string text);
+
+        private void SetText(string text)
+        {
+            lock (_textOutThreadLock)
+            {
+                if (_noTerminalOutputFlag)
+                {
+                    if (_logAutoSaveFlag) File.AppendAllText(_logAutoSaveFile, text);
+                    return;
+                }
+
+                //text = Accessory.FilterZeroChar(text);
+                // InvokeRequired required compares the thread ID of the
+                // calling thread to the thread ID of the creating thread.
+                // If these threads are different, it returns true.
+                //if (this.textBox_terminal1.InvokeRequired)
+                if (textBox_terminal.InvokeRequired)
+                {
+                    SetTextCallback1 d = SetText;
+                    BeginInvoke(d, text);
+                }
+                else
+                {
+                    if (_logAutoSaveFlag)
+                    {
+                        File.AppendAllText(_logAutoSaveFile, text);
+                    }
+
+                    int pos = textBox_terminal.SelectionStart;
+                    textBox_terminal.AppendText(text);
+                    if (textBox_terminal.Lines.Length > _logLinesLimit)
+                    {
+                        StringBuilder tmp = new StringBuilder();
+                        for (int i = textBox_terminal.Lines.Length - _logLinesLimit;
+                            i < textBox_terminal.Lines.Length;
+                            i++)
+                        {
+                            tmp.Append(textBox_terminal.Lines[i] + "\r\n");
+                        }
+
+                        textBox_terminal.Text = tmp.ToString();
+                    }
+
+                    if (checkBox_autoScroll.Checked)
+                    {
+                        textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
+                        textBox_terminal.ScrollToCaret();
+                    }
+                    else
+                    {
+                        textBox_terminal.SelectionStart = pos;
+                        textBox_terminal.ScrollToCaret();
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Generate commands
+
+        private void button_setMode_Click(object sender, EventArgs e)
+        {
+            byte[] setMode = new byte[CommandDataLength.SET_MODE];
+            setMode[PacketBytes.COMMAND] = Command.SET_MODE;
+
+            //0: новый номер режима
+
+            if (!StationSettings.StationMode.TryGetValue(comboBox_mode.SelectedItem.ToString(), out var item)) return;
+
+            setMode[PacketBytes.DATA_START] = (byte)item;
+            SendCommand(setMode);
+        }
+
+        private void button_setTime_Click(object sender, EventArgs e)
+        {
+            byte[] setTime = new byte[CommandDataLength.SET_TIME];
+            setTime[PacketBytes.COMMAND] = Command.SET_TIME;
+
+            //0-5: дата и время[yy.mm.dd hh: mm:ss]
+            if (checkBox_autoTime.Checked)
+                textBox_setTime.Text = Helpers.DateToString(DateTime.Now.ToUniversalTime());
+            byte[] date = Helpers.DateStringToByteArray(textBox_setTime.Text);
+            for (int i = 0; i < 6; i++)
+                setTime[PacketBytes.DATA_START + i] = date[i];
+
+            SendCommand(setTime);
+        }
+
+        private void button_resetStation_Click(object sender, EventArgs e)
+        {
+            byte[] resetStation = new byte[CommandDataLength.RESET_STATION];
+            resetStation[PacketBytes.COMMAND] = Command.RESET_STATION;
+
+            /*0-1: кол-во отмеченных карт (для сверки)
+            2-5: время последней отметки unixtime(для сверки)
+            6: новый номер станции*/
+            uint.TryParse(textBox_checkedChips.Text, out uint chipsNumber);
+            resetStation[PacketBytes.DATA_START + 0] = (byte)(chipsNumber >> 8);
+            resetStation[PacketBytes.DATA_START + 1] = (byte)(chipsNumber & 0x00ff);
+
+            long tmpTime = Helpers.DateStringToUnixTime(textBox_lastCheck.Text);
+            resetStation[PacketBytes.DATA_START + 2] = (byte)((tmpTime & 0xFF000000) >> 24);
+            resetStation[PacketBytes.DATA_START + 3] = (byte)((tmpTime & 0x00FF0000) >> 16);
+            resetStation[PacketBytes.DATA_START + 4] = (byte)((tmpTime & 0x0000FF00) >> 8);
+            resetStation[PacketBytes.DATA_START + 5] = (byte)(tmpTime & 0x000000FF);
+
+            byte.TryParse(textBox_newStationNumber.Text, out resetStation[PacketBytes.DATA_START + 6]);
+
+            SendCommand(resetStation);
+        }
+
+        private void button_getStatus_Click(object sender, EventArgs e)
+        {
+            byte[] getStatus = new byte[CommandDataLength.GET_STATUS];
+            getStatus[PacketBytes.COMMAND] = Command.GET_STATUS;
+
+            SendCommand(getStatus);
+        }
+
+        private void button_initChip_Click(object sender, EventArgs e)
+        {
+            byte[] initChip = new byte[CommandDataLength.INIT_CHIP];
+            initChip[PacketBytes.COMMAND] = Command.INIT_CHIP;
+
+            /*0-1: номер команды
+            2-3: маска участников*/
+            uint.TryParse(textBox_initTeamNum.Text, out uint cmd);
+            initChip[PacketBytes.DATA_START] = (byte)(cmd >> 8);
+            initChip[PacketBytes.DATA_START + 1] = (byte)cmd;
+
+            uint mask = 0;
+            byte j = 0;
+            for (int i = 15; i >= 0; i--)
+            {
+                if (textBox_initMask.Text[i] == '1')
+                    mask = (uint)Accessory.SetBit(mask, j);
+                else
+                    mask = (uint)Accessory.ClearBit(mask, j);
+                j++;
+            }
+
+            initChip[PacketBytes.DATA_START + 2] = (byte)(mask >> 8);
+            initChip[PacketBytes.DATA_START + 3] = (byte)(mask & 0x00ff);
+
+            SendCommand(initChip);
+        }
+
+        private void button_getLastTeam_Click(object sender, EventArgs e)
+        {
+            byte[] getLastTeam = new byte[CommandDataLength.GET_LAST_TEAMS];
+            getLastTeam[PacketBytes.COMMAND] = Command.GET_LAST_TEAMS;
+
+            SendCommand(getLastTeam);
+        }
+
+        private void button_getTeamRecord_Click(object sender, EventArgs e)
+        {
+            byte[] getTeamRecord = new byte[CommandDataLength.GET_TEAM_RECORD];
+            getTeamRecord[PacketBytes.COMMAND] = Command.GET_TEAM_RECORD;
+
+            //0-1: какую запись
+            uint.TryParse(textBox_teamNumber.Text, out uint from);
+            getTeamRecord[PacketBytes.DATA_START] = (byte)(from >> 8);
+            getTeamRecord[PacketBytes.DATA_START + 1] = (byte)(from & 0x00ff);
+
+            SendCommand(getTeamRecord);
+        }
+
+        private void button_readCardPage_Click(object sender, EventArgs e)
+        {
+            byte[] readCardPage = new byte[CommandDataLength.READ_CARD_PAGE];
+            readCardPage[PacketBytes.COMMAND] = Command.READ_CARD_PAGE;
+
+            //0: с какой страницу карты
+            byte.TryParse(
+                textBox_readChipPage.Text.Substring(0, textBox_readChipPage.Text.IndexOf("-", StringComparison.Ordinal)).Trim(), out byte from);
+            readCardPage[PacketBytes.DATA_START] = from;
+            //1: по какую страницу карты включительно
+            byte.TryParse(textBox_readChipPage.Text.Substring(textBox_readChipPage.Text.IndexOf("-", StringComparison.Ordinal) + 1)
+                .Trim(), out byte to);
+            readCardPage[PacketBytes.DATA_START + 1] = to;
+
+            SendCommand(readCardPage);
+        }
+
+        private void button_updateTeamMask_Click(object sender, EventArgs e)
+        {
+            byte[] updateTeamMask = new byte[CommandDataLength.UPDATE_TEAM_MASK];
+            updateTeamMask[PacketBytes.COMMAND] = Command.UPDATE_TEAM_MASK;
+
+            /*0-1: номер команды
+            2-5: время выдачи чипа
+            6-7: маска участников*/
+            uint.TryParse(textBox_teamNumber.Text, out uint teamNum);
+            updateTeamMask[PacketBytes.DATA_START] = (byte)(teamNum >> 8);
+            updateTeamMask[PacketBytes.DATA_START + 1] = (byte)teamNum;
+
+            //card issue time - 4 byte
+            //textBox_issueTime.Text
+            long tmpTime = Helpers.DateStringToUnixTime(textBox_issueTime.Text);
+            updateTeamMask[PacketBytes.DATA_START + 2] = (byte)((tmpTime & 0xFF000000) >> 24);
+            updateTeamMask[PacketBytes.DATA_START + 3] = (byte)((tmpTime & 0x00FF0000) >> 16);
+            updateTeamMask[PacketBytes.DATA_START + 4] = (byte)((tmpTime & 0x0000FF00) >> 8);
+            updateTeamMask[PacketBytes.DATA_START + 5] = (byte)(tmpTime & 0x000000FF);
+
+
+            uint mask = 0;
+            byte j = 0;
+            for (int i = 15; i >= 0; i--)
+            {
+                if (textBox_teamMask.Text[i] == '1')
+                    mask = (uint)Accessory.SetBit(mask, j);
+                else
+                    mask = (uint)Accessory.ClearBit(mask, j);
+                j++;
+            }
+
+            updateTeamMask[PacketBytes.DATA_START + 6] = (byte)(mask >> 8);
+            updateTeamMask[PacketBytes.DATA_START + 7] = (byte)(mask & 0x00ff);
+
+            SendCommand(updateTeamMask);
+        }
+
+        private void button_writeCardPage_Click(object sender, EventArgs e)
+        {
+            byte[] writeCardPage = new byte[CommandDataLength.WRITE_CARD_PAGE];
+            writeCardPage[PacketBytes.COMMAND] = Command.WRITE_CARD_PAGE;
+
+            //0-7: UID чипа
+            //8: номер страницы
+            //9-12: данные из страницы карты (4 байта)
+            byte[] uid = Accessory.ConvertHexToByteArray(textBox_uid.Text);
+            if (uid.Length != 8)
+                return;
+            for (int i = 0; i <= 7; i++)
+                writeCardPage[PacketBytes.DATA_START + i] = uid[i];
+
+            byte.TryParse(textBox_writeChipPage.Text, out writeCardPage[PacketBytes.DATA_START + 8]);
+
+            byte[] data = Accessory.ConvertHexToByteArray(textBox_data.Text);
+
+            if (data.Length != 4)
+                return;
+            for (int i = 0; i <= 3; i++)
+                writeCardPage[PacketBytes.DATA_START + 9 + i] = data[i];
+
+            SendCommand(writeCardPage);
+        }
+
+        private void button_readFlash_Click(object sender, EventArgs e)
+        {
+            byte[] readFlash = new byte[CommandDataLength.READ_FLASH];
+            readFlash[PacketBytes.COMMAND] = Command.READ_FLASH;
+
+            //0-3: адрес начала чтения
+            //4: размер блока
+
+            long.TryParse(textBox_readFlashAddress.Text, out long fromAddr);
+            readFlash[PacketBytes.DATA_START] = (byte)((fromAddr & 0xFF000000) >> 24);
+            readFlash[PacketBytes.DATA_START + 1] = (byte)((fromAddr & 0x00FF0000) >> 16);
+            readFlash[PacketBytes.DATA_START + 2] = (byte)((fromAddr & 0x0000FF00) >> 8);
+            readFlash[PacketBytes.DATA_START + 3] = (byte)(fromAddr & 0x000000FF);
+
+            byte.TryParse(textBox_readFlashLength.Text, out byte toAddr);
+            readFlash[PacketBytes.DATA_START + 4] = toAddr;
+
+            SendCommand(readFlash);
+        }
+
+        private void button_writeFlash_Click(object sender, EventArgs e)
+        {
+            byte[] data = Accessory.ConvertHexToByteArray(textBox_flashData.Text);
+
+            byte[] writeFlash = new byte[CommandDataLength.WRITE_FLASH + data.Length];
+            writeFlash[PacketBytes.COMMAND] = Command.WRITE_FLASH;
+
+            //0-3: адрес начала записи
+            //4...: данные для записи
+            long.TryParse(textBox_writeAddr.Text, out long tmpTime);
+            writeFlash[PacketBytes.DATA_START] = (byte)((tmpTime & 0xFF000000) >> 24);
+            writeFlash[PacketBytes.DATA_START + 1] = (byte)((tmpTime & 0x00FF0000) >> 16);
+            writeFlash[PacketBytes.DATA_START + 2] = (byte)((tmpTime & 0x0000FF00) >> 8);
+            writeFlash[PacketBytes.DATA_START + 3] = (byte)(tmpTime & 0x000000FF);
+
+            for (byte i = 0; i < data.Length; i++)
+            {
+                writeFlash[PacketBytes.DATA_START + 4 + i] = data[i];
+            }
+
+            SendCommand(writeFlash);
+        }
+
+        private void button_eraseFlashSector_Click(object sender, EventArgs e)
+        {
+            byte[] eraseFlashSector = new byte[CommandDataLength.ERASE_FLASH_SECTOR];
+            eraseFlashSector[PacketBytes.COMMAND] = Command.ERASE_FLASH_SECTOR;
+
+            //0-1: какой сектор
+            uint.TryParse(textBox_eraseSector.Text, out uint sector);
+            eraseFlashSector[PacketBytes.DATA_START] = (byte)(sector >> 8);
+            eraseFlashSector[PacketBytes.DATA_START + 1] = (byte)(sector & 0x00ff);
+
+            SendCommand(eraseFlashSector);
+        }
+
+        private void button_getConfig_Click(object sender, EventArgs e)
+        {
+            byte[] getConfig = new byte[CommandDataLength.GET_CONFIG];
+            getConfig[PacketBytes.COMMAND] = Command.GET_CONFIG;
+
+            SendCommand(getConfig);
+        }
+
+        private void button_setVCoeff_Click(object sender, EventArgs e)
+        {
+            byte[] setKoeff = new byte[CommandDataLength.SET_V_COEFF];
+            setKoeff[PacketBytes.COMMAND] = Command.SET_V_COEFF;
+
+            //0-3: коэффициент пересчета напряжения
+            float.TryParse(textBox_koeff.Text, out float koeff);
+            byte[] k = BitConverter.GetBytes(koeff);
+            for (int i = 0; i < 4; i++)
+            {
+                setKoeff[PacketBytes.DATA_START + i] = k[i];
+            }
+
+            SendCommand(setKoeff);
+        }
+
+        private void Button_setGain_Click(object sender, EventArgs e)
+        {
+            byte[] setGain = new byte[CommandDataLength.SET_GAIN];
+            setGain[PacketBytes.COMMAND] = Command.SET_GAIN;
+
+            //0: новый коэфф.
+            if (!StationSettings.Gain.TryGetValue(comboBox_setGain.SelectedItem.ToString(), out setGain[PacketBytes.DATA_START])) return;
+            SendCommand(setGain);
+        }
+
+        private void button_setChipType_Click(object sender, EventArgs e)
+        {
+            byte[] setChipType = new byte[CommandDataLength.SET_CHIP_TYPE];
+            setChipType[PacketBytes.COMMAND] = Command.SET_CHIP_TYPE;
+
+            //0: новый тип чипа
+            setChipType[PacketBytes.DATA_START] = RfidContainer.ChipTypes.GetSystemId(_selectedChipType);
+            SendCommand(setChipType);
+        }
+
+        private void Button_setTeamFlashSize_Click(object sender, EventArgs e)
+        {
+            byte[] setTeamFlashSize = new byte[CommandDataLength.SET_TEAM_FLASH_SIZE];
+            setTeamFlashSize[PacketBytes.COMMAND] = Command.SET_TEAM_FLASH_SIZE;
+
+            //0-1: новый размер блока команды
+            int.TryParse(textBox_teamFlashSize.Text, out int chip);
+
+            setTeamFlashSize[PacketBytes.DATA_START] = (byte)(chip >> 8);
+            setTeamFlashSize[PacketBytes.DATA_START + 1] = (byte)(chip & 0x00ff);
+            SendCommand(setTeamFlashSize);
+        }
+
+        private void Button_setEraseBlock_Click(object sender, EventArgs e)
+        {
+            byte[] setEraseBlockSize = new byte[CommandDataLength.SET_FLASH_BLOCK_SIZE];
+            setEraseBlockSize[PacketBytes.COMMAND] = Command.SET_FLASH_BLOCK_SIZE;
+
+            //0-1: новый размер стираемого блока
+            int.TryParse(textBox_eraseBlock.Text, out int chip);
+
+            setEraseBlockSize[PacketBytes.DATA_START] = (byte)(chip >> 8);
+            setEraseBlockSize[PacketBytes.DATA_START + 1] = (byte)(chip & 0x00ff);
+            SendCommand(setEraseBlockSize);
+        }
+
+        private void Button_SetBtName_Click(object sender, EventArgs e)
+        {
+            byte[] data = Encoding.ASCII.GetBytes(textBox_BtName.Text);
+
+            byte[] setBtName = new byte[CommandDataLength.SET_BT_NAME + data.Length];
+            setBtName[PacketBytes.COMMAND] = Command.SET_BT_NAME;
+
+            //0...: данные для записи
+            for (byte i = 0; i < data.Length; i++)
+            {
+                setBtName[PacketBytes.DATA_START + i] = data[i];
+            }
+
+            SendCommand(setBtName);
+        }
+
+        private void Button_SetBtPin_Click(object sender, EventArgs e)
+        {
+            byte[] data = Encoding.ASCII.GetBytes(textBox_BtPin.Text);
+
+            byte[] setBtName = new byte[CommandDataLength.SET_BT_PIN + data.Length];
+            setBtName[PacketBytes.COMMAND] = Command.SET_BT_PIN;
+
+            //0...: данные для записи
+            for (byte i = 0; i < data.Length; i++)
+            {
+                setBtName[PacketBytes.DATA_START + i] = data[i];
+            }
+
+            SendCommand(setBtName);
+        }
+
+        private void Button_setBatteryLimit_Click(object sender, EventArgs e)
+        {
+            byte[] setBatteryLimit = new byte[CommandDataLength.SET_BATTERY_LIMIT];
+            setBatteryLimit[PacketBytes.COMMAND] = Command.SET_BATTERY_LIMIT;
+
+            //0-3: коэффициент пересчета напряжения
+            float.TryParse(textBox_setBatteryLimit.Text, out float limit);
+            byte[] k = BitConverter.GetBytes(limit);
+            for (int i = 0; i < 4; i++)
+            {
+                setBatteryLimit[PacketBytes.DATA_START + i] = k[i];
+            }
+
+            SendCommand(setBatteryLimit);
+        }
+
+        private void button_getTeamsList_Click(object sender, EventArgs e)
+        {
+            UInt32.TryParse(textBox_getTeamsList.Text, out UInt32 teamNumber);
+
+            byte[] scanTeams = new byte[CommandDataLength.SCAN_TEAMS];
+            scanTeams[PacketBytes.COMMAND] = Command.SCAN_TEAMS;
+
+            //0-1: начальный номер команды
+            scanTeams[PacketBytes.DATA_START] = (byte)(teamNumber >> 8);
+            scanTeams[PacketBytes.DATA_START + 1] = (byte)(teamNumber & 0x00ff);
+
+            SendCommand(scanTeams);
+        }
+
+        private void button_sendBtCommand_Click(object sender, EventArgs e)
+        {
+            string btCommand = textBox_sendBtCommand.Text + "\r\n";
+            byte[] data = Encoding.ASCII.GetBytes(btCommand);
+            if (data.Length > 256 - 8 || data.Length < 1) return;
+
+            byte[] sendBtCommand = new byte[CommandDataLength.SEND_BT_COMMAND + data.Length];
+            sendBtCommand[PacketBytes.COMMAND] = Command.SEND_BT_COMMAND;
+
+            //0...: команда
+            for (byte i = 0; i < data.Length; i++)
+            {
+                sendBtCommand[PacketBytes.DATA_START + i] = data[i];
+            }
+
+            SendCommand(sendBtCommand);
+        }
+
+        #endregion
+
+        #region Parse replies
+
+        private string ParseReply(byte[] data)
+        {
+            string result = "";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+            {
+                result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+                result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+                result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+                return result;
+            }
+            bool incorrectLengthFlag = false;
+            switch (data[PacketBytes.COMMAND])
+            {
+                case Reply.SET_MODE:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.SET_MODE)
+                        result = reply_setMode(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.SET_TIME:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.SET_TIME)
+                        result = reply_setTime(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.RESET_STATION:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.RESET_STATION)
+                        result = reply_resetStation(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.GET_STATUS:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.GET_STATUS)
+                        result = reply_getStatus(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.INIT_CHIP:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.INIT_CHIP)
+                        result = reply_initChip(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.GET_LAST_TEAMS:
+                    if (data[PacketBytes.LENGTH] >= ReplyDataLength.GET_LAST_TEAMS)
+                        result = reply_getLastTeams(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.GET_TEAM_RECORD:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.GET_TEAM_RECORD)
+                        result = reply_getTeamRecord(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.READ_CARD_PAGE:
+                    if (data[PacketBytes.LENGTH] >= ReplyDataLength.READ_CARD_PAGE)
+                        result = reply_readCardPages(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.UPDATE_TEAM_MASK:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.UPDATE_TEAM_MASK)
+                        result = reply_updateTeamMask(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.WRITE_CARD_PAGE:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.WRITE_CARD_PAGE)
+                        result = reply_writeCardPage(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.READ_FLASH:
+                    if (data[PacketBytes.LENGTH] >= ReplyDataLength.READ_FLASH)
+                        result = reply_readFlash(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.WRITE_FLASH:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.WRITE_FLASH)
+                        result = reply_writeFlash(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.ERASE_FLASH_SECTOR:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.ERASE_FLASH_SECTOR)
+                        result = reply_eraseFlashSector(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.GET_CONFIG:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.GET_CONFIG)
+                        result = reply_getConfig(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.SET_V_COEFF:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.SET_V_COEFF)
+                        result = reply_setVCoeff(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.SET_GAIN:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.SET_GAIN)
+                        result = reply_setGain(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.SET_CHIP_TYPE:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.SET_CHIP_TYPE)
+                        result = reply_setChipType(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.SET_TEAM_FLASH_SIZE:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.SET_TEAM_FLASH_SIZE)
+                        result = reply_setTeamFlashSize(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.SET_FLASH_BLOCK_SIZE:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.SET_FLASH_BLOCK_SIZE)
+                        result = reply_setFlashBlockSize(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.SET_BT_NAME:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.SET_BT_NAME)
+                        result = reply_setBtName(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.SET_BT_PIN:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.SET_BT_PIN)
+                        result = reply_setBtPin(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.SET_BATTERY_LIMIT:
+                    if (data[PacketBytes.LENGTH] == ReplyDataLength.SET_BATTERY_LIMIT)
+                        result = reply_setBatteryLimit(data);
+                    else incorrectLengthFlag = true;
+                    break;
+
+                case Reply.SCAN_TEAMS:
+                    if (data[PacketBytes.LENGTH] >= ReplyDataLength.SCAN_TEAMS)
+                        result = reply_scanTeams(data);
+                    else incorrectLengthFlag = true;
+                    break;
+                case Reply.SEND_BT_COMMAND:
+                    if (data[PacketBytes.LENGTH] >= ReplyDataLength.SEND_BT_COMMAND)
+                        result = reply_sendBtCommand(data);
+                    else incorrectLengthFlag = true;
+                    break;
+
+                default:
+                    result = "Incorrect reply code: " +
+                        data[PacketBytes.COMMAND].ToString() +
+                        "\r\n";
+                    break;
+            }
+            if (incorrectLengthFlag)
+            {
+                result = "Command: " +
+                    _replyStrings[data[PacketBytes.COMMAND] - 0x90] +
+                    "\r\nIncorrect length: " +
+                    data[PacketBytes.COMMAND].ToString() +
+                    "\r\n";
+            }
+
+            return result;
+        }
+
+        private string reply_setMode(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            return result;
+        }
+
+        private string reply_setTime(byte[] data)
+        {
+            //0: код ошибки
+            //1-4: текущее время
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            long t = data[PacketBytes.DATA_START + 1] * 16777216 + data[PacketBytes.DATA_START + 2] * 65536 +
+                     data[PacketBytes.DATA_START + 3] * 256 + data[PacketBytes.DATA_START + 4];
+            DateTime d = Helpers.ConvertFromUnixTimestamp(t);
+            result += "\tНовое время: " + Helpers.DateToString(d) + "\r\n";
+            return result;
+        }
+
+        private string reply_resetStation(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            return result;
+        }
+
+        private string reply_getStatus(byte[] data)
+        {
+            string result = "";
+            //0: код ошибки
+            //1-4: текущее время
+            //5-6: количество отметок на станции
+            //7-10: время последней отметки на станции
+            //11-12: напряжение батареи в условных единицах[0..1023] ~ [0..1.1В]
+            //13-14: температура чипа DS3231 (чуть выше окружающей среды)
+
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            Invoke((MethodInvoker)delegate
+            {
+                station.Number = data[PacketBytes.STATION_NUMBER];
+                textBox_stationNumber.Text = station.Number.ToString();
+            });
+
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            long t = data[PacketBytes.DATA_START + 1] * 16777216 + data[PacketBytes.DATA_START + 2] * 65536 +
+                     data[PacketBytes.DATA_START + 3] * 256 + data[PacketBytes.DATA_START + 4];
+            DateTime d = Helpers.ConvertFromUnixTimestamp(t);
+            result += "\tВремя: " + Helpers.DateToString(d) + "\r\n";
+
+            int n = data[PacketBytes.DATA_START + 5] * 256 + data[PacketBytes.DATA_START + 6];
+            result += "\tКол-во отметок#: " + n + "\r\n";
+            Invoke((MethodInvoker)delegate
+            {
+                textBox_checkedChips.Text = n.ToString();
+            });
+
+            t = data[PacketBytes.DATA_START + 7] * 16777216 + data[PacketBytes.DATA_START + 8] * 65536 +
+                    data[PacketBytes.DATA_START + 9] * 256 + data[PacketBytes.DATA_START + 10];
+            d = Helpers.ConvertFromUnixTimestamp(t);
+            result += "\tВремя последней отметки: " + Helpers.DateToString(d) + "\r\n";
+            //textBox_lastCheck.Text = DateToString(d);
+
+            n = data[PacketBytes.DATA_START + 11] * 256 + data[PacketBytes.DATA_START + 12];
+            result += "\tБатарея: " + (station.VoltageCoefficient * n).ToString("F2") + "V (ADC=" + n + ")\r\n";
+
+            n = data[PacketBytes.DATA_START + 13] * 256 + data[PacketBytes.DATA_START + 14];
+            result += "\tТемпература: " + n + "\r\n";
+
+            return result;
+        }
+
+        private string reply_initChip(byte[] data)
+        {
+            //0: код ошибки
+            // убрать 1-7: UID чипа
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            result += "\tВремя инициализации: ";
+            long t = data[PacketBytes.DATA_START + 1] * 16777216 + data[PacketBytes.DATA_START + 2] * 65536 +
+                     data[PacketBytes.DATA_START + 3] * 256 + data[PacketBytes.DATA_START + 4];
+            DateTime d = Helpers.ConvertFromUnixTimestamp(t);
+            result += Helpers.DateToString(d) + "\r\n";
+
+            result += "\tUID: ";
+            for (int i = 1; i <= 8; i++)
+                result += Accessory.ConvertByteToHex(data[PacketBytes.DATA_START + 4 + i]);
+            result += "\r\n";
+
+            return result;
+        }
+
+        private string reply_getLastTeams(byte[] data)
+        {
+            //0: код ошибки
+            //1-2: номер 1й команды
+            //3-4: номер 2й команды
+            //...
+            //(n - 1) - n: номер последней команды
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            result += "\tНомера последних команд:\r\n";
+            for (int i = 1; i < data[PacketBytes.LENGTH]; i++)
+            {
+                UInt16 n = (UInt16)(data[PacketBytes.DATA_START + i] * 256);
+                i++;
+                n += data[PacketBytes.DATA_START + i];
+                if (n > 0)
+                {
+                    result += "\t\t" + n + "\r\n";
+                    TeamsContainer.TeamData tmpTeam = new TeamsContainer.TeamData();
+                    tmpTeam.TeamNumber = n;
+                    Teams.Add(tmpTeam);
+                }
+            }
+
+            return result;
+        }
+
+        private string reply_getTeamRecord(byte[] data)
+        {
+            //0: код ошибки
+            //1: данные отметившейся команды
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            TeamsContainer.TeamData tmpTeam = new TeamsContainer.TeamData();
+
+            UInt16 n = (UInt16)(data[PacketBytes.DATA_START + 1] * 256 + data[PacketBytes.DATA_START + 2]);
+            result += "\tКоманда#: " + n + "\r\n";
+            tmpTeam.TeamNumber = n;
+
+
+            long t = data[PacketBytes.DATA_START + 3] * 16777216 + data[PacketBytes.DATA_START + 4] * 65536 +
+                     data[PacketBytes.DATA_START + 5] * 256 + data[PacketBytes.DATA_START + 6];
+            DateTime d = Helpers.ConvertFromUnixTimestamp(t);
+            result += "\tВремя инициализации: " + Helpers.DateToString(d) + "\r\n";
+            tmpTeam.InitTime = d;
+
+            n = (UInt16)(data[PacketBytes.DATA_START + 7] * 256 + data[PacketBytes.DATA_START + 8]);
+            result += "\tМаска команды: " + Helpers.ConvertMaskToString(n) + "\r\n";
+            tmpTeam.TeamMask = n;
+
+            t = data[PacketBytes.DATA_START + 9] * 16777216 + data[PacketBytes.DATA_START + 10] * 65536 +
+                data[PacketBytes.DATA_START + 11] * 256 + data[PacketBytes.DATA_START + 12];
+            d = Helpers.ConvertFromUnixTimestamp(t);
+            result += "\tВремя последней отметки: " + Helpers.DateToString(d) + "\r\n";
+            tmpTeam.LastCheckTime = d;
+
+            /*n = (int)(data[PacketBytes.DATA_START + 13] * 256 + data[PacketBytes.DATA_START + 14]);
+            if (n == 0xff) n = 0;
+            result += "Байт в дампе: " + n + "\r\n";
+            tmpTeam.TeamDumpSize = n;*/
+
+            n = data[PacketBytes.DATA_START + 13];
+            if (n == 0xff) n = 0;
+            result += "Страниц в дампе: " + n + "\r\n";
+            tmpTeam.DumpSize = n;
+
+            Teams.Add(tmpTeam);
+
+            return result;
+        }
+
+        private string reply_readCardPages(byte[] data)
+        {
+            //0: код ошибки
+            //1-7: UID чипа
+            //8-11: данные из страницы карты(4 байта)
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            result += "\tUID: ";
+            for (int i = 1; i <= 8; i++)
+                result += Accessory.ConvertByteToHex(data[PacketBytes.DATA_START + i]);
+            result += "\r\n";
+
+            result += "\tДанные с карты:\r\n";
+
+            byte startPage = data[PacketBytes.DATA_START + 9];
+            result += "\t\tStart page: " + startPage.ToString() + "\r\n";
+
+            byte[] tmpPage = new byte[data[PacketBytes.LENGTH] - 10];
+            for (int i = 0; i < tmpPage.Length; i++)
+            {
+                tmpPage[i] = data[PacketBytes.DATA_START + 10 + i];
+            }
+            RfidCard.AddPages(startPage, tmpPage);
+            result += "\t\tData: ";
+            result += Accessory.ConvertByteArrayToHex(tmpPage);
+            result += "\r\n";
+
+            return result;
+        }
+
+        private string reply_updateTeamMask(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            return result;
+        }
+
+        private string reply_writeCardPage(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            return result;
+        }
+
+        private string reply_readFlash(byte[] data)
+        {
+            //0: код ошибки
+            //1...: данные из флэша
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            long t = data[PacketBytes.DATA_START + 1] * 16777216 + data[PacketBytes.DATA_START + 2] * 65536 +
+                data[PacketBytes.DATA_START + 3] * 256 + data[PacketBytes.DATA_START + 4];
+            result += "\tАдрес начала чтения: " + t + "\r\n";
+
+            result += "\tДанные флэш: ";
+            byte[] tmpData = new byte[data[PacketBytes.LENGTH] - 5];
+            for (int i = 0; i < tmpData.Length; i++)
+            {
+                //result += Accessory.ConvertByteToHex(data[PacketBytes.DATA_START + 5 + i]);
+                tmpData[i] = data[PacketBytes.DATA_START + 5 + i];
+            }
+            StationFlash.Add(t, tmpData);
+            result += Accessory.ConvertByteArrayToHex(tmpData);
+
+            result += "\r\n";
+            return result;
+        }
+
+        private string reply_writeFlash(byte[] data)
+        {
+            //0: код ошибки
+            //1...: данные из флэша
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            result += "\tЗаписано байт: " + data[PacketBytes.DATA_START + 1] + "\r\n";
+            return result;
+        }
+
+        private string reply_eraseFlashSector(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            return result;
+        }
+
+        private string reply_getConfig(byte[] data)
+        {
+            string result = "";
+            //0: код ошибки
+            //1: версия прошивки
+            //2: номер режима
+            //3: тип чипов (емкость разная, а распознать их программно можно только по ошибкам чтения "дальних" страниц)
+            //4-7: емкость флэш-памяти
+            //12-15: коэффициент пересчета напряжения (float, 4 bytes) - просто умножаешь коэффициент на полученное в статусе число и будет температура
+            //16: коэфф. усиления антенны
+            //17-18: размер блока хранения команды
+            //19-20: размер стираемого блока
+            //21-24: минимальное значение напряжения батареи
+
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            station.FwVersion = data[PacketBytes.DATA_START + 1];
+            result += "\tПрошивка: " + station.FwVersion.ToString() + "\r\n";
+            result += "\tРежим: " + StationSettings.StationMode.FirstOrDefault(x => x.Value == data[PacketBytes.DATA_START + 2]).Key + "\r\n";
+            station.Mode = data[PacketBytes.DATA_START + 2];
+
+            if (data[PacketBytes.DATA_START + 3] == 213)
+                station.ChipType = RfidContainer.ChipTypes.Types["NTAG213"];
+            else if (data[PacketBytes.DATA_START + 3] == 215)
+                station.ChipType = RfidContainer.ChipTypes.Types["NTAG215"];
+            else if (data[PacketBytes.DATA_START + 3] == 216)
+                station.ChipType = RfidContainer.ChipTypes.Types["NTAG216"];
+            result += "\tМетка: " + station.ChipType + "\r\n";
+
+
+            station.FlashSize = (UInt32)(data[PacketBytes.DATA_START + 4] * 16777216 + data[PacketBytes.DATA_START + 5] * 65536 + data[PacketBytes.DATA_START + 6] * 256 + data[PacketBytes.DATA_START + 7]);
+            result += "\tРазмер флэш: " + station.FlashSize + " байт\r\n";
+            if (station.FlashSize < StationFlash.Size)
+            {
+                // check _selectedFlashSize
+                RefreshFlashGrid(_selectedFlashSize, station.TeamBlockSize, _bytesPerRow);
+            }
+
+            byte[] b =
+            {
+                _uartBuffer[PacketBytes.DATA_START + 8], _uartBuffer[PacketBytes.DATA_START + 9],
+                _uartBuffer[PacketBytes.DATA_START + 10], _uartBuffer[PacketBytes.DATA_START + 11]
+            };
+            station.VoltageCoefficient = Helpers.FloatConversion(b);
+            result += "\tКоэфф. пересчета напряжения: " + station.VoltageCoefficient.ToString("F5") + "\r\n";
+
+            station.AntennaGain = data[PacketBytes.DATA_START + 12];
+            result += "\tКоэфф. усиления антенны: " + station.AntennaGain.ToString() + "\r\n";
+
+            station.TeamBlockSize = (UInt16)(data[PacketBytes.DATA_START + 13] * 256 + data[PacketBytes.DATA_START + 14]);
+            _bytesPerRow = station.TeamBlockSize;
+            result += "\tРазмер блока команды: " + station.TeamBlockSize.ToString() + "\r\n";
+
+            station.EraseBlockSize = data[PacketBytes.DATA_START + 15] * 256 + data[PacketBytes.DATA_START + 16];
+            result += "\tРазмер стираемого блока: " + station.EraseBlockSize.ToString() + "\r\n";
+
+            b = new[]
+            {
+                data[PacketBytes.DATA_START + 17], data[PacketBytes.DATA_START + 18],
+                data[PacketBytes.DATA_START + 19], data[PacketBytes.DATA_START + 20]
+            };
+            station.BatteryLimit = Helpers.FloatConversion(b);
+            result += "\tМинимальное напряжение батареи: " + station.BatteryLimit.ToString("F3") + "\r\n";
+
+            Invoke((MethodInvoker)delegate
+            {
+                textBox_fwVersion.Text = station.FwVersion.ToString();
+                comboBox_mode.SelectedItem = StationSettings.StationMode.FirstOrDefault(x => x.Value == station.Mode).Key;
+                comboBox_chipType.SelectedIndex = station.ChipType;
+                textBox_flashSize.Text = (int)(station.FlashSize / 1024 / 1024) + " Mb";
+                // switch flash size combobox to new value if bigger than new FlashSize
+                textBox_koeff.Text = station.VoltageCoefficient.ToString("F5");
+                comboBox_setGain.SelectedItem = StationSettings.Gain.FirstOrDefault(x => x.Value == station.AntennaGain).Key;
+                textBox_teamFlashSize.Text = station.TeamBlockSize.ToString();
+                textBox_eraseBlock.Text = station.EraseBlockSize.ToString();
+                textBox_setBatteryLimit.Text = station.BatteryLimit.ToString("F3");
+            });
+
+            return result;
+        }
+
+        private string reply_setVCoeff(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.DATA_START] == 0)
+            {
+                float.TryParse(textBox_koeff.Text, out float koeff);
+                station.VoltageCoefficient = koeff;
+            }
+
+            return result;
+        }
+
+        private string reply_setGain(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+
+            return result;
+        }
+
+        private string reply_setChipType(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.DATA_START] == 0 && _selectedChipType != station.ChipType)
+            {
+                RfidCard = new RfidContainer(_selectedChipType);
+                RefreshChipGrid(station.ChipType);
+            }
+            return result;
+        }
+
+        private string reply_setTeamFlashSize(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            return result;
+        }
+
+        private string reply_setFlashBlockSize(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            return result;
+        }
+
+        private string reply_setBtName(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            return result;
+        }
+
+        private string reply_setBtPin(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            return result;
+        }
+
+        private string reply_setBatteryLimit(byte[] data)
+        {
+            //0: код ошибки
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.DATA_START] == 0)
+            {
+                float.TryParse(textBox_setBatteryLimit.Text, out float limit);
+                station.BatteryLimit = limit;
+            }
+
+            return result;
+        }
+
+        private string reply_scanTeams(byte[] data)
+        {
+            //0: код ошибки
+            //1-2: номер 1й команды
+            //3-4: номер 2й команды           
+            //...	                        
+            //(n - 1) - n: номер последней команды
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            result += "\tНомера отмеченных команд:\r\n";
+            for (int i = 1; i < data[PacketBytes.LENGTH]; i = i + 2)
+            {
+                UInt16 n = (UInt16)(data[PacketBytes.DATA_START + i] * 256 + data[PacketBytes.DATA_START + i + 1]);
+                result += "\t\t" + n + "\r\n";
+                TeamsContainer.TeamData tmpTeam = new TeamsContainer.TeamData();
+                tmpTeam.TeamNumber = n;
+                Teams.Add(tmpTeam);
+            }
+
+            if (data[PacketBytes.LENGTH] < 252 - 7) needMore = true;
+
+            return result;
+        }
+
+        private string reply_sendBtCommand(byte[] data)
+        {
+            //0: код ошибки
+            //1-n: ответ BT модуля
+            string result = "";
+            result += "Ответ:\r\n\tСтанция#: " + data[PacketBytes.STATION_NUMBER] + "\r\n";
+            result += "\tОтвет команды: " + _replyStrings[data[PacketBytes.COMMAND] - 0x90] + "\r\n";
+            result += "\tОшибка#: " + _errorCodesStrings[data[PacketBytes.DATA_START]] + "\r\n";
+            if (data[PacketBytes.LENGTH] == 1 && data[PacketBytes.DATA_START] > 0)
+                return result;
+
+            List<byte> str = new List<byte>();
+            for (int i = 1; i < data[PacketBytes.LENGTH]; i++)
+            {
+                str.Add(data[PacketBytes.DATA_START + i]);
+            }
+            result += "\tОтвет Bluetooth: " + Accessory.ConvertByteArrayToString(str.ToArray()) + "\r\n";
+
+            return result;
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private void RefreshFlashGrid(UInt32 flashSize, UInt32 teamDumpSize, UInt32 bytesPerRow)
+        {
+            StationFlash = new FlashContainer(flashSize, teamDumpSize, bytesPerRow);
+            dataGridView_flashRawData.DataSource = StationFlash.Table;
+            dataGridView_flashRawData.AutoGenerateColumns = true;
+            //dataGridView_flashRawData.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dataGridView_flashRawData.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+            dataGridView_flashRawData.AutoResizeColumns();
+            dataGridView_flashRawData.ScrollBars = ScrollBars.Both;
+            dataGridView_flashRawData.AllowUserToResizeColumns = true;
+            dataGridView_flashRawData.AllowUserToOrderColumns = false;
+            for (int i = 0; i < dataGridView_flashRawData.Columns.Count; i++)
+            {
+                dataGridView_flashRawData.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+        }
+
+        private void RefreshChipGrid(byte chipTypeId)
+        {
+            RfidCard = new RfidContainer(chipTypeId);
+            dataGridView_chipRawData.DataSource = RfidCard.Table;
+            dataGridView_chipRawData.AutoGenerateColumns = true;
+            dataGridView_chipRawData.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dataGridView_chipRawData.AutoResizeColumns();
+            dataGridView_chipRawData.ScrollBars = ScrollBars.Both;
+            dataGridView_chipRawData.AllowUserToResizeColumns = true;
+            dataGridView_chipRawData.AllowUserToOrderColumns = false;
+            for (int i = 0; i < dataGridView_chipRawData.Columns.Count; i++)
+            {
+                dataGridView_chipRawData.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+        }
+
+        private void RefreshTeamsGrid()
+        {
+            Teams = new TeamsContainer();
+            dataGridView_teams.DataSource = Teams.Table;
+            dataGridView_teams.AutoGenerateColumns = true;
+            dataGridView_teams.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dataGridView_teams.AutoResizeColumns();
+            dataGridView_teams.ScrollBars = ScrollBars.Both;
+            dataGridView_teams.AllowUserToResizeColumns = true;
+            dataGridView_teams.AllowUserToOrderColumns = false;
+            for (int i = 0; i < dataGridView_teams.Columns.Count; i++)
+            {
+                dataGridView_teams.Columns[i].SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+        }
+
+
+        #endregion
+
+        #region GUI
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            _logAutoSaveFile = Settings.Default.LogAutoSaveFile;
+            if (_logAutoSaveFile != "") _logAutoSaveFlag = true;
+            _logLinesLimit = Settings.Default.LogLinesLimit;
+            _portSpeed = Settings.Default.BaudRate;
+            serialPort1.Encoding = Encoding.GetEncoding(InputCodePage);
+            //Serial init
+            comboBox_portName.Items.Add("None");
+            foreach (string portname in SerialPort.GetPortNames())
+            {
+                comboBox_portName.Items.Add(portname); //добавить порт в список
+            }
+            if (comboBox_portName.Items.Count == 1)
+            {
+                comboBox_portName.SelectedIndex = 0;
+                button_openPort.Enabled = false;
+            }
+            else
+            {
+                comboBox_portName.SelectedIndex = comboBox_portName.Items.Count - 1;
+            }
+
+            foreach (var item in StationSettings.StationMode)
+            {
+                comboBox_mode.Items.Add(item.Key);
+            }
+
+            foreach (var item in StationSettings.Gain)
+            {
+                comboBox_setGain.Items.Add(item.Key);
+            }
+
+            foreach (var item in RfidContainer.ChipTypes.Types)
+            {
+                comboBox_chipType.Items.Add(item.Key);
+            }
+
+            foreach (var item in FlashSizeLimit)
+            {
+                comboBox_flashSize.Items.Add(item.Key);
+            }
+
+            textBox_setTime.Text = Helpers.DateToString(DateTime.Now.ToUniversalTime());
+            comboBox_mode.SelectedIndex = 0;
+            comboBox_setGain.SelectedIndex = 0;
+
+            station = new StationSettings();
+
+            Teams = new TeamsContainer();
+            RefreshTeamsGrid();
+
+            RfidCard = new RfidContainer(_selectedChipType);
+            RefreshChipGrid(station.ChipType);
+
+            StationFlash = new FlashContainer(_selectedFlashSize, station.TeamBlockSize, _bytesPerRow);
+            RefreshFlashGrid(_selectedFlashSize, station.TeamBlockSize, _bytesPerRow);
+
+            textBox_flashSize.Text = (int)(station.FlashSize / 1024 / 1024) + " Mb";
+            textBox_teamFlashSize.Text = station.TeamBlockSize.ToString();
+
+            comboBox_flashSize.SelectedIndex = 0;
+            comboBox_chipType.SelectedIndex = 1;
+            splitContainer1.FixedPanel = FixedPanel.Panel1;
+        }
+
+        private void checkBox_autoTime_CheckedChanged(object sender, EventArgs e)
+        {
+            textBox_setTime.Enabled = !checkBox_autoTime.Checked;
+            textBox_setTime.Text = Helpers.DateToString(DateTime.Now.ToUniversalTime());
+        }
+
+        private void textBox_stationNumber_Leave(object sender, EventArgs e)
+        {
+            byte.TryParse(textBox_stationNumber.Text, out station.Number);
+            textBox_stationNumber.Text = station.Number.ToString();
+        }
+
+        private void textBox_commandNumber_Leave(object sender, EventArgs e)
+        {
+            int.TryParse(textBox_teamNumber.Text, out int n);
+            textBox_teamNumber.Text = n.ToString();
+        }
+
+        private void textBox_teamMask_Leave(object sender, EventArgs e)
+        {
+            if (textBox_teamMask.Text.Length > 16)
+                textBox_teamMask.Text = textBox_teamMask.Text.Substring(0, 16);
+            else if (textBox_teamMask.Text.Length < 16)
+            {
+                while (textBox_teamMask.Text.Length < 16)
+                    textBox_teamMask.Text = "0" + textBox_teamMask.Text;
+            }
+
+            UInt16 n = Helpers.ConvertStringToMask(textBox_teamMask.Text);
+            textBox_teamMask.Clear();
+            for (int i = 15; i >= 0; i--)
+                textBox_teamMask.Text = Helpers.ConvertMaskToString(n);
+        }
+
+        private void textBox_setTime_Leave(object sender, EventArgs e)
+        {
+            long t = Helpers.DateStringToUnixTime(textBox_setTime.Text);
+            textBox_setTime.Text = Helpers.DateToString(Helpers.ConvertFromUnixTimestamp(t));
+        }
+
+        private void textBox_newStationNumber_Leave(object sender, EventArgs e)
+        {
+            byte.TryParse(textBox_newStationNumber.Text, out byte n);
+            textBox_newStationNumber.Text = n.ToString();
+        }
+
+        private void textBox_checkedChips_Leave(object sender, EventArgs e)
+        {
+            int.TryParse(textBox_checkedChips.Text, out int n);
+            textBox_checkedChips.Text = n.ToString();
+        }
+
+        private void textBox_lastCheck_Leave(object sender, EventArgs e)
+        {
+            long t = Helpers.DateStringToUnixTime(textBox_lastCheck.Text);
+            textBox_lastCheck.Text = Helpers.DateToString(Helpers.ConvertFromUnixTimestamp(t));
+        }
+
+        private void textBox_issueTime_Leave(object sender, EventArgs e)
+        {
+            long t = Helpers.DateStringToUnixTime(textBox_issueTime.Text);
+            textBox_issueTime.Text = Helpers.DateToString(Helpers.ConvertFromUnixTimestamp(t));
+        }
+
+        private void textBox_readChipPage_Leave(object sender, EventArgs e)
+        {
+            if (!textBox_readChipPage.Text.Contains('-')) textBox_readChipPage.Text = "0-" + textBox_readChipPage.Text;
+            byte.TryParse(textBox_readChipPage.Text.Substring(0, textBox_readChipPage.Text.IndexOf("-", StringComparison.Ordinal)).Trim(), out byte from);
+            byte.TryParse(textBox_readChipPage.Text.Substring(textBox_readChipPage.Text.IndexOf("-", StringComparison.Ordinal) + 1).Trim(), out byte to);
+            if (to - from > (256 - 7 - ReplyDataLength.READ_CARD_PAGE) / 4) to = (256 - 7 - ReplyDataLength.READ_CARD_PAGE) / 4;
+            textBox_readChipPage.Text = from + "-" + to;
+        }
+
+        private void textBox_writeChipPage_Leave(object sender, EventArgs e)
+        {
+            byte.TryParse(textBox_writeChipPage.Text, out byte n);
+            textBox_writeChipPage.Text = n.ToString();
+        }
+
+        private void textBox_data_Leave(object sender, EventArgs e)
+        {
+            textBox_data.Text = Accessory.CheckHexString(textBox_data.Text);
+            byte[] n = Accessory.ConvertHexToByteArray(textBox_data.Text);
+            textBox_data.Text = Accessory.ConvertByteArrayToHex(n, 4);
+        }
+
+        private void textBox_uid_Leave(object sender, EventArgs e)
+        {
+            textBox_uid.Text = Accessory.CheckHexString(textBox_uid.Text);
+            byte[] n = Accessory.ConvertHexToByteArray(textBox_uid.Text);
+            textBox_uid.Text = Accessory.ConvertByteArrayToHex(n);
+            if (textBox_uid.Text.Length > 24)
+                textBox_uid.Text = textBox_uid.Text.Substring(0, 24);
+            else if (textBox_uid.Text.Length < 24)
+            {
+                while (textBox_uid.Text.Length < 24)
+                    textBox_uid.Text = "00 " + textBox_uid.Text;
+            }
+        }
+
+        private void textBox_readFlash_Leave(object sender, EventArgs e)
+        {
+            long.TryParse(textBox_readFlashAddress.Text, out long from);
+            textBox_readFlashAddress.Text = from.ToString();
+        }
+
+        private void textBox_writeAddr_Leave(object sender, EventArgs e)
+        {
+            int.TryParse(textBox_writeAddr.Text, out int n);
+            textBox_writeAddr.Text = n.ToString();
+        }
+
+        private void textBox_flashData_Leave(object sender, EventArgs e)
+        {
+            textBox_flashData.Text = Accessory.CheckHexString(textBox_flashData.Text);
+            byte[] n = Accessory.ConvertHexToByteArray(textBox_flashData.Text);
+            textBox_flashData.Text = Accessory.ConvertByteArrayToHex(n, 256 - CommandDataLength.WRITE_FLASH);
+        }
+
+        private void tabControl_teamData_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabControl_teamData.SelectedIndex == 0 && checkBox_autoScroll.Checked)
+            {
+                textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
+                textBox_terminal.ScrollToCaret();
+            }
+        }
+
+        private void textBox_eraseSector_Leave(object sender, EventArgs e)
+        {
+            int.TryParse(textBox_eraseSector.Text, out int n);
+            textBox_eraseSector.Text = n.ToString();
+        }
+
+        private void textBox_koeff_Leave(object sender, EventArgs e)
+        {
+            textBox_koeff.Text =
+                textBox_koeff.Text.Replace('.', ',');
+            float.TryParse(textBox_koeff.Text, out float koeff);
+            textBox_koeff.Text = koeff.ToString("F5");
+        }
+
+        private void button_clearLog_Click(object sender, EventArgs e)
+        {
+            textBox_terminal.Clear();
+        }
+
+        private void button_clearTeams_Click(object sender, EventArgs e)
+        {
+            RefreshTeamsGrid();
+        }
+
+        private void button_clearRfid_Click(object sender, EventArgs e)
+        {
+            RefreshChipGrid(station.ChipType);
+        }
+
+        private void button_clearFlash_Click(object sender, EventArgs e)
+        {
+            RefreshFlashGrid(_selectedFlashSize, station.TeamBlockSize, _bytesPerRow);
+        }
+
+        private void button_saveLog_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.FileName = "station_" + station.Number.ToString() + ".log";
+            saveFileDialog1.Title = "Save log to file";
+            saveFileDialog1.DefaultExt = "txt";
+            saveFileDialog1.Filter = "Text files|*.txt|All files|*.*";
+            saveFileDialog1.ShowDialog();
+        }
+
+        private void button_saveTeams_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.FileName = "station_" + station.Number.ToString() + "_teams.csv";
+            saveFileDialog1.Title = "Save teams to file";
+            saveFileDialog1.DefaultExt = "csv";
+            saveFileDialog1.Filter = "CSV files|*.csv";
+            saveFileDialog1.ShowDialog();
+        }
+
+        private void button_saveRfid_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.FileName = "uid_" + dataGridView_chipRawData.Rows[0].Cells[2].Value + dataGridView_chipRawData.Rows[1].Cells[2].Value.ToString().Trim() + ".bin";
+            saveFileDialog1.FileName = saveFileDialog1.FileName.Replace(' ', '_');
+            saveFileDialog1.Title = "Save card dump to file";
+            saveFileDialog1.DefaultExt = "bin";
+            saveFileDialog1.Filter = "Binary files|*.bin|CSV files|*.csv";
+            saveFileDialog1.ShowDialog();
+        }
+
+        private void button_saveFlash_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.FileName = "station_" + station.Number.ToString() + "_flash.bin";
+            saveFileDialog1.Title = "Save flash dump to file";
+            saveFileDialog1.DefaultExt = "txt";
+            saveFileDialog1.Filter = "Binary files|*.bin|CSV files|*.csv";
+            saveFileDialog1.ShowDialog();
+
+        }
+
+        private void saveFileDialog1_FileOk(object sender, CancelEventArgs e)
+        {
+            if (saveFileDialog1.Title == "Save log to file")
+            {
+                File.WriteAllText(saveFileDialog1.FileName, textBox_terminal.Text);
+            }
+            else if (saveFileDialog1.Title == "Save teams to file")
+            {
+                var sb = new StringBuilder();
+
+                var headers = dataGridView_teams.Columns.Cast<DataGridViewColumn>();
+                sb.AppendLine(string.Join(",", headers.Select(column => "\"" + column.HeaderText + "\"").ToArray()));
+
+                foreach (DataGridViewRow row in dataGridView_teams.Rows)
+                {
+                    var cells = row.Cells.Cast<DataGridViewCell>();
+                    sb.AppendLine(string.Join(",", cells.Select(cell => "\"" + cell.Value + "\"").ToArray()));
+                }
+                File.WriteAllText(saveFileDialog1.FileName, sb.ToString());
+            }
+            else if (saveFileDialog1.Title == "Save card dump to file")
+            {
+                if (saveFileDialog1.FilterIndex == 1)
+                {
+                    byte[] tmp = new byte[RfidCard.Dump.Length];
+                    for (int i = 0; i < RfidCard.Dump.Length; i++)
+                    {
+                        tmp[i] = (byte)RfidCard.Dump[i];
+                    }
+                    File.WriteAllBytes(saveFileDialog1.FileName, tmp);
+                }
+                else if (saveFileDialog1.FilterIndex == 2)
+                {
+                    var sb = new StringBuilder();
+
+                    var headers = RfidCard.Table.Columns.Cast<DataColumn>();
+                    sb.AppendLine(string.Join(",", headers.Select(column => "\"" + column.ColumnName + "\"").ToArray()));
+
+                    foreach (DataRow page in RfidCard.Table.Rows)
+                    {
+                        for (int i = 0; i < page.ItemArray.Count(); i++)
+                        {
+                            sb.Append(page.ItemArray[i].ToString() + ";");
+                        }
+                        sb.AppendLine();
+                    }
+                    File.WriteAllText(saveFileDialog1.FileName, sb.ToString());
+                }
+            }
+            else if (saveFileDialog1.Title == "Save flash dump to file")
+            {
+                if (saveFileDialog1.FilterIndex == 1)
+                {
+                    File.WriteAllBytes(saveFileDialog1.FileName, StationFlash.Dump);
+                }
+                else if (saveFileDialog1.FilterIndex == 2)
+                {
+                    var sb = new StringBuilder();
+
+                    var headers = StationFlash.Table.Columns.Cast<DataColumn>();
+                    sb.AppendLine(string.Join(",", headers.Select(column => "\"" + column.ColumnName + "\"").ToArray()));
+
+                    foreach (DataRow team in StationFlash.Table.Rows)
+                    {
+                        for (int i = 0; i < team.ItemArray.Count(); i++)
+                        {
+                            sb.Append(team.ItemArray[i].ToString() + ";");
+                        }
+                        sb.AppendLine();
+                    }
+                    File.WriteAllText(saveFileDialog1.FileName, sb.ToString());
+                }
+            }
+        }
+
+        private void button_dumpTeams_Click(object sender, EventArgs e)
+        {
+            button_dumpTeams.Enabled = false;
+            button_getTeamRecord.Enabled = false;
+            RefreshTeamsGrid();
+
+            uint maxTeams = StationFlash.Size / station.TeamBlockSize;
+
+            // get list of commands in flash
+            byte[] scanTeams = new byte[CommandDataLength.SCAN_TEAMS];
+            scanTeams[PacketBytes.COMMAND] = Command.SCAN_TEAMS;
+
+            uint teamNum = 1;
+            _noTerminalOutputFlag = true;
+            _asyncFlag = 0;
+            needMore = false;
+            var startTime = DateTime.Now.ToUniversalTime();
+            do
+            {
+                //0-1: какую запись
+                scanTeams[PacketBytes.DATA_START] = (byte)(teamNum >> 8);
+                scanTeams[PacketBytes.DATA_START + 1] = (byte)(teamNum & 0x00ff);
+                _asyncFlag++;
+                SendCommand(scanTeams);
+
+                long timeout = 1000;
+                while (_asyncFlag > 0)
+                {
+                    Accessory.Delay_ms(1);
+                    if (timeout <= 0)
+                        break;
+                    timeout--;
+                }
+
+                if (dataGridView_teams.RowCount == 0 || !uint.TryParse(dataGridView_teams.Rows[dataGridView_teams.RowCount - 1].Cells[0].Value.ToString(),
+                    out teamNum))
+                {
+                    return;
+                }
+                if (!needMore) teamNum = maxTeams;
+
+            } while (teamNum < maxTeams);
+            SetText("\r\nTeams list time=" +
+                    DateTime.Now.ToUniversalTime().Subtract(startTime).TotalMilliseconds + " ms.\r\n");
+
+            // load every command data
+            byte[] getTeamRecord = new byte[CommandDataLength.GET_TEAM_RECORD];
+            getTeamRecord[PacketBytes.COMMAND] = Command.GET_TEAM_RECORD;
+
+            int rowNum = 0;
+            _noTerminalOutputFlag = true;
+            _asyncFlag = 0;
+            startTime = DateTime.Now.ToUniversalTime();
+            while (rowNum < dataGridView_teams.RowCount)
+            {
+                if (!uint.TryParse(
+                        dataGridView_teams.Rows[rowNum].Cells[0].Value.ToString(),
+                        out teamNum))
+                {
+                    break;
+                }
+
+                //0-1: какую запись
+                getTeamRecord[PacketBytes.DATA_START] = (byte)(teamNum >> 8);
+                getTeamRecord[PacketBytes.DATA_START + 1] = (byte)(teamNum & 0x00ff);
+                _asyncFlag++;
+                SendCommand(getTeamRecord);
+                rowNum++;
+
+                long timeout = 1000;
+                while (_asyncFlag > 0)
+                {
+                    Accessory.Delay_ms(1);
+                    if (timeout <= 0)
+                        break;
+                    timeout--;
+                }
+            }
+
+            SetText("\r\nTeams dump time=" +
+                    DateTime.Now.ToUniversalTime().Subtract(startTime).TotalMilliseconds + " ms.\r\n");
+
+            dataGridView_teams.Refresh();
+            dataGridView_teams.PerformLayout();
+
+            _noTerminalOutputFlag = false;
+            button_dumpTeams.Enabled = true;
+            button_getTeamRecord.Enabled = true;
+        }
+
+        private void button_dumpChip_Click(object sender, EventArgs e)
+        {
+            RefreshChipGrid(station.ChipType);
+            button_dumpChip.Enabled = false;
+            button_readChipPage.Enabled = false;
+            byte[] readCardPage = new byte[CommandDataLength.READ_CARD_PAGE];
+            readCardPage[PacketBytes.COMMAND] = Command.READ_CARD_PAGE;
+
+            byte chipSize = RfidContainer.ChipTypes.GetSize(RfidCard.CurrentChipType);
+            byte maxFramePages = 45;
+            int pagesFrom = 0;
+            int pagesTo;
+            _noTerminalOutputFlag = true;
+            _asyncFlag = 0;
+            var startTime = DateTime.Now.ToUniversalTime();
+            do
+            {
+                pagesTo = pagesFrom + maxFramePages - 1;
+                if (pagesTo >= chipSize)
+                    pagesTo = chipSize - 1;
+
+                //0: с какой страницу карты
+                readCardPage[PacketBytes.DATA_START] = (byte)pagesFrom;
+                //1: по какую страницу карты включительно
+                readCardPage[PacketBytes.DATA_START + 1] = (byte)pagesTo;
+                _asyncFlag++;
+                SendCommand(readCardPage);
+                pagesFrom = pagesTo + 1;
+                long timeout = 1000;
+                while (_asyncFlag > 0)
+                {
+                    Accessory.Delay_ms(1);
+                    if (timeout <= 0)
+                        break;
+                    timeout--;
+                }
+            } while (pagesTo < chipSize - 1);
+            SetText("\r\nRFID dump time=" +
+                    DateTime.Now.ToUniversalTime().Subtract(startTime).TotalMilliseconds +
+                    " ms.\r\n");
+
+            dataGridView_chipRawData.Refresh();
+            dataGridView_chipRawData.PerformLayout();
+
+            _noTerminalOutputFlag = false;
+            button_dumpChip.Enabled = true;
+            button_readChipPage.Enabled = true;
+        }
+
+        private void button_dumpFlash_Click(object sender, EventArgs e)
+        {
+            RefreshFlashGrid(_selectedFlashSize, station.TeamBlockSize, _bytesPerRow);
+            button_dumpFlash.Enabled = false;
+            button_readFlash.Enabled = false;
+            byte[] readFlash = new byte[CommandDataLength.READ_FLASH];
+            readFlash[PacketBytes.COMMAND] = Command.READ_FLASH;
+
+            byte maxFrameBytes = 256 - 7 - ReplyDataLength.READ_FLASH - 1;
+            int currentRow = 0;
+            long addrFrom = 0;
+            long addrTo;
+            _noTerminalOutputFlag = true;
+            _asyncFlag = 0;
+            var startTime = DateTime.Now.ToUniversalTime();
+            do
+            {
+                addrTo = addrFrom + maxFrameBytes;
+                if (addrTo >= StationFlash.Size)
+                    addrTo = StationFlash.Size;
+
+                readFlash[PacketBytes.DATA_START] = (byte)((addrFrom & 0xFF000000) >> 24);
+                readFlash[PacketBytes.DATA_START + 1] = (byte)((addrFrom & 0x00FF0000) >> 16);
+                readFlash[PacketBytes.DATA_START + 2] = (byte)((addrFrom & 0x0000FF00) >> 8);
+                readFlash[PacketBytes.DATA_START + 3] = (byte)(addrFrom & 0x000000FF);
+
+                readFlash[PacketBytes.DATA_START + 4] = (byte)(addrTo - addrFrom);
+                _asyncFlag++;
+                SendCommand(readFlash);
+                addrFrom = addrTo;
+
+                long timeout = 1000;
+                while (_asyncFlag > 0)
+                {
+                    Accessory.Delay_ms(1);
+                    if (timeout <= 0)
+                        break;
+                    timeout--;
+                }
+                //check if it's time to update grid
+                if ((int)(addrFrom / _bytesPerRow) > currentRow)
+                {
+                    currentRow = (int)(addrFrom / _bytesPerRow);
+                }
+            } while (addrTo < StationFlash.Size);
+
+            SetText("\r\nFlash dump time=" +
+                    DateTime.Now.ToUniversalTime().Subtract(startTime).TotalMilliseconds + " ms.\r\n");
+
+            _noTerminalOutputFlag = false;
+            dataGridView_flashRawData.Refresh();
+            dataGridView_flashRawData.PerformLayout();
+
+            button_dumpFlash.Enabled = true;
+            button_readFlash.Enabled = true;
+        }
+
+        private void button_quickDump_Click(object sender, EventArgs e)
+        {
+            button_quickDump.Enabled = false;
+            button_dumpFlash.Enabled = false;
+
+            uint maxTeams = StationFlash.Size / station.TeamBlockSize;
+
+            // load every command data
+            int rowNum = 0;
+            _noTerminalOutputFlag = true;
+            _asyncFlag = 0;
+            DateTime startTime = DateTime.Now.ToUniversalTime();
+            while (rowNum < dataGridView_teams.RowCount)
+            {
+                if (!ushort.TryParse(
+                    dataGridView_teams.Rows[rowNum].Cells[0].Value.ToString(),
+                    out ushort teamNum) || teamNum >= dataGridView_flashRawData.RowCount)
+                {
+                    break;
+                }
+                dataGridView_flashRawData_CellDoubleClick(this, new DataGridViewCellEventArgs(0, teamNum));
+                rowNum++;
+            }
+
+            SetText("\r\nTeams dump time=" +
+                    DateTime.Now.ToUniversalTime().Subtract(startTime).TotalMilliseconds + " ms.\r\n");
+
+            dataGridView_teams.Refresh();
+            dataGridView_teams.PerformLayout();
+
+            _noTerminalOutputFlag = false;
+            button_quickDump.Enabled = true;
+            button_dumpFlash.Enabled = true;
+        }
+
+        private void dataGridView_teams_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (!serialPort1.IsOpen || e.ColumnIndex < 0 || e.RowIndex < 0) return;
+
+            byte[] getTeamRecord = new byte[CommandDataLength.GET_TEAM_RECORD];
+            getTeamRecord[PacketBytes.COMMAND] = Command.GET_TEAM_RECORD;
+
+            //0-1: какую запись
+            int.TryParse(dataGridView_teams?.Rows[e.RowIndex].Cells[0]?.Value?.ToString(), out int teamNum);
+            if (teamNum <= 0) return;
+
+            getTeamRecord[PacketBytes.DATA_START] = (byte)(teamNum >> 8);
+            getTeamRecord[PacketBytes.DATA_START + 1] = (byte)(teamNum & 0x00ff);
+            _asyncFlag = 0;
+            _asyncFlag++;
+            SendCommand(getTeamRecord);
+
+            long timeout = 1000;
+            while (_asyncFlag > 0)
+            {
+                Accessory.Delay_ms(1);
+                if (timeout <= 0)
+                    break;
+                timeout--;
+            }
+
+            dataGridView_teams.Refresh();
+            dataGridView_teams.PerformLayout();
+        }
+
+        private void dataGridView_chipRawData_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (!serialPort1.IsOpen || e.ColumnIndex < 0 || e.RowIndex < 0) return;
+
+            byte[] readCardPage = new byte[CommandDataLength.READ_CARD_PAGE];
+            readCardPage[PacketBytes.COMMAND] = Command.READ_CARD_PAGE;
+
+            byte page = (byte)e.RowIndex;
+
+            //0: с какой страницу карты
+            readCardPage[PacketBytes.DATA_START] = page;
+            //1: по какую страницу карты включительно
+            readCardPage[PacketBytes.DATA_START + 1] = page;
+            _asyncFlag = 0;
+            _asyncFlag++;
+            SendCommand(readCardPage);
+
+            long timeout = 1000;
+            while (_asyncFlag > 0)
+            {
+                Accessory.Delay_ms(1);
+                if (timeout <= 0)
+                    break;
+                timeout--;
+            }
+            dataGridView_chipRawData.Refresh();
+            dataGridView_chipRawData.PerformLayout();
+        }
+
+        private void dataGridView_flashRawData_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (!serialPort1.IsOpen || e.ColumnIndex < 0 || e.RowIndex < 0) return;
+            button_dumpFlash.Enabled = false;
+            byte[] readFlash = new byte[CommandDataLength.READ_FLASH];
+            readFlash[PacketBytes.COMMAND] = Command.READ_FLASH;
+
+            int rowFrom = e.RowIndex;
+            byte maxFrameBytes = 256 - 7 - ReplyDataLength.READ_FLASH - 1;
+            long addrFrom = rowFrom * _bytesPerRow;
+            long addrTo;
+            long flashSize = addrFrom + _bytesPerRow;
+            _asyncFlag = 0;
+            do
+            {
+                addrTo = addrFrom + maxFrameBytes;
+                if (addrTo >= flashSize)
+                    addrTo = flashSize;
+
+                readFlash[PacketBytes.DATA_START] = (byte)((addrFrom & 0xFF000000) >> 24);
+                readFlash[PacketBytes.DATA_START + 1] = (byte)((addrFrom & 0x00FF0000) >> 16);
+                readFlash[PacketBytes.DATA_START + 2] = (byte)((addrFrom & 0x0000FF00) >> 8);
+                readFlash[PacketBytes.DATA_START + 3] = (byte)(addrFrom & 0x000000FF);
+
+                readFlash[PacketBytes.DATA_START + 4] = (byte)(addrTo - addrFrom);
+                _asyncFlag++;
+                SendCommand(readFlash);
+                addrFrom = addrTo;
+
+                long timeout = 1000;
+                while (_asyncFlag > 0)
+                {
+                    Accessory.Delay_ms(1);
+                    if (timeout <= 0)
+                        break;
+                    timeout--;
+                }
+            } while (addrTo < flashSize);
+
+            dataGridView_flashRawData.Refresh();
+            dataGridView_flashRawData.PerformLayout();
+
+            button_dumpFlash.Enabled = true;
+        }
+
+        private void ComboBox_flashSize_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox_flashSize.SelectedIndex == 0)
+                _selectedFlashSize = 32 * 1024;
+            else if (comboBox_flashSize.SelectedIndex == 1)
+                _selectedFlashSize = 64 * 1024;
+            else if (comboBox_flashSize.SelectedIndex == 2)
+                _selectedFlashSize = 128 * 1024;
+            else if (comboBox_flashSize.SelectedIndex == 3)
+                _selectedFlashSize = 256 * 1024;
+            else if (comboBox_flashSize.SelectedIndex == 4)
+                _selectedFlashSize = 512 * 1024;
+            else if (comboBox_flashSize.SelectedIndex == 5)
+                _selectedFlashSize = 1024 * 1024;
+            else if (comboBox_flashSize.SelectedIndex == 6)
+                _selectedFlashSize = 2048 * 1024;
+            else if (comboBox_flashSize.SelectedIndex == 7)
+                _selectedFlashSize = 4096 * 1024;
+            else if (comboBox_flashSize.SelectedIndex == 8)
+                _selectedFlashSize = 8192 * 1024;
+
+            if (_selectedFlashSize > station.FlashSize)
+            {
+                _selectedFlashSize = station.FlashSize;
+                comboBox_flashSize.SelectedIndex--;
+            }
+            RefreshFlashGrid(_selectedFlashSize, station.TeamBlockSize, _bytesPerRow);
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try
+            {
+                serialPort1.Close();
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private void Button_eraseChip_Click(object sender, EventArgs e)
+        {
+            button_eraseChip.Enabled = false;
+            byte[] writeCardPage = new byte[CommandDataLength.WRITE_CARD_PAGE];
+            writeCardPage[PacketBytes.COMMAND] = Command.WRITE_CARD_PAGE;
+
+            //0-7: UID чипа
+            // read uid from card or use default
+            byte[] uid = Accessory.ConvertHexToByteArray(textBox_uid.Text);
+
+            if (uid.Length != 8)
+                return;
+            for (int i = 0; i <= 7; i++)
+                writeCardPage[PacketBytes.DATA_START + i] = uid[i];
+
+            //9-12: данные страницы карты (4 байта)
+            for (int i = 0; i < 4; i++)
+                writeCardPage[PacketBytes.DATA_START + 9 + i] = 0;
+
+            int chipSize = RfidContainer.ChipTypes.GetSize(RfidCard.CurrentChipType);
+            byte page;
+            _asyncFlag = 0;
+            var startTime = DateTime.Now.ToUniversalTime();
+            for (page = 4; page < chipSize - 4; page++)
+            {
+                //8: номер страницы
+                writeCardPage[PacketBytes.DATA_START + 8] = page;
+                _asyncFlag++;
+                SendCommand(writeCardPage);
+
+                long timeout = 1000;
+                while (_asyncFlag > 0)
+                {
+                    Accessory.Delay_ms(1);
+                    if (timeout <= 0)
+                        break;
+                    timeout--;
+                }
+            }
+            SetText("\r\nRFID clear time=" +
+                    DateTime.Now.ToUniversalTime().Subtract(startTime).TotalMilliseconds + " ms.\r\n");
+            button_eraseChip.Enabled = true;
+        }
+
+        private void TextBox_teamFlashSize_Leave(object sender, EventArgs e)
+        {
+            int.TryParse(textBox_teamFlashSize.Text, out int teamFlashSize);
+            textBox_teamFlashSize.Text = teamFlashSize.ToString();
+        }
+
+        private void TextBox_eraseBlock_Leave(object sender, EventArgs e)
+        {
+            int.TryParse(textBox_eraseBlock.Text, out int teamFlashSize);
+            textBox_eraseBlock.Text = teamFlashSize.ToString();
+        }
+
+        private void TextBox_initTeamNum_Leave(object sender, EventArgs e)
+        {
+            int.TryParse(textBox_initTeamNum.Text, out int n);
+            textBox_initTeamNum.Text = n.ToString();
+        }
+
+        private void TextBox_initMask_Leave(object sender, EventArgs e)
+        {
+            if (textBox_initMask.Text.Length > 16) textBox_initMask.Text = textBox_initMask.Text.Substring(0, 16);
+            else if (textBox_initMask.Text.Length < 16)
+            {
+                while (textBox_initMask.Text.Length < 16)
+                    textBox_initMask.Text = "0" + textBox_initMask.Text;
+            }
+
+            UInt16 n = Helpers.ConvertStringToMask(textBox_initMask.Text);
+            textBox_initMask.Clear();
+            for (int i = 15; i >= 0; i--) textBox_initMask.Text = Helpers.ConvertMaskToString(n);
+
+        }
+
+        private void TextBox_readFlashLength_Leave(object sender, EventArgs e)
+        {
+            uint.TryParse(textBox_readFlashLength.Text, out uint toAddr);
+            if (toAddr > 256 - 7 - ReplyDataLength.READ_FLASH - 1) toAddr = 256 - 7 - ReplyDataLength.READ_FLASH - 1;
+            textBox_readFlashLength.Text = toAddr.ToString();
+        }
+
+        private void TextBox_BtName_Leave(object sender, EventArgs e)
+        {
+            if (textBox_BtName.Text == "") textBox_BtName.Text = "Sportduino-xx";
+        }
+
+        private void TextBox_BtPin_Leave(object sender, EventArgs e)
+        {
+            if (textBox_BtPin.Text == "") textBox_BtPin.Text = "1234";
+            List<byte> pin = new List<byte>();
+            pin.AddRange(Encoding.ASCII.GetBytes(textBox_BtPin.Text));
+            for (int i = 0; i < pin.Count; i++)
+            {
+                if (pin[i] < 0x30 || pin[i] > 0x39)
+                {
+                    pin.RemoveAt(i);
+                    i--;
+                }
+            }
+            if (pin.Count > 16) pin.RemoveRange(16, pin.Count - 16);
+            textBox_BtPin.Text = Encoding.UTF8.GetString(pin.ToArray());
+        }
+
+        private void ComboBox_chipType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!RfidContainer.ChipTypes.Types.TryGetValue(comboBox_chipType.SelectedItem.ToString(), out byte n))
+            {
+                comboBox_chipType.SelectedItem = RfidContainer.ChipTypes.GetName(RfidCard.CurrentChipType);
+                _selectedChipType = RfidCard.CurrentChipType;
+            }
+            else
+            {
+                _selectedChipType = n;
+            }
+        }
+
+        private void TextBox_setBatteryLimit_Leave(object sender, EventArgs e)
+        {
+            textBox_setBatteryLimit.Text =
+                textBox_setBatteryLimit.Text.Replace('.', ',');
+            float.TryParse(textBox_setBatteryLimit.Text, out float limit);
+            textBox_setBatteryLimit.Text = limit.ToString("F3");
+        }
+
+        private void Button_loadFlash_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Title = "Load flash dump";
+            openFileDialog1.DefaultExt = "bin";
+            openFileDialog1.Filter = "Binary files|*.bin";
+            openFileDialog1.ShowDialog();
+        }
+
+        private void Button_loadRfid_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Title = "Load card dump";
+            openFileDialog1.DefaultExt = "bin";
+            openFileDialog1.Filter = "Binary files|*.bin";
+            openFileDialog1.FileName = "";
+            openFileDialog1.ShowDialog();
+        }
+
+        private void OpenFileDialog1_FileOk(object sender, CancelEventArgs e)
+        {
+            if (openFileDialog1.Title == "Load card dump")
+            {
+                byte[] data = File.ReadAllBytes(openFileDialog1.FileName);
+
+                if (data.Length < 16) return;
+
+                if (data[14] == 0x12)
+                {
+                    station.ChipType = RfidContainer.ChipTypes.Types["NTAG213"];
+                }
+                else if (data[14] == 0x3e)
+                {
+                    station.ChipType = RfidContainer.ChipTypes.Types["NTAG215"];
+                }
+                else if (data[14] == 0x6d)
+                {
+                    station.ChipType = RfidContainer.ChipTypes.Types["NTAG216"];
+                }
+                else return;
+
+                RefreshChipGrid(station.ChipType);
+
+                int pages = data.Length / RfidContainer.ChipTypes.PageSize;
+                for (byte i = 0; i < pages; i++)
+                {
+                    byte[] tmp = new byte[RfidContainer.ChipTypes.PageSize];
+                    for (int j = 0; j < tmp.Length; j++)
+                    {
+                        tmp[j] = data[i * RfidContainer.ChipTypes.PageSize + j];
+                    }
+                    RfidCard.AddPages(i, tmp);
+                }
+                dataGridView_chipRawData.Refresh();
+                dataGridView_chipRawData.PerformLayout();
+            }
+            else if (openFileDialog1.Title == "Load flash dump")
+            {
+                byte[] data = File.ReadAllBytes(openFileDialog1.FileName);
+                RefreshFlashGrid((UInt32)data.Length, station.TeamBlockSize, _bytesPerRow);
+                StationFlash.Add(0, data);
+            }
+        }
+
+        private void textBox_getTeamsList_Leave(object sender, EventArgs e)
+        {
+            int.TryParse(textBox_getTeamsList.Text, out int n);
+            textBox_getTeamsList.Text = n.ToString();
+        }
+
+        #endregion
+
     }
-  }
-}
-
-// пишем присланные с ББ 4 байта в указанную страницу
-void writeCardPage()
-{
-  digitalWrite(INFO_LED_PIN, HIGH);
-  SPI.begin();      // Init SPI bus
-  mfrc522.PCD_Init();   // Init MFRC522
-  mfrc522.PCD_SetAntennaGain(gainCoeff);
-
-  // Look for new cards
-  if (!mfrc522.PICC_IsNewCardPresent())
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(NO_CHIP, REPLY_WRITE_CARD_PAGE);
-    return;
-  }
-
-  // Select one of the cards
-  if (!mfrc522.PICC_ReadCardSerial())
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_READ_ERROR, REPLY_WRITE_CARD_PAGE);
-    return;
-  }
-
-  // 0-7: UID чипа
-  // 8: номер страницы
-  // 9-12: данные для записи (4 байта)
-
-  // проверить UID
-  if (!ntagRead4pages(PAGE_UID))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_READ_ERROR, REPLY_WRITE_CARD_PAGE);
-    return;
-  }
-  bool flag = false;
-  for (uint8_t i = 0; i <= 7; i++)
-  {
-    if (uartBuffer[DATA_START_BYTE + i] != 0xff && ntag_page[i] != uartBuffer[DATA_START_BYTE + i])
-    {
-      flag = true;
-      break;
-    }
-  }
-  if (flag)
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(WRONG_UID, REPLY_WRITE_CARD_PAGE);
-    return;
-  }
-
-  // записать страницу
-  uint8_t dataBlock[] =
-  {
-    uartBuffer[DATA_START_BYTE + 9],
-    uartBuffer[DATA_START_BYTE + 10],
-    uartBuffer[DATA_START_BYTE + 11],
-    uartBuffer[DATA_START_BYTE + 12]
-  };
-  if (!ntagWritePage(dataBlock, uartBuffer[DATA_START_BYTE + 8]))
-  {
-    SPI.end();
-    digitalWrite(INFO_LED_PIN, LOW);
-    sendError(RFID_WRITE_ERROR, REPLY_WRITE_CARD_PAGE);
-    return;
-  }
-  SPI.end();
-  digitalWrite(INFO_LED_PIN, LOW);
-
-  init_package(REPLY_WRITE_CARD_PAGE);
-
-  // 0: код ошибки
-  if (!addData(OK)) return;
-  sendData();
-}
-
-// читаем флэш
-void readFlash()
-{
-  // 0-3: адрес начала чтения
-  // 4: размер блока
-  uint32_t startAddress = uartBuffer[DATA_START_BYTE];
-  startAddress <<= 8;
-  startAddress += uartBuffer[DATA_START_BYTE + 1];
-  startAddress <<= 8;
-  startAddress += uartBuffer[DATA_START_BYTE + 2];
-  startAddress <<= 8;
-  startAddress += uartBuffer[DATA_START_BYTE + 3];
-
-  uint16_t length = uartBuffer[DATA_START_BYTE + 4];
-  if (length > (256 - 7 - DATA_LENGTH_READ_FLASH - 1)) length = 256 - 7 - DATA_LENGTH_READ_FLASH - 1;
-
-#ifdef DEBUG
-  Serial.print(F("!!!flash read="));
-  Serial.print(String(startAddress));
-  Serial.print(F("/"));
-  Serial.println(String(length));
-#endif
-
-  init_package(REPLY_READ_FLASH);
-
-  // 0: код ошибки
-  // 0-3: адрес начала чтения
-  // 4-n: данные из флэша
-  if (!addData(OK)) return;
-#ifdef DEBUG
-  Serial.print(F("!!!OK "));
-  Serial.println(String(uartBufferPosition));
-#endif
-
-  bool flag = true;
-  flag &= addData((startAddress & 0xFF000000) >> 24);
-  flag &= addData((startAddress & 0x00FF0000) >> 16);
-  flag &= addData((startAddress & 0x0000FF00) >> 8);
-  flag &= addData(startAddress & 0x000000FF);
-  if (!flag) return;
-#ifdef DEBUG
-  //Serial.print(F("!!!address "));
-  //Serial.println(String(uartBufferPosition));
-#endif
-
-  for (long i = startAddress; i < startAddress + uint32_t(length); i++)
-  {
-    uint8_t b = SPIflash.readByte(i);
-    if (!addData(b)) return;
-
-#ifdef DEBUG
-    Serial.print(String(i));
-    Serial.print(F("="));
-    if (b < 0x10) Serial.print(F("0"));
-    Serial.println(String(b, HEX));
-#endif
-  }
-
-  sendData();
-}
-
-// пишем в флэш
-void writeFlash()
-{
-  // 0-3: адрес начала записи
-  // 1: кол-во записанных байт (для проверки)
-  uint32_t startAddress = uartBuffer[DATA_START_BYTE];
-  startAddress <<= 8;
-  startAddress += uartBuffer[DATA_START_BYTE + 1];
-  startAddress <<= 8;
-  startAddress += uartBuffer[DATA_START_BYTE + 2];
-  startAddress <<= 8;
-  startAddress += uartBuffer[DATA_START_BYTE + 3];
-
-  uint8_t length = uartBuffer[LENGTH_BYTE] - 4;
-
-  init_package(REPLY_WRITE_FLASH);
-
-  if (!SPIflash.writeByteArray(startAddress, &uartBuffer[DATA_START_BYTE + 4], length))
-  {
-    sendError(FLASH_WRITE_ERROR, REPLY_WRITE_FLASH);
-    return;
-  }
-
-  // 0: код ошибки
-  // 1: кол-во записанных байт (для проверки)
-  if (!addData(OK)) return;
-  if (!addData(length)) return;
-
-  sendData();
-}
-
-// стираем команду с флэша (4096 байт)
-void eraseTeamFlash()
-{
-  uint32_t teamNumber = uartBuffer[DATA_START_BYTE];
-  teamNumber <<= 8;
-  teamNumber += uartBuffer[DATA_START_BYTE + 1];
-#ifdef DEBUG
-  Serial.print(F("!!!erasing "));
-  Serial.println(String(teamNumber));
-#endif
-
-  if (!eraseTeamFromFlash(teamNumber))
-  {
-    sendError(ERASE_ERROR, REPLY_ERASE_FLASH_SECTOR);
-    return;
-  }
-
-  init_package(REPLY_ERASE_FLASH_SECTOR);
-  // 0: код ошибки
-  if (!addData(OK)) return;
-  sendData();
-}
-
-// выдает конфигурацию станции
-void getConfig()
-{
-  // 0: код ошибки
-  // 1: версия прошивки
-  // 2: номер режима
-  // 3: тип чипов (емкость разная, а распознать их программно можно только по ошибкам чтения "дальних" страниц)
-  // 4-7: емкость флэш - памяти
-  // 8-11: размер сектора флэш - памяти
-  // 12-15: коэффициент пересчета напряжения(float, 4 bytes) - просто умножаешь коэффициент на полученное в статусе число и будет температура
-  // 16: коэффициент усиления антенны RFID
-  // 17-18: размер блока хранения команды
-  init_package(REPLY_GET_CONFIG);
-
-  bool flag = true;
-  flag &= addData(OK);
-  flag &= addData(FW_VERSION);
-  flag &= addData(stationMode);
-  flag &= addData(NTAG_MARK);
-
-  uint32_t n = SPIflash.getCapacity();
-  flag &= addData((n & 0xFF000000) >> 24);
-  flag &= addData((n & 0x00FF0000) >> 16);
-  flag &= addData((n & 0x0000FF00) >> 8);
-  flag &= addData(n & 0x000000FF);
-
-  uint8_t v[4];
-  floatToByte(v, voltageCoeff);
-  flag &= addData(v[0]);
-  flag &= addData(v[1]);
-  flag &= addData(v[2]);
-  flag &= addData(v[3]);
-
-  flag &= addData(gainCoeff);
-
-  flag &= addData(TEAM_FLASH_SIZE >> 8);
-  flag &= addData(TEAM_FLASH_SIZE & 0x00FF);
-
-  flag &= addData(FLASH_BLOCK_SIZE >> 8);
-  flag &= addData(FLASH_BLOCK_SIZE & 0x00FF);
-
-  floatToByte(v, batteryLimit);
-  flag &= addData(v[0]);
-  flag &= addData(v[1]);
-  flag &= addData(v[2]);
-  flag &= addData(v[3]);
-
-  if (!flag) return;
-
-  sendData();
-}
-
-// сохранить коэфф. пересчета ADC в напряжение для резисторного делителя 10кОм + 2.2кОм
-void setVCoeff()
-{
-  // 0-3: коэфф.
-  union Convert
-  {
-    float number;
-    uint8_t byte[4];
-  } p;
-
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    p.byte[i] = uartBuffer[DATA_START_BYTE + i];
-    if (!eepromwrite(EEPROM_VOLTAGE_KOEFF + i * 3, uartBuffer[DATA_START_BYTE + i]))
-    {
-      sendError(EEPROM_WRITE_ERROR, REPLY_SET_V_KOEFF);
-      return;
-    }
-  }
-  voltageCoeff = p.number;
-
-  init_package(REPLY_SET_V_KOEFF);
-  // 0: код ошибки
-  // 1...: данные из флэша
-  if (!addData(OK)) return;
-
-  sendData();
-}
-
-// сохранить коэфф. усиления для RFID
-void setGain()
-{
-  // 0: коэфф.
-  gainCoeff = uartBuffer[DATA_START_BYTE] & 0x70;
-  if (!eepromwrite(EEPROM_GAIN, gainCoeff))
-  {
-    sendError(EEPROM_WRITE_ERROR, REPLY_SET_GAIN);
-    return;
-  }
-
-  init_package(REPLY_SET_GAIN);
-  // 0: код ошибки
-  if (!addData(OK)) return;
-
-  sendData();
-}
-
-// сохранить тип чипа
-void setChipType()
-{
-  // 0: тип чипа
-  chipType = uartBuffer[DATA_START_BYTE];
-
-  if (!selectChipType(chipType))
-  {
-    sendError(WRONG_CHIP_TYPE, REPLY_SET_CHIP_TYPE);
-    return;
-  }
-  if (!eepromwrite(EEPROM_CHIP_TYPE, chipType))
-  {
-    sendError(EEPROM_WRITE_ERROR, REPLY_SET_CHIP_TYPE);
-    return;
-  }
-
-  init_package(REPLY_SET_CHIP_TYPE);
-  // 0: код ошибки
-  if (!addData(OK)) return;
-
-  sendData();
-}
-
-// сохранить размер блока команды
-void setTeamFlashSize()
-{
-  // 0-1: размер блока
-  uint16_t n = uartBuffer[DATA_START_BYTE] * 256 + uartBuffer[DATA_START_BYTE + 1];
-
-  if (n < 16)
-  {
-    sendError(WRONG_SIZE, REPLY_SET_TEAM_FLASH_SIZE);
-    return;
-  }
-  TEAM_FLASH_SIZE = n;
-
-  if (!eepromwrite(EEPROM_TEAM_BLOCK_SIZE, uartBuffer[DATA_START_BYTE]))
-  {
-    sendError(EEPROM_WRITE_ERROR, REPLY_SET_TEAM_FLASH_SIZE);
-    return;
-  }
-  if (!eepromwrite(EEPROM_TEAM_BLOCK_SIZE + 3, uartBuffer[DATA_START_BYTE + 1]))
-  {
-    sendError(EEPROM_WRITE_ERROR, REPLY_SET_TEAM_FLASH_SIZE);
-    return;
-  }
-
-  init_package(REPLY_SET_TEAM_FLASH_SIZE);
-  // 0: код ошибки
-  if (!addData(OK)) return;
-
-  sendData();
-}
-
-// сохранить размер стираемого блока
-void setFlashBlockSize()
-{
-  // 0-1: размер блока
-  uint16_t n = uartBuffer[DATA_START_BYTE] * 256 + uartBuffer[DATA_START_BYTE + 1];
-
-  if (n < 16)
-  {
-    sendError(WRONG_SIZE, REPLY_SET_FLASH_BLOCK_SIZE);
-    return;
-  }
-  FLASH_BLOCK_SIZE = n;
-
-  if (!eepromwrite(EEPROM_FLASH_BLOCK_SIZE, uartBuffer[DATA_START_BYTE]))
-  {
-    sendError(EEPROM_WRITE_ERROR, REPLY_SET_FLASH_BLOCK_SIZE);
-    return;
-  }
-  if (!eepromwrite(EEPROM_FLASH_BLOCK_SIZE + 3, uartBuffer[DATA_START_BYTE + 1]))
-  {
-    sendError(EEPROM_WRITE_ERROR, REPLY_SET_FLASH_BLOCK_SIZE);
-    return;
-  }
-
-  init_package(REPLY_SET_FLASH_BLOCK_SIZE);
-  // 0: код ошибки
-  if (!addData(OK)) return;
-
-  sendData();
-}
-
-// поменять имя BT адаптера
-void setNewBtName()
-{
-#ifdef DEBUG
-  Serial.print(F("!!!Set new BT name"));
-#endif
-
-  if (uartBuffer[LENGTH_BYTE] < 1 || uartBuffer[LENGTH_BYTE]>32)
-  {
-    sendError(WRONG_DATA, REPLY_SET_BT_NAME);
-    return;
-  }
-  String buf;
-  buf.reserve(uartBuffer[LENGTH_BYTE]);
-  for (uint16_t i = 0; i < uartBuffer[LENGTH_BYTE]; i++)
-  {
-    buf += String(char(uartBuffer[DATA_START_BYTE + i]));
-  }
-
-  if (!setBtName(buf))
-  {
-    sendError(BT_ERROR, REPLY_SET_BT_NAME);
-    return;
-  }
-#ifdef DEBUG
-  Serial.println();
-#endif
-
-  init_package(REPLY_SET_BT_NAME);
-  // 0: код ошибки
-  if (!addData(OK)) return;
-  sendData();
-}
-
-// поменять пин-код BT адаптера
-void setNewBtPinCode()
-{
-#ifdef DEBUG
-  Serial.print(F("!!!Set new BT name"));
-#endif
-  if (uartBuffer[LENGTH_BYTE] < 1 || uartBuffer[LENGTH_BYTE]>16)
-  {
-    sendError(WRONG_DATA, REPLY_SET_BT_PIN);
-    return;
-  }
-  String buf;
-  buf.reserve(uartBuffer[LENGTH_BYTE]);
-  for (uint16_t i = 0; i < uartBuffer[LENGTH_BYTE]; i++)
-  {
-    buf += String(char(uartBuffer[DATA_START_BYTE + i]));
-  }
-
-  if (!setBtPinCode(buf))
-  {
-    sendError(BT_ERROR, REPLY_SET_BT_PIN);
-    return;
-  }
-#ifdef DEBUG
-  Serial.println();
-#endif
-
-  init_package(REPLY_SET_BT_PIN);
-  // 0: код ошибки
-  if (!addData(OK)) return;
-
-  sendData();
-}
-
-// Установить порог срабатывания сигнала о низком напряжении батареи
-void setBatteryLimit()
-{
-  // 0-3: коэфф.
-  union Convert
-  {
-    float number;
-    uint8_t byte[4];
-  } p;
-
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    p.byte[i] = uartBuffer[DATA_START_BYTE + i];
-    if (!eepromwrite(EEPROM_BATTERY_LIMIT + i * 3, uartBuffer[DATA_START_BYTE + i]))
-    {
-      sendError(EEPROM_WRITE_ERROR, REPLY_SET_BATTERY_LIMIT);
-      return;
-    }
-  }
-  batteryLimit = p.number;
-
-  init_package(REPLY_SET_BATTERY_LIMIT);
-  // 0: код ошибки
-  // 1...: данные из флэша
-  if (!addData(OK)) return;
-
-  sendData();
-}
-
-// получить список остканированных команд начиная с n
-void scanTeams()
-{
-#ifdef DEBUG
-  Serial.print(F("!!!Scan commands in flash"));
-#endif
-
-  // 0-1: номер команды  
-  uint16_t startNumber = uartBuffer[DATA_START_BYTE] * 256 + uartBuffer[DATA_START_BYTE + 1];
-#ifdef DEBUG
-  Serial.print(F("!!!Start from command "));
-  Serial.println(String(startNumber));
-#endif
-
-  if (startNumber < 1 || startNumber > maxTeamNumber)
-  {
-    sendError(WRONG_DATA, REPLY_SCAN_TEAMS);
-    return;
-  }
-
-  init_package(REPLY_SCAN_TEAMS);
-  // 0: код ошибки
-  if (!addData(OK)) return;
-
-  // 1...: список команд
-  uint8_t data[2];
-  for (; startNumber <= maxTeamNumber; startNumber++)
-  {
-#ifdef DEBUG
-    Serial.print(F("!!!Trying "));
-    Serial.println(String(startNumber));
-#endif
-
-    uint32_t addr = uint32_t(uint32_t(startNumber) * uint32_t(TEAM_FLASH_SIZE));
-
-    if (!SPIflash.readByteArray(addr, data, 2))
-    {
-      sendError(FLASH_READ_ERROR, REPLY_SCAN_TEAMS);
-      return;
-
-    }
-    if (data[0] != 0xff)
-    {
-#ifdef DEBUG
-      Serial.print(F("!!!Found "));
-      Serial.println(String(startNumber));
-#endif
-      if (!addData(data[0])) return;
-      if (!addData(data[1])) return;
-    }
-    if (uartBufferPosition > 252) break;
-  }
-  sendData();
-}
-
-// отправить команду в BT-модуль и вернуть ответ
-void sendBtCommand()
-{
-  String btCommand;
-  btCommand.reserve(uartBuffer[LENGTH_BYTE]);
-  for (uint16_t i = 0; i < uartBuffer[LENGTH_BYTE]; i++)
-  {
-    btCommand += String(char(uartBuffer[DATA_START_BYTE + i]));
-  }
-
-  String reply = sendCommandToBt(btCommand, (uint8_t)btCommand.length());
-  if (reply.length() > 256 - 9)
-  {
-    sendError(BT_ERROR, REPLY_SEND_BT_COMMAND);
-    return;
-  }
-
-  init_package(REPLY_SET_BT_NAME);
-
-  if (!addData(OK)) return;
-
-  for (uint8_t i = 0; i < reply.length(); i++)
-  {
-    if (!addData(reply[i])) return;
-  }
-
-  sendData();
-}
-
-// Internal functions
-
-// поменять имя BT адаптера
-// Переделать на работу с указателем
-bool setBtName(String name)
-{
-  bool result = false;
-  digitalWrite(BT_COMMAND_ENABLE, HIGH);
-  delay(200);
-  // AT+NAME=<nameArray> [1-32]
-  Serial.println("AT+NAME=" + name);
-  char reply[2] = { 0,0 };
-  delay(200);
-  Serial.readBytes(reply, 2);
-  while (Serial.available()) Serial.read();
-  digitalWrite(BT_COMMAND_ENABLE, LOW);
-  delay(200);
-  while (Serial.available()) Serial.read();
-  if (reply[0] == 'O' && reply[1] == 'K')
-  {
-    result = true;
-  }
-  return result;
-}
-
-// поменять пин-код BT адаптера
-// Переделать на работу с указателем
-bool setBtPinCode(String code)
-{
-  bool result = false;
-  digitalWrite(BT_COMMAND_ENABLE, HIGH);
-  delay(200);
-  // AT+PSWD:"<nameArray>" [1-16] for HC-06
-  // AT+PSWD=<nameArray> [1-16] for HC-05
-  Serial.println("AT+PSWD:\"" + code + "\"");
-  char reply[2] = { 0,0 };
-  delay(200);
-  Serial.readBytes(reply, 2);
-  while (Serial.available()) Serial.read();
-  if (reply[0] == 'O' && reply[1] == 'K')
-  {
-    result = true;
-  }
-  else
-  {
-    Serial.println("AT+PSWD=" + code);
-    reply[0] = 0;
-    reply[1] = 0;
-    delay(200);
-    Serial.readBytes(reply, 2);
-    while (Serial.available()) Serial.read();
-    if (reply[0] == 'O' && reply[1] == 'K')
-    {
-      result = true;
-    }
-  }
-  digitalWrite(BT_COMMAND_ENABLE, LOW);
-  delay(200);
-
-  while (Serial.available()) Serial.read();
-  return result;
-}
-
-String sendCommandToBt(String btCommand, uint8_t length)
-{
-  String result = "";
-  result.reserve(250);
-  digitalWrite(BT_COMMAND_ENABLE, HIGH);
-  delay(200);
-  Serial.println(btCommand);
-  delay(200);
-  while (Serial.available())
-  {
-    result += Serial.read();
-  }
-  digitalWrite(BT_COMMAND_ENABLE, LOW);
-  delay(200);
-  return result;
-}
-
-// заполнить буфер смены маски
-void saveNewMask()
-{
-#ifdef DEBUG
-  Serial.print(F("!!!New mask set to: "));
-#endif
-
-  for (uint8_t i = 0; i < 8; i++)
-  {
-    newTeamMask[i] = uartBuffer[DATA_START_BYTE + i];
-#ifdef DEBUG
-    Serial.print(String(newTeamMask[i], HEX));
-#endif
-  }
-#ifdef DEBUG
-  Serial.println();
-#endif
-}
-
-// очистить буфер смены маски
-void clearNewMask()
-{
-  for (uint8_t i = 0; i < 8; i++)
-  {
-    newTeamMask[i] = 0;
-  }
-#ifdef DEBUG
-  Serial.print(F("!!!Mask cleared: "));
-#endif
-}
-
-// чтение заряда батареи
-uint16_t getBatteryLevel()
-{
-  const uint8_t MeasurementsToAverage = 16;
-  uint32_t AverageValue = analogRead(BATTERY_PIN);
-  for (uint8_t i = 1; i < MeasurementsToAverage; ++i)
-  {
-    uint16_t val = analogRead(BATTERY_PIN);
-    AverageValue = (AverageValue + val) / 2;
-    delay(5);
-  }
-  return AverageValue;
-}
-
-// запись в память с мажоритарным резервированием
-bool eepromwrite(uint16_t adr, uint8_t val)
-{
-  for (uint8_t i = 0; i < 3; i++)
-  {
-    EEPROM.write(adr + i, val);
-    if (EEPROM.read(adr + i) != val) return false;
-  }
-  return true;
-}
-
-// считывание из памяти с учетом мажоритального резервирования
-int eepromread(uint16_t adr)
-{
-  uint8_t byte1 = EEPROM.read(adr);
-  uint8_t byte2 = EEPROM.read(adr + 1);
-  uint8_t byte3 = EEPROM.read(adr + 2);
-
-  // возвращаем при совпадении два из трех
-  if (byte1 == byte2 && byte1 == byte3)
-  {
-    return byte1;
-  }
-  if (byte1 == byte2)
-  {
-    return byte1;
-  }
-  if (byte1 == byte3)
-  {
-    return byte1;
-  }
-  if (byte2 == byte3)
-  {
-    return byte2;
-  }
-  return -1;
-}
-
-// сигнал станции, длительность сигнала и задержки в мс и число повторений
-void beep(uint8_t n, uint16_t ms)
-{
-  for (uint8_t i = 0; i < n; i++)
-  {
-    digitalWrite(INFO_LED_PIN, HIGH);
-    tone(BUZZER_PIN, 4000, ms);
-    delay(ms);
-    digitalWrite(INFO_LED_PIN, LOW);
-    if (n - i != 0)
-    {
-      delay(ms);
-    }
-  }
-}
-
-// сигнал ошибки станции
-void errorBeepMs(uint8_t n, uint16_t ms)
-{
-  for (uint8_t i = 0; i < n; i++)
-  {
-    digitalWrite(ERROR_LED_PIN, HIGH);
-    tone(BUZZER_PIN, 500, ms);
-    delay(ms);
-    digitalWrite(ERROR_LED_PIN, LOW);
-    if (n - i > 0)
-    {
-      delay(ms);
-    }
-  }
-}
-
-// сигнал ошибки станции
-void errorBeep(uint8_t n)
-{
-  uint16_t ms = 200;
-  for (uint8_t i = 0; i < n; i++)
-  {
-    digitalWrite(ERROR_LED_PIN, HIGH);
-    tone(BUZZER_PIN, 500, ms);
-    delay(ms);
-    digitalWrite(ERROR_LED_PIN, LOW);
-    if (n - i > 0)
-    {
-      delay(ms);
-    }
-  }
-}
-
-// инициализация пакета данных
-void init_package(uint8_t command)
-{
-  uartBuffer[0] = uartBuffer[1] = 0xFE;
-  uartBuffer[STATION_NUMBER_BYTE] = stationNumber;
-  uartBuffer[COMMAND_BYTE] = command;
-  uartBufferPosition = DATA_START_BYTE;
-}
-
-// добавление данных в буфер
-bool addData(uint8_t data)
-{
-  if (uartBufferPosition > 254)
-  {
-    sendError(BUFFER_OVERFLOW);
-    return false;
-  }
-  uartBuffer[uartBufferPosition] = data;
-  uartBufferPosition++;
-  return true;
-}
-
-// передача пакета данных
-void sendData()
-{
-  uartBuffer[LENGTH_BYTE] = uartBufferPosition - COMMAND_BYTE - 1;
-  uartBuffer[uartBufferPosition] = crcCalc(uartBuffer, PACKET_ID, uartBufferPosition - 1);
-  uartBufferPosition++;
-#ifdef DEBUG
-  Serial.print(F("!!!Sending:"));
-  for (uint8_t i = 0; i < uartBufferPosition; i++)
-  {
-    Serial.print(F(" "));
-    if (uartBuffer[i] < 0x10) Serial.print(F("0"));
-    Serial.print(String(uartBuffer[i], HEX));
-  }
-  Serial.println();
-#endif
-  Serial.write(uartBuffer, uartBufferPosition);
-  uartBufferPosition = 0;
-}
-
-// запись страницы (4 байта) в чип
-bool ntagWritePage(uint8_t* dataBlock, uint8_t pageAdr)
-{
-  const uint8_t sizePageNtag = 4;
-
-  uint8_t n = 0;
-
-  MFRC522::StatusCode status = MFRC522::STATUS_ERROR;
-  while (status != MFRC522::STATUS_OK && n < 3)
-  {
-    status = MFRC522::StatusCode(mfrc522.MIFARE_Ultralight_Write(pageAdr, dataBlock, sizePageNtag));
-    n++;
-    if (status != MFRC522::STATUS_OK)
-    {
-      mfrc522.PCD_Init();
-      mfrc522.PICC_IsNewCardPresent();
-      mfrc522.PICC_ReadCardSerial();
-    }
-  }
-
-  if (status != MFRC522::STATUS_OK)
-  {
-#ifdef DEBUG
-    Serial.println(F("!!!chip write failed"));
-#endif
-
-    return false;
-  }
-
-  uint8_t buffer[18];
-  uint8_t size = sizeof(buffer);
-
-  n = 0;
-  status = MFRC522::STATUS_ERROR;
-  while (status != MFRC522::STATUS_OK && n < 3)
-  {
-    status = MFRC522::StatusCode(mfrc522.MIFARE_Read(pageAdr, buffer, &size));
-    n++;
-  }
-  if (status != MFRC522::STATUS_OK)
-  {
-#ifdef DEBUG
-    Serial.println(F("!!!chip read failed"));
-#endif
-
-    return false;
-  }
-
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    if (buffer[i] != dataBlock[i])
-    {
-#ifdef DEBUG
-      Serial.println(F("!!!chip verify failed"));
-#endif
-      return false;
-    }
-  }
-
-  return true;
-}
-
-// чтение 4-х страниц (16 байт) из чипа
-bool ntagRead4pages(uint8_t pageAdr)
-{
-  uint8_t size = 18;
-  uint8_t buffer[18];
-
-  uint8_t n = 0;
-
-  MFRC522::StatusCode status = MFRC522::STATUS_ERROR;
-  while (status != MFRC522::STATUS_OK && n < 3)
-  {
-    status = MFRC522::StatusCode(mfrc522.MIFARE_Read(pageAdr, buffer, &size));
-    if (status != MFRC522::STATUS_OK)
-    {
-      mfrc522.PCD_Init();
-      mfrc522.PICC_IsNewCardPresent();
-      mfrc522.PICC_ReadCardSerial();
-    }
-    n++;
-  }
-
-  if (status != MFRC522::STATUS_OK)
-  {
-#ifdef DEBUG
-    Serial.println(F("!!!card read failed"));
-#endif
-    return false;
-  }
-
-  for (uint8_t i = 0; i < 16; i++)
-  {
-    ntag_page[i] = buffer[i];
-  }
-  return true;
-}
-
-// пишет на чип время и станцию отметки
-bool writeCheckPointToCard(uint8_t newPage, uint32_t checkTime)
-{
-  uint8_t dataBlock[4];
-  dataBlock[0] = stationNumber;
-  dataBlock[1] = (checkTime & 0x00FF0000) >> 16;
-  dataBlock[2] = (checkTime & 0x0000FF00) >> 8;
-  dataBlock[3] = (checkTime & 0x000000FF);
-
-  if (!ntagWritePage(dataBlock, newPage))
-  {
-    return false;
-  }
-  return true;
-}
-
-// Поиск пустой на чипе.
-// !!! разобраться в алгоритме Саши или сделать свой бинарный поиск
-int findNewPage()
-{
-  int page = PAGE_DATA_START;
-  while (page < TAG_MAX_PAGE)
-  {
-    if (!ntagRead4pages(page))
-    {
-#ifdef DEBUG
-      Serial.println(F("!!!Can't read chip"));
-#endif
-      // chip read error
-      return 0;
-    }
-    for (uint8_t n = 0; n < 4; n++)
-    {
-      if (stationMode == MODE_START_KP && ntag_page[n * 4] == stationNumber)
-      {
-#ifdef DEBUG
-        Serial.println(F("!!!Chip checked already"));
-#endif
-        // chip was checked by another station with the same number
-        return -1;
-      }
-      if (ntag_page[n * 4] == 0 ||
-        (stationMode == MODE_FINISH_KP && ntag_page[n * 4] == stationNumber))
-      {
-        // free page found
-        return page;
-      }
-      page++;
-    }
-  }
-  // чип заполнен
-  return TAG_MAX_PAGE;
-}
-
-// пишем дамп чипа в лог
-bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
-{
-  // адрес хранения в каталоге
-  const uint32_t teamFlashAddress = uint32_t(uint32_t(teamNumber) * uint32_t(TEAM_FLASH_SIZE));
-#ifdef DEBUG
-  Serial.print(F("!!!Write to flash address: "));
-  Serial.println(String(teamFlashAddress));
-#endif
-  if (SPIflash.readByte(teamFlashAddress) != 0xff)
-  {
-    // если режим финишной станции, то надо переписать содержимое
-    if (stationMode == MODE_FINISH_KP)
-    {
-#ifdef DEBUG
-      Serial.print(F("!!!erasing team #"));
-      Serial.println(String(teamNumber));
-#endif
-      if (!eraseTeamFromFlash(teamNumber))
-      {
-#ifdef DEBUG
-        Serial.println(F("!!!fail to erase"));
-#endif
-        return false;
-      }
-    }
-    else
-    {
-#ifdef DEBUG
-      Serial.print(F("!!!team already saved"));
-#endif
-      return false;
-    }
-  }
-  // save basic parameters
-  if (!ntagRead4pages(PAGE_CHIP_NUM))
-  {
-    return false;
-  }
-
-  uint8_t basic_record[12];
-  // 1-2: номер команды
-  basic_record[0] = ntag_page[0];
-  basic_record[1] = ntag_page[1];
-  //3-6: время инициализации
-  basic_record[2] = ntag_page[4];
-  basic_record[3] = ntag_page[5];
-  basic_record[4] = ntag_page[6];
-  basic_record[5] = ntag_page[7];
-  //7-8: маска команды
-  basic_record[6] = ntag_page[8];
-  basic_record[7] = ntag_page[9];
-  //9-12: время последней отметки на станции
-  basic_record[8] = (checkTime & 0xFF000000) >> 24;
-  basic_record[9] = (checkTime & 0x00FF0000) >> 16;
-  basic_record[10] = (checkTime & 0x0000FF00) >> 8;
-  basic_record[11] = checkTime & 0x000000FF;
-  bool flag = SPIflash.writeByteArray(teamFlashAddress, basic_record, 12);
-  if (!flag)
-  {
-#ifdef DEBUG
-    Serial.println(F("!!!fail write flash1"));
-#endif
-    return false;
-  }
-
-#ifdef DEBUG
-  Serial.println(F("!!!basics wrote"));
-#endif
-
-  // copy card content to flash. все страницы не начинающиеся с 0
-  uint8_t checkCount = 0;
-  uint8_t block = 0;
-  while (block < TAG_MAX_PAGE)
-  {
-#ifdef DEBUG
-    Serial.print(F("!!!reading 4 page fron #"));
-    Serial.println(String(block));
-#endif
-    if (!ntagRead4pages(block))
-    {
-#ifdef DEBUG
-      Serial.println(F("!!!fail read chip"));
-#endif
-      flag = false;
-      break;
-    }
-
-    //4 pages in one read block
-    for (uint8_t i = 0; i < 4; i++)
-    {
-      if (block < 8 || ntag_page[i * 4]>0)
-      {
-#ifdef DEBUG
-        Serial.print(F("!!!writing to flash: "));
-        for (uint8_t k = 0; k < 16; k++)Serial.print(String(ntag_page[k], HEX) + " ");
-        Serial.println();
-#endif
-        flag &= SPIflash.writeByteArray(uint32_t(teamFlashAddress + uint32_t(16) + uint32_t(block) * uint32_t(4) + uint32_t(i) * uint32_t(4) + uint32_t(0)), &ntag_page[0 + i * 4], 4);
-        checkCount++;
-      }
-      else
-      {
-#ifdef DEBUG
-        Serial.print(F("!!!chip last block: "));
-        Serial.println(String(block + i));
-#endif
-        block = TAG_MAX_PAGE;
-        break;
-      }
-    }
-    block += 4;
-  }
-  // add dump pages number
-  flag &= SPIflash.writeByte(uint32_t(teamFlashAddress + uint32_t(12)), checkCount);
-#ifdef DEBUG
-  if (!flag)
-  {
-    Serial.println(F("!!!fail write flash2"));
-  }
-#endif
-  return flag;
-}
-
-// сохраняем весь блок, стираем весь блок и возвращаем назад все, кроме переписываемой команды
-// оптимизировать чтение и запись флэш (блоками)
-bool eraseTeamFromFlash(uint16_t teamNumber)
-{
-  bool flag = true;
-  uint32_t const tmpBufferStart = uint32_t(uint32_t(uint32_t(maxTeamNumber) + uint32_t(1)) * uint32_t(TEAM_FLASH_SIZE));
-  const uint32_t blockFlashAddress = uint32_t(teamNumber) * uint32_t(TEAM_FLASH_SIZE) / uint32_t(FLASH_BLOCK_SIZE) * uint32_t(FLASH_BLOCK_SIZE);
-  const uint8_t teamInBlock = uint32_t(uint32_t(uint32_t(teamNumber) * uint32_t(TEAM_FLASH_SIZE) - uint32_t(blockFlashAddress)) / uint32_t(TEAM_FLASH_SIZE));
-#ifdef DEBUG
-  Serial.print(F("!!!teamNumber="));
-  Serial.println(String(teamNumber));
-  Serial.print(F("!!!tmpBufferStart="));
-  Serial.println(String(tmpBufferStart));
-  Serial.print(F("!!!blockFlashAddress="));
-  Serial.println(String(blockFlashAddress));
-  Serial.print(F("!!!teamInBlock="));
-  Serial.println(String(teamInBlock));
-#endif
-
-  // erase sector
-  flag &= SPIflash.eraseSector(tmpBufferStart);
-  uint8_t b;
-  // backup Flash Block
-  for (uint32_t i = 0; i < uint32_t(FLASH_BLOCK_SIZE); i++)
-  {
-    // не копировать перезаписываемую запись
-    if (i < teamInBlock * uint32_t(TEAM_FLASH_SIZE) || i >= (teamInBlock + uint32_t(1)) * uint32_t(TEAM_FLASH_SIZE))
-    {
-      b = SPIflash.readByte(uint32_t(blockFlashAddress + uint32_t(i)));
-      if (b != 0xff) flag &= SPIflash.writeByte(uint32_t(tmpBufferStart + uint32_t(i)), b);
-    }
-  }
-
-  // erase sector
-  flag &= SPIflash.eraseSector(blockFlashAddress);
-
-  // restore Flash Block
-  for (uint32_t i = 0; i < uint32_t(FLASH_BLOCK_SIZE); i++)
-  {
-    // не копировать перезаписываемую запись
-    if (i < uint32_t(teamInBlock * uint32_t(TEAM_FLASH_SIZE)) || i >= uint32_t(uint32_t(teamInBlock + uint32_t(1)) * uint32_t(TEAM_FLASH_SIZE)))
-    {
-      b = SPIflash.readByte(uint32_t(tmpBufferStart + uint32_t(i)));
-      if (b != 0xff) flag &= SPIflash.writeByte(uint32_t(blockFlashAddress + uint32_t(i)), b);
-    }
-  }
-
-  return flag;
-}
-
-// получаем сведения о команде из лога
-bool readTeamFromFlash(uint16_t recordNum)
-{
-  const uint32_t addr = uint32_t(uint32_t(recordNum) * uint32_t(TEAM_FLASH_SIZE));
-  if (SPIflash.readByte(addr) == 0xff) return false;
-  // #команды
-  // время инициализации
-  // маска
-  // время отметки
-  // счетчик страниц на чипе
-  SPIflash.readByteArray(addr, ntag_page, 13);
-  return true;
-}
-
-// подсчет записанных в флэш отметок
-uint16_t refreshChipCounter()
-{
-#ifdef DEBUG
-  Serial.print(F("!!!team records found="));
-#endif
-
-  uint16_t chips = 0;
-
-  for (uint16_t i = 1; i <= maxTeamNumber; i++)
-  {
-    uint32_t addr = uint32_t(uint32_t(i) * uint32_t(TEAM_FLASH_SIZE));
-    uint16_t c = SPIflash.readByte(addr);
-    if (SPIflash.readByte(addr) != 255)
-    {
-      chips++;
-      uint32_t time = SPIflash.readByte(addr + 8);
-      time <<= 8;
-      time += SPIflash.readByte(addr + 9);
-      time <<= 8;
-      time += SPIflash.readByte(addr + 10);
-      time <<= 8;
-      time += SPIflash.readByte(addr + 11);
-      if (time > lastTimeChecked)
-      {
-        lastTimeChecked = time;
-        lastTeams[0] = c;
-        lastTeams[1] = SPIflash.readByte(addr + 1);
-      }
-#ifdef DEBUG
-      Serial.print(String(i));
-      Serial.print(F(", "));
-#endif
-    }
-  }
-#ifdef DEBUG
-  Serial.println();
-  Serial.print(F("!!!checked chip counter="));
-  Serial.println(String(chips));
-#endif
-  return chips;
-}
-
-// обработка ошибок. формирование пакета с сообщением о ошибке
-void sendError(uint8_t errorCode, uint8_t commandCode)
-{
-  init_package(commandCode);
-  uartBuffer[DATA_START_BYTE] = errorCode;
-  uartBufferPosition = DATA_START_BYTE + 1;
-  sendData();
-}
-
-void sendError(uint8_t errorCode)
-{
-  uartBuffer[DATA_START_BYTE] = errorCode;
-  uartBufferPosition = DATA_START_BYTE + 1;
-  sendData();
-}
-
-// добавляем номер в буфер последних команд
-void addLastTeam(uint16_t number)
-{
-  // фильтровать дубли
-  if (lastTeams[0] == uint8_t(number >> 8) && lastTeams[1] == uint8_t(number)) return;
-
-  for (uint8_t i = lastTeamsLength * 2 - 1; i > 1; i = i - 2)
-  {
-    lastTeams[i] = lastTeams[i - 2];
-    lastTeams[i - 1] = lastTeams[i - 3];
-  }
-  lastTeams[0] = uint8_t(number >> 8);
-  lastTeams[1] = uint8_t(number);
-}
-
-uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
-{
-  uint8_t crc = 0x00;
-  uint16_t i = startPosition;
-  while (i <= dataEnd)
-  {
-    uint8_t tmpByte = dataArray[i];
-    for (uint8_t tempI = 8; tempI; tempI--)
-    {
-      uint8_t sum = (crc ^ tmpByte) & 0x01;
-      crc >>= 1;
-      if (sum)
-      {
-        crc ^= 0x8C;
-      }
-      tmpByte >>= 1;
-    }
-    i++;
-  }
-  return (crc);
-}
-
-void floatToByte(uint8_t* bytes, float f)
-{
-  uint16_t length = sizeof(float);
-
-  for (uint16_t i = 0; i < length; i++)
-  {
-    bytes[i] = ((uint8_t*)&f)[i];
-  }
-}
-
-// check chip type consistence
-bool selectChipType(uint8_t type)
-{
-  if (type == NTAG213_ID) //NTAG213
-  {
-    chipType = type;
-    NTAG_MARK = NTAG213_MARK;
-    TAG_MAX_PAGE = NTAG213_MAX_PAGE;
-  }
-  else if (type == NTAG216_ID) //NTAG216
-  {
-    chipType = type;
-    NTAG_MARK = NTAG216_MARK;
-    TAG_MAX_PAGE = NTAG216_MAX_PAGE;
-  }
-  else //NTAG215
-  {
-    chipType = NTAG215_ID;
-    NTAG_MARK = NTAG215_MARK;
-    TAG_MAX_PAGE = NTAG215_MAX_PAGE;
-    if (chipType != NTAG215_ID) return false;
-  }
-  return true;
 }
