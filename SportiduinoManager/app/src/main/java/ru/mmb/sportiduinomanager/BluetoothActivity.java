@@ -35,7 +35,7 @@ import ru.mmb.sportiduinomanager.task.ResetStationTask;
 /**
  * Provides ability to discover a station, connect to it and set it's mode.
  */
-public final class BluetoothActivity extends MainActivity implements BTDeviceListAdapter.OnItemClicked {
+public final class BluetoothActivity extends MenuActivity implements BTDeviceListAdapter.OnItemClicked {
     /**
      * Code of started Bluetooth discovery activity.
      */

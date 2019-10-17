@@ -182,18 +182,20 @@ public final class MainApp extends Application {
      */
     // TODO: remove 'force' parameter
     public static void setAllRecords(final Records records, final boolean force) {
-        if (force || mAllRecords == null) {
-            // Forget old records and replace them with new
-            mAllRecords = records;
-            return;
-        }
-        // Check if old list has more records then new
-        if (mDatabase != null && mAllRecords.size() > records.size()) {
-            // Reload records from local database
-            // (it is better to lose some records statuses then the whole records)
-            mAllRecords = mDatabase.loadRecords();
-        } else {
-            mAllRecords = records;
+        synchronized (MainApp.class) {
+            if (force || mAllRecords == null) {
+                // Forget old records and replace them with new
+                mAllRecords = records;
+                return;
+            }
+            // Check if old list has more records then new
+            if (mDatabase != null && mAllRecords.size() > records.size()) {
+                // Reload records from local database
+                // (it is better to lose some records statuses then the whole records)
+                mAllRecords = mDatabase.loadRecords();
+            } else {
+                mAllRecords = records;
+            }
         }
     }
 

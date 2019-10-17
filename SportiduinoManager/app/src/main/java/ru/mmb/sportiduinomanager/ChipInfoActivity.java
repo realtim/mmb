@@ -18,7 +18,7 @@ import static ru.mmb.sportiduinomanager.model.StationRaw.UID_SIZE;
 /**
  * Read chip info and display it.
  */
-public final class ChipInfoActivity extends MainActivity {
+public final class ChipInfoActivity extends MenuActivity {
     /**
      * Chip info request not running now.
      */

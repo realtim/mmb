@@ -37,6 +37,10 @@ public final class StationAPI extends StationRaw {
      */
     public static final int MAX_PUNCH_COUNT = 61;
     /**
+     * Caller of station command is MenuActivity.
+     */
+    public static final String CALLER_MENU = "SiMan Menu";
+    /**
      * Caller of station command is BluetoothActivity.
      */
     public static final String CALLER_BLUETOOTH = "SiMan Bluetooth";

@@ -1,6 +1,5 @@
 package ru.mmb.sportiduinomanager;
 
-import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,7 +30,7 @@ import static ru.mmb.sportiduinomanager.StationMonitorService.NO_DATA_IN_MSG;
  * as absent, update team members mask in a chip and save this data
  * in local database.
  */
-public final class ControlPointActivity extends MainActivity
+public final class ControlPointActivity extends MenuActivity
         implements TeamListAdapter.OnTeamClicked, MemberListAdapter.OnMemberClicked {
     /**
      * User modified team members mask (it can be saved to chip and to local db).
@@ -196,32 +195,6 @@ public final class ControlPointActivity extends MainActivity
                 .getString(R.string.team_members_count, teamMembersCount));
         // Enable 'Save mask' button if new mask differs from original
         updateMaskButton();
-    }
-
-    /**
-     * Background thread for periodic querying of connected station.
-     */
-    private void startMonitoringService() {
-        MainApp.mStation.setQueryingAllowed(true);
-        // Return if the service is already running
-        final ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (final ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (StationMonitorService.class.getName().equals(service.service.getClassName())) return;
-        }
-        // Start the service
-        Log.d(StationAPI.CALLER_CP, "Start service");
-        final Intent intent = new Intent(this, StationMonitorService.class);
-        startService(intent);
-    }
-
-    /**
-     * Stops rescheduling of periodic station query.
-     */
-    private void stopMonitoringService() {
-        MainApp.mStation.setQueryingAllowed(false);
-        Log.d(StationAPI.CALLER_CP, "Stop service");
-        final Intent intent = new Intent(this, StationMonitorService.class);
-        stopService(intent);
     }
 
     /**

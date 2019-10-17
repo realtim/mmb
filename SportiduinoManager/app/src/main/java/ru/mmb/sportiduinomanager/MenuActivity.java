@@ -1,6 +1,7 @@
 package ru.mmb.sportiduinomanager;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
@@ -24,7 +26,7 @@ import ru.mmb.sportiduinomanager.model.StationAPI;
 /**
  * Provides left menu via NavigationDrawer.
  */
-public class MainActivity extends AppCompatActivity {
+public class MenuActivity extends AppCompatActivity {
     /**
      * Sliding left menu view.
      */
@@ -243,11 +245,39 @@ public class MainActivity extends AppCompatActivity {
             Objects.requireNonNull(getSupportActionBar())
                     .setTitle(mNavigationView.getMenu().findItem(activeItem).getTitle());
         }
-        // Stop station monitoring service if we are not on control point screen
-        if (activeItem != R.id.control_point && MainApp.mStation != null) {
-            MainApp.mStation.setQueryingAllowed(false);
-            final Intent intent = new Intent(this, StationMonitorService.class);
-            stopService(intent);
+        if (MainApp.mStation != null) {
+            // Start/stop station monitoring service after selecting new activity
+            if (activeItem == R.id.control_point) {
+                startMonitoringService();
+            } else {
+                stopMonitoringService();
+            }
         }
+    }
+
+    /**
+     * Background thread for periodic querying of connected station.
+     */
+    void startMonitoringService() {
+        MainApp.mStation.setQueryingAllowed(true);
+        // Return if the service is already running
+        final ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (final ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (StationMonitorService.class.getName().equals(service.service.getClassName())) return;
+        }
+        // Start the service
+        Log.d(StationAPI.CALLER_MENU, "Start service");
+        final Intent intent = new Intent(this, StationMonitorService.class);
+        startService(intent);
+    }
+
+    /**
+     * Stops rescheduling of periodic station query.
+     */
+    void stopMonitoringService() {
+        MainApp.mStation.setQueryingAllowed(false);
+        Log.d(StationAPI.CALLER_MENU, "Stop service");
+        final Intent intent = new Intent(this, StationMonitorService.class);
+        stopService(intent);
     }
 }

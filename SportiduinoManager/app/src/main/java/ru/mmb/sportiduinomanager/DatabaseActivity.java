@@ -28,7 +28,7 @@ import ru.mmb.sportiduinomanager.model.SiteRequest;
 /**
  * Provides interaction with database at http://mmb.progressor.ru site.
  */
-public final class DatabaseActivity extends MainActivity {
+public final class DatabaseActivity extends MenuActivity {
     /**
      * Main application thread with persistent data.
      */

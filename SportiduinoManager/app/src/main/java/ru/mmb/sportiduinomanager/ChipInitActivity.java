@@ -21,7 +21,7 @@ import ru.mmb.sportiduinomanager.task.ChipInitTask;
  * Provides ability to select a team, mark team members as absent,
  * init a chip for the team and save this data in local database.
  */
-public final class ChipInitActivity extends MainActivity implements MemberListAdapter.OnMemberClicked {
+public final class ChipInitActivity extends MenuActivity implements MemberListAdapter.OnMemberClicked {
     /**
      * Chip init not running now.
      */
