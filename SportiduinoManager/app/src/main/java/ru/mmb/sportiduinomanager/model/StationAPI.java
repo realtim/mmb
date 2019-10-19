@@ -37,6 +37,10 @@ public final class StationAPI extends StationRaw {
      */
     public static final int MAX_PUNCH_COUNT = 61;
     /**
+     * Indicate "Low battery" status at this voltage and below.
+     */
+    public static final float BATTERY_LOW = 3.1f;
+    /**
      * Caller of station command is MenuActivity.
      */
     public static final String CALLER_MENU = "SiMan Menu";

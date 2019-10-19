@@ -136,10 +136,7 @@ public class StationMonitorService extends Service {
                 // Inform other activities that service finished sending queries to station
                 MainApp.mStation.setQueryingActive(false);
                 // Send notification to ControlPointActivity - time to update UI
-                final Intent intent = new Intent(DATA_UPDATED);
-                intent.putExtra("result", result);
-                intent.putExtra("selectedTeamN", selectedTeamN);
-                LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+                updateTeamList(result, selectedTeamN);
                 // Force ControlPointActivity into foreground in case of new data or error
                 if (result != 0 && !MainApp.isCPActivityActive()) {
                     // Bring activity in foreground
@@ -216,13 +213,6 @@ public class StationMonitorService extends Service {
         return fetchTeams;
     }
 
-    private void updateProgressBar(final int currentTeam, final int totalTeams) {
-        final Intent intent = new Intent(PROGRESS_UPDATED);
-        intent.putExtra("current", currentTeam);
-        intent.putExtra("total", totalTeams);
-        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
-    }
-
     /**
      * Get all punches for all new teams
      * which has been punched at the station after the last check.
@@ -242,9 +232,10 @@ public class StationMonitorService extends Service {
         boolean newRecords = false;
         int stationError = 0;
         final int teamListSize = fetchTeams.size();
+        final boolean longScan = teamListSize > 1;
         for (int n = 0; n < teamListSize; n++) {
             // Display progress bar in ControlPointActivity for long scans
-            if (teamListSize > 1) updateProgressBar(n, teamListSize);
+            if (longScan) updateProgressBar(n, teamListSize);
             // Fetch data for the team punched at the station
             final int teamNumber = fetchTeams.get(n);
             int newError = 0;
@@ -311,7 +302,7 @@ public class StationMonitorService extends Service {
             }
         }
         // Hide previously shown progress bar in ControlPointActivity for long scans
-        if (teamListSize > 1) updateProgressBar(0, 0);
+        if (longScan) updateProgressBar(0, 0);
         // We have asked station for all teams from fetch list
         // Save new records (if any) to local db
         if (newRecords) {
@@ -329,6 +320,20 @@ public class StationMonitorService extends Service {
         } else {
             return 0;
         }
+    }
+
+    private void updateProgressBar(final int currentTeam, final int totalTeams) {
+        final Intent intent = new Intent(PROGRESS_UPDATED);
+        intent.putExtra("current", currentTeam);
+        intent.putExtra("total", totalTeams);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
+    }
+
+    private void updateTeamList(final int result, final int selectedTeamN) {
+        final Intent intent = new Intent(DATA_UPDATED);
+        intent.putExtra("result", result);
+        intent.putExtra("selectedTeamN", selectedTeamN);
+        LocalBroadcastManager.getInstance(mContext).sendBroadcast(intent);
     }
 
     /**

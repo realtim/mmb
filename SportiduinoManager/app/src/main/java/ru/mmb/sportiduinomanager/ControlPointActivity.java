@@ -44,6 +44,20 @@ public final class ControlPointActivity extends MenuActivity
      */
     private int mOriginalMask;
     /**
+     * True when service is fetching a lot of teams from station
+     * and progress bar should be visible.
+     */
+    private boolean mLongScan;
+    /**
+     * Receiver of "full scan" messages from station monitoring service.
+     */
+    private final BroadcastReceiver mProgressReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            onScanProgressChanged(intent);
+        }
+    };
+    /**
      * RecyclerView with team members.
      */
     private MemberListAdapter mMemberAdapter;
@@ -58,15 +72,6 @@ public final class ControlPointActivity extends MenuActivity
         @Override
         public void onReceive(final Context context, final Intent intent) {
             onStationDataUpdated(intent);
-        }
-    };
-    /**
-     * Receiver of "full scan" messages from station monitoring service.
-     */
-    private final BroadcastReceiver mProgressReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            onScanProgressChanged(intent);
         }
     };
 
@@ -346,9 +351,11 @@ public final class ControlPointActivity extends MenuActivity
         if (totalTeams == 0) {
             // Scanning has been ended, hide the progress bar
             findViewById(R.id.cp_full_scan).setVisibility(View.GONE);
-            findViewById(R.id.cp_team_data).setVisibility(View.VISIBLE);
+            mLongScan = false;
+            // Don't show team data, layout has not been updated yet
             return;
         }
+        mLongScan = true;
         if (currentTeam == 0) {
             // Scanning is starting, show the progress bar
             findViewById(R.id.cp_team_data).setVisibility(View.GONE);
@@ -375,6 +382,8 @@ public final class ControlPointActivity extends MenuActivity
         // (station clock will be updated in background thread)
         ((TextView) findViewById(R.id.cp_total_teams)).setText(getResources()
                 .getString(R.string.cp_total_teams, MainApp.mPointPunches.size()));
+        // Do nothing if full scan progress bar is visible
+        if (mLongScan) return;
         // Hide last team block when no teams have been punched at the station
         if (MainApp.mPointPunches.isEmpty()) {
             findViewById(R.id.cp_team_data).setVisibility(View.GONE);
@@ -415,7 +424,7 @@ public final class ControlPointActivity extends MenuActivity
         // Update number of team members
         ((TextView) findViewById(R.id.cp_members_count)).setText(getResources()
                 .getString(R.string.team_members_count, Teams.getMembersCount(mTeamMask)));
-        // Show last team block
+        // Show all updated elements
         findViewById(R.id.cp_team_data).setVisibility(View.VISIBLE);
     }
 

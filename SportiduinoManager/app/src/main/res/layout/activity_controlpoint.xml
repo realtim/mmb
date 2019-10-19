@@ -38,7 +38,7 @@
         android:id="@+id/cp_team_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="cp_team_name,cp_team_time,cp_punched,cp_skipped,cp_members_count,cp_divider_2,cp_save_mask,cp_team_list" />
+        app:constraint_referenced_ids="cp_team_name,cp_team_time,cp_punched,cp_skipped,cp_members_count,cp_save_mask,cp_member_list,cp_divider_2,cp_team_list" />
 
     <TextView
         android:id="@+id/cp_team_name"

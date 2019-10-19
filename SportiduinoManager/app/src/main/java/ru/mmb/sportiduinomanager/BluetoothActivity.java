@@ -534,9 +534,15 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
         ((TextView) findViewById(R.id.station_bt_name)).setText(MainApp.mStation.getName());
         ((TextView) findViewById(R.id.station_firmware)).setText(getResources()
                 .getString(R.string.station_firmware, MainApp.mStation.getFirmware()));
-        ((TextView) findViewById(R.id.station_voltage)).setText(getResources()
-                .getString(R.string.station_voltage,
-                        MainApp.mStation.getVoltage(), MainApp.mStation.getTemperature()));
+        final float voltage = MainApp.mStation.getVoltage();
+        final TextView voltageView = findViewById(R.id.station_voltage);
+        voltageView.setText(getResources().getString(R.string.station_voltage, voltage,
+                MainApp.mStation.getTemperature()));
+        if (voltage <= StationAPI.BATTERY_LOW) {
+            voltageView.setTextColor(getResources().getColor(R.color.bg_secondary));
+        } else {
+            voltageView.setTextColor(getResources().getColor(R.color.text_secondary));
+        }
         ((TextView) findViewById(R.id.station_response_time)).setText(getResources()
                 .getString(R.string.response_time, MainApp.mStation.getResponseTime()));
         final String pointName = MainApp.mDistance.getPointName(MainApp.mStation.getNumber(),
