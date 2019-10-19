@@ -671,7 +671,7 @@ void processRfidCard()
 #ifdef DEBUG
   Serial.println(F("!!!searching free page"));
 #endif
-  //digitalWrite(INFO_LED_PIN, HIGH);
+
   // ищем свободную страницу на чипе
   int newPage = findNewPage();
 
@@ -700,7 +700,7 @@ void processRfidCard()
     return;
   }
 
-  // chip was not checked by another station with the same number
+  // chip was checked by another station with the same number
   if (newPage == -1)
   {
 #ifdef DEBUG
@@ -742,7 +742,7 @@ void processRfidCard()
   // добавляем в буфер последних команд
   addLastTeam(chipNum);
   lastTimeChecked = checkTime;
-  if (!already_checked) totalChipsChecked++;
+  //if (!already_checked) totalChipsChecked++;
   lastTeamFlag = chipNum;
   digitalWrite(INFO_LED_PIN, LOW);
   beep(1, 200);
@@ -1069,6 +1069,7 @@ void resetStation()
   checkCardNumber <<= 8;
   checkCardNumber += uartBuffer[DATA_START_BYTE + 1];
 
+  // проверить кол-во отметок (для безопасности)
   if (checkCardNumber != totalChipsChecked)
   {
     sendError(WRONG_DATA, REPLY_RESET_STATION);
@@ -1133,33 +1134,32 @@ void getStatus()
   uint32_t tmpTime = systemTime.unixtime;
 
   // 0: код ошибки
-  // 1 - 4: текущее время
-  // 5 - 6 : количество отметок на станции
-  // 7 - 10 : время последней отметки на станции
-  // 11 - 12 : напряжение батареи в условных единицах[0..1023] ~[0..1.1В]
-  // 13 - 14 : температура чипа DS3231(чуть выше окружающей среды)
   init_package(REPLY_GET_STATUS);
 
   bool flag = true;
   flag &= addData(OK);
 
+  // 1 - 4: текущее время
   flag &= addData((tmpTime & 0xFF000000) >> 24);
   flag &= addData((tmpTime & 0x00FF0000) >> 16);
   flag &= addData((tmpTime & 0x0000FF00) >> 8);
   flag &= addData(tmpTime & 0x000000FF);
 
+  // 5 - 6 : количество отметок на станции
   flag &= addData((totalChipsChecked & 0xFF00) >> 8);
   flag &= addData(totalChipsChecked & 0x00FF);
 
+  // 7 - 10 : время последней отметки на станции
   flag &= addData((lastTimeChecked & 0xFF000000) >> 24);
   flag &= addData((lastTimeChecked & 0x00FF0000) >> 16);
   flag &= addData((lastTimeChecked & 0x0000FF00) >> 8);
   flag &= addData(lastTimeChecked & 0x000000FF);
 
-  //uint16_t batteryLevel = getBatteryLevel();
+  // 11 - 12 : напряжение батареи в условных единицах[0..1023] ~[0..1.1В]
   flag &= addData((batteryLevel & 0xFF00) >> 8);
   flag &= addData(batteryLevel & 0x00FF);
 
+  // 13 - 14 : температура чипа DS3231(чуть выше окружающей среды)
   int temperature = int(DS3231_get_treg());
   flag &= addData((temperature & 0xFF00) >> 8);
   flag &= addData(temperature & 0x00FF);
@@ -2673,7 +2673,7 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
   while (block < TAG_MAX_PAGE)
   {
 #ifdef DEBUG
-    Serial.print(F("!!!reading 4 page fron #"));
+    Serial.print(F("!!!reading 4 page from #"));
     Serial.println(String(block));
 #endif
     if (!ntagRead4pages(block))
@@ -2718,6 +2718,7 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
     Serial.println(F("!!!fail write flash2"));
   }
 #endif
+  //if (!flag) eraseTeamFromFlash(teamNumber);
   return flag;
 }
 
@@ -2726,48 +2727,82 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
 bool eraseTeamFromFlash(uint16_t teamNumber)
 {
   bool flag = true;
-  uint32_t const tmpBufferStart = uint32_t(uint32_t(uint32_t(maxTeamNumber) + uint32_t(1)) * uint32_t(TEAM_FLASH_SIZE));
-  const uint32_t blockFlashAddress = uint32_t(teamNumber) * uint32_t(TEAM_FLASH_SIZE) / uint32_t(FLASH_BLOCK_SIZE) * uint32_t(FLASH_BLOCK_SIZE);
-  const uint8_t teamInBlock = uint32_t(uint32_t(uint32_t(teamNumber) * uint32_t(TEAM_FLASH_SIZE) - uint32_t(blockFlashAddress)) / uint32_t(TEAM_FLASH_SIZE));
+  uint32_t const tmpBufferStart = uint32_t(uint32_t(uint32_t(maxTeamNumber + 1) + uint32_t(1)) * uint32_t(TEAM_FLASH_SIZE));
+  const uint32_t eraseBlockFlashAddress = uint32_t(teamNumber) * uint32_t(TEAM_FLASH_SIZE) / uint32_t(FLASH_BLOCK_SIZE) * uint32_t(FLASH_BLOCK_SIZE);
+  const uint8_t teamInBlock = uint32_t(uint32_t(uint32_t(teamNumber) * uint32_t(TEAM_FLASH_SIZE) - uint32_t(eraseBlockFlashAddress)) / uint32_t(TEAM_FLASH_SIZE));
 #ifdef DEBUG
   Serial.print(F("!!!teamNumber="));
   Serial.println(String(teamNumber));
   Serial.print(F("!!!tmpBufferStart="));
   Serial.println(String(tmpBufferStart));
-  Serial.print(F("!!!blockFlashAddress="));
-  Serial.println(String(blockFlashAddress));
   Serial.print(F("!!!teamInBlock="));
   Serial.println(String(teamInBlock));
 #endif
 
   // erase sector
   flag &= SPIflash.eraseSector(tmpBufferStart);
-  uint8_t b;
+
   // backup Flash Block
-  for (uint32_t i = 0; i < uint32_t(FLASH_BLOCK_SIZE); i++)
+  for (byte i = 0; i < int32_t(FLASH_BLOCK_SIZE) / int32_t(TEAM_FLASH_SIZE); i++)
   {
     // не копировать перезаписываемую запись
-    if (i < teamInBlock * uint32_t(TEAM_FLASH_SIZE) || i >= (teamInBlock + uint32_t(1)) * uint32_t(TEAM_FLASH_SIZE))
+    if (i != teamInBlock)
     {
-      b = SPIflash.readByte(uint32_t(blockFlashAddress + uint32_t(i)));
-      if (b != 0xff) flag &= SPIflash.writeByte(uint32_t(tmpBufferStart + uint32_t(i)), b);
+#ifdef DEBUG
+      Serial.print(F("!!!Copy team "));
+      Serial.println(String(teamNumber - teamInBlock + i));
+      Serial.print(F("!!!to "));
+      Serial.println(String(maxTeamNumber + 1 + i));
+#endif
+
+      copyTeam(teamNumber - teamInBlock + i, maxTeamNumber + 1 + i);
     }
   }
 
   // erase sector
-  flag &= SPIflash.eraseSector(blockFlashAddress);
+  flag &= SPIflash.eraseSector(eraseBlockFlashAddress);
 
   // restore Flash Block
-  for (uint32_t i = 0; i < uint32_t(FLASH_BLOCK_SIZE); i++)
+  for (byte i = 0; i < int32_t(FLASH_BLOCK_SIZE) / int32_t(TEAM_FLASH_SIZE); i++)
   {
     // не копировать перезаписываемую запись
-    if (i < uint32_t(teamInBlock * uint32_t(TEAM_FLASH_SIZE)) || i >= uint32_t(uint32_t(teamInBlock + uint32_t(1)) * uint32_t(TEAM_FLASH_SIZE)))
+    if (i != teamInBlock)
     {
-      b = SPIflash.readByte(uint32_t(tmpBufferStart + uint32_t(i)));
-      if (b != 0xff) flag &= SPIflash.writeByte(uint32_t(blockFlashAddress + uint32_t(i)), b);
+      copyTeam(uint16_t(maxTeamNumber + uint16_t(1) + uint16_t(i)), uint16_t(teamNumber - uint16_t(teamInBlock) + uint16_t(i)));
     }
   }
 
+  return flag;
+}
+
+//copies team record from one place to another. Destination block must be cleaned already.
+bool copyTeam(uint16_t teamNumberFrom, uint16_t teamNumberTo)
+{
+  const uint32_t teamFlashAddressFrom = uint32_t(uint32_t(teamNumberFrom) * uint32_t(TEAM_FLASH_SIZE));
+  const uint32_t teamFlashAddressTo = uint32_t(uint32_t(teamNumberTo) * uint32_t(TEAM_FLASH_SIZE));
+#ifdef DEBUG
+  Serial.print(F("!!!teamNumberFrom="));
+  Serial.println(String(teamNumberFrom));
+  Serial.print(F("!!!FlashAddressFrom="));
+  Serial.println(String(teamFlashAddressFrom));
+
+  Serial.print(F("!!!teamNumberTo="));
+  Serial.println(String(teamNumberTo));
+  Serial.print(F("!!!FlashAddressTo="));
+  Serial.println(String(teamFlashAddressTo));
+#endif
+
+  bool flag = true;
+  // backup Flash Block
+  const int bufSize = 256;
+  uint8_t b[bufSize];
+  uint32_t i = 0;
+  while (i < uint32_t(TEAM_FLASH_SIZE))
+  {
+    flag &= SPIflash.readByteArray(uint32_t(teamFlashAddressFrom + uint32_t(i)), b, bufSize);
+    if (b[0] + b[1] != 2 * 0xff) flag &= SPIflash.writeByteArray(uint32_t(teamFlashAddressTo + uint32_t(i)), b, bufSize);
+    i += bufSize;
+  }
   return flag;
 }
 
@@ -2857,6 +2892,7 @@ void addLastTeam(uint16_t number)
   }
   lastTeams[0] = uint8_t(number >> 8);
   lastTeams[1] = uint8_t(number);
+  totalChipsChecked++;
 }
 
 uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
