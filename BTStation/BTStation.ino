@@ -735,7 +735,7 @@ void processRfidCard()
   // добавляем в буфер последних команд
   addLastTeam(chipNum);
   lastTimeChecked = checkTime;
-  if (!already_checked) totalChipsChecked++;
+  //if (!already_checked) totalChipsChecked++;
   lastTeamFlag = chipNum;
   digitalWrite(INFO_LED_PIN, LOW);
   beep(1, 200);
@@ -2847,6 +2847,7 @@ void addLastTeam(uint16_t number)
   }
   lastTeams[0] = uint8_t(number >> 8);
   lastTeams[1] = uint8_t(number);
+  totalChipsChecked++;
 }
 
 uint8_t crcCalc(uint8_t* dataArray, uint16_t startPosition, uint16_t dataEnd)
