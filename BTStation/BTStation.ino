@@ -2708,6 +2708,7 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
     Serial.println(F("!!!fail write flash2"));
   }
 #endif
+  if (!flag) eraseTeamFromFlash(teamNumber);
   return flag;
 }
 
