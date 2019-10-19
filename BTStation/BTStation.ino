@@ -3,7 +3,6 @@
 #include <Wire.h>
 #include "ds3231.h"
 #include <MFRC522.h>
-#include <EEPROM.h>
 #include <SPIFlash.h>
 
 #define UART_SPEED 38400
@@ -2708,7 +2707,7 @@ bool writeDumpToFlash(uint16_t teamNumber, uint32_t checkTime)
     Serial.println(F("!!!fail write flash2"));
   }
 #endif
-  if (!flag) eraseTeamFromFlash(teamNumber);
+  //if (!flag) eraseTeamFromFlash(teamNumber);
   return flag;
 }
 
