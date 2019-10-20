@@ -81,7 +81,7 @@
 		1-4[Uint32]: время инициализации
 		5-12[byteArray]: UID карточки
 	
-	//получить данные последнмх отметившихся команд
+	//получить последние отметившиеся команды
 	getLastTeams(): 0x85
 		ответ: 0x95
 		0[byte]: код ошибки
@@ -212,7 +212,7 @@
 		ответ: 0xa5
 		0[byte]: код ошибки
 		
-	//установить минимальное значение напряжения батареи
+	//получить список команд, сохраненных на флэше
 	scanTeams(): 0x96
 		0-1[Uint16]: Стартовый номер команды
 		ответ: 0xa6
@@ -222,14 +222,53 @@
 		...
 		(n-1)-n[Uint16]: номер последней команды
 	
-	//установить минимальное значение напряжения батареи
+	//отправить командe в BT-модуль (работает только по проводу)
 	sendBtCommand(): 0x97
 		0-n[byteArray]: текст команды (для большинства модулей должнен завершаться 0x13, 0x10)
 		ответ: 0xa7
 		0[byte]: код ошибки
 		1-n[byteArray]: текст ответа
 
-5. Коды ошибок станции:
+	//получить последние ошибки
+	getLastErrors(): 0x98
+		ответ: 0xa8
+		0[byte]: код ошибки
+		1-2[byte]: номер 1й ошибки
+		3-4[byte]: номер 2й ошибки
+		...	
+		(n-1)-n[byte]: номер последней ошибки
+		Список ошибок:
+			//коды ошибок при включении
+			#define STARTUP_NUMBER  50 //STARTUP: incorrect station number in EEPROM
+			#define STARTUP_MODE  51 //STARTUP: incorrect station mode in EEPROM
+			#define STARTUP_VKOEFF  52 //STARTUP: incorrect Vkoeff in EEPROM
+			#define STARTUP_GAIN  53 //STARTUP: incorrect gain in EEPROM
+			#define STARTUP_CHIP_TYPE  54 //STARTUP: incorrect chip type in EEPROM
+			#define STARTUP_TEAM_SIZE  55 //STARTUP: incorrect team block size in EEPROM
+			#define STARTUP_ERASE_SIZE  56 //STARTUP: incorrect erase block size in EEPROM
+			#define STARTUP_BATTERY_LIMIT  57 //STARTUP: incorrect battery limit in EEPROM
+			
+			
+			//коды ошибок UART
+			#define UART_TIMEOUT  60 //UART: receive timeout
+			#define UART_PACKET_LENGTH  61 //UART: incorrect packet length
+			#define UART_CRC  62 //UART: CRC incorrect
+			#define UART_UNEXPECTED_BYTE  63 //UART: unexpected byte
+			
+			//коды ошибок обработки чипа
+			#define PROCESS_READ_CHIP  70 //CARD PROCESSING: error reading chip
+			#define PROCESS_HW_CHIP_TYPE  71 //CARD PROCESSING: wrong hw chip type
+			#define PROCESS_SW_CHIP_TYPE  72 //CARD PROCESSING: wrong sw chip type
+			#define PROCESS_FW_VERSION  73 //CARD PROCESSING: wrong fw. version
+			#define PROCESS_INIT_TIME  74 //CARD PROCESSING: chip init time is due
+			#define PROCESS_CHIP_NUMBER  75 //CARD PROCESSING: wrong chip number
+			#define PROCESS_WRITE_CHIP  76 //CARD PROCESSING: error writing to chip
+			#define PROCESS_ALREADY_CHECKED  77 //CARD PROCESSING: chip already checked
+			#define PROCESS_FIND_FREE_PAGE  78 //CARD PROCESSING: error finding free page
+			#define PROCESS_SAVE_DUMP  79 //CARD PROCESSING: error saving dump
+			#define PROCESS_SEND_AUTOREPORT  80 //CARD PROCESSING: error sending autoreport
+
+5. Коды ошибок в ответах станции:
 	0  - OK
 	1  - WRONG_STATION
 	2  - RFID_READ_ERROR
