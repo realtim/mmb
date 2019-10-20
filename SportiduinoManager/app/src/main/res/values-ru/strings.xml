@@ -108,5 +108,9 @@
     </plurals>
     <string name="monitoring_service">Мониторинг отметок на станции</string>
 
-    <string name="chip_info_request">Запрос информации о чипе</string>
+    <string name="info_request">Считать чип</string>
+    <string name="info_help">Чтобы посмотреть содержимое чипа, положите его на станцию и нажмите кнопку</string>
+    <string name="info_team_name">№%1$d %2$s</string>
+    <string name="list_point_name">%1$s</string>
+    <string name="list_point_time">%1$s</string>
 </resources>

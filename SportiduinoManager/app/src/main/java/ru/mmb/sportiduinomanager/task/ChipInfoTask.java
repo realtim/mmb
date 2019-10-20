@@ -1,11 +1,13 @@
 package ru.mmb.sportiduinomanager.task;
 
 import android.os.AsyncTask;
+import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
 import ru.mmb.sportiduinomanager.ChipInfoActivity;
 import ru.mmb.sportiduinomanager.MainApp;
+import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.StationAPI;
 
 /**
@@ -34,7 +36,7 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
         // Get a reference to the activity if it is still there
         final ChipInfoActivity activity = mActivityRef.get();
         if (activity == null || activity.isFinishing()) return;
-        // Change chip init state
+        // Change layout state
         activity.setInfoRequestState(ChipInfoActivity.INFO_REQUEST_ON);
         // Update activity layout
         activity.updateLayout();
@@ -47,7 +49,13 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
      * @return True if succeeded
      */
     protected Boolean doInBackground(final Void... params) {
-        return MainApp.mStation != null && MainApp.mStation.readCardPage((byte) 20, 5, StationAPI.CALLER_CHIP_INFO);
+        // Send command to connected station
+        if (MainApp.mStation == null) return Boolean.FALSE;
+        final Boolean result = MainApp.mStation.readCard(StationAPI.CALLER_CHIP_INFO);
+        // Save list of punches from the chip in main app
+        MainApp.mChipPunches = new Records(0);
+        MainApp.mChipPunches.join(MainApp.mStation.getRecords());
+        return result;
     }
 
     /**
@@ -59,10 +67,14 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
         // Get a reference to the activity if it is still there
         final ChipInfoActivity activity = mActivityRef.get();
         if (activity == null || activity.isFinishing()) return;
-
+        // Show error message
+        if (!result) {
+            Toast.makeText(activity, MainApp.mStation.getLastError(true),
+                    Toast.LENGTH_LONG).show();
+        }
+        // Change layout state
         activity.setInfoRequestState(ChipInfoActivity.INFO_REQUEST_OFF);
-
-        activity.onChipInfoRequestResult(result);
+        // Update activity layout
+        activity.updateLayout();
     }
-
 }

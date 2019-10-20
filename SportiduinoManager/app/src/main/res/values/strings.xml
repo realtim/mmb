@@ -107,5 +107,9 @@
     </plurals>
     <string name="monitoring_service">Monitoring connected station for new punches</string>
 
-    <string name="chip_info_request">Read chip info</string>
+    <string name="info_request">Read chip data</string>
+    <string name="info_help">Put a chip on the station and click the button to view chip content</string>
+    <string name="info_team_name">№%1$d %2$s</string>
+    <string name="list_point_name">%1$s</string>
+    <string name="list_point_time">%1$s</string>
 </resources>

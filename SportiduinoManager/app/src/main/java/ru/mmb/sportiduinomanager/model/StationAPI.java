@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothDevice;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
@@ -68,7 +67,22 @@ public final class StationAPI extends StationRaw {
      * Caller of station command is StationResetTask.
      */
     public static final String CALLER_RESET = "SiMan StationReset";
-
+    /**
+     * Number of pages to read from NTAG213 chip.
+     */
+    private static final int SIZE_NTAG213 = 37;
+    /**
+     * Number of pages to read from NTAG215 chip.
+     */
+    private static final int SIZE_NTAG215 = 125;
+    /**
+     * Number of pages to read from NTAG216 chip.
+     */
+    private static final int SIZE_NTAG216 = 219;
+    /**
+     * Max number of pages to read in one request to station.
+     */
+    private static final int MAX_READ_PAGES = 59;
     /**
      * List of last teams (up to 10) which punched at the station.
      */
@@ -106,10 +120,6 @@ public final class StationAPI extends StationRaw {
      * Number of nonempty records in chip from fetchTeamHeader method.
      */
     private int mChipRecordsN;
-    /**
-     * Chip content for ChipInfo activity.
-     */
-    private byte[] mChipInfo;
     /**
      * Station firmware version received from getConfig.
      */
@@ -229,16 +239,6 @@ public final class StationAPI extends StationRaw {
      */
     public int getChipRecordsN() {
         return mChipRecordsN;
-    }
-
-    /**
-     * Get chip content for ChipInfo activity.
-     *
-     * @return response byte array
-     */
-    public byte[] getChipInfo() {
-        if (mChipInfo == null || mChipInfo.length == 0) return null;
-        return Arrays.copyOf(mChipInfo, mChipInfo.length);
     }
 
     /**
@@ -493,36 +493,90 @@ public final class StationAPI extends StationRaw {
     }
 
     /**
-     * Read chip information from 0 to 20 pages to mChipInfo byte array.
+     * Read all data from chip placed near the station.
      *
-     * @param pagesInRequest must be 20
-     * @param requestsCount  multiplier by 20 to get reasonable pages count
-     * @param caller         Name of caller activity for Logcat
+     * @param caller Name of caller activity for Logcat
      * @return true if succeeded
      */
-    public boolean readCardPage(final byte pagesInRequest, final int requestsCount, final String caller) {
-        // TODO: rewrite function for new API
-        mChipInfo = new byte[]{};
-        final byte[] concatResponse = new byte[UID_SIZE + (pagesInRequest * requestsCount + 1) * 5];
-        for (int i = 0; i < requestsCount; i++) {
-            final byte pageFrom = (byte) (i * pagesInRequest);
-            final byte pageTo = (byte) (pageFrom + pagesInRequest);
-            // Prepare command payload
-            byte[] commandData = new byte[3];
-            commandData[0] = CMD_READ_CARD;
+    public boolean readCard(final String caller) {
+        int pagesLeft = 0;
+        int pagesInRequest = SIZE_NTAG213;
+        byte pageFrom = 3;
+        int punchesOffset = 29;
+        boolean cardHeader = true;
+        int teamNumber = 0;
+        long initTime = 0;
+        int teamMask = 0;
+        mRecords.clear();
+        // Prepare command payload
+        byte[] commandData = new byte[3];
+        commandData[0] = CMD_READ_CARD;
+        do {
             commandData[1] = pageFrom;
-            commandData[2] = pageTo;
-            final int expectedSize = UID_SIZE + (pageTo - pageFrom + 1) * 5;
+            commandData[2] = (byte) (pageFrom + pagesInRequest - 1);
             // Send command to station
-            final byte[] response = new byte[expectedSize];
+            final byte[] response = new byte[pagesInRequest * 4 + 9];
             if (!command(commandData, response, caller)) return false;
-            if (pageFrom == 0) {
-                System.arraycopy(response, 0, concatResponse, 0, expectedSize);
-            } else {
-                System.arraycopy(response, UID_SIZE, concatResponse, UID_SIZE + pageFrom * 5, expectedSize - UID_SIZE);
+            if (response[8] != commandData[1]) {
+                setLastError(R.string.err_station_address_changed);
+                return false;
             }
-        }
-        mChipInfo = concatResponse;
+            // Parse card header
+            if (cardHeader) {
+                cardHeader = false;
+                // Detect card type and update number of pages to read according to card size
+                final int ntagType = response[11] & 0xFF;
+                switch (ntagType) {
+                    case 0x12:
+                        pagesLeft = SIZE_NTAG213;
+                        break;
+                    case 0x3e:
+                        pagesLeft = SIZE_NTAG215;
+                        break;
+                    case 0x6d:
+                        pagesLeft = SIZE_NTAG216;
+                        break;
+                    default:
+                        setLastError(R.string.err_station_bad_chip_type);
+                        return false;
+                }
+                // Check if it is Sportiduino chip
+                final int sportiduinoType = response[15] & 0xFF;
+                if (!(pagesLeft == SIZE_NTAG213 && sportiduinoType == 213
+                        || pagesLeft == SIZE_NTAG215 && sportiduinoType == 215
+                        || pagesLeft == SIZE_NTAG216 && sportiduinoType == 216)) {
+                    setLastError(R.string.err_station_bad_chip_content);
+                    return false;
+                }
+                // Get team number, init time amd members mask from header
+                teamNumber = (int) byteArray2Long(response, 13, 14);
+                initTime = byteArray2Long(response, 17, 20);
+                teamMask = (int) byteArray2Long(response, 21, 22);
+                // Create fake punch record  at chip init point
+                mRecords.addRecord(this, initTime, teamNumber, teamMask, 0, initTime);
+            }
+            // Get punches from fetched pages
+            for (int i = punchesOffset; i < response.length; i = i + 4) {
+                final int pointNumber = response[i];
+                final long pointTime = byteArray2Long(response, i + 1, i + 3);
+                // Stop parsing and making request to station if zero record is found
+                if (pointNumber == 0 && pointTime == 0) {
+                    pagesLeft = 0;
+                    break;
+                }
+                mRecords.addRecord(this, initTime, teamNumber, teamMask, pointNumber,
+                        pointTime + (initTime & 0xff000000));
+            }
+            punchesOffset = 9;
+            // Detect how many pages we still need to read in next cycle
+            pageFrom += pagesInRequest;
+            pagesLeft -= pagesInRequest;
+            if (pagesLeft < MAX_READ_PAGES) {
+                pagesInRequest = pagesLeft;
+            } else {
+                pagesInRequest = MAX_READ_PAGES;
+            }
+        } while (pagesInRequest > 0);
         return true;
     }
 

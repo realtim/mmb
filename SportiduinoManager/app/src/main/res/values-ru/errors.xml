@@ -43,6 +43,7 @@
     <string name="err_station_bad_command">Неподдерживаемая станцией функций</string>
     <string name="err_station_erase_flash">Ошибка перезаписи флеш-памяти станции</string>
     <string name="err_station_bad_chip_type">Некорректный тип чипа</string>
+    <string name="err_station_bad_chip_content">Некорректное содержимое чипа</string>
 
     <string name="err_station_absent">Станция не подключена по BT</string>
     <string name="err_station_unknown">Станция вернула неизвестный код ошибки</string>

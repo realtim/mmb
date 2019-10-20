@@ -16,10 +16,6 @@ import ru.mmb.sportiduinomanager.R;
  */
 public class StationRaw {
     /**
-     * Size of chip UID in communication packet.
-     */
-    public static final int UID_SIZE = 8;
-    /**
      * Code of setMode station command.
      */
     static final byte CMD_SET_MODE = (byte) 0x80;

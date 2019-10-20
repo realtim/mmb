@@ -83,6 +83,17 @@ public final class Records {
     }
 
     /**
+     * Get 'index' record from the list.
+     *
+     * @param index Position in mRecords list
+     * @return One record or null
+     */
+    public Record getRecord(final int index) {
+        if (index < 0 || index >= mRecords.size()) return null;
+        return mRecords.get(index);
+    }
+
+    /**
      * Get team number from 'index' element of mRecords list
      * (mRecords should be previously filtered with getPunchesAtStation).
      *
@@ -128,6 +139,17 @@ public final class Records {
     public long getInitTime(final int index) {
         if (index < 0 || index >= mRecords.size()) return -1;
         return mRecords.get(index).mInitTime;
+    }
+
+    /**
+     * Get point number from 'index' element of mRecords list.
+     *
+     * @param index Index in mRecords list array
+     * @return Point for element with this index
+     */
+    public int getPointNumber(final int index) {
+        if (index < 0 || index >= mRecords.size()) return -1;
+        return mRecords.get(index).mPointNumber;
     }
 
     /**
@@ -258,7 +280,8 @@ public final class Records {
      *
      * @param record Sportiduino record to add
      */
-    void addRecord(final Record record) {
+    public void addRecord(final Record record) {
+        if (record == null) return;
         mRecords.add(record);
     }
 

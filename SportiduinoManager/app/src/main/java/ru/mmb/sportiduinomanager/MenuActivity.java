@@ -78,7 +78,7 @@ public class MenuActivity extends AppCompatActivity {
                             Toast.LENGTH_LONG).show();
                     break;
                 case R.id.chip_info:
-                    //activity = new Intent(getApplicationContext(), ChipInfoActivity.class);
+                    activity = new Intent(getApplicationContext(), ChipInfoActivity.class);
                     break;
                 default:
             }
@@ -233,6 +233,8 @@ public class MenuActivity extends AppCompatActivity {
             controlPointItem.setEnabled(false);
             controlPointItem.setTitle(getResources().getText(R.string.mode_control_point));
         }
+        // 'View results' is not implemented yet
+        mNavigationView.getMenu().findItem(R.id.team_list).setEnabled(false);
         // Update 'Chip Info' menu item
         final MenuItem chipInfoItem = mNavigationView.getMenu().findItem(R.id.chip_info);
         if (readyForWork && MainApp.mStation.getMode() == StationAPI.MODE_INIT_CHIPS) {

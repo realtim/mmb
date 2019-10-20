@@ -42,6 +42,7 @@
     <string name="err_station_bad_command">Unsupported function</string>
     <string name="err_station_erase_flash">Error erasing station flash memory</string>
     <string name="err_station_bad_chip_type">Incorrect chip type</string>
+    <string name="err_station_bad_chip_content">Incorrect chip content</string>
 
     <string name="err_station_unknown">The station returned an unknown error</string>
     <string name="err_station_absent">Station is not connected via BT</string>

@@ -93,6 +93,10 @@ public final class MainApp extends Application {
      */
     public static Records mAllRecords = new Records(0);
     /**
+     * List of punches read from a chip at ChipInfo activity.
+     */
+    public static Records mChipPunches = new Records(0);
+    /**
      * Distance downloaded from site or loaded from local database.
      */
     static Distance mDistance = new Distance();

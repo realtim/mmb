@@ -89,7 +89,9 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
             holder.mMember.setTextColor(mChangedColor);
         }
         // Set my listener for the team member checkbox
-        holder.mMember.setOnClickListener(view -> mOnClick.onMemberClick(holder.getAdapterPosition()));
+        if (mOnClick != null) {
+            holder.mMember.setOnClickListener(view -> mOnClick.onMemberClick(holder.getAdapterPosition()));
+        }
     }
 
     /**
@@ -152,6 +154,7 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
         private MemberHolder(final View view) {
             super(view);
             mMember = view.findViewById(R.id.check_member);
+            if (mOnClick == null) mMember.setClickable(false);
         }
     }
 }
