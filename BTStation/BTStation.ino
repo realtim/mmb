@@ -2293,7 +2293,7 @@ void sendBtCommand()
 // получить последние ошибки
 void getLastErrors()
 {
-  init_package(REPLY_GET_LAST_TEAMS);
+  init_package(REPLY_GET_LAST_ERRORS);
 
   // 0: код ошибки
   if (!addData(OK)) return;
@@ -2303,6 +2303,7 @@ void getLastErrors()
   while (lastErrors[i] != 0 && i < lastTeamsLength)
   {
     if (!addData(lastErrors[i])) return;
+    i++;
   }
   sendData();
   for (i = 0; i < lastTeamsLength; i++) lastErrors[i] = 0;
