@@ -66,12 +66,8 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Integer>
             MainApp.setStation(station);
             // Set all station class instance variables
             // by sending getConfig and getStatus commands to station
-            if (!MainApp.mStation.fetchConfig(StationAPI.CALLER_BLUETOOTH)) {
-                return MainApp.mStation.getLastError(true);
-            }
-            if (!MainApp.mStation.fetchStatus(StationAPI.CALLER_BLUETOOTH)) {
-                return MainApp.mStation.getLastError(true);
-            }
+            if (!MainApp.mStation.fetchConfig()) return MainApp.mStation.getLastError(true);
+            if (!MainApp.mStation.fetchStatus()) return MainApp.mStation.getLastError(true);
             // Create filtered list of punches at station number control point
             MainApp.setPointPunches(MainApp.mAllRecords.getPunchesAtStation(MainApp.mStation.getNumber(),
                     MainApp.mStation.getMACasLong()));

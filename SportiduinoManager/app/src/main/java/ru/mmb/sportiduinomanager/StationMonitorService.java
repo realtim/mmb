@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +59,6 @@ public class StationMonitorService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(StationAPI.CALLER_QUERYING, "Starting service");
         // save service context for sending messages to activity
         mContext = this;
         // prepare notification that will be shown to user about service start
@@ -101,7 +99,6 @@ public class StationMonitorService extends Service {
      */
     @Override
     public int onStartCommand(final Intent intent, final int flags, final int startId) {
-        Log.d(StationAPI.CALLER_QUERYING, "onStartCommand");
         // Stop the timer if it was started already
         if (mTimer != null) {
             mTimer.cancel();
@@ -115,22 +112,16 @@ public class StationMonitorService extends Service {
              */
             public void run() {
                 // Station was not connected yet
-                if (MainApp.mStation == null) {
-                    Log.d(StationAPI.CALLER_QUERYING, "Station disconnected");
-                    return;
-                }
+                if (MainApp.mStation == null) return;
                 // Querying is scheduled to stop, return immediately
-                if (!MainApp.mStation.isQueryingAllowed()) {
-                    Log.d(StationAPI.CALLER_QUERYING, "Skip querying");
-                    return;
-                }
+                if (!MainApp.mStation.isQueryingAllowed()) return;
                 // Inform other activities that service starts sending queries to station
                 MainApp.mStation.setQueryingActive(true);
                 // Save currently selected team
                 final int selectedTeamN = MainApp.mPointPunches
                         .getTeamNumber(MainApp.mPointPunches.size() - 1 - MainApp.getTeamListPosition());
                 // Fetch current station status
-                MainApp.mStation.fetchStatus(StationAPI.CALLER_QUERYING);
+                MainApp.mStation.fetchStatus();
                 // Get the latest data from connected station
                 final int result = fetchTeamsPunches();
                 // Inform other activities that service finished sending queries to station
@@ -140,7 +131,6 @@ public class StationMonitorService extends Service {
                 // Force ControlPointActivity into foreground in case of new data or error
                 if (result != 0 && !MainApp.isCPActivityActive()) {
                     // Bring activity in foreground
-                    Log.d(StationAPI.CALLER_QUERYING, "Force activity back");
                     final Intent activityIntent = new Intent(getApplicationContext(), ControlPointActivity.class);
                     activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                     getApplicationContext().startActivity(activityIntent);
@@ -164,7 +154,7 @@ public class StationMonitorService extends Service {
         List<Integer> fetchTeams = new ArrayList<>();
 
         // Do nothing if no teams has been punched yet
-        if (MainApp.mStation.getTeamsPunched() == 0) return fetchTeams;
+        if (MainApp.mStation.getLastPunchTime() == 0) return fetchTeams;
         // Number of team punches at local db and at station are the same?
         // Time of last punch in local db and at station is the same?
         // (it can change without changing of number of teams)
@@ -174,41 +164,23 @@ public class StationMonitorService extends Service {
             return fetchTeams;
         }
 
-        // Ok, we have some new punches
+        // Ok, we have some new punches, we shouldn't maje full station scan in most cases
         boolean fullDownload = false;
-        // Clone previous teams list from station
-        final List<Integer> prevLastTeams = new ArrayList<>(MainApp.mStation.getLastTeams());
-        // Ask station for new list
-        if (!MainApp.mStation.fetchLastTeams(StationAPI.CALLER_QUERYING)) {
-            fullDownload = true;
-        }
-        final List<Integer> currLastTeams = MainApp.mStation.getLastTeams();
-        // Check if teams from previous list were copied from flash
-        for (final int team : prevLastTeams) {
-            if (!MainApp.mPointPunches.contains(team, MainApp.mStation.getNumber())) {
-                // Something strange has been happened, do full download of all teams
-                fullDownload = true;
-            }
-        }
-        // Start building the final list of teams to fetch
-        for (final int team : currLastTeams) {
-            if (!prevLastTeams.contains(team)) {
-                fetchTeams.add(team);
-            }
-        }
-        // If all members of last teams buffer are new to us,
-        // then we need to make a full rescan
-        if (fetchTeams.size() == StationAPI.LAST_TEAMS_LEN) {
-            fullDownload = true;
-        }
-        // If all last teams are the same but last team time has been changed
-        // then we need to rescan all teams from the buffer
-        if (fetchTeams.isEmpty()) {
-            fetchTeams = currLastTeams;
-        }
+        // Ask station for new teams list
+        if (!MainApp.mStation.fetchLastTeams()) fullDownload = true;
+        final List<Integer> stationLastTeams = MainApp.mStation.getLastTeams();
+        // If station list is full,  then we need to make a full scan
+        if (stationLastTeams.size() >= StationAPI.LAST_TEAMS_LEN) fullDownload = true;
+        // If station list is empty,
+        // but last team time or total number of teams has been changed,
+        // then we have a fatal error and need full scan
+        if (stationLastTeams.isEmpty()) fullDownload = true;
         // For full rescan of all teams make a list of all registered teams
+        // Otherwise we need only to check new teams since previous check
         if (fullDownload) {
             fetchTeams = MainApp.mTeams.getTeamList();
+        } else {
+            fetchTeams = stationLastTeams;
         }
         return fetchTeams;
     }
@@ -239,7 +211,7 @@ public class StationMonitorService extends Service {
             // Fetch data for the team punched at the station
             final int teamNumber = fetchTeams.get(n);
             int newError = 0;
-            if (!MainApp.mStation.fetchTeamHeader(teamNumber, StationAPI.CALLER_QUERYING)) {
+            if (!MainApp.mStation.fetchTeamHeader(teamNumber)) {
                 newError = MainApp.mStation.getLastError(true);
                 // Ignore data absence for teams which are not in last teams list
                 // Most probable these teams did not punched at the station at all
@@ -283,8 +255,7 @@ public class StationMonitorService extends Service {
                     if (toRead > StationAPI.MAX_PUNCH_COUNT) {
                         toRead = StationAPI.MAX_PUNCH_COUNT;
                     }
-                    if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask, fromMark, toRead,
-                            StationAPI.CALLER_QUERYING)) {
+                    if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask, fromMark, toRead)) {
                         return MainApp.mStation.getLastError(true);
                     }
                     fromMark += toRead;
@@ -350,7 +321,6 @@ public class StationMonitorService extends Service {
      */
     @Override
     public void onDestroy() {
-        Log.d(StationAPI.CALLER_QUERYING, "Stopping service");
         if (mTimer != null) {
             mTimer.cancel();
             mTimer.purge();

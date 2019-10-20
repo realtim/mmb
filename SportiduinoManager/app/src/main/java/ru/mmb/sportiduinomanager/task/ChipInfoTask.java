@@ -8,7 +8,6 @@ import java.lang.ref.WeakReference;
 import ru.mmb.sportiduinomanager.ChipInfoActivity;
 import ru.mmb.sportiduinomanager.MainApp;
 import ru.mmb.sportiduinomanager.model.Records;
-import ru.mmb.sportiduinomanager.model.StationAPI;
 
 /**
  * Run long read chip info in separate thread.
@@ -51,7 +50,7 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
     protected Boolean doInBackground(final Void... params) {
         // Send command to connected station
         if (MainApp.mStation == null) return Boolean.FALSE;
-        final Boolean result = MainApp.mStation.readCard(StationAPI.CALLER_CHIP_INFO);
+        final Boolean result = MainApp.mStation.readCard();
         // Save list of punches from the chip in main app
         MainApp.mChipPunches = new Records(0);
         MainApp.mChipPunches.join(MainApp.mStation.getRecords());

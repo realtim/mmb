@@ -40,34 +40,6 @@ public final class StationAPI extends StationRaw {
      */
     public static final float BATTERY_LOW = 3.1f;
     /**
-     * Caller of station command is MenuActivity.
-     */
-    public static final String CALLER_MENU = "SiMan Menu";
-    /**
-     * Caller of station command is BluetoothActivity.
-     */
-    public static final String CALLER_BLUETOOTH = "SiMan Bluetooth";
-    /**
-     * Caller of station command is ControlPointActivity.
-     */
-    public static final String CALLER_CP = "SiMan ControlPoint";
-    /**
-     * Caller of station command is StationQuerying task.
-     */
-    public static final String CALLER_QUERYING = "SiMan StationQuery";
-    /**
-     * Caller of station command is ChipInfoActivity.
-     */
-    public static final String CALLER_CHIP_INFO = "SiMan ChipInfo";
-    /**
-     * Caller of station command is ChipInitTask.
-     */
-    public static final String CALLER_CHIP_INIT = "SiMan ChipInit";
-    /**
-     * Caller of station command is StationResetTask.
-     */
-    public static final String CALLER_RESET = "SiMan StationReset";
-    /**
      * Number of pages to read from NTAG213 chip.
      */
     private static final int SIZE_NTAG213 = 37;
@@ -304,18 +276,17 @@ public final class StationAPI extends StationRaw {
     /**
      * Set station mode and number.
      *
-     * @param mode   New station mode (chip initialization, ordinary or finish point)
-     * @param caller Name of caller activity for Logcat
+     * @param mode New station mode (chip initialization, ordinary or finish point)
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean newMode(final int mode, final String caller) {
+    public boolean newMode(final int mode) {
         // Zero number is only for chip initialization
         if (getNumber() == 0 && mode != MODE_INIT_CHIPS) {
             setLastError(R.string.err_init_wrong_mode);
             return false;
         }
         final byte[] response = new byte[0];
-        if (command(new byte[]{CMD_SET_MODE, (byte) mode}, response, caller)) {
+        if (command(new byte[]{CMD_SET_MODE, (byte) mode}, response)) {
             mMode = mode;
             return true;
         } else {
@@ -326,10 +297,9 @@ public final class StationAPI extends StationRaw {
     /**
      * Set station clock to Android local time converted to UTC timezone.
      *
-     * @param caller Name of caller activity for Logcat
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean syncTime(final String caller) {
+    public boolean syncTime() {
         byte[] commandData = new byte[7];
         commandData[0] = CMD_SET_TIME;
         // Get current UTC time
@@ -342,7 +312,7 @@ public final class StationAPI extends StationRaw {
         commandData[6] = (byte) (calendar.get(Calendar.SECOND));
         // Send it to station
         final byte[] response = new byte[4];
-        if (!command(commandData, response, caller)) return false;
+        if (!command(commandData, response)) return false;
         // Get new station time
         mStationTime = byteArray2Long(response, 0, 3);
         mTimeDrift = (int) (mStationTime - System.currentTimeMillis() / 1000L);
@@ -353,10 +323,9 @@ public final class StationAPI extends StationRaw {
      * Reset station by giving it new number and erasing all data in it.
      *
      * @param number New station number
-     * @param caller Name of caller activity for Logcat
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean resetStation(final int number, final String caller) {
+    public boolean resetStation(final int number) {
         // Don't allow 0xFF station number
         if (number < 0 || number >= 0xFF) {
             setLastError(R.string.err_station_wrong_number);
@@ -370,7 +339,7 @@ public final class StationAPI extends StationRaw {
         commandData[7] = (byte) number;
         // Send it to station
         final byte[] response = new byte[0];
-        if (!command(commandData, response, caller)) return false;
+        if (!command(commandData, response)) return false;
         // Update station number and mode in class object
         setNumber(number);
         mMode = MODE_INIT_CHIPS;
@@ -384,13 +353,12 @@ public final class StationAPI extends StationRaw {
     /**
      * Get station local time, mode, number, etc.
      *
-     * @param caller Name of caller activity for Logcat
      * @return True if we got valid response from station, check mLastError otherwise
      */
-    public boolean fetchStatus(final String caller) {
+    public boolean fetchStatus() {
         // Get response from station
         final byte[] response = new byte[14];
-        if (!command(new byte[]{CMD_GET_STATUS}, response, caller)) return false;
+        if (!command(new byte[]{CMD_GET_STATUS}, response)) return false;
         // Get station time
         mStationTime = byteArray2Long(response, 0, 3);
         mTimeDrift = (int) (mStationTime - System.currentTimeMillis() / 1000L);
@@ -412,10 +380,9 @@ public final class StationAPI extends StationRaw {
      *
      * @param teamNumber Team number
      * @param teamMask   Mask of team members presence
-     * @param caller     Name of caller activity for Logcat
      * @return True if succeeded
      */
-    public boolean initChip(final int teamNumber, final int teamMask, final String caller) {
+    public boolean initChip(final int teamNumber, final int teamMask) {
         // Note: last 4 byte are reserved and equal to zero now
         byte[] commandData = new byte[5];
         commandData[0] = CMD_INIT_CHIP;
@@ -424,7 +391,7 @@ public final class StationAPI extends StationRaw {
         long2ByteArray(teamMask, commandData, 3, 2);
         // Send command to station
         final byte[] response = new byte[12];
-        if (!command(commandData, response, caller)) return false;
+        if (!command(commandData, response)) return false;
         // Get init time from station response
         mLastInitTime = byteArray2Long(response, 0, 3);
         // Update station time and drift
@@ -437,13 +404,12 @@ public final class StationAPI extends StationRaw {
     /**
      * Get list of last LAST_TEAMS_LEN teams which has been punched at the station.
      *
-     * @param caller Name of caller activity for Logcat
      * @return True if succeeded
      */
-    public boolean fetchLastTeams(final String caller) {
+    public boolean fetchLastTeams() {
         // Get response from station
         final byte[] response = new byte[LAST_TEAMS_LEN * 2];
-        if (!command(new byte[]{CMD_LAST_TEAMS}, response, caller)) return false;
+        if (!command(new byte[]{CMD_LAST_TEAMS}, response)) return false;
         mLastTeams.clear();
         for (int i = 0; i < LAST_TEAMS_LEN; i++) {
             final int teamNumber = (int) byteArray2Long(response, i * 2, i * 2 + 1);
@@ -456,11 +422,10 @@ public final class StationAPI extends StationRaw {
      * Get info about team with teamNumber number punched at the station.
      *
      * @param teamNumber Number of team to fetch
-     * @param caller     Name of caller activity for Logcat
      * @return True if succeeded
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean fetchTeamHeader(final int teamNumber, final String caller) {
+    public boolean fetchTeamHeader(final int teamNumber) {
         // Prepare command payload
         byte[] commandData = new byte[3];
         commandData[0] = CMD_TEAM_RECORD;
@@ -469,7 +434,7 @@ public final class StationAPI extends StationRaw {
         final byte[] response = new byte[13];
         mChipRecordsN = 0;
         mRecords.clear();
-        if (!command(commandData, response, caller)) return false;
+        if (!command(commandData, response)) return false;
         // Parse response
         final int checkTeamNumber = (int) byteArray2Long(response, 0, 1);
         if (checkTeamNumber != teamNumber) {
@@ -495,10 +460,9 @@ public final class StationAPI extends StationRaw {
     /**
      * Read all data from chip placed near the station.
      *
-     * @param caller Name of caller activity for Logcat
      * @return true if succeeded
      */
-    public boolean readCard(final String caller) {
+    public boolean readCard() {
         int pagesLeft = 0;
         int pagesInRequest = SIZE_NTAG213;
         byte pageFrom = 3;
@@ -516,7 +480,7 @@ public final class StationAPI extends StationRaw {
             commandData[2] = (byte) (pageFrom + pagesInRequest - 1);
             // Send command to station
             final byte[] response = new byte[pagesInRequest * 4 + 9];
-            if (!command(commandData, response, caller)) return false;
+            if (!command(commandData, response)) return false;
             if (response[8] != commandData[1]) {
                 setLastError(R.string.err_station_address_changed);
                 return false;
@@ -587,10 +551,9 @@ public final class StationAPI extends StationRaw {
      * @param initTime   Chip init time
      *                   (along with team number it is the primary key of a chip)
      * @param teamMask   New team members mask
-     * @param caller     Name of caller activity for Logcat
      * @return true if succeeded
      */
-    public boolean updateTeamMask(final int teamNumber, final long initTime, final int teamMask, final String caller) {
+    public boolean updateTeamMask(final int teamNumber, final long initTime, final int teamMask) {
         // Prepare command payload
         byte[] commandData = new byte[9];
         commandData[0] = CMD_UPDATE_MASK;
@@ -599,7 +562,7 @@ public final class StationAPI extends StationRaw {
         long2ByteArray(teamMask, commandData, 7, 2);
         // Send command to station
         final byte[] response = new byte[0];
-        return command(commandData, response, caller);
+        return command(commandData, response);
     }
 
     /**
@@ -610,12 +573,11 @@ public final class StationAPI extends StationRaw {
      * @param teamMask   Chip team mask (for creation of new punch records)
      * @param fromPunch  Starting position in the list of punches
      * @param count      Number of punches to read
-     * @param caller     Name of caller activity for Logcat
      * @return True if succeeded, fills mRecords with punches as Record instances
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchTeamPunches(final int teamNumber, final long initTime, final int teamMask, final int fromPunch,
-                                    final int count, final String caller) {
+                                    final int count) {
         if (count <= 0 || count > MAX_PUNCH_COUNT) {
             setLastError(R.string.err_station_buffer_overflow);
             return false;
@@ -631,7 +593,7 @@ public final class StationAPI extends StationRaw {
         final byte[] response = new byte[4 + count * 4];
         mChipRecordsN = 0;
         mRecords.clear();
-        if (!command(commandData, response, caller)) return false;
+        if (!command(commandData, response)) return false;
         // Check that read address in response is equal to read address in command
         if (startAddress != byteArray2Long(response, 0, 3)) {
             setLastError(R.string.err_station_address_changed);
@@ -660,13 +622,12 @@ public final class StationAPI extends StationRaw {
     /**
      * Get station firmware version and configuration.
      *
-     * @param caller Name of caller activity for Logcat
      * @return True if succeeded
      */
-    public boolean fetchConfig(final String caller) {
+    public boolean fetchConfig() {
         // Get response from station
         final byte[] response = new byte[20];
-        if (!command(new byte[]{CMD_GET_CONFIG}, response, caller)) return false;
+        if (!command(new byte[]{CMD_GET_CONFIG}, response)) return false;
         // Get station firmware
         mFirmware = response[0];
         // Get station mode

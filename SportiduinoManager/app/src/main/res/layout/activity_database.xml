@@ -106,7 +106,7 @@
                     android:id="@+id/test_database"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:checked="true"
+                    android:checked="false"
                     android:padding="@dimen/default_padding"
                     android:text="@string/use_test_site"
                     local:showText="false" />

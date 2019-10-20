@@ -2,7 +2,6 @@ package ru.mmb.sportiduinomanager.model;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,10 +99,6 @@ public class StationRaw {
      * of command execution
      */
     private static final byte REC_COMMAND_ERROR = 4;
-    /**
-     * Internal messages inside station data exchange.
-     */
-    private static final String CALLER_INTERNAL = "SiMan Station";
 
     /**
      * Station Bluetooth whole object.
@@ -389,7 +384,6 @@ public class StationRaw {
             output.write(buffer);
             output.flush();
         } catch (IOException e) {
-            Log.d(CALLER_INTERNAL, "send: " + e.getMessage());
             // station got disconnected
             disconnect();
             return false;
@@ -437,7 +431,6 @@ public class StationRaw {
             }
             return response;
         } catch (IOException e) {
-            Log.d(CALLER_INTERNAL, "receive: " + e.getMessage());
             // station got disconnected
             disconnect();
             return response;
@@ -505,23 +498,17 @@ public class StationRaw {
      *
      * @param commandContent  Command payload sent to station
      * @param responseContent Station response without service bytes
-     * @param caller          Name of caller activity for Logcat
      * @return True if there was no communication or command execution errors
      */
-    boolean command(final byte[] commandContent, final byte[] responseContent,
-                    final String caller) {
+    boolean command(final byte[] commandContent, final byte[] responseContent) {
         synchronized (this) {
             // Save time at the beginning of command processing
             mStartTime = System.currentTimeMillis();
-            // TODO: remove debug output
-            Log.d(caller, " command " + String.format("%02x", commandContent[0]) + " started  at " + mStartTime);
             // Communicate with the station
             final byte[] rawResponse = runCommand(commandContent);
             // Compute execution time
             final long now = System.currentTimeMillis();
             mResponseTime = now - mStartTime;
-            // TODO: remove debug output
-            Log.d(caller, " command " + String.format("%02x", commandContent[0]) + " finished  at " + now);
             // Check for command execution errors and response parsing errors
             if (rawResponse[0] != ALL_OK) {
                 switch (rawResponse[0]) {

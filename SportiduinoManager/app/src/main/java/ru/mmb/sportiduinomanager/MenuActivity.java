@@ -11,7 +11,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
@@ -268,7 +267,6 @@ public class MenuActivity extends AppCompatActivity {
             if (StationMonitorService.class.getName().equals(service.service.getClassName())) return;
         }
         // Start the service
-        Log.d(StationAPI.CALLER_MENU, "Start service");
         final Intent intent = new Intent(this, StationMonitorService.class);
         startService(intent);
     }
@@ -278,7 +276,6 @@ public class MenuActivity extends AppCompatActivity {
      */
     void stopMonitoringService() {
         MainApp.mStation.setQueryingAllowed(false);
-        Log.d(StationAPI.CALLER_MENU, "Stop service");
         final Intent intent = new Intent(this, StationMonitorService.class);
         stopService(intent);
     }

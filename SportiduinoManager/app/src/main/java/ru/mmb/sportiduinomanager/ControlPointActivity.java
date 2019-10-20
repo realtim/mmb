@@ -10,7 +10,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -78,7 +77,6 @@ public final class ControlPointActivity extends MenuActivity
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
-        Log.d(StationAPI.CALLER_CP, "Create");
         setContentView(R.layout.activity_controlpoint);
         // Register receiver of messages from station monitoring service
         LocalBroadcastManager.getInstance(this).registerReceiver(mDataReceiver,
@@ -90,15 +88,8 @@ public final class ControlPointActivity extends MenuActivity
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d(StationAPI.CALLER_CP, "Start");
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
-        Log.d(StationAPI.CALLER_CP, "Resume");
         // Wake the device (if the activity was started by monitoring service)
         final PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         final PowerManager.WakeLock wakeLock =
@@ -146,21 +137,13 @@ public final class ControlPointActivity extends MenuActivity
 
     @Override
     protected void onPause() {
-        Log.d(StationAPI.CALLER_CP, "Pause");
         // Set flag for monitoring service in main app
         MainApp.setCPActivityActive(false);
         super.onPause();
     }
 
     @Override
-    protected void onStop() {
-        Log.d(StationAPI.CALLER_CP, "Stop");
-        super.onStop();
-    }
-
-    @Override
     protected void onDestroy() {
-        Log.d(StationAPI.CALLER_CP, "Destroy");
         // Stop monitoring service
         stopMonitoringService();
         // Unregister the receiver of messages from monitoring service
@@ -247,8 +230,7 @@ public final class ControlPointActivity extends MenuActivity
             Thread.currentThread().interrupt();
         }
         MainApp.mStation.waitForQuerying2Stop();
-        if (!MainApp.mStation.updateTeamMask(teamNumber, MainApp.mPointPunches.getInitTime(index), mTeamMask,
-                StationAPI.CALLER_CP)) {
+        if (!MainApp.mStation.updateTeamMask(teamNumber, MainApp.mPointPunches.getInitTime(index), mTeamMask)) {
             Toast.makeText(getApplicationContext(), MainApp.mStation.getLastError(true), Toast.LENGTH_LONG).show();
             startMonitoringService();
             return;

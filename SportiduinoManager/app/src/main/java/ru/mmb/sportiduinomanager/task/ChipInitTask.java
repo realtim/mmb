@@ -6,7 +6,6 @@ import java.lang.ref.WeakReference;
 
 import ru.mmb.sportiduinomanager.ChipInitActivity;
 import ru.mmb.sportiduinomanager.MainApp;
-import ru.mmb.sportiduinomanager.model.StationAPI;
 
 /**
  * Run long chip init in separate thread.
@@ -37,7 +36,7 @@ public class ChipInitTask extends AsyncTask<Integer, Void, Boolean> {
         final int teamNumber = teamParams[0];
         final int teamMask = teamParams[1];
         // Send the command to station
-        return MainApp.mStation != null && MainApp.mStation.initChip(teamNumber, teamMask, StationAPI.CALLER_CHIP_INIT);
+        return MainApp.mStation != null && MainApp.mStation.initChip(teamNumber, teamMask);
     }
 
     /**
