@@ -219,16 +219,16 @@ public class StationRaw {
     }
 
     /**
-     * Get station name + MAC.
+     * Get station name.
      *
-     * @return String with Bluetooth name and MAC address
+     * @return String with Bluetooth name
      */
     public String getName() {
-        return mDevice.getName() + " (" + mDevice.getAddress() + ")";
+        return mDevice.getName();
     }
 
     /**
-     * Get station MAC.
+     * Get station MAC as string.
      *
      * @return String with Bluetooth module MAC address
      */

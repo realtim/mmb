@@ -155,14 +155,11 @@ public class StationMonitorService extends Service {
 
         // Do nothing if no teams has been punched yet
         if (MainApp.mStation.getLastPunchTime() == 0) return fetchTeams;
-        // Number of team punches at local db and at station are the same?
-        // Time of last punch in local db and at station is the same?
+        // Do nothing if time of last punch in local db and at station is the same
         // (it can change without changing of number of teams)
-        final int teamListSize = MainApp.mPointPunches.size();
-        if (teamListSize == MainApp.mStation.getTeamsPunched()
-                && MainApp.mPointPunches.getTeamTime(teamListSize - 1) == MainApp.mStation.getLastPunchTime()) {
-            return fetchTeams;
-        }
+        final int localTeamsCount = MainApp.mPointPunches.size();
+        final long localLastPunch = MainApp.mPointPunches.getTeamTime(localTeamsCount - 1);
+        if (localLastPunch == MainApp.mStation.getLastPunchTime()) return fetchTeams;
 
         // Ok, we have some new punches, we shouldn't maje full station scan in most cases
         boolean fullDownload = false;
@@ -171,8 +168,7 @@ public class StationMonitorService extends Service {
         final List<Integer> stationLastTeams = MainApp.mStation.getLastTeams();
         // If station list is full,  then we need to make a full scan
         if (stationLastTeams.size() >= StationAPI.LAST_TEAMS_LEN) fullDownload = true;
-        // If station list is empty,
-        // but last team time or total number of teams has been changed,
+        // If station list is empty but last team time has been changed,
         // then we have a fatal error and need full scan
         if (stationLastTeams.isEmpty()) fullDownload = true;
         // For full rescan of all teams make a list of all registered teams

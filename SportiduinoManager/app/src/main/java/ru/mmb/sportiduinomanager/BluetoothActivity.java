@@ -519,7 +519,8 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
             return;
         }
         // Update station data status in layout
-        ((TextView) findViewById(R.id.station_bt_name)).setText(MainApp.mStation.getName());
+        final String name = MainApp.mStation.getName() + " (" + MainApp.mStation.getAddress() + ")";
+        ((TextView) findViewById(R.id.station_bt_name)).setText(name);
         ((TextView) findViewById(R.id.station_firmware)).setText(getResources()
                 .getString(R.string.station_firmware, MainApp.mStation.getFirmware()));
         final float voltage = MainApp.mStation.getVoltage();

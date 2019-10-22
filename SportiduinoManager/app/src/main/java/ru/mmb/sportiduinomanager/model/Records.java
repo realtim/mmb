@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import static ru.mmb.sportiduinomanager.model.StationAPI.MODE_INIT_CHIPS;
+
 /**
  * Handling Sportiduino records (initialization/punches) received from stations.
  */
@@ -197,7 +199,7 @@ public final class Records {
         // Filter records
         for (final Record record : mRecords) {
             if (record.mPointNumber == pointNumber && record.mStationMAC == stationMAC
-                    && record.mStationNumber == pointNumber) {
+                    && record.mStationNumber == pointNumber && record.mStationMode != MODE_INIT_CHIPS) {
                 // Find previous punch of this team (if any)
                 int index = -1;
                 for (int i = 0; i < punches.size(); i++) {
@@ -258,7 +260,7 @@ public final class Records {
         int punchSent = 0;
         // Find number of each type of records
         for (final Record record : mRecords) {
-            if (record.getMode() == StationAPI.MODE_INIT_CHIPS) {
+            if (record.getMode() == MODE_INIT_CHIPS) {
                 initAll++;
                 if (record.getStatus() == Record.STATUS_SENT) initSent++;
             } else {
@@ -454,6 +456,7 @@ public final class Records {
             mRecords.add(newRecord);
             dataChanged = true;
         }
+        if (dataChanged) sort();
         return dataChanged;
     }
 
