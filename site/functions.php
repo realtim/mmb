@@ -3538,7 +3538,9 @@ function FindErrors($raid_id, $team_id)
 
 		 $tm1 = CMmbLogger::addInterval(' 1 ', $tm0);
 
-	RecalcTeamLevelPointsDuration($raidid, $teamid);
+		RecalcTeamLevelPointsDateTimeCorrection($raidid, $teamid);     
+	
+		RecalcTeamLevelPointsDuration($raidid, $teamid);
 
 		 $tm2 = CMmbLogger::addInterval(' 2', $tm1);
 
