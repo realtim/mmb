@@ -2562,6 +2562,72 @@ send_mime_mail('Автор письма',
      }
      //Конец генерации точек для ММБ 
    
+
+
+     // функция рассчитывает  скорректированное время для тех точек, что внесли без времени
+	// ставится время предыдущей по  номеру точки 
+     function RecalcTeamLevelPointsDateTimeCorrection($raidid, $teamid)
+     {
+
+
+	// Для каждой точки с отсечкой времени (исключая точки с типом Старт) 
+	//считается  предыдущей точка с отсечкой времени.
+	 if (empty($teamid) and empty($raidid)) {     	 
+	    return;
+	 }
+
+	 $teamRaidCondition1 = (!empty($teamid)) ? " tlp.team_id = $teamid" : "d.raid_id = $raidid";
+	 $teamRaidCondition2 = (!empty($teamid)) ? " tlp1.team_id = $teamid" : "d1.raid_id = $raidid";
+
+	     
+	 // переносим сначала все корректные времена
+	 $sql = "  update TeamLevelPoints tlp
+			inner join LevelPoints lp
+    			on tlp.levelpoint_id = lp.levelpoint_id
+			inner join Distances d
+		      	on lp.distance_id = d.distance_id
+		set tlp.teamlevelpoint_datetimeaftercorrection = tlp.teamlevelpoint_datetime
+		where  $teamRaidCondition1
+	 ";
+         echo $sql;
+      
+       	 $rs = MySqlQuery($sql);
+	
+	 // теперь заполняем пустые точки предыдущими значениями    
+	 $sql = "  update TeamLevelPoints tlp
+			inner join LevelPoints lp
+    			on tlp.levelpoint_id = lp.levelpoint_id
+			inner join Distances d
+		      	on lp.distance_id = d.distance_id
+			inner join 
+			(
+			select tlp1.teamlevelpoint_id as teamlevelpoint_id
+				, (select max(tlp2.teamlevelpoint_datetimeaftercorrection)
+				   from TeamLevelPoints  tlp2
+					inner join LevelPoints lp2
+					on tlp2.levelpoint_id = lp2.levelpoint_id
+				   where tlp2.Team_id = tlp1.Team_Id
+					and lp2.levelpoint_order < lp1.levelpoint_order
+		  		) as pred_dt
+			from TeamLevelPoints  tlp1
+				inner join LevelPoints lp1
+				on tlp1.levelpoint_id = lp1.levelpoint_id
+				inner join Distances d1
+			      	on lp1.distance_id = d1.distance_id
+			where  tlp1.teamlevelpoint_datetimeaftercorrection is null
+				and $teamRaidCondition2 
+			) a
+			on tlp.teamlevelpoint_id = a.teamlevelpoint_id
+		set tlp.teamlevelpoint_datetimeaftercorrection = a.pred_dt
+		where tlp.teamlevelpoint_datetimeaftercorrection is null
+			and $teamRaidCondition1
+	 ";
+         echo $sql;
+      
+       	 $rs = MySqlQuery($sql);
+	
+     }
+     // конец функции пересчёта длительности прохождения команды до точки 
      
      // функция пересчитывает длительнрость прохождения команды в точке
      function RecalcTeamLevelPointsDuration($raidid, $teamid)
