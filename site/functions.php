@@ -2589,7 +2589,7 @@ send_mime_mail('Автор письма',
 		set tlp.teamlevelpoint_datetimeaftercorrection = tlp.teamlevelpoint_datetime
 		where  $teamRaidCondition1
 	 ";
-         echo $sql;
+         //echo $sql;
       
        	 $rs = MySqlQuery($sql);
 	
@@ -2622,7 +2622,7 @@ send_mime_mail('Автор письма',
 		where tlp.teamlevelpoint_datetimeaftercorrection is null
 			and $teamRaidCondition1
 	 ";
-         echo $sql;
+         //echo $sql;
       
        	 $rs = MySqlQuery($sql);
 	
@@ -3116,7 +3116,7 @@ send_mime_mail('Автор письма',
 		set tlp.teamlevelpoint_result = a.sum_pred_duration_and_penalty
 		where $teamRaidCondition
 	";
-	echo $sql;
+	//echo $sql;
 	$rs = MySqlQuery($sql);
 
      }
