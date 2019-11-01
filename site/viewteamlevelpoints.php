@@ -358,7 +358,7 @@ $sql = "select tlp.teamlevelpoint_id, lp.levelpoint_id, lp.levelpoint_name,
 	     left outer join Errors err
 	     on tlp.error_id = err.error_id 
 	where tlp.team_id = $TeamId
-	order by tlp.teamlevelpoint_datetimeaftercorrection ASC, lp.levelpoint_order AS
+	order by tlp.teamlevelpoint_datetimeaftercorrection ASC, lp.levelpoint_order ASC
 	";
 
 /*
