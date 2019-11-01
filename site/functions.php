@@ -3075,7 +3075,55 @@ send_mime_mail('Автор письма',
      }
      // Конец функции расчета результата в точке		
  
+     // функция пересчитывает результат команды в точке по корректированным данным
+     function RecalcTeamLevelPointsResultAfterCorrection($raidid, $teamid)
+     {
 
+	 if (empty($teamid) and empty($raidid)) {     	 
+	    return;
+	 }
+
+	$teamRaidCondition = (!empty($teamid)) ? " t.team_id = $teamid" : "d.raid_id = $raidid";
+	$teamRaidCondition1 = (!empty($teamid)) ? " t1.team_id = $teamid" : "d1.raid_id = $raidid";
+
+	$sql = "
+		update TeamLevelPoints tlp
+		inner join LevelPoints lp
+		    on tlp.levelpoint_id = lp.levelpoint_id
+		inner join Teams t
+			on tlp.team_id = t.team_id
+		inner join Distances d
+			on lp.distance_id = d.distance_id
+		inner join 
+		(
+			  select 
+		      tlp1.teamlevelpoint_id
+		     , (select sec_to_time(sum(time_to_sec(coalesce(tlp2.teamlevelpoint_duration, 0)) + coalesce(teamlevelpoint_penalty, 0)*60))
+			from TeamLevelPoints  tlp2
+			where tlp2.Team_id = tlp1.Team_Id
+			and   tlp2.teamlevelpoint_datetimeaftercorrection <=  tlp1.teamlevelpoint_datetimeaftercorrection
+				) as sum_pred_duration_and_penalty
+			from TeamLevelPoints  tlp1
+				inner join LevelPoints lp1
+				on tlp1.levelpoint_id = lp1.levelpoint_id
+				inner join Teams t1
+				on tlp1.team_id = t1.team_id
+				inner join Distances d1
+				on lp1.distance_id = d1.distance_id
+			where $teamRaidCondition1
+		) a
+			on tlp.teamlevelpoint_id = a.teamlevelpoint_id
+		set tlp.teamlevelpoint_resultaftercorrection = a.sum_pred_duration_and_penalty
+		where $teamRaidCondition
+	";
+	echo $sql;
+	$rs = MySqlQuery($sql);
+
+     }
+     // Конец функции расчета результата в точке по времени		
+ 
+
+	
 // Функция поиска ошибок для марш-броска/команды
 function FindErrors($raid_id, $team_id)
 {
@@ -3552,9 +3600,10 @@ function FindErrors($raid_id, $team_id)
 
 		 $tm4 = CMmbLogger::addInterval(' 4', $tm3);
 
-// echo 'RecalcTeamLevelPointsResult '.$raidid.','.$teamid;
 
-	RecalcTeamLevelPointsResult($raidid, $teamid);
+// замена на новый алгоритм
+	     RecalcTeamLevelPointsResultAfterCorrection($raidid, $teamid)
+	//RecalcTeamLevelPointsResult($raidid, $teamid);
 
 		 $tm5 = CMmbLogger::addInterval(' 5', $tm4);
 
