@@ -3602,7 +3602,7 @@ function FindErrors($raid_id, $team_id)
 
 
 // замена на новый алгоритм
-	     RecalcTeamLevelPointsResultAfterCorrection($raidid, $teamid)
+	     RecalcTeamLevelPointsResultAfterCorrection($raidid, $teamid);
 	//RecalcTeamLevelPointsResult($raidid, $teamid);
 
 		 $tm5 = CMmbLogger::addInterval(' 5', $tm4);
