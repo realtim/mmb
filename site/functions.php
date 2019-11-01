@@ -3113,7 +3113,7 @@ send_mime_mail('Автор письма',
 			where $teamRaidCondition1
 		) a
 			on tlp.teamlevelpoint_id = a.teamlevelpoint_id
-		set tlp.teamlevelpoint_resultaftercorrection = a.sum_pred_duration_and_penalty
+		set tlp.teamlevelpoint_result = a.sum_pred_duration_and_penalty
 		where $teamRaidCondition
 	";
 	echo $sql;
