@@ -506,7 +506,8 @@ if (!isset($MyPHPScript)) return;
 		$sql = "select tu.teamuser_id, null as raiddeveloper_id,
 			   	t.team_name, t.team_id, 
 		               d.distance_name, r.raid_name, t.team_num, 
-			       r.raid_id, lp.levelpoint_name, t.team_dismiss,
+                   r.raid_id, lp.levelpoint_name, t.team_dismiss,
+                   TIME_FORMAT(t.team_result, '%H:%i') as team_sresult,
 			       lp.levelpoint_id, COALESCE(tu.teamuser_rank, 0.00000) as teamuser_rank  
 		        from  TeamUsers tu
 			      inner join  Teams t
@@ -523,7 +524,8 @@ if (!isset($MyPHPScript)) return;
 			UNION ALL 
 			select  null as teamuser_id,  rd.raiddeveloper_id,  'cудьи' as team_name,  null as team_id, 
 		               '' as distance_name, r.raid_name, '' as team_num, 
-			       r.raid_id, null as levelpoint_name, null as team_dismiss,
+                   r.raid_id, null as levelpoint_name, null as team_dismiss,
+                   '' as team_sresult,
 			       null as levelpoint_id, null as teamuser_rank  
 		        from  Users u
 			      inner join RaidDevelopers rd
@@ -573,7 +575,7 @@ if (!isset($MyPHPScript)) return;
 			  		{
 			    			print("<td>{$TeamUserOff}</td>\r\n");
 			  		} else {
-			    			print("<td>{$TeamPlaceResult} ({$Row['teamuser_rank']})</td>\r\n");
+			    			print("<td>{$TeamPlaceResult} ({$Row['teamuser_rank']}, {$Row['team_sresult']})</td>\r\n");
 			  		}
 				} else {
 			  		print("<td><br/></td>\r\n");
