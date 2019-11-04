@@ -946,14 +946,15 @@ elseif ($action == 'JsonExport')
 		$firstRow = true;
 		while (($Row = mysql_fetch_assoc($Result))) 
 		{ 
-	  	if ($firstRow) 
-	  	{
-	        $firstRow = false;
-		} else 
-	  	{
-		    fwrite($output, ",");   
-    	}
-      	fwrite($output, json_encode($Row));
+	  		if ($firstRow) 
+	  		{
+	        	$firstRow = false;
+			} else 
+	  		{
+		    	fwrite($output, ",");   
+    		}
+		  	fwrite($output, json_encode($Row));
+		}  
 	}
 
 	fwrite($output, ']}');
@@ -985,12 +986,12 @@ elseif ($action == 'JsonExport')
 		readfile($zipfileName);
    	}
 
-
 	// Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
 	die();
 	return;
 
- } elseif ($action == "AddTeamInUnion")  {
+ }
+  elseif ($action == "AddTeamInUnion")  {
     // Действие вызывается нажатием кнопки "Объединить"
 
 	if ($TeamId <= 0)
@@ -1110,7 +1111,6 @@ elseif ($action == 'JsonExport')
 
 
    }
-
 elseif ($action == "HideTeamInUnion")  {
     // Действие вызывается нажатием кнопки "Удалить" на странице со списокм команд в объединении
     
@@ -1642,5 +1642,4 @@ elseif ($action == "CancelUnionTeams")  {
 else
 {
 }
-
 ?>
