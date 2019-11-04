@@ -935,6 +935,7 @@ elseif ($action == 'JsonExport')
 					teamlevelpoint_datetime, teamlevelpoint_comment,
 					teamlevelpoint_penalty,
 					error_id, teamlevelpoint_duration,
+					time_to_sec(coalesce(teamlevelpoint_duration, 0))/60.0 as teamlevelpoint_durationdecimal,
 					teamlevelpoint_result
 				from TeamLevelPoints tlp
 		    		 inner join Teams t on tlp.team_id = t.team_id
