@@ -883,116 +883,116 @@ elseif ($action == 'JsonExport')
 
 	// Определяем, можно ли показывать пользователю информацию об этапах дистанции
 	$LevelDataVisible = CanViewResults($Administrator, $Moderator, $RaidStage);
+	$CanViewResults = CanViewResults($Administrator, $Moderator, $RaidStage);
 
 	if ($LevelDataVisible)
 	{
 	
-	// LevelPoints: levelpoint_id, distance_id, levelpoint_name, levelpoint_order, pointtype_id, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
-	$Sql = "select lp.levelpoint_id, lp.distance_id, lp.levelpoint_name, lp.levelpoint_order, lp.pointtype_id, 
+		// LevelPoints: levelpoint_id, distance_id, levelpoint_name, levelpoint_order, pointtype_id, level_pointnames, level_pointpenalties, level_begtime, level_maxbegtime, level_minendtime, level_endtime
+		$Sql = "select lp.levelpoint_id, lp.distance_id, lp.levelpoint_name, lp.levelpoint_order, lp.pointtype_id, 
 					lp.levelpoint_penalty, lp.levelpoint_mindatetime, lp.levelpoint_maxdatetime,
 					lp.scanpoint_id
-			from LevelPoints lp 
+				from LevelPoints lp 
 					inner join Distances d on lp.distance_id = d.distance_id 
-			where  d.distance_hide = 0 and d.raid_id = $RaidId";
+				where  d.distance_hide = 0 and d.raid_id = $RaidId";
 
-	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
-	mysql_free_result($Result);
+		$Result = MySqlQuery($Sql);
+		while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
+		mysql_free_result($Result);
 
 
-	// TeamLevelDismiss: 
-	$Sql = "select teamleveldismiss_id, tld.levelpoint_id, 
+		// TeamLevelDismiss: 
+		$Sql = "select teamleveldismiss_id, tld.levelpoint_id, 
 					teamleveldismiss_date, teamuser_id
 			from TeamLevelDismiss tld
 			     inner join LevelPoints lp on tld.levelpoint_id = lp.levelpoint_id
 			     inner join Distances d on lp.distance_id = d.distance_id
 			where  d.distance_hide = 0 and d.raid_id = $RaidId";
 
-	$Result = MySqlQuery($Sql);
+		$Result = MySqlQuery($Sql);
 
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelDismiss"][] = $Row; }
-	mysql_free_result($Result);
+		while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelDismiss"][] = $Row; }
+		mysql_free_result($Result);
 	}
 	// Конец проверки, что можно экспортировать данные по этапам
 
 
-		$sql = "select  raid_fileprefix
-	              from Raids
-	              where raid_id = $RaidId";
-		$Prefix = trim(CSql::singleValue($sql, 'raid_fileprefix'));
- 	        $JsonFileName = 'TeamLevelPoints.json';
-	        $fullJSONfileName = $MyStoreFileLink . $Prefix. $JsonFileName;
-	        $zipfileName = $MyStoreFileLink . $Prefix. 'mmbdata.zip';
+	$sql = "select  raid_fileprefix
+		    from Raids
+	        where raid_id = $RaidId";
+	$Prefix = trim(CSql::singleValue($sql, 'raid_fileprefix'));
+ 	$JsonFileName = 'TeamLevelPoints.json';
+	$fullJSONfileName = $MyStoreFileLink . $Prefix. $JsonFileName;
+	$zipfileName = $MyStoreFileLink . $Prefix. 'mmbdata.zip';
 
-	        $output = fopen($fullJSONfileName, 'w');
-		fwrite($output, '{"TeamLevelPoints":[');
+	$output = fopen($fullJSONfileName, 'w');
+	fwrite($output, '{"TeamLevelPoints":[');
 
+	if ($CanViewResults)
+	{
 		// TeamLevelPoints: 
 		$Sql = "select teamlevelpoint_id, tlp.team_id, tlp.levelpoint_id, 
 					teamlevelpoint_datetime, teamlevelpoint_comment,
 					teamlevelpoint_penalty,
 					error_id, teamlevelpoint_duration,
+					time_to_sec(coalesce(teamlevelpoint_duration, 0))/60.0 as teamlevelpoint_durationdecimal,
 					teamlevelpoint_result
-			from TeamLevelPoints tlp
-		    	 inner join Teams t on tlp.team_id = t.team_id
-			     inner join Distances d on t.distance_id = d.distance_id
-			where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
+				from TeamLevelPoints tlp
+		    		 inner join Teams t on tlp.team_id = t.team_id
+			    	 inner join Distances d on t.distance_id = d.distance_id
+				where t.team_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 
 		$Result = MySqlQuery($Sql);
 	
 		$firstRow = true;
 		while (($Row = mysql_fetch_assoc($Result))) 
 		{ 
-    		  if ($firstRow) {
-        	    $firstRow = false;
-    		  } else {
-	            fwrite($output, ",");   
-    		  }
-    		  fwrite($output, json_encode($Row));
-		}
+	  		if ($firstRow) 
+	  		{
+	        	$firstRow = false;
+			} else 
+	  		{
+		    	fwrite($output, ",");   
+    		}
+		  	fwrite($output, json_encode($Row));
+		}  
+	}
 
-		fwrite($output, ']}');
-		mysql_free_result($Result);
- 		fclose($output);
+	fwrite($output, ']}');
+	mysql_free_result($Result);
+ 	fclose($output);
 
 
- 	        $JsonMainDataFileName = 'maindata.json';
-	        $fullJSONmaindatafileName = $MyStoreFileLink . $Prefix. $JsonMainDataFileName;
+ 	$JsonMainDataFileName = 'maindata.json';
+	$fullJSONmaindatafileName = $MyStoreFileLink . $Prefix. $JsonMainDataFileName;
 
-	        $output2 = fopen($fullJSONmaindatafileName, 'w');
-		fwrite($output2, json_encode($data)."\n");
- 		fclose($output2);
-		unset($data);
+	$output2 = fopen($fullJSONmaindatafileName, 'w');
+	fwrite($output2, json_encode($data)."\n");
+ 	fclose($output2);
+	unset($data);
 
-		$zip = new ZipArchive; //Создаём объект для работы с ZIP-архивами
-  		$zip->open($zipfileName, ZIPARCHIVE::CREATE); //Открываем (создаём) архив archive.zip
-  		$zip->addFile($fullJSONfileName, $JsonFileName); 
-  		$zip->addFile($fullJSONmaindatafileName, $JsonMainDataFileName); 
-  		$zip->close(); 
+	$zip = new ZipArchive; //Создаём объект для работы с ZIP-архивами
+  	$zip->open($zipfileName, ZIPARCHIVE::CREATE); //Открываем (создаём) архив archive.zip
+  	$zip->addFile($fullJSONfileName, $JsonFileName); 
+  	$zip->addFile($fullJSONmaindatafileName, $JsonMainDataFileName); 
+  	$zip->close(); 
 
 	
-	 	if (file_exists($zipfileName)) {
-	                header("Content-Type: application/zip");
-        	        header("Content-Disposition: attachment; filename=mmbdata.zip");
-			 ob_clean();
-        		 flush();
-		 	 readfile($zipfileName);
-			
-			// create a file pointer connected to the output stream
-			//$output = fopen('php://output', 'w');
-//			while ( ( $Row = mysql_fetch_assoc($Result) ) )
-//			{  
-//			fwrite($output, $zipfileName); 
-//			}
-//		 	fclose($output);
-        	}
-
+	if (file_exists($zipfileName)) 
+	{
+        header("Content-Type: application/zip");
+        header("Content-Disposition: attachment; filename=mmbdata.zip");
+		ob_clean();
+        flush();
+		readfile($zipfileName);
+   	}
 
 	// Можно не прерывать, но тогда нужно написать обработчик в index, чтобы не выводить дальше ничего
 	die();
 	return;
 
- } elseif ($action == "AddTeamInUnion")  {
+ }
+  elseif ($action == "AddTeamInUnion")  {
     // Действие вызывается нажатием кнопки "Объединить"
 
 	if ($TeamId <= 0)
@@ -1112,7 +1112,6 @@ elseif ($action == 'JsonExport')
 
 
    }
-
 elseif ($action == "HideTeamInUnion")  {
     // Действие вызывается нажатием кнопки "Удалить" на странице со списокм команд в объединении
     
@@ -1644,5 +1643,4 @@ elseif ($action == "CancelUnionTeams")  {
 else
 {
 }
-
 ?>
