@@ -307,7 +307,10 @@ foreach ($teams as $n => $team)
             foreach ($diff["removed"] as $member) {
                 if (isset($team["dismiss"][$member]))
                     $errors[] = "В команде $n на точке '" . $points[$masks[$i]["point"]]["name"] . "' участник не мог сойти, так как уже сошел на точке '" . $points[$team["dismiss"][$member]]["name"] . "'";
-                else $teams[$n]["dismiss"][$member] = $masks[$i]["point"];
+                else {
+                    $teams[$n]["dismiss"][$member] = $masks[$i]["point"];
+                    if ($masks[$i]["point"] == $start_id) $errors[] = "В команде $n сход участников между инициализацией и стартом 1 этапа";
+                }
            }
         }
     }
@@ -320,15 +323,14 @@ $sql = $pdo->prepare("SELECT team_num, levelpoint_order, teamlevelpoint_datetime
 $sql ->bindParam("raid_start", $raid_start, PDO::PARAM_STR);
 $sql ->bindParam("raid_end", $raid_end, PDO::PARAM_STR);
 $sql->execute();
-$result = $sql->fetchAll(PDO::FETCH_ASSOC);
 $stations = array();
-foreach ($result as $row) {
+while ($row = $sql->fetch(PDO::FETCH_ASSOC)) {
     // Проверяем, что команда была заявлена
     if (!isset($teams[$row["team_num"]])) continue;
     $n = $row["team_num"];
     // Проверяем, что чип с данным временем инициализации был выдан нами
     if (!in_array($row["sportiduino_inittime"], $teams[$n]["init"])) {
-        $errors[] = "В команде $n на точке '" . $points[$row["levelpoint_order"]]["name"] . "' в чипе, считанном станцией с адресом " . printMAC($row["sportiduino_stationmac"]) . " и номером " . $row["sportiduino_stationnumber"] . ", некорректное время инициализации " . $row["sportiduino_inittime"];
+        $errors[] = "В команде $n на точке '" . $points[$row["levelpoint_order"]]["name"] . "' в чипе, считанном станцией с адресом " . printMAC($row["sportiduino_stationmac"]) . " и номером " . $row["sportiduino_stationnumber"] . ", чип был выдан не нами в " . $row["sportiduino_inittime"];
     }
     // Анализируем время на точке
     $time = $row["teamlevelpoint_datetime"];
@@ -339,7 +341,7 @@ foreach ($result as $row) {
            if ($points[$point]["type"] == 1)
                $errors[] = "У команды $n на точке '" . $points[$point]["name"] . "', имеющей тип 'Старт', несколько разных отметок времени";
            if (!$points[$point]["active"])
-               $errors[] = "У команды $n на точке '" . $points[$point]["name"] . "' без судейской станции несколько разных отметок времени";
+               $errors[] = "У команды $n на точке '" . $points[$point]["name"] . "' без судейской станции несколько разных отметок времени: " . $teams[$n]["points"][$point] . " и " . $time;
            // При повторной отметке правильное время - более позднее
            if (($points[$point]["type"] != 1) && $points[$point]["active"])
                $teams[$n]["points"][$point] = $time;
@@ -443,6 +445,26 @@ foreach ($teams as $n => $team) {
         }
     }
     if ($chip_with_read_errors) $chips_errors++; else $chips_ok++;
+}
+
+// Переводим время работы точек из unixtime
+foreach ($points as $n => $point) {
+   $points[$n]["start"] = date("Y-m-d H:i:s", $point["start"]);
+   $points[$n]["end"] = date("Y-m-d H:i:s", $point["end"]);
+}
+// Корректируем время старта для нетерпеливых/опоздавших
+foreach ($teams as $n => $team) {
+    if ($team["ignore"]) continue;
+    foreach ($team["points"] as $point => $time) {
+       if ($time < $points[$point]["start"]) {
+           if ($points[$point]["type"] == 1) $teams[$n]["points"][$point] = $points[$point]["start"];
+           else $errors[] = "отметка команды $n на точке $point сделана в $time до начала ее работы в " . $points[$point]["start"];
+       }
+       if ($time > $points[$point]["end"]) {
+           if ($points[$point]["type"] == 1) $teams[$n]["points"][$point] = $points[$point]["end"];
+           else $errors[] = "отметка команды $n на точке $point сделана в $time после окончания ее работы в " . $points[$point]["end"];
+       }
+    }
 }
 
 // TODO - добавить в статистику станции, работавшие на выдаче чипов
