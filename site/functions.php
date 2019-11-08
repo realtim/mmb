@@ -1523,7 +1523,7 @@ send_mime_mail('Автор письма',
 	// Здесь не проверяется прогресс команды,т.е. делается предположение (см. код расчета результата), что результат только для финишировавших команд
 	// если это будет не так, то и алгоритм здесь нужно менять.
 
-		$sql = "select TIME_TO_SEC(COALESCE(t.team_result,0)) as result_in_sec, t.distance_id 
+		$sql = "select FLOOR(TIME_TO_SEC(COALESCE(t.team_result,0))/60) as result_in_sec, t.distance_id 
 				from Teams t
 				where  t.team_hide = 0 
 					and COALESCE(t.team_outofrange, 0) = 0
@@ -1549,7 +1549,7 @@ send_mime_mail('Автор письма',
 						and COALESCE(t.team_outofrange, 0) = 0
 						and COALESCE(t.team_result,0) > 0
 						and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
-						and TIME_TO_SEC(COALESCE(t.team_result,0)) < $TeamResult";
+						and FLOOR(TIME_TO_SEC(COALESCE(t.team_result,0))/60) < $TeamResult";
 
 		// echo $sql_place;
 		return CSql::singleValue($sql_place, 'result_place');
