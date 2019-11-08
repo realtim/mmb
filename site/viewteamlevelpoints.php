@@ -447,7 +447,6 @@ print("</table>\r\n");
 print("<br/>\r\n");
 print("<table class=\"std\">\r\n");
 print('<tr class="head">
-                <td>Пропущены кп в облаке с .. по ... </td>
                 <td>Пропущены кп</td>
                 <td>Штраф, минуты</td>
 	 '."\r\n");
@@ -456,7 +455,8 @@ print('<tr class="head">
 				lp.levelpoint_penalty,
 				lpd.levelpointdiscount_start,
 				lpd.levelpointdiscount_finish,
-				lpd.levelpointdiscount_value
+				lpd.levelpointdiscount_value,
+				lpd.levelpointdiscount_id
 			from Distances d 
 				inner join LevelPointDiscounts lpd 
 				on d.distance_id = lpd.distance_id 
@@ -480,14 +480,21 @@ print('<tr class="head">
 			";
 $Result = MySqlQuery($sql);
 
-
+$predDiscountId = 0;
 while ($Row = mysql_fetch_assoc($Result))
 {
-
-print("<tr>\r\n");
-print("<td>{$Row['levelpoint_name']}</td>
+	if ($predDiscountId <> $Row['lpd.levelpointdiscount_id'])
+	{
+		$predDiscountId = $Row['lpd.levelpointdiscount_id'];
+		print("<tr>\r\n");
+		print("<td>{$Row['levelpointdiscount_start']} - {$Row['levelpointdiscount_finish']}</td>
+	   <td>{$Row['levelpointdiscount_value']}</td>\r\n");
+		print("</tr>\r\n");
+	}
+	print("<tr>\r\n");
+	print("<td>{$Row['levelpoint_name']}</td>
    <td>{$Row['levelpoint_penalty']}</td>\r\n");
-print("</tr>\r\n");
+	print("</tr>\r\n");
 }
 mysql_free_result($Result);
 
