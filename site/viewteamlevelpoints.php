@@ -317,18 +317,18 @@ print("<table class=\"std\">\r\n");
 
 
 print('<tr class="head gray">
-                         <td width="100">Точка</td>
-                         <td width="100">Время</td>
-                         <td width="100">Ошибка</td>
-		         <td width="150">Комментарий</td>
-		         <td width="150">Время</td>
-		         <td width="150">Штраф (минуты)</td>
-		         <td width="150">Результат</td>
+                         <td>Точка</td>
+                         <td>Время отметки</td>
+                         <td>Ошибка</td>
+		         <td>Комментарий</td>
+		         <td>Время на дистанции</td>
+		         <td>Штраф, минуты</td>
+		         <td>Результат</td>
 		         '."\r\n");
 
 		if ($AllowEdit == 1)
 		{
-		       print('<td width="100">&nbsp;</td>'."\r\n");
+		       print('<td>&nbsp;</td>'."\r\n");
 		}
 		
 	
@@ -345,11 +345,11 @@ $TeamNoTimePointsNumber = CSql::singleValue($sql, 'cnt');
 */
 
 $sql = "select tlp.teamlevelpoint_id, lp.levelpoint_id, lp.levelpoint_name, 
-	DATE_FORMAT(tlp.teamlevelpoint_datetime,    '%d.%m %H:%i') as tlp_datetime,
+	COALESCE(DATE_FORMAT(tlp.teamlevelpoint_datetime,    '%d.%m %H:%i'), '-') as tlp_datetime,
 	tlp.teamlevelpoint_comment,
 	tlp.error_id,
-	COALESCE(err.error_name, '') as error_name,
-	tlp.teamlevelpoint_duration,
+	IF(tlp.error_id = 0, '-', COALESCE(err.error_name, '')) as error_name,
+	COALESCE(tlp.teamlevelpoint_duration, '-') as teamlevelpoint_duration,
 	tlp.teamlevelpoint_penalty,
 	tlp.teamlevelpoint_result
 	from TeamLevelPoints tlp
