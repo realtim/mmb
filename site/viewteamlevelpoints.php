@@ -404,31 +404,32 @@ print('<tr class="head">
                 <td>Штраф, минуты</td>
 	 '."\r\n");
 
- $sql = "select lp.levelpoint_id, lp.levelpoint_name, 
-	 		lp.levelpoint_penalty
-	 from Distances d 
+ $sql = "    select lp.levelpoint_id
+				, lp.levelpoint_name
+				, lp.levelpoint_penalty
+			from Distances d 
 			inner join LevelPoints lp 
 			on d.distance_id = lp.distance_id 
 			left outer join (
-				select lpd.levelpoint_id
-				from  LevelPointDiscounts lpd 
-					inner join LevelPoints lp 
-					on lp.levelpoint_order >= lpd.levelpointdiscount_start
-						 and lp.levelpoint_order <= lpd.levelpointdiscount_finish
-						 and lp.distance_id = lpd.distance_id
-				where lpd.distance_id = $DistanceId 
-					and COALESCE(lp.levelpoint_hide, 0) = 0
-					and COALESCE(lpd.levelpointdiscount_hide, 0) = 0
+			select lp1.levelpoint_id
+			from  LevelPointDiscounts lpd 
+				inner join LevelPoints lp1 
+				on lp1.levelpoint_order >= lpd.levelpointdiscount_start
+					and lp1.levelpoint_order <= lpd.levelpointdiscount_finish
+					and lp1.distance_id = lpd.distance_id
+			where lpd.distance_id = $DistanceId
+				and COALESCE(lp1.levelpoint_hide, 0) = 0
+				and COALESCE(lpd.levelpointdiscount_hide, 0) = 0
 			) lpd1
 			on lp.levelpoint_id = lpd1.levelpoint_id		
 			left outer join TeamLevelPoints tlp 
 			on tlp.levelpoint_id = lp.levelpoint_id 
-				and  tlp.team_id = $TeamId
-	 where  d.distance_id = $DistanceId 
-			 and tlp.levelpoint_id is null
-			 and lpd1.levelpoint_id	is null
-			 and COALESCE(lp.levelpoint_hide, 0) = 0
-	 order by lp.levelpoint_order ASC
+			and  tlp.team_id = $TeamId
+			where  d.distance_id = $DistanceId
+			and tlp.levelpoint_id is null
+			and lpd1.levelpoint_id	is null
+			and COALESCE(lp.levelpoint_hide, 0) = 0
+			order by lp.levelpoint_order ASC
 	 ";
   $Result = MySqlQuery($sql);
  while ($Row = mysql_fetch_assoc($Result))
