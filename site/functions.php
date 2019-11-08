@@ -1517,6 +1517,7 @@ send_mime_mail('Автор письма',
 
 
 
+	
 	// функция вычисляет место команды в общем зачёте
 	function GetTeamPlace($teamid)
 	{
