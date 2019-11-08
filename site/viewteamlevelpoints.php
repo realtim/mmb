@@ -316,7 +316,7 @@ print("<br/>\n");
 print("<table class=\"std\">\r\n");
 
 
-print('<tr class="head gray">
+print('<tr class="head">
                          <td>Точка</td>
                          <td>Время отметки</td>
                          <td>Ошибка</td>
