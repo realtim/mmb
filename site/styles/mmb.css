@@ -97,7 +97,9 @@ table.std td {
 }
 
 table.std tr.head td {
-    padding:  2px 3px 2px 3px;
+    padding:  2px 5px 2px 5px;
+    text-align: center;
+    background-color: #CCCCCC;
 }
 
 
