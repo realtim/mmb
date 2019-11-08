@@ -398,7 +398,51 @@ mysql_free_result($Result);
 //print('<tr><td colspan="5">*Наведите курсор на ячейку с КП, чтобы узнать штраф за его невзятие</td></tr>'."\n");
 print("</table>\r\n");
 print("<br/>\r\n");
+print("<table class=\"std\">\r\n");
+print('<tr class="head">
+                <td>Пропуск кп с собственным штрафом</td>
+                <td>Штраф, минуты</td>
+	 '."\r\n");
 
+ $sql = "select lp.levelpoint_id, lp.levelpoint_name, 
+	 		lp.levelpoint_penalty
+	 from Distances d 
+			inner join LevelPoints lp 
+			on d.distance_id = lp.distance_id 
+			left outer join TeamLevelPoints tlp 
+			on tlp.levelpoint_id = lp.levelpoint_id 
+				and  tlp.team_id = $TeamId
+	 where  d.distance_id = $DistanceId and tlp.levelpoint_id is null
+	 order by lp.levelpoint_order ASC
+	 ";
+  $Result = MySqlQuery($sql);
+ while ($Row = mysql_fetch_assoc($Result))
+ {
+ 
+	 print("<tr>\r\n");
+	 print("<td>{$Row['levelpoint_name']}</td>
+		   <td>{$Row['levelpoint_penalty']}</td>\r\n");
+	 print("</tr>\r\n");
+ }
+  mysql_free_result($Result);
+
+print("</tr>\r\n");
+print("</table>\r\n");
+print("<br/>\r\n");
+print("<table class=\"std\">\r\n");
+print('<tr class="head">
+                <td>Облако кп с .. по ...</td>
+                <td>Амнистия, минуты</td>
+                <td>Пропущены кп</td>
+                <td>Штраф без учета амнистии, минуты</td>
+                <td>Штраф с учетом амнистии, минуты</td>
+	 '."\r\n");
+
+
+print("</tr>\r\n");
+print("</table>\r\n");
+print("<br/>\r\n");
+ 
 
 // Закрываем форму
 print("</form>\n");
