@@ -477,7 +477,7 @@ mysql_free_result($Result);
 				and COALESCE(lpd.levelpointdiscount_hide, 0) = 0
 			order by lp.levelpoint_order ASC
 			";
-			
+
 $Result = MySqlQuery($sql);
 if (mysql_num_rows($Result) > 0)
 {
@@ -503,10 +503,10 @@ if (mysql_num_rows($Result) > 0)
 		print("<td>{$Row['levelpoint_name']}</td>
 	   <td>{$Row['levelpoint_penalty']}</td>\r\n");
 		print("</tr>\r\n");
-	
-		print("</tr>\r\n");
-		print("</table>\r\n");
 	}
+	print("</tr>\r\n");
+	print("</table>\r\n");
+
 }
 mysql_free_result($Result);
 
