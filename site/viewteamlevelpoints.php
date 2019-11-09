@@ -448,8 +448,6 @@ if (mysql_num_rows($Result) > 0)
 mysql_free_result($Result);
 
 
-
-
 	$sql = "select lp.levelpoint_id, lp.levelpoint_name, 
 				lp.levelpoint_penalty,
 				lpd.levelpointdiscount_start,
@@ -484,7 +482,7 @@ if (mysql_num_rows($Result) > 0)
 	print("<br/>\r\n");
 	print("<table class=\"std\">\r\n");
 	print('<tr class="head">
-					<td>Номер ка</td>
+					<td>Номер кп</td>
 					<td>Штраф, минуты</td>
 					</tr>'."\r\n");
 	
