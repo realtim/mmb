@@ -488,7 +488,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	if ($predDiscountId <> $Row['levelpointdiscount_id'])
 	{
 		$predDiscountId = $Row['levelpointdiscount_id'];
-		print("<tr class="head">\r\n");
+		print('<tr class="head">'."\r\n");
 		print("<td>{$Row['levelpointdiscount_start']} - {$Row['levelpointdiscount_finish']}</td>\r\n");
 		print("<td>{$Row['levelpointdiscount_value']}</td>\r\n");
 		print("</tr>\r\n");
