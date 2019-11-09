@@ -446,10 +446,6 @@ print("</tr>\r\n");
 print("</table>\r\n");
 print("<br/>\r\n");
 print("<table class=\"std\">\r\n");
-print('<tr class="head">
-                <td>Пропущены кп</td>
-                <td>Штраф, минуты</td>
-	 '."\r\n");
 
 	$sql = "select lp.levelpoint_id, lp.levelpoint_name, 
 				lp.levelpoint_penalty,
