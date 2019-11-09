@@ -445,7 +445,7 @@ print('<tr class="head">
 print("</tr>\r\n");
 print("</table>\r\n");
 print("<br/>\r\n");
-print("<table class=\"std\">\r\n");
+/* print("<table class=\"std\">\r\n");
 
 	$sql = "select lp.levelpoint_id, lp.levelpoint_name, 
 				lp.levelpoint_penalty,
@@ -483,7 +483,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	{
 		$predDiscountId = $Row['lpd.levelpointdiscount_id'];
 		print("<tr>\r\n");
-		print("<td>{$Row['levelpointdiscount_start']} - {$Row['levelpointdiscount_finish']}</td>
+		//print("<td>{$Row['levelpointdiscount_start']} - {$Row['levelpointdiscount_finish']}</td>
 	   <td>{$Row['levelpointdiscount_value']}</td>\r\n");
 		print("</tr>\r\n");
 	}
@@ -493,7 +493,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	print("</tr>\r\n");
 }
 mysql_free_result($Result);
-
+ */
 
 print("</tr>\r\n");
 print("</table>\r\n");
