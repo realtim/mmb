@@ -397,12 +397,6 @@ mysql_free_result($Result);
 // Закрываем таблицу
 //print('<tr><td colspan="5">*Наведите курсор на ячейку с КП, чтобы узнать штраф за его невзятие</td></tr>'."\n");
 print("</table>\r\n");
-print("<br/>\r\n");
-print("<table class=\"std\">\r\n");
-print('<tr class="head">
-                <td>Пропуск кп с собственным штрафом</td>
-                <td>Штраф, минуты</td>
-	 '."\r\n");
 
  $sql = "    select lp.levelpoint_id
 				, lp.levelpoint_name
@@ -431,25 +425,29 @@ print('<tr class="head">
 			and COALESCE(lp.levelpoint_hide, 0) = 0
 			order by lp.levelpoint_order ASC
 	 ";
-  $Result = MySqlQuery($sql);
- while ($Row = mysql_fetch_assoc($Result))
- {
- 
-	 print("<tr>\r\n");
-	 print("<td>{$Row['levelpoint_name']}</td>
-		   <td>{$Row['levelpoint_penalty']}</td>\r\n");
-	 print("</tr>\r\n");
- }
-  mysql_free_result($Result);
+$Result = MySqlQuery($sql);
+if (mysql_num_rows($Result) > 0)
+{
+	print("<br/>\r\n");
+	print("<table class=\"std\">\r\n");
+	print('<tr class="head">
+                <td>Пропуск кп с собственным штрафом</td>
+                <td>Штраф, минуты</td>
+	 '."\r\n");
+	
+	 while ($Row = mysql_fetch_assoc($Result))
+	{
+		print("<tr>\r\n");
+		print("<td>{$Row['levelpoint_name']}</td>
+			<td>{$Row['levelpoint_penalty']}</td>\r\n");
+		print("</tr>\r\n");
+	}
+	print("</tr>\r\n");
+	print("</table>\r\n");
+}
+mysql_free_result($Result);
 
-print("</tr>\r\n");
-print("</table>\r\n");
-print("<br/>\r\n");
-print("<table class=\"std\">\r\n");
-print('<tr class="head">
-                <td>Пропуск кп в облаке с ..по</td>
-                <td>Амнистия, минуты</td>
-				</tr>'."\r\n");
+
 
 
 	$sql = "select lp.levelpoint_id, lp.levelpoint_name, 
@@ -479,31 +477,40 @@ print('<tr class="head">
 				and COALESCE(lpd.levelpointdiscount_hide, 0) = 0
 			order by lp.levelpoint_order ASC
 			";
+			
 $Result = MySqlQuery($sql);
-
-
-$predDiscountId = 0;
-while ($Row = mysql_fetch_assoc($Result))
+if (mysql_num_rows($Result) > 0)
 {
-	if ($predDiscountId <> $Row['levelpointdiscount_id'])
-	{
-		$predDiscountId = $Row['levelpointdiscount_id'];
-		print('<tr class="head">'."\r\n");
-		print("<td>{$Row['levelpointdiscount_start']} - {$Row['levelpointdiscount_finish']}</td>\r\n");
-		print("<td>{$Row['levelpointdiscount_value']}</td>\r\n");
-		print("</tr>\r\n");
-	}
-	print("<tr>\r\n");
-	print("<td>{$Row['levelpoint_name']}</td>
-   <td>{$Row['levelpoint_penalty']}</td>\r\n");
-	print("</tr>\r\n");
-}
+	print("<br/>\r\n");
+	print("<table class=\"std\">\r\n");
+	print('<tr class="head">
+					<td>Номер ка</td>
+					<td>Штраф, минуты</td>
+					</tr>'."\r\n");
 	
+	$predDiscountId = 0;
+	while ($Row = mysql_fetch_assoc($Result))
+	{
+		if ($predDiscountId <> $Row['levelpointdiscount_id'])
+		{
+			$predDiscountId = $Row['levelpointdiscount_id'];
+			print('<tr class="head">'."\r\n");
+			print("<td>Облако {$Row['levelpointdiscount_start']} - {$Row['levelpointdiscount_finish']}</td>\r\n");
+			print("<td>Амнистия, минуты {$Row['levelpointdiscount_value']}</td>\r\n");
+			print("</tr>\r\n");
+		}
+		print("<tr>\r\n");
+		print("<td>{$Row['levelpoint_name']}</td>
+	   <td>{$Row['levelpoint_penalty']}</td>\r\n");
+		print("</tr>\r\n");
+	
+		print("</tr>\r\n");
+		print("</table>\r\n");
+	}
+}
 mysql_free_result($Result);
 
 
-print("</tr>\r\n");
-print("</table>\r\n");
 print("<br/>\r\n");
  
 
