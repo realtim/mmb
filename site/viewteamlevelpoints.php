@@ -480,9 +480,9 @@ $Result = MySqlQuery($sql);
 $predDiscountId = 0;
 while ($Row = mysql_fetch_assoc($Result))
 {
-	if ($predDiscountId <> $Row['lpd.levelpointdiscount_id'])
+	if ($predDiscountId <> $Row['levelpointdiscount_id'])
 	{
-		$predDiscountId = $Row['lpd.levelpointdiscount_id'];
+		$predDiscountId = $Row['levelpointdiscount_id'];
 		print("<tr>\r\n");
 		//print("<td>{$Row['levelpointdiscount_start']} - {$Row['levelpointdiscount_finish']}</td>
 
