@@ -558,6 +558,18 @@ class CSql {
 		if (empty($lotterydt)) return "NO_LOTTERY";		// приглашения по итогам лотереи еще не выдавались
 		else return "LOT_END";					// приглашения по итогам лотереи выданы
 	}
+
+	// 10.11.2019 возвращает число ммб, которые активны, то есть открыты или дата закрытия ещё не наступила
+	public static function activeRaidsCount()
+	{
+		$sql = "select count(*) as rcount
+		from Raids r
+		where  r.raid_closedate is null or r.raid_closedate >= NOW()";
+
+		return self::singleValue($sql, 'rcount', false);
+	}
+
+
 }
 // Конец описания класса cSql
 
@@ -1342,27 +1354,27 @@ function CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $Raid
 
 function CanRequestUserUnion($Administrator, $UserId, $ParentUserId)
 {
-
-
+	//  проверка, что нет активных ммб
+	if (CSql::activeRaidsCount() > 0) return(0);
+	
 	// Оба пользователя должны быть определеные
 	if (!$UserId || !$ParentUserId) return(0);
 
 	// Нельзя запросить слияние с самим собой
 	if ($UserId == $ParentUserId) return(0);
 
-        // Тут добавить проверку наличия записей в журнале объединения
-	$Sql = "select count(*) as result from  UserUnionLogs where union_status <> 0 and  union_status <> 3 and user_id = $UserId";
+    // проверка, что пользователь, с которым запросят слияние не участвовал в открытом/подтвержденном слиянии со стороны "предка" 
+	$Sql = "select count(*) as result from  UserUnionLogs where union_status <> 0 and  union_status <> 3 and user_parentid = $ParentUserId";
 	$InUnion = CSql::singleValue($Sql, 'result');
 
-         // Если есть в запросе, то нельзя
+    // Если есть в запросе, то нельзя
 	if ($InUnion) return(0);
 
-
-         // Если выше проверки не сработали, то  Администратору можно 
+    // Если выше проверки не сработали, то  Администратору можно 
 	if ($Administrator) return(1);
 
-        // Пока и всем остальным разрешаем делать запросы          
-        return(1);
+    // нельзя          
+    return(0);
 }
 // Конец проверки возможности запросить слияние с пользователем
 
