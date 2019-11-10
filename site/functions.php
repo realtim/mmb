@@ -1354,6 +1354,7 @@ function CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $Raid
 
 function CanRequestUserUnion($Administrator, $UserId, $ParentUserId)
 {
+	print("1");
 	//  проверка, что нет активных ммб
 	if (CSql::activeRaidsCount() > 0) return(0);
 	
@@ -1367,8 +1368,11 @@ function CanRequestUserUnion($Administrator, $UserId, $ParentUserId)
 	$Sql = "select count(*) as result from  UserUnionLogs where union_status <> 0 and  union_status <> 3 and user_parentid = $ParentUserId";
 	$InUnion = CSql::singleValue($Sql, 'result');
 
+	print("2");
+
     // Если есть в запросе, то нельзя
 	if ($InUnion) return(0);
+	print("3");
 
     // Если выше проверки не сработали, то  Администратору можно 
 	if ($Administrator) return(1);
