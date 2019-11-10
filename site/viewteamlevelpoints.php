@@ -341,7 +341,7 @@ $TeamNoTimePointsNumber = CSql::singleValue($sql, 'cnt');
 
 $sql = "select tlp.teamlevelpoint_id, lp.levelpoint_id, lp.levelpoint_name, 
 	COALESCE(DATE_FORMAT(tlp.teamlevelpoint_datetime,'%d.%m.%y'), '-') as tlp_date,
-	COALESCE(DATE_FORMAT(tlp.teamlevelpoint_datetime, %H:%i'), '-') as tlp_time,
+	COALESCE(DATE_FORMAT(tlp.teamlevelpoint_datetime, '%H:%i'), '-') as tlp_time,
 	tlp.teamlevelpoint_comment,
 	tlp.error_id,
 	IF(tlp.error_id = 0, '-', COALESCE(err.error_name, '')) as error_name,
