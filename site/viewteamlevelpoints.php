@@ -314,12 +314,13 @@ print("<br/>\n");
 print("<table class=\"std\">\r\n");
 print('<tr class="head">
                 <td>Взятые кп</td>
+                <td>Дата отметки</td>
                 <td>Время отметки</td>
                 <td>Ошибка</td>
 		        <td>Комментарий</td>
-		        <td>Время на дистанции</td>
+		        <td>Сплит (время на отрезке)</td>
 		        <td>Штраф, минуты</td>
-		        <td>Результат</td>
+		        <td>Время на дистанции</td>
 	 '."\r\n");
 
 if ($AllowEdit == 1)
@@ -339,7 +340,8 @@ $TeamNoTimePointsNumber = CSql::singleValue($sql, 'cnt');
 */
 
 $sql = "select tlp.teamlevelpoint_id, lp.levelpoint_id, lp.levelpoint_name, 
-	COALESCE(DATE_FORMAT(tlp.teamlevelpoint_datetime,    '%d.%m %H:%i'), '-') as tlp_datetime,
+	COALESCE(DATE_FORMAT(tlp.teamlevelpoint_datetime,'%d.%m.%y'), '-') as tlp_date,
+	COALESCE(DATE_FORMAT(tlp.teamlevelpoint_datetime, %H:%i'), '-') as tlp_time,
 	tlp.teamlevelpoint_comment,
 	tlp.error_id,
 	IF(tlp.error_id = 0, '-', COALESCE(err.error_name, '')) as error_name,
@@ -374,7 +376,8 @@ while ($Row = mysql_fetch_assoc($Result))
 
 	print("<tr>\r\n");
 	print("<td>{$Row['levelpoint_name']}</td>
-              <td>{$Row['tlp_datetime']}</td>
+              <td>{$Row['tlp_date']}</td>
+              <td>{$Row['tlp_time']}</td>
               <td>{$Row['error_name']}</td>
               <td>{$Row['teamlevelpoint_comment']}</td>
               <td>{$Row['teamlevelpoint_duration']}</td>
