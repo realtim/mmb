@@ -980,7 +980,7 @@ if (!isset($MyPHPScript)) return;
                  from UserUnionLogs 
              where union_status <> 0
                    and union_status <> 3
-                   and user_id = $UserId";
+                   and user_parentid = $pUserId";
 
         if (CSql::rowCount($sql) > 0) {
             CMmb::setResult('Пользователь уже есть в слиянии', 'ViewUserUnionPage', '');
