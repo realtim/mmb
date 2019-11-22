@@ -249,9 +249,9 @@ public final class Distance {
      * @return String with point name from the distance, '#N' name or '?' name
      */
     private String pointFromList(final List<Integer> list, final int index) {
-        if (index < 0 || index > list.size()) return "?";
+        if (index < 0 || index >= list.size()) return "?";
         final int number = list.get(index);
-        if (mPoints == null || number < 0 || number > mPoints.length || mPoints[number] == null) return "#" + number;
+        if (mPoints == null || number < 0 || number >= mPoints.length || mPoints[number] == null) return "#" + number;
         return mPoints[number].mName;
     }
 

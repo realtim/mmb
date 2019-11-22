@@ -396,7 +396,7 @@ public final class StationAPI extends StationRaw {
         mLastInitTime = byteArray2Long(response, 0, 3);
         // Update station time and drift
         mStationTime = mLastInitTime;
-        mTimeDrift = (int) (mStationTime - getStartTime());
+        mTimeDrift = (int) (mStationTime - getStartTime() / 1000L);
         // Chip UID (bytes 4-11) is ignored right now
         return true;
     }
