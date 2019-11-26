@@ -149,6 +149,7 @@ function SendDistance(PDO $pdo, $raid_id)
     $last = intval(substr(end(array_keys($points)), 1));
     for ($n = $last; $n > 0; $n--) {
         $index = "p" . $n;
+        if (!isset($points[$index])) continue;
         if ($raid_end == -1) {
             if (!$points[$index]["end"]) die("Точка финиша последнего этапа без времени окончания работы");
             $raid_end = $points[$index]["end"];

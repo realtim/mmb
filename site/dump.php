@@ -29,13 +29,16 @@ header("Connection: close");
 // Выводим всю таблицу в виде csv
 $sql = $pdo->prepare("SELECT * FROM SportiduinoRecords ORDER BY sportiduinorecord_id ASC");
 $sql->execute();
-$result = $sql->fetchAll(PDO::FETCH_ASSOC);
-foreach ($result[0] as $key => $value)
-    echo "$key;";
-echo "\n";
-foreach ($result as $row) {
-    foreach ($row as $key => $value)
-        echo "$value;";
+$header_line = 1;
+while ($row = $sql->fetch(PDO::FETCH_ASSOC)) {
+  // Выводим шапку с названиями полей
+  if ($header_line) {
+    foreach (array_keys($row) as $name) echo "$name;";
     echo "\n";
+    $header_line = 0;
+  }
+  // Выводим очередную строку таблицы
+  foreach ($row as $key => $value) echo "$value;";
+  echo "\n";
 }
 ?>
