@@ -50,12 +50,14 @@
 
             <Button
                 android:id="@+id/send_results"
+                style="@style/AppTheme.ButtonColored"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="false"
                 android:onClick="startRecordsUpload"
                 android:padding="@dimen/default_padding"
-                android:text="@string/send_results" />
+                android:text="@string/send_results"
+                app:backgroundTint="@color/bg_primary" />
 
             <Button
                 android:id="@+id/get_results"

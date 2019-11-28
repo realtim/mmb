@@ -1,10 +1,13 @@
 package ru.mmb.sportiduinomanager;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.constraint.Group;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.view.ViewCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.SwitchCompat;
 import android.view.MenuItem;
 import android.view.View;
@@ -132,9 +135,15 @@ public final class DatabaseActivity extends MenuActivity {
             if (MainApp.mAllRecords.hasUnsentRecords()) {
                 sendRecordsButton.setAlpha(MainApp.ENABLED_BUTTON);
                 sendRecordsButton.setClickable(true);
+                final ColorStateList backgroundTintList = AppCompatResources.getColorStateList(mAppContext,
+                        R.color.bg_secondary);
+                ViewCompat.setBackgroundTintList(sendRecordsButton, backgroundTintList);
             } else {
                 sendRecordsButton.setAlpha(MainApp.DISABLED_BUTTON);
                 sendRecordsButton.setClickable(false);
+                final ColorStateList backgroundTintList = AppCompatResources.getColorStateList(mAppContext,
+                        R.color.bg_primary);
+                ViewCompat.setBackgroundTintList(sendRecordsButton, backgroundTintList);
             }
             // Always allow to download results from site and upload database
             getResultsButton.setVisibility(View.VISIBLE);

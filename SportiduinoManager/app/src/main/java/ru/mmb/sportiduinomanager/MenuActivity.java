@@ -11,6 +11,8 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
@@ -179,7 +181,10 @@ public class MenuActivity extends AppCompatActivity {
         }
         if (dbStatus == Database.DB_STATE_OK) {
             if (MainApp.mAllRecords.hasUnsentRecords()) {
-                databaseItem.setTitle(getResources().getText(R.string.mode_cloud_upload));
+                final SpannableString title = new SpannableString(getResources().getText(R.string.mode_cloud_upload));
+                title.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.bg_secondary)), 0,
+                        title.length(), 0);
+                databaseItem.setTitle(title);
                 databaseItem.setIcon(R.drawable.ic_cloud_upload);
             } else {
                 databaseItem.setTitle(getResources().getText(R.string.mode_cloud_done));
@@ -243,8 +248,8 @@ public class MenuActivity extends AppCompatActivity {
         }
         // Update toolbar title
         if (activeItem != 0) {
-            Objects.requireNonNull(getSupportActionBar())
-                    .setTitle(mNavigationView.getMenu().findItem(activeItem).getTitle());
+            final String title = mNavigationView.getMenu().findItem(activeItem).getTitle().toString();
+            Objects.requireNonNull(getSupportActionBar()).setTitle(title);
         }
         if (MainApp.mStation != null) {
             // Start/stop station monitoring service after selecting new activity
