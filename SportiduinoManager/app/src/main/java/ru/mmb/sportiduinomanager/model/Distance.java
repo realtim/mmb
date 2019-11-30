@@ -39,6 +39,10 @@ public final class Distance {
      * Which website database is used, test or main.
      */
     private final int mTestSite;
+    /*
+     * Default Sportiduino Bluetooth PIN-code.
+     */
+    private final String mBluetoothPin;
     /**
      * Sparse array of control points, array index == point number.
      */
@@ -64,6 +68,7 @@ public final class Distance {
         mUserEmail = "";
         mUserPassword = "";
         mTestSite = 1;
+        mBluetoothPin = "";
         mLastResultId = 0;
     }
 
@@ -78,11 +83,12 @@ public final class Distance {
      * @param timeDownloaded Time when the distance was download from site
      * @param timeReadonly   Time when the raid becomes readonly
      * @param timeFinish     Time when the last control point is closed
+     * @param bluetoothPin   Sportiduino Bluetooth PIN-code
      * @param lastResultId   Id of last result downloaded from site
      */
     Distance(final String userEmail, final String userPassword, final int testSite,
              final int raidId, final String raidName, final long timeDownloaded,
-             final long timeReadonly, final long timeFinish, final long lastResultId) {
+             final long timeReadonly, final long timeFinish, final String bluetoothPin, final long lastResultId) {
         mUserEmail = userEmail;
         mUserPassword = userPassword;
         mTestSite = testSite;
@@ -91,6 +97,7 @@ public final class Distance {
         mTimeDownloaded = timeDownloaded;
         mTimeReadonly = timeReadonly;
         mTimeFinish = timeFinish;
+        mBluetoothPin = bluetoothPin;
         mLastResultId = lastResultId;
     }
 
@@ -119,6 +126,13 @@ public final class Distance {
      */
     public int getTestSite() {
         return mTestSite;
+    }
+
+    /*
+     * Get default Sportiduino Bluetooth PIN-code.
+     */
+    public String getBluetoothPin() {
+        return mBluetoothPin;
     }
 
     /**

@@ -99,11 +99,12 @@ switch ($request["X-Sportiduino-Action"]) {
 function SendDistance(PDO $pdo, $raid_id)
 {
     // Получаем название марш-броска и интервал до старта, за который марш-бросок переводится в режим readonly
-    $sql = $pdo->prepare("SELECT raid_name, raid_readonlyhoursbeforestart FROM Raids WHERE raid_id = :raid_id");
+    $sql = $pdo->prepare("SELECT raid_name, raid_readonlyhoursbeforestart, raid_btpin FROM Raids WHERE raid_id = :raid_id");
     $sql ->bindParam("raid_id", $raid_id, PDO::PARAM_INT);
     $sql->execute();
     $row = $sql->fetch(PDO::FETCH_ASSOC);
     $raid_name = trim(strtr($row["raid_name"], "\t\n", "  "));
+    $bt_pin = trim(strtr($row["raid_btpin"], "\t\n", "  "));
     $ro_hours = intval($row["raid_readonlyhoursbeforestart"]);
     $sql = null;
 
@@ -211,7 +212,7 @@ function SendDistance(PDO $pdo, $raid_id)
 
     // Все данные извлечены успешно, отправляем их
     echo "\n";
-    echo "R\t$raid_id\t$db_ready_date\t$raid_end\t$raid_name\n";
+    echo "R\t$raid_id\t$db_ready_date\t$raid_end\t$raid_name\t$bt_pin\n";
     echo "P\t", count($points), "\t$max_order\n";
     foreach ($points as $n => $point)
         echo "\t", substr($n, 1), "\t", $point["type"], "\t", $point["penalty"], "\t", $point["start"], "\t", $point["end"], "\t", $point["name"], "\n";

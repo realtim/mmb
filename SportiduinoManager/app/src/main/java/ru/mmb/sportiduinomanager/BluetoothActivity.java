@@ -21,6 +21,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -137,14 +138,24 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
                 // Discovery has found a device
                 // Get the BluetoothDevice object and its info from the Intent
                 final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                mAdapter.insertItem(device);
+                final String name = device.getName();
+                if (name != null && !name.matches("Sport.*")) return;
                 final List<BluetoothDevice> deviceList = mMainApplication.getBTDeviceList();
-                if (!deviceList.contains(device)) {
-                    deviceList.add(device);
-                }
+                if (deviceList.contains(device)) return;
+                mAdapter.insertItem(device);
+                deviceList.add(device);
+            } else if (BluetoothDevice.ACTION_PAIRING_REQUEST.equals(action)) {
+                usePin(intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE));
             }
         }
     };
+
+    private void usePin(final BluetoothDevice device) {
+        if (android.os.Build.VERSION.SDK_INT < 19) return;
+        final byte[] pinBytes = MainApp.mDistance.getBluetoothPin().getBytes(StandardCharsets.UTF_8);
+        if (pinBytes.length <= 0 || pinBytes.length > 16) return;
+        device.setPin(pinBytes);
+    }
 
     @Override
     protected void onCreate(final Bundle instanceState) {
@@ -162,6 +173,9 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
         final IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        if (android.os.Build.VERSION.SDK_INT >= 19) {
+            filter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
+        }
         registerReceiver(mSearchDevices, filter);
         // Get default Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
