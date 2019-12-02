@@ -38,6 +38,7 @@ if ($viewmode == 'Add')
 	        $RaidMapPrice = (int)$_POST['RaidMapPrice'];
 	        $RaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
 	        $RaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
+		$RaidBluetoothPIN = $_POST['RaidBluetoothPIN'];
 	}
 	else
 	// Пробуем создать команду первый раз
@@ -62,6 +63,7 @@ if ($viewmode == 'Add')
 		$RaidMapPrice = 0;
 		$RaidNoStartPrice = 0;
 		$RaidTeamsLimit = 0;
+		$RaidBluetoothPIN = '';
 	}
 
 	// Определяем следующее действие
@@ -91,7 +93,8 @@ else
 		       r.raid_fileprefix,
       	               (CASE WHEN r.raid_closedate is null THEN 1 ELSE 0 END) as raid_clearclosedate,
 		       (select count(*) from Distances where distance_hide = 0 and raid_id = $RaidId) as raid_distancescount,
-		       r.raid_teamslimit
+		       r.raid_teamslimit,
+		       r.raid_btpin
 		from Raids r
 		where r.raid_id = $RaidId";
 	$Row = CSql::singleRow($sql);
@@ -120,7 +123,7 @@ else
                 $RaidMapPrice = (int)$_POST['RaidMapPrice'];
                 $RaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
                 $RaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
-
+                $RaidBluetoothPIN = $_POST['RaidBluetoothPIN'];
 	}
 	else
 	{
@@ -144,7 +147,7 @@ else
                 $RaidMapPrice = (int)$Row['raid_mapprice'];
                 $RaidNoStartPrice = (int)$Row['raid_nostartprice'];
                 $RaidTeamsLimit = (int)$Row['raid_teamslimit'];
-
+                $RaidBluetoothPIN = $Row['raid_btpin'];
 	}
 
 	$NextActionName = 'RaidChangeData';
@@ -247,18 +250,18 @@ print('<tr><td class = "input">Новый файл эмблемы для заг�
 
 */
 // ============ Период ММБ
-print('<tr><td class="input">Период: <input type="text" name="RaidPeriod" size="30" value="'.$RaidPeriod.'" tabindex="'.(++$TabIndex)
+print('<tr><td class="input">Период: <input type="text" name="RaidPeriod" size="20" value="'.$RaidPeriod.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidPeriod))
 	.' title="Период ММБ"></td></tr>'."\r\n");
 
 // ============ Префикс файлов прим загрузке 
-print('<tr><td class="input">Префикс файлов: <input type="text" name="RaidFilePrefix" size="30" value="'.$RaidFilePrefix.'" tabindex="'.(++$TabIndex)
+print('<tr><td class="input">Префикс файлов: <input type="text" name="RaidFilePrefix" size="20" value="'.$RaidFilePrefix.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidFilePrefix))
 	.' title="Префикс файлов"></td></tr>'."\r\n");
 
 
 // ============ Число Дистанций
-print('<tr><td class="input">Число дистанций <input type="text" name="RaidDistancesCount" size="2" maxlength="1" value="'.$RaidDistancesCount.'" tabindex="'.(++$TabIndex)
+print('<tr><td class="input">Число дистанций <input type="text" name="RaidDistancesCount" size="1" maxlength="1" value="'.$RaidDistancesCount.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidDistancesCount))
 	.' title="Число дистанций"> <i>Должно быть не меньше, чем уже создано.</i></td></tr>'."\r\n");
 
@@ -296,23 +299,25 @@ print('<tr><td class="input">Название пункта старта: <input 
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidStartPointName))
 	.' title="Название пункта старта ММБ"></td></tr>'."\n\n");
 
-// ============ Стоимость одного комлпекта карт
-print('<tr><td class="input">Стоимость одного комплекта карт (руб.) <input type="text" name="RaidMapPrice" size="6" maxlength="6" value="'.$RaidMapPrice.'" tabindex="'.(++$TabIndex)
+// ============ Стоимость одного комплекта карт
+print('<tr><td class="input">Стоимость одного комплекта карт (руб.) <input type="text" name="RaidMapPrice" size="4" maxlength="4" value="'.$RaidMapPrice.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidMapPrice))
 	.' title="Стоимость одного комплекта карт (руб.)"></td></tr>'."\r\n");
 
 // ============ Стоимость (штраф) с участника за неявку на старт на этот ММБ
-print('<tr><td class="input">Стоимость неявки (руб.) <input type="text" name="RaidNoStartPrice" size="6" maxlength="6" value="'.$RaidNoStartPrice.'" tabindex="'.(++$TabIndex)
+print('<tr><td class="input">Стоимость неявки (руб.) <input type="text" name="RaidNoStartPrice" size="4" maxlength="4" value="'.$RaidNoStartPrice.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidNoStartPrice))
 	.' title="Стоимость неявки (руб.)"></td></tr>'."\r\n");
 
-
-
 // ============ Лимит команд
-print('<tr><td class="input">Лимит команд <input type="text" name="RaidTeamsLimit" size="8" maxlength="4" value="'.$RaidTeamsLimit.'" tabindex="'.(++$TabIndex)
+print('<tr><td class="input">Лимит команд <input type="text" name="RaidTeamsLimit" size="4" maxlength="4" value="'.$RaidTeamsLimit.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidTeamsLimit))
 	.' title="Лимит команд"></td></tr>'."\r\n");
 
+// ============ Bluetooth PIN-код судейских станций
+print('<tr><td class="input">Sportiduino PIN-код <input type="text" name="RaidBluetoothPIN" size="4" maxlength="4" value="'.$RaidBluetoothPIN.'" tabindex="'.(++$TabIndex)
+	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidBluetoothPIN))
+	.' title="Sportiduino PIN-код"></td></tr>'."\r\n");
 
 /*
 // ============ Информация о старте  (ссылка)
@@ -324,7 +329,7 @@ print('<tr><td class="input"><br/></td></tr>'."\r\n");
 print('<tr><td class="input"><b>Заполняется после ММБ</b></td></tr>'."\r\n");
 
 // ============ Финиш ММБ
-print('<tr><td class="input">Название пункта финиша: <input type="text" name="RaidFinishPointName" size="40" value="'.$RaidFinishPointName.'" tabindex="'.(++$TabIndex)
+print('<tr><td class="input">Название пункта финиша: <input type="text" name="RaidFinishPointName" size="20" value="'.$RaidFinishPointName.'" tabindex="'.(++$TabIndex)
 	.'"'.$DisabledText.($viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidFinishPointName))
 	.' title="Название пункта финиша ММБ"></td></tr>'."\n\n");
 

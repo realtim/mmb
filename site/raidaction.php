@@ -63,6 +63,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
         $pRaidMapPrice = (int)$_POST['RaidMapPrice'];
 	$pRaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
 	$pRaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
+	$pRaidBluetoothPIN = $_POST['RaidBluetoothPIN'];
 
 /*
         // Обрабатываем зхагрузку файла эмблемы
@@ -196,14 +197,14 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 		                           raid_startpoint, raid_finishpoint, raid_closedate,
 					   raid_noshowresult, raid_fileprefix,
 					   raid_readonlyhoursbeforestart, raid_mapprice, 
-					   raid_nostartprice, raid_teamslimit
+					   raid_nostartprice, raid_teamslimit, raid_btpin
 					   )
 			values (trim('$pRaidName'), trim('$pRaidPeriod'), $regEndDate
 				, trim('$pRaidStartPointName'), trim('$pRaidFinishPointName')
 				, $closeDate
 				, $pRaidNoShowResult, trim('$pRaidFilePrefix')
 				, $pRaidReadOnlyHoursBeforeStart, $pRaidMapPrice
-				, $pRaidNoStartPrice, $pRaidTeamsLimit)";
+				, $pRaidNoStartPrice, $pRaidTeamsLimit, trim($pRaidBluetoothPIN))";
 
 
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
@@ -298,6 +299,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 				, raid_nostartprice = $pRaidNoStartPrice
 				, raid_teamslimit = $pRaidTeamsLimit
 				, raid_fileprefix = trim('$pRaidFilePrefix')
+				, raid_btpin = trim('$pRaidBluetoothPIN')
 		        where raid_id = $RaidId";
 	    
 	        //       echo $sql;
