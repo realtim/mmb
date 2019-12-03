@@ -6,10 +6,10 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
-import ru.mmb.sportiduinomanager.BTDeviceListAdapter;
 import ru.mmb.sportiduinomanager.BluetoothActivity;
 import ru.mmb.sportiduinomanager.MainApp;
 import ru.mmb.sportiduinomanager.R;
+import ru.mmb.sportiduinomanager.adapter.BTDeviceListAdapter;
 import ru.mmb.sportiduinomanager.model.StationAPI;
 
 /**

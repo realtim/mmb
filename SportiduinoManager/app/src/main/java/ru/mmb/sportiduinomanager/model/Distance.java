@@ -39,7 +39,7 @@ public final class Distance {
      * Which website database is used, test or main.
      */
     private final int mTestSite;
-    /*
+    /**
      * Default Sportiduino Bluetooth PIN-code.
      */
     private final String mBluetoothPin;
@@ -128,8 +128,10 @@ public final class Distance {
         return mTestSite;
     }
 
-    /*
+    /**
      * Get default Sportiduino Bluetooth PIN-code.
+     *
+     * @return PIN-code as string
      */
     public String getBluetoothPin() {
         return mBluetoothPin;

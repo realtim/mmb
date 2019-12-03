@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import ru.mmb.sportiduinomanager.adapter.MemberListAdapter;
+import ru.mmb.sportiduinomanager.adapter.PointListAdapter;
 import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.task.ChipInfoTask;
 

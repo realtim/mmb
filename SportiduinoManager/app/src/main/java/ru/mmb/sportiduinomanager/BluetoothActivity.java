@@ -25,8 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
+import ru.mmb.sportiduinomanager.adapter.BTDeviceListAdapter;
 import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.StationAPI;
 import ru.mmb.sportiduinomanager.task.ConnectDeviceTask;
@@ -578,8 +578,8 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
 
         ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
                 .getString(R.string.station_time_drift, MainApp.mStation.getTimeDrift()));
-        ((TextView) findViewById(R.id.station_chips_registered_value))
-                .setText(String.format(Locale.getDefault(), "%d", MainApp.mStation.getTeamsPunched()));
+        ((TextView) findViewById(R.id.station_chips_registered_value)).setText(getResources()
+                .getString(R.string.station_chips_registered_n, MainApp.mStation.getTeamsPunched()));
         ((TextView) findViewById(R.id.station_last_chip_time)).setText(
                 Records.printTime(MainApp.mStation.getLastPunchTime(), "dd.MM.yyyy  HH:mm:ss"));
         // Show status block

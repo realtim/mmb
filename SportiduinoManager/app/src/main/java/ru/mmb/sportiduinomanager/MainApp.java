@@ -71,11 +71,11 @@ public final class MainApp extends Application {
     /**
      * Alpha for disabled buttons appearance in the application.
      */
-    static final float DISABLED_BUTTON = .5f;
+    public static final float DISABLED_BUTTON = .5f;
     /**
      * Alpha for enabled buttons appearance in the application.
      */
-    static final float ENABLED_BUTTON = 1f;
+    public static final float ENABLED_BUTTON = 1f;
     /**
      * Teams with members downloaded from site or loaded from local database.
      */
@@ -99,7 +99,7 @@ public final class MainApp extends Application {
     /**
      * Distance downloaded from site or loaded from local database.
      */
-    static Distance mDistance = new Distance();
+    public static Distance mDistance = new Distance();
     /**
      * Filtered list of records with team punches at connected station.
      * Last punch per team only. Should be equal to records in station flash memory.

@@ -1,4 +1,4 @@
-package ru.mmb.sportiduinomanager;
+package ru.mmb.sportiduinomanager.adapter;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +9,8 @@ import android.widget.CheckBox;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import ru.mmb.sportiduinomanager.R;
 
 /**
  * Provides the list of team members with checkboxes.
@@ -48,7 +50,7 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
      * @param originalColor Color of members which presence has not been changed.
      * @param changedColor  Color of members which presence has been changed.
      */
-    MemberListAdapter(final OnMemberClicked onClick, final int originalColor,
+    public MemberListAdapter(final OnMemberClicked onClick, final int originalColor,
                       final int changedColor) {
         super();
         mOnClick = onClick;
@@ -109,7 +111,7 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
      * @param originalMask Original mask with team members presence at control point
      * @param mask         Current mask which could be changed by operator
      */
-    void updateList(final List<String> names, final int originalMask, final int mask) {
+    public void updateList(final List<String> names, final int originalMask, final int mask) {
         mNamesList = names;
         mMask = mask;
         mOriginalMask = originalMask;
@@ -121,7 +123,7 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
      *
      * @param mask New mask value
      */
-    void setMask(final int mask) {
+    public void setMask(final int mask) {
         mMask = mask;
     }
 

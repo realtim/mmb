@@ -135,15 +135,15 @@ public final class DatabaseActivity extends MenuActivity {
             if (MainApp.mAllRecords.hasUnsentRecords()) {
                 sendRecordsButton.setAlpha(MainApp.ENABLED_BUTTON);
                 sendRecordsButton.setClickable(true);
-                final ColorStateList backgroundTintList = AppCompatResources.getColorStateList(mAppContext,
+                final ColorStateList backgroundTint = AppCompatResources.getColorStateList(mAppContext,
                         R.color.bg_secondary);
-                ViewCompat.setBackgroundTintList(sendRecordsButton, backgroundTintList);
+                ViewCompat.setBackgroundTintList(sendRecordsButton, backgroundTint);
             } else {
                 sendRecordsButton.setAlpha(MainApp.DISABLED_BUTTON);
                 sendRecordsButton.setClickable(false);
-                final ColorStateList backgroundTintList = AppCompatResources.getColorStateList(mAppContext,
+                final ColorStateList backgroundTint = AppCompatResources.getColorStateList(mAppContext,
                         R.color.bg_primary);
-                ViewCompat.setBackgroundTintList(sendRecordsButton, backgroundTintList);
+                ViewCompat.setBackgroundTintList(sendRecordsButton, backgroundTint);
             }
             // Always allow to download results from site and upload database
             getResultsButton.setVisibility(View.VISIBLE);

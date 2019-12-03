@@ -18,6 +18,8 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import ru.mmb.sportiduinomanager.adapter.MemberListAdapter;
+import ru.mmb.sportiduinomanager.adapter.TeamListAdapter;
 import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.StationAPI;
 import ru.mmb.sportiduinomanager.model.Teams;
