@@ -121,12 +121,6 @@ public class MenuActivity extends AppCompatActivity {
         final String html = getResources().getString(R.string.app_usage);
         ((WebView) findViewById(R.id.startup_message)).loadDataWithBaseURL(null, html, "text/html",
                 "utf-8", null);
-        // Show error from application onCreate (if any)
-        final MainApp mainApplication = (MainApp) getApplication();
-        final String startupError = mainApplication.getStartupError();
-        if (!"".equals(startupError)) {
-            Toast.makeText(this, startupError, Toast.LENGTH_LONG).show();
-        }
         // Update menu items
         updateMenuItems(0);
     }

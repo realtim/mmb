@@ -1,16 +1,14 @@
 package ru.mmb.sportiduinomanager;
 
 import android.app.Application;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteException;
 import android.os.Build;
+import android.widget.Toast;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import org.acra.ACRA;
@@ -106,41 +104,13 @@ public final class MainApp extends Application {
      */
     static Records mPointPunches = new Records(0);
     /**
-     * Current position in team list at control point.
+     * Current state of all UI elements to restore after activity recreation.
      */
-    private static int mTeamListPosition;
-    /**
-     * Current members selection mask at chip initialization / control point.
-     */
-    private static int mTeamMask;
+    static UIState mUIState = new UIState();
     /**
      * True if ControlPointActivity is running in foreground.
      */
     private static boolean mCPActivityActive;
-    /**
-     * Description of error occurred during application startup (if any).
-     */
-    private String mStartupError = "";
-    /**
-     * Email of the user who authorized (or tried to authorize) at the site.
-     */
-    private String mUserEmail = "";
-    /**
-     * Password of the user who authorized (or tried to authorize) at the site.
-     */
-    private String mUserPassword = "";
-    /**
-     * Which website database we are using, main of test.
-     */
-    private int mTestSite;
-    /**
-     * List of previously discovered Bluetooth devices.
-     */
-    private List<BluetoothDevice> mBTDeviceList = new ArrayList<>();
-    /**
-     * Current team number at chip initialization.
-     */
-    private int mTeamNumber;
 
     /**
      * Save distance to persistent memory.
@@ -234,43 +204,6 @@ public final class MainApp extends Application {
     }
 
     /**
-     * Get the current position in team list.
-     *
-     * @return Zero-based position
-     */
-    public static int getTeamListPosition() {
-        return mTeamListPosition;
-    }
-
-    /**
-     * Save the current position in team list.
-     *
-     * @param teamListPosition Zero-based position
-     */
-    public static void setTeamListPosition(final int teamListPosition) {
-        mTeamListPosition =
-                teamListPosition;
-    }
-
-    /**
-     * Get the current team mask at chip initialization / control point.
-     *
-     * @return Team mask
-     */
-    public static int getTeamMask() {
-        return mTeamMask;
-    }
-
-    /**
-     * Save the current team mask at chip initialization / control point.
-     *
-     * @param teamMask Team mask
-     */
-    public static void setTeamMask(final int teamMask) {
-        mTeamMask = teamMask;
-    }
-
-    /**
      * Get mCPActivityActive flag value.
      *
      * @return True if ControlPointActivity is running in foreground.
@@ -288,124 +221,36 @@ public final class MainApp extends Application {
         mCPActivityActive = isActive;
     }
 
-    /**
-     * Get startup error message (if any).
-     *
-     * @return Error message string
-     */
-    public String getStartupError() {
-        return mStartupError;
-    }
-
-    /**
-     * Get the email of the user who authorized (or tried to authorize) at the site.
-     *
-     * @return User email
-     */
-    public String getUserEmail() {
-        return mUserEmail;
-    }
-
-    /**
-     * Get the password of the user who authorized (or tried to do it) at the site.
-     *
-     * @return User password
-     */
-    public String getUserPassword() {
-        return mUserPassword;
-    }
-
-    /**
-     * Get info about which website database we are using, main of test.
-     *
-     * @return True if we are using test database
-     */
-    public int getTestSite() {
-        return mTestSite;
-    }
-
-    /**
-     * Keep email and password of authorized user
-     * and info about which website database we are using, main of test.
-     *
-     * @param userEmail    Email entered by user
-     * @param userPassword Password entered by user
-     * @param testSite     Test site selection (equal 1 if selected)
-     */
-    public void setAuthorizationParameters(final String userEmail, final String userPassword, final int testSite) {
-        mUserEmail = userEmail;
-        mUserPassword = userPassword;
-        mTestSite = testSite;
-    }
-
-    /**
-     * Get the list of previously discovered Bluetooth devices.
-     *
-     * @return List od Bluetooth devices
-     */
-    public List<BluetoothDevice> getBTDeviceList() {
-        return mBTDeviceList;
-    }
-
-    /**
-     * Save the list of previously discovered Bluetooth devices.
-     *
-     * @param deviceList List od Bluetooth devices
-     */
-    public void setBTDeviceList(final List<BluetoothDevice> deviceList) {
-        mBTDeviceList = deviceList;
-    }
-
-    /**
-     * Get the current team number during chip initialization.
-     *
-     * @return Team number
-     */
-    public int getTeamNumber() {
-        return mTeamNumber;
-    }
-
-    /**
-     * Save the current team number during chip initialization.
-     *
-     * @param teamNumber Team number
-     */
-    public void setTeamNumber(final int teamNumber) {
-        mTeamNumber = teamNumber;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
+        String startupError = "";
         final Context context = getApplicationContext();
         // Try to open/create local SQLite database
         try {
             setDatabase(new Database(context));
         } catch (IOException e) {
-            mStartupError = context.getString(R.string.err_db_cant_create_dir).concat(e.getMessage());
-            return;
+            startupError = context.getString(R.string.err_db_cant_create_dir).concat(e.getMessage());
         } catch (SQLiteException e) {
-            mStartupError = e.getMessage();
-            return;
+            startupError = e.getMessage();
         }
         // Try to load distance amd teams from database if it is not empty
-        if (mDatabase.getDbStatus() == Database.DB_STATE_OK) {
+        if ("".equals(startupError) && mDatabase.getDbStatus() == Database.DB_STATE_OK) {
             try {
                 final Distance distance =
                         mDatabase.loadDistance(context.getString(R.string.mode_chip_init));
                 if (distance != null && !distance.hasErrors()) {
                     setDistance(distance);
                     // Get user email, password and test/main database flag from loaded distance
-                    mUserEmail = mDistance.getUserEmail();
-                    mUserPassword = mDistance.getUserPassword();
-                    mTestSite = mDistance.getTestSite();
+                    mUIState.setAuthorizationParameters(mDistance.getUserEmail(), mDistance.getUserPassword(),
+                            mDistance.getTestSite());
                 }
                 final Teams teams = mDatabase.loadTeams();
                 if (teams != null && !teams.hasErrors()) {
                     setTeams(teams);
                 }
             } catch (SQLiteException e) {
-                mStartupError = e.getMessage();
+                startupError = e.getMessage();
             }
         }
         // Try to load records from database
@@ -414,8 +259,12 @@ public final class MainApp extends Application {
             try {
                 setAllRecords(mDatabase.loadRecords(), true);
             } catch (SQLiteException e) {
-                mStartupError = e.getMessage();
+                startupError = e.getMessage();
             }
+        }
+        // Display startup error (if any)
+        if (!"".equals(startupError)) {
+            Toast.makeText(this, startupError, Toast.LENGTH_LONG).show();
         }
     }
 
