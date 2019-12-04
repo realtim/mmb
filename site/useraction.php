@@ -34,7 +34,12 @@ if (!isset($MyPHPScript)) return;
         // $statustext = "Сотрудник: ".$employeename.", табельный номер: ".$tabnum ;
     } elseif ($action == "UserLogin")  {
         // обработка регистрации
-         
+        if ($ReadOnly == 1)
+        {
+            CMmb::setErrorMessage('В связи техническими работами сайт доступен только в режиме чтения.');
+            return;
+        }
+
         // первичная проверка данных
         $Login = trim(mmb_validate($_POST, 'Login'));
         $Password = trim(mmb_validate($_POST, 'Password'));
