@@ -84,6 +84,12 @@ if (!isset($MyPHPScript)) return;
 
     } elseif ($action == "ViewNewUserForm")  {
         // Действие вызывается ссылкой Новый пользователь
+        if ($ReadOnly == 1)
+        {
+            CMmb::setErrorMessage('В связи техническими работами сайт доступен только в режиме чтения.');
+            return;
+        }
+
         CMmb::setViews('ViewUserData', 'Add');
 
     } elseif ($action == "UserChangeData" or $action == "AddUser")  {
@@ -366,6 +372,13 @@ if (!isset($MyPHPScript)) return;
     } elseif ($action == "RestorePasswordRequest")  {
         // Действие вызывается ссылкой "Забыли пароль"
   
+        if ($ReadOnly == 1)
+        {
+            CMmb::setErrorMessage('В связи техническими работами сайт доступен только в режиме чтения.');
+            return;
+        }
+
+
         $view = "";
 
         $pUserEmail = trim(mmb_validate($_POST, 'Login'));
