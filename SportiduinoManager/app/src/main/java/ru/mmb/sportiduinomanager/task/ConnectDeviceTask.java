@@ -6,10 +6,10 @@ import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
-import ru.mmb.sportiduinomanager.BTDeviceListAdapter;
 import ru.mmb.sportiduinomanager.BluetoothActivity;
 import ru.mmb.sportiduinomanager.MainApp;
 import ru.mmb.sportiduinomanager.R;
+import ru.mmb.sportiduinomanager.adapter.BTDeviceListAdapter;
 import ru.mmb.sportiduinomanager.model.StationAPI;
 
 /**
@@ -20,10 +20,6 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Integer>
      * Reference to parent activity (which can cease to exist in any moment).
      */
     private final WeakReference<BluetoothActivity> mActivityRef;
-    /**
-     * Reference to main application thread.
-     */
-    private final MainApp mMainApplication;
     /**
      * RecyclerView with discovered Bluetooth devices and connect buttons.
      */
@@ -38,7 +34,6 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Integer>
     public ConnectDeviceTask(final BluetoothActivity context, final BTDeviceListAdapter adapter) {
         super();
         mActivityRef = new WeakReference<>(context);
-        mMainApplication = (MainApp) context.getApplication();
         mAdapter = adapter;
     }
 
@@ -82,18 +77,18 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Integer>
      * @param result False if connection attempt failed
      */
     protected void onPostExecute(final Integer result) {
-        // Show error message if connect attempt failed
-        if (result < 0) {
-            // Connection to BT device failed
-            Toast.makeText(mMainApplication, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
-        } else if (result > 0) {
-            // Station responded to getConfig/getStatus commands with an error,
-            // show this error to user
-            Toast.makeText(mMainApplication, result, Toast.LENGTH_LONG).show();
-        }
         // Get a reference to the activity if it is still there
         final BluetoothActivity activity = mActivityRef.get();
         if (activity == null || activity.isFinishing()) return;
+        // Show error message if connect attempt failed
+        if (result < 0) {
+            // Connection to BT device failed
+            Toast.makeText(activity, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
+        } else if (result > 0) {
+            // Station responded to getConfig/getStatus commands with an error,
+            // show this error to user
+            Toast.makeText(activity, result, Toast.LENGTH_LONG).show();
+        }
         // Update device list in activity
         if (result == 0) {
             if (MainApp.mStation == null) {

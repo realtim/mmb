@@ -1,10 +1,13 @@
 package ru.mmb.sportiduinomanager;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.constraint.Group;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.view.ViewCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.SwitchCompat;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,10 +32,6 @@ import ru.mmb.sportiduinomanager.model.SiteRequest;
  * Provides interaction with database at http://mmb.progressor.ru site.
  */
 public final class DatabaseActivity extends MenuActivity {
-    /**
-     * Main application thread with persistent data.
-     */
-    private MainApp mAppContext;
     /**
      * True when download/upload async task is active.
      */
@@ -92,7 +91,6 @@ public final class DatabaseActivity extends MenuActivity {
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
         mTransferActive = false;
-        mAppContext = (MainApp) getApplicationContext();
         setContentView(R.layout.activity_database);
     }
 
@@ -121,9 +119,9 @@ public final class DatabaseActivity extends MenuActivity {
             if (MainApp.mDistance.canBeReloaded()) {
                 dlDistance.setVisibility(View.VISIBLE);
                 // set user email and test db flag from local database
-                ((EditText) findViewById(R.id.user_email)).setText(mAppContext.getUserEmail());
+                ((EditText) findViewById(R.id.user_email)).setText(MainApp.mUIState.getUserEmail());
                 ((SwitchCompat) findViewById(R.id.test_database))
-                        .setChecked(mAppContext.getTestSite() == 1);
+                        .setChecked(MainApp.mUIState.getTestSite() == 1);
             } else {
                 dlDistance.setVisibility(View.GONE);
             }
@@ -132,9 +130,15 @@ public final class DatabaseActivity extends MenuActivity {
             if (MainApp.mAllRecords.hasUnsentRecords()) {
                 sendRecordsButton.setAlpha(MainApp.ENABLED_BUTTON);
                 sendRecordsButton.setClickable(true);
+                final ColorStateList backgroundTint = AppCompatResources.getColorStateList(getApplicationContext(),
+                        R.color.bg_secondary);
+                ViewCompat.setBackgroundTintList(sendRecordsButton, backgroundTint);
             } else {
                 sendRecordsButton.setAlpha(MainApp.DISABLED_BUTTON);
                 sendRecordsButton.setClickable(false);
+                final ColorStateList backgroundTint = AppCompatResources.getColorStateList(getApplicationContext(),
+                        R.color.bg_primary);
+                ViewCompat.setBackgroundTintList(sendRecordsButton, backgroundTint);
             }
             // Always allow to download results from site and upload database
             getResultsButton.setVisibility(View.VISIBLE);
@@ -269,7 +273,7 @@ public final class DatabaseActivity extends MenuActivity {
         }
         // Save email/password/site in main application
         // (as this activity can be recreated loosing these value)
-        mAppContext.setAuthorizationParameters(sUserEmail, userPassword, testSite);
+        MainApp.mUIState.setAuthorizationParameters(sUserEmail, userPassword, testSite);
         // Clean password field to require to enter it again for next distance download
         etUserPassword.setText("");
         // Hide virtual keyboard
@@ -310,9 +314,9 @@ public final class DatabaseActivity extends MenuActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // Start upload
         final SiteRequest siteRequest =
-                SiteRequest.builder().userEmail(mAppContext.getUserEmail())
-                        .userPassword(mAppContext.getUserPassword())
-                        .testSite(mAppContext.getTestSite())
+                SiteRequest.builder().userEmail(MainApp.mUIState.getUserEmail())
+                        .userPassword(MainApp.mUIState.getUserPassword())
+                        .testSite(MainApp.mUIState.getTestSite())
                         .database(MainApp.mDatabase)
                         .records(MainApp.mAllRecords)
                         .type(SiteRequest.TYPE_UL_CHIPS).build();
@@ -337,9 +341,9 @@ public final class DatabaseActivity extends MenuActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // Start download
         final SiteRequest siteRequest =
-                SiteRequest.builder().userEmail(mAppContext.getUserEmail())
-                        .userPassword(mAppContext.getUserPassword())
-                        .testSite(mAppContext.getTestSite())
+                SiteRequest.builder().userEmail(MainApp.mUIState.getUserEmail())
+                        .userPassword(MainApp.mUIState.getUserPassword())
+                        .testSite(MainApp.mUIState.getTestSite())
                         .database(MainApp.mDatabase)
                         .type(SiteRequest.TYPE_DL_RESULTS).build();
         new AsyncSiteRequest(this).execute(siteRequest);
@@ -363,9 +367,9 @@ public final class DatabaseActivity extends MenuActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // Start download
         final SiteRequest siteRequest =
-                SiteRequest.builder().userEmail(mAppContext.getUserEmail())
-                        .userPassword(mAppContext.getUserPassword())
-                        .testSite(mAppContext.getTestSite())
+                SiteRequest.builder().userEmail(MainApp.mUIState.getUserEmail())
+                        .userPassword(MainApp.mUIState.getUserPassword())
+                        .testSite(MainApp.mUIState.getTestSite())
                         .database(MainApp.mDatabase)
                         .type(SiteRequest.TYPE_UL_DATABASE).build();
         new AsyncSiteRequest(this).execute(siteRequest);
@@ -457,9 +461,9 @@ public final class DatabaseActivity extends MenuActivity {
             if (activity == null || activity.isFinishing()) return;
             // Show parsing result
             if (mCustomError == null) {
-                Toast.makeText(activity.mAppContext, message, Toast.LENGTH_LONG).show();
+                Toast.makeText(activity, message, Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(activity.mAppContext, mCustomError, Toast.LENGTH_LONG).show();
+                Toast.makeText(activity, mCustomError, Toast.LENGTH_LONG).show();
             }
             // Update activity layout
             activity.mTransferActive = false;

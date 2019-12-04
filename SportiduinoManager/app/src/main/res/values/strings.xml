@@ -69,6 +69,7 @@
     <string name="station_time_drift">Time drift: %1$ds</string>
     <string name="station_sync_time">Synchronize</string>
     <string name="station_chips_registered">Chips registered</string>
+    <string name="station_chips_registered_n">%1$d</string>
     <string name="station_last_chip">Last chip at</string>
     <plurals name="station_reset_time">
         <item quantity="one">%1$d second to complete</item>

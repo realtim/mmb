@@ -1,4 +1,4 @@
-package ru.mmb.sportiduinomanager;
+package ru.mmb.sportiduinomanager.adapter;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import ru.mmb.sportiduinomanager.R;
 import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.Teams;
 
@@ -39,7 +40,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
      * @param teams   List of all registered teams from ControlPointActivity
      * @param records List of all team punches from ControlPointActivity
      */
-    TeamListAdapter(final OnTeamClicked onClick, final Teams teams, final Records records) {
+    public TeamListAdapter(final OnTeamClicked onClick, final Teams teams, final Records records) {
         super();
         mOnClick = onClick;
         mTeams = teams;
@@ -115,7 +116,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
      *
      * @return Current selected item index
      */
-    int getPosition() {
+    public int getPosition() {
         return mSelectedPos;
     }
 
@@ -124,7 +125,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
      *
      * @param position New selected item index
      */
-    void setPosition(final int position) {
+    public void setPosition(final int position) {
         mSelectedPos = position;
     }
 

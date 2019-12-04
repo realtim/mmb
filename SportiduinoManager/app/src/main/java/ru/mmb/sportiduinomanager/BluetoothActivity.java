@@ -21,11 +21,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
+import ru.mmb.sportiduinomanager.adapter.BTDeviceListAdapter;
 import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.StationAPI;
 import ru.mmb.sportiduinomanager.task.ConnectDeviceTask;
@@ -72,10 +73,6 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
      */
     private BTDeviceListAdapter mAdapter;
 
-    /**
-     * Reference to main thread object with all persistent data.
-     */
-    private MainApp mMainApplication;
     /**
      * Bluetooth adapter handler.
      */
@@ -137,19 +134,28 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
                 // Discovery has found a device
                 // Get the BluetoothDevice object and its info from the Intent
                 final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                final String name = device.getName();
+                if (name != null && !name.matches("Sport.*")) return;
+                final List<BluetoothDevice> deviceList = MainApp.mUIState.getBTDeviceList();
+                if (deviceList.contains(device)) return;
                 mAdapter.insertItem(device);
-                final List<BluetoothDevice> deviceList = mMainApplication.getBTDeviceList();
-                if (!deviceList.contains(device)) {
-                    deviceList.add(device);
-                }
+                deviceList.add(device);
+            } else if (BluetoothDevice.ACTION_PAIRING_REQUEST.equals(action)) {
+                usePin(intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE));
             }
         }
     };
 
+    private void usePin(final BluetoothDevice device) {
+        if (android.os.Build.VERSION.SDK_INT < 19) return;
+        final byte[] pinBytes = MainApp.mDistance.getBluetoothPin().getBytes(StandardCharsets.UTF_8);
+        if (pinBytes.length <= 0 || pinBytes.length > 16) return;
+        device.setPin(pinBytes);
+    }
+
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
-        mMainApplication = (MainApp) getApplication();
         setContentView(R.layout.activity_bluetooth);
     }
 
@@ -162,6 +168,9 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
         final IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        if (android.os.Build.VERSION.SDK_INT >= 19) {
+            filter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
+        }
         registerReceiver(mSearchDevices, filter);
         // Get default Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -179,7 +188,7 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         // Create a RecyclerView adapter and set it with saved device list from main app
-        mAdapter = new BTDeviceListAdapter(mMainApplication.getBTDeviceList(), this);
+        mAdapter = new BTDeviceListAdapter(MainApp.mUIState.getBTDeviceList(), this);
         if (MainApp.mStation != null) {
             mAdapter.setConnectedDevice(MainApp.mStation.getAddress(), false);
         }
@@ -331,7 +340,7 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
         }
         // Empty device list in view and in the app
-        mMainApplication.setBTDeviceList(new ArrayList<>());
+        MainApp.mUIState.setBTDeviceList(new ArrayList<>());
         mAdapter.clearList();
         // Disconnect currently connected station
         if (MainApp.mStation != null) {
@@ -564,8 +573,8 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
 
         ((TextView) findViewById(R.id.station_time_drift)).setText(getResources()
                 .getString(R.string.station_time_drift, MainApp.mStation.getTimeDrift()));
-        ((TextView) findViewById(R.id.station_chips_registered_value))
-                .setText(String.format(Locale.getDefault(), "%d", MainApp.mStation.getTeamsPunched()));
+        ((TextView) findViewById(R.id.station_chips_registered_value)).setText(getResources()
+                .getString(R.string.station_chips_registered_n, MainApp.mStation.getTeamsPunched()));
         ((TextView) findViewById(R.id.station_last_chip_time)).setText(
                 Records.printTime(MainApp.mStation.getLastPunchTime(), "dd.MM.yyyy  HH:mm:ss"));
         // Show status block

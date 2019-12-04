@@ -263,7 +263,7 @@ public final class SiteRequest {
                     mDistance = new Distance(mUserEmail, mUserPassword, mTestSite,
                             Integer.parseInt(values[1]), values[4],
                             System.currentTimeMillis() / 1000,
-                            Long.parseLong(values[2]), Long.parseLong(values[3]), 0);
+                            Long.parseLong(values[2]), Long.parseLong(values[3]), values[5], 0);
                     break;
                 case 'P':
                     // parse list of points

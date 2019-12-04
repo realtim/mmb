@@ -1,4 +1,4 @@
-package ru.mmb.sportiduinomanager;
+package ru.mmb.sportiduinomanager.adapter;
 
 import android.content.res.Resources;
 import android.support.annotation.NonNull;
@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import ru.mmb.sportiduinomanager.MainApp;
+import ru.mmb.sportiduinomanager.R;
 import ru.mmb.sportiduinomanager.model.Records;
 
 /**
@@ -24,7 +26,7 @@ public class PointListAdapter extends RecyclerView.Adapter<PointListAdapter.Poin
      *
      * @param records List of all punches in chip from ChipInfoActivity
      */
-    PointListAdapter(final Records records) {
+    public PointListAdapter(final Records records) {
         super();
         copyRecords(records);
     }
@@ -70,7 +72,7 @@ public class PointListAdapter extends RecyclerView.Adapter<PointListAdapter.Poin
      *
      * @param records reference to MainApp.mChipPunches
      */
-    void updateList(final Records records) {
+    public void updateList(final Records records) {
         copyRecords(records);
         notifyDataSetChanged();
     }

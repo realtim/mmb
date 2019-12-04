@@ -40,6 +40,10 @@ public final class Distance {
      */
     private final int mTestSite;
     /**
+     * Default Sportiduino Bluetooth PIN-code.
+     */
+    private final String mBluetoothPin;
+    /**
      * Sparse array of control points, array index == point number.
      */
     private Point[] mPoints;
@@ -64,6 +68,7 @@ public final class Distance {
         mUserEmail = "";
         mUserPassword = "";
         mTestSite = 1;
+        mBluetoothPin = "";
         mLastResultId = 0;
     }
 
@@ -78,11 +83,12 @@ public final class Distance {
      * @param timeDownloaded Time when the distance was download from site
      * @param timeReadonly   Time when the raid becomes readonly
      * @param timeFinish     Time when the last control point is closed
+     * @param bluetoothPin   Sportiduino Bluetooth PIN-code
      * @param lastResultId   Id of last result downloaded from site
      */
     Distance(final String userEmail, final String userPassword, final int testSite,
              final int raidId, final String raidName, final long timeDownloaded,
-             final long timeReadonly, final long timeFinish, final long lastResultId) {
+             final long timeReadonly, final long timeFinish, final String bluetoothPin, final long lastResultId) {
         mUserEmail = userEmail;
         mUserPassword = userPassword;
         mTestSite = testSite;
@@ -91,6 +97,7 @@ public final class Distance {
         mTimeDownloaded = timeDownloaded;
         mTimeReadonly = timeReadonly;
         mTimeFinish = timeFinish;
+        mBluetoothPin = bluetoothPin;
         mLastResultId = lastResultId;
     }
 
@@ -119,6 +126,15 @@ public final class Distance {
      */
     public int getTestSite() {
         return mTestSite;
+    }
+
+    /**
+     * Get default Sportiduino Bluetooth PIN-code.
+     *
+     * @return PIN-code as string
+     */
+    public String getBluetoothPin() {
+        return mBluetoothPin;
     }
 
     /**
@@ -249,9 +265,9 @@ public final class Distance {
      * @return String with point name from the distance, '#N' name or '?' name
      */
     private String pointFromList(final List<Integer> list, final int index) {
-        if (index < 0 || index > list.size()) return "?";
+        if (index < 0 || index >= list.size()) return "?";
         final int number = list.get(index);
-        if (mPoints == null || number < 0 || number > mPoints.length || mPoints[number] == null) return "#" + number;
+        if (mPoints == null || number < 0 || number >= mPoints.length || mPoints[number] == null) return "#" + number;
         return mPoints[number].mName;
     }
 

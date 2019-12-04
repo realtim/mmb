@@ -68,6 +68,7 @@
     <string name="station_time_drift">Смещение часов: %1$dс</string>
     <string name="station_sync_time">Синхронизировать</string>
     <string name="station_chips_registered">Отметок</string>
+    <string name="station_chips_registered_n">%1$d</string>
     <string name="station_last_chip">Последняя отметка</string>
     <plurals name="station_reset_time">
         <item quantity="one">%1$d секунда до завершения</item>

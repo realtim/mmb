@@ -1,4 +1,4 @@
-package ru.mmb.sportiduinomanager;
+package ru.mmb.sportiduinomanager.adapter;
 
 import android.bluetooth.BluetoothDevice;
 import android.support.annotation.NonNull;
@@ -11,6 +11,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import ru.mmb.sportiduinomanager.MainApp;
+import ru.mmb.sportiduinomanager.R;
 
 /**
  * Provides the list of discovered Bluetooth devices.
@@ -40,7 +43,7 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
      * @param bluetoothDevices List of detected Bluetooth devices
      * @param onClick          Adapter for processing Connect button click
      */
-    BTDeviceListAdapter(final List<BluetoothDevice> bluetoothDevices, final OnItemClicked onClick) {
+    public BTDeviceListAdapter(final List<BluetoothDevice> bluetoothDevices, final OnItemClicked onClick) {
         super();
         mBTDeviceList = bluetoothDevices;
         mOnClick = onClick;
@@ -102,7 +105,7 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
     /**
      * Remove all devices before new search.
      */
-    void clearList() {
+    public void clearList() {
         mBTDeviceList = new ArrayList<>();
         notifyDataSetChanged();
     }
@@ -112,7 +115,7 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
      *
      * @param device New Bluetooth device to add to our list
      */
-    void insertItem(final BluetoothDevice device) {
+    public void insertItem(final BluetoothDevice device) {
         if (mBTDeviceList.contains(device)) {
             return;
         }
@@ -126,7 +129,7 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
      * @param position Position in the list of devices
      * @return Bluetooth device at that position
      */
-    BluetoothDevice getDevice(final int position) {
+    public BluetoothDevice getDevice(final int position) {
         return mBTDeviceList.get(position);
     }
 

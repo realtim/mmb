@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import ru.mmb.sportiduinomanager.adapter.MemberListAdapter;
 import ru.mmb.sportiduinomanager.model.StationAPI;
 import ru.mmb.sportiduinomanager.model.Teams;
 import ru.mmb.sportiduinomanager.task.ChipInitTask;
@@ -34,11 +35,6 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
      * Max number of symbols in mTeamNumber string.
      */
     private static final int TEAM_MEMBER_LEN = 4;
-
-    /**
-     * Main application thread with persistent data.
-     */
-    private MainApp mMainApplication;
 
     /**
      * RecyclerView with team members.
@@ -67,12 +63,11 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
     @Override
     protected void onCreate(final Bundle instanceState) {
         super.onCreate(instanceState);
-        mMainApplication = (MainApp) getApplication();
         setContentView(R.layout.activity_chipinit);
         // Load last entered team number and mask from main application
-        mTeamNumber = Integer.toString(mMainApplication.getTeamNumber());
+        mTeamNumber = Integer.toString(MainApp.mUIState.getTeamNumber());
         if ("0".equals(mTeamNumber)) mTeamNumber = "";
-        mTeamMask = MainApp.getTeamMask();
+        mTeamMask = MainApp.mUIState.getTeamMask();
         mOriginalMask = 0;
         // Prepare recycler view of members list
         final RecyclerView recyclerView = findViewById(R.id.member_list);
@@ -108,14 +103,13 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
         // Update team mask
         final int newMask = mTeamMask ^ (1 << position);
         if (newMask == 0) {
-            Toast.makeText(mMainApplication,
-                    R.string.err_init_empty_team, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.err_init_empty_team, Toast.LENGTH_LONG).show();
             mAdapter.notifyItemChanged(position);
             return;
         }
         mTeamMask = newMask;
         // Save it to main application
-        MainApp.setTeamMask(mTeamMask);
+        MainApp.mUIState.setTeamMask(mTeamMask);
         // Update list item
         mAdapter.setMask(mTeamMask);
         mAdapter.notifyItemChanged(position);
@@ -220,16 +214,16 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
                 // Update onscreen keyboard and "load" empty team
                 updateKeyboardState();
                 loadTeam(true);
-                Toast.makeText(mMainApplication, R.string.init_success, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.init_success, Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(mMainApplication, result, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, result, Toast.LENGTH_LONG).show();
             }
         } else {
             // Chip initialization failed
             if (MainApp.mStation == null) {
-                Toast.makeText(mMainApplication, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(mMainApplication, MainApp.mStation.getLastError(true), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, MainApp.mStation.getLastError(true), Toast.LENGTH_LONG).show();
             }
             loadTeam(false);
         }
@@ -305,7 +299,7 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
         }
         // Save it in main application for new team
         if (isNew) {
-            mMainApplication.setTeamNumber(teamNumber);
+            MainApp.mUIState.setTeamNumber(teamNumber);
         }
         // Check if we can send initialization command to a station
         if (MainApp.mStation == null) {
@@ -368,7 +362,7 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
         // leave mask untouched for old team being reloaded
         if (isNew) {
             mTeamMask = mOriginalMask;
-            MainApp.setTeamMask(mTeamMask);
+            MainApp.mUIState.setTeamMask(mTeamMask);
         }
         // Update team members list
         mAdapter.updateList(teamMembers, mOriginalMask, mTeamMask);
