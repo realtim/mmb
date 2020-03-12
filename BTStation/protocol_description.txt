@@ -1,10 +1,10 @@
-1. Формат кадра:
+﻿1. Формат кадра:
 	0 - 0xFE
-	1 - 0xFE
-	2 - packet ID
-	3 - station number
-	4 - data_length (data[0]...data[k])
-	5 - command / reply code
+	1 - packet ID
+	2 - station number
+	3 - command / reply code	
+	4 - data_length high byte (data[0]...data[k])
+	5 - data_length low byte (data[0]...data[k])	
 	6 - data[0] / error code
 	n-1 - data[k]
 	n - CRC8 (packet ID...data[k])
@@ -72,7 +72,7 @@
 		11-12[Uint16]: напряжение батареи в условных единицах [0..1023] ~ [0..1.1В]
 		13-14[Uint16]: температура чипа DS3231 (чуть выше окружающей среды)
 	
-	//обнулить карточку и подготовить для выдаче команде
+	//обнулить карточку и подготовить для выдачи команде
 	initChip(): 0x84
 		0-1[Uint16]: номер команды
 		2-3[Uint16]: маска участников
@@ -130,7 +130,7 @@
 	//получить данные об отметившихся командах их флэша
 	readFlash(): 0x8a
 		0-3[Uint32]: адрес начала чтения
-		4[byte]: размер блока
+		4-5[Uint16]: размер блока
 		ответ: 0x9a
 		0[byte]: код ошибки
 		0-3[Uint32]: адрес начала чтения
@@ -142,7 +142,7 @@
 		4...[byteArray]: данные для записи
 		ответ: 0x9b
 		0[byte]: код ошибки
-		1[byte]: кол-во записанных байт (для проверки)
+		1-2[Uint16]: кол-во записанных байт (для проверки)
 	
 	//стереть сектор на флэше
 	eraseTeamFlash(): 0x8c
@@ -163,6 +163,8 @@
 		13-14[Uint32]: размер блока хранения команды
 		15-16[Uint32]: размер стираемого блока
 		17-20[float]: минимальное напряжение батареи
+		21-22[Uint16]: максимальный размер пакета
+		23[byte]: автоотчет о новой отсканированной команде вкл./выкл.
 	
 	//установить коэффициент пересчета напряжения
 	setKoeff(): 0x8e
@@ -237,37 +239,46 @@
 		3-4[byte]: номер 2й ошибки
 		...	
 		(n-1)-n[byte]: номер последней ошибки
-		Список ошибок:
-			//коды ошибок при включении
-			STARTUP_NUMBER  50 //STARTUP: incorrect station number in EEPROM
-			STARTUP_MODE  51 //STARTUP: incorrect station mode in EEPROM
-			STARTUP_VKOEFF  52 //STARTUP: incorrect Vkoeff in EEPROM
-			STARTUP_GAIN  53 //STARTUP: incorrect gain in EEPROM
-			STARTUP_CHIP_TYPE  54 //STARTUP: incorrect chip type in EEPROM
-			STARTUP_TEAM_SIZE  55 //STARTUP: incorrect team block size in EEPROM
-			STARTUP_ERASE_SIZE  56 //STARTUP: incorrect erase block size in EEPROM
-			STARTUP_BATTERY_LIMIT  57 //STARTUP: incorrect battery limit in EEPROM
-						
-			//коды ошибок UART
-			UART_TIMEOUT  60 //UART: receive timeout
-			UART_PACKET_LENGTH  61 //UART: incorrect packet length
-			UART_CRC  62 //UART: CRC incorrect
-			UART_UNEXPECTED_BYTE  63 //UART: unexpected byte
-			
-			//коды ошибок обработки чипа
-			PROCESS_READ_CHIP  70 //CARD PROCESSING: error reading chip
-			PROCESS_HW_CHIP_TYPE  71 //CARD PROCESSING: wrong hw chip type
-			PROCESS_SW_CHIP_TYPE  72 //CARD PROCESSING: wrong sw chip type
-			PROCESS_FW_VERSION  73 //CARD PROCESSING: wrong fw. version
-			PROCESS_INIT_TIME  74 //CARD PROCESSING: chip init time is due
-			PROCESS_CHIP_NUMBER  75 //CARD PROCESSING: wrong chip number
-			PROCESS_WRITE_CHIP  76 //CARD PROCESSING: error writing to chip
-			PROCESS_ALREADY_CHECKED  77 //CARD PROCESSING: chip already checked
-			PROCESS_FIND_FREE_PAGE  78 //CARD PROCESSING: error finding free page
-			PROCESS_SAVE_DUMP  79 //CARD PROCESSING: error saving dump
-			PROCESS_SEND_AUTOREPORT  80 //CARD PROCESSING: error sending autoreport
 
-5. Коды ошибок в ответах станции:
+	//изменение режима автоответа
+	setAutoReport(): 0x99
+		0[byte]: автоответ вкл/выкл
+		ответ: 0xa9
+		0[byte]: код ошибки
+
+5. Список ошибок getLastErrors():
+	//коды ошибок при включении
+	50 - STARTUP: incorrect station number in EEPROM
+	51 - STARTUP: incorrect station mode in EEPROM
+	52 - STARTUP: incorrect Vkoeff in EEPROM
+	53 - STARTUP: incorrect gain in EEPROM
+	54 - STARTUP: incorrect chip type in EEPROM
+	55 - STARTUP: incorrect team block size in EEPROM
+	56 - STARTUP: incorrect erase block size in EEPROM
+	57 - STARTUP: incorrect battery limit in EEPROM
+	58 - STARTUP: incorrect autoreport mode in EEPROM
+
+	//коды ошибок UART
+	60 - UART: receive timeout
+	61 - UART: incorrect packet length
+	62 - UART: CRC incorrect
+	63 - UART: unexpected byte
+	64 - UART: incorrect station number
+
+	//коды ошибок обработки чипа
+	70 - CARD PROCESSING: error reading chip
+	71 - CARD PROCESSING: wrong hw chip type
+	72 - CARD PROCESSING: wrong sw chip type
+	73 - CARD PROCESSING: wrong fw. version
+	74 - CARD PROCESSING: chip init time is due
+	75 - CARD PROCESSING: wrong chip number
+	76 - CARD PROCESSING: error writing to chip
+	77 - CARD PROCESSING: chip already checked
+	78 - CARD PROCESSING: error finding free page
+	79 - CARD PROCESSING: error saving dump
+	80 - CARD PROCESSING: error sending autoreport
+
+6. Коды ошибок в ответах станции:
 	0  - OK
 	1  - WRONG_STATION
 	2  - RFID_READ_ERROR
