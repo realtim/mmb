@@ -13,6 +13,16 @@ if (realpath(__FILE__) != realpath($_SERVER['DOCUMENT_ROOT'] . $_SERVER['SCRIPT_
     die("Некорректный запуск скрипта");
 
 // Получаем заголовки запроса клиента, вызвавшего наш скрипт
+if (!function_exists('getallheaders')) {
+    // Заглушка для ситуации, когда в php-fpm нет этой функции
+    function getallheaders() {
+        $headers = [];
+        foreach ($_SERVER as $name => $value)
+            if (substr($name, 0, 5) == 'HTTP_')
+                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+        return $headers;
+    }
+}
 $request = getallheaders();
 
 // Проверяем версию API клиента
@@ -28,7 +38,6 @@ try {
 }
 
 // Устанавливаем часовой пояс по умолчанию
-// TODO: Обсудить потенциальную проблему с летним временем
 date_default_timezone_set("Etc/GMT-3");
 
 // Проверяем авторизацию
