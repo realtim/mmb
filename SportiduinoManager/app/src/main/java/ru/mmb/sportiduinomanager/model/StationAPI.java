@@ -535,11 +535,7 @@ public final class StationAPI extends StationRaw {
             // Detect how many pages we still need to read in next cycle
             pageFrom += pagesInRequest;
             pagesLeft -= pagesInRequest;
-            if (pagesLeft < MAX_READ_PAGES) {
-                pagesInRequest = pagesLeft;
-            } else {
-                pagesInRequest = MAX_READ_PAGES;
-            }
+            pagesInRequest = Math.min(pagesLeft, MAX_READ_PAGES);
         } while (pagesInRequest > 0);
         return true;
     }
@@ -583,12 +579,12 @@ public final class StationAPI extends StationRaw {
             return false;
         }
         // Prepare command payload
-        byte[] commandData = new byte[6];
+        byte[] commandData = new byte[7];
         commandData[0] = CMD_READ_FLASH;
         final long punchesZone = teamNumber * 1024L + 48L;
         final long startAddress = punchesZone + fromPunch * 4L;
         long2ByteArray(startAddress, commandData, 1, 4);
-        commandData[5] = (byte) ((count * 4) & 0xFF);
+        long2ByteArray(count * 4, commandData, 5, 2);
         // Send command to station
         final byte[] response = new byte[4 + count * 4];
         mChipRecordsN = 0;
@@ -626,7 +622,7 @@ public final class StationAPI extends StationRaw {
      */
     public boolean fetchConfig() {
         // Get response from station
-        final byte[] response = new byte[20];
+        final byte[] response = new byte[23];
         if (!command(new byte[]{CMD_GET_CONFIG}, response)) return false;
         // Get station firmware
         mFirmware = response[0];
@@ -634,6 +630,9 @@ public final class StationAPI extends StationRaw {
         mMode = response[1] & 0xFF;
         // Get voltage coefficient
         mVCoeff = ByteBuffer.wrap(response, 7, 4).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+        // Update max packet size
+        final long maxSize = byteArray2Long(response, 20, 21);
+        setMaxPacketSize((int) maxSize);
         // Ignore all other parameters
         return true;
     }

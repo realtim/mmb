@@ -65,9 +65,9 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
         super.onCreate(instanceState);
         setContentView(R.layout.activity_chipinit);
         // Load last entered team number and mask from main application
-        mTeamNumber = Integer.toString(MainApp.mUIState.getTeamNumber());
+        mTeamNumber = Integer.toString(MainApp.UI_STATE.getTeamNumber());
         if ("0".equals(mTeamNumber)) mTeamNumber = "";
-        mTeamMask = MainApp.mUIState.getTeamMask();
+        mTeamMask = MainApp.UI_STATE.getTeamMask();
         mOriginalMask = 0;
         // Prepare recycler view of members list
         final RecyclerView recyclerView = findViewById(R.id.member_list);
@@ -109,7 +109,7 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
         }
         mTeamMask = newMask;
         // Save it to main application
-        MainApp.mUIState.setTeamMask(mTeamMask);
+        MainApp.UI_STATE.setTeamMask(mTeamMask);
         // Update list item
         mAdapter.setMask(mTeamMask);
         mAdapter.notifyItemChanged(position);
@@ -299,7 +299,7 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
         }
         // Save it in main application for new team
         if (isNew) {
-            MainApp.mUIState.setTeamNumber(teamNumber);
+            MainApp.UI_STATE.setTeamNumber(teamNumber);
         }
         // Check if we can send initialization command to a station
         if (MainApp.mStation == null) {
@@ -362,7 +362,7 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
         // leave mask untouched for old team being reloaded
         if (isNew) {
             mTeamMask = mOriginalMask;
-            MainApp.mUIState.setTeamMask(mTeamMask);
+            MainApp.UI_STATE.setTeamMask(mTeamMask);
         }
         // Update team members list
         mAdapter.updateList(teamMembers, mOriginalMask, mTeamMask);

@@ -136,7 +136,7 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
                 final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 final String name = device.getName();
                 if (name != null && !name.matches("Sport.*")) return;
-                final List<BluetoothDevice> deviceList = MainApp.mUIState.getBTDeviceList();
+                final List<BluetoothDevice> deviceList = MainApp.UI_STATE.getBTDeviceList();
                 if (deviceList.contains(device)) return;
                 mAdapter.insertItem(device);
                 deviceList.add(device);
@@ -188,7 +188,7 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         // Create a RecyclerView adapter and set it with saved device list from main app
-        mAdapter = new BTDeviceListAdapter(MainApp.mUIState.getBTDeviceList(), this);
+        mAdapter = new BTDeviceListAdapter(MainApp.UI_STATE.getBTDeviceList(), this);
         if (MainApp.mStation != null) {
             mAdapter.setConnectedDevice(MainApp.mStation.getAddress(), false);
         }
@@ -340,7 +340,7 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
         }
         // Empty device list in view and in the app
-        MainApp.mUIState.setBTDeviceList(new ArrayList<>());
+        MainApp.UI_STATE.setBTDeviceList(new ArrayList<>());
         mAdapter.clearList();
         // Disconnect currently connected station
         if (MainApp.mStation != null) {

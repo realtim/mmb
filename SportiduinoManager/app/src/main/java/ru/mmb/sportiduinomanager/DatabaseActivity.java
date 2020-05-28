@@ -119,9 +119,9 @@ public final class DatabaseActivity extends MenuActivity {
             if (MainApp.mDistance.canBeReloaded()) {
                 dlDistance.setVisibility(View.VISIBLE);
                 // set user email and test db flag from local database
-                ((EditText) findViewById(R.id.user_email)).setText(MainApp.mUIState.getUserEmail());
+                ((EditText) findViewById(R.id.user_email)).setText(MainApp.UI_STATE.getUserEmail());
                 ((SwitchCompat) findViewById(R.id.test_database))
-                        .setChecked(MainApp.mUIState.getTestSite() == 1);
+                        .setChecked(MainApp.UI_STATE.getTestSite() == 1);
             } else {
                 dlDistance.setVisibility(View.GONE);
             }
@@ -273,7 +273,7 @@ public final class DatabaseActivity extends MenuActivity {
         }
         // Save email/password/site in main application
         // (as this activity can be recreated loosing these value)
-        MainApp.mUIState.setAuthorizationParameters(sUserEmail, userPassword, testSite);
+        MainApp.UI_STATE.setAuthorizationParameters(sUserEmail, userPassword, testSite);
         // Clean password field to require to enter it again for next distance download
         etUserPassword.setText("");
         // Hide virtual keyboard
@@ -314,9 +314,9 @@ public final class DatabaseActivity extends MenuActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // Start upload
         final SiteRequest siteRequest =
-                SiteRequest.builder().userEmail(MainApp.mUIState.getUserEmail())
-                        .userPassword(MainApp.mUIState.getUserPassword())
-                        .testSite(MainApp.mUIState.getTestSite())
+                SiteRequest.builder().userEmail(MainApp.UI_STATE.getUserEmail())
+                        .userPassword(MainApp.UI_STATE.getUserPassword())
+                        .testSite(MainApp.UI_STATE.getTestSite())
                         .database(MainApp.mDatabase)
                         .records(MainApp.mAllRecords)
                         .type(SiteRequest.TYPE_UL_CHIPS).build();
@@ -341,9 +341,9 @@ public final class DatabaseActivity extends MenuActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // Start download
         final SiteRequest siteRequest =
-                SiteRequest.builder().userEmail(MainApp.mUIState.getUserEmail())
-                        .userPassword(MainApp.mUIState.getUserPassword())
-                        .testSite(MainApp.mUIState.getTestSite())
+                SiteRequest.builder().userEmail(MainApp.UI_STATE.getUserEmail())
+                        .userPassword(MainApp.UI_STATE.getUserPassword())
+                        .testSite(MainApp.UI_STATE.getTestSite())
                         .database(MainApp.mDatabase)
                         .type(SiteRequest.TYPE_DL_RESULTS).build();
         new AsyncSiteRequest(this).execute(siteRequest);
@@ -367,9 +367,9 @@ public final class DatabaseActivity extends MenuActivity {
         findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         // Start download
         final SiteRequest siteRequest =
-                SiteRequest.builder().userEmail(MainApp.mUIState.getUserEmail())
-                        .userPassword(MainApp.mUIState.getUserPassword())
-                        .testSite(MainApp.mUIState.getTestSite())
+                SiteRequest.builder().userEmail(MainApp.UI_STATE.getUserEmail())
+                        .userPassword(MainApp.UI_STATE.getUserPassword())
+                        .testSite(MainApp.UI_STATE.getTestSite())
                         .database(MainApp.mDatabase)
                         .type(SiteRequest.TYPE_UL_DATABASE).build();
         new AsyncSiteRequest(this).execute(siteRequest);

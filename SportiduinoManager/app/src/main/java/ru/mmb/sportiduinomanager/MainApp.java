@@ -75,6 +75,10 @@ public final class MainApp extends Application {
      */
     public static final float ENABLED_BUTTON = 1f;
     /**
+     * Current state of all UI elements to restore after activity recreation.
+     */
+    static final UIState UI_STATE = new UIState();
+    /**
      * Teams with members downloaded from site or loaded from local database.
      */
     public static Teams mTeams = new Teams(0);
@@ -103,10 +107,6 @@ public final class MainApp extends Application {
      * Last punch per team only. Should be equal to records in station flash memory.
      */
     static Records mPointPunches = new Records(0);
-    /**
-     * Current state of all UI elements to restore after activity recreation.
-     */
-    static UIState mUIState = new UIState();
     /**
      * True if ControlPointActivity is running in foreground.
      */
@@ -242,7 +242,7 @@ public final class MainApp extends Application {
                 if (distance != null && !distance.hasErrors()) {
                     setDistance(distance);
                     // Get user email, password and test/main database flag from loaded distance
-                    mUIState.setAuthorizationParameters(mDistance.getUserEmail(), mDistance.getUserPassword(),
+                    UI_STATE.setAuthorizationParameters(mDistance.getUserEmail(), mDistance.getUserPassword(),
                             mDistance.getTestSite());
                 }
                 final Teams teams = mDatabase.loadTeams();

@@ -63,7 +63,7 @@ public class StationRaw {
      */
     private static final UUID STATION_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     /**
-     * Maximum size of communication packet.
+     * Default maximum size of communication packet.
      */
     private static final int MAX_PACKET_SIZE = 255;
     /**
@@ -109,6 +109,10 @@ public class StationRaw {
      */
     private BluetoothSocket mSocket;
     /**
+     * Maximum size of communication packet for connected station.
+     */
+    private int mMaxPacketSize;
+    /**
      * Configurable station number
      * (an control point number to work at or zero for chip initialization).
      */
@@ -142,6 +146,7 @@ public class StationRaw {
      */
     StationRaw(final BluetoothDevice device) {
         mDevice = device;
+        mMaxPacketSize = MAX_PACKET_SIZE;
         mNumber = 0;
         mLastError = 0;
         mQueryingAllowed = false;
@@ -154,6 +159,15 @@ public class StationRaw {
         }
     }
 
+
+    /**
+     * Set station max packet size.
+     *
+     * @param size max packet size (obtained from fetchConfig call)
+     */
+    void setMaxPacketSize(final int size) {
+        mMaxPacketSize = size;
+    }
 
     /**
      * Get configurable station number (a control point number to work at).
@@ -345,7 +359,7 @@ public class StationRaw {
      */
     private byte crc8(final byte[] array, final int end) {
         byte crc = 0x00;
-        for (int i = 2; i < end; i++) {
+        for (int i = 1; i < end; i++) {
             byte extract = array[i];
             for (byte tempI = 8; tempI != 0; tempI--) {
                 byte sum = (byte) ((crc & 0xFF) ^ (extract & 0xFF));
@@ -367,17 +381,18 @@ public class StationRaw {
      * @return True if the command was sent
      */
     private boolean send(final byte[] command) {
-        final int len = command.length;
-        if (len == 0 || len > MAX_PACKET_SIZE) return false;
+        final int len = command.length - 1;
+        if (len < 0 || (len + HEADER_SIZE + 1) > mMaxPacketSize) return false;
         // prepare output buffer
-        byte[] buffer = new byte[len + HEADER_SIZE];
-        buffer[0] = HEADER_SIGNATURE;
-        buffer[1] = HEADER_SIGNATURE;
-        buffer[2] = HEADER_SIGNATURE;
-        buffer[3] = (byte) (mNumber & 0xFF);
-        buffer[4] = (byte) ((len - 1) & 0xFF);
-        System.arraycopy(command, 0, buffer, 5, len);
-        buffer[len + HEADER_SIZE - 1] = crc8(buffer, len + HEADER_SIZE - 1);
+        byte[] buffer = new byte[len + HEADER_SIZE + 1];
+        buffer[0] = HEADER_SIGNATURE;                   // Signature
+        buffer[1] = 0;                                  // Packet Id
+        buffer[2] = (byte) (mNumber & 0xFF);            // Station number
+        buffer[3] = command[0];                         // Command code
+        buffer[4] = (byte) ((len & 0xFF00) >> 8);       // Payload length
+        buffer[5] = (byte) (len & 0x00FF);              // Payload length
+        System.arraycopy(command, 1, buffer, HEADER_SIZE, len);
+        buffer[len + HEADER_SIZE] = crc8(buffer, len + HEADER_SIZE);
         // send output buffer to station Bluetooth socket
         try {
             @SuppressWarnings("PMD.CloseResource") final OutputStream output = mSocket.getOutputStream();
@@ -400,7 +415,7 @@ public class StationRaw {
         byte[] response = new byte[0];
         // try to open Bluetooth socket input stream
         // read from station Bluetooth socket
-        final byte[] buffer = new byte[MAX_PACKET_SIZE];
+        final byte[] buffer = new byte[mMaxPacketSize];
         try {
             @SuppressWarnings("PMD.CloseResource") final InputStream input = mSocket.getInputStream();
             while (System.currentTimeMillis() - mStartTime < WAIT_TIMEOUT) {
@@ -424,8 +439,9 @@ public class StationRaw {
                     response = temp;
                 }
                 // stop waiting for more data if we got whole packet
-                if (response.length >= HEADER_SIZE && response.length
-                        >= ((response[HEADER_SIZE - 2] & 0xFF) + HEADER_SIZE + 1)) {
+                if (response.length <= HEADER_SIZE) continue;
+                final int payloadLen = ((response[4] & 0xFF) << 8) + (response[5] & 0xFF);
+                if (response.length >= (payloadLen + HEADER_SIZE + 1)) {
                     return response;
                 }
             }
@@ -451,39 +467,25 @@ public class StationRaw {
         final byte[] receiveBuffer = receive();
         final int len = receiveBuffer.length;
         if (len == 0) return new byte[]{REC_TIMEOUT};
+        // check signature
+        if (receiveBuffer[0] != HEADER_SIGNATURE) return new byte[]{REC_BAD_RESPONSE};
         // check if response has at minimum 1 byte payload
         if (len < HEADER_SIZE) return new byte[]{REC_BAD_RESPONSE};
         // check buffer length
-        if ((receiveBuffer[HEADER_SIZE - 2] & 0xFF) != len - HEADER_SIZE - 1) {
-            return new byte[]{REC_BAD_RESPONSE};
-        }
-        // check header
-        if (receiveBuffer[0] != HEADER_SIGNATURE || receiveBuffer[1] != HEADER_SIGNATURE
-                || receiveBuffer[2] != HEADER_SIGNATURE) {
-            return new byte[]{REC_BAD_RESPONSE};
-        }
+        final int payloadLen = ((receiveBuffer[4] & 0xFF) << 8) + (receiveBuffer[5] & 0xFF);
+        if (payloadLen != len - HEADER_SIZE - 1) return new byte[]{REC_BAD_RESPONSE};
         // check station number
         if (sendBuffer[0] != CMD_GET_STATUS && sendBuffer[0] != CMD_GET_CONFIG
                 && sendBuffer[0] != CMD_RESET_STATION
-                && (receiveBuffer[3] & 0xFF) != mNumber) {
-            return new byte[]{REC_BAD_RESPONSE};
-        }
+                && (receiveBuffer[2] & 0xFF) != mNumber) return new byte[]{REC_BAD_RESPONSE};
         // update station number for getStatus command
-        if (sendBuffer[0] == CMD_GET_STATUS) {
-            mNumber = receiveBuffer[3] & 0xFF;
-        }
+        if (sendBuffer[0] == CMD_GET_STATUS) mNumber = receiveBuffer[2] & 0xFF;
         // check crc
-        if (receiveBuffer[len - 1] != crc8(receiveBuffer, len - 1)) {
-            return new byte[]{REC_BAD_RESPONSE};
-        }
+        if (receiveBuffer[len - 1] != crc8(receiveBuffer, len - 1)) return new byte[]{REC_BAD_RESPONSE};
         // check if command code received is equal to command code sent
-        if (receiveBuffer[HEADER_SIZE - 1] != sendBuffer[0] + 0x10) {
-            return new byte[]{REC_BAD_RESPONSE};
-        }
+        if (receiveBuffer[3] != sendBuffer[0] + 0x10) return new byte[]{REC_BAD_RESPONSE};
         // check command execution code (it should be present and equal to zero)
-        if (receiveBuffer[HEADER_SIZE] != 0) {
-            return new byte[]{(byte) (REC_COMMAND_ERROR + receiveBuffer[HEADER_SIZE])};
-        }
+        if (receiveBuffer[HEADER_SIZE] != 0) return new byte[]{(byte) (REC_COMMAND_ERROR + receiveBuffer[HEADER_SIZE])};
         // copy payload to response buffer
         final byte[] response = new byte[len - HEADER_SIZE - 1];
         response[0] = ALL_OK;

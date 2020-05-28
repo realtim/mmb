@@ -39,7 +39,7 @@ public class PointListAdapter extends RecyclerView.Adapter<PointListAdapter.Poin
     public PointListAdapter.PointHolder onCreateViewHolder(@NonNull final ViewGroup viewGroup, final int viewType) {
         final View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.point_list_item, viewGroup, false);
-        return new PointListAdapter.PointHolder(view);
+        return new PointHolder(view);
     }
 
     /**
@@ -92,7 +92,7 @@ public class PointListAdapter extends RecyclerView.Adapter<PointListAdapter.Poin
     /**
      * Custom ViewHolder for point_list_item layout.
      */
-    final class PointHolder extends RecyclerView.ViewHolder {
+    static final class PointHolder extends RecyclerView.ViewHolder {
         /**
          * Point name.
          */

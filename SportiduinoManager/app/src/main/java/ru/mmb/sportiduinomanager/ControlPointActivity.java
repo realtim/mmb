@@ -106,7 +106,7 @@ public final class ControlPointActivity extends MenuActivity
         // Set flag for monitoring service in main app
         MainApp.setCPActivityActive(true);
         // Initialize masks
-        mTeamMask = MainApp.mUIState.getTeamMask();
+        mTeamMask = MainApp.UI_STATE.getTeamMask();
         mOriginalMask = 0;
         // Prepare recycler view of members list
         final RecyclerView membersList = findViewById(R.id.cp_member_list);
@@ -125,12 +125,12 @@ public final class ControlPointActivity extends MenuActivity
         mTeamAdapter = new TeamListAdapter(this, MainApp.mTeams, MainApp.mPointPunches);
         teamsList.setAdapter(mTeamAdapter);
         // Restore team list position and update activity layout
-        int restoredPosition = MainApp.mUIState.getTeamListPosition();
+        int restoredPosition = MainApp.UI_STATE.getTeamListPosition();
         int maxPosition = MainApp.mPointPunches.size() - 1;
         if (maxPosition < 0) maxPosition = 0;
         if (restoredPosition > maxPosition) {
             restoredPosition = maxPosition;
-            MainApp.mUIState.setTeamListPosition(restoredPosition);
+            MainApp.UI_STATE.setTeamListPosition(restoredPosition);
         }
         updateMasks(true, restoredPosition);
         mTeamAdapter.setPosition(restoredPosition);
@@ -165,8 +165,8 @@ public final class ControlPointActivity extends MenuActivity
         final int oldPosition = mTeamAdapter.getPosition();
         mTeamAdapter.setPosition(position);
         // Save new position and mask in main application
-        MainApp.mUIState.setTeamListPosition(position);
-        MainApp.mUIState.setTeamMask(mTeamMask);
+        MainApp.UI_STATE.setTeamListPosition(position);
+        MainApp.UI_STATE.setTeamMask(mTeamMask);
         // Update team list
         mTeamAdapter.notifyItemChanged(oldPosition);
         mTeamAdapter.notifyItemChanged(position);
@@ -188,7 +188,7 @@ public final class ControlPointActivity extends MenuActivity
         }
         mTeamMask = newMask;
         // Save it in main application
-        MainApp.mUIState.setTeamMask(mTeamMask);
+        MainApp.UI_STATE.setTeamMask(mTeamMask);
         // Update list item
         mMemberAdapter.setMask(mTeamMask);
         mMemberAdapter.notifyItemChanged(position);
@@ -260,16 +260,16 @@ public final class ControlPointActivity extends MenuActivity
         mOriginalMask = MainApp.mPointPunches.getTeamMask(index);
         if (restore) {
             // Restore current mask from main application
-            mTeamMask = MainApp.mUIState.getTeamMask();
+            mTeamMask = MainApp.UI_STATE.getTeamMask();
             // Set it to original if the mask in main application was not initialized
             if (mTeamMask == 0) {
                 mTeamMask = mOriginalMask;
-                MainApp.mUIState.setTeamMask(mTeamMask);
+                MainApp.UI_STATE.setTeamMask(mTeamMask);
             }
         } else {
             // Set current mask equal to original from database
             mTeamMask = mOriginalMask;
-            MainApp.mUIState.setTeamMask(mTeamMask);
+            MainApp.UI_STATE.setTeamMask(mTeamMask);
         }
     }
 
@@ -307,7 +307,7 @@ public final class ControlPointActivity extends MenuActivity
                 }
             }
             mTeamAdapter.setPosition(newPosition);
-            MainApp.mUIState.setTeamListPosition(newPosition);
+            MainApp.UI_STATE.setTeamListPosition(newPosition);
         }
         // Update team list as we have a new team in it
         mTeamAdapter.notifyDataSetChanged();

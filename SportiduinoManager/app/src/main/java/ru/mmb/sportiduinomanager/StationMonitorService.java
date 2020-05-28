@@ -119,7 +119,7 @@ public class StationMonitorService extends Service {
                 MainApp.mStation.setQueryingActive(true);
                 // Save currently selected team
                 final int selectedTeamN = MainApp.mPointPunches
-                        .getTeamNumber(MainApp.mPointPunches.size() - 1 - MainApp.mUIState.getTeamListPosition());
+                        .getTeamNumber(MainApp.mPointPunches.size() - 1 - MainApp.UI_STATE.getTeamListPosition());
                 // Fetch current station status
                 MainApp.mStation.fetchStatus();
                 // Get the latest data from connected station

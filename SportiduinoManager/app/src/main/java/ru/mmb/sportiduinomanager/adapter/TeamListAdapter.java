@@ -57,7 +57,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
                                                          final int viewType) {
         final View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.team_list_item, viewGroup, false);
-        return new TeamListAdapter.TeamHolder(view);
+        return new TeamHolder(view);
     }
 
     /**
@@ -144,7 +144,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
     /**
      * Custom ViewHolder for team_list_item layout.
      */
-    final class TeamHolder extends RecyclerView.ViewHolder {
+    static final class TeamHolder extends RecyclerView.ViewHolder {
         /**
          * Team number and name.
          */

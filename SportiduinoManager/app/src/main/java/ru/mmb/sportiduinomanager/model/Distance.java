@@ -310,8 +310,8 @@ public final class Distance {
             for (int index = list.get(i - 1) + 1; index < list.get(i); index++) {
                 if (mPoints != null && mPoints[index] != null) {
                     noHole = false;
+                    break;
                 }
-                if (!noHole) break;
             }
             continuous[i] = noHole;
         }
