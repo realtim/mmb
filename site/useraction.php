@@ -367,7 +367,7 @@ if (!isset($MyPHPScript)) return;
         $Msg .= "P.S. Изменения можете вносить Вы, а также администратор сайта ММБ.";
 
         // Отправляем письмо
-        SendMail(trim($UserEmail), $Msg, $UserName);
+        SendMail($UserEmail, $Msg, $UserName);
 
     } elseif ($action == "RestorePasswordRequest")  {
         // Действие вызывается ссылкой "Забыли пароль"
@@ -390,7 +390,7 @@ if (!isset($MyPHPScript)) return;
         }
 
 
-        $sql = "select user_id 
+        $sql = "select user_id, user_name
                 from  Users 
                 where user_hide = 0 and user_email = '$pUserEmail'";
 
@@ -400,6 +400,7 @@ if (!isset($MyPHPScript)) return;
             CMmb::setErrorMessage("Пользователь с  e-mail $pUserEmail не найден");
             return;
         }
+        $pUserName = CSql::singleValue($sql, 'user_name');
 
 
         $ChangePasswordSessionId = uniqid();
@@ -420,12 +421,9 @@ if (!isset($MyPHPScript)) return;
         $Msg.= "Кто-то (возможно, это были Вы) запросил восстановление пароля на сайте ММБ для этого адреса e-mail.\r\n";
         $Msg.= "Для получения нового пароля необходимо перейти по ссылке:\r\n";
         $Msg.= $MyHttpLink.$MyLocation."?changepasswordsessionid=$ChangePasswordSessionId \r\n\r\n";
-        $Msg.= "P.S. Если Вы не запрашивали восстановление пароля - просто проигнорируйте письмо - приносим извинения за доставленные неудобства.\r\n";
+        $Msg.= "P.S. Если Вы не запрашивали восстановление пароля, то просто проигнорируйте это письмо.\r\n";
 
-        //echo $Message;
-        // Чтобы вежливо написать "кому", нужен доп. запрос с получением имени по enail
-        // пока не стал делать
-        SendMail($pUserEmail, $Msg);
+        SendMail($pUserEmail, $Msg, $pUserName);
         $statustext = 'Ссылка для получения нового пароля выслана на указанный адрес. Если письмо не пришло - проверьте спам.';
 
     } elseif ($action == "sendpasswordafterrequest")  {
@@ -462,7 +460,7 @@ if (!isset($MyPHPScript)) return;
             $Msg .= "для Вашей учетной записи на сайте ММБ создан пароль: $NewPassword\r\n";
 
             // Отправляем письмо
-            SendMail(trim($UserEmail), $Msg, $UserName);
+            SendMail($UserEmail, $Msg, $UserName);
 
             CMmb::setShortResult("Пароль выслан.", 'MainPage');
 
@@ -589,7 +587,7 @@ if (!isset($MyPHPScript)) return;
 
 
             // Отправляем письмо
-            SendMail(trim($pUserEmail), $Msg, $pUserName);
+            SendMail($pUserEmail, $Msg, $pUserName);
 
             CMmb::setResult('Добавлен модератор', 'ViewAdminModeratorsPage');
         } else {
@@ -625,7 +623,7 @@ if (!isset($MyPHPScript)) return;
         $Msg .= "Автор изменений: $ChangeDataUserName.\r\n\r\n";
 
         // Отправляем письмо
-        SendMail(trim($pUserEmail), $Msg, $pUserName);
+        SendMail($pUserEmail, $Msg, $pUserName);
 
         // Остаемся на той же странице
         CMmb::setResult('Удален модератор', 'ViewAdminModeratorsPage');
@@ -716,7 +714,7 @@ if (!isset($MyPHPScript)) return;
 
 
             // Отправляем письмо
-            SendMail(trim($pUserEmail), $Msg, $pUserName);
+            SendMail($pUserEmail, $Msg, $pUserName);
 
             CMmb::setResult('Добавлен волонтёр', 'ViewRaidDevelopersPage');
         } else {
@@ -752,7 +750,7 @@ if (!isset($MyPHPScript)) return;
         $Msg .= "Автор изменений: $ChangeDataUserName.\r\n\r\n";
 
         // Отправляем письмо
-        SendMail(trim($pUserEmail), $Msg, $pUserName);
+        SendMail($pUserEmail, $Msg, $pUserName);
 
         // Остаемся на той же странице
         CMmb::setResult('Удален волонтёр', 'ViewRaidDevelopersPage');
@@ -957,7 +955,7 @@ if (!isset($MyPHPScript)) return;
 
         //echo 'user mail'.$UserEmail;
                 // Отправляем письмо
-        SendMail(trim($UserEmail), $Msg, $UserName);
+        SendMail($UserEmail, $Msg, $UserName);
 
         $LogMsg = "Usermessage was sent to $pUserId";
         $Sql = "insert into Logs (logs_level, user_id, logs_message) values ('info', $UserId, '$LogMsg')";
@@ -968,7 +966,7 @@ if (!isset($MyPHPScript)) return;
         // Отправляем копию
         if (!empty($AuthorUserEmail)) {
             $Msg = "Копия письма, которое Вами было отправлено\r\n ================ \r\n".$Msg;
-            SendMail(trim($AuthorUserEmail), $Msg, $UserName);
+            SendMail($AuthorUserEmail, $Msg, $UserName);
         }
     }
     // ============ Добавить пользователя в слияние ====================================
@@ -1044,7 +1042,7 @@ if (!isset($MyPHPScript)) return;
                       ."Если Вы считаете это неправильным, необходимо авторизоваться на сервисе ММБ, перейти на страницу 'Запросы на слияние' и отклонить запрос."."\r\n\r\n";
 
                 // Отправляем письмо
-                SendMail(trim($pUserEmail), $Msg, $pUserName);
+                SendMail($pUserEmail, $Msg, $pUserName);
             }
             // Конец проверки, что пользователь не импортирован
         }

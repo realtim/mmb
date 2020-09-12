@@ -795,21 +795,22 @@ class CMmbAuth {
 
 
 
-  // Отсылаем пароль
+    // Отправка писем с сайта
     function SendMail($Email, $Message, $ToName='', $Subject='Информация с сайта ММБ') {
-   //
    
-    // 20.01.2012 Заменил штатную функцию на более удобную  send_mime_mail (см. ниже)
-    return send_mime_mail('mmbsite',
- 		   'mmb@progressor.ru',
-		    $ToName,
-		    $Email,
-		    'UTF-8',  // кодировка, в которой находятся передаваемые строки
-		    'UTF-8', // кодировка, в которой будет отправлено письмо
-		    $Subject,
-		    $Message."\r\n".'Используйте для вопросов адрес mmbsite@googlegroups.com'."\r\n".'Ответ на это письмо будет проигнорирован.'."\r\n",
-		    FALSE,
-		    'noreply@mmb.progressor.ru');
+        // 20.01.2012 Заменил штатную функцию на более удобную  send_mime_mail (см. ниже)
+        $result = send_mime_mail('Робот сайта ММБ',	// имя отправителя
+		    'mmb@progressor.ru',		// email отправителя
+		    $ToName,				// имя получателя
+		    trim($Email),			// email получателя
+		    $Subject,				// тема письма
+		    $Message."\r\n" .			// текст письма
+			'Если Вам что-то непонятно, ищите ответы на вопросы здесь: https://github.com/realtim/mmb/wiki/Вопросы-и-ответы'."\r\n" .
+			'О проблемах, которые не удалось решить самостоятельно, пишите на mmbsite@googlegroups.com'."\r\n",
+		    'mmbsite@googlegroups.com',		// Reply-To
+		    'noreply@mmb.progressor.ru');	// Return-Path
+        if (!$result) CMmbLogger::e('EMail', "Failed to send email to user with email '$Email' and name '$ToName'");
+        return $result;
     }
 
 
@@ -998,7 +999,7 @@ class CMmbAuth {
 		
 		        //echo $sendingType." ".
 		        // Отправляем письмо
-			SendMail(trim($UserEmail),  $Msg, $UserName,  $msgSubject);
+			SendMail($UserEmail,  $Msg, $UserName,  $msgSubject);
 	}
   	mysql_free_result($UserResult);
   	
@@ -1463,73 +1464,44 @@ function CanRejectUserUnion($Administrator, $UserRequestId, $UserId)
 
 
 // ----------------------------------------------------------------------------
+// Отправка писем с поддержкой MIME
+function send_mime_mail($name_from, // имя отправителя
+			$email_from, // email отправителя
+			$name_to, // имя получателя
+			$email_to, // email получателя
+			$subject, // тема письма
+			$body, // текст письма
+			$reply = '',  // Reply-To
+			$return_path = '', // Return-Path
+			$html = FALSE // письмо в виде html или обычного текста
+			)
+{
+	if (!$email_from || !$email_to) return false;
 
-    // функция 
-    // Автор: Григорий Рубцов [rgbeast]  
-    // Из статьи Отправка e-mail в русской кодировке средствами PHP
-/*
-Пример:
-send_mime_mail('Автор письма',
-               'sender@site.ru',
-               'Получатель письма',
-               'recepient@site.ru',
-               'CP1251',  // кодировка, в которой находятся передаваемые строки
-               'KOI8-R', // кодировка, в которой будет отправлено письмо
-               'Письмо-уведомление',
-               "Здравствуйте, я Ваша программа!");
-*/
-    function send_mime_mail($name_from, // имя отправителя
-                        $email_from, // email отправителя
-                        $name_to, // имя получателя
-                        $email_to, // email получателя
-                        $data_charset, // кодировка переданных данных
-                        $send_charset, // кодировка письма
-                        $subject, // тема письма
-                        $body, // текст письма
-                        $html = FALSE, // письмо в виде html или обычного текста
-			$reply = '' // отвечать на адрес    
-                        ) 
-    {
-    	
-    	
-      $to = mime_header_encode($name_to, $data_charset, $send_charset)
-		  . " <$email_to>";
-		  
-      $subject = mime_header_encode($subject, $data_charset, $send_charset);
+	$from = encode_header($name_from) . " <$email_from>";
+	$to = encode_header($name_to) . " <$email_to>";
 
-      $from =  mime_header_encode($name_from, $data_charset, $send_charset)
-                     ." <$email_from>";
-     
-	    
-      if($data_charset != $send_charset) 
-      {
-	$body = iconv($data_charset, $send_charset, $body);
-      }
-      $headers = "From: $from\r\n";
-      if ($reply <> '') {
-	   $headers .= "Reply-To: $reply\r\n";	
-      }
-      $type = ($html) ? 'html' : 'plain';
-      $headers .= "Content-type: text/$type; charset=$send_charset\r\n";
-      $headers .= "Mime-Version: 1.0\r\n";
+	$subject = encode_header($subject);
 
-      // 09/09/2013 Добавил атрибут Return-Path (пятым параметром)
-      return mail($to, $subject, $body, $headers, "-f".$email_from);
-     }
+	$headers = "From: $from\r\n";
+	if ($reply <> '') $headers .= "Reply-To: $reply\r\n";
+	$type = ($html) ? 'html' : 'plain';
+	$headers .= "Content-Type: text/$type; charset=UTF-8\r\n";
+	$headers .= "Content-Transfer-Encoding: 8bit\r\n";
+	$headers .= "Mime-Version: 1.0\r\n";
 
-    function mime_header_encode($str, $data_charset, $send_charset)
-    {
-      if($data_charset != $send_charset) 
-      {
-	$str = iconv($data_charset, $send_charset, $str);
-      }
-      return '=?' . $send_charset . '?B?' . base64_encode($str) . '?=';
-    }
-    // конец функций для отправки письма
+	if (!$return_path) $return_path = $email_from;
+	return mail($to, $subject, $body, $headers, "-f" . $return_path);
+}
+
+function encode_header($str)
+{
+      if (mb_check_encoding($str, 'ASCII')) return $str;
+      return '=?UTF-8?B?' . base64_encode($str) . '?=';
+}
+// конец функций для отправки письма
 
 
-
-	
 	// функция вычисляет место команды в общем зачёте
 	function GetTeamPlace($teamid)
 	{
@@ -4073,7 +4045,7 @@ class CMmbLogger
 			$mail = self::$fatalErrorMail == null ? 'mmbsite@googlegroups.com' : self::$fatalErrorMail;
 			$msg = self::makeFatalMessage($dbname, $user, $operation, $message, true);
 			
-			if (SendMail(trim($mail), $msg, 'Админы и разработчики', "Критическая ошибка на сайте с базой $dbname"))
+			if (SendMail($mail, $msg, 'Админы и разработчики ММБ', "Критическая ошибка на сайте с базой $dbname"))
 				self::updateLogFile(false);
 		}
 	}
