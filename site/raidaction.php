@@ -204,7 +204,7 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 				, $closeDate
 				, $pRaidNoShowResult, trim('$pRaidFilePrefix')
 				, $pRaidReadOnlyHoursBeforeStart, $pRaidMapPrice
-				, $pRaidNoStartPrice, $pRaidTeamsLimit, trim($pRaidBluetoothPIN))";
+				, $pRaidNoStartPrice, $pRaidTeamsLimit, trim('$pRaidBluetoothPIN'))";
 
 
 		// При insert должен вернуться послений id - это реализовано в MySqlQuery
