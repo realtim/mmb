@@ -2015,7 +2015,7 @@ function encode_header($str)
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  COALESCE(t.team_result, 0) > 0
+		       and  COALESCE(t.team_result, 0) > '00:00:00'
 		       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
 		       and  COALESCE(c.minorder, 0) = 0
 		       and  d.raid_id <= $maxRaidId
