@@ -256,12 +256,12 @@ if ($AllowEditResult == 1)
 
 	print('<option value="0">Не указана</option>'."\n");
 
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$levelpointselected = ($Row['levelpoint_id'] == $LevelPointId ? 'selected' : '');
 		print('<option value="'.$Row['levelpoint_id'].'" '.$levelpointselected.' >'.$Row['levelpoint_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 	print("</td></tr>\r\n");
 	print("<tr><td>\r\n");
@@ -279,12 +279,12 @@ if ($AllowEditResult == 1)
 	$sql = "select error_id, error_name from Errors order by error_id ";
 	$Result = MySqlQuery($sql);
 
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$errorselected = ($Row['error_id'] == $ErrorId ? 'selected' : '');
 		print('<option value="'.$Row['error_id'].'" '.$errorselected.' >'.$Row['error_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 	print('</td></tr>'."\r\n");
 	print('<tr><td class="input">'."\n");
@@ -371,7 +371,7 @@ if ($TeamNoTimePointsNumber)
 $Result = MySqlQuery($sql);
 
 // ============ Цикл обработки данных по этапам ===============================
-while ($Row = mysql_fetch_assoc($Result))
+while ($Row = mysqli_fetch_assoc($Result))
 {
 
 	print("<tr>\r\n");
@@ -394,7 +394,7 @@ while ($Row = mysql_fetch_assoc($Result))
 	print("</tr>\r\n");
 }
 // ============ Конец цикла обработки данных по этапам ========================
-mysql_free_result($Result);
+mysqli_free_result($Result);
 
 
 // Закрываем таблицу
@@ -429,7 +429,7 @@ print("</table>\r\n");
 			order by lp.levelpoint_order ASC
 	 ";
 $Result = MySqlQuery($sql);
-if (mysql_num_rows($Result) > 0)
+if (mysqli_num_rows($Result) > 0)
 {
 	print("<br/>\r\n");
 	print("<table class=\"std\">\r\n");
@@ -438,7 +438,7 @@ if (mysql_num_rows($Result) > 0)
                 <td>Штраф, минуты</td>
 	 '."\r\n");
 	
-	 while ($Row = mysql_fetch_assoc($Result))
+	 while ($Row = mysqli_fetch_assoc($Result))
 	{
 		print("<tr>\r\n");
 		print("<td>{$Row['levelpoint_name']}</td>
@@ -448,7 +448,7 @@ if (mysql_num_rows($Result) > 0)
 	print("</tr>\r\n");
 	print("</table>\r\n");
 }
-mysql_free_result($Result);
+mysqli_free_result($Result);
 
 
 	$sql = "select lp.levelpoint_id, lp.levelpoint_name, 
@@ -480,7 +480,7 @@ mysql_free_result($Result);
 			";
 
 $Result = MySqlQuery($sql);
-if (mysql_num_rows($Result) > 0)
+if (mysqli_num_rows($Result) > 0)
 {
 	print("<br/>\r\n");
 	print("<table class=\"std\">\r\n");
@@ -490,7 +490,7 @@ if (mysql_num_rows($Result) > 0)
 					</tr>'."\r\n");
 	
 	$predDiscountId = 0;
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		if ($predDiscountId <> $Row['levelpointdiscount_id'])
 		{
@@ -509,7 +509,7 @@ if (mysql_num_rows($Result) > 0)
 	print("</table>\r\n");
 
 }
-mysql_free_result($Result);
+mysqli_free_result($Result);
 
 
 print("<br/>\r\n");

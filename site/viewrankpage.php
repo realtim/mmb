@@ -34,7 +34,7 @@ class CTeamPlaces
 		$lastPlace = 0;
 		$lastRes = 0;
 		$skip = 0;
-		while ($row = mysql_fetch_assoc($result))
+		while ($row = mysqli_fetch_assoc($result))
 		{
 			if ($dist != $row['distance_id'])
 			{
@@ -57,7 +57,7 @@ class CTeamPlaces
 
 			$this->teamPlaces[$row['team_id']] = $lastPlace;
 		}
-		mysql_free_result($result);
+		mysqli_free_result($result);
 	}
 
 	private function retrieveUserDistance()
@@ -78,7 +78,7 @@ class CTeamPlaces
 		$result = MySqlQuery($sql);
 		$this->userDistance = array();
 		$last = array();
-		while ($row = mysql_fetch_assoc($result))
+		while ($row = mysqli_fetch_assoc($result))
 		{
 			$uid = $row['user_id'];
 			if ($last !== $uid)
@@ -94,7 +94,7 @@ class CTeamPlaces
 				'levelpoint_id' => $row['levelpoint_id']);
 		}
 
-		mysql_free_result($result);
+		mysqli_free_result($result);
 	}
 
 	function GetTeamPlace($teamId)
@@ -198,7 +198,7 @@ CMmbLogger::addRecord('rank query: ');
 			        inner join Distances d on r.raid_id = d.raid_id and d.distance_hide = 0
 		                order by r.raid_id  desc, d.distance_id desc ";
 		$ResultRaids = MySqlQuery($sqlRaids);
-		$RowCount = mysql_num_rows($ResultRaids);
+		$RowCount = mysqli_num_rows($ResultRaids);
 		$TableWidth =  $RowCount*100 + 660;
 
 		$ctp = microtime(true);
@@ -223,12 +223,12 @@ $t5 = microtime(true);
 	{
 	        // Показываем  список ММБ
 		$distances = array();
-		while ($RowRaids = mysql_fetch_assoc($ResultRaids))
+		while ($RowRaids = mysqli_fetch_assoc($ResultRaids))
 		{
 	                print('<td width="100">'.$RowRaids['raid_name'].' '.$RowRaids['distance_name']."</td>\r\n");
 			$distances[] = $RowRaids['distance_id'];
 		}
-		mysql_free_result($ResultRaids);
+		mysqli_free_result($ResultRaids);
 	}
 	       
 	print("</tr>\r\n");
@@ -236,7 +236,7 @@ $t5 = microtime(true);
 	
         $LineNum = 0;
         // Сканируем команды
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
 		$LineNum++;
@@ -280,7 +280,7 @@ $t5 = microtime(true);
 	}
         // Конец цикла по журналу объединений
 
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 
 	print("</table>\r\n");
 

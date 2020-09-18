@@ -36,7 +36,7 @@ if ($RaidId < 0)
 
   $PredDistance = "";
   $CardsArr = "";
-  while ($Row = mysql_fetch_assoc($Result))
+  while ($Row = mysqli_fetch_assoc($Result))
   {
 	if ($Row['distance_name'] <> $PredDistance)
 	{
@@ -54,7 +54,7 @@ if ($RaidId < 0)
 		$CardsArr = $CardsArr.','.$Row['team_num'];
 	}
   }
-  mysql_free_result($Result);
+  mysqli_free_result($Result);
 
   // записываем накопленное
   print($CardsArr.'<br />'."\n");
@@ -71,7 +71,7 @@ if ($RaidId < 0)
 
   $Result = MySqlQuery($sql);
 
-  while ($Row = mysql_fetch_assoc($Result))
+  while ($Row = mysqli_fetch_assoc($Result))
   {
 	$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, u.user_id
 		from TeamUsers tu
@@ -81,7 +81,7 @@ if ($RaidId < 0)
 	$UserResult = MySqlQuery($sql);
 
 	$First = 1;
-	while ($UserRow = mysql_fetch_assoc($UserResult))
+	while ($UserRow = mysqli_fetch_assoc($UserResult))
 	{
 		if ($First == 1)
 		{
@@ -94,10 +94,10 @@ if ($RaidId < 0)
 		}
 	}
   
-	mysql_free_result($UserResult);
+	mysqli_free_result($UserResult);
   }
 
-  mysql_free_result($Result);
+  mysqli_free_result($Result);
 
   print("<br/>\n");
 
@@ -142,7 +142,7 @@ elseif ($action == 'RaidCardsExport')
 
   	$PredDistance = "";
   	$CardsArr = "";
-  	while ($Row = mysql_fetch_assoc($Result))
+  	while ($Row = mysqli_fetch_assoc($Result))
   	{
 		if ($Row['distance_name'] <> $PredDistance)
 		{
@@ -161,7 +161,7 @@ elseif ($action == 'RaidCardsExport')
 			$CardsArr = $CardsArr.','.$Row['team_num'];
 		}
   	}
-  	mysql_free_result($Result);
+  	mysqli_free_result($Result);
 
   	// записываем накопленное
   	
@@ -183,7 +183,7 @@ elseif ($action == 'RaidCardsExport')
 
   	$Result = MySqlQuery($sql);
 
-  	while ($Row = mysql_fetch_assoc($Result))
+  	while ($Row = mysqli_fetch_assoc($Result))
   	{
 		$sql = "select tu.teamuser_id, u.user_name, u.user_birthyear, u.user_id
 			from TeamUsers tu
@@ -193,7 +193,7 @@ elseif ($action == 'RaidCardsExport')
 		$UserResult = MySqlQuery($sql);
 
 		$First = 1;
-		while ($UserRow = mysql_fetch_assoc($UserResult))
+		while ($UserRow = mysqli_fetch_assoc($UserResult))
 		{
 			if ($First == 1)
 			{
@@ -210,10 +210,10 @@ elseif ($action == 'RaidCardsExport')
 			}
 		}
   
-		mysql_free_result($UserResult);
+		mysqli_free_result($UserResult);
   	}
 
-  	mysql_free_result($Result);
+  	mysqli_free_result($Result);
 
  	fclose($output);
 
@@ -243,44 +243,44 @@ elseif ($action == 'JSON')
 	// Raids: raid_id, raid_name, raid_registrationenddate
 	$Sql = "select raid_id, raid_name, raid_registrationenddate from Raids where raid_id = $RaidId";
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Raids"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Raids"][] = $Row; }
+	mysqli_free_result($Result);
 	// Distances: distance_id, raid_id, distance_name
 	$Sql = "select distance_id, raid_id, distance_name from Distances d where d.distance_hide = 0 and d.raid_id = $RaidId";
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
+	mysqli_free_result($Result);
 	// ScanPoints: 
 	$Sql = "select sp.scanpoint_id, sp.raid_id, sp.scanpoint_name, sp.scanpoint_order  from ScanPoints sp where sp.scanpoint_hide = 0 and sp.raid_id = $RaidId";
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["ScanPoints"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["ScanPoints"][] = $Row; }
+	mysqli_free_result($Result);
 	// 18/02/2014 добавил scanpoint_id
 	// LevelPoints: levelpoint_id, level_id, pointtype_id
 	$Sql = "select lp.levelpoint_id, lp.pointtype_id, lp.distance_id, lp.levelpoint_name, lp.levelpoint_order, lp.levelpoint_penalty, lp.levelpoint_mindatetime, lp.levelpoint_maxdatetime, scanpoint_id from LevelPoints lp inner join Distances d on lp.distance_id = d.distance_id where lp.levelpoint_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["LevelPoints"][] = $Row; }
+	mysqli_free_result($Result);
 	// LevelPointDiscounts: 
 	$Sql = "select lpd.levelpointdiscount_id, lpd.distance_id, lpd.levelpointdiscount_value, lpd.levelpointdiscount_start, lpd.levelpointdiscount_finish from LevelPointDiscounts lpd inner join Distances d on lpd.distance_id = d.distance_id where lpd.levelpointdiscount_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["LevelPointDiscounts"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["LevelPointDiscounts"][] = $Row; }
+	mysqli_free_result($Result);
 	// Teams: team_id, distance_id, team_name, team_num // *
 	$Sql = "select team_id, t.distance_id, team_name, team_num from Teams t inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0 and COALESCE(t.team_outofrange, 0) = 0 and d.raid_id = $RaidId";
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
+	mysqli_free_result($Result);
 	// Users: user_id, user_name, user_birthyear // *
 	$Sql = "select user_id, user_name, user_birthyear from Users where user_hide = 0";
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Users"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Users"][] = $Row; }
+	mysqli_free_result($Result);
 	// TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
 	$Sql = "select teamuser_id, tu.team_id, user_id, teamuser_hide from TeamUsers tu inner join Teams t on tu.team_id = t.team_id inner join Distances d on t.distance_id = d.distance_id where t.team_hide = 0  and COALESCE(t.team_outofrange, 0) = 0  and d.raid_id = $RaidId";
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
+	mysqli_free_result($Result);
 	// 27/03/2013 Отключил экспорт TeamLevelPoints т.к. эта таблица формируется исключительно при импорте данных.
 	// Пока на планшетах не производится сведение всех данных - не нужна
 	// TeamLevelDismiss: user_id, levelpoint_id, team_id, teamuser_id, teamleveldismiss_date, device_id
@@ -338,7 +338,7 @@ elseif ($action == 'RecalcRaidResults')
         
         $Result = MySqlQuery($sql);
 	// Цикл по всем командам
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$RecalcTeamId = $Row['team_id'];
 		RecalcTeamLevelDuration($RecalcTeamId);
@@ -349,7 +349,7 @@ elseif ($action == 'RecalcRaidResults')
 			RecalcTeamResult($RecalcTeamId);
 		}	
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 
 */
 	CMmb::setShortResult('Результаты марш-броска пересчитаны', 'ViewAdminDataPage');
@@ -513,7 +513,7 @@ elseif ($action == 'RaidTeamUsersExport')
 	// create a file pointer connected to the output stream
 	$output = fopen('php://output', 'w');
 
-	while ( ( $Row = mysql_fetch_assoc($Result) ) )
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) )
 	{  
 		$strtowrite = trim($Row['user_name']).';'.$Row['user_birthyear'].';'.$Row['user_city'].';'.
 				$Row['user_phone'].';'.$Row['team_num'].';'.trim($Row['team_name']).';'.
@@ -521,7 +521,7 @@ elseif ($action == 'RaidTeamUsersExport')
 		fwrite($output, iconv('UTF-8', 'Windows-1251', $strtowrite)."\n"); 
 		//fputcsv($output, $Row, ';');
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 
  	fclose($output);
  	die();
@@ -884,10 +884,10 @@ function ValidateTeam($Team, $Levels)
 	{
 		$sql = "select * from TeamLevels where level_id = $level_id and team_id = {$Team['team_id']} and teamlevel_hide = 0";
 		$Result = MySqlQuery($sql);
-		if (mysql_num_rows($Result) > 1) die('Несколько записей на один этап для команды '.$Team['team_id']);
-	        $Row = mysql_fetch_assoc($Result);
+		if (mysqli_num_rows($Result) > 1) die('Несколько записей на один этап для команды '.$Team['team_id']);
+	        $Row = mysqli_fetch_assoc($Result);
 		if ($Row) $TeamLevels[$n] = $Row;
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 	}
 	// Проверяем все этапы, о которых есть записи в таблицах
 	$team_result = 0;

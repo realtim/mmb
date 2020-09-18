@@ -24,7 +24,7 @@ print("<br/>\n");
 	print("<table class=\"std\">\r\n");
 
         // Сканируем
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
              print("<tr>\r\n");
 	     print('<td>');
@@ -33,6 +33,6 @@ print("<br/>\n");
              print("</tr>\r\n");
 	}
 
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print("</table>\r\n");
 ?>

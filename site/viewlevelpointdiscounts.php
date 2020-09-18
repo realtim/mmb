@@ -185,12 +185,12 @@ $TabIndex = 0;
 	print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"  onchange="javascript: submit();">'."\n");
 	$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = $RaidId order by distance_id ";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
 		print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 	print('</td></tr>'."\n\n");
 	print('</table>'."\n");
@@ -237,12 +237,12 @@ if ($AllowEdit == 1)
 	print('<select name="LevelPointId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
 	$sql = "select levelpoint_id, levelpoint_name from LevelPoints where pointtype_id in (2,4) and distance_id = ".$DistanceId." order by levelpoint_order ";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$levelpointselected = ($Row['levelpoint_id'] == $LevelPointId ? 'selected' : '');
 		print('<option value="'.$Row['levelpoint_id'].'" '.$levelpointselected.' >'.$Row['levelpoint_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 	print('</td></tr>'."\n\n");
 
@@ -309,7 +309,7 @@ if (empty($DistanceId))
 	print("</tr>\r\n");
 
         // Сканируем команды
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
         //   print('<tr class = "'.$TrClass.'">'."\r\n");
              print("<tr>\r\n");
@@ -327,6 +327,6 @@ if (empty($DistanceId))
 	     print("</tr>\r\n");
 	}
 
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print("</table>\r\n");
 ?>

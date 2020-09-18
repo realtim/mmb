@@ -175,7 +175,7 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 	     			limit 0, 1
 		) f on r.raid_id = f.raid_id";
  $Result = MySqlQuery($Sql);
- while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
+ while ( ( $Row = mysqli_fetch_assoc($Result) ) ) 
  { 
         // 08.12.2013 Ищем ссылку на логотип  
 	$LogoFile = trim($Row['logo_file']);
@@ -185,7 +185,7 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 	 $mmbLogos[] = "                {$Row['raid_id']}: '$link'";
         }
  }
- mysql_free_result($Result);
+ mysqli_free_result($Result);
  ?>
 
  <script language="JavaScript">

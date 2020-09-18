@@ -277,12 +277,12 @@ $TabIndex = 0;
 	print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'"  onchange="javascript: submit();">'."\n");
 	$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = $RaidId order by distance_id ";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
 		print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 	print('</td></tr>'."\n\n");
 	print('</table>'."\n");
@@ -321,12 +321,12 @@ if ($AllowEdit == 1)
 
 	print('<option value="0">Не указан</option>'."\n");
 
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$levelselected = ($Row['level_id'] == $LevelId ? 'selected' : '');
 		print('<option value="'.$Row['level_id'].'" '.$levelselected.' >'.$Row['level_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 
 	print('</td></tr>'."\n\n");
@@ -341,12 +341,12 @@ if ($AllowEdit == 1)
 
 //	print('<option value="0">Не указана</option>'."\n");
 
-//	while ($Row = mysql_fetch_assoc($Result))
+//	while ($Row = mysqli_fetch_assoc($Result))
 //	{
 //		$scanpointselected = ($Row['scanpoint_id'] == $ScanPointId ? 'selected' : '');
 //		print('<option value="'.$Row['scanpoint_id'].'" '.$scanpointselected.' >'.$Row['scanpoint_name']."</option>\n");
 //	}
-//	mysql_free_result($Result);
+//	mysqli_free_result($Result);
 //	print('</select>'."\n");
 
 
@@ -355,12 +355,12 @@ if ($AllowEdit == 1)
 	print('<select name="PointTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
 	$sql = "select pointtype_id, pointtype_name from PointTypes ";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$pointtypeselected = ($Row['pointtype_id'] == $PointTypeId ? 'selected' : '');
 		print('<option value="'.$Row['pointtype_id'].'" '.$pointtypeselected.' >'.$Row['pointtype_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 
 	print("</td></tr>\r\n");
@@ -515,7 +515,7 @@ if ($AllowViewResults == 1)
 		print("</tr>\r\n");
 		
 	        // Сканируем команды
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
 //                            <td align = "left" style = "'.$tdstyle.'">'.$Row['level_name'].'</td>
@@ -541,7 +541,7 @@ if ($AllowViewResults == 1)
 		     print("</tr>\r\n");
 		}	
 
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 		print("</table>\r\n");
 	
 
@@ -609,7 +609,7 @@ if ($AllowViewResults == 1)
 	print('</tr>'."\r\n");
 		
 	// Сканируем команды
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
              print('<tr>'."\r\n");
@@ -628,7 +628,7 @@ if ($AllowViewResults == 1)
   	                               
 	}	
 
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</table>'."\r\n");
 
    } 

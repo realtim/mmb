@@ -33,8 +33,8 @@ print("</tr>\r\n");
 // Вытаскиваем информацию о марш-бросках
 $resultRaids = MySqlQuery('SELECT * FROM Raids r WHERE raid_registrationenddate is not null ORDER BY raid_id  DESC');
 
-$RaidsCount = mysql_num_rows($resultRaids);
-while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
+$RaidsCount = mysqli_num_rows($resultRaids);
+while ($rowRaids = mysqli_fetch_assoc($resultRaids)) {
 
         
 	$nextRaidId = $rowRaids['raid_id'];
@@ -104,7 +104,7 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 	
         $DistancesCount = 0;
          
-	while ($rowDistance = mysql_fetch_assoc($resultDistance)) {
+	while ($rowDistance = mysqli_fetch_assoc($resultDistance)) {
 	
 	        $DistancesCount++;
 		
@@ -129,12 +129,12 @@ while ($rowRaids = mysql_fetch_assoc($resultRaids)) {
 
 	
 	}
-	mysql_free_result($resultDistance);
+	mysqli_free_result($resultDistance);
         print("</td>\r\n");
 	print("</tr>\r\n");
 
 }
-mysql_free_result($resultRaids);
+mysqli_free_result($resultRaids);
 print("</table>\r\n");
 //print('</body></html>'."\r\n");
 

@@ -267,11 +267,11 @@ if (!isset($MyPHPScript)) return;
 		$notAdmin = $Administrator ? "true" : "raid_registrationenddate is not null";
 		$sql = "select raid_id, raid_name from Raids where $notAdmin order by raid_id desc ";
 		$Result = MySqlQuery($sql);
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 			print('<option value="'.$Row['raid_id'].'" '.(($Row['raid_id'] == $RaidId) ? 'selected' : '').' onclick="/* javascript: ChangeRaid(); */">'.$Row['raid_name']."</option>\r\n");
 		}
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 	print("</select>\r\n");
 	print("</td></tr>\r\n");
 

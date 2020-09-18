@@ -44,7 +44,7 @@ TD {font-family: sans-serif; font-size:15px; background-color: #C0C0C0;}
 
                 $PredRaid = '';
 		
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
                   // сменился ММБ
                   if ($PredRaid <> $Row['raid_name']) {
@@ -61,7 +61,7 @@ TD {font-family: sans-serif; font-size:15px; background-color: #C0C0C0;}
 			  
 		}
 
-                mysql_free_result($Result);
+                mysqli_free_result($Result);
 
 ?>
 

@@ -221,7 +221,7 @@ if ($AllowViewResults == 1)
 		print("</tr>\r\n");
 		
 	        // Сканируем команды
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
                      print("<tr>\r\n");
@@ -238,7 +238,7 @@ if ($AllowViewResults == 1)
 		     print("</tr>\r\n");
 		}
 
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 		print("</table>\r\n");
 	
 

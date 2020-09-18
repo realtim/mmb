@@ -538,9 +538,9 @@ if (!isset($MyPHPScript)) return;
 		//echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
 
-		$TeamsCount = mysql_num_rows($Result);
+		$TeamsCount = mysqli_num_rows($Result);
 
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 
 			$TrClass = ($TeamsCount%2 == 0) ? 'yellow': 'green';
@@ -588,7 +588,7 @@ if (!isset($MyPHPScript)) return;
 		
 		}
 
-                mysql_free_result($Result);
+                mysqli_free_result($Result);
 	      //  print("</form>\r\n");
 
 	  if ($viewmode <> 'Add' and $AllowEdit == 1)
@@ -609,13 +609,13 @@ if (!isset($MyPHPScript)) return;
                 //echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
 
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 		  print('<div class="team_res">'.CMmbUI::toHtml($Row['device_name']).' <a href = "javascript:GetDeviceId('.$Row['device_id'].');"
 		          title = "Получить файл конфигурации">Конфигурация</a></div>'."\r\n");
 		}
 
-                mysql_free_result($Result);
+                mysqli_free_result($Result);
 
                 $TabIndex = 1;
 	        $DisabledText = '';
@@ -677,7 +677,7 @@ if (!isset($MyPHPScript)) return;
                 //echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
 
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 
                   $Label =  (empty($Row['userlink_name'])) ?  $Row['userlink_url'] : CMmbUI::toHtml($Row['userlink_name']);
@@ -688,7 +688,7 @@ if (!isset($MyPHPScript)) return;
 			  
 		}
 
-                mysql_free_result($Result);
+                mysqli_free_result($Result);
 
                 $TabIndex = 1;
 	        $DisabledText = '';
@@ -708,25 +708,25 @@ if (!isset($MyPHPScript)) return;
 		
 		$sql = "select raid_id, raid_name from Raids $RaidCondition order by raid_id  desc";
 		$Result = MySqlQuery($sql);
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 			$raidselected =  ($Row['raid_id'] == $RaidId)  ? ' selected ' : '';
 			print('<option value="'.$Row['raid_id'].'" '.$raidselected.' >'.$Row['raid_name']."</option>\n");
 		}
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 		print('</select>'."\n");
 
 		// Показываем выпадающий список типов ссылок
 		print('<select name="LinkTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
 		$sql = "select linktype_id, linktype_name, linktype_textonly from LinkTypes where linktype_hide = 0  order by linktype_order asc ";
 		$Result = MySqlQuery($sql);
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 			$linktypeselected = '';
 			$LinkNameDisabled =  (empty($Row['linktype_textonly']) ? 'false' : 'true');
 			print('<option value="'.$Row['linktype_id'].'" '.$linktypeselected.'  onclick = "javascript:document.UserLinksForm.NewLinkName.disabled='.$LinkNameDisabled.';">'.$Row['linktype_name']."</option>\n");
 		}
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 		print('</select>'."\n");
 
 		print('<input type="text" name="NewLinkName" size="30" value="'.$NewLinkName.'" tabindex = "'.(++$TabIndex).'"  '.$DisabledText.' '
@@ -770,7 +770,7 @@ if (!isset($MyPHPScript)) return;
               //  echo 'sql '.$sql;
 		$Result = MySqlQuery($sql);
 
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 			print('<div class="team_res">'.$Row['raid_name'].'; '.$Row['type_name'].'; выдано: '.$Row['begindt'].'; ');
 			if (!empty($Row['team_id']))
@@ -780,7 +780,7 @@ if (!isset($MyPHPScript)) return;
 			print("\r\n</div>\r\n");
 		}
 
-                mysql_free_result($Result);
+                mysqli_free_result($Result);
 	   }
 	   // Конец блока приглашений
 
