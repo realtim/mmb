@@ -7,7 +7,7 @@ $tmSt = microtime(true);
 	// Библиотека функций
 	include("functions.php");
 
-CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
+	CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 
         if (isset($DebugMode) and ($DebugMode == 1))
 	{
@@ -20,8 +20,8 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 	}
 
 
-        // Пробегаем помассивам POST GET REQUEST COOKIE  и чистим возможные sql инъекции и мусор
-        ClearArrays();
+    // Пробегаем помассивам POST GET REQUEST COOKIE  и чистим возможные sql инъекции и мусор
+    ClearArrays();
 
 	// Устанавливаем часовой пояс по умолчанию
 	date_default_timezone_set("Europe/Moscow");
@@ -103,7 +103,7 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 
 
 
-$tmAction = CMmbLogger::addInterval('before action', $tmSt);
+	$tmAction = CMmbLogger::addInterval('before action', $tmSt);
 	if ($action == "") 
 	{
 	// Действие не указано

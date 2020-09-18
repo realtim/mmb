@@ -85,16 +85,16 @@ function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "")
 
   	// echo $ConnectionId;
 
-	$ConnectionId = CSql::getConnection();
+	$connectionId = CSql::getConnection();
 
 	$t1 = microtime(true);
-	$rs = mysqli_query($SqlString, $ConnectionId);
+	$rs = mysqli_query($connectionId, $SqlString);
 	CMmbLogger::addInterval('query', $t1);
 
 
 	if (!$rs)
 	{
-		$err = mysqli_error();
+		$err = mysqli_error($connectionId);
 		CMmbLogger::e('MySqlQuery', "sql error: '$err' \r\non query: '$SqlString'");
 		echo $err;
 
@@ -106,7 +106,7 @@ function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "")
 	// Если был insert - возвращаем последний id
 	if (strpos($SqlString, 'insert') !== false)
 	{
-		$rs = mysqli_insert_id($ConnectionId);
+		$rs = mysqli_insert_id($connectionId);
 	//  echo ' NewId '.$rs;
 	}
 
@@ -130,7 +130,8 @@ class CSql {
 	// returns: well-quoted and escaped string
 	public static function quote($str)
 	{
-		return "'" . mysqli_real_escape_string($str) . "'";
+		$connectionId = CSql::getConnection();
+		return "'" . mysqli_real_escape_string($connectionId, $str) . "'";
 	}
 
 	// закрывает переданное соединение. При вызове без параметра -- закрывает общее.
@@ -159,23 +160,23 @@ class CSql {
 		$connection = mysqli_connect($ServerName, $WebUserName, $WebUserPassword);
 
 		// Ошибка соединения
-		if ($connection <= 0)
-			self::dieOnSqlError(null, 'createConnection', 'mysqli_connect: ', mysqli_error());
+		if (!$connection)
+			self::dieOnSqlError(null, 'createConnection', 'mysqli_connect: ', mysqli_connect_error());
 
 		//  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
 		//  устанавливаем временную зону
 		//		 mysqli_query('set time_zone = \'+4:00\'', $ConnectionId);
 		//  устанавливаем кодировку для взаимодействия
 
-		mysqli_query('set names \'utf8\'', $connection);
+		mysqli_query($connection, 'set names \'utf8\'');
 
 		// Выбираем БД ММБ
 		//		echo $DBName;
-		$rs = mysqli_select_db($DBName, $connection);
+		$rs = mysqli_select_db($connection, $DBName);
 
 		if (!$rs)
 		{
-			$err = mysqli_error();
+			$err = mysqli_error($connection);
 			self::closeConnection($connection);
 			self::dieOnSqlError(null, 'createConnection', "mysqli_select_db '$DBName'", $err);
 		}
@@ -4102,7 +4103,7 @@ class CMmbLogger
 		$query = "insert into Logs (logs_level, user_id, logs_operation, logs_message, logs_dt)
                 values ($level, $uid, $qOperation, $qMessage, UTC_TIMESTAMP)";
 
-		$rs = mysqli_query($query, $conn);	// потому что надо работать со своим соединением :(
+		$rs = mysqli_query($conn, $query);	// потому что надо работать со своим соединением :(
 		if (!$rs)
 		{
 			$err = mysqli_error($conn);

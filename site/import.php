@@ -32,12 +32,12 @@ else
 // Устанавливаем часовой пояс по умолчанию
 date_default_timezone_set("Europe/Moscow");
 // Подключаемся к базе
-$ConnectionId = mysqli_connect($ServerName, $WebUserName, $WebUserPassword);
-if ($ConnectionId <= 0) die(mysqli_error());
+$connectionId = mysqli_connect($ServerName, $WebUserName, $WebUserPassword);
+if ($connectionId <= 0) die(mysqli_connection_error());
 // Устанавливаем кодировку для взаимодействия
-mysqli_query('set names \'utf8\'', $ConnectionId);
+mysqli_query($connectionId, 'set names \'utf8\'');
 // Выбираем БД ММБ
-if (mysqli_select_db($DBName, $ConnectionId) == "") die(mysqli_error());
+if (mysqli_select_db($connectionId, $DBName) == "") die(mysqli_error($connectionId));
 
 
 // Обработка загруженного файла
