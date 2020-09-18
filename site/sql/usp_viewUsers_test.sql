@@ -16,6 +16,7 @@ begin
 		RESIGNAL; 
 	end;
    
+   
     set _executionUid  = fn_getUid(_executionUid);
     call usp_addLog(_executionUid, 'debug', null, null, null, 'start usp_viewUsers', _sessionUid);
     
