@@ -243,7 +243,6 @@ if (!isset($MyPHPScript)) return;
             $newUserId = MySqlQuery($sql);
 
 //	        echo $UserId;
-//          $UserId = mysqli_insert_id($Connection);
             if ($newUserId <= 0) {
                 CMmb::setErrorSm('Ошибка записи нового пользователя.');
                 return;
@@ -501,7 +500,8 @@ if (!isset($MyPHPScript)) return;
         if ($FindString == 'все-все' or $FindString == 'все-все-все') {
             $sqlFindString = '';
         } else {
-            $sqlFindString = mysqli_real_escape_string($FindString);
+            $connectionId = CSql::getConnection();
+            $sqlFindString = mysqli_real_escape_string($connectionId, $FindString);
         }
 
          

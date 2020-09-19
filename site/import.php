@@ -105,7 +105,7 @@ if (isset($_FILES['android']))
 			// Получаем переменные
 			$values = explode(';', $line);
 			if (count($values) <> 6) die("Некорректное число параметров в строке #".$line_num." - ".$line);
-			foreach ($values as &$value) $value = mysqli_real_escape_string(trim($value, '"'));
+			foreach ($values as &$value) $value = mysqli_real_escape_string($connectionId, trim($value, '"'));
 			if (is_numeric($values[0])) $operator_id = intval($values[0]); else $operator_id = -1;
 			if ($type == "TeamLevelPoints") $device_id = $values[4]; else $device_id = $values[5];
 			if (is_numeric($device_id)) $device_id = intval($device_id); else $device_id = -1;
@@ -281,7 +281,7 @@ if (isset($_FILES['android']))
 
 		// Получаем переменные
 		$values = explode(';', $line);
-		foreach ($values as &$value) $value = mysqli_real_escape_string(trim($value, '"'));
+		foreach ($values as &$value) $value = mysqli_real_escape_string($connectionId, trim($value, '"'));
 		$operator_id = intval($values[0]);
 		if ($type == "TeamLevelPoints") $device_id = intval($values[4]); else $device_id = intval($values[5]);
 		$point_id = intval($values[1]);

@@ -124,7 +124,9 @@ if ($action == "ChangeTeamResult")
 
 		// Обрабатываем комментарии
 		$Comment = $_POST[$levelPfx.'_comment'];
-		if ($Comment == "") $Comment = "NULL"; else $Comment = "'" . mysqli_real_escape_string($Comment) . "'";
+		$connectionId = CSql::getConnection();
+	
+		if ($Comment == "") $Comment = "NULL"; else $Comment = "'" . mysqli_real_escape_string($connectionId, $Comment) . "'";
 
 
 		// Если есть запись в базе - изменяем, нет - вставляем
