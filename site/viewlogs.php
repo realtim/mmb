@@ -14,7 +14,7 @@ if (!CRights::canViewLogs($UserId))     // нет прав -- вываливае
 
 ?>
 
-<form name="LogsForm" action="<? echo $MyPHPScript; ?>" method="post">
+<form name="LogsForm" action="<?php echo $MyPHPScript; ?>" method="post">
     <input type="hidden" value="viewLogs" name="action"/>
     <div style="margin-bottom: 2ex;">
 

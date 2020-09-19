@@ -101,7 +101,7 @@ else
 	// Функция проверки правильности заполнения формы
 	function ValidateScanPointForm()
 	{
-		document.ScanPointForm.action.value = "<? echo $NextActionName; ?>";
+		document.ScanPointForm.action.value = "<?php echo $NextActionName; ?>";
 		return true;
 	}
 	// Конец проверки правильности заполнения формы

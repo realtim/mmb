@@ -172,7 +172,7 @@ if (empty($TlpYear) or (int)$TlpYear == 0) {
 	// Функция проверки правильности заполнения формы
 	function ValidateTlpForm()
 	{
-		document.TlpForm.action.value = "<? echo $NextActionName; ?>";
+		document.TlpForm.action.value = "<?php echo $NextActionName; ?>";
 		return true;
 	}
 	// Конец проверки правильности заполнения формы

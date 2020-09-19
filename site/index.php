@@ -157,8 +157,8 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 
 <html>
  <head>
-	  <link rel="stylesheet" type="text/css"  href="<? echo $CssFile; ?>" />
-	  <link rel="icon" type="image/png" href="<? echo $FavIconFile; ?>" />
+	  <link rel="stylesheet" type="text/css"  href="<?php echo $CssFile; ?>" />
+	  <link rel="icon" type="image/png" href="<?php echo $FavIconFile; ?>" />
 	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
  </head>
 
@@ -192,7 +192,7 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
  function ChangeLogo(raidid)
  {
 	var links = {
-<? echo implode(",\r\n", $mmbLogos); ?>};
+<?php echo implode(",\r\n", $mmbLogos); ?>};
 
 	if (console)
 		console.log("change logo called");
@@ -215,11 +215,11 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 		                 border-right-color: #000000;  border-right-style: solid; border-right-width: 1px;
 				 border-bottom-color: #000000;  border-bottom-style: solid; border-bottom-width: 1px;">
 
-                        <form name = "StartPageForm" action = "<? echo $MyPHPScript; ?>" method = "post">
+                        <form name = "StartPageForm" action = "<?php echo $MyPHPScript; ?>" method = "post">
 				<input type = "hidden" name = "action" value = "StartPage">
 				<input type = "hidden" name = "view" value = "MainPage">
-				<input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
-				<div align="center"><a href="javascript:document.StartPageForm.submit();"><img name = "mmblogo" style="margin-bottom: 15px; border: none" width="160" height="140" alt="ММБ" src="<? echo GetMmbLogo($RaidId); ?>"></a></div>
+				<input type = "hidden" name = "RaidId" value = "<?php echo $RaidId; ?>">
+				<div align="center"><a href="javascript:document.StartPageForm.submit();"><img name = "mmblogo" style="margin-bottom: 15px; border: none" width="160" height="140" alt="ММБ" src="<?php echo GetMmbLogo($RaidId); ?>"></a></div>
                        </form> 
 
 			<!-- вставка меню на php -->

@@ -166,7 +166,7 @@ else
 		  return false;
 		}
 		
-		document.RaidFileForm.action.value = "<? echo $NextActionName; ?>";
+		document.RaidFileForm.action.value = "<?php echo $NextActionName; ?>";
 		return true;
 	}
 	// Конец проверки правильности заполнения формы

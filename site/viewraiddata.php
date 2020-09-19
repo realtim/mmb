@@ -189,7 +189,7 @@ else
 	// Функция проверки правильности заполнения формы
 	function ValidateRaidDataForm()
 	{
-		document.RaidDataForm.action.value = "<? echo $NextActionName; ?>";
+		document.RaidDataForm.action.value = "<?php echo $NextActionName; ?>";
 		return true;
 	}
 	// Конец проверки правильности заполнения формы

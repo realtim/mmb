@@ -166,8 +166,8 @@ if (!isset($MyPHPScript)) return;
 
 	function ShowEmail()
 	{
-		var begstr = "<? echo substr(trim($_SERVER['SERVER_NAME']), 0, 4); ?>";
-		var endstr = "<? echo substr(trim($_SERVER['SERVER_NAME']), -3); ?>";
+		var begstr = "<?php echo substr(trim($_SERVER['SERVER_NAME']), 0, 4); ?>";
+		var endstr = "<?php echo substr(trim($_SERVER['SERVER_NAME']), -3); ?>";
 
 		begstr = begstr.replace("\.","site\@");
 		endstr = endstr.replace("\.ru","\.com");

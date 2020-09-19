@@ -134,7 +134,7 @@ else
 	// Функция проверки правильности заполнения формы
 	function ValidateLevelPointDiscountForm()
 	{
-		document.LevelPointDiscountForm.action.value = "<? echo $NextActionName; ?>";
+		document.LevelPointDiscountForm.action.value = "<?php echo $NextActionName; ?>";
 		return true;
 	}
 	// Конец проверки правильности заполнения формы

@@ -205,7 +205,7 @@ if (empty($LevelPointMinYear) or (int)$LevelPointMinYear == 0 or
 	// Функция проверки правильности заполнения формы
 	function ValidateLevelPointForm()
 	{
-		document.LevelPointForm.action.value = "<? echo $NextActionName; ?>";
+		document.LevelPointForm.action.value = "<?php echo $NextActionName; ?>";
 		return true;
 	}
 	// Конец проверки правильности заполнения формы

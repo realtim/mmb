@@ -185,7 +185,7 @@ if (!isset($MyPHPScript)) return;
 			return false;
 		} 
 		
-		document.UserDataForm.action.value = "<? echo $NextActionName; ?>";
+		document.UserDataForm.action.value = "<?php echo $NextActionName; ?>";
 		return true;
 	}
         // Конец проверки правильности заполнения формы

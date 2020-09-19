@@ -180,7 +180,7 @@ $RaidRulesLink = CSql::raidFileLink($RaidId, 1, false);
 	// Функция проверки правильности заполнения формы
 	function ValidateTeamDataForm()
 	{
-		document.TeamDataForm.action.value = '<? echo $NextActionName; ?>';
+		document.TeamDataForm.action.value = '<?php echo $NextActionName; ?>';
 		document.TeamDataForm.submit();
 
 		//return true;

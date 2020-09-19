@@ -385,11 +385,11 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 
 
 ?>	
-         <form  name = "RaidTeamsForm"  action = "<? echo $MyPHPScript; ?>" method = "post">
+         <form  name = "RaidTeamsForm"  action = "<?php echo $MyPHPScript; ?>" method = "post">
          <input type = "hidden" name = "action" value = "ViewRaidTeams">
          <input type = "hidden" name = "TeamId" value = "0">
          <input type = "hidden" name = "UserId" value = "0">
-         <input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
+         <input type = "hidden" name = "RaidId" value = "<?php echo $RaidId; ?>">
 
 <?
 
