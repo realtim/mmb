@@ -156,7 +156,8 @@ function SendDistance(PDO $pdo, $raid_id)
     // Генерируем отсутствующие времена закрытия точек
     $raid_end = -1;
     $prev_end = -1;
-    $last = intval(substr(end(array_keys($points)), 1));
+    $last = array_keys($points);
+    $last = intval(substr(end($last), 1));
     for ($n = $last; $n > 0; $n--) {
         $index = "p" . $n;
         if (!isset($points[$index])) continue;
