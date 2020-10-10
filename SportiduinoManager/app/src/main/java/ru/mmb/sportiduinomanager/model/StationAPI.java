@@ -40,6 +40,10 @@ public final class StationAPI extends StationRaw {
      */
     public static final float BATTERY_LOW = 3.1f;
     /**
+     * Supported station firmware version.
+     */
+    public static final int API_FIRMWARE = 109;
+    /**
      * Number of pages to read from NTAG213 chip.
      */
     private static final int SIZE_NTAG213 = 37;

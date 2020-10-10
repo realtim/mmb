@@ -69,6 +69,7 @@ task pmd(type: Pmd) {
 
 tasks.withType(SpotBugsTask) {
     group = "verification"
+    //noinspection GrFinalVariableAccess
     excludeFilter = file("${project.rootDir}/config/spotbugs/spotbugs-exclude.xml")
     reports {
         xml.enabled = true
