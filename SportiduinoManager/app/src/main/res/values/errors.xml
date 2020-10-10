@@ -50,7 +50,7 @@
     <string name="err_station_team_changed">Wrong team number in station response</string>
     <string name="err_station_address_changed">Wrong flash memory address in station
         response</string>
-    <string name="err_station_flash_empty">A chip was not copied to station memory</string>
+    <string name="err_station_flash_empty">A chip was not copied fully to station memory</string>
 
     <string name="err_todo_team_list">Team list mode is not supported yet</string>
 </resources>
