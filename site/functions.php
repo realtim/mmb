@@ -377,20 +377,20 @@ class CSql {
 		(select count(*) from LevelPoints lp
 			inner join Distances d on lp.distance_id = d.distance_id
 			where (d.raid_id = r.raid_id) and (NOW() >= DATE_SUB(lp.levelpoint_mindatetime, INTERVAL COALESCE(r.raid_readonlyhoursbeforestart, 8) HOUR))
-				and  COALESCE(lp.levelpoint_mindatetime, 0) > 0			
+				and  COALESCE(lp.levelpoint_mindatetime, '00:00:00') > '00:00:00'			
 		)
 		as cantdelete,
 		(select count(*) from LevelPoints lp
 			inner join Distances d on lp.distance_id = d.distance_id
 			where (d.raid_id = r.raid_id) and (NOW() >= lp.levelpoint_mindatetime)
-				and  COALESCE(lp.levelpoint_mindatetime, 0) > 0			
+				and  COALESCE(lp.levelpoint_mindatetime, '00:00:00') > '00:00:00'			
 
 		)
 		as started,
 		(select count(*) from LevelPoints lp
 			inner join Distances d on lp.distance_id = d.distance_id
 			where (d.raid_id = r.raid_id) and (NOW() < lp.levelpoint_maxdatetime)
-				and  COALESCE(lp.levelpoint_maxdatetime, 0) > 0			
+				and  COALESCE(lp.levelpoint_maxdatetime, '00:00:00') > '00:00:00'			
 		)
 		as notfinished,
 		CASE
@@ -1126,20 +1126,20 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		(select count(*) from LevelPoints lp
 			inner join Distances d on lp.distance_id = d.distance_id
 			where (d.raid_id = r.raid_id) and (NOW() >= DATE_SUB(lp.levelpoint_mindatetime, INTERVAL COALESCE(r.raid_readonlyhoursbeforestart, 8) HOUR))
-				and  COALESCE(lp.levelpoint_mindatetime, 0) > 0			
+				and  COALESCE(lp.levelpoint_mindatetime, '00:00:00') > '00:00:00'			
 		)
 		as cantdelete,
 		(select count(*) from LevelPoints lp
 			inner join Distances d on lp.distance_id = d.distance_id
 			where (d.raid_id = r.raid_id) and (NOW() >= lp.levelpoint_mindatetime)
-				and  COALESCE(lp.levelpoint_mindatetime, 0) > 0			
+				and  COALESCE(lp.levelpoint_mindatetime, '00:00:00') > '00:00:00'			
 
 		)
 		as started,
 		(select count(*) from LevelPoints lp
 			inner join Distances d on lp.distance_id = d.distance_id
 			where (d.raid_id = r.raid_id) and (NOW() < lp.levelpoint_maxdatetime)
-				and  COALESCE(lp.levelpoint_maxdatetime, 0) > 0			
+				and  COALESCE(lp.levelpoint_maxdatetime, '00:00:00') > '00:00:00'			
 		)
 		as notfinished,
 		CASE
@@ -1512,7 +1512,7 @@ function encode_header($str)
 				from Teams t
 				where  t.team_hide = 0 
 					and COALESCE(t.team_outofrange, 0) = 0
-					and COALESCE(t.team_result, 0) > 0
+					and COALESCE(t.team_result, '00:00:00') > '00:00:00'
 					and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
 					and t.team_id = $teamid";
 
@@ -1532,7 +1532,7 @@ function encode_header($str)
 					where t.team_hide = 0
 						and t.distance_id = $DistanceId
 						and COALESCE(t.team_outofrange, 0) = 0
-						and COALESCE(t.team_result,0) > 0
+						and COALESCE(t.team_result, '00:00:00') > '00:00:00'
 						and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
 						and FLOOR(TIME_TO_SEC(COALESCE(t.team_result,0))/60) < $TeamResult";
 
@@ -1878,7 +1878,7 @@ function encode_header($str)
 			 where d.distance_hide = 0 
 			       and t.team_hide = 0 
 		               and  COALESCE(t.team_outofrange, 0) = 0
-		               and  COALESCE(t.team_result, 0) > 0
+		               and  COALESCE(t.team_result, '00:00:00') > '00:00:00'
 			       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
                          group by t.distance_id
                         ) a
@@ -1893,13 +1893,13 @@ function encode_header($str)
                         on d.raid_id = b.raid_id
 			left outer join TeamLevelDismiss tld
 			on tu.teamuser_id = tld.teamuser_id
-		 SET teamuser_rank  =  (a.firstresult_in_sec + 0.00)/(TIME_TO_SEC(COALESCE(t.team_result, 0)) + 0.00)*(CASE WHEN b.maxlength > 0 THEN  d.distance_length/(b.maxlength + 0.00) ELSE 1.00 END) 
+		 SET teamuser_rank  =  (a.firstresult_in_sec + 0.00)/(TIME_TO_SEC(COALESCE(t.team_result, '00:00:00')) + 0.00)*(CASE WHEN b.maxlength > 0 THEN  d.distance_length/(b.maxlength + 0.00) ELSE 1.00 END) 
 		 where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and tld.levelpoint_id is NULL
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  COALESCE(t.team_result, 0) > 0
+		       and  COALESCE(t.team_result, '00:00:00') > '00:00:00'
 		       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
 
                        $RaidWhereString
@@ -2015,7 +2015,7 @@ function encode_header($str)
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  COALESCE(t.team_result, 0) > '00:00:00'
+		       and  COALESCE(t.team_result, '00:00:00') > '00:00:00'
 		       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
 		       and  COALESCE(c.minorder, 0) = 0
 		       and  d.raid_id <= $maxRaidId
@@ -3083,7 +3083,7 @@ function encode_header($str)
 		(
 			  select 
 		      tlp1.teamlevelpoint_id
-		     , (select sec_to_time(sum(time_to_sec(coalesce(tlp2.teamlevelpoint_duration, 0)) + coalesce(teamlevelpoint_penalty, 0)*60))
+		     , (select sec_to_time(sum(time_to_sec(coalesce(tlp2.teamlevelpoint_duration, '00:00:00')) + coalesce(teamlevelpoint_penalty, 0)*60))
 			from TeamLevelPoints  tlp2
 			where tlp2.Team_id = tlp1.Team_Id
 			and   tlp2.teamlevelpoint_datetimeaftercorrection <=  tlp1.teamlevelpoint_datetimeaftercorrection
@@ -3626,7 +3626,7 @@ function FindErrors($raid_id, $team_id)
 		          	(select tlp.team_id,
 					        MAX(COALESCE(lp.levelpoint_order, 0)) as progress,
 							MAX(t.distance_id) as distance_id,
-					        MAX(TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_result, 0))) as secresult
+					        MAX(TIME_TO_SEC(COALESCE(tlp.teamlevelpoint_result, '00:00:00'))) as secresult
 					 from TeamLevelPoints tlp
 					      inner join Teams t
 					      on tlp.team_id = t.team_id
@@ -3645,7 +3645,7 @@ function FindErrors($raid_id, $team_id)
 					group by lp.distance_id
 					) b
 			  	on a.distance_id = b.distance_id
-  	          set  team_result =  CASE WHEN b.maxlporder = COALESCE(a.progress, 0) THEN SEC_TO_TIME(COALESCE(a.secresult, 0)) ELSE NULL END
+  	          set  team_result =  CASE WHEN b.maxlporder = COALESCE(a.progress, 0) THEN SEC_TO_TIME(COALESCE(a.secresult, '00:00:00')) ELSE NULL END
 				, team_maxlevelpointorderdone = COALESCE(a.progress, 0) ";
 
      //     echo $sql;
@@ -3804,7 +3804,7 @@ function FindErrors($raid_id, $team_id)
 							    on t.distance_id = d.distance_id
 							    inner join LevelPoints lp
 							    on tlp.levelpoint_id = lp.levelpoint_id
-						where  COALESCE(tlp.teamlevelpoint_datetime, 0) > 0
+						where  COALESCE(tlp.teamlevelpoint_datetime, '00:00:00') > '00:00:00'
 							and lp.pointtype_id in (1,4,2)
 		                       and $teamRaidCondition
 						group by tlp.team_id
