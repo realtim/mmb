@@ -1508,7 +1508,7 @@ function encode_header($str)
 	// Здесь не проверяется прогресс команды,т.е. делается предположение (см. код расчета результата), что результат только для финишировавших команд
 	// если это будет не так, то и алгоритм здесь нужно менять.
 
-		$sql = "select FLOOR(TIME_TO_SEC(COALESCE(t.team_result,0))/60) as result_in_sec, t.distance_id 
+		$sql = "select FLOOR(TIME_TO_SEC(COALESCE(t.team_result, '00:00:00'))/60) as result_in_sec, t.distance_id 
 				from Teams t
 				where  t.team_hide = 0 
 					and COALESCE(t.team_outofrange, 0) = 0
@@ -1534,7 +1534,7 @@ function encode_header($str)
 						and COALESCE(t.team_outofrange, 0) = 0
 						and COALESCE(t.team_result, '00:00:00') > '00:00:00'
 						and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
-						and FLOOR(TIME_TO_SEC(COALESCE(t.team_result,0))/60) < $TeamResult";
+						and FLOOR(TIME_TO_SEC(COALESCE(t.team_result, '00:00:00'))/60) < $TeamResult";
 
 		// echo $sql_place;
 		return CSql::singleValue($sql_place, 'result_place');
@@ -1709,8 +1709,8 @@ function encode_header($str)
 	  $sql =  "
 		 select  a.levelpoint_id,  a.levelpoint_name,   
 		         a.levelpoint_mindatetime, a.levelpoint_maxdatetime,
-			 COALESCE(b.levelpoint_mindatetime, 0) as  levelpoint_predmindatetime,
-			 COALESCE(b.levelpoint_maxdatetime, 0) as  levelpoint_predmaxdatetime
+			 COALESCE(b.levelpoint_mindatetime, '00:00:00') as  levelpoint_predmindatetime,
+			 COALESCE(b.levelpoint_maxdatetime, '00:00:00') as  levelpoint_predmaxdatetime
 		 from 
 			(
 			 select  levelpoint_id, levelpoint_name, levelpoint_order, pointtype_id, levelpoint_mindatetime, levelpoint_maxdatetime
@@ -1863,7 +1863,7 @@ function encode_header($str)
 		        on t.distance_id = d.distance_id
 			inner join 
 			(
-			 select t.distance_id,  MIN(TIME_TO_SEC(COALESCE(t.team_result, 0))) as firstresult_in_sec 
+			 select t.distance_id,  MIN(TIME_TO_SEC(COALESCE(t.team_result, '00:00:00'))) as firstresult_in_sec 
 			 from Teams t
 		 	      inner join Distances d
 			      on t.distance_id = d.distance_id
@@ -2939,7 +2939,7 @@ function encode_header($str)
 	
 	$sql = " INSERT INTO tmp_rtlpr2 (team_id, levelpoint_order, durationinsec, penaltyinmin)
 			 select t1.team_id, lp1.levelpoint_order,  
-				    TIME_TO_SEC(COALESCE(tlp1.teamlevelpoint_duration, 0)) as durationinsec, 
+				    TIME_TO_SEC(COALESCE(tlp1.teamlevelpoint_duration, '00:00:00')) as durationinsec, 
 					COALESCE(tlp1.teamlevelpoint_penalty, 0) as penaltyinmin  
                                   from TeamLevelPoints tlp1 
                                            inner join LevelPoints lp1 on tlp1.levelpoint_id = lp1.levelpoint_id 
