@@ -15,6 +15,8 @@ import org.acra.ACRA;
 import org.acra.annotation.AcraCore;
 import org.acra.annotation.AcraHttpSender;
 import org.acra.annotation.AcraToast;
+import org.acra.config.CoreConfigurationBuilder;
+import org.acra.config.ToastConfigurationBuilder;
 import org.acra.data.StringFormat;
 import org.acra.sender.HttpSender;
 
@@ -63,7 +65,7 @@ import ru.mmb.sportiduinomanager.model.Teams;
                 org.acra.ReportField.BUILD_CONFIG})
 @AcraHttpSender(uri = "http://mmb.progressor.ru/php/mmbscripts/acra.php",
         httpMethod = HttpSender.Method.POST)
-@AcraToast(resText = R.string.acra_toast_text)
+@AcraToast(resText = 0)
 
 public final class MainApp extends Application {
     /**
@@ -277,6 +279,8 @@ public final class MainApp extends Application {
             super.attachBaseContext(base);
         }
         // The following line triggers the initialization of ACRA
-        ACRA.init(this);
+        final CoreConfigurationBuilder builder = new CoreConfigurationBuilder(this);
+        builder.getPluginConfigurationBuilder(ToastConfigurationBuilder.class).setResText(R.string.acra_toast_text);
+        ACRA.init(this, builder);
     }
 }
