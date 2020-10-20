@@ -85,17 +85,6 @@ public final class Records {
     }
 
     /**
-     * Get 'index' record from the list.
-     *
-     * @param index Position in mRecords list
-     * @return One record or null
-     */
-    public Record getRecord(final int index) {
-        if (index < 0 || index >= mRecords.size()) return null;
-        return mRecords.get(index);
-    }
-
-    /**
      * Get team number from 'index' element of mRecords list
      * (mRecords should be previously filtered with getPunchesAtStation).
      *

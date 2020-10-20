@@ -103,7 +103,7 @@ public final class ChipInfoActivity extends MenuActivity {
         // Check station presence
         if (MainApp.mStation == null) return;
         // Send command to station and check result
-        new ChipInfoTask(this).execute();
+        new ChipInfoTask(this).execute(MainApp.UI_STATE.isSaveChipInDB());
     }
 
     /**

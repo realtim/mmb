@@ -12,7 +12,7 @@ import ru.mmb.sportiduinomanager.model.Records;
 /**
  * Run long read chip info in separate thread.
  */
-public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
+public class ChipInfoTask extends AsyncTask<Boolean, Void, Boolean> {
     /**
      * Reference to parent activity (which can cease to exist in any moment).
      */
@@ -47,13 +47,18 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
      * @param params No parameters are sent to this function
      * @return True if succeeded
      */
-    protected Boolean doInBackground(final Void... params) {
+    protected Boolean doInBackground(final Boolean... params) {
         // Send command to connected station
         if (MainApp.mStation == null) return Boolean.FALSE;
         final Boolean result = MainApp.mStation.readCard();
         // Save list of punches from the chip in main app
         MainApp.mChipPunches = new Records(0);
         MainApp.mChipPunches.join(MainApp.mStation.getRecords());
+        // params[0] contains value of isSaveChipInDB flag
+        if (params[0] && !MainApp.mChipPunches.isEmpty()) {
+            // Add the list from the chip to global list of all registered punches
+            MainApp.mAllRecords.join(MainApp.mChipPunches);
+        }
         return result;
     }
 
@@ -70,6 +75,12 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
         if (!result) {
             Toast.makeText(activity, MainApp.mStation.getLastError(true),
                     Toast.LENGTH_LONG).show();
+        }
+        // Save new records into the local database
+        // (will do nothing if no new records were added to mAllRecords)
+        final String saveError = MainApp.mAllRecords.saveNewRecords(MainApp.mDatabase);
+        if (!"".equals(saveError)) {
+            Toast.makeText(activity, saveError, Toast.LENGTH_LONG).show();
         }
         // Change layout state
         activity.setInfoRequestState(ChipInfoActivity.INFO_REQUEST_OFF);
