@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SwitchCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -31,10 +30,6 @@ public final class ChipInfoActivity extends MenuActivity {
     public static final int INFO_REQUEST_ON = 1;
 
     /**
-     * Switch for SaveChipInDB flag.
-     */
-    private SwitchCompat mSaveSwitch;
-    /**
      * Current state of chip info request.
      */
     private int mInfoRequest;
@@ -53,9 +48,6 @@ public final class ChipInfoActivity extends MenuActivity {
         setContentView(R.layout.activity_chipinfo);
         updateMenuItems(R.id.chip_info);
         mInfoRequest = INFO_REQUEST_OFF;
-        // Create switch state listener
-        mSaveSwitch = findViewById(R.id.info_save_to_db);
-        mSaveSwitch.setOnCheckedChangeListener((view, isChecked) -> MainApp.UI_STATE.setSaveChipInDB(isChecked));
     }
 
     @Override
@@ -103,7 +95,7 @@ public final class ChipInfoActivity extends MenuActivity {
         // Check station presence
         if (MainApp.mStation == null) return;
         // Send command to station and check result
-        new ChipInfoTask(this).execute(MainApp.UI_STATE.isSaveChipInDB());
+        new ChipInfoTask(this).execute();
     }
 
     /**
@@ -114,14 +106,11 @@ public final class ChipInfoActivity extends MenuActivity {
         final ProgressBar infoProgress = findViewById(R.id.info_request_progress);
         final TextView infoHelp = findViewById(R.id.info_help);
         final View infoTeamData = findViewById(R.id.info_team_data);
-        // Update saved SaveChipInDB state
-        mSaveSwitch.setChecked(MainApp.UI_STATE.isSaveChipInDB());
         // Show request progress if request to station is being processed
         if (mInfoRequest == INFO_REQUEST_ON) {
             infoButton.setVisibility(View.INVISIBLE);
             infoProgress.setVisibility(View.VISIBLE);
             infoHelp.setVisibility(View.GONE);
-            mSaveSwitch.setVisibility(View.GONE);
             infoTeamData.setVisibility(View.GONE);
             return;
         }
@@ -132,11 +121,9 @@ public final class ChipInfoActivity extends MenuActivity {
         if (MainApp.mChipPunches.isEmpty()) {
             infoTeamData.setVisibility(View.GONE);
             infoHelp.setVisibility(View.VISIBLE);
-            mSaveSwitch.setVisibility(View.VISIBLE);
             return;
         }
         infoHelp.setVisibility(View.GONE);
-        mSaveSwitch.setVisibility(View.VISIBLE);
         // Display team number and chip init time
         final int teamNumber = MainApp.mChipPunches.getTeamNumber(0);
         final String teamName = MainApp.mTeams.getTeamName(teamNumber);

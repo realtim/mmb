@@ -37,10 +37,6 @@ class UIState {
      * Current position in team list at control point.
      */
     private int mTeamListPosition;
-    /**
-     * Turn saving chip data from ChipInfo activity into database.
-     */
-    private boolean mSaveChipInDB;
 
     /**
      * Set initial default values for all UI elements.
@@ -53,7 +49,6 @@ class UIState {
         mTeamNumber = 0;
         mTeamMask = 0;
         mTeamListPosition = 0;
-        mSaveChipInDB = false;
     }
 
     /**
@@ -166,24 +161,7 @@ class UIState {
      * @param teamListPosition Zero-based position
      */
     void setTeamListPosition(final int teamListPosition) {
-        mTeamListPosition = teamListPosition;
-    }
-
-    /**
-     * Get SaveChipInDB switch saved state.
-     *
-     * @return True if if should save chip data after reading it in ChipInfo activity
-     */
-    boolean isSaveChipInDB() {
-        return mSaveChipInDB;
-    }
-
-    /**
-     * Save the current state of SaveChipInDB switch.
-     *
-     * @param saveChipInDB switch state
-     */
-    void setSaveChipInDB(final boolean saveChipInDB) {
-        mSaveChipInDB = saveChipInDB;
+        mTeamListPosition =
+                teamListPosition;
     }
 }

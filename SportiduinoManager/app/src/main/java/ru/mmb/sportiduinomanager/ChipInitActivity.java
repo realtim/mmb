@@ -126,35 +126,47 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
      */
     public void keyboardButtonClicked(final View view) {
         // Update team number string according to button clicked
-        final int buttonId = view.getId();
-        if (buttonId == R.id.key_0) {
-            mTeamNumber += "0";
-        } else if (buttonId == R.id.key_1) {
-            mTeamNumber += "1";
-        } else if (buttonId == R.id.key_2) {
-            mTeamNumber += "2";
-        } else if (buttonId == R.id.key_3) {
-            mTeamNumber += "3";
-        } else if (buttonId == R.id.key_4) {
-            mTeamNumber += "4";
-        } else if (buttonId == R.id.key_5) {
-            mTeamNumber += "5";
-        } else if (buttonId == R.id.key_6) {
-            mTeamNumber += "6";
-        } else if (buttonId == R.id.key_7) {
-            mTeamNumber += "7";
-        } else if (buttonId == R.id.key_8) {
-            mTeamNumber += "8";
-        } else if (buttonId == R.id.key_9) {
-            mTeamNumber += "9";
-        } else if (buttonId == R.id.key_del) {
-            if (mTeamNumber.length() > 0) {
-                mTeamNumber = mTeamNumber.substring(0, mTeamNumber.length() - 1);
-            }
-        } else if (buttonId == R.id.key_clear) {
-            mTeamNumber = "";
-        } else {
-            return;
+        switch (view.getId()) {
+            case R.id.key_0:
+                mTeamNumber += "0";
+                break;
+            case R.id.key_1:
+                mTeamNumber += "1";
+                break;
+            case R.id.key_2:
+                mTeamNumber += "2";
+                break;
+            case R.id.key_3:
+                mTeamNumber += "3";
+                break;
+            case R.id.key_4:
+                mTeamNumber += "4";
+                break;
+            case R.id.key_5:
+                mTeamNumber += "5";
+                break;
+            case R.id.key_6:
+                mTeamNumber += "6";
+                break;
+            case R.id.key_7:
+                mTeamNumber += "7";
+                break;
+            case R.id.key_8:
+                mTeamNumber += "8";
+                break;
+            case R.id.key_9:
+                mTeamNumber += "9";
+                break;
+            case R.id.key_del:
+                if (mTeamNumber.length() > 0) {
+                    mTeamNumber = mTeamNumber.substring(0, mTeamNumber.length() - 1);
+                }
+                break;
+            case R.id.key_clear:
+                mTeamNumber = "";
+                break;
+            default:
+                return;
         }
         // Enable/disable buttons after mTeamNumber length change
         updateKeyboardState();

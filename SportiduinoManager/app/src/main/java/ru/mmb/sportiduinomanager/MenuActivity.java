@@ -9,7 +9,6 @@ import android.support.annotation.LayoutRes;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
@@ -19,6 +18,8 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import java.util.Objects;
 
 import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.StationAPI;
@@ -60,19 +61,27 @@ public class MenuActivity extends AppCompatActivity {
         mNavigationView.setNavigationItemSelectedListener(menuItem -> {
             // Process selected menu item
             Intent activity = null;
-            final int menuId = menuItem.getItemId();
-            if (menuId == R.id.database) {
-                activity = new Intent(getApplicationContext(), DatabaseActivity.class);
-            } else if (menuId == R.id.bluetooth) {
-                activity = new Intent(getApplicationContext(), BluetoothActivity.class);
-            } else if (menuId == R.id.chip_init) {
-                activity = new Intent(getApplicationContext(), ChipInitActivity.class);
-            } else if (menuId == R.id.control_point) {
-                activity = new Intent(getApplicationContext(), ControlPointActivity.class);
-            } else if (menuId == R.id.team_list) {
-                Toast.makeText(this, R.string.err_todo_team_list, Toast.LENGTH_LONG).show();
-            } else if (menuId == R.id.chip_info) {
-                activity = new Intent(getApplicationContext(), ChipInfoActivity.class);
+            switch (menuItem.getItemId()) {
+                case R.id.database:
+                    activity = new Intent(getApplicationContext(), DatabaseActivity.class);
+                    break;
+                case R.id.bluetooth:
+                    activity = new Intent(getApplicationContext(), BluetoothActivity.class);
+                    break;
+                case R.id.chip_init:
+                    activity = new Intent(getApplicationContext(), ChipInitActivity.class);
+                    break;
+                case R.id.control_point:
+                    activity = new Intent(getApplicationContext(), ControlPointActivity.class);
+                    break;
+                case R.id.team_list:
+                    Toast.makeText(this, R.string.err_todo_team_list,
+                            Toast.LENGTH_LONG).show();
+                    break;
+                case R.id.chip_info:
+                    activity = new Intent(getApplicationContext(), ChipInfoActivity.class);
+                    break;
+                default:
             }
             // Switch to new activity
             if (activity != null) {
@@ -187,7 +196,11 @@ public class MenuActivity extends AppCompatActivity {
             bluetoothItem.setTitle(getResources().getString(R.string.mode_bluetooth_set,
                     MainApp.mStation.getName()));
         }
-        bluetoothItem.setEnabled(MainApp.mDatabase != null && MainApp.mDistance.getTimeDownloaded() != 0);
+        if (MainApp.mDatabase == null || MainApp.mDistance.getTimeDownloaded() == 0) {
+            bluetoothItem.setEnabled(false);
+        } else {
+            bluetoothItem.setEnabled(true);
+        }
         // Get the name of the point which is selected in connected station
         String pointName = "";
         if (MainApp.mStation != null) {
@@ -222,17 +235,15 @@ public class MenuActivity extends AppCompatActivity {
         mNavigationView.getMenu().findItem(R.id.team_list).setEnabled(false);
         // Update 'Chip Info' menu item
         final MenuItem chipInfoItem = mNavigationView.getMenu().findItem(R.id.chip_info);
-        chipInfoItem.setEnabled(readyForWork && MainApp.mStation.getMode() == StationAPI.MODE_INIT_CHIPS);
+        if (readyForWork && MainApp.mStation.getMode() == StationAPI.MODE_INIT_CHIPS) {
+            chipInfoItem.setEnabled(true);
+        } else {
+            chipInfoItem.setEnabled(false);
+        }
         // Update toolbar title
         if (activeItem != 0) {
-            final MenuItem menuItem = mNavigationView.getMenu().findItem(activeItem);
-            if (menuItem != null) {
-                final String title = menuItem.getTitle().toString();
-                final ActionBar actionBar = getSupportActionBar();
-                if (actionBar != null) {
-                    actionBar.setTitle(title);
-                }
-            }
+            final String title = mNavigationView.getMenu().findItem(activeItem).getTitle().toString();
+            Objects.requireNonNull(getSupportActionBar()).setTitle(title);
         }
         if (MainApp.mStation != null) {
             // Start/stop station monitoring service after selecting new activity

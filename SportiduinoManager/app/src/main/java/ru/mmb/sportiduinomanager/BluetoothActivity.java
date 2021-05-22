@@ -564,7 +564,7 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
                         .getString(R.string.station_mode_value_0, pointName));
                 break;
-            case StationAPI.MODE_START_POINT:
+            case StationAPI.MODE_OTHER_POINT:
                 ((TextView) findViewById(R.id.station_mode_value)).setText(getResources()
                         .getString(R.string.station_mode_value_1, pointName));
                 break;
@@ -632,10 +632,10 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
                     return -1;
                 case 0:
                     return StationAPI.MODE_INIT_CHIPS;
-                case 1:
-                    return StationAPI.MODE_START_POINT;
-                default:
+                case 2:
                     return StationAPI.MODE_FINISH_POINT;
+                default:
+                    return StationAPI.MODE_OTHER_POINT;
             }
         }
 

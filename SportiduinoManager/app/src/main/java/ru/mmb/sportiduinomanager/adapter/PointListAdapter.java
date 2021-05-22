@@ -84,7 +84,9 @@ public class PointListAdapter extends RecyclerView.Adapter<PointListAdapter.Poin
      */
     private void copyRecords(final Records records) {
         mRecords = new Records(0);
-        mRecords.join(records);
+        for (int i = 1; i < records.size(); i++) {
+            mRecords.addRecord(records.getRecord(i));
+        }
     }
 
     /**

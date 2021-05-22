@@ -2,11 +2,12 @@
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fillViewport="true">
 
-    <android.support.constraint.ConstraintLayout xmlns:tools="http://schemas.android.com/tools"
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -44,25 +45,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/default_padding"
-            android:gravity="center_horizontal"
             android:padding="@dimen/default_padding"
+            android:gravity="center_horizontal"
             android:scrollHorizontally="false"
             android:text="@string/info_help"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/info_request_frame" />
 
-        <android.support.v7.widget.SwitchCompat
-            android:id="@+id/info_save_to_db"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/default_padding"
-            android:checked="false"
-            android:text="@string/info_save_to_db"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/info_help"
-            app:switchPadding="@dimen/default_padding" />
 
         <android.support.constraint.Group
             android:id="@+id/info_team_data"
@@ -83,7 +73,7 @@
             android:textColor="@color/text_primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/info_save_to_db" />
+            app:layout_constraintTop_toBottomOf="@+id/info_request_frame" />
 
         <TextView
             android:id="@+id/info_init_time"
