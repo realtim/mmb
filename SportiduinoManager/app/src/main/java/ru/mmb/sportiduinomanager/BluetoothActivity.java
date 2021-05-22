@@ -527,11 +527,23 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
             findViewById(R.id.station_status).setVisibility(View.GONE);
             return;
         }
-        // Update station data status in layout
+
+        // Display station name
         final String name = MainApp.mStation.getName() + " (" + MainApp.mStation.getAddress() + ")";
         ((TextView) findViewById(R.id.station_bt_name)).setText(name);
-        ((TextView) findViewById(R.id.station_firmware)).setText(getResources()
-                .getString(R.string.station_firmware, MainApp.mStation.getFirmware()));
+        // Display station firmware
+        final int firmware = MainApp.mStation.getFirmware();
+        final TextView firmwareView = findViewById(R.id.station_firmware);
+        firmwareView.setText(getResources().getString(R.string.station_firmware, firmware));
+        if (firmware == StationAPI.API_FIRMWARE) {
+            firmwareView.setTextColor(getResources().getColor(R.color.text_secondary));
+        } else {
+            firmwareView.setTextColor(getResources().getColor(R.color.bg_secondary));
+            Toast.makeText(getApplicationContext(),
+                    getResources().getString(R.string.err_bt_wrong_firmware, firmware, StationAPI.API_FIRMWARE),
+                    Toast.LENGTH_LONG).show();
+        }
+        // Display station voltage
         final float voltage = MainApp.mStation.getVoltage();
         final TextView voltageView = findViewById(R.id.station_voltage);
         voltageView.setText(getResources().getString(R.string.station_voltage, voltage,
@@ -541,8 +553,10 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
         } else {
             voltageView.setTextColor(getResources().getColor(R.color.text_secondary));
         }
+        // Display station response time
         ((TextView) findViewById(R.id.station_response_time)).setText(getResources()
                 .getString(R.string.response_time, MainApp.mStation.getResponseTime()));
+        // Display station number as point name and station mode
         final String pointName = MainApp.mDistance.getPointName(MainApp.mStation.getNumber(),
                 getResources().getString(R.string.control_point_prefix));
         switch (MainApp.mStation.getMode()) {

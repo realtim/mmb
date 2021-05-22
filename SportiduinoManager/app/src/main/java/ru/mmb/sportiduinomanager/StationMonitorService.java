@@ -252,16 +252,13 @@ public class StationMonitorService extends Service {
                         toRead = StationAPI.MAX_PUNCH_COUNT;
                     }
                     if (!MainApp.mStation.fetchTeamPunches(teamNumber, initTime, teamMask, fromMark, toRead)) {
-                        return MainApp.mStation.getLastError(true);
+                        newError = MainApp.mStation.getLastError(true);
+                        if (newError != R.string.err_station_flash_empty) return newError;
                     }
                     fromMark += toRead;
                     // Add fetched punches to application list of records
                     MainApp.mAllRecords.join(MainApp.mStation.getRecords());
                 } while (fromMark < marks);
-            } else {
-                // Ignore recurrent problem with copying data from chip to memory
-                // as we already created synthetic team punch and warned a user
-                newError = 0;
             }
             // Save non-fatal station error
             if (newError == R.string.err_station_flash_empty || newError == R.string.err_station_no_data) {

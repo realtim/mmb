@@ -19,6 +19,7 @@
     <string name="err_bt_receive_timeout">Станция не отвечает</string>
     <string name="err_bt_receive_bad_response">Некорректный ответ станции</string>
     <string name="err_bt_response_wrong_length">Неправильная длина ответа станции</string>
+    <string name="err_bt_wrong_firmware">Версия прошивки станции - %1$d, поддерживаемая версия - только %2$d</string>
 
     <string name="err_init_no_such_team">Команды с таким номером не существует</string>
     <string name="err_init_empty_team">В команде должно быть не менее 1 участника</string>
@@ -50,7 +51,7 @@
     <string name="err_station_team_changed">Неправильный номер команды в ответе станции</string>
     <string name="err_station_address_changed">Неправильный адрес флеш-памяти в ответе
         станции</string>
-    <string name="err_station_flash_empty">Чип не был скопирован в память станции</string>
+    <string name="err_station_flash_empty">Чип не был скопирован целиком в память станции</string>
 
     <string name="err_todo_team_list">Режим просмотра результатов команд еще не
         поддерживается</string>

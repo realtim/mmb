@@ -193,7 +193,8 @@
         <module name="CustomImportOrder">
             <property name="sortImportsInGroupAlphabetically" value="true"/>
             <property name="separateLineBetweenGroups" value="true"/>
-            <property name="customImportOrderRules" value="THIRD_PARTY_PACKAGE###STATIC"/>
+            <property name="specialImportsRegExp" value="^android.*"/>
+            <property name="customImportOrderRules" value="SPECIAL_IMPORTS###STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###SAME_PACKAGE(3)###STATIC"/>
         </module>
         <module name="MethodParamPad"/>
         <module name="NoWhitespaceBefore">
@@ -233,10 +234,8 @@
         <module name="JavadocMethod">
             <property name="scope" value="public"/>
             <property name="allowMissingParamTags" value="true"/>
-            <property name="allowMissingThrowsTags" value="true"/>
             <property name="allowMissingReturnTag" value="true"/>
             <property name="allowedAnnotations" value="Override, Test"/>
-            <property name="allowThrowsTagsForSubclasses" value="true"/>
         </module>
         <module name="MethodName">
             <property name="format" value="^[a-z][a-zA-Z0-9_]*$"/>

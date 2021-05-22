@@ -40,6 +40,10 @@ public final class StationAPI extends StationRaw {
      */
     public static final float BATTERY_LOW = 3.1f;
     /**
+     * Supported station firmware version.
+     */
+    public static final int API_FIRMWARE = 109;
+    /**
      * Number of pages to read from NTAG213 chip.
      */
     private static final int SIZE_NTAG213 = 37;
@@ -584,7 +588,7 @@ public final class StationAPI extends StationRaw {
         final long punchesZone = teamNumber * 1024L + 48L;
         final long startAddress = punchesZone + fromPunch * 4L;
         long2ByteArray(startAddress, commandData, 1, 4);
-        long2ByteArray(count * 4, commandData, 5, 2);
+        long2ByteArray(count * 4L, commandData, 5, 2);
         // Send command to station
         final byte[] response = new byte[4 + count * 4];
         mChipRecordsN = 0;

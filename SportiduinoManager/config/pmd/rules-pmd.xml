@@ -30,6 +30,7 @@
 <!---->        <exclude name="NcssCount"/>
 <!---->        <exclude name="NPathComplexity"/>
 <!---->        <exclude name="ExcessiveParameterList"/>
+<!---->        <exclude name="GodClass"/>
     </rule>
     <rule ref="category/java/design.xml/TooManyMethods">
        <properties>

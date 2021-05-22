@@ -19,6 +19,7 @@
     <string name="err_bt_receive_timeout">Station communication timeout</string>
     <string name="err_bt_receive_bad_response">Incorrect station response</string>
     <string name="err_bt_response_wrong_length">Station response has wrong length</string>
+    <string name="err_bt_wrong_firmware">Station firmware version is %1$d, supported version is only %2$d</string>
 
     <string name="err_init_no_such_team">No team with this number</string>
     <string name="err_init_empty_team">A team should consist of 1 or more members</string>
@@ -49,7 +50,7 @@
     <string name="err_station_team_changed">Wrong team number in station response</string>
     <string name="err_station_address_changed">Wrong flash memory address in station
         response</string>
-    <string name="err_station_flash_empty">A chip was not copied to station memory</string>
+    <string name="err_station_flash_empty">A chip was not copied fully to station memory</string>
 
     <string name="err_todo_team_list">Team list mode is not supported yet</string>
 </resources>

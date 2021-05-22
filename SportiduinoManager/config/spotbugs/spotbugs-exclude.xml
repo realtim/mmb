@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <Match>
+       <Class name="ru.mmb.sportiduinomanager.DatabaseActivity"/>
+       <Or>
+           <Method name="md5" params="java.lang.String" returns="java.lang.String"/>
+       </Or>
+       <Bug code="SECMD5"/>
+    </Match>
+</FindBugsFilter>

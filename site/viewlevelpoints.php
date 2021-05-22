@@ -175,7 +175,7 @@ if (empty($LevelPointMinYear) or (int)$LevelPointMinYear == 0 or
 	empty($LevelPointMaxYear) or (int)$LevelPointMaxYear == 0) {
 
 		$RaidYear = 0;		
-		$sql = "select YEAR(r.raid_registrationenddate) as raidyear
+		$sql = "select YEAR(NOW()) as raidyear
 			from Raids r
 		             inner join Distances d
 			     on d.raid_id = r.raid_id
