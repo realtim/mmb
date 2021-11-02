@@ -2548,6 +2548,59 @@ function encode_header($str)
      //Конец генерации точек для ММБ 
    
 
+     // функция расчета штрафа за превышение интервала
+     function RecalcTeamLevelPointsMaxIntervalPenalty($raidid, $teamid)
+     {
+	 if (empty($teamid) and empty($raidid)) {     	 
+	    return;
+	 }
+
+	 $teamRaidCondition1 = (!empty($teamid)) ? " tlp.team_id = $teamid" : "d.raid_id = $raidid";
+	 $teamRaidCondition2 = (!empty($teamid)) ? " tlp1.team_id = $teamid" : "d1.raid_id = $raidid";
+
+	     
+	 $sql = " 
+	 	update  TeamLevelPoints tlp9
+		inner join 
+		(
+			SELECT tlp4.teamlevelpoint_id, t6.team_num, lp5.levelpoint_name,  lp5.levelpoint_id, 
+			    b.teamlevelpoint_datetime, b.maxprevdatetime,
+		            coalesce(lp5.levelpoint_maxintervaltoprevious, 0)*60 as maxintervalinsec, 
+			    time_to_sec(coalesce(timediff(b.teamlevelpoint_datetime, b.maxprevdatetime), '00:00:00'))  as teamintervalinsec 
+			FROM
+			(select tlp1.teamlevelpoint_id,  tlp1.teamlevelpoint_datetime,  
+				MAX(tlp2.teamlevelpoint_datetime) as maxprevdatetime
+				from TeamLevelPoints tlp1
+				     inner join LevelPoints lp1
+				     on tlp1.levelpoint_id = lp1.levelpoint_id
+				     inner join Distances d1
+				     on lp1.distance_id = d1.distance_id
+				     left outer join TeamLevelPoints tlp2
+				     on tlp1.team_id = tlp2.team_id
+					and tlp1.teamlevelpoint_datetime > tlp2.teamlevelpoint_datetime
+				where tlp1.teamlevelpoint_datetime > 0
+				      and  lp1.pointtype_id = 1
+					and $teamRaidCondition2
+				group by tlp1.teamlevelpoint_id
+			) b  
+			  inner join TeamLevelPoints tlp4
+			  on tlp4.teamlevelpoint_id = b.teamlevelpoint_id
+			  inner join LevelPoints lp5
+			  on tlp4.levelpoint_id = lp5.levelpoint_id
+			  inner join Teams t6
+			  on tlp4.team_id = t6.team_id
+			 where coalesce(lp5.levelpoint_maxintervaltoprevious, 0) > 0
+		 ) c
+		 on c.teamlevelpoint_id = tlp9.teamlevelpoint_id
+		 set tlp9.teamlevelpoint_penalty = floor((c.teamintervalinsec - c.maxintervalinsec)/60)
+		 where c.maxintervalinsec < c.teamintervalinsec
+	 ";
+         //echo $sql;
+      
+       	 $rs = MySqlQuery($sql);
+     }
+     // конец функции расчета штрафа за превышение интервала 
+  
 
      // функция рассчитывает  скорректированное время для тех точек, что внесли без времени
 	// ставится время предыдущей по  номеру точки 
@@ -3329,7 +3382,7 @@ function FindErrors($raid_id, $team_id)
 				if ($delta > 25 * 60 * 60) $errors[$finish_id] = -2;
 /*
 				// Анализируем время редактирования для всех точек, введенных на планшетах
-				$start_order = $points[$start_id]['order'];
+				$start_order = $points[$start_id]['order'];  http://mmb.progressor.ru/php/mmbscripts/
 				$finish_order = $points[$finish_id]['order'];
 				$tablet_edit_time = "";
 				foreach ($points as $id => $point)
@@ -3572,6 +3625,8 @@ function FindErrors($raid_id, $team_id)
 		 $tm1 = CMmbLogger::addInterval(' 1 ', $tm0);
 
 		RecalcTeamLevelPointsDateTimeCorrection($raidid, $teamid);     
+	     
+	     	RecalcTeamLevelPointsMaxIntervalPenalty($raidid, $teamid);
 	
 		RecalcTeamLevelPointsDuration($raidid, $teamid);
 
