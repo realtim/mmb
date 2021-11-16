@@ -1848,12 +1848,14 @@ function encode_header($str)
 		        on tu.user_id = u.user_id
 			inner join Distances d
 		        on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 		 SET teamuser_rank = NULL 
-		 where 1= 1 $RaidWhereString ";
+		 where r.raid_excludefromrank = 0 $RaidWhereString ";
 
 		 $rs = MySqlQuery($sql);
 
-  
+  // рассчитываем рейтинг пользователя для текущего ммб как отношение результатов к первому месту, умноженному на отношение длины дистанции к длиннейшей
 	$sql = "
 		update TeamUsers tu
  			inner join Teams t
@@ -1862,6 +1864,8 @@ function encode_header($str)
 		        on tu.user_id = u.user_id
 			inner join Distances d
 		        on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 			inner join 
 			(
 			 select t.distance_id,  MIN(TIME_TO_SEC(COALESCE(t.team_result, '00:00:00'))) as firstresult_in_sec 
@@ -1899,12 +1903,12 @@ function encode_header($str)
 		       and tu.teamuser_hide = 0
 		       and tld.levelpoint_id is NULL
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  COALESCE(t.team_result, '00:00:00') > '00:00:00'
+		       and COALESCE(t.team_outofrange, 0) = 0
+		       and COALESCE(t.team_result, '00:00:00') > '00:00:00'
 		       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
-
-                       $RaidWhereString
-                ";
+           and r.raid_excludefromrank = 0
+           $RaidWhereString
+      ";
 		 
 		 $rs = MySqlQuery($sql);
        
@@ -1945,22 +1949,28 @@ function encode_header($str)
 	 $rs = MySqlQuery($sql);
 
 	     
-        // Сбрасываем признак неявки команды  по всем ММБ с весны 2012
+    // Сбрасываем признак неявки команды  по всем ММБ с весны 2012 
+    // в том числе сбрасываем для марш-бросков, которые не учитываются в рейтинге
   	$sql = " update Teams t 
 			inner join Distances d
-	        	on t.distance_id = d.distance_id
-		 SET t.team_dismiss = NULL 
+            on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
+			 SET t.team_dismiss = NULL 
 		 where d.raid_id  >= 19
-		       and  d.raid_id = $maxRaidId
+           and  d.raid_id = $maxRaidId
   		";
 
 	 $rs = MySqlQuery($sql);
 
-	// Устанавливаем    признак неявки команды  по всем ММБ с весны 2012  	
+  // Устанавливаем признак неявки команды только для последнего ммб и только если он не исключен их рейтинга  
+  // 
 	$sql = "
 		update  Teams t
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 			left outer join 
 			(
 			 	select tlp.team_id, count(*) as points
@@ -1971,11 +1981,12 @@ function encode_header($str)
 		SET t.team_dismiss = 1
 		where d.distance_hide = 0 
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  d.raid_id <= $maxRaidId
-		       and  d.raid_id >= 19
-	       	       and  COALESCE(teamdismiss.points, 0) = 0
-                ";
+		       and COALESCE(t.team_outofrange, 0) = 0
+		       and d.raid_id = $maxRaidId
+		       and d.raid_id >= 19
+           and r.raid_excludefromrank = 0 
+           and COALESCE(teamdismiss.points, 0) = 0
+     ";
 	
 	$rs = MySqlQuery($sql);
 	     
@@ -1983,26 +1994,65 @@ function encode_header($str)
 	     
   	// Добавил проверку на сход
   	// проверка на ошибки идёт по полю, посчитанному в пересчете результатов
- 
+    // актуальным является поле r6
+    // расчет осложняется тем, что дисконтирование не должно производиться для тех ммб, когда участник работал судьей
+/*   
+    - (select count(*) 
+    from RaidDevelopers rd 
+       inner join Raids r
+       on rd.raid_id = r.raid_id
+    where rd.raiddeveloper_hide = 0
+       and rd.raid_id > d.raid_id
+      and rd.user_id = tu.user_id
+      and rd.raid_excludefromrank = 0 
+  )
+
+ */  
+    // и тем, что теоретически последовательность raid_id может иметь "дырки" - правильнее сначала получить/присвоить
+    // виртулаьный raid_order (учитывая исключения ммб из рейтинга), но здесь "расстояние" считается динамически прям в запросе
+/* 
+    (select count(*) 
+    from Raids r
+    where r.raid_id > d.raid_id
+    and r.raid_id <= $maxRaidId
+    and r.raid_excludefromrank = 0 
+  )
+ */
+    // само дисконтирование - возведение  0.9 в степень, равной "расстоянию" между текущим и последним ммб, с учетом описанных выше особенностей
+
 	$sql = "
 		update Users u
 		inner join 
-		(select tu.user_id, SUM(COALESCE(tu.teamuser_rank, 0.00)) as rank, 
-			SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId 
-			- d.raid_id 
-			- (select count(*) 
-				from RaidDevelopers rd 
-				where rd.raiddeveloper_hide = 0
-					and rd.raid_id > d.raid_id
-					and rd.user_id =  tu.user_id
-			))) as r6,
-			SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId 
-			- d.raid_id)) as r6old
-	        from TeamUsers tu 
+		(
+      select tu.user_id
+      , SUM(COALESCE(tu.teamuser_rank, 0.00)) as rank
+      , SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, 
+          (select count(*) 
+				    from Raids r
+            where r.raid_id > d.raid_id
+            and r.raid_id <= $maxRaidId
+            and r.raid_excludefromrank = 0 
+          )
+			  - (select count(*) 
+				    from RaidDevelopers rd 
+               inner join Raids r
+               on rd.raid_id = r.raid_id
+            where rd.raiddeveloper_hide = 0
+     					and rd.raid_id > d.raid_id
+              and rd.user_id = tu.user_id
+              and rd.raid_excludefromrank = 0 
+          )
+        )
+      ) as r6
+      ,	SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId 
+			    - d.raid_id)) as r6old
+      from TeamUsers tu 
 			inner join Teams t
 			on tu.team_id = t.team_id	
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 			left outer join 
 			(
 		 	select tld.teamuser_id,  MIN(lp.levelpoint_order) as minorder
@@ -2012,15 +2062,16 @@ function encode_header($str)
 			 group by tld.teamuser_id
                         ) c
 			on tu.teamuser_id = c.teamuser_id
-		where d.distance_hide = 0 
+		  where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  COALESCE(t.team_result, '00:00:00') > '00:00:00'
+		       and COALESCE(t.team_outofrange, 0) = 0
+		       and COALESCE(t.team_result, '00:00:00') > '00:00:00'
 		       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
-		       and  COALESCE(c.minorder, 0) = 0
-		       and  d.raid_id <= $maxRaidId
-		group by tu.user_id
+		       and COALESCE(c.minorder, 0) = 0
+		       and d.raid_id <= $maxRaidId
+           and r.raid_excludefromrank = 0 
+      group by tu.user_id
  		) a
 		on a.user_id = u.user_id
 		SET u.user_rank = a.rank, u.user_r6 = a.r6, u.user_r6old = a.r6old
@@ -2029,20 +2080,23 @@ function encode_header($str)
 		$rs = MySqlQuery($sql);
 
 
-	// теперь считаем  минимальный и максимальный ключ ММБ по всем пользователям
+	/* // теперь считаем  минимальный и максимальный ключ ММБ по всем пользователям
      	// добавил учет невыходов на старт
      	// добавил учет невыходов на старт для команды
 	
 	$sql = "
 		update Users u
 		inner join 
-		(select tu.user_id, MIN(d.raid_id) as minraidid, 
-			MAX(d.raid_id) as maxraidid 
-	        from TeamUsers tu 
+    ( select tu.user_id
+      , MIN(d.raid_id) as minraidid
+      , MAX(d.raid_id) as maxraidid 
+	    from TeamUsers tu 
 			inner join Teams t
-			on tu.team_id = t.team_id	
+			      on tu.team_id = t.team_id	
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 			left outer join 
 			(
 				select tld.teamuser_id
@@ -2058,8 +2112,9 @@ function encode_header($str)
 		       and COALESCE(t.team_dismiss, 0) = 0
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  d.raid_id <= $maxRaidId
+		       and COALESCE(t.team_outofrange, 0) = 0
+           and d.raid_id <= $maxRaidId
+           and r.raid_excludefromrank = 0
 		group by tu.user_id
 		) a
 		on a.user_id = u.user_id
@@ -2067,21 +2122,23 @@ function encode_header($str)
                 ";
 
 	$rs = MySqlQuery($sql);
-
+ */
 	     
-	     	// теперь считаем  максимальный ключ ММБ по всем пользователям по невыходу на старт
+	/*      	// теперь считаем  максимальный ключ ММБ по всем пользователям по невыходу на старт
 
 	
 	$sql = "
 		update Users u
 		inner join 
-		(select tu.user_id, 
-			MAX(d.raid_id) as maxnotstartraidid 
-	        from TeamUsers tu 
+    (select tu.user_id
+      , MAX(d.raid_id) as maxnotstartraidid 
+	    from TeamUsers tu 
 			inner join Teams t
-			on tu.team_id = t.team_id	
+			      on tu.team_id = t.team_id	
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 			left outer join 
 			(
 				select tld.teamuser_id
@@ -2096,31 +2153,36 @@ function encode_header($str)
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and COALESCE(t.team_outofrange, 0) = 0
-		       and d.raid_id <= $maxRaidId
-	       	       and (dismiss.teamuser_id is not null or COALESCE(t.team_dismiss, 0) = 1)
+           and d.raid_id <= $maxRaidId
+           and r.raid_excludefromrank = 0
+   	       and (dismiss.teamuser_id is not null or COALESCE(t.team_dismiss, 0) = 1)
 		group by tu.user_id
 		) a
 		on a.user_id = u.user_id
 		SET u.user_maxnotstartraidid = a.maxnotstartraidid
                 ";
 	
-	$rs = MySqlQuery($sql);
+	$rs = MySqlQuery($sql); */
 	     
 	     
 
-		// теперь считаем флаг у тех кто не вышел (?!) или дисквалифицирован 
+  // теперь считаем флаг у тех кто не вышел (?!) или дисквалифицирован 
+  // только по текущему (последнему) ммб и только для не исключенных ммб из рейтинга
 	$sql = "
 		update Users u
 		inner join 
-		(select tu.user_id, dismiss.teamuser_id as dismissteamuser, 
-			COALESCE(disq.disqualification, 0) as disqualification, 
-			COALESCE(t.team_dismiss, 0)  as dismissteam
-	        from TeamUsers tu 
+    ( select tu.user_id
+      , dismiss.teamuser_id as dismissteamuser
+      , COALESCE(disq.disqualification, 0) as disqualification
+      , COALESCE(t.team_dismiss, 0)  as dismissteam
+	    from TeamUsers tu 
 			inner join Teams t
-			on tu.team_id = t.team_id	
+			    on tu.team_id = t.team_id	
 			inner join Distances d
-	        	on t.distance_id = d.distance_id
-			left outer join 
+        	on t.distance_id = d.distance_id
+      inner join Raids r
+	        on d.raid_id = r.raid_id
+      left outer join 
 			(
 		 		select tlp.team_id,  count(*) as disqualification
 		 		from TeamLevelPoints tlp
@@ -2141,21 +2203,22 @@ function encode_header($str)
  		where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  d.raid_id = $maxRaidId
+		       and COALESCE(t.team_outofrange, 0) = 0
+		       and d.raid_id = $maxRaidId
+           and r.raid_excludefromrank = 0
 		group by tu.user_id
 		) a
 		on a.user_id = u.user_id
 		SET u.user_noinvitation = 1
 		WHERE   a.dismissteamuser is not null
-	  		or COALESCE(a.disqualification, 0) > 1 
-	 		or COALESCE(a.dismissteam, 0) = 1
+	  		    or COALESCE(a.disqualification, 0) > 1 
+	 		      or COALESCE(a.dismissteam, 0) = 1
                 ";
 
 		 $rs = MySqlQuery($sql);
 
   
-		// теперь ставим флаг у тех кто не участоввал в последних 8 ммб
+/* 		// теперь ставим флаг у тех кто не участоввал в последних 8 ммб
 	$sql = "
 		update Users u
 		SET u.user_noinvitation = 1
@@ -2168,7 +2231,7 @@ function encode_header($str)
 		      and  u.user_maxraidid is not null
                 ";
 
-		 $rs = MySqlQuery($sql);
+		 $rs = MySqlQuery($sql); */
 
 
          return (1);
