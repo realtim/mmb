@@ -85,16 +85,16 @@ function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "")
 
   	// echo $ConnectionId;
 
-	$ConnectionId = CSql::getConnection();
+	$connectionId = CSql::getConnection();
 
 	$t1 = microtime(true);
-	$rs = mysql_query($SqlString, $ConnectionId);
+	$rs = mysqli_query($connectionId, $SqlString);
 	CMmbLogger::addInterval('query', $t1);
 
 
 	if (!$rs)
 	{
-		$err = mysql_error();
+		$err = mysqli_error($connectionId);
 		CMmbLogger::e('MySqlQuery', "sql error: '$err' \r\non query: '$SqlString'");
 		echo $err;
 
@@ -106,7 +106,7 @@ function MySqlQuery($SqlString, $SessionId = "", $NonSecure = "")
 	// Если был insert - возвращаем последний id
 	if (strpos($SqlString, 'insert') !== false)
 	{
-		$rs = mysql_insert_id($ConnectionId);
+		$rs = mysqli_insert_id($connectionId);
 	//  echo ' NewId '.$rs;
 	}
 
@@ -130,7 +130,8 @@ class CSql {
 	// returns: well-quoted and escaped string
 	public static function quote($str)
 	{
-		return "'" . mysql_real_escape_string($str) . "'";
+		$connectionId = CSql::getConnection();
+		return "'" . mysqli_real_escape_string($connectionId, $str) . "'";
 	}
 
 	// закрывает переданное соединение. При вызове без параметра -- закрывает общее.
@@ -138,12 +139,12 @@ class CSql {
 	{
 		if ($conn !== null)
 		{
-			mysql_close($conn);
+			mysqli_close($conn);
 			return;	
 		}
 		
 		if (self::$connection !== null)
-			mysql_close(self::$connection);
+			mysqli_close(self::$connection);
 		self::$connection = null;
 	}
 	
@@ -156,28 +157,28 @@ class CSql {
 		// Данные берём из settings
 		include("settings.php");
 
-		$connection = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
+		$connection = mysqli_connect($ServerName, $WebUserName, $WebUserPassword);
 
 		// Ошибка соединения
-		if ($connection <= 0)
-			self::dieOnSqlError(null, 'createConnection', 'mysql_connect: ', mysql_error());
+		if (!$connection)
+			self::dieOnSqlError(null, 'createConnection', 'mysqli_connect: ', mysqli_connect_error());
 
 		//  15/05/2015  Убрал установку, т.к. сейчас в mysql всё правильно, а зона GMT +3
 		//  устанавливаем временную зону
-		//		 mysql_query('set time_zone = \'+4:00\'', $ConnectionId);
+		//		 mysqli_query('set time_zone = \'+4:00\'', $ConnectionId);
 		//  устанавливаем кодировку для взаимодействия
 
-		mysql_query('set names \'utf8\'', $connection);
+		mysqli_query($connection, 'set names \'utf8\'');
 
 		// Выбираем БД ММБ
 		//		echo $DBName;
-		$rs = mysql_select_db($DBName, $connection);
+		$rs = mysqli_select_db($connection, $DBName);
 
 		if (!$rs)
 		{
-			$err = mysql_error();
+			$err = mysqli_error($connection);
 			self::closeConnection($connection);
-			self::dieOnSqlError(null, 'createConnection', "mysql_select_db '$DBName'", $err);
+			self::dieOnSqlError(null, 'createConnection', "mysqli_select_db '$DBName'", $err);
 		}
 	//	CMmbLogger::addInterval('getConnection', $t1);
 		
@@ -194,16 +195,16 @@ class CSql {
 	public static function singleRow($query)
 	{
 		$result = MySqlQuery($query);
-		$row = mysql_fetch_assoc($result);
-		mysql_free_result($result);
+		$row = mysqli_fetch_assoc($result);
+		mysqli_free_result($result);
 		return $row;
 	}
 
 	public static function singleValue($query, $key, $strict = true)
 	{
 		$result = MySqlQuery($query);
-		$row = mysql_fetch_assoc($result);
-		mysql_free_result($result);
+		$row = mysqli_fetch_assoc($result);
+		mysqli_free_result($result);
 
 		if (!isset($row[$key]) && $strict == true)
 			CMmbLogger::w('singleValue', "Field '$key' doesn't exist, query:\n" . trim($query));
@@ -213,8 +214,8 @@ class CSql {
 	public static function rowCount($query)
 	{
 		$result = MySqlQuery($query);
-		$rn = mysql_num_rows($result);
-		mysql_free_result($result);
+		$rn = mysqli_num_rows($result);
+		mysqli_free_result($result);
 		return $rn;
 	}
 
@@ -978,7 +979,7 @@ class CMmbAuth {
 		
 	$UserResult = MySqlQuery($sql);
 		
-	while ($UserRow = mysql_fetch_assoc($UserResult))
+	while ($UserRow = mysqli_fetch_assoc($UserResult))
 	{
 		        $UserEmail = $UserRow['user_email'];
 		        $UserName = $UserRow['user_name'];
@@ -1001,7 +1002,7 @@ class CMmbAuth {
 		        // Отправляем письмо
 			SendMail($UserEmail,  $Msg, $UserName,  $msgSubject);
 	}
-  	mysql_free_result($UserResult);
+  	mysqli_free_result($UserResult);
   	
   	return (1);
  
@@ -1034,9 +1035,9 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 		$sql = "select user_admin from Users where user_hide = 0 and user_id = $UserId";
 		$Result = MySqlQuery($sql);
 		if (!$Result) return;
-		$Row = mysql_fetch_assoc($Result);
+		$Row = mysqli_fetch_assoc($Result);
 		$Administrator = $Row['user_admin'];
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 	}
 
 	// Контролируем, что команда есть в базе
@@ -1044,10 +1045,10 @@ function GetPrivileges($SessionId, &$RaidId, &$TeamId, &$UserId, &$Administrator
 	{
 		$sql = "select team_id, COALESCE(team_outofrange, 0) as team_outofrange from Teams where team_id = $TeamId";
 		$Result = MySqlQuery($sql);
-		$Row = mysql_fetch_assoc($Result);
-		if (mysql_num_rows($Result) == 0) $TeamId = 0;
+		$Row = mysqli_fetch_assoc($Result);
+		if (mysqli_num_rows($Result) == 0) $TeamId = 0;
 		$TeamOutOfRange = $Row['team_outofrange'];
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 	}
 	// Если ($TeamId == 0) && ($RaidId != 0), то сделать $TeamId равным команде пользователя, если он участвует в RaidId
 	// !! реализовать алгоритм !!
@@ -1798,7 +1799,7 @@ function encode_header($str)
 
 	// ================ Цикл обработки данных по этапам
 	$Comment = "";
-	while ($Row = mysql_fetch_assoc($rs))
+	while ($Row = mysqli_fetch_assoc($rs))
 	{
 		$Comment = trim($Comment.' '.trim($Row['teamlevel_comment']));
          }
@@ -1815,13 +1816,13 @@ function encode_header($str)
 
 	// ================ Цикл обработки данных по этапам
 	$Comment = "";
-	while ($Row = mysql_fetch_assoc($rs))
+	while ($Row = mysqli_fetch_assoc($rs))
 	{
 		$Comment = trim($Comment.' '.trim($Row['teamlevelpoint_comment']));
          }
 	// Конец цикла по этапам
 
-	mysql_free_result($rs);
+	mysqli_free_result($rs);
 	if ($Comment == '') {
 	 $Comment = "&nbsp;";
 	}
@@ -1847,12 +1848,14 @@ function encode_header($str)
 		        on tu.user_id = u.user_id
 			inner join Distances d
 		        on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 		 SET teamuser_rank = NULL 
-		 where 1= 1 $RaidWhereString ";
+		 where r.raid_excludefromrank = 0 $RaidWhereString ";
 
 		 $rs = MySqlQuery($sql);
 
-  
+  // рассчитываем рейтинг пользователя для текущего ммб как отношение результатов к первому месту, умноженному на отношение длины дистанции к длиннейшей
 	$sql = "
 		update TeamUsers tu
  			inner join Teams t
@@ -1861,6 +1864,8 @@ function encode_header($str)
 		        on tu.user_id = u.user_id
 			inner join Distances d
 		        on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 			inner join 
 			(
 			 select t.distance_id,  MIN(TIME_TO_SEC(COALESCE(t.team_result, '00:00:00'))) as firstresult_in_sec 
@@ -1898,12 +1903,12 @@ function encode_header($str)
 		       and tu.teamuser_hide = 0
 		       and tld.levelpoint_id is NULL
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  COALESCE(t.team_result, '00:00:00') > '00:00:00'
+		       and COALESCE(t.team_outofrange, 0) = 0
+		       and COALESCE(t.team_result, '00:00:00') > '00:00:00'
 		       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
-
-                       $RaidWhereString
-                ";
+           and r.raid_excludefromrank = 0
+           $RaidWhereString
+      ";
 		 
 		 $rs = MySqlQuery($sql);
        
@@ -1944,22 +1949,28 @@ function encode_header($str)
 	 $rs = MySqlQuery($sql);
 
 	     
-        // Сбрасываем признак неявки команды  по всем ММБ с весны 2012
+    // Сбрасываем признак неявки команды  по всем ММБ с весны 2012 
+    // в том числе сбрасываем для марш-бросков, которые не учитываются в рейтинге
   	$sql = " update Teams t 
 			inner join Distances d
-	        	on t.distance_id = d.distance_id
-		 SET t.team_dismiss = NULL 
+            on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
+			 SET t.team_dismiss = NULL 
 		 where d.raid_id  >= 19
-		       and  d.raid_id = $maxRaidId
+           and  d.raid_id = $maxRaidId
   		";
 
 	 $rs = MySqlQuery($sql);
 
-	// Устанавливаем    признак неявки команды  по всем ММБ с весны 2012  	
+  // Устанавливаем признак неявки команды только для последнего ммб и только если он не исключен их рейтинга  
+  // 
 	$sql = "
 		update  Teams t
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 			left outer join 
 			(
 			 	select tlp.team_id, count(*) as points
@@ -1970,11 +1981,12 @@ function encode_header($str)
 		SET t.team_dismiss = 1
 		where d.distance_hide = 0 
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  d.raid_id <= $maxRaidId
-		       and  d.raid_id >= 19
-	       	       and  COALESCE(teamdismiss.points, 0) = 0
-                ";
+		       and COALESCE(t.team_outofrange, 0) = 0
+		       and d.raid_id = $maxRaidId
+		       and d.raid_id >= 19
+           and r.raid_excludefromrank = 0 
+           and COALESCE(teamdismiss.points, 0) = 0
+     ";
 	
 	$rs = MySqlQuery($sql);
 	     
@@ -1982,26 +1994,65 @@ function encode_header($str)
 	     
   	// Добавил проверку на сход
   	// проверка на ошибки идёт по полю, посчитанному в пересчете результатов
- 
+    // актуальным является поле r6
+    // расчет осложняется тем, что дисконтирование не должно производиться для тех ммб, когда участник работал судьей
+/*   
+    - (select count(*) 
+    from RaidDevelopers rd 
+       inner join Raids r
+       on rd.raid_id = r.raid_id
+    where rd.raiddeveloper_hide = 0
+       and rd.raid_id > d.raid_id
+      and rd.user_id = tu.user_id
+      and rd.raid_excludefromrank = 0 
+  )
+
+ */  
+    // и тем, что теоретически последовательность raid_id может иметь "дырки" - правильнее сначала получить/присвоить
+    // виртулаьный raid_order (учитывая исключения ммб из рейтинга), но здесь "расстояние" считается динамически прям в запросе
+/* 
+    (select count(*) 
+    from Raids r
+    where r.raid_id > d.raid_id
+    and r.raid_id <= $maxRaidId
+    and r.raid_excludefromrank = 0 
+  )
+ */
+    // само дисконтирование - возведение  0.9 в степень, равной "расстоянию" между текущим и последним ммб, с учетом описанных выше особенностей
+
 	$sql = "
 		update Users u
 		inner join 
-		(select tu.user_id, SUM(COALESCE(tu.teamuser_rank, 0.00)) as rank, 
-			SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId 
-			- d.raid_id 
-			- (select count(*) 
-				from RaidDevelopers rd 
-				where rd.raiddeveloper_hide = 0
-					and rd.raid_id > d.raid_id
-					and rd.user_id =  tu.user_id
-			))) as r6,
-			SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId 
-			- d.raid_id)) as r6old
-	        from TeamUsers tu 
+		(
+      select tu.user_id
+      , SUM(COALESCE(tu.teamuser_rank, 0.00)) as rank
+      , SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, 
+          (select count(*) 
+				    from Raids r
+            where r.raid_id > d.raid_id
+            and r.raid_id <= $maxRaidId
+            and r.raid_excludefromrank = 0 
+          )
+			  - (select count(*) 
+				    from RaidDevelopers rd 
+               inner join Raids r
+               on rd.raid_id = r.raid_id
+            where rd.raiddeveloper_hide = 0
+     					and rd.raid_id > d.raid_id
+              and rd.user_id = tu.user_id
+              and rd.raid_excludefromrank = 0 
+          )
+        )
+      ) as r6
+      ,	SUM(COALESCE(tu.teamuser_rank, 0.00) * POW(0.9, $maxRaidId 
+			    - d.raid_id)) as r6old
+      from TeamUsers tu 
 			inner join Teams t
 			on tu.team_id = t.team_id	
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 			left outer join 
 			(
 		 	select tld.teamuser_id,  MIN(lp.levelpoint_order) as minorder
@@ -2011,15 +2062,16 @@ function encode_header($str)
 			 group by tld.teamuser_id
                         ) c
 			on tu.teamuser_id = c.teamuser_id
-		where d.distance_hide = 0 
+		  where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  COALESCE(t.team_result, '00:00:00') > '00:00:00'
+		       and COALESCE(t.team_outofrange, 0) = 0
+		       and COALESCE(t.team_result, '00:00:00') > '00:00:00'
 		       and COALESCE(t.team_minlevelpointorderwitherror, 0) = 0
-		       and  COALESCE(c.minorder, 0) = 0
-		       and  d.raid_id <= $maxRaidId
-		group by tu.user_id
+		       and COALESCE(c.minorder, 0) = 0
+		       and d.raid_id <= $maxRaidId
+           and r.raid_excludefromrank = 0 
+      group by tu.user_id
  		) a
 		on a.user_id = u.user_id
 		SET u.user_rank = a.rank, u.user_r6 = a.r6, u.user_r6old = a.r6old
@@ -2028,20 +2080,23 @@ function encode_header($str)
 		$rs = MySqlQuery($sql);
 
 
-	// теперь считаем  минимальный и максимальный ключ ММБ по всем пользователям
+	/* // теперь считаем  минимальный и максимальный ключ ММБ по всем пользователям
      	// добавил учет невыходов на старт
      	// добавил учет невыходов на старт для команды
 	
 	$sql = "
 		update Users u
 		inner join 
-		(select tu.user_id, MIN(d.raid_id) as minraidid, 
-			MAX(d.raid_id) as maxraidid 
-	        from TeamUsers tu 
+    ( select tu.user_id
+      , MIN(d.raid_id) as minraidid
+      , MAX(d.raid_id) as maxraidid 
+	    from TeamUsers tu 
 			inner join Teams t
-			on tu.team_id = t.team_id	
+			      on tu.team_id = t.team_id	
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 			left outer join 
 			(
 				select tld.teamuser_id
@@ -2057,8 +2112,9 @@ function encode_header($str)
 		       and COALESCE(t.team_dismiss, 0) = 0
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  d.raid_id <= $maxRaidId
+		       and COALESCE(t.team_outofrange, 0) = 0
+           and d.raid_id <= $maxRaidId
+           and r.raid_excludefromrank = 0
 		group by tu.user_id
 		) a
 		on a.user_id = u.user_id
@@ -2066,21 +2122,23 @@ function encode_header($str)
                 ";
 
 	$rs = MySqlQuery($sql);
-
+ */
 	     
-	     	// теперь считаем  максимальный ключ ММБ по всем пользователям по невыходу на старт
+	/*      	// теперь считаем  максимальный ключ ММБ по всем пользователям по невыходу на старт
 
 	
 	$sql = "
 		update Users u
 		inner join 
-		(select tu.user_id, 
-			MAX(d.raid_id) as maxnotstartraidid 
-	        from TeamUsers tu 
+    (select tu.user_id
+      , MAX(d.raid_id) as maxnotstartraidid 
+	    from TeamUsers tu 
 			inner join Teams t
-			on tu.team_id = t.team_id	
+			      on tu.team_id = t.team_id	
 			inner join Distances d
 	        	on t.distance_id = d.distance_id
+      inner join Raids r
+		        on d.raid_id = r.raid_id
 			left outer join 
 			(
 				select tld.teamuser_id
@@ -2095,31 +2153,36 @@ function encode_header($str)
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
 		       and COALESCE(t.team_outofrange, 0) = 0
-		       and d.raid_id <= $maxRaidId
-	       	       and (dismiss.teamuser_id is not null or COALESCE(t.team_dismiss, 0) = 1)
+           and d.raid_id <= $maxRaidId
+           and r.raid_excludefromrank = 0
+   	       and (dismiss.teamuser_id is not null or COALESCE(t.team_dismiss, 0) = 1)
 		group by tu.user_id
 		) a
 		on a.user_id = u.user_id
 		SET u.user_maxnotstartraidid = a.maxnotstartraidid
                 ";
 	
-	$rs = MySqlQuery($sql);
+	$rs = MySqlQuery($sql); */
 	     
 	     
 
-		// теперь считаем флаг у тех кто не вышел (?!) или дисквалифицирован 
+  // теперь считаем флаг у тех кто не вышел (?!) или дисквалифицирован 
+  // только по текущему (последнему) ммб и только для не исключенных ммб из рейтинга
 	$sql = "
 		update Users u
 		inner join 
-		(select tu.user_id, dismiss.teamuser_id as dismissteamuser, 
-			COALESCE(disq.disqualification, 0) as disqualification, 
-			COALESCE(t.team_dismiss, 0)  as dismissteam
-	        from TeamUsers tu 
+    ( select tu.user_id
+      , dismiss.teamuser_id as dismissteamuser
+      , COALESCE(disq.disqualification, 0) as disqualification
+      , COALESCE(t.team_dismiss, 0)  as dismissteam
+	    from TeamUsers tu 
 			inner join Teams t
-			on tu.team_id = t.team_id	
+			    on tu.team_id = t.team_id	
 			inner join Distances d
-	        	on t.distance_id = d.distance_id
-			left outer join 
+        	on t.distance_id = d.distance_id
+      inner join Raids r
+	        on d.raid_id = r.raid_id
+      left outer join 
 			(
 		 		select tlp.team_id,  count(*) as disqualification
 		 		from TeamLevelPoints tlp
@@ -2140,21 +2203,22 @@ function encode_header($str)
  		where d.distance_hide = 0 
 		       and tu.teamuser_hide = 0
 		       and t.team_hide = 0 
-		       and  COALESCE(t.team_outofrange, 0) = 0
-		       and  d.raid_id = $maxRaidId
+		       and COALESCE(t.team_outofrange, 0) = 0
+		       and d.raid_id = $maxRaidId
+           and r.raid_excludefromrank = 0
 		group by tu.user_id
 		) a
 		on a.user_id = u.user_id
 		SET u.user_noinvitation = 1
 		WHERE   a.dismissteamuser is not null
-	  		or COALESCE(a.disqualification, 0) > 1 
-	 		or COALESCE(a.dismissteam, 0) = 1
+	  		    or COALESCE(a.disqualification, 0) > 1 
+	 		      or COALESCE(a.dismissteam, 0) = 1
                 ";
 
 		 $rs = MySqlQuery($sql);
 
   
-		// теперь ставим флаг у тех кто не участоввал в последних 8 ммб
+/* 		// теперь ставим флаг у тех кто не участоввал в последних 8 ммб
 	$sql = "
 		update Users u
 		SET u.user_noinvitation = 1
@@ -2167,7 +2231,7 @@ function encode_header($str)
 		      and  u.user_maxraidid is not null
                 ";
 
-		 $rs = MySqlQuery($sql);
+		 $rs = MySqlQuery($sql); */
 
 
          return (1);
@@ -2283,7 +2347,7 @@ function encode_header($str)
 
         $TeamUsersNoStartPayment = 0;
 	// ================ Цикл обработки участников
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 
            $PredRaidId =  CheckNotStart($Row['user_id'], $Row['raid_id']);
@@ -2296,9 +2360,9 @@ function encode_header($str)
 		        where r.raid_id = ".$PredRaidId."
 			LIMIT 0,1";
 	     $ResultUser = MySqlQuery($sqlUser);
-	     $RowUser = mysql_fetch_assoc($ResultUser);
+	     $RowUser = mysqli_fetch_assoc($ResultUser);
 	     $UserNoStartPayment = $RowUser['usernostartpayment'];
-	     mysql_free_result($ResultUser);
+	     mysqli_free_result($ResultUser);
   	   
 	     $TeamUsersNoStartPayment += $UserNoStartPayment; 
 	   }
@@ -2306,7 +2370,7 @@ function encode_header($str)
 	         
         }
 	// Конец цикла обработки участников
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
   */
   
         return ($TeamMapPayment + $TeamNotStartPayment); 
@@ -2340,7 +2404,7 @@ function encode_header($str)
        // echo $sql;
 
 	$Result = MySqlQuery($sql);
-	$Row = mysql_fetch_assoc($Result);
+	$Row = mysqli_fetch_assoc($Result);
 	$LevelPointsString = trim($Row['teamlevel_points']);
 	$LevelId = $Row['level_id'];
 	$TeamId = $Row['team_id'];
@@ -2350,7 +2414,7 @@ function encode_header($str)
 	$Comment = $Row['teamlevel_comment'];
 	$Penalty = $Row['teamlevel_penalty'];
 	$Duration = $Row['teamlevel_duration'];
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	
 	
 	if (empty($LevelId)) {
@@ -2478,7 +2542,7 @@ function encode_header($str)
 	$i=0;
 	
 	// ================ Цикл обработки контрольных точек этапа
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$i++;
 		$NowLevelPointOrder = $Row['levelpoint_order'];
@@ -2506,7 +2570,7 @@ function encode_header($str)
          }
 	// Конец цикла по контрольным точкам этапа
 
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 		    
        return;
      }
@@ -2531,7 +2595,7 @@ function encode_header($str)
 	       
 	$Result2 = MySqlQuery($Sql);  
 
-        while ($Row2 = mysql_fetch_assoc($Result2))
+        while ($Row2 = mysqli_fetch_assoc($Result2))
         {
                    
           set_time_limit(10);
@@ -2539,7 +2603,7 @@ function encode_header($str)
 	  	  
 	  GenerateTeamLevelPointsFromTeamLevelString($TeamLevelId2);
         }
-        mysql_free_result($Result2);
+        mysqli_free_result($Result2);
    
         set_time_limit(30);
 
@@ -3169,8 +3233,8 @@ function FindErrors($raid_id, $team_id)
 	$teams_with_manualerrors = array();
 	$sql = "SELECT DISTINCT team_id FROM TeamLevelPoints, Errors WHERE TeamLevelPoints.error_id <> 0 AND TeamLevelPoints.error_id = Errors.error_id AND Errors.error_manual = 1";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result)) $teams_with_manualerrors[] = $Row['team_id'];
-	mysql_free_result($Result);
+	while ($Row = mysqli_fetch_assoc($Result)) $teams_with_manualerrors[] = $Row['team_id'];
+	mysqli_free_result($Result);
 
 	$distances = array();
 	// Если нужно проверить отдельную команду, то находим дистанцию, по которой она бежала
@@ -3179,18 +3243,18 @@ function FindErrors($raid_id, $team_id)
 		if (in_array($team_id, $teams_with_manualerrors)) return(0);
 		$sql = "SELECT distance_id FROM Teams WHERE team_id = $team_id AND team_hide = 0";
 		$Result = MySqlQuery($sql);
-		if (mysql_num_rows($Result) <> 1) die('Команда $team_id отсутствует или удалена, проверка невозможна');
-		$Row = mysql_fetch_assoc($Result);
+		if (mysqli_num_rows($Result) <> 1) die('Команда $team_id отсутствует или удалена, проверка невозможна');
+		$Row = mysqli_fetch_assoc($Result);
 		if ($Row) $distances[] = $Row['distance_id'];
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 	}
 	// Если нужно проверить весь марш-бросок, то находим все дистанции, принадлежащие данному марш-броску
 	if ($raid_id)
 	{
 		$sql = "SELECT distance_id FROM Distances WHERE raid_id = $raid_id AND distance_hide = 0";
 		$Result = MySqlQuery($sql);
-		while ($Row = mysql_fetch_assoc($Result)) $distances[] = $Row['distance_id'];
-		mysql_free_result($Result);
+		while ($Row = mysqli_fetch_assoc($Result)) $distances[] = $Row['distance_id'];
+		mysqli_free_result($Result);
 	}
 	if (!count($distances)) die('Отсутствуют дистанции для проверки');
 	$teamRaidCondition = (!empty($team_id)) ? "t.team_id = $team_id" : "d.raid_id = $raid_id";
@@ -3206,10 +3270,10 @@ function FindErrors($raid_id, $team_id)
 		{
 			$sql = "SELECT DISTINCT TeamLevelPoints.team_id FROM TeamLevelPoints, Teams WHERE TeamLevelPoints.team_id = Teams.team_id AND Teams.distance_id = $distance_id";
 			$Result = MySqlQuery($sql);
-			while ($Row = mysql_fetch_assoc($Result))
+			while ($Row = mysqli_fetch_assoc($Result))
 				if (!in_array($Row['team_id'], $teams_with_manualerrors))
 					$teams[] = $Row['team_id'];
-			mysql_free_result($Result);
+			mysqli_free_result($Result);
 		}
 		if (!count($teams)) continue;
 
@@ -3222,7 +3286,7 @@ function FindErrors($raid_id, $team_id)
 		$ncard = 0;
 		$sql = "SELECT * FROM LevelPoints WHERE distance_id = $distance_id AND levelpoint_hide = 0 ORDER BY levelpoint_order ASC";
 		$Result = MySqlQuery($sql);
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 			// Проверяем уникальность levelpoint_order
 			if (isset($order[$Row['levelpoint_order']])) die("Дублирующийся levelpoint_order = {$Row['levelpoint_order']}");
@@ -3282,7 +3346,7 @@ function FindErrors($raid_id, $team_id)
 			}
 		}
 		unset($order);
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 		// Проверяем получившиеся карточки
 		foreach ($cards as $card)
 			if (!isset($card['finish'])) die("Этап со стартом в точке {$card['start']} не имеет финиша");	
@@ -3295,7 +3359,7 @@ function FindErrors($raid_id, $team_id)
 			$errors = array();
 			$sql = "SELECT * FROM TeamLevelPoints WHERE team_id = $team_id";
 			$Result = MySqlQuery($sql);
-			while ($Row = mysql_fetch_assoc($Result))
+			while ($Row = mysqli_fetch_assoc($Result))
 			{
 				// У команды не может быть несколько записей результата на одной точке
 				$id = $Row['levelpoint_id'];
@@ -3323,7 +3387,7 @@ function FindErrors($raid_id, $team_id)
 				// Время ввода результата меньше времени команды на точке
 				if (!$errors[$id] && $team_time && ($results[$id]['edit_time'] < $team_time)) $errors[$id] = 25;
 			}
-			mysql_free_result($Result);
+			mysqli_free_result($Result);
 
 			// Проверяем последовательность обязательных точек
 			$mandatory_skipped = "";
@@ -4157,10 +4221,10 @@ class CMmbLogger
 		$query = "insert into Logs (logs_level, user_id, logs_operation, logs_message, logs_dt)
                 values ($level, $uid, $qOperation, $qMessage, UTC_TIMESTAMP)";
 
-		$rs = mysql_query($query, $conn);	// потому что надо работать со своим соединением :(
+		$rs = mysqli_query($conn, $query);	// потому что надо работать со своим соединением :(
 		if (!$rs)
 		{
-			$err = mysql_error($conn);
+			$err = mysqli_error($conn);
 //			self::fatal($user, $operation, $message);		// sql не работает -- кого волнует исходное сообщение!
 			CSql::closeConnection($conn);
 			self::$sqlConn = null;

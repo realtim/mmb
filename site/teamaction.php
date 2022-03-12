@@ -375,7 +375,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			order by tu.teamuser_id asc";
 
 		$Result = MySqlQuery($sql);
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 			// Формируем сообщение
 			$Msg =  "Уважаемый участник {$Row['user_name']}!\n\n";
@@ -387,7 +387,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 			// Отправляем письмо
 			SendMail($Row['user_email'], $Msg, $Row['user_name']);
 		}
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 	}
 	// Конец отправки писем
 
@@ -499,13 +499,13 @@ elseif ($action == 'HideTeamUser')
 
 		if ($StartTeamUserCount == 1)
 		{
-			$Row = mysql_fetch_assoc($Result);
+			$Row = mysqli_fetch_assoc($Result);
 			$Msg = "Уважаемый участник ".$Row['user_name']."!\n\nВаша команда (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).") была удалена.\nАвтор изменений: ".$ChangeDataUserName.".\n\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
 			// Отправляем письмо
 			SendMail($Row['user_email'], $Msg, $Row['user_name']);
 		} else {
 			
-			while ($Row = mysql_fetch_assoc($Result))
+			while ($Row = mysqli_fetch_assoc($Result))
 			{
 				// Формируем сообщение
 				if (trim($DelUserName) <> trim($Row['user_name']))
@@ -517,7 +517,7 @@ elseif ($action == 'HideTeamUser')
 			}
 
 		}
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 	}
 	// Конец отправки писем об удалении
 
@@ -650,7 +650,7 @@ elseif ($action == 'TeamUserNotInPoint')
 		where tu.teamuser_hide = 0 and tu.team_id = $TeamId and u.user_id <> $UserId
 		order by tu.teamuser_id asc";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		// Формируем сообщение
 		$Msg =  "Уважаемый участник {$Row['user_name']}!\n\n";
@@ -662,7 +662,7 @@ elseif ($action == 'TeamUserNotInPoint')
 		// Отправляем письмо
 		SendMail($Row['user_email'], $Msg, $Row['user_name']);
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 
 	$view = $_POST['view'];
 	if (empty($view)) $view = "ViewTeamData";
@@ -711,14 +711,14 @@ elseif ($action == 'HideTeam')
 		where tu.teamuser_hide = 0 and tu.team_id = $TeamId
 		order by tu.teamuser_id asc";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		// Формируем сообщение
 		$Msg = "Уважаемый участник ".$Row['user_name']."!\n\nВаша команда (N ".$Row['team_num'].", Дистанция: ".trim($Row['distance_name']).", ММБ: ".trim($Row['raid_name']).") была удалена.\nАвтор изменений: ".$ChangeDataUserName.".\n\n\nP.S. Изменения может вносить любой из участников команды, а также модератор ММБ.";
 		// Отправляем письмо
 		SendMail($Row['user_email'], $Msg, $Row['user_name']);
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 
 	// 04.2016 вернул обновление
 	// 21/03/2016 заменил на удаление
@@ -811,8 +811,8 @@ elseif ($action == 'JsonExport')
 			where raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Raids"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Raids"][] = $Row; }
+	mysqli_free_result($Result);
 
 	// Distances: distance_id, raid_id, distance_name
 	$Sql = "select distance_id, raid_id, distance_name 
@@ -820,8 +820,8 @@ elseif ($action == 'JsonExport')
 			where distance_hide = 0 and raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Distances"][] = $Row; }
+	mysqli_free_result($Result);
 
 
 	// Teams: team_id, distance_id, team_name, team_num // *
@@ -834,8 +834,8 @@ elseif ($action == 'JsonExport')
 			where t.team_hide = 0 and d.distance_hide = 0  and d.raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Teams"][] = $Row; }
+	mysqli_free_result($Result);
 
 	// Initations: team_id, distance_id, team_name, team_num // *
 	$Sql = "select inv.invitation_id, inv.invitation_begindt, inv.invitation_enddt,
@@ -849,8 +849,8 @@ elseif ($action == 'JsonExport')
 		where t.team_hide = 0 and d.distance_hide = 0  and d.raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Invitations"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Invitations"][] = $Row; }
+	mysqli_free_result($Result);
 	
 	
 	// Users: user_id, user_name, user_birthyear // *
@@ -866,8 +866,8 @@ elseif ($action == 'JsonExport')
 
 
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Users"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Users"][] = $Row; }
+	mysqli_free_result($Result);
 
 	// TeamUsers: teamuser_id, team_id, user_id, teamuser_hide
 	$Sql = "select teamuser_id, tu.team_id, tu.user_id, tu.teamuser_rank, tu.teamuser_new, tu.teamuser_notstartraidid 
@@ -877,8 +877,8 @@ elseif ($action == 'JsonExport')
 			where t.team_hide = 0 and tu.teamuser_hide = 0 and d.distance_hide = 0 and d.raid_id = $RaidId";
 
 	$Result = MySqlQuery($Sql);
-	while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
-	mysql_free_result($Result);
+	while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["TeamUsers"][] = $Row; }
+	mysqli_free_result($Result);
 
 
 	// Определяем, можно ли показывать пользователю информацию об этапах дистанции
@@ -897,8 +897,8 @@ elseif ($action == 'JsonExport')
 				where  d.distance_hide = 0 and d.raid_id = $RaidId";
 
 		$Result = MySqlQuery($Sql);
-		while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
-		mysql_free_result($Result);
+		while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Levels"][] = $Row; }
+		mysqli_free_result($Result);
 
 
 		// TeamLevelDismiss: 
@@ -911,8 +911,8 @@ elseif ($action == 'JsonExport')
 
 		$Result = MySqlQuery($Sql);
 
-		while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["TeamLevelDismiss"][] = $Row; }
-		mysql_free_result($Result);
+		while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["TeamLevelDismiss"][] = $Row; }
+		mysqli_free_result($Result);
 	}
 	// Конец проверки, что можно экспортировать данные по этапам
 
@@ -945,7 +945,7 @@ elseif ($action == 'JsonExport')
 		$Result = MySqlQuery($Sql);
 	
 		$firstRow = true;
-		while (($Row = mysql_fetch_assoc($Result))) 
+		while (($Row = mysqli_fetch_assoc($Result))) 
 		{ 
 	  		if ($firstRow) 
 	  		{
@@ -959,7 +959,7 @@ elseif ($action == 'JsonExport')
 	}
 
 	fwrite($output, ']}');
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
  	fclose($output);
 
 
@@ -1621,12 +1621,12 @@ elseif ($action == "CancelUnionTeams")  {
 
         $Result = MySqlQuery($sql);
 	 
- 	while ($Row = mysql_fetch_assoc($Result))
+ 	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		RecalcTeamResultFromTeamLevelPoints(0, $Row['team_id']);
 	}
 	
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 
 	 // Сбрасываем команду, в которую объединяли
 

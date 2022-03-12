@@ -130,12 +130,12 @@ else
 	$Result = MySqlQuery($sql);
 
 	// Сканируем команды
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$allRaidFiles[] = "'".trim($Row['raidfile_shortname'])."'";
 		$RaidFilePrefix = $Row['raid_fileprefix'];
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 
 // Выводим javascrpit
 ?>
@@ -166,7 +166,7 @@ else
 		  return false;
 		}
 		
-		document.RaidFileForm.action.value = "<? echo $NextActionName; ?>";
+		document.RaidFileForm.action.value = "<?php echo $NextActionName; ?>";
 		return true;
 	}
 	// Конец проверки правильности заполнения формы
@@ -233,12 +233,12 @@ if ($AllowEdit == 1)
 	print('<select name="FileTypeId" class="leftmargin" tabindex="'.(++$TabIndex).'"'.$DisabledText.'>'."\n");
 	$sql = "select filetype_id, filetype_name from FileTypes ";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$filetypeselected = ($Row['filetype_id'] == $FileTypeId ? 'selected' : '');
 		print('<option value="'.$Row['filetype_id'].'" '.$filetypeselected.' >'.$Row['filetype_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 
 	$placeHolder = $viewmode <> 'Add' ? '' : CMmbUI::placeholder($RaidFileComment);
@@ -256,12 +256,12 @@ if ($AllowEdit == 1)
 		where  d.raid_id = ".$RaidId."
 		order by  d.distance_id, lp.levelpoint_order";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$levelpointselected = ($Row['levelpoint_id'] == $LevelPointId ? 'selected' : '');
 		print('<option value="'.$Row['levelpoint_id'].'" '.$levelpointselected.' >'.$Row['levelpoint_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 */
 
@@ -317,7 +317,7 @@ print("<br/>\n");
 	print("</tr>\r\n");
 
         // Сканируем команды
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
         //   print('<tr class = "'.$TrClass.'">'."\r\n");
              print("<tr>\r\n");
@@ -332,6 +332,6 @@ print("<br/>\n");
              print("</tr>\r\n");
 	}
 
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print("</table>\r\n");
 ?>

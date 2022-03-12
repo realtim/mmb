@@ -52,7 +52,7 @@ if ($action == "ChangeTeamResult")
 
 	// ================ Цикл обработки данных по этапам
 	$statustext = "";
-	while ($Row = mysql_fetch_assoc($rs))
+	while ($Row = mysqli_fetch_assoc($rs))
 	{
 		// По этому ключу потом определяем, есть ли уже строчка в TeamLevels или её нужно создать
 		$TeamLevelId = $Row['teamlevel_id'];
@@ -124,7 +124,9 @@ if ($action == "ChangeTeamResult")
 
 		// Обрабатываем комментарии
 		$Comment = $_POST[$levelPfx.'_comment'];
-		if ($Comment == "") $Comment = "NULL"; else $Comment = "'" . mysql_real_escape_string($Comment) . "'";
+		$connectionId = CSql::getConnection();
+	
+		if ($Comment == "") $Comment = "NULL"; else $Comment = "'" . mysqli_real_escape_string($connectionId, $Comment) . "'";
 
 
 		// Если есть запись в базе - изменяем, нет - вставляем
@@ -147,7 +149,7 @@ if ($action == "ChangeTeamResult")
 		MySqlQuery($sql);
 	}
 	// Конец цикла по этапам
-	mysql_free_result($rs);
+	mysqli_free_result($rs);
 
 	if (trim($statustext) <> "")
 		$statustext = "Выход за допустимые границы: ".trim($statustext);

@@ -7,7 +7,7 @@ $tmSt = microtime(true);
 	// Библиотека функций
 	include("functions.php");
 
-CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
+	CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 
         if (isset($DebugMode) and ($DebugMode == 1))
 	{
@@ -20,8 +20,8 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 	}
 
 
-        // Пробегаем помассивам POST GET REQUEST COOKIE  и чистим возможные sql инъекции и мусор
-        ClearArrays();
+    // Пробегаем помассивам POST GET REQUEST COOKIE  и чистим возможные sql инъекции и мусор
+    ClearArrays();
 
 	// Устанавливаем часовой пояс по умолчанию
 	date_default_timezone_set("Europe/Moscow");
@@ -103,7 +103,7 @@ CMmbLogger::enable(isset($_GET['time']) || isset($_COOKIE['time']));
 
 
 
-$tmAction = CMmbLogger::addInterval('before action', $tmSt);
+	$tmAction = CMmbLogger::addInterval('before action', $tmSt);
 	if ($action == "") 
 	{
 	// Действие не указано
@@ -157,8 +157,8 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 
 <html>
  <head>
-	  <link rel="stylesheet" type="text/css"  href="<? echo $CssFile; ?>" />
-	  <link rel="icon" type="image/png" href="<? echo $FavIconFile; ?>" />
+	  <link rel="stylesheet" type="text/css"  href="<?php echo $CssFile; ?>" />
+	  <link rel="icon" type="image/png" href="<?php echo $FavIconFile; ?>" />
 	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
  </head>
 
@@ -175,7 +175,7 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 	     			limit 0, 1
 		) f on r.raid_id = f.raid_id";
  $Result = MySqlQuery($Sql);
- while ( ( $Row = mysql_fetch_assoc($Result) ) ) 
+ while ( ( $Row = mysqli_fetch_assoc($Result) ) ) 
  { 
         // 08.12.2013 Ищем ссылку на логотип  
 	$LogoFile = trim($Row['logo_file']);
@@ -185,14 +185,14 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 	 $mmbLogos[] = "                {$Row['raid_id']}: '$link'";
         }
  }
- mysql_free_result($Result);
+ mysqli_free_result($Result);
  ?>
 
  <script language="JavaScript">
  function ChangeLogo(raidid)
  {
 	var links = {
-<? echo implode(",\r\n", $mmbLogos); ?>};
+<?php echo implode(",\r\n", $mmbLogos); ?>};
 
 	if (console)
 		console.log("change logo called");
@@ -215,11 +215,11 @@ $tmActionEn = CMmbLogger::addInterval('---- action', $tmAction);
 		                 border-right-color: #000000;  border-right-style: solid; border-right-width: 1px;
 				 border-bottom-color: #000000;  border-bottom-style: solid; border-bottom-width: 1px;">
 
-                        <form name = "StartPageForm" action = "<? echo $MyPHPScript; ?>" method = "post">
+                        <form name = "StartPageForm" action = "<?php echo $MyPHPScript; ?>" method = "post">
 				<input type = "hidden" name = "action" value = "StartPage">
 				<input type = "hidden" name = "view" value = "MainPage">
-				<input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
-				<div align="center"><a href="javascript:document.StartPageForm.submit();"><img name = "mmblogo" style="margin-bottom: 15px; border: none" width="160" height="140" alt="ММБ" src="<? echo GetMmbLogo($RaidId); ?>"></a></div>
+				<input type = "hidden" name = "RaidId" value = "<?php echo $RaidId; ?>">
+				<div align="center"><a href="javascript:document.StartPageForm.submit();"><img name = "mmblogo" style="margin-bottom: 15px; border: none" width="160" height="140" alt="ММБ" src="<?php echo GetMmbLogo($RaidId); ?>"></a></div>
                        </form> 
 
 			<!-- вставка меню на php -->

@@ -96,13 +96,13 @@ if (!isset($MyPHPScript)) return;
 		
 		$Result = MySqlQuery($sql);
 
-                $RowsCount = mysql_num_rows($Result);
+                $RowsCount = mysqli_num_rows($Result);
 		if ($RowsCount > 0)
 		{
 	 	       print('<div style = "margin-top: 5px;" align = "left">Текущее объединение</div>'."\r\n");
 	               print("</br>\r\n");
 		
-			while ($Row = mysql_fetch_assoc($Result))
+			while ($Row = mysqli_fetch_assoc($Result))
 			{
 			  
 			  print('<div align="left" style="margin-top: 5px;">'."\r\n");
@@ -117,13 +117,13 @@ if (!isset($MyPHPScript)) return;
 				   where tu.teamuser_hide = 0 and team_id = {$Row['team_id']}";
 			  $TeamUsersResult = MySqlQuery($sql);
 
-			  while ($TeamUsersRow = mysql_fetch_assoc($TeamUsersResult))
+			  while ($TeamUsersRow = mysqli_fetch_assoc($TeamUsersResult))
 			  {
 				print('<div style="margin-top: 5px; margin-left: 15px;">'."\n");
 				print('<a href="?UserId='.$TeamUsersRow['user_id'].'">'.CMmbUI::toHtml($TeamUsersRow['user_name'])."</a> {$TeamUsersRow['user_birthyear']}\n");
 				print('</div>'."\n");
 			  }
-				mysql_free_result($TeamUsersResult);
+				mysqli_free_result($TeamUsersResult);
 
 			}
 
@@ -155,7 +155,7 @@ if (!isset($MyPHPScript)) return;
 			  print('<div class= "input" align = "left">Нет команд в текущем объединении</div>'."\r\n");
 		}
 	        print("</form>\r\n");
-                mysql_free_result($Result);
+                mysqli_free_result($Result);
 
 
                print("<br/>\r\n");
@@ -230,7 +230,7 @@ if (!isset($MyPHPScript)) return;
 			 </tr>'."\r\n");
 		
 	        // Сканируем команды
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 	 	//   print('<tr class = "'.$TrClass.'">'."\r\n");
                      print("<tr>\r\n");
@@ -323,7 +323,7 @@ if (!isset($MyPHPScript)) return;
 
                       $UserCount = 0;
                       // Сканируем состав
-		      while ($UserRow = mysql_fetch_assoc($UserResult))
+		      while ($UserRow = mysqli_fetch_assoc($UserResult))
 		      {
 			  $UserCount++;
 			  print("<div>{$UserRow['unionlog_dt']} " . CMmbUI::toHtml($UserRow['oldteam_name']) . ' ' .
@@ -336,7 +336,7 @@ if (!isset($MyPHPScript)) return;
 			  }
 			  print("</div>\r\n");
 		      }  
-		      mysql_free_result($UserResult);
+		      mysqli_free_result($UserResult);
 	
 	              if ($UserCount == 0)
 		      {
@@ -345,7 +345,7 @@ if (!isset($MyPHPScript)) return;
 		      print("</td>\r\n</tr>\r\n");
 		}
 
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 		
 		print("</table>\r\n");
 ?>

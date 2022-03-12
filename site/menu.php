@@ -166,8 +166,8 @@ if (!isset($MyPHPScript)) return;
 
 	function ShowEmail()
 	{
-		var begstr = "<? echo substr(trim($_SERVER['SERVER_NAME']), 0, 4); ?>";
-		var endstr = "<? echo substr(trim($_SERVER['SERVER_NAME']), -3); ?>";
+		var begstr = "<?php echo substr(trim($_SERVER['SERVER_NAME']), 0, 4); ?>";
+		var endstr = "<?php echo substr(trim($_SERVER['SERVER_NAME']), -3); ?>";
 
 		begstr = begstr.replace("\.","site\@");
 		endstr = endstr.replace("\.ru","\.com");
@@ -267,11 +267,11 @@ if (!isset($MyPHPScript)) return;
 		$notAdmin = $Administrator ? "true" : "raid_registrationenddate is not null";
 		$sql = "select raid_id, raid_name from Raids where $notAdmin order by raid_id desc ";
 		$Result = MySqlQuery($sql);
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 			print('<option value="'.$Row['raid_id'].'" '.(($Row['raid_id'] == $RaidId) ? 'selected' : '').' onclick="/* javascript: ChangeRaid(); */">'.$Row['raid_name']."</option>\r\n");
 		}
-		mysql_free_result($Result);
+		mysqli_free_result($Result);
 	print("</select>\r\n");
 	print("</td></tr>\r\n");
 

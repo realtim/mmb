@@ -32,12 +32,12 @@ else
 // Устанавливаем часовой пояс по умолчанию
 date_default_timezone_set("Europe/Moscow");
 // Подключаемся к базе
-$ConnectionId = mysql_connect($ServerName, $WebUserName, $WebUserPassword);
-if ($ConnectionId <= 0) die(mysql_error());
+$connectionId = mysqli_connect($ServerName, $WebUserName, $WebUserPassword);
+if ($connectionId <= 0) die(mysqli_connection_error());
 // Устанавливаем кодировку для взаимодействия
-mysql_query('set names \'utf8\'', $ConnectionId);
+mysqli_query($connectionId, 'set names \'utf8\'');
 // Выбираем БД ММБ
-if (mysql_select_db($DBName, $ConnectionId) == "") die(mysql_error());
+if (mysqli_select_db($connectionId, $DBName) == "") die(mysqli_error($connectionId));
 
 
 // Обработка загруженного файла
@@ -63,11 +63,11 @@ if (isset($_FILES['android']))
 			if (is_numeric($line)) $author_id = intval($line); else $author_id = -1;
 			if ($author_id <= 0) die("Некорректный автор файла данных $line");
 			$sql = "SELECT user_password FROM Users WHERE user_id = $author_id AND user_hide = 0";
-			$Result = mysql_query($sql);
+			$Result = mysqli_query($connectionId, $sql);
 			if (!$Result) die("Автор файла данных $line отсутствует в базе");
-			$Row = mysql_fetch_assoc($Result);
+			$Row = mysqli_fetch_assoc($Result);
 			if (isset($Row['user_password'])) $password = $Row['user_password'];
-			mysql_free_result($Result);
+			mysqli_free_result($Result);
 			continue;
 		}
 		// Проверка пароля пользователя, от имени которого загружаем
@@ -105,7 +105,7 @@ if (isset($_FILES['android']))
 			// Получаем переменные
 			$values = explode(';', $line);
 			if (count($values) <> 6) die("Некорректное число параметров в строке #".$line_num." - ".$line);
-			foreach ($values as &$value) $value = mysql_real_escape_string(trim($value, '"'));
+			foreach ($values as &$value) $value = mysqli_real_escape_string($connectionId, trim($value, '"'));
 			if (is_numeric($values[0])) $operator_id = intval($values[0]); else $operator_id = -1;
 			if ($type == "TeamLevelPoints") $device_id = $values[4]; else $device_id = $values[5];
 			if (is_numeric($device_id)) $device_id = intval($device_id); else $device_id = -1;
@@ -120,53 +120,53 @@ if (isset($_FILES['android']))
 			if (!in_array($operator_id, $valid_operators))
 			{
 				$sql = "SELECT user_id FROM Users WHERE user_id = $operator_id AND user_hide = 0";
-				$Result = mysql_query($sql);
-				if (!$Result || mysql_num_rows($Result) <> 1)
+				$Result = mysqli_query($connectionId, $sql);
+				if (!$Result || mysqli_num_rows($Result) <> 1)
 					die("Несуществующий или удаленный автор данных $operator_id в строке #".$line_num." - ".$line);
-				mysql_free_result($Result);
+				mysqli_free_result($Result);
 				$valid_operators[] = $operator_id;
 			}
 			// Проверяем наличие в базе устройства для ввода данных
 			if (!in_array($device_id, $valid_devices))
 			{
 				$sql = "SELECT device_id FROM Devices WHERE device_id = $device_id";
-				$Result = mysql_query($sql);
-				if (!$Result || mysql_num_rows($Result) <> 1)
+				$Result = mysqli_query($connectionId, $sql);
+				if (!$Result || mysqli_num_rows($Result) <> 1)
 					die("Несуществующее устройство ввода данных $device_id в строке #".$line_num." - ".$line);
-				mysql_free_result($Result);
+				mysqli_free_result($Result);
 				$valid_devices[] = $device_id;
 			}
 			// Проверяем наличие активной точки в базе
 			$sql = "SELECT pointtype_id, levelpoint_order, distance_id, levelpoint_mindatetime, levelpoint_maxdatetime, scanpoint_id
 				FROM LevelPoints WHERE levelpoint_id = $point_id AND levelpoint_hide = 0";
-			$Result = mysql_query($sql);
-			if (!$Result || mysql_num_rows($Result) <> 1)
+			$Result = mysqli_query($connectionId, $sql);
+			if (!$Result || mysqli_num_rows($Result) <> 1)
 				die("Несуществующая или удаленная точка $point_id в строке #".$line_num." - ".$line);
-			$Row = mysql_fetch_assoc($Result);
+			$Row = mysqli_fetch_assoc($Result);
 			$pointtype_id = $Row['pointtype_id'];
 			$levelpoint_order = $Row['levelpoint_order'];
 			$distance_id = $Row['distance_id'];
 			$begtime = $Row['levelpoint_mindatetime'];
 			$endtime = $Row['levelpoint_maxdatetime'];
 			$scanpoint_id = $Row['scanpoint_id'];
-			mysql_free_result($Result);
+			mysqli_free_result($Result);
 			// Проверяем, что данные зарегистрированы на точке с известным скрипту типом
 			if (($pointtype_id < 1) || ($pointtype_id > 5))
 				die("Неподдерживаемый тип точки $pointtype_id в строке #".$line_num." - ".$line);
 
 			// Проверяем наличие неудаленной команды в базе
 			$sql = "SELECT distance_id, team_outofrange FROM Teams WHERE team_id = $team_id AND team_hide = 0";
-			$Result = mysql_query($sql);
-			if (!$Result || mysql_num_rows($Result) <> 1)
+			$Result = mysqli_query($connectionId, $sql);
+			if (!$Result || mysqli_num_rows($Result) <> 1)
 				die("Несуществующая или удаленная команда $team_id в строке #".$line_num." - ".$line);
-			$Row = mysql_fetch_assoc($Result);
+			$Row = mysqli_fetch_assoc($Result);
 			// Проверяем, что команда могла оказаться на этой точке
 			if ($distance_id != $Row['distance_id'])
 				die("Команда с чужой дистанции ".$Row['distance_id']." на точке дистанции $distance_id в строке #".$line_num." - ".$line);
 			// Проверяем, что команда не выступает вне зачета
 			if ($Row['team_outofrange'] >= 1)
 				die("Команда $team_id вне зачета в строке #".$line_num." - ".$line);
-			mysql_free_result($Result);
+			mysqli_free_result($Result);
 
 			// проверяем на корректность время редактирования данных
 			$timestamp = strtotime($edit_time);
@@ -182,14 +182,14 @@ if (isset($_FILES['android']))
 		{
 			// Проверяем, является ли сошедший участник действующим членом команды
 			$sql = "SELECT teamuser_id FROM TeamUsers WHERE team_id = $team_id AND user_id = $user_id AND teamuser_hide = 0";
-			$Result = mysql_query($sql);
-			if (!$Result || mysql_num_rows($Result) <> 1)
+			$Result = mysqli_query($connectionId, $sql);
+			if (!$Result || mysqli_num_rows($Result) <> 1)
 				die("Сошедший участник $user_id отсутствует или удален в его команде $team_id в строке #".$line_num." - ".$line);
 			// Сохраняем teamuser_id и levelpoint_order для второго прохода скрипта
-			$Row = mysql_fetch_assoc($Result);
+			$Row = mysqli_fetch_assoc($Result);
 			$saved_teamuser_id[$line_num] = $Row['teamuser_id'];
 			$saved_levelpoint_order[$line_num] = $levelpoint_order;
-			mysql_free_result($Result);
+			mysqli_free_result($Result);
 			// Проверяем, что сход зарегистрирован на точке с судьями, а не на обычной точке с компостером
 			if ($pointtype_id == 5)
 				die("Сход участника $user_id на точке $point_id с обычным компостером (pointtype_id=5) в строке #".$line_num." - ".$line);
@@ -281,7 +281,7 @@ if (isset($_FILES['android']))
 
 		// Получаем переменные
 		$values = explode(';', $line);
-		foreach ($values as &$value) $value = mysql_real_escape_string(trim($value, '"'));
+		foreach ($values as &$value) $value = mysqli_real_escape_string($connectionId, trim($value, '"'));
 		$operator_id = intval($values[0]);
 		if ($type == "TeamLevelPoints") $device_id = intval($values[4]); else $device_id = intval($values[5]);
 		$point_id = intval($values[1]);
@@ -300,9 +300,9 @@ if (isset($_FILES['android']))
 			$sql = "SELECT levelpoint_order FROM TeamLevelDismiss, LevelPoints".
 				" WHERE LevelPoints.levelpoint_id = TeamLevelDismiss.levelpoint_id AND teamuser_id = $teamuser_id".
 				" ORDER BY levelpoint_order ASC LIMIT 1";
-			$Result = mysql_query($sql);
+			$Result = mysqli_query($connectionId, $sql);
 			unset($Old);
-			$Old = mysql_fetch_assoc($Result);
+			$Old = mysqli_fetch_assoc($Result);
 			if (isset($Old['levelpoint_order']))
 			{
 				// обновляем запись в базе только если точка схода из файла раньше, чем в базе
@@ -310,15 +310,15 @@ if (isset($_FILES['android']))
 				else $Record = "updated";
 			}
 			else $Record = "new";
-			mysql_free_result($Result);
+			mysqli_free_result($Result);
 			if ($Record == "updated")
 			{
 				// Участник сошел раньше, чем было известно до этого
 				// Удаляем все старые записи о сходе участника (теоретически это всего одна запись)
 				$d_updated++;
 				$sql = "DELETE FROM TeamLevelDismiss WHERE teamuser_id = $teamuser_id";
-				mysql_query($sql);
-				if (mysql_error()) die($sql.": ".mysql_error());
+				mysqli_query($connectionId, $sql);
+				if (mysqli_error($connectionId)) die($sql.": ".mysqli_error($connectionId));
 			}
 			if (($Record == "new") || ($Record == "updated"))
 			{
@@ -326,8 +326,8 @@ if (isset($_FILES['android']))
 				if ($Record == "new") $d_new++;
 				$sql = "INSERT INTO TeamLevelDismiss (teamleveldismiss_date, user_id, device_id, levelpoint_id, teamuser_id)
 					VALUES ('$edit_time', $operator_id, $device_id, $point_id, $teamuser_id)";
-				mysql_query($sql);
-				if (mysql_error()) die($sql.": ".mysql_error());
+				mysqli_query($connectionId, $sql);
+				if (mysqli_error($connectionId)) die($sql.": ".mysqli_error($connectionId));
 			}
 			else
 			{
@@ -335,30 +335,6 @@ if (isset($_FILES['android']))
 				$d_unchanged++;
 				continue;
 			}
-			// =============== Данные импортировали, теперь обновляем другие таблицы на основе импортированной записи
-			// В будущем этот блок можно будет удалить
-			//
-/*			// Выясняем порядковый номер контрольной точки, на которой зарегистрирован сход
-			$sql = "SELECT levelpoint_order FROM LevelPoints WHERE levelpoint_id = $point_id";
-			$Result = mysql_query($sql);
-			$Row = mysql_fetch_assoc($Result);
-			$new_levelpoint_order = $Row['levelpoint_order'];
-			mysql_free_result($Result);
-			// Ищем в базе уже зарегистрированные сходы члена команды и берем из них точку с наименьшим порядковым номером
-                        $sql = "SELECT MIN(levelpoint_order) AS old FROM TeamLevelDismiss, LevelPoints
-				WHERE teamuser_id = $teamuser_id AND TeamLevelDismiss.levelpoint_id = LevelPoints.levelpoint_id";
-			$Result = mysql_query($sql);
-			$Row = mysql_fetch_assoc($Result);
-			$old_levelpoint_order = $Row['old'];
-			mysql_free_result($Result);
-			// Если в импортированных данных участник сошел раньше, чем в базе, или в базе сходов не было - обновляем базу
-			if (($old_levelpoint_order == "") || ($new_levelpoint_order < $old_levelpoint_order))
-			{
-				$sql = "UPDATE TeamUsers SET levelpoint_id = $point_id WHERE teamuser_id = $teamuser_id";
-				mysql_query($sql);
-				if (mysql_error()) die($sql.": ".mysql_error());
-				$d_dismiss++;
-			}*/
 		}
 
 		// Данные о командах на контрольной точке
@@ -368,9 +344,9 @@ if (isset($_FILES['android']))
 			if (isset($saved_team_time[$line_num])) $team_time = $saved_team_time[$line_num];
 			// Выясняем, есть ли уже такая запись
 			$sql = "SELECT teamlevelpoint_date, teamlevelpoint_datetime FROM TeamLevelPoints WHERE levelpoint_id = $point_id AND team_id = $team_id";
-			$Result = mysql_query($sql);
+			$Result = mysqli_query($connectionId, $sql);
 			unset($Old);
-			$Old = mysql_fetch_assoc($Result);
+			$Old = mysqli_fetch_assoc($Result);
 			if (isset($Old['teamlevelpoint_date']))
 			{
 				// обновляем запись в базе только если дата ввода данных в файле больше, чем в базе
@@ -380,7 +356,7 @@ if (isset($_FILES['android']))
 				if (($Record == "updated") && $Old["teamlevelpoint_datetime"] && ($team_time == "NULL")) $Record = "unchanged";
 			}
 			else $Record = "new";
-			mysql_free_result($Result);
+			mysqli_free_result($Result);
 			// Если записи раньше не было - вставляем ее в таблицу
 			if ($Record == "new")
 			{
@@ -388,8 +364,8 @@ if (isset($_FILES['android']))
 				$n_new++;
 				$sql = "INSERT INTO TeamLevelPoints (teamlevelpoint_date, user_id, device_id, levelpoint_id, team_id, teamlevelpoint_datetime)
 					VALUES ('$edit_time', $operator_id, $device_id, $point_id, $team_id, '$team_time')";
-				mysql_query($sql);
-				if (mysql_error()) die($sql.": ".mysql_error());
+				mysqli_query($connectionId, $sql);
+				if (mysqli_error($connectionId)) die($sql.": ".mysqli_error($connectionId));
 			}
 			elseif ($Record == "updated")
 			{
@@ -398,8 +374,8 @@ if (isset($_FILES['android']))
 				$sql = "UPDATE TeamLevelPoints SET teamlevelpoint_date = '$edit_time', user_id = $operator_id,
 					device_id = $device_id, teamlevelpoint_datetime = '$team_time'
 					WHERE levelpoint_id = $point_id AND team_id = $team_id";
-				mysql_query($sql);
-				if (mysql_error()) die($sql.": ".mysql_error());
+				mysqli_query($connectionId, $sql);
+				if (mysqli_error($connectionId)) die($sql.": ".mysqli_error($connectionId));
 			}
 			else
 			{
@@ -412,16 +388,6 @@ if (isset($_FILES['android']))
 	echo "Команды: $n_new результатов добавлено, $n_updated изменено, $n_unchanged являются дубликатами<br>\n";
 	echo "Данные о сходах: $d_new добавлено, $d_updated изменено, $d_unchanged являются дубликатами<br>\n";
 //	echo "У $d_dismiss участников изменена информация о первой точке схода<br>\n";
-	// Определяем id марш-броска по последней обработанной команде
-/*	$sql = "SELECT raid_id FROM Teams, Distances WHERE team_id = $team_id AND Teams.distance_id = Distances.distance_id";
-	$Result = mysql_query($sql);
-	if (mysql_error()) die($sql.": ".mysql_error());
-	$Row = mysql_fetch_assoc($Result);
-	$raid_id = $Row['raid_id'];
-	mysql_free_result($Result);
-	// Пересчитываем общие результаты команд для данного марш-броска
-	RecalcTeamResultFromTeamLevelPoints($raid_id, "");
-	echo "Результаты марш-броска пересчитаны<br>\n&nbsp;";*/
 	echo "&nbsp;<br><strong>Не забудьте нажать на кнопку &quot;Пересчитать результаты&quot; после того, как загрузите все файлы с планшетов</strong><br>\n&nbsp;";
 }
 

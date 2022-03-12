@@ -162,7 +162,7 @@
 
 		$last = null;
 		$res = array();
-		while ($row = mysql_fetch_assoc($UserResult))
+		while ($row = mysqli_fetch_assoc($UserResult))
 		{
 			$teamId = $row['team_id'];
 			if ($teamId !== $last)
@@ -179,7 +179,7 @@
 				'teamuser_notstartraidid' => $row['teamuser_notstartraidid']);
 		}
 
-		mysql_free_result($UserResult);
+		mysqli_free_result($UserResult);
 
 	return $res;
     }
@@ -196,9 +196,9 @@
 		$TeamResult = MySqlQuery($sql);
 
 		$forgetful = array();
-		while ($row = mysql_fetch_assoc($TeamResult))
+		while ($row = mysqli_fetch_assoc($TeamResult))
 			array_push($forgetful, $row['team_id']);
-		mysql_free_result($TeamResult);
+		mysqli_free_result($TeamResult);
 		return $forgetful;
     }
 
@@ -217,7 +217,7 @@
         $skipTail = false;
 
         $sqlRes = MySqlQuery($sql);
-        while ($row = mysql_fetch_assoc($sqlRes))
+        while ($row = mysqli_fetch_assoc($sqlRes))
         {
                 if ($dist != $row['distance_id'])
                 {
@@ -234,7 +234,7 @@
 			$skipTail = true;
         }
 
-        mysql_free_result($sqlRes);
+        mysqli_free_result($sqlRes);
 
         return $res;
     }
@@ -282,12 +282,12 @@
 	$time = microtime(true) - $time;
 
 	$res = array();
-	while ($row = mysql_fetch_assoc($UserResult))
+	while ($row = mysqli_fetch_assoc($UserResult))
 		$res[$row['team_id']] = array('names' => $row['notlevelpoint_name'],
 		                              'distance' => $row['distance_id'],
 					      'last' => $row['last_done']);
 
-	mysql_free_result($UserResult);
+	mysqli_free_result($UserResult);
 
 	$distanceLists = GetDistancePoints($raidId, $checkPointId);
 
@@ -385,11 +385,11 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 
 
 ?>	
-         <form  name = "RaidTeamsForm"  action = "<? echo $MyPHPScript; ?>" method = "post">
+         <form  name = "RaidTeamsForm"  action = "<?php echo $MyPHPScript; ?>" method = "post">
          <input type = "hidden" name = "action" value = "ViewRaidTeams">
          <input type = "hidden" name = "TeamId" value = "0">
          <input type = "hidden" name = "UserId" value = "0">
-         <input type = "hidden" name = "RaidId" value = "<? echo $RaidId; ?>">
+         <input type = "hidden" name = "RaidId" value = "<?php echo $RaidId; ?>">
 
 <?
 
@@ -505,7 +505,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
                     order by distance_name";
 		//echo 'sql '.$sql;
 	$Result = MySqlQuery($sql);
-	if (mysql_num_rows($Result) > 1)
+	if (mysqli_num_rows($Result) > 1)
 	{
 		print('<select name="DistanceId" style = "margin-left: 10px; margin-right: 5px;"
                                onchange="DistanceIdChange();"  tabindex="'.(++$TabIndex).'">'."\r\n");
@@ -513,14 +513,14 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
                 $selected  =  (0 == $distanceId) ? ' selected' : '';
 		print("<option value=\"0\" $selected>дистанцию</option>\r\n");
 
-	        while ($Row = mysql_fetch_assoc($Result))
+	        while ($Row = mysqli_fetch_assoc($Result))
 		{
 		  $selected = ($Row['distance_id'] == $distanceId) ? ' selected' : '';
 		  print("<option value=\"{$Row['distance_id']}\" $selected>{$Row['distance_name']}</option>\r\n");
 		}
 		print("</select>\r\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 
 /*
 ============================= точки ===============================
@@ -577,13 +577,13 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 
 		if (!isset($_REQUEST['LevelPointId'])) $_REQUEST['LevelPointId'] = "";
 
-	        while ($Row = mysql_fetch_assoc($Result))
+	        while ($Row = mysqli_fetch_assoc($Result))
 		{
 			$levelpointselected = ($Row['levelpoint_id'] == $_REQUEST['LevelPointId']  ? 'selected' : '');
 			print("<option value = '{$Row['levelpoint_id']}' $levelpointselected>{$Row['distance_name']} {$Row['levelpoint_name']} ({$Row['teamscount']}/{$Row['teamuserscount']})</option>\r\n");
 		}
 		print('</select>'."\r\n");  
-		mysql_free_result($Result);		
+		mysqli_free_result($Result);		
 
 	} else {
          
@@ -710,7 +710,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 		print('<div align="left" style="margin-top:10px; margin-bottom:10px; font-size: 100%;">'."\r\n");
 
 		$Result = MySqlQuery($mapQuery);
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
 			$ImageLink = $Row['raidfile_name'];
 			$ImageComment = $Row['raidfile_comment'];
@@ -728,7 +728,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 			}
 			print('<a style="margin-right: 15px;" href="'.trim($MyStoreHttpLink).trim($ImageLink).'" title="'.trim($ImageComment).'" target = "_blank"><img src = "'.trim($MyStoreHttpLink).trim($tumbImg).'"  alt = "'.trim($ImageComment).'" height = "100"></a>'."\r\n");
 		}
-  		mysql_free_result($Result);
+  		mysqli_free_result($Result);
 		print('</div>'."\r\n");
 	}
 
@@ -775,9 +775,9 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
       // Информация о дистанции(ях)
       $sql = "SELECT d.distance_name, d.distance_data, d.distance_id FROM Distances d WHERE d.distance_hide = 0 AND d.raid_id = $RaidId";
       $Result = MySqlQuery($sql);
-      while ($Row = mysql_fetch_assoc($Result))
+      while ($Row = mysqli_fetch_assoc($Result))
           ShowDistanceHeader($RaidId, $Row['distance_id'], $Row['distance_name'], $Row['distance_data'], $lottery_count, $colspan);
-      mysql_free_result($Result);
+      mysqli_free_result($Result);
 
 
 	// ============ Вывод списка команд ===========================
@@ -945,7 +945,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 	
 	print('</tr>'."\r\n");
 	
-	$TeamsCount = mysql_num_rows($Result);
+	$TeamsCount = mysqli_num_rows($Result);
     // Меняем логику отображения места
     // Было 1111233345  Стало 1111455589
     $TeamPlace = 0;
@@ -953,7 +953,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
     $PredResult = '';
 	$PredDistanceId = 0;
 		
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 			$TrClass = ($TeamsCount%2 == 0) ? 'yellow': 'green';
 			$TeamsCount--;
@@ -1057,7 +1057,7 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 			// Конец проверки на вывод с сортировкой по месту
 			print("</tr>\r\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 
 	print("</table>\r\n");
 

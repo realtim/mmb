@@ -14,7 +14,7 @@ if (!CRights::canViewLogs($UserId))     // нет прав -- вываливае
 
 ?>
 
-<form name="LogsForm" action="<? echo $MyPHPScript; ?>" method="post">
+<form name="LogsForm" action="<?php echo $MyPHPScript; ?>" method="post">
     <input type="hidden" value="viewLogs" name="action"/>
     <div style="margin-bottom: 2ex;">
 
@@ -77,13 +77,13 @@ if (!CRights::canViewLogs($UserId))     // нет прав -- вываливае
     print("<table class='std'>\n");
     print("<tr class='gray head'><th>#</th><th width='50'>id</th><th>Время</th><th>Уровень</th><th>Пользователь</th><th>Операция</th><th>Сообщение</th><th>Длительность</th></tr>\n");
     $cnt = 0;
-    while ($Row = mysql_fetch_assoc($Result))
+    while ($Row = mysqli_fetch_assoc($Result))
     {
         print("<tr><td>$cnt</td><td>{$Row['logs_id']}</td><td>" . $Row['logs_dt'] /*date("Y-m-d hh:mm:ss", $Row['logs_dt'])*/ . "</td><td>{$Row['logs_level']}</td><td>{$Row['user_id']}</td><td>{$Row['logs_operation']}</td><td>" . nl2br($Row['logs_message']) . "</td><td>{$Row['logs_duration']}</td></tr>\n");
         $cnt++;
     }
 
-    mysql_free_result($Result);
+    mysqli_free_result($Result);
     if ($cnt == 0)
         print("<tr><td colspan='8'>Записей, подпадающих под условия, не найдено</td></tr>\n");
     print("</table>");

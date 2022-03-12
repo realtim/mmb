@@ -48,7 +48,7 @@ if (!isset($viewsubmode)) $viewsubmode = "";
                 $PredLinkType = '';
                 $LinkTextOnly = 0;
 
-		while ($Row = mysql_fetch_assoc($Result))
+		while ($Row = mysqli_fetch_assoc($Result))
 		{
                   // сменился ММБ
                   if ($PredRaid <> $Row['raid_name']) {
@@ -79,5 +79,5 @@ if (!isset($viewsubmode)) $viewsubmode = "";
 			  
 		}
 
-                mysql_free_result($Result);
+                mysqli_free_result($Result);
 ?>

@@ -1560,7 +1560,7 @@ elseif ($action == 'RecalculateLevels')
 	 $LevelDiscountPoints = "";
 	 $LevelDiscountValue = 0;
 	  
- 	 while ($Row = mysql_fetch_assoc($Result))
+ 	 while ($Row = mysqli_fetch_assoc($Result))
 	 {
 
 
@@ -1669,7 +1669,7 @@ elseif ($action == 'RecalculateLevels')
 
 	 }
          // Конец цикла 
-	 mysql_free_result($Result);
+	 mysqli_free_result($Result);
 }
 // ============ Впечатления  =============
 elseif ($action == 'ViewUsersLinksPage')

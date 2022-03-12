@@ -180,7 +180,7 @@ $RaidRulesLink = CSql::raidFileLink($RaidId, 1, false);
 	// Функция проверки правильности заполнения формы
 	function ValidateTeamDataForm()
 	{
-		document.TeamDataForm.action.value = '<? echo $NextActionName; ?>';
+		document.TeamDataForm.action.value = '<?php echo $NextActionName; ?>';
 		document.TeamDataForm.submit();
 
 		//return true;
@@ -380,12 +380,12 @@ if (!$DisabledDistance) {
 	print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
 	$sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
 		print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 
 	
@@ -395,12 +395,12 @@ if (!$DisabledDistance) {
 	print('<select name="DistanceDisabledId" class="leftmargin" tabindex="'.(++$TabIndex).'" disabled>'."\n");
 	$sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
 	$Result = MySqlQuery($sql);
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
 		print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
 	}
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print('</select>'."\n");
 
 }
@@ -506,7 +506,7 @@ if ($viewmode <> "Add")
 		where tu.teamuser_hide = 0 and team_id = $TeamId";
 	$Result = MySqlQuery($sql);
 
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 		$userName = CMmbUI::toHtml($Row['user_name']);
 		print('<div style="margin-top: 5px;">'."\n");
@@ -524,12 +524,12 @@ if ($viewmode <> "Add")
 			$ResultLevelPoints = MySqlQuery($sqllevelpoints);
 			$userlevelpointselected = ($Row['levelpoint_id'] == 0 ? ' selected' : '');
 			print('<option value="0"'.$userlevelpointselected.'>-</option>'."\n");
-			while ($RowLevelPoints = mysql_fetch_assoc($ResultLevelPoints))
+			while ($RowLevelPoints = mysqli_fetch_assoc($ResultLevelPoints))
 			{
 				$userlevelpointselected = ($RowLevelPoints['levelpoint_id'] == $Row['levelpoint_id'] ? 'selected' : '');
 				print('<option value="'.$RowLevelPoints['levelpoint_id'].'"'.$userlevelpointselected.'>'.$RowLevelPoints['levelpoint_name']."</option>\n");
 			}
-			mysql_free_result($ResultLevelPoints);
+			mysqli_free_result($ResultLevelPoints);
 			print('</select>'."\n");
 		}
 
@@ -543,7 +543,7 @@ if ($viewmode <> "Add")
 		print("</div>\n");
 	}
 
-	mysql_free_result($Result);
+	mysqli_free_result($Result);
 	print("</td></tr>\n");
 }
 // Закончили вывод списка участников

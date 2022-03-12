@@ -56,13 +56,13 @@ if ($Administrator)
 
 $Result = MySqlQuery($sql);
 
-$RowsCount = mysql_num_rows($Result);
+$RowsCount = mysqli_num_rows($Result);
 
 
 if ($RowsCount > 0)
 {
 
-	while ($Row = mysql_fetch_assoc($Result))
+	while ($Row = mysqli_fetch_assoc($Result))
 	{
 	  print('<div class="team_res"><a href="?UserId='.$Row['user_id']."&RaidId=$RaidId\">".CMmbUI::toHtml($Row['user_name']).'</a> '.CMmbUI::toHtml($Row['user_city'])."\r\n");
 	  if ($Administrator)
@@ -78,7 +78,7 @@ if ($RowsCount > 0)
 	  print('<div class="input team_res">Не найдено</div>'."\r\n");
 }
 
-mysql_free_result($Result);
+mysqli_free_result($Result);
 
 ?>
 <!--		

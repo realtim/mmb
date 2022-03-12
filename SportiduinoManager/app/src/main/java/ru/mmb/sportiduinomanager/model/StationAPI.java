@@ -22,15 +22,11 @@ public final class StationAPI extends StationRaw {
     /**
      * Station mode for an ordinary control point.
      */
-    public static final int MODE_START_POINT = 1;
+    public static final int MODE_OTHER_POINT = 1;
     /**
      * Station mode for control point at distance segment end.
      */
     public static final int MODE_FINISH_POINT = 2;
-    /**
-     * Pseudo mode for records received by reading chip info.
-     */
-    public static final int MODE_CHIP_INFO = 3;
     /**
      * Size of last teams buffer in station.
      */
@@ -524,9 +520,10 @@ public final class StationAPI extends StationRaw {
                 teamNumber = (int) byteArray2Long(response, 13, 14);
                 initTime = byteArray2Long(response, 17, 20);
                 teamMask = (int) byteArray2Long(response, 21, 22);
+                // Create fake punch record  at chip init point
+                mRecords.addRecord(this, initTime, teamNumber, teamMask, 0, initTime);
             }
             // Get punches from fetched pages
-            mMode = MODE_CHIP_INFO;
             for (int i = punchesOffset; i < response.length; i = i + 4) {
                 final int pointNumber = response[i];
                 final long pointTime = byteArray2Long(response, i + 1, i + 3);
@@ -539,7 +536,6 @@ public final class StationAPI extends StationRaw {
                         pointTime + (initTime & 0xff000000));
             }
             punchesOffset = 9;
-            mMode = MODE_INIT_CHIPS;
             // Detect how many pages we still need to read in next cycle
             pageFrom += pagesInRequest;
             pagesLeft -= pagesInRequest;

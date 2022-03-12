@@ -243,7 +243,6 @@ if (!isset($MyPHPScript)) return;
             $newUserId = MySqlQuery($sql);
 
 //	        echo $UserId;
-//          $UserId = mysql_insert_id($Connection);
             if ($newUserId <= 0) {
                 CMmb::setErrorSm('Ошибка записи нового пользователя.');
                 return;
@@ -501,7 +500,8 @@ if (!isset($MyPHPScript)) return;
         if ($FindString == 'все-все' or $FindString == 'все-все-все') {
             $sqlFindString = '';
         } else {
-            $sqlFindString = mysql_real_escape_string($FindString);
+            $connectionId = CSql::getConnection();
+            $sqlFindString = mysqli_real_escape_string($connectionId, $FindString);
         }
 
          
@@ -887,8 +887,8 @@ if (!isset($MyPHPScript)) return;
         // Raids: raid_id, raid_name, raid_registrationenddate
         $Sql = "select d.device_id, d.device_name, d.user_id, u.user_name, u.user_password from Devices d inner join Users u on d.user_id = u.user_id  where d.device_id = $pDeviceId";
         $Result = MySqlQuery($Sql);
-        while ( ( $Row = mysql_fetch_assoc($Result) ) ) { $data["Devices"][] = $Row; }
-        mysql_free_result($Result);
+        while ( ( $Row = mysqli_fetch_assoc($Result) ) ) { $data["Devices"][] = $Row; }
+        mysqli_free_result($Result);
 
         // Заголовки, чтобы скачивать можно было и на мобильных устройствах просто браузером (который не умеет делать Save as...)
         header("Content-Type: application/octet-stream");

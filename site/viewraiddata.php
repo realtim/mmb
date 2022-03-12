@@ -189,7 +189,7 @@ else
 	// Функция проверки правильности заполнения формы
 	function ValidateRaidDataForm()
 	{
-		document.RaidDataForm.action.value = "<? echo $NextActionName; ?>";
+		document.RaidDataForm.action.value = "<?php echo $NextActionName; ?>";
 		return true;
 	}
 	// Конец проверки правильности заполнения формы
@@ -385,7 +385,7 @@ if ($viewmode != 'Add')
 		from Distances d
 		where d.distance_hide = 0 and d.raid_id = $RaidId";
 	$DistanceResult = MySqlQuery($sql);
-	while ($RowDistance = mysql_fetch_assoc($DistanceResult))
+	while ($RowDistance = mysqli_fetch_assoc($DistanceResult))
 	{
 
 		print('<form name="DistanceDataForm'.$RowDistance['distance_id'].'" action="'.$MyPHPScript.'" method="post">'."\n");
@@ -407,7 +407,7 @@ if ($viewmode != 'Add')
 		print("</td></tr>\r\n");
 		print("</table></form>\r\n");
 	}
-	mysql_free_result($DistanceResult);
+	mysqli_free_result($DistanceResult);
 	print("<br/>\r\n");
 	// Закончили вывод дистанций
 }
