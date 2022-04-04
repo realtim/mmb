@@ -2004,7 +2004,7 @@ function encode_header($str)
     where rd.raiddeveloper_hide = 0
        and rd.raid_id > d.raid_id
       and rd.user_id = tu.user_id
-      and rd.raid_excludefromrank = 0 
+      and r.raid_excludefromrank = 0 
   )
 
  */  
@@ -2040,7 +2040,7 @@ function encode_header($str)
             where rd.raiddeveloper_hide = 0
      					and rd.raid_id > d.raid_id
               and rd.user_id = tu.user_id
-              and rd.raid_excludefromrank = 0 
+              and r.raid_excludefromrank = 0 
           )
         )
       ) as r6
