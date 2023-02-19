@@ -1943,7 +1943,8 @@ function encode_header($str)
         // Обнуляем рейтинг  по всем пользовтелям
   	$sql = " update Users u	SET user_rank = NULL, user_r6 = NULL, 
   				user_minraidid = NULL,  user_maxraidid = NULL,
-  				user_noinvitation = NULL, user_maxnotstartraidid = NULL
+  				user_noinvitation = NULL, user_maxnotstartraidid = NULL,
+				user_amateur = 1
   		";
 
 	 $rs = MySqlQuery($sql);
@@ -2125,6 +2126,39 @@ function encode_header($str)
 	$rs = MySqlQuery($sql);
  
 	     
+	// теперь ставим признак, что пользователь не новичок, если участовал хотябы в одном ммб (включая те, что не в рейтинге)
+	$sql = "
+		update Users u
+		inner join 
+		    ( select tu.user_id
+		      from TeamUsers tu 
+		 	inner join Teams t      on tu.team_id = t.team_id	
+			inner join Distances d	on t.distance_id = d.distance_id
+		        inner join Raids r      on d.raid_id = r.raid_id
+			left outer join 
+			( select tld.teamuser_id
+			  from TeamLevelDismiss tld
+			    inner join LevelPoints lp
+			    on tld.levelpoint_id = lp.levelpoint_id
+			  group by tld.teamuser_id
+			  having MIN(lp.levelpoint_order) = 1
+			) dismiss
+			on  tu.teamuser_id = dismiss.teamuser_id
+		      where d.distance_hide = 0 
+  		        and dismiss.teamuser_id is null
+		        and COALESCE(t.team_dismiss, 0) = 0
+		        and tu.teamuser_hide = 0
+		        and t.team_hide = 0 
+		        and COALESCE(t.team_outofrange, 0) = 0
+	   	        and d.raid_id <= $maxRaidId
+	   	      group by tu.user_id
+		    ) a
+		on a.user_id = u.user_id
+		SET u.user_amateur = 0
+                ";
+
+	$rs = MySqlQuery($sql);
+ 	     
 	// теперь считаем  максимальный ключ ММБ по всем пользователям по невыходу на старт
 	$sql = "
 		update Users u
