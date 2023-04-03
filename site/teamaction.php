@@ -242,7 +242,7 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		$RowUser = CSql::singleRow($sqlUser);
 
 		$NotStartPreviousRaidId = ($RowUser['maxnotstartraidid'] > $RowUser['maxraidid']) ? $RowUser['maxnotstartraidid'] : 0;
-		$TeamUserNew = ($RowUser['amateur'] > 0) ? 0 : 1;
+		$TeamUserNew = ($RowUser['amateur'] > 0) ? 1 : 0;
 	}
 	
 	
