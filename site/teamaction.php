@@ -234,14 +234,15 @@ elseif ($action == 'TeamChangeData' or $action == "AddTeam")
 		// Если ммбб не участия больше чем максимальный - его и заносим, как последний неучастия (не переркытый участием)
 		$sqlUser = "select COALESCE(u.user_minraidid, 0) as minraidid,  
 				COALESCE(u.user_maxraidid, 0) as maxraidid,  
-				COALESCE(u.user_maxnotstartraidid, 0) as maxnotstartraidid
+				COALESCE(u.user_maxnotstartraidid, 0) as maxnotstartraidid,
+				COALESCE(u.user_amateur, 1) as amateur  
 			from Users u
 			where u.user_id = $NewUserId";
 
 		$RowUser = CSql::singleRow($sqlUser);
 
 		$NotStartPreviousRaidId = ($RowUser['maxnotstartraidid'] > $RowUser['maxraidid']) ? $RowUser['maxnotstartraidid'] : 0;
-		$TeamUserNew = ($RowUser['minraidid'] > 0) ? 0 : 1;
+		$TeamUserNew = ($RowUser['amateur'] > 0) ? 1 : 0;
 	}
 	
 	
