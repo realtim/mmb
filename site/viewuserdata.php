@@ -300,7 +300,7 @@ if (!isset($MyPHPScript)) return;
 		}
 		else
 		{
-			alert("Поле 'Адрес ссылки' должно содержать адрес, например http://your-site.com/mmb.html");
+			alert("Поле 'Адрес ссылки' должно содержать адрес, например https://your-site.com/mmb.html");
 		}
 	}
 
