@@ -1,0 +1,43 @@
+networks:
+    mmb-backend-network:
+        driver: bridge
+
+services:
+    php:
+        build:
+            context: environment/dev/php
+            dockerfile: Dockerfile
+        volumes:
+            - ../site:/var/www/html
+        ports:
+            - 9900:80
+        networks:
+            - mmb-backend-network
+
+    mailer:
+        image: mailhog/mailhog
+        restart: unless-stopped
+        ports:
+            - 9901:8025
+        networks:
+            - mmb-backend-network
+
+    mysql:
+        build:
+            context: environment/dev/mysql
+            dockerfile: Dockerfile
+        command: --default-authentication-plugin=mysql_native_password
+        ports:
+            - 333:3306
+        environment:
+            MYSQL_ROOT_PASSWORD: "root"
+            MYSQL_DATABASE: mmb
+            MYSQL_USER: mmb
+            MYSQL_PASSWORD: mmb
+        volumes:
+            - mysql-data:/var/lib/mysql:delegated
+            - ../database:/sql:delegated
+        networks:
+            - mmb-backend-network
+volumes:
+    mysql-data:
