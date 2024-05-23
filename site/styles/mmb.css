@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    padding: 10px 0px 0px 0px;
+    padding: 10px 0 0 0;
     background-color: #DFDFDF;
 }
 
@@ -92,39 +92,39 @@ tr.green {
 }
 
 table.body {
-    margin: 0px 0px 0px 0px;
+    margin: 0 0 0 0;
 }
 
 table.status {
-    margin: 0px 0px 10px 0px;
+    margin: 0 0 10px 0;
     background-color: #D6D6D6;
 }
 
 table.status td {
-    padding: 3px 0px 3px 0px;
+    padding: 3px 0 3px 0;
 }
 
 table.menu {
-    margin: 5px 0px 0px 0px;
+    margin: 5px 0 0 0;
     width: 100%
 }
 
 table.menu td {
-    padding: 5px 0px 0px 0px;
+    padding: 5px 0 0 0;
 }
 
 table.menu td.input {
-    padding: 5px 0px 0px 0px;
+    padding: 5px 0 0 0;
     font-size: 80%;
 }
 
 table.bottom {
-    margin: 20px 0px 0px 0px;
+    margin: 20px 0 0 0;
     background-color: #D6D6D6;
 }
 
 table.bottom td {
-    padding: 3px 0px 3px 0px;
+    padding: 3px 0 3px 0;
 }
 
 table.content td.body {
@@ -132,7 +132,7 @@ table.content td.body {
 }
 
 table.content td.label {
-    padding: 0px 10px 0px 5px;
+    padding: 0 10px 0 5px;
 }
 
 table.content td.input {
@@ -146,7 +146,7 @@ table.content td.header {
 }
 
 .leftmargin {
-    margin: 0px 0px 0px 5px;
+    margin: 0 0 0 5px;
 }
 
 .hline {
@@ -194,7 +194,7 @@ div.ErrorText {
     font-weight: normal;
     color: #000000;
     margin-bottom: 10px;
-    margin-top: 0px;
+    margin-top: 0;
     padding-top: 5px;
     padding-bottom: 5px;
     border-top-style: dotted;
@@ -237,13 +237,13 @@ div.comment {
 
 table.std {
     border-collapse: separate;
-    border-spacing: 0px;
+    border-spacing: 0;
     border: 1px outset #808080;
     font-size: 80%;
 }
 
 table.std td {
-    padding: 5px 0px 2px 5px;
+    padding: 5px 0 2px 5px;
     border: 1px inset #808080;
 }
 
