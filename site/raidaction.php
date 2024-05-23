@@ -1,199 +1,192 @@
 <?php
-// +++++++++++ Обработчик действий, связанных с марш-бросокм +++++++++++++++++++++
+
+/**
+ * +++++++++++ Обработчик действий, связанных с марш-бросокм +++++++++++++++++++++
+ *
+ * @var int|null $Administrator
+ * @var int|null $Moderator
+ * @var int $RaidId
+ * @var string $action
+ */
 
 // Выходим, если файл был запрошен напрямую, а не через include
-if (!isset($MyPHPScript)) return;
+if (!isset($MyPHPScript)) {
+    return;
+}
 
-function raidError($message)
+function raidError($message): void
 {
-	global $viewmode;
-	$viewmode = "Edit";
-	CMmb::setErrorSm($message);
+    global $viewmode;
+    $viewmode = "Edit";
+    CMmb::setErrorSm($message);
 }
 
 // ============ Обработка возможности создания нового марш-броска команды =====================
-if ($action == "RegisterNewRaid")
-{
-	CMmb::setViews('ViewRaidData', 'Add');
+if ($action === "RegisterNewRaid") {
+    CMmb::setViews('ViewRaidData', 'Add');
 
-	// Проверка возможности создать сарш бросок
-	if (!$Administrator)
-	{
-		CMmb::setMessage('Нет прав на создание марш-броска.');
-		return;
-	}
-}
-// ============ Информация о ММБ (форма) =============
-elseif ($action == 'RaidInfo')
-{
-	if ($RaidId <= 0)
-	{
-		CMmb::setErrorMessage('Id ММБ не указан');
-		return;
-	}
-	CMmb::setViews('ViewRaidData', '');
-}
-// ============ Изменение данных ММБ или запись нового ММБ (реакция на отправку формы) =============
-elseif ($action == 'RaidChangeData' or $action == "AddRaid")
-{
-	CMmb::setViews('ViewRaidData', ($action == "AddRaid") ? 'Add' : '');
-	// Общая проверка возможности редактирования
-	if (!$Administrator)
-	{
-		CMmb::setMessage('Нет прав на ввод или правку марш-броска');
-		return;
-	}
+    // Проверка возможности создать марш-бросок
+    if (!$Administrator) {
+        CMmb::setMessage('Нет прав на создание марш-броска.');
+        return;
+    }
+} elseif ($action === 'RaidInfo') {
+    // ============ Информация о ММБ (форма) =============
+    if ($RaidId <= 0) {
+        CMmb::setErrorMessage('Id ММБ не указан');
+        return;
+    }
+    CMmb::setViews('ViewRaidData', '');
+} elseif ($action === 'RaidChangeData' || $action === "AddRaid") {
+    // ============ Изменение данных ММБ или запись нового ММБ (реакция на отправку формы) =============
+    CMmb::setViews('ViewRaidData', ($action === "AddRaid") ? 'Add' : '');
+    // Общая проверка возможности редактирования
+    if (!$Administrator) {
+        CMmb::setMessage('Нет прав на ввод или правку марш-броска');
+        return;
+    }
 
-	$pRaidName = $_POST['RaidName'];
-	$pRaidPeriod = $_POST['RaidPeriod'];
-	$pRaidRegistrationEndDate = $_POST['RaidRegistrationEndDate'];
-	$pClearRaidRegistrationEndDate = mmb_isOn($_POST, 'ClearRaidRegistrationEndDate');
-	//$pRaidLogoLink = $_POST['RaidLogoLink'];
-	//$pRaidRulesLink = $_POST['RaidRulesLink'];
-	$pRaidStartPointName = $_POST['RaidStartPointName'];
-	//$pRaidStartLink = $_POST['RaidStartLink'];
-	$pRaidFinishPointName = $_POST['RaidFinishPointName'];
-	$pRaidCloseDate = $_POST['RaidCloseDate'];
-	$pClearRaidCloseDate = mmb_isOn($_POST, 'ClearRaidCloseDate');
-	//$pRaidZnLink = $_POST['RaidZnLink'];
-        $pRaidDistancesCount = (int)$_POST['RaidDistancesCount'];
-        $pRaidNoShowResult = mmb_isOn($_POST, 'RaidNoShowResult');
-	$pRaidFilePrefix = $_POST['RaidFilePrefix'];
-        $pRaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
-        $pRaidMapPrice = (int)$_POST['RaidMapPrice'];
-	$pRaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
-	$pRaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
-	$pRaidBluetoothPIN = $_POST['RaidBluetoothPIN'];
+    $pRaidName = $_POST['RaidName'];
+    $pRaidPeriod = $_POST['RaidPeriod'];
+    $pRaidRegistrationEndDate = $_POST['RaidRegistrationEndDate'];
+    $pClearRaidRegistrationEndDate = mmb_isOn($_POST, 'ClearRaidRegistrationEndDate');
+    //$pRaidLogoLink = $_POST['RaidLogoLink'];
+    //$pRaidRulesLink = $_POST['RaidRulesLink'];
+    $pRaidStartPointName = $_POST['RaidStartPointName'];
+    //$pRaidStartLink = $_POST['RaidStartLink'];
+    $pRaidFinishPointName = $_POST['RaidFinishPointName'];
+    $pRaidCloseDate = $_POST['RaidCloseDate'];
+    $pClearRaidCloseDate = mmb_isOn($_POST, 'ClearRaidCloseDate');
+    //$pRaidZnLink = $_POST['RaidZnLink'];
+    $pRaidDistancesCount = (int)$_POST['RaidDistancesCount'];
+    $pRaidNoShowResult = mmb_isOn($_POST, 'RaidNoShowResult');
+    $pRaidFilePrefix = $_POST['RaidFilePrefix'];
+    $pRaidReadOnlyHoursBeforeStart = (int)$_POST['RaidReadOnlyHoursBeforeStart'];
+    $pRaidMapPrice = (int)$_POST['RaidMapPrice'];
+    $pRaidNoStartPrice = (int)$_POST['RaidNoStartPrice'];
+    $pRaidTeamsLimit = (int)$_POST['RaidTeamsLimit'];
+    $pRaidBluetoothPIN = $_POST['RaidBluetoothPIN'];
 
-/*
-        // Обрабатываем зхагрузку файла эмблемы
-        if (!empty($_FILES['logofile']['name']) and ($_FILES['logofile']['size'] > 0))
-	{
-           if  (substr(trim($_FILES['logofile']['type']), 0, 6) != 'image/') 
-	   {
-			CMmb::setErrorSm('Недопустимый тип файла.');
-			return;
-	   }
-            
-	   $UploadFile = $MyStoreFileLink . basename($_FILES['logofile']['name']);
-
-	   if (move_uploaded_file($_FILES['logofile']['tmp_name'], $UploadFile))
-	   {
-		// Успешно загрузили файл
-		$pRaidLogoLink = $MyStoreHttpLink . basename($_FILES['logofile']['name']);
-	   } else {
-			CMmb::setErrorSm('Ошибка загрузки файла с эмблемой ММБ.');
-			return;
+    /*
+            // Обрабатываем загрузку файла эмблемы
+            if (!empty($_FILES['logofile']['name']) and ($_FILES['logofile']['size'] > 0))
+        {
+               if  (substr(trim($_FILES['logofile']['type']), 0, 6) != 'image/')
+           {
+                CMmb::setErrorSm('Недопустимый тип файла.');
+                return;
            }
-           // Конец проверки на успешность загрузки
-	}
-        // Конец проверки на указание в форме файла для загрузки эмблемы
-	*/
-	// Проверка на пустое название 
-	if  (empty($pRaidName)) 
-	{
-		CMmb::setErrorSm('Пустое название ММБ.');
-		return;
-	}
-        // Конец проверки на пустое название 
-	
-	// Проверка на число дистанций
-	if  ($pRaidDistancesCount <= 0) 
-	{
-		CMmb::setErrorSm('Число дистанций должно быть положительным.');
-		return;
-	}
-        // Конец проверки на число дистанций
-	
-	
-	/*
 
-        // Обрабатываем зхагрузку файла положения
+           $UploadFile = $MyStoreFileLink . basename($_FILES['logofile']['name']);
+
+           if (move_uploaded_file($_FILES['logofile']['tmp_name'], $UploadFile))
+           {
+            // Успешно загрузили файл
+            $pRaidLogoLink = $MyStoreHttpLink . basename($_FILES['logofile']['name']);
+           } else {
+                CMmb::setErrorSm('Ошибка загрузки файла с эмблемой ММБ.');
+                return;
+               }
+               // Конец проверки на успешность загрузки
+        }
+            // Конец проверки на указание в форме файла для загрузки эмблемы
+        */
+    // Проверка на пустое название
+    if (empty($pRaidName)) {
+        CMmb::setErrorSm('Пустое название ММБ.');
+        return;
+    }
+    // Конец проверки на пустое название
+
+    // Проверка на число дистанций
+    if ($pRaidDistancesCount <= 0) {
+        CMmb::setErrorSm('Число дистанций должно быть положительным.');
+        return;
+    }
+    // Конец проверки на число дистанций
+
+    /*
+
+        // Обрабатываем загрузку файла положения
         if (!empty($_FILES['rulesfile']['name']) and ($_FILES['rulesfile']['size'] > 0))
-	{
+    {
 
-           if  (substr(trim($_FILES['rulesfile']['type']), 0, 9) != 'text/html') 
-	   {
-			CMmb::setErrorSm('Недопустимый тип файла.');
-			return;
-	   }
-            
-	   $UploadFile = $MyStoreFileLink . basename($_FILES['rulesfile']['name']);
+           if  (substr(trim($_FILES['rulesfile']['type']), 0, 9) != 'text/html')
+       {
+            CMmb::setErrorSm('Недопустимый тип файла.');
+            return;
+       }
 
-	   if (move_uploaded_file($_FILES['rulesfile']['tmp_name'], $UploadFile))
-	   {
-		// Успешно загрузили файл
-		$pRaidRulesLink = $MyStoreHttpLink . basename($_FILES['rulesfile']['name']);
-	   } else {
-			CMmb::setErrorSm('Ошибка загрузки файла с положением ММБ.');
-			return;
+       $UploadFile = $MyStoreFileLink . basename($_FILES['rulesfile']['name']);
+
+       if (move_uploaded_file($_FILES['rulesfile']['tmp_name'], $UploadFile))
+       {
+        // Успешно загрузили файл
+        $pRaidRulesLink = $MyStoreHttpLink . basename($_FILES['rulesfile']['name']);
+       } else {
+            CMmb::setErrorSm('Ошибка загрузки файла с положением ММБ.');
+            return;
            }
            // Конец проверки на успешность загрузки
-	}
-        // Конец проверки на указание в форме файла для загрузки положэние
-
-	
+    }
+        // Конец проверки на указание в форме файла для загрузки положение
 */
-		
-	// Добавляем/изменяем марш-бросок в базе
 
-	if ($action == "AddRaid")
-	// Новый ММБ
-	{
+    // Добавляем/изменяем марш-бросок в базе
 
-
-		// Проверяем, нет ли уже ММБ с таким названием
-		$sql = "select count(*) as resultcount
+    if ($action === "AddRaid") // Новый ММБ
+    {
+        // Проверяем, нет ли уже ММБ с таким названием
+        $sql = "select count(*) as resultcount
 			from Raids r
 			where  trim(raid_name) = '$pRaidName'";
 
-		if (CSql::singleValue($sql, 'resultcount') > 0)
-		{
-			CMmb::setErrorSm('Уже есть ММБ с таким названием.');
-			return;
-		}
-                // Конец проверки на  повтор имени
+        if (CSql::singleValue($sql, 'resultcount') > 0) {
+            CMmb::setErrorSm('Уже есть ММБ с таким названием.');
+            return;
+        }
+        // Конец проверки на повтор имени
 
-/*
-		$sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
-		                           raid_logolink, raid_ruleslink, raid_startpoint, 
-					   raid_startlink, raid_finishpoint, raid_closedate,
-					   raid_znlink, raid_noshowresult, raid_fileprefix,
-					   raid_readonlyhoursbeforestart
-					   )
-			values (trim('".$pRaidName."'), trim('".$pRaidPeriod."')  ";
-		
-		if ($pClearRaidRegistrationEndDate == 1 or empty($pRaidRegistrationEndDate)) 
-		{	
-			$sql.=  ", NULL ";
-		} else {
-			$sql.=  ", '".$pRaidRegistrationEndDate."'";
-		}
-		$sql.= ", trim('".$pRaidLogoLink."') ";
-		$sql.= ", trim('".$pRaidRulesLink."') ";
-		$sql.= ", trim('".$pRaidStartPointName."') ";
-		$sql.= ", trim('".$pRaidStartLink."') ";
-		$sql.= ", trim('".$pRaidFinishPointName."') ";
+        /*
+                $sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate,
+                                           raid_logolink, raid_ruleslink, raid_startpoint,
+                               raid_startlink, raid_finishpoint, raid_closedate,
+                               raid_znlink, raid_noshowresult, raid_fileprefix,
+                               raid_readonlyhoursbeforestart
+                               )
+                    values (trim('".$pRaidName."'), trim('".$pRaidPeriod."')  ";
 
-		if ($pClearRaidCloseDate == 1 or empty($pRaidCloseDate)) 
-		{	
-			$sql.=  ", NULL ";
-		} else {
-			$sql.=  ", '".$pRaidCloseDate."'";
-		}
-	
-		$sql.= ", trim('".$pRaidZnLink."') ";
-		$sql.= ", ".$pRaidNoShowResult;
-		$sql.= ", trim('".$pRaidFilePrefix."') " ;
-		$sql.= ", ".$pRaidReadOnlyHoursBeforeStart;
-		$sql.= ")";
+                if ($pClearRaidRegistrationEndDate == 1 or empty($pRaidRegistrationEndDate))
+                {
+                    $sql.=  ", NULL ";
+                } else {
+                    $sql.=  ", '".$pRaidRegistrationEndDate."'";
+                }
+                $sql.= ", trim('".$pRaidLogoLink."') ";
+                $sql.= ", trim('".$pRaidRulesLink."') ";
+                $sql.= ", trim('".$pRaidStartPointName."') ";
+                $sql.= ", trim('".$pRaidStartLink."') ";
+                $sql.= ", trim('".$pRaidFinishPointName."') ";
+
+                if ($pClearRaidCloseDate == 1 or empty($pRaidCloseDate))
+                {
+                    $sql.=  ", NULL ";
+                } else {
+                    $sql.=  ", '".$pRaidCloseDate."'";
+                }
+
+                $sql.= ", trim('".$pRaidZnLink."') ";
+                $sql.= ", ".$pRaidNoShowResult;
+                $sql.= ", trim('".$pRaidFilePrefix."') " ;
+                $sql.= ", ".$pRaidReadOnlyHoursBeforeStart;
+                $sql.= ")";
 
 
-*/
-		$regEndDate = ($pClearRaidRegistrationEndDate == 1 or empty($pRaidRegistrationEndDate)) ? 'NULL' : "'$pRaidRegistrationEndDate'";
-		$closeDate = ($pClearRaidCloseDate == 1 or empty($pRaidCloseDate)) ? 'NULL' : "'$pRaidCloseDate'";
+        */
+        $regEndDate = ($pClearRaidRegistrationEndDate == 1 || empty($pRaidRegistrationEndDate)) ? 'NULL' : "'$pRaidRegistrationEndDate'";
+        $closeDate = ($pClearRaidCloseDate == 1 || empty($pRaidCloseDate)) ? 'NULL' : "'$pRaidCloseDate'";
 
-                $sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
+        $sql = "insert into Raids (raid_name, raid_period, raid_registrationenddate, 
 		                           raid_startpoint, raid_finishpoint, raid_closedate,
 					   raid_noshowresult, raid_fileprefix,
 					   raid_readonlyhoursbeforestart, raid_mapprice, 
@@ -206,88 +199,70 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 				, $pRaidReadOnlyHoursBeforeStart, $pRaidMapPrice
 				, $pRaidNoStartPrice, $pRaidTeamsLimit, trim('$pRaidBluetoothPIN'))";
 
+        // При insert должен вернуться последний id - это реализовано в MySqlQuery
+        $RaidId = MySqlQuery($sql);
+        GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
 
-		// При insert должен вернуться послений id - это реализовано в MySqlQuery
+        if ($RaidId <= 0) {
+            CMmb::setErrorSm('Ошибка записи нового ММБ.');
+            return;
+        }
 
-                //  echo $sql;
+        // Добавляем дистанции
+        if ($pRaidDistancesCount == 1) {
+            $sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink, distance_hide) 
+			values ($RaidId, 'Общая', '','', 0)";
 
-		$RaidId = MySqlQuery($sql);
-		GetPrivileges($SessionId, $RaidId, $TeamId, $UserId, $Administrator, $TeamUser, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange);
+            $rs = MySqlQuery($sql);
+        } else {
+            $AddDistanceCounter = 0;
+            while ($AddDistanceCounter < $pRaidDistancesCount) {
+                $AddDistanceCounter++;
 
-		if ($RaidId <= 0)
-		{
-			CMmb::setErrorSm('Ошибка записи нового ММБ.');
-			return;
-		} else {
-		
-		    // Добавляем дистанции
-                    if  ($pRaidDistancesCount == 1)
-		    {
-				$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink, distance_hide) 
-				        values ($RaidId, 'Общая', '','', 0)";
-		    
-				$rs = MySqlQuery($sql);
-		    
-		    } else {
+                $sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink, distance_hide) 
+			values ($RaidId, 'Дистанция$AddDistanceCounter', '','', 0)";
 
-			$AddDistanceCounter =  0;
-			while ($AddDistanceCounter < $pRaidDistancesCount) 
-			{
-				$AddDistanceCounter++;
-			
-				$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink, distance_hide) 
-				        values ($RaidId, 'Дистанция$AddDistanceCounter', '','', 0)";
-
-				// echo $sql;
-				$rs = MySqlQuery($sql);
-		    
-		         }
-                     }
-		    // Конец добавления дистанций 
-		}
-                // Конец проверки успешной записи ММБ
+                $rs = MySqlQuery($sql);
+            }
+        }
+        // Конец добавления дистанций
+        // Конец проверки успешной записи ММБ
 
 //		$sql = "insert into TeamUsers (team_id, user_id) values (".$TeamId.", ".$NewUserId.")";
 //		MySqlQuery($sql);
-		// Теперь нужно открыть на просмотр
-		$viewmode = "";
-	}
-	else
-	// Изменения в уже существующем ММБ
-	{
-		// Проверяем, что текущее чимсло дистанций не больше, чем указано
-		$sql = "select count(*) as resultcount
+        // Теперь нужно открыть на просмотр
+        $viewmode = "";
+    } else // Изменения в уже существующем ММБ
+    {
+        // Проверяем, что текущее число дистанций не больше, чем указано
+        $sql = "select count(*) as resultcount
 			from Distances d
 			where distance_hide = 0 and raid_id = $RaidId";
 
-		$NowDistancesCounter = CSql::singleValue($sql, 'resultcount');
-		if ($NowDistancesCounter > $pRaidDistancesCount)
-		{
-			CMmb::setErrorSm('Дистанций не может быть меньше, чем уже создано.');
-			return;
+        $NowDistancesCounter = CSql::singleValue($sql, 'resultcount');
+        if ($NowDistancesCounter > $pRaidDistancesCount) {
+            CMmb::setErrorSm('Дистанций не может быть меньше, чем уже создано.');
+            return;
+        }
 
-                } else {
-                    // Добавляем дистанции
-                    $AddDistanceCounter =  $NowDistancesCounter;
-                    while ($AddDistanceCounter < $pRaidDistancesCount) 
-		    {
-			$AddDistanceCounter++;
-			
-			$sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink, distance_hide) 
-			        values ($RaidId, 'Дистанция$AddDistanceCounter', '','', 0)";
+        // Добавляем дистанции
+        $AddDistanceCounter = $NowDistancesCounter;
+        while ($AddDistanceCounter < $pRaidDistancesCount) {
+            $AddDistanceCounter++;
 
-                        // echo $sql;
-			$rs = MySqlQuery($sql);
-		    }
-		    // Конец добавления дистанций 
-		}
-                // Конец проверки на число дистанций
+            $sql = "insert into Distances (raid_id, distance_name, distance_data, distance_resultlink, distance_hide) 
+				values ($RaidId, 'Дистанция$AddDistanceCounter', '','', 0)";
+
+            $rs = MySqlQuery($sql);
+        }
+        // Конец добавления дистанций
+        // Конец проверки на число дистанций
 
 
-		$regEndDate = ($pClearRaidRegistrationEndDate == 1) ? 'NULL' : "'$pRaidRegistrationEndDate'";
-		$closeDate = ($pClearRaidCloseDate == 1) ? 'NULL' : "'$pRaidCloseDate'";
+        $regEndDate = ($pClearRaidRegistrationEndDate == 1) ? 'NULL' : "'$pRaidRegistrationEndDate'";
+        $closeDate = ($pClearRaidCloseDate == 1) ? 'NULL' : "'$pRaidCloseDate'";
 
-		$sql = "update Raids set raid_name = trim('$pRaidName'),
+        $sql = "update Raids set raid_name = trim('$pRaidName'),
 				raid_period = trim('$pRaidPeriod'),
 				raid_registrationenddate = $regEndDate
 				, raid_startpoint =  trim('$pRaidStartPointName')
@@ -301,958 +276,807 @@ elseif ($action == 'RaidChangeData' or $action == "AddRaid")
 				, raid_fileprefix = trim('$pRaidFilePrefix')
 				, raid_btpin = trim('$pRaidBluetoothPIN')
 		        where raid_id = $RaidId";
-	    
-	        //       echo $sql;
-		$rs = MySqlQuery($sql);
-	}
-	// Конец разных вариантов действий при создании и редактировании ММБ
+
+        $rs = MySqlQuery($sql);
+    }
+    // Конец разных вариантов действий при создании и редактировании ММБ
 
 
-	// Если передали альтернативную страницу, на которую переходить (пока только одна возможность - на список команд)
-	$view = $_POST['view'];
-	if (empty($view)) $view = "ViewRaidData";
-}
-// ============ Отмена изменений в марш-броске ====================================
-elseif ($action == "CancelChangeRaidData")
-{
-	$view = "ViewRaidData";
-}
-// ============ Измененеия в дистанции ====================================
-elseif ($action == 'DistanceChangeData')
-{
-	CMmb::setViews('ViewRaidData', '');
-	// Общая проверка возможности редактирования
-	if (!$Administrator)
-	{
-		CMmb::setMessage('Нет прав на ввод или правку дистанций');
-		return;
-	}
-        $pDistanceId = (int)$_POST['DistanceId'];
+    // Если передали альтернативную страницу, на которую переходить (пока только одна возможность - на список команд)
+    $view = $_POST['view'];
+    if (empty($view)) {
+        $view = "ViewRaidData";
+    }
+} // ============ Отмена изменений в марш-броске ====================================
+elseif ($action === "CancelChangeRaidData") {
+    $view = "ViewRaidData";
+} // ============ Изменение в дистанции ====================================
+elseif ($action === 'DistanceChangeData') {
+    CMmb::setViews('ViewRaidData', '');
+    // Общая проверка возможности редактирования
+    if (!$Administrator) {
+        CMmb::setMessage('Нет прав на ввод или правку дистанций');
+        return;
+    }
+    $pDistanceId = (int)$_POST['DistanceId'];
 
-	// Проверка на ключ дистанции
-	if  ($pDistanceId <= 0) 
-	{
-			CMmb::setErrorSm('Не найден ключ дистанции.', '' /*'ReturnAfterError' */);
-			return;
-	}
-        // Конец проверки на пустое название 
+    // Проверка на ключ дистанции
+    if ($pDistanceId <= 0) {
+        CMmb::setErrorSm('Не найден ключ дистанции.', '' /*'ReturnAfterError' */);
+        return;
+    }
+    // Конец проверки на пустое название
 
-        		
-        $pDistanceName = $_POST['DistanceName'.$pDistanceId];
 
-	// Проверка на пустое название 
-	if (empty($pDistanceName)) 
-	{
-		CMmb::setErrorSm('Пустое название дистанции.', '' /*'ReturnAfterError' */);
-		return;
-	}
-        // Конец проверки на пустое название 
+    $pDistanceName = $_POST['DistanceName' . $pDistanceId];
 
-        $pDistanceData = $_POST['DistanceData'.$pDistanceId];
-	
-	$sql = "update Distances set distance_name = trim('$pDistanceName'),
+    // Проверка на пустое название
+    if (empty($pDistanceName)) {
+        CMmb::setErrorSm('Пустое название дистанции.', '' /*'ReturnAfterError' */);
+        return;
+    }
+    // Конец проверки на пустое название
+
+    $pDistanceData = $_POST['DistanceData' . $pDistanceId];
+
+    $sql = "update Distances set distance_name = trim('$pDistanceName'),
 	 			     distance_data = trim('$pDistanceData')
 		where distance_id = $pDistanceId";
-	    
-	// echo $sql;
-	$rs = MySqlQuery($sql);
-}
-// ============ Удаление дистанции  =============
-elseif ($action == 'HideDistance')
-{
-	if (!$Administrator)
-	{
-		CMmb::setMessage('Нет прав на удаление дистанции');
-		return;
-	}
 
-        $pDistanceId = mmb_validateInt($_POST, 'DistanceId');
+    $rs = MySqlQuery($sql);
+} elseif ($action === 'HideDistance') {
+    // ============ Удаление дистанции  =============
+    if (!$Administrator) {
+        CMmb::setMessage('Нет прав на удаление дистанции');
+        return;
+    }
 
-	if ($pDistanceId <= 0)
-	{
-		CMmb::setErrorSm('Не определён ключ дистанции.', '' /*'ReturnAfterError' */);
-		return;
-	}
+    $pDistanceId = mmb_validateInt($_POST, 'DistanceId');
 
-	CMmb::setViews('ViewRaidData', '');
-	
-        // Проверяем, что нет точек на эту дистацнию
-	$sql = "select count(*) as resultcount
+    if ($pDistanceId <= 0) {
+        CMmb::setErrorSm('Не определён ключ дистанции.', '' /*'ReturnAfterError' */);
+        return;
+    }
+
+    CMmb::setViews('ViewRaidData', '');
+
+    // Проверяем, что нет точек на эту дистанцию
+    $sql = "select count(*) as resultcount
 		from LevelPoints lp
 		where levelpoint_hide = 0 and distance_id = $pDistanceId";
 
-	if (CSql::singleValue($sql, 'resultcount') > 0)
-	{
-		CMmb::setErrorSm('Уже есть точки на эту дистанцию.', '' /*"ReturnAfterError"*/);
-		return;
-        }
+    if (CSql::singleValue($sql, 'resultcount') > 0) {
+        CMmb::setErrorSm('Уже есть точки на эту дистанцию.', '' /*"ReturnAfterError"*/);
+        return;
+    }
 
-        // Проверяем, что нет команд на эту дистацнию
-	$sql = "select count(*) as resultcount
+    // Проверяем, что нет команд на эту дистанцию
+    $sql = "select count(*) as resultcount
 		from Teams t
 		where team_hide = 0 and distance_id = $pDistanceId";
 
-	if (CSql::singleValue($sql, 'resultcount') > 0)
-	{
-		CMmb::setErrorSm('Уже есть команды на эту дистанцию.', '' /*'ReturnAfterError'*/);
-		return;
-        }
-	 
+    if (CSql::singleValue($sql, 'resultcount') > 0) {
+        CMmb::setErrorSm('Уже есть команды на эту дистанцию.', '' /*'ReturnAfterError'*/);
+        return;
+    }
 
-	// 22.06.2015 Заменил на удаление дистанции
-        $sql = "delete Distances where distance_id = $pDistanceId";
-        //    $sql = "update Distances set distance_hide = 1
-	//        where distance_id = ".$pDistanceId;   
-	MySqlQuery($sql);
+    // 22.06.2015 Заменил на удаление дистанции
+    $sql = "delete Distances where distance_id = $pDistanceId";
+    //    $sql = "update Distances set distance_hide = 1
+    //        where distance_id = ".$pDistanceId;
+    MySqlQuery($sql);
 
+    $view = "ViewRaidData";
+} elseif ($action === 'ViewRaidFilesPage') {
+    // ============ Загруженные файлы  =============
+    if ($RaidId <= 0) {
+        CMmb::setErrorMessage('Id ММБ не указан');
+        return;
+    }
+    CMmb::setViews('ViewRaidFiles', 'Add');
+} elseif ($action === 'AddRaidFile') {
+    // ============ Загрузка файла  =============
+    CMmb::setViews('ViewRaidFiles', 'Add');
 
-	$view = "ViewRaidData";
-}
-// ============ Загруженные файлы  =============
-elseif ($action == 'ViewRaidFilesPage')
-{
-	if ($RaidId <= 0)
-	{
-		CMmb::setErrorMessage('Id ММБ не указан');
-		return;
-	}
-	CMmb::setViews('ViewRaidFiles', 'Add');
-}
-// ============ Загрузка файда  =============
-elseif ($action == 'AddRaidFile')
-{
-	CMmb::setViews('ViewRaidFiles', 'Add');
+    // Общая проверка возможности редактирования
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на загрузку файла');
+        return;
+    }
 
+    $pFileTypeId = mmb_validateInt($_POST, 'FileTypeId', -1);
+    //$pLevelPointId = $_POST['LevelPointId'];
+    $pRaidFileComment = $_POST['RaidFileComment'];
 
-	// Общая проверка возможности редактирования
-	if (!$Administrator and !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на загрузку файла');
-		return;
-	}
-
-	$pFileTypeId = mmb_validateInt($_POST, 'FileTypeId', -1);
-	//$pLevelPointId = $_POST['LevelPointId'];
-	$pRaidFileComment = $_POST['RaidFileComment'];
-
-
-        // Обрабатываем загрузку файла
-	// Проверка, что файл загрузился
-        if (!empty($_FILES['raidfile']['name']) and ($_FILES['raidfile']['size'] > 0))
-	{
-		$pMimeType = trim($_FILES['raidfile']['type']);
-/*
-         Тут можно вставить проверки по типу звгружаемого файла
-           if  (substr(trim($_FILES['raidfile']['type']), 0, 6) != 'image/') 
-	   {
-			CMmb::setErrorSm('Недопустимый тип файла.');
-			return;
-	   }
-*/
-
-
-		$sql = "select  raid_fileprefix
+    // Обрабатываем загрузку файла
+    // Проверка, что файл загрузился
+    if (!empty($_FILES['raidfile']['name']) and ($_FILES['raidfile']['size'] > 0)) {
+        $pMimeType = trim($_FILES['raidfile']['type']);
+        /*
+                 Тут можно вставить проверки по типу загружаемого файла
+                   if  (substr(trim($_FILES['raidfile']['type']), 0, 6) != 'image/')
+               {
+                    CMmb::setErrorSm('Недопустимый тип файла.');
+                    return;
+               }
+        */
+        $sql = "select  raid_fileprefix
 	              from Raids
 	              where raid_id = $RaidId";
 
-		$Prefix = trim(CSql::singleValue($sql, 'raid_fileprefix'));
+        $Prefix = trim(CSql::singleValue($sql, 'raid_fileprefix'));
 
- 	        $pRaidFileName = trim(basename($_FILES['raidfile']['name']));
+        $pRaidFileName = trim(basename($_FILES['raidfile']['name']));
 
-                if (strlen($Prefix) > 0 && substr($pRaidFileName, 0, strlen($Prefix)) <> $Prefix)
-                        $pRaidFileName = $Prefix.$pRaidFileName;
+        if (strlen($Prefix) > 0 && substr($pRaidFileName, 0, strlen($Prefix)) <> $Prefix) {
+            $pRaidFileName = $Prefix . $pRaidFileName;
+        }
 
-	        $UploadFile = $MyStoreFileLink . $pRaidFileName;
+        $UploadFile = $MyStoreFileLink . $pRaidFileName;
 
-	        if (move_uploaded_file($_FILES['raidfile']['tmp_name'], $UploadFile))
-	        {
-		// Успешно загрузили файл
-			$pRaidFileLink = $MyStoreHttpLink . $pRaidFileName;
-	        } else {
-			CMmb::setErrorSm('Ошибка загрузки файла.');
-			return;
-                }
-                // Конец проверки на успешность загрузки
+        if (move_uploaded_file($_FILES['raidfile']['tmp_name'], $UploadFile)) {
+            // Успешно загрузили файл
+            $pRaidFileLink = $MyStoreHttpLink . $pRaidFileName;
+        } else {
+            CMmb::setErrorSm('Ошибка загрузки файла.');
+            return;
+        }
+        // Конец проверки на успешность загрузки
 
-                //Удаляем все ссылки на файл с таким же имененм
-	        $sql = "update RaidFiles set raidfile_hide = 1
-	                where raid_id = $RaidId and raidfile_name = '".trim($pRaidFileName)."'";
-			
-	        MySqlQuery($sql);
+        //Удаляем все ссылки на файл с таким же именем
+        $sql = "update RaidFiles set raidfile_hide = 1
+	                where raid_id = $RaidId and raidfile_name = '" . trim($pRaidFileName) . "'";
 
-		// Пишем ссылку на файл в таблицу
-		//  М.б. можно переделать на запись файла прямо в таблицу - это повышаетбезопасность, но
-		// надо тогда писать собственное отображение файлов
-		$sql = "insert into RaidFiles (raid_id, raidfile_mimetype, filetype_id,
+        MySqlQuery($sql);
+
+        // Пишем ссылку на файл в таблицу
+        //  М.б. можно переделать на запись файла прямо в таблицу - это повышает безопасность, но
+        // надо тогда писать собственное отображение файлов
+        $sql = "insert into RaidFiles (raid_id, raidfile_mimetype, filetype_id,
 			raidfile_uploaddt, raidfile_name, raidfile_comment, raidfile_hide)
 			values ($RaidId, '$pMimeType', $pFileTypeId, NOW(), '$pRaidFileName','$pRaidFileComment', 0)";
-	        // При insert должен вернуться послений id - это реализовано в MySqlQuery
-	        $RaidFileId = MySqlQuery($sql);
-	
-	        if ($RaidFileId <= 0)
-	        {
-			CMmb::setErrorSm('Ошибка записи нового файла.');
-			return;
-	        }
+        // При insert должен вернуться последний id - это реализовано в MySqlQuery
+        $RaidFileId = MySqlQuery($sql);
 
-		// делаем preview
-	        $point = strrpos($pRaidFileName, '.');
-	        if  ($point > 0 and (substr($pRaidFileName, $point) == '.png' or substr($pRaidFileName, $point) == '.gif')) 
-	        {
-		          $tumbImg = substr($pRaidFileName, 0, $point).'_tumb'.substr($pRaidFileName, $point);
-			//	echo $point.' '.$ImageLink.' '.$tumbImg;
-		          if (!is_file(trim($MyStoreFileLink).$tumbImg))
-		          {
-			//	echo '1111';
-			     image_resize(trim($MyStoreFileLink).trim($pRaidFileName), trim($MyStoreFileLink).trim($tumbImg), 1000, 100, 0);
-		          }
-	        }
-		// конец проверки на необходимость делать картинку preview
+        if ($RaidFileId <= 0) {
+            CMmb::setErrorSm('Ошибка записи нового файла.');
+            return;
+        }
+
+        // делаем preview
+        $point = strrpos($pRaidFileName, '.');
+        if (
+            $point > 0
+            && (substr($pRaidFileName, $point) === '.png' || substr($pRaidFileName, $point) === '.gif')
+        ) {
+            $tumbImg = substr($pRaidFileName, 0, $point) . '_tumb' . substr($pRaidFileName, $point);
+
+            if (!is_file(trim($MyStoreFileLink) . $tumbImg)) {
+                image_resize(trim($MyStoreFileLink) . trim($pRaidFileName), trim($MyStoreFileLink) . trim($tumbImg), 1000, 100, 0);
+            }
+        }
+        // конец проверки на необходимость делать картинку preview
 
 
-       }
-       // Конец проверки, что файл был загружен	
- }
- elseif ($action == "RaidFileInfo")  
- {
-       // Действие вызывается кнопокй "Править" в таблице файлов
-	 CMmb::setViews('ViewRaidFiles', 'Edit');
- }
- // ============ Правка файла  =============
-elseif ($action == 'RaidFileChange')
-{
-	if (!$Administrator and !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку файла');
-		return;
-	}
+    }
+    // Конец проверки, что файл был загружен
+} elseif ($action === "RaidFileInfo") {
+    // Действие вызывается кнопкой "Править" в таблице файлов
+    CMmb::setViews('ViewRaidFiles', 'Edit');
+} elseif ($action === 'RaidFileChange') {
+    // ============ Правка файла  =============
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку файла');
+        return;
+    }
 
-        $pRaidFileId = mmb_validateInt($_POST, 'RaidFileId');
-	if ($pRaidFileId <= 0)
-	{
-		CMmb::setErrorSm('Не определён ключ файла.');
-		return;
-	}
-	
-	$pFileTypeId = mmb_validateInt($_POST, 'FileTypeId');
-	//$pLevelPointId = $_POST['LevelPointId'];
-	$pRaidFileComment = $_POST['RaidFileComment'];
+    $pRaidFileId = mmb_validateInt($_POST, 'RaidFileId');
+    if ($pRaidFileId <= 0) {
+        CMmb::setErrorSm('Не определён ключ файла.');
+        return;
+    }
 
-        $sql = "update RaidFiles  set filetype_id = $pFileTypeId,
-	                              raidfile_comment = '$pRaidFileComment'
+    $pFileTypeId = mmb_validateInt($_POST, 'FileTypeId');
+    //$pLevelPointId = $_POST['LevelPointId'];
+    $pRaidFileComment = $_POST['RaidFileComment'];
+
+    $sql = "update RaidFiles set filetype_id = $pFileTypeId, raidfile_comment = '$pRaidFileComment'
 	        where raidfile_id = $pRaidFileId";
-			
-	MySqlQuery($sql);
-       
-        // Не знаю, какой правильно режим поставить
-	CMmb::setViews('ViewRaidFiles', 'Add');
-}
-// ============ Удаление  файла  =============
-elseif ($action == 'HideFile')
-{
-	if (!$Administrator and !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку файла');
-		return;
-	}
 
-        $pRaidFileId = mmb_validateInt($_POST, 'RaidFileId');
-	if ($pRaidFileId <= 0)
-	{
-		CMmb::setErrorSm('Не определён ключ файла.');
-		return;
-	}
+    MySqlQuery($sql);
 
-        $sql = "select  raidfile_name
+    // Не знаю, какой правильно режим поставить
+    CMmb::setViews('ViewRaidFiles', 'Add');
+} elseif ($action === 'HideFile') {
+    // ============ Удаление  файла  =============
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку файла');
+        return;
+    }
+
+    $pRaidFileId = mmb_validateInt($_POST, 'RaidFileId');
+    if ($pRaidFileId <= 0) {
+        CMmb::setErrorSm('Не определён ключ файла.');
+        return;
+    }
+
+    $sql = "select  raidfile_name
 	        from RaidFiles
 	        where raidfile_id = $pRaidFileId";
 
-        $UnlinkFile = $MyStoreFileLink.trim(CSql::singleValue($sql, 'raidfile_name'));
+    $UnlinkFile = $MyStoreFileLink . trim(CSql::singleValue($sql, 'raidfile_name'));
 
-        if (file_exists($UnlinkFile))
-	{
-	        unlink($UnlinkFile);
-	} 
-       
-        $sql = "update RaidFiles set raidfile_hide = 1
+    if (file_exists($UnlinkFile)) {
+        unlink($UnlinkFile);
+    }
+
+    $sql = "update RaidFiles set raidfile_hide = 1
 	        where raidfile_id = $pRaidFileId";
-	MySqlQuery($sql);
+    MySqlQuery($sql);
 
-        // Не знаю, какой правильно режим поставить
-	CMmb::setViews('ViewRaidFiles', 'Add');
-}
-// ============ Точки сканирвания марш-броска  =============
-elseif ($action == 'ViewScanPointsPage')
-{
-	if ($RaidId <= 0)
-	{
-		CMmb::setErrorMessage('Id ММБ не указан');
-		return;
-	}
+    // Не знаю, какой правильно режим поставить
+    CMmb::setViews('ViewRaidFiles', 'Add');
+} elseif ($action === 'ViewScanPointsPage') {
+    // ============ Точки сканирования марш-броска  =============
+    if ($RaidId <= 0) {
+        CMmb::setErrorMessage('Id ММБ не указан');
+        return;
+    }
 
-	CMmb::setViews('ViewScanPoints', 'Add');
-}
-// ============ Добавить скан-точку  =============
-elseif ($action == 'AddScanPoint')
-{
-	CMmb::setViews('ViewScanPoints', 'Add');
+    CMmb::setViews('ViewScanPoints', 'Add');
+} elseif ($action === 'AddScanPoint') {
+    // ============ Добавить скан-точку  =============
+    CMmb::setViews('ViewScanPoints', 'Add');
 
-	// Общая проверка возможности редактирования
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на ввод скан-точки');
-		return;
-	}
+    // Общая проверка возможности редактирования
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на ввод скан-точки');
+        return;
+    }
 
-        $pScanPointName = $_POST['ScanPointName'];
+    $pScanPointName = $_POST['ScanPointName'];
 
-        // тут по-хорошему нужны проверки
+    // тут по-хорошему нужны проверки
 
-	$sql = "select  MAX(scanpoint_order) as lastorder
+    $sql = "select  MAX(scanpoint_order) as lastorder
 	      from ScanPoints
 	      where scanpoint_hide = 0 and raid_id = $RaidId";
 
-	$LastOrder = (int)CSql::singleValue($sql, 'lastorder');
+    $LastOrder = (int)CSql::singleValue($sql, 'lastorder');
 
-	if  (empty($pScanPointName) or trim($pScanPointName) == 'Название точки сканирования')
-	{
-		CMmb::setErrorSm('Не указано название скан-точки.');
-		return;
-	}
+    if (empty($pScanPointName) || trim($pScanPointName) === 'Название точки сканирования') {
+        CMmb::setErrorSm('Не указано название скан-точки.');
+        return;
+    }
 
-	$sql = " select count(*) as countresult
+    $sql = " select count(*) as countresult
 		  from ScanPoints
 		  where scanpoint_hide = 0  and raid_id = $RaidId
 		        and trim(scanpoint_name) = trim('$pScanPointName')";
 
-	if  (((int) CSql::singleValue($sql, 'countresult')) > 0)
-	{
-		CMmb::setErrorSm('Повтор названия скан-точки.');
-		return;
-	}
+    if (((int)CSql::singleValue($sql, 'countresult')) > 0) {
+        CMmb::setErrorSm('Повтор названия скан-точки.');
+        return;
+    }
 
-        // потом добавить время макс. и мин.
-	     
-	$sql = "insert into ScanPoints (raid_id, scanpoint_name,
+    // потом добавить время макс. и мин.
+    $sql = "insert into ScanPoints (raid_id, scanpoint_name,
 		scanpoint_order, scanpoint_hide)
-		values ($RaidId, '$pScanPointName',  ".($LastOrder + 1).", 0)";
-	// При insert должен вернуться послений id - это реализовано в MySqlQuery
+		values ($RaidId, '$pScanPointName',  " . ($LastOrder + 1) . ", 0)";
+    // При insert должен вернуться последний id - это реализовано в MySqlQuery
 
-        //    echo $sql;
-		
-	$ScanPointId = MySqlQuery($sql);
+    $ScanPointId = MySqlQuery($sql);
 
-	if ($ScanPointId <= 0)
-	{
-		CMmb::setErrorSm('Ошибка записи новой скан-точки.');
-		return;
-	}
-	
+    if ($ScanPointId <= 0) {
+        CMmb::setErrorSm('Ошибка записи новой скан-точки.');
+        return;
+    }
 
-	$statustext = CheckScanPoints($RaidId);
-	if (!empty($error))
-	{
-		$alert = 1;
-	}
- }
- elseif ($action == "ScanPointInfo")  
- {
-        // Действие вызывается кнопокй "Править" в таблице скан-точек
-	 CMmb::setViews('ViewScanPoints', 'Edit');
- }
- // ============ Правка скан-точки  =============
-elseif ($action == 'ScanPointChange')
-{
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку скан-точки');
-		return;
-	}
 
-	CMmb::setViews('ViewScanPoints', 'Add');
+    $statustext = CheckScanPoints($RaidId);
+    if (!empty($error)) {
+        $alert = 1;
+    }
+} elseif ($action === "ScanPointInfo") {
+    // Действие вызывается кнопкой "Править" в таблице скан-точек
+    CMmb::setViews('ViewScanPoints', 'Edit');
+} elseif ($action === 'ScanPointChange') {
+    // ============ Правка скан-точки  =============
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку скан-точки');
+        return;
+    }
 
-        $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
-        $pScanPointName = $_POST['ScanPointName'];
-	if ($pScanPointId <= 0)
-	{
-		raidError('Не определён ключ скан-точки.');
-		return;
-	}
+    CMmb::setViews('ViewScanPoints', 'Add');
 
-	$sql = " select count(*) as countresult
+    $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
+    $pScanPointName = $_POST['ScanPointName'];
+    if ($pScanPointId <= 0) {
+        raidError('Не определён ключ скан-точки.');
+        return;
+    }
+
+    $sql = " select count(*) as countresult
 		  from ScanPoints
 		  where scanpoint_hide = 0  and raid_id = $RaidId
 		        and scanpoint_id <> $pScanPointId
 		        and trim(scanpoint_name)= trim('$pScanPointName')";
 
-	if  (((int) CSql::singleValue($sql, 'countresult')) > 0)
-	{
-		raidError('Повтор названия.');
-		return;
-	}
+    if (((int)CSql::singleValue($sql, 'countresult')) > 0) {
+        raidError('Повтор названия.');
+        return;
+    }
 
-        $sql = "update ScanPoints  set scanpoint_name = '$pScanPointName'
+    $sql = "update ScanPoints  set scanpoint_name = '$pScanPointName'
 	        where scanpoint_id = $pScanPointId";
-	//echo $sql;
-	 MySqlQuery($sql);
-       
-	 $statustext = CheckScanPoints($RaidId);
-	 if (!empty($error))
-	 {
-		$alert = 1;
-	 }
-}
-// ============ Удаление скан-точки  =============
-elseif ($action == 'HideScanPoint')
-{
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку скан-точки');
-		return;
-	}
 
-	CMmb::setViews('ViewScanPoints', 'Add');
+    MySqlQuery($sql);
 
-        $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
-	if ($pScanPointId <= 0)
-	{
-		raidError('Не определён ключ скан-точки.');
-		return;
-	}
-	
-	$sql = "select  count(*) as lpcount
+    $statustext = CheckScanPoints($RaidId);
+    if (!empty($error)) {
+        $alert = 1;
+    }
+} elseif ($action === 'HideScanPoint') {
+    // ============ Удаление скан-точки  =============
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку скан-точки');
+        return;
+    }
+
+    CMmb::setViews('ViewScanPoints', 'Add');
+
+    $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
+    if ($pScanPointId <= 0) {
+        raidError('Не определён ключ скан-точки.');
+        return;
+    }
+
+    $sql = "select  count(*) as lpcount
 	      from LevelPoints
 	      where scanpoint_id = $pScanPointId
-	            and levelpoint_hide = 0" ;
-	 
-	if (CSql::singleValue($sql, 'lpcount') > 0)
-	{
-		raidError('Есть точки дистанции, которые ссылаются на эту скан-точку.');
-		return;
-	}
-	
-	$sql = "select  scanpoint_order
+	            and levelpoint_hide = 0";
+
+    if (CSql::singleValue($sql, 'lpcount') > 0) {
+        raidError('Есть точки дистанции, которые ссылаются на эту скан-точку.');
+        return;
+    }
+
+    $sql = "select  scanpoint_order
 	      from ScanPoints
 	      where scanpoint_id = $pScanPointId";
 
-	$ScanOrder = CSql::singleValue($sql, 'scanpoint_order');
+    $ScanOrder = CSql::singleValue($sql, 'scanpoint_order');
 
-        $sql = "update ScanPoints set scanpoint_hide = 1, scanpoint_order = 0 
+    $sql = "update ScanPoints set scanpoint_hide = 1, scanpoint_order = 0 
 	        where scanpoint_id = $pScanPointId";
-			
-	MySqlQuery($sql);
 
-		// сдвигаем все точки с большими порядоквыми номерами, чем текущая
-        $sql = "update ScanPoints set scanpoint_order = scanpoint_order - 1
+    MySqlQuery($sql);
+
+    // сдвигаем все точки с большими порядковыми номерами, чем текущая
+    $sql = "update ScanPoints set scanpoint_order = scanpoint_order - 1
 	        where scanpoint_order > $ScanOrder and raid_id = $RaidId";
-			
-	MySqlQuery($sql);
 
+    MySqlQuery($sql);
 
-	$statustext = CheckScanPoints($RaidId);
-	if (!empty($error))
-	{
-		$alert = 1;
-	}
+    $statustext = CheckScanPoints($RaidId);
+    if (!empty($error)) {
+        $alert = 1;
+    }
 
-	CMmb::setViews('ViewScanPoints', 'Add');
-}
-// ============ Поднять скан-точку (уменьшить порядковый номер)  =============
-elseif ($action == 'ScanPointOrderDown')
-{
-	CMmb::setViews('ViewScanPoints', 'Add');
+    CMmb::setViews('ViewScanPoints', 'Add');
+} elseif ($action === 'ScanPointOrderDown') {
+    // ============ Поднять скан-точку (уменьшить порядковый номер) =============
+    CMmb::setViews('ViewScanPoints', 'Add');
 
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку скан-точки');
-		return;
-	}
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку скан-точки');
+        return;
+    }
 
-        $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
-	if ($pScanPointId <= 0)
-	{
-		raidError('Не определён ключ скан-точки.');
-		return;
-	}
-	
+    $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
+    if ($pScanPointId <= 0) {
+        raidError('Не определён ключ скан-точки.');
+        return;
+    }
 
-	$sql = "select  scanpoint_order
+    $sql = "select  scanpoint_order
 	      from ScanPoints
               where scanpoint_id = $pScanPointId";
 
-	$ScanOrder = CSql::singleValue($sql, 'scanpoint_order');
+    $ScanOrder = CSql::singleValue($sql, 'scanpoint_order');
 
-	$sql = "select  scanpoint_id
+    $sql = "select  scanpoint_id
 	      from ScanPoints
 	      where scanpoint_order < $ScanOrder
 	            and raid_id = $RaidId
 		    and scanpoint_hide = 0
 	     order by scanpoint_order desc
 	     LIMIT 0,1";
-	 
-	$MaxScanPointId = (int)CSql::singleValue($sql, 'scanpoint_id');
-        if ($MaxScanPointId == 0)
-	{
-		raidError('Нельзя уменьшить порядковый номер.');
-		return;
-	}
 
-        $sql = "update ScanPoints set scanpoint_order = scanpoint_order - 1
+    $MaxScanPointId = (int)CSql::singleValue($sql, 'scanpoint_id');
+    if ($MaxScanPointId == 0) {
+        raidError('Нельзя уменьшить порядковый номер.');
+        return;
+    }
+
+    $sql = "update ScanPoints set scanpoint_order = scanpoint_order - 1
 	        where scanpoint_id = $pScanPointId";
-	MySqlQuery($sql);
+    MySqlQuery($sql);
 
-
-        $sql = "update ScanPoints set scanpoint_order = scanpoint_order + 1
+    $sql = "update ScanPoints set scanpoint_order = scanpoint_order + 1
 	        where scanpoint_id = $MaxScanPointId";
-	MySqlQuery($sql);
+    MySqlQuery($sql);
 
-	$statustext = CheckScanPoints($RaidId);
-	if (!empty($error))
-	{
-		$alert = 1;
-	}
-}
-// ============ Опустить скан-точку  (увеличить порядковый номер) =============
-elseif ($action == 'ScanPointOrderUp')
-{
-	CMmb::setViews('ViewScanPoints', 'Add');
+    $statustext = CheckScanPoints($RaidId);
+    if (!empty($error)) {
+        $alert = 1;
+    }
+} elseif ($action === 'ScanPointOrderUp') {
+    // ============ Опустить скан-точку (увеличить порядковый номер) =============
+    CMmb::setViews('ViewScanPoints', 'Add');
 
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку скан-точки');
-		return;
-	}
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку скан-точки');
+        return;
+    }
 
-        $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
-	if ($pScanPointId <= 0)
-	{
-		raidError('Не определён ключ скан-точки.');
-		return;
-	}
-	
-	$sql = "select   scanpoint_order
+    $pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
+    if ($pScanPointId <= 0) {
+        raidError('Не определён ключ скан-точки.');
+        return;
+    }
+
+    $sql = "select   scanpoint_order
 	      from ScanPoints
 	      where scanpoint_id = $pScanPointId";
 
-	$ScanOrder = CSql::singleValue($sql, 'scanpoint_order');
+    $ScanOrder = CSql::singleValue($sql, 'scanpoint_order');
 
-	$sql = "select  scanpoint_id
+    $sql = "select  scanpoint_id
 	        from ScanPoints
 	        where scanpoint_order > $ScanOrder
 	              and raid_id = $RaidId
 		      and scanpoint_hide = 0
 	        order by scanpoint_order asc
 	        LIMIT 0,1";
-	
-	     //   echo $sql;
-	$MinScanPointId = (int)CSql::singleValue($sql, 'scanpoint_id');
-        if ($MinScanPointId == 0)
-	{
-		raidError('Нельзя увеличить порядковый номер.');
-		return;
-	}
-       
-        $sql = "update ScanPoints set scanpoint_order = scanpoint_order + 1
+
+    $MinScanPointId = (int)CSql::singleValue($sql, 'scanpoint_id');
+    if ($MinScanPointId == 0) {
+        raidError('Нельзя увеличить порядковый номер.');
+        return;
+    }
+
+    $sql = "update ScanPoints set scanpoint_order = scanpoint_order + 1
 	        where scanpoint_id = $pScanPointId";
-			
-	 MySqlQuery($sql);
 
+    MySqlQuery($sql);
 
-        $sql = "update ScanPoints set scanpoint_order = scanpoint_order - 1
+    $sql = "update ScanPoints set scanpoint_order = scanpoint_order - 1
 	        where scanpoint_id = $MinScanPointId";
-			
-	 MySqlQuery($sql);
-	 
-	 $statustext = CheckScanPoints($RaidId);
-	 if (!empty($error))
-	 {
-		$alert = 1;
-	 }
-	 
 
-}
-// ============ Точки дистанции  =============
-elseif ($action == 'ViewLevelPointsPage')
-{
-	if ($RaidId <= 0)
-	{
-		CMmb::setErrorMessage('Id ММБ не указан');
-		return;
-	}
+    MySqlQuery($sql);
 
-	$DistanceId = mmb_validateInt($_POST, 'DistanceId');
-	// Есди дистанция не указана  - берём первую
-        if ($DistanceId <= 0)
-	{
-		$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = $RaidId order by distance_id ";
-	        $DistanceId = CSql::singleValue($sql, 'distance_id');
-	}
-	// Конец инициализации дистанции 
+    $statustext = CheckScanPoints($RaidId);
+    if (!empty($error)) {
+        $alert = 1;
+    }
+} elseif ($action === 'ViewLevelPointsPage') {
+    // ============ Точки дистанции  =============
+    if ($RaidId <= 0) {
+        CMmb::setErrorMessage('Id ММБ не указан');
+        return;
+    }
 
-	CMmb::setViews('ViewLevelPoints', 'Add');
-}
-// ============ Добавить точку  =============
-elseif ($action == 'AddLevelPoint')
-{
-	CMmb::setViews('ViewLevelPoints', 'Add');
+    $DistanceId = mmb_validateInt($_POST, 'DistanceId');
+    // Если дистанция не указана - берём первую
+    if ($DistanceId <= 0) {
+        $sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = $RaidId order by distance_id ";
+        $DistanceId = CSql::singleValue($sql, 'distance_id');
+    }
+    // Конец инициализации дистанции
 
-	// Общая проверка возможности редактирования
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на ввод точки');
-		return;
-	}
+    CMmb::setViews('ViewLevelPoints', 'Add');
+} elseif ($action === 'AddLevelPoint') {
+    // ============ Добавить точку  =============
+    CMmb::setViews('ViewLevelPoints', 'Add');
 
-	$pPointTypeId = mmb_validateInt($_POST, 'PointTypeId');
-	$pDistanceId = mmb_validateInt($_POST, 'DistanceId');
-        $pPointName = $_POST['PointName'];
-        $pPointPenalty = mmb_validateInt($_POST, 'PointPenalty');
+    // Общая проверка возможности редактирования
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на ввод точки');
+        return;
+    }
 
-	//$pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
+    $pPointTypeId = mmb_validateInt($_POST, 'PointTypeId');
+    $pDistanceId = mmb_validateInt($_POST, 'DistanceId');
+    $pPointName = $_POST['PointName'];
+    $pPointPenalty = mmb_validateInt($_POST, 'PointPenalty');
+
+    //$pScanPointId = mmb_validateInt($_POST, 'ScanPointId');
 //	$pLevelId = $_POST['LevelId'];
 
-	$MinYDTs = CSql::timeString2($_POST, 'MinYear', 'MinDate', 'MinTime');
-	$MaxYDTs = CSql::timeString2($_POST, 'MaxYear', 'MaxDate', 'MaxTime');
+    $MinYDTs = CSql::timeString2($_POST, 'MinYear', 'MinDate', 'MinTime');
+    $MaxYDTs = CSql::timeString2($_POST, 'MaxYear', 'MaxDate', 'MaxTime');
 
-         // тут по-хорошему нужны проверки
+    // тут по-хорошему нужны проверки
 
-	$sql = "select  MAX(levelpoint_order) as lastorder, YEAR(NOW()) as nowyear
+    $sql = "select  MAX(levelpoint_order) as lastorder, YEAR(NOW()) as nowyear
 	      from LevelPoints
 	      where levelpoint_hide = 0 and distance_id = $pDistanceId";
 
-	$LastOrder = (int)CSql::singleValue($sql, 'lastorder');
+    $LastOrder = (int)CSql::singleValue($sql, 'lastorder');
 
-	if  (empty($pPointName) or trim($pPointName) == 'Название КП')
-	{
-		CMmb::setErrorSm('Не указано название точки.');
-		return;
-	}
+    if (empty($pPointName) || trim($pPointName) === 'Название КП') {
+        CMmb::setErrorSm('Не указано название точки.');
+        return;
+    }
 
-
-	$sql = " select count(*) as countresult
+    $sql = "select count(*) as countresult
 		  from LevelPoints
 		  where levelpoint_hide = 0  and distance_id = $pDistanceId
 	                and trim(levelpoint_name)= trim('$pPointName')";
 
-	if  (((int) CSql::singleValue($sql, 'countresult')) > 0)
-	{
-		CMmb::setErrorSm('Повтор названия.');
-		return;
-	}
+    if (((int)CSql::singleValue($sql, 'countresult')) > 0) {
+        CMmb::setErrorSm('Повтор названия.');
+        return;
+    }
 
+    // потом добавить время макс. и мин.
 
-        // потом добавить время макс. и мин.
-	     
-	$sql = "insert into LevelPoints (distance_id, levelpoint_name, pointtype_id,
+    $sql = "insert into LevelPoints (distance_id, levelpoint_name, pointtype_id,
 		levelpoint_penalty, levelpoint_order, levelpoint_hide,
 		levelpoint_mindatetime, levelpoint_maxdatetime)
 		values ($pDistanceId, '$pPointName', $pPointTypeId,
-		        $pPointPenalty , ".($LastOrder + 1).", 0, $MinYDTs, $MaxYDTs)";
+		        $pPointPenalty , " . ($LastOrder + 1) . ", 0, $MinYDTs, $MaxYDTs)";
 
-	// При insert должен вернуться послений id - это реализовано в MySqlQuery
-	$LevelPointId = MySqlQuery($sql);
-	if ($LevelPointId <= 0)
-	{
-		CMmb::setErrorSm('Ошибка записи новой точки.');
-		return;
-	}
-	
+    // При insert должен вернуться последний id - это реализовано в MySqlQuery
+    $LevelPointId = MySqlQuery($sql);
+    if ($LevelPointId <= 0) {
+        CMmb::setErrorSm('Ошибка записи новой точки.');
+        return;
+    }
 
-	 $statustext = CheckLevelPoints($DistanceId);
-	 if (!empty($error))
-	 {
-		$alert = 1;
-	 }
+    $statustext = CheckLevelPoints($DistanceId);
+    if (!empty($error)) {
+        $alert = 1;
+    }
+} elseif ($action === "LevelPointInfo") {
+    // Действие вызывается кнопкой "Править" в таблице точек
+    CMmb::setViews('ViewLevelPoints', 'Edit');
+} elseif ($action === 'LevelPointChange') {
+    // ============ Правка точки  =============
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку точки');
+        return;
+    }
 
+    CMmb::setViews('ViewLevelPoints', 'Add');
 
- }
- elseif ($action == "LevelPointInfo")  
- {
-        // Действие вызывается кнопокй "Править" в таблице точек
-	 CMmb::setViews('ViewLevelPoints', 'Edit');
- }
- // ============ Правка точки  =============
-elseif ($action == 'LevelPointChange')
-{
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку точки');
-		return;
-	}
+    $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
+    if ($pLevelPointId <= 0) {
+        raidError('Не определён ключ точки.');
+        return;
+    }
 
-  	CMmb::setViews('ViewLevelPoints', 'Add');
+    $sql = "select YEAR(NOW()) as nowyear";
+    $NowYear = (int)CSql::singleValue($sql, 'nowyear');  // вроде есть способы и попроще :)
 
+    $pPointTypeId = mmb_validateInt($_POST, 'PointTypeId');
+    $pDistanceId = mmb_validateInt($_POST, 'DistanceId');
+    $pPointName = trim($_POST['PointName']);
+    $pPointPenalty = mmb_validateInt($_POST, 'PointPenalty');
 
-        $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
-	if ($pLevelPointId <= 0)
-	{
-		raidError('Не определён ключ точки.');
-		return;
-	}
-
-
-        $sql = "select  YEAR(NOW()) as nowyear";
-	$NowYear = (int)CSql::singleValue($sql, 'nowyear');     // вроде есть способы и попроще :)
-
-
-	$pPointTypeId = mmb_validateInt($_POST, 'PointTypeId');
-	$pDistanceId = mmb_validateInt($_POST, 'DistanceId');
-        $pPointName = trim($_POST['PointName']);
-        $pPointPenalty = mmb_validateInt($_POST, 'PointPenalty');
-
-	//$pScanPointId = $_POST['ScanPointId'];		// todo почему где-то оно -- int, а где-то -- строка
+    //$pScanPointId = $_POST['ScanPointId'];		// todo почему где-то оно -- int, а где-то -- строка
 //	$pLevelId = $_POST['LevelId'];
 
-	$MinYDTs = CSql::timeString2($_POST, 'MinYear', 'MinDate', 'MinTime');
-	$MaxYDTs = CSql::timeString2($_POST, 'MaxYear', 'MaxDate', 'MaxTime');
+    $MinYDTs = CSql::timeString2($_POST, 'MinYear', 'MinDate', 'MinTime');
+    $MaxYDTs = CSql::timeString2($_POST, 'MaxYear', 'MaxDate', 'MaxTime');
 
-	// тут надо поставить проверки
+    // тут надо поставить проверки
 
-	$sql = " select count(*) as countresult
+    $sql = " select count(*) as countresult
 	  from LevelPoints
 	  where levelpoint_hide = 0  and distance_id = $pDistanceId
 	        and levelpoint_id <> $pLevelPointId
 	        and trim(levelpoint_name)= trim('$pPointName')";
-                
-	if  (((int) CSql::singleValue($sql, 'countresult')) > 0)
-	{
-		raidError('Повтор названия.');
-		return;
-	}
 
+    if (((int)CSql::singleValue($sql, 'countresult')) > 0) {
+        raidError('Повтор названия.');
+        return;
+    }
 
-//	                                ,level_id = '".$pLevelId."'
-	 // ,scanpoint_id = '$pScanPointId'
-		
-        $sql = "update LevelPoints  set pointtype_id = $pPointTypeId
+    // ,level_id = '".$pLevelId."'
+    // ,scanpoint_id = '$pScanPointId'
+
+    $sql = "update LevelPoints  set pointtype_id = $pPointTypeId
 	                                ,levelpoint_name = '$pPointName'
 	                                ,levelpoint_penalty = $pPointPenalty
 	                                ,levelpoint_mindatetime = $MinYDTs
 	                                ,levelpoint_maxdatetime = $MaxYDTs
 	        where levelpoint_id = $pLevelPointId";
-	//echo $sql;
-	 MySqlQuery($sql);
-       
-	 $statustext = CheckLevelPoints($DistanceId);
-	 if (!empty($error))
-	 {
-		$alert = 1;
-	 }
-		
 
-}
-// ============ Удаление точки  =============
-elseif ($action == 'HideLevelPoint')
-{
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку точки');
-		return;
-	}
+    MySqlQuery($sql);
 
-        $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
-	if ($pLevelPointId <= 0)
-	{
-		raidError('Не определён ключ точки.');
-		return;
-	}
-	
-	
-	$sql = "select  count(*) as lpcount
+    $statustext = CheckLevelPoints($DistanceId);
+
+    if (!empty($error)) {
+        $alert = 1;
+    }
+} elseif ($action === 'HideLevelPoint') {
+    // ============ Удаление точки  =============
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку точки');
+        return;
+    }
+
+    $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
+    if ($pLevelPointId <= 0) {
+        raidError('Не определён ключ точки.');
+        return;
+    }
+
+    $sql = "select  count(*) as lpcount
 	      from LevelPointDiscounts
 	      where levelpoint_id = $pLevelPointId
 	      	and levelpointdiscount_hide = 0";
-	
-	if (CSql::singleValue($sql, 'lpcount') > 0)
-	{
-		raidError('Есть группы амнистии, которые привзаны к этой контрольной точке.');
-		return;
-	}
 
-	$sql = "select  count(*) as lpcount
+    if (CSql::singleValue($sql, 'lpcount') > 0) {
+        raidError('Есть группы амнистии, которые привязаны к этой контрольной точке.');
+        return;
+    }
+
+    $sql = "select  count(*) as lpcount
 	      from TeamLevelPoints
 	      where levelpoint_id = $pLevelPointId";
-	
-	if (CSql::singleValue($sql, 'lpcount') > 0)
-	{
-		raidError('Есть данные о прохождении команд, которые ссылаются на эту контрольную точку.');
-		return;
-	}
-	
-	$sql = "select  count(*) as lpcount
+
+    if (CSql::singleValue($sql, 'lpcount') > 0) {
+        raidError('Есть данные о прохождении команд, которые ссылаются на эту контрольную точку.');
+        return;
+    }
+
+    $sql = "select  count(*) as lpcount
 	      from TeamLevelDismiss
 	      where levelpoint_id = $pLevelPointId";
-	
-	if (CSql::singleValue($sql, 'lpcount') > 0)
-	{
-		raidError('Есть данные о сходах участников команд, которые ссылаются на эту контрольную точку. ');
-		return;
-	}
 
+    if (CSql::singleValue($sql, 'lpcount') > 0) {
+        raidError('Есть данные о сходах участников команд, которые ссылаются на эту контрольную точку. ');
+        return;
+    }
 
-	
-	$sql = "select  distance_id, levelpoint_order
+    $sql = "select  distance_id, levelpoint_order
 	      from LevelPoints
 	      where levelpoint_id = $pLevelPointId";
-	 
-	$Row = CSql::singleRow($sql);
-	$DistanceId = $Row['distance_id'];
-	$LevelOrder = $Row['levelpoint_order'];
 
+    $Row = CSql::singleRow($sql);
+    $DistanceId = $Row['distance_id'];
+    $LevelOrder = $Row['levelpoint_order'];
 
-	$sql = "select  count(*) as lpcount
+    $sql = "select  count(*) as lpcount
 	      from LevelPointDiscounts
 	      where distance_id = $DistanceId
 	      	and  levelpointdiscount_start <= $LevelOrder
 		and  levelpointdiscount_finish >= $LevelOrder
 	      	and levelpointdiscount_hide = 0";
-	
-	if (CSql::singleValue($sql, 'lpcount') > 0)
-	{
-		raidError('Есть группы амнистии, которые содержат эту контрольную точку.');
-		return;
-	}
 
-	
-	
-        //  19.06.2015 ПРобуем удалить точку физически
+    if (CSql::singleValue($sql, 'lpcount') > 0) {
+        raidError('Есть группы амнистии, которые содержат эту контрольную точку.');
+        return;
+    }
 
-        $sql = "delete from LevelPoints where levelpoint_id = $pLevelPointId";
-       
+    //  19.06.2015 Пробуем удалить точку физически
+    $sql = "delete from LevelPoints where levelpoint_id = $pLevelPointId";
+
 //        $sql = "update LevelPoints set levelpoint_hide = 1, levelpoint_order = 0 
 //	        where levelpoint_id = $pLevelPointId";
-			
-	 MySqlQuery($sql);
 
-	$sql = "select  count(*) as lpcount
-	      from LevelPoints
-	      where levelpoint_id = $pLevelPointId";
-	
-	if (CSql::singleValue($sql, 'lpcount') > 0)
-	{
-		raidError('Контрольная точка не удалена. ');
-		return;
-	} else {
-		// сдвигаем все точки с большими порядоквыми номерами, чем текущая
-		// с условием, что точка удалена (предыдущим запросом) - не сработало ограничение целостности
-        	$sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
-	        	where levelpoint_order > $LevelOrder and distance_id = $DistanceId
-			order by levelpoint_order asc ";
-		//print $sql;	
-	 	MySqlQuery($sql);
-	}
-	// конец проверки, что точка действительно удалилиась			
-		
+    MySqlQuery($sql);
 
-	 $statustext = CheckLevelPoints($DistanceId);
-	 if (!empty($error))
-	 {
-		$alert = 1;
-	 }
-
-	CMmb::setViews('ViewLevelPoints', 'Add');
-}
-// ============ Поднять точку (уменьшить порядковый номер)  =============
-elseif ($action == 'LevelPointOrderDown')
-{
-	CMmb::setViews('ViewLevelPoints', 'Add');
-
-
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку точки');
-		return;
-	}
-
-        $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
-	if ($pLevelPointId <= 0)
-	{
-		raidError('Не определён ключ точки.');
-		return;
-	}
-	
-
-	$sql = "select  distance_id, levelpoint_order
+    $sql = "select  count(*) as lpcount
 	      from LevelPoints
 	      where levelpoint_id = $pLevelPointId";
 
-	$Row = CSql::singleRow($sql);
-	$DistanceId = $Row['distance_id'];
-	$LevelOrder = $Row['levelpoint_order'];
+    if (CSql::singleValue($sql, 'lpcount') > 0) {
+        raidError('Контрольная точка не удалена. ');
+        return;
+    }
 
+    // сдвигаем все точки с большими порядковыми номерами, чем текущая
+    // с условием, что точка удалена (предыдущим запросом) - не сработало ограничение целостности
+    $sql = "update LevelPoints set levelpoint_order = levelpoint_order - 1
+            where levelpoint_order > $LevelOrder and distance_id = $DistanceId
+        order by levelpoint_order asc ";
+    //print $sql;
+    MySqlQuery($sql);
+    // конец проверки, что точка действительно удалилась
 
-	$sql = "select  levelpoint_id, levelpoint_order
+    $statustext = CheckLevelPoints($DistanceId);
+    if (!empty($error)) {
+        $alert = 1;
+    }
+
+    CMmb::setViews('ViewLevelPoints', 'Add');
+} elseif ($action === 'LevelPointOrderDown') {
+    // ============ Поднять точку (уменьшить порядковый номер) =============
+    CMmb::setViews('ViewLevelPoints', 'Add');
+
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку точки');
+        return;
+    }
+
+    $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
+    if ($pLevelPointId <= 0) {
+        raidError('Не определён ключ точки.');
+        return;
+    }
+
+    $sql = "select  distance_id, levelpoint_order
+	      from LevelPoints
+	      where levelpoint_id = $pLevelPointId";
+
+    $Row = CSql::singleRow($sql);
+    $DistanceId = $Row['distance_id'];
+    $LevelOrder = $Row['levelpoint_order'];
+
+    $sql = "select  levelpoint_id, levelpoint_order
 	      from LevelPoints
 	      where levelpoint_order < $LevelOrder
 	            and distance_id = $DistanceId
 		    and levelpoint_hide = 0
 	     order by levelpoint_order desc
 	     LIMIT 0,1";
-	
-	$Row = CSql::singleRow($sql);
-	$MaxLevelPointId = $Row['levelpoint_id'];
-	$MaxLevelOrder = $Row['levelpoint_order'];
 
-        if ($MaxLevelPointId == 0)
-	{
-		raidError('Нельзя уменьшить порядковый номер.');
-		return;
-	}
-       
-              
-        $sql = "update LevelPoints set levelpoint_order = 0
+    $Row = CSql::singleRow($sql);
+    $MaxLevelPointId = $Row['levelpoint_id'];
+    $MaxLevelOrder = $Row['levelpoint_order'];
+
+    if ($MaxLevelPointId == 0) {
+        raidError('Нельзя уменьшить порядковый номер.');
+        return;
+    }
+
+    $sql = "update LevelPoints set levelpoint_order = 0
 	        where levelpoint_id = $pLevelPointId";
-			
-	 MySqlQuery($sql);
 
+    MySqlQuery($sql);
 
-        $sql = "update LevelPoints set levelpoint_order = $MaxLevelOrder + 1
+    $sql = "update LevelPoints set levelpoint_order = $MaxLevelOrder + 1
 	        where levelpoint_id = $MaxLevelPointId";
-			
-	 MySqlQuery($sql);
 
-	$sql = "update LevelPoints set levelpoint_order = $MaxLevelOrder
+    MySqlQuery($sql);
+
+    $sql = "update LevelPoints set levelpoint_order = $MaxLevelOrder
 	        where levelpoint_id = $pLevelPointId";
-			
-	 MySqlQuery($sql);
 
+    MySqlQuery($sql);
 
-	 $statustext = CheckLevelPoints($DistanceId);
-	 if (!empty($error))
-	 {
-		$alert = 1;
-	 }
-		
+    $statustext = CheckLevelPoints($DistanceId);
+    if (!empty($error)) {
+        $alert = 1;
+    }
+} elseif ($action === 'LevelPointOrderUp') {
+    // ============ Опустить точку (увеличить порядковый номер) =============
+    CMmb::setViews('ViewLevelPoints', 'Add');
 
-}
-// ============ Опустить точку  (увеличить порядковый номер) =============
-elseif ($action == 'LevelPointOrderUp')
-{
-	CMmb::setViews('ViewLevelPoints', 'Add');
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку точки');
+        return;
+    }
 
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку точки');
-		return;
-	}
+    $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
+    if ($pLevelPointId <= 0) {
+        raidError('Не определён ключ точки.');
+        return;
+    }
 
-        $pLevelPointId = mmb_validateInt($_POST, 'LevelPointId');
-	if ($pLevelPointId <= 0)
-	{
-		raidError('Не определён ключ точки.');
-		return;
-	}
-	
-	$sql = "select  distance_id, levelpoint_order
+    $sql = "select  distance_id, levelpoint_order
 	      from LevelPoints
 	      where levelpoint_id = $pLevelPointId";
-	 
-	$Row = CSql::singleRow($sql);
-	$DistanceId = $Row['distance_id'];
-	$LevelOrder = $Row['levelpoint_order'];
 
+    $Row = CSql::singleRow($sql);
+    $DistanceId = $Row['distance_id'];
+    $LevelOrder = $Row['levelpoint_order'];
 
-	$sql = "select  levelpoint_id, levelpoint_order
+    $sql = "select  levelpoint_id, levelpoint_order
 	      from LevelPoints
 	      where levelpoint_order > $LevelOrder
 	            and distance_id = $DistanceId
@@ -1260,280 +1084,232 @@ elseif ($action == 'LevelPointOrderUp')
 	     order by levelpoint_order asc
 	     LIMIT 0,1";
 
-	$Row = CSql::singleRow($sql);
-	$MinLevelPointId = $Row['levelpoint_id'];
-	$MinLevelOrder = $Row['levelpoint_order'];
+    $Row = CSql::singleRow($sql);
+    $MinLevelPointId = $Row['levelpoint_id'];
+    $MinLevelOrder = $Row['levelpoint_order'];
 
-	if ($MinLevelPointId == 0)
-	{
-		raidError('Нельзя увеличить порядковый номер.');
-		return;
-	}
-       
-        $sql = "update LevelPoints set levelpoint_order = 0
+    if ($MinLevelPointId == 0) {
+        raidError('Нельзя увеличить порядковый номер.');
+        return;
+    }
+
+    $sql = "update LevelPoints set levelpoint_order = 0
 	        where levelpoint_id = $pLevelPointId";
-			
-	 MySqlQuery($sql);
 
+    MySqlQuery($sql);
 
-        $sql = "update LevelPoints set levelpoint_order = $MinLevelOrder - 1
+    $sql = "update LevelPoints set levelpoint_order = $MinLevelOrder - 1
 	        where levelpoint_id = $MinLevelPointId";
-			
-	 MySqlQuery($sql);
-	
-        $sql = "update LevelPoints set levelpoint_order = $MinLevelOrder
+
+    MySqlQuery($sql);
+
+    $sql = "update LevelPoints set levelpoint_order = $MinLevelOrder
 	        where levelpoint_id = $pLevelPointId";
-			
-	 MySqlQuery($sql);
 
-	
-	 $statustext = CheckLevelPoints($DistanceId);
-	 if (!empty($error))
-	 {
-		$alert = 1;
-	 }
-}
-// ============ просмотр интервалов амнистии  =============
-elseif ($action == 'ViewLevelPointDiscountsPage')
-{
-	if ($RaidId <= 0)
-	{
-		CMmb::setErrorMessage('Id ММБ не указан');
-		return;
-	}
-	
-	// Есди дистанция не указана  - берём первую
-	$DistanceId = mmb_validateInt($_POST, 'DistanceId');
-        if ($DistanceId <= 0)
-	{
-		$sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = $RaidId order by distance_id ";
-	        $DistanceId = CSql::singleValue($sql, 'distance_id');
-	}
-	// Конец инициализации дистанции 
-	CMmb::setViews('ViewLevelPointDiscounts', 'Add');
-}
-// ============  Добавить интервал амнистии  =============
-elseif ($action == 'AddLevelPointDiscount')
-{
-	CMmb::setViews('ViewLevelPointDiscounts', 'Add');
+    MySqlQuery($sql);
 
-	// Общая проверка возможности редактирования
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на ввод интервала');
-		return;
-	}
+    $statustext = CheckLevelPoints($DistanceId);
+    if (!empty($error)) {
+        $alert = 1;
+    }
+} elseif ($action === 'ViewLevelPointDiscountsPage') {
+    // ============ просмотр интервалов амнистии  =============
+    if ($RaidId <= 0) {
+        CMmb::setErrorMessage('Id ММБ не указан');
+        return;
+    }
 
-	$pDistanceId = (int)$_POST['DistanceId'];
-        $pDiscountStart = (int)$_POST['DiscountStart'];
-        $pDiscountFinish = (int)$_POST['DiscountFinish'];
-        $pDiscountValue = (int)$_POST['DiscountValue'];
-	$pLevelPointId = (int)$_POST['LevelPointId'];
-                
+    // Если дистанция не указана - берём первую
+    $DistanceId = mmb_validateInt($_POST, 'DistanceId');
+    if ($DistanceId <= 0) {
+        $sql = "select distance_id, distance_name from Distances where distance_hide = 0  and raid_id = $RaidId order by distance_id ";
+        $DistanceId = CSql::singleValue($sql, 'distance_id');
+    }
+    // Конец инициализации дистанции
+    CMmb::setViews('ViewLevelPointDiscounts', 'Add');
+} elseif ($action === 'AddLevelPointDiscount') {
+    // ============  Добавить интервал амнистии  =============
+    CMmb::setViews('ViewLevelPointDiscounts', 'Add');
 
+    // Общая проверка возможности редактирования
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на ввод интервала');
+        return;
+    }
 
-	// тут по-хорошему нужны проверки
-	if  (empty($pLevelPointId))
-	{
-		CMmb::setErrorSm('Не указана точка зачёта амнистии');
-		return;
-	}
-      
-	if  (empty($pDiscountValue) or ($pDiscountFinish < $pDiscountStart) or empty($pDiscountStart) or empty($pDiscountFinish))
-	{
-		CMmb::setErrorSm('Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.');
-		return;
-	}
+    $pDistanceId = (int)$_POST['DistanceId'];
+    $pDiscountStart = (int)$_POST['DiscountStart'];
+    $pDiscountFinish = (int)$_POST['DiscountFinish'];
+    $pDiscountValue = (int)$_POST['DiscountValue'];
+    $pLevelPointId = (int)$_POST['LevelPointId'];
 
-	$sql = " select count(*) as countresult
+    // тут по-хорошему нужны проверки
+    if (empty($pLevelPointId)) {
+        CMmb::setErrorSm('Не указана точка зачёта амнистии');
+        return;
+    }
+
+    if (
+        empty($pDiscountValue)
+        || ($pDiscountFinish < $pDiscountStart)
+        || empty($pDiscountStart)
+        || empty($pDiscountFinish)
+    ) {
+        CMmb::setErrorSm('Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.');
+        return;
+    }
+
+    $sql = " select count(*) as countresult
 		  from LevelPointDiscounts
 		  where levelpointdiscount_hide = 0  and distance_id = $pDistanceId
 		        and (levelpointdiscount_start <= $pDiscountFinish and levelpointdiscount_finish >= $pDiscountStart)";
-                
-	if (((int)CSql::singleValue($sql, 'countresult')) > 0)
-	{
-		CMmb::setErrorSm('Интервал пересекается с существующим.');
-		return;
-	}
 
-	$sql = " select count(*) as countresult
+    if (((int)CSql::singleValue($sql, 'countresult')) > 0) {
+        CMmb::setErrorSm('Интервал пересекается с существующим.');
+        return;
+    }
+
+    $sql = " select count(*) as countresult
 		  from LevelPoints
 		  where levelpoint_hide = 0  and distance_id = $pDistanceId
 		        and pointtype_id in (1,2,3,4)
 		        and (levelpoint_order <= $pDiscountFinish
 			and levelpoint_order >= $pDiscountStart)";
 
-	if  (((int)CSql::singleValue($sql, 'countresult')) > 0)
-	{
-		CMmb::setErrorSm('Интервал содержит запрещённые для амнистии точки.');
-		return;
-	}
-
-                
-	// потом добавить время макс. и мин.
-	     
-	$sql = "insert into LevelPointDiscounts (distance_id, levelpointdiscount_start, levelpointdiscount_finish,
+    if (((int)CSql::singleValue($sql, 'countresult')) > 0) {
+        CMmb::setErrorSm('Интервал содержит запрещённые для амнистии точки.');
+        return;
+    }
+    // потом добавить время макс. и мин.
+    $sql = "insert into LevelPointDiscounts (distance_id, levelpointdiscount_start, levelpointdiscount_finish,
 		levelpointdiscount_hide, levelpointdiscount_value, levelpoint_id)
 		values ($pDistanceId, $pDiscountStart, $pDiscountFinish, 0, $pDiscountValue, $pLevelPointId)";
-	// При insert должен вернуться послений id - это реализовано в MySqlQuery
-	$LevelPointDiscountId = MySqlQuery($sql);
+    // При insert должен вернуться последний id - это реализовано в MySqlQuery
+    $LevelPointDiscountId = MySqlQuery($sql);
 
-	if ($LevelPointDiscountId <= 0)
-	{
-		CMmb::setErrorSm('Ошибка записи новой точки.');
-		return;
-	}
-	
+    if ($LevelPointDiscountId <= 0) {
+        CMmb::setErrorSm('Ошибка записи новой точки.');
+        return;
+    }
+} elseif ($action === "LevelPointDiscountInfo") {
+// Действие вызывается кнопкой "Править" в таблице интервалов
+    CMmb::setViews('ViewLevelPointDiscounts', 'Edit');
+} elseif ($action === 'LevelPointDiscountChange') {
+    // ============ Правка интервала  =============
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку интервала');
+        return;
+    }
 
- }
-elseif ($action == "LevelPointDiscountInfo")
-{
-// Действие вызывается кнопокй "Править" в таблице интервалов
-	CMmb::setViews('ViewLevelPointDiscounts', 'Edit');
-}
- // ============ Правка интервала  =============
-elseif ($action == 'LevelPointDiscountChange')
-{
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку интервала');
-		return;
-	}
+    CMmb::setViews('ViewLevelPointDiscounts', 'Add');
 
-	CMmb::setViews('ViewLevelPointDiscounts', 'Add');
-	
-        $pLevelPointDiscountId = mmb_validateInt($_POST, 'LevelPointDiscountId');
-	if ($pLevelPointDiscountId <= 0)
-	{
-		raidError('Не определён ключ интервала.');
-		return;
-	}
+    $pLevelPointDiscountId = mmb_validateInt($_POST, 'LevelPointDiscountId');
+    if ($pLevelPointDiscountId <= 0) {
+        raidError('Не определён ключ интервала.');
+        return;
+    }
 
-                
-
-	$pDistanceId = (int)$_POST['DistanceId'];
-	$pDiscountStart = (int)$_POST['DiscountStart'];
-	$pDiscountFinish = (int)$_POST['DiscountFinish'];
-	$pDiscountValue = (int)$_POST['DiscountValue'];
-	$pLevelPointId = (int)$_POST['LevelPointId'];
-                
+    $pDistanceId = (int)$_POST['DistanceId'];
+    $pDiscountStart = (int)$_POST['DiscountStart'];
+    $pDiscountFinish = (int)$_POST['DiscountFinish'];
+    $pDiscountValue = (int)$_POST['DiscountValue'];
+    $pLevelPointId = (int)$_POST['LevelPointId'];
 
 
-         // тут по-хорошему нужны проверки
-	if  (empty($pLevelPointId))
-	{
-		CMmb::setErrorSm('Не указана точка зачёта амнистии');
-		return;
-	}
-     
-     
-	if  (empty($pDiscountValue) or ($pDiscountFinish < $pDiscountStart) or empty($pDiscountStart) or empty($pDiscountFinish))
-	{
-		raidError('Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.');
-		return;
-	}
+    // тут по-хорошему нужны проверки
+    if (empty($pLevelPointId)) {
+        CMmb::setErrorSm('Не указана точка зачёта амнистии');
+        return;
+    }
 
-	$sql = " select count(*) as countresult
+    if (empty($pDiscountValue) || ($pDiscountFinish < $pDiscountStart) || empty($pDiscountStart) || empty($pDiscountFinish)) {
+        raidError('Нулевая амнистия, пустое начало или конец; начало амнистии позже конца.');
+        return;
+    }
+
+    $sql = " select count(*) as countresult
 		 from LevelPointDiscounts
 		 where levelpointdiscount_hide = 0  and distance_id = $pDistanceId
 		        and  levelpointdiscount_id <> $pLevelPointDiscountId
 		        and (levelpointdiscount_start <= $pDiscountFinish and levelpointdiscount_finish >= $pDiscountStart)";
 
-	if  (((int)CSql::singleValue($sql, 'countresult')) > 0)
-	{
-		raidError('Интервал пересекается с существующим.');
-		return;
-	}
+    if (((int)CSql::singleValue($sql, 'countresult')) > 0) {
+        raidError('Интервал пересекается с существующим.');
+        return;
+    }
 
-	$sql = " select count(*) as countresult
+    $sql = " select count(*) as countresult
 		  from LevelPoints
 		  where levelpoint_hide = 0  and distance_id = $pDistanceId
 		        and pointtype_id in (1,2,3,4)
 		        and (levelpoint_order <= $pDiscountFinish
 			and levelpoint_order >= $pDiscountStart)";
 
-	if  (((int)CSql::singleValue($sql, 'countresult'))  > 0)
-	{
-		raidError('Интервал содержит запрещённые для амнистии точки.');
-		return;
-	}
+    if (((int)CSql::singleValue($sql, 'countresult')) > 0) {
+        raidError('Интервал содержит запрещённые для амнистии точки.');
+        return;
+    }
 
-	
-		
-        $sql = "update LevelPointDiscounts  set levelpointdiscount_value = $pDiscountValue
+    $sql = "update LevelPointDiscounts  set levelpointdiscount_value = $pDiscountValue
 	                                ,levelpointdiscount_start = $pDiscountStart
 	                                ,levelpointdiscount_finish = $pDiscountFinish
 	                                ,levelpoint_id = $pLevelPointId
 	       where 	levelpointdiscount_id = $pLevelPointDiscountId";
-			
-	//echo $sql;
 
-	MySqlQuery($sql);
+    MySqlQuery($sql);
 
-	$viewmode = "Add";
-}
-// ============ Удаление интервала  =============
-elseif ($action == 'HideLevelPointDiscount')
-{
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку интервала');
-		return;
-	}
+    $viewmode = "Add";
+} // ============ Удаление интервала  =============
+elseif ($action === 'HideLevelPointDiscount') {
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку интервала');
+        return;
+    }
 
-        $pLevelPointDiscountId = mmb_validateInt($_POST, 'LevelPointDiscountId');
-	if ($pLevelPointDiscountId <= 0)
-	{
-		raidError('Не определён ключ интервала.');
-		return;
-	}
-	
-	      
-        $sql = "update LevelPointDiscounts set levelpointdiscount_hide = 1
+    $pLevelPointDiscountId = mmb_validateInt($_POST, 'LevelPointDiscountId');
+    if ($pLevelPointDiscountId <= 0) {
+        raidError('Не определён ключ интервала.');
+        return;
+    }
+
+    $sql = "update LevelPointDiscounts set levelpointdiscount_hide = 1
 	        where levelpointdiscount_id = $pLevelPointDiscountId";
-			
-	MySqlQuery($sql);
 
-	CMmb::setViews('ViewLevelPointDiscounts', 'Add');
-}
-// ============ Пересоздание этапов =================================
-elseif ($action == 'RecalculateLevels')
-{
-	if (!$Administrator && !$Moderator)
-	{
-		CMmb::setMessage('Нет прав на правку');
-		return;
-	}
+    MySqlQuery($sql);
 
-	CMmb::setViews('ViewLevelPoints', 'Add');
+    CMmb::setViews('ViewLevelPointDiscounts', 'Add');
+} elseif ($action === 'RecalculateLevels') {
+    // ============ Пересоздание этапов =================================
+    if (!$Administrator && !$Moderator) {
+        CMmb::setMessage('Нет прав на правку');
+        return;
+    }
 
- 	 $pDistanceId = (int)$_POST['DistanceId'];
+    CMmb::setViews('ViewLevelPoints', 'Add');
 
-         if ($pDistanceId <= 0)
-	 {
-		CMmb::setErrorSm('Не определена дистанция.');
-		return;
-	 }
-	 
-	 $statustext = CheckLevelPoints($pDistanceId);
-	 if (!empty($error))
-	 {
-		CMmb::setErrorSm("Нельзя создавать этапы: $statustext");
-		return;
-	 }
+    $pDistanceId = (int)$_POST['DistanceId'];
 
-          // Нет проверки, что на одном этапе ровно одна амнистия
+    if ($pDistanceId <= 0) {
+        CMmb::setErrorSm('Не определена дистанция.');
+        return;
+    }
 
+    $statustext = CheckLevelPoints($pDistanceId);
+    if (!empty($error)) {
+        CMmb::setErrorSm("Нельзя создавать этапы: $statustext");
+        return;
+    }
 
-         // удаляем существующие этапы
-         $sql = "update Levels set level_hide = 1 
-	          where distance_id = $pDistanceId";
-			
-	 MySqlQuery($sql);
+    // Нет проверки, что на одном этапе ровно одна амнистия
 
-          // 2014-05-10 Исключилд старт и финиш из этапа	 
-         // цикл по точкам
-	 $sql = "select lp.levelpoint_id, pt.pointtype_id, pt.pointtype_name,  
+    // удаляем существующие этапы
+    $sql = "update Levels set level_hide = 1 where distance_id = $pDistanceId";
+
+    MySqlQuery($sql);
+
+    // 2014-05-10 Исключил старт и финиш из этапа
+    // цикл по точкам
+    $sql = "select lp.levelpoint_id, pt.pointtype_id, pt.pointtype_name,  
 	                lp.levelpoint_name, lp.levelpoint_penalty, 
 	 	        lp.distance_id, lp.levelpoint_order,
 		        lp.levelpoint_mindatetime, 
@@ -1550,150 +1326,124 @@ elseif ($action == 'RecalculateLevels')
 		 where lp.levelpoint_hide = 0 and lp.distance_id = $pDistanceId
 		 order by levelpoint_order";
 
-	 
-	 $Result = MySqlQuery($sql);
+    $Result = MySqlQuery($sql);
 
-         $LevelId = 0;
-         $LevelOrder = 0;
-	 $LevelPoints = "";
-	 $LevelPenalties  = "";
-	 $LevelDiscountPoints = "";
-	 $LevelDiscountValue = 0;
-	  
- 	 while ($Row = mysqli_fetch_assoc($Result))
-	 {
+    $LevelId = 0;
+    $LevelOrder = 0;
+    $LevelPoints = "";
+    $LevelPenalties = "";
+    $LevelDiscountPoints = "";
+    $LevelDiscountValue = 0;
 
-
-//               echo 'pt '.$Row['pointtype_id'];
-
-               // 2014-05-10 Убрал старт и финиш из точек этапа 
-               // Финиш или смена-карт - обновляем уже созданный уровень
-               if (($Row['pointtype_id'] == 2 or $Row['pointtype_id'] == 4) and ($LevelId > 0))
-	       {
-		  $sqlPoint = "update LevelPoints set level_id = $LevelId
+    while ($Row = mysqli_fetch_assoc($Result)) {
+        // 2014-05-10 Убрал старт и финиш из точек этапа
+        // Финиш или смена-карт - обновляем уже созданный уровень
+        if (
+            ($Row['pointtype_id'] == 2 || $Row['pointtype_id'] == 4)
+            && ($LevelId > 0)
+        ) {
+            $sqlPoint = "update LevelPoints set level_id = $LevelId
 			       where levelpoint_id = {$Row['levelpoint_id']}";
-			
-		  MySqlQuery($sqlPoint);
 
-  		  $sqlFinishLevel = "update Levels set   
+            MySqlQuery($sqlPoint);
+
+            $sqlFinishLevel = "update Levels set   
                                                       level_minendtime = '{$Row['levelpoint_mindatetime']}'
 						      ,level_endtime = '{$Row['levelpoint_maxdatetime']}'
-						      ,level_pointnames = '".substr($LevelPoints, 1)."'		 
-						      ,level_pointpenalties = '".substr($LevelPenalties, 1)."'		 
-						      ,level_discountpoints = '".substr($LevelDiscountPoints, 1)."'		 
+						      ,level_pointnames = '" . substr($LevelPoints, 1) . "'		 
+						      ,level_pointpenalties = '" . substr($LevelPenalties, 1) . "'		 
+						      ,level_discountpoints = '" . substr($LevelDiscountPoints, 1) . "'		 
 						      ,level_discount = $LevelDiscountValue
-						      ,level_name = CONCAT(level_name, '".trim($Row['levelpoint_name'])."')		 
+						      ,level_name = CONCAT(level_name, '" . trim($Row['levelpoint_name']) . "')		 
 		 	            where level_id = $LevelId";
-	          // echo $sqlFinishLevel;
-	          MySqlQuery($sqlFinishLevel);
-	       }       
-               // Конец проверки на финиш или смену карт
 
-               // Старт или смена-карт - записываем этап
-	       // Для смены карт нужно не забыть, что точка привязывается к предыдущему этапу
-               if ($Row['pointtype_id'] == 1 or $Row['pointtype_id'] == 4)
-	       {
+            MySqlQuery($sqlFinishLevel);
+        }
+        // Конец проверки на финиш или смену карт
 
-	         $LevelId = 0;
-		 $LevelPoints = "";
-		 $LevelPenalties  = "";
-		 $LevelDiscountPoints = "";
-		 $LevelDiscountValue = 0;
-	         $LevelOrder++;
+        // Старт или смена-карт - записываем этап
+        // Для смены карт нужно не забыть, что точка привязывается к предыдущему этапу
+        if ($Row['pointtype_id'] == 1 || $Row['pointtype_id'] == 4) {
+            $LevelId = 0;
+            $LevelPoints = "";
+            $LevelPenalties = "";
+            $LevelDiscountPoints = "";
+            $LevelDiscountValue = 0;
+            $LevelOrder++;
 
-                 if ($Row['pointtype_id'] == 4)
-		 {
-		   $StartType = 3;
-		 } else {
-                    // Проверка на общий старт
-		    if ($Row['levelpoint_mindatetime'] == $Row['levelpoint_maxdatetime']) 
-		    {
-		       $StartType = 2;
-		    } else  {
- 		       $StartType = 1;
-		    }
-                 }	         
-		
-		 $sqlStartLevel = "insert into Levels (distance_id, level_name, level_starttype,
+            if ($Row['pointtype_id'] == 4) {
+                $StartType = 3;
+            } else {
+                // Проверка на общий старт
+                if ($Row['levelpoint_mindatetime'] == $Row['levelpoint_maxdatetime']) {
+                    $StartType = 2;
+                } else {
+                    $StartType = 1;
+                }
+            }
+
+            $sqlStartLevel = "insert into Levels (distance_id, level_name, level_starttype,
 		                                       level_hide, level_order, 
 			                               level_begtime, level_maxbegtime)
-			            values ($pDistanceId, '".trim($Row['levelpoint_name'])." - ', $StartType,
+			            values ($pDistanceId, '" . trim($Row['levelpoint_name']) . " - ', $StartType,
 				              0, $LevelOrder,
 				            '{$Row['levelpoint_mindatetime']}', '{$Row['levelpoint_maxdatetime']}')";
-		
-		 // При insert должен вернуться послений id - это реализовано в MySqlQuery
-		 //echo $sqlStartLevel;
-		 $LevelId = MySqlQuery($sqlStartLevel);
 
-                 // Привязываем точку только в случае старта. 
-		 // Для смены карт точка уже привязан к прредыдущему этапу
-                 if ($Row['pointtype_id'] == 1)
-		 {
+            // При insert должен вернуться последний id - это реализовано в MySqlQuery
+            $LevelId = MySqlQuery($sqlStartLevel);
 
-		    $sqlPoint = "update LevelPoints set level_id = $LevelId
+            // Привязываем точку только в случае старта.
+            // Для смены карт точка уже привязан к предыдущему этапу
+            if ($Row['pointtype_id'] == 1) {
+                $sqlPoint = "update LevelPoints set level_id = $LevelId
 				       where levelpoint_id = {$Row['levelpoint_id']}";
-			
-		     MySqlQuery($sqlPoint);
-		  }   
-		  // Конец проверки на привязку точки старта
 
-	       }       
-               // Конец проверки на необходимость создать новый этап (старт или смену карт)
-             
-//	        echo  $Row['levelpoint_name'].'  '.$Row['pointtype_id']; 
-	     
-	       // Точка, кроме старта, финиша или смены карт 
-	       if ($LevelId > 0 and $Row['pointtype_id'] <> 1  and $Row['pointtype_id'] <> 2 and $Row['pointtype_id'] <> 4)
-	       {
-	       
-	          $sqlPoint = "update LevelPoints set level_id = $LevelId
-			       where levelpoint_id = {$Row['levelpoint_id']}";
-			
-		  MySqlQuery($sqlPoint);
+                MySqlQuery($sqlPoint);
+            }
+            // Конец проверки на привязку точки старта
 
-                  if ($Row['levelpoint_discount'] <> 0) 
-		  {
-		     if ($LevelDiscountValue == 0)
-		     {
-			$LevelDiscountValue = $Row['levelpoint_discount'];
-                     }
-	             $LevelDiscountPoints .= ",1";
-		  } else {
-                     $LevelDiscountPoints .= ",0";
-		  }
-	       
-       	          $LevelPoints .= ",".$Row['levelpoint_name'];
-		  $LevelPenalties .= ",".$Row['levelpoint_penalty'];
-	       }       
-               // Конец проверки, что точка не смена карт старт или финиш
+        }
+        // Конец проверки на необходимость создать новый этап (старт или смену карт)
+        // Точка, кроме старта, финиша или смены карт
+        if (
+            $LevelId > 0
+            && $Row['pointtype_id'] <> 1
+            && $Row['pointtype_id'] <> 2
+            && $Row['pointtype_id'] <> 4
+        ) {
+            $sqlPoint = "update LevelPoints set level_id = $LevelId where levelpoint_id = {$Row['levelpoint_id']}";
 
-	 }
-         // Конец цикла 
-	 mysqli_free_result($Result);
-}
-// ============ Впечатления  =============
-elseif ($action == 'ViewUsersLinksPage')
-{
-	if ($RaidId <= 0)
-	{
-		CMmb::setErrorMessage('Id ММБ не указан');
-		return;
-	}
-	
-//       	print '2';
-	CMmb::setViews('ViewUsersLinks', '');
-}
-// ============ Значки  =============
-elseif ($action == 'ViewAllBadgesPage')
-{
-	
-  //     	print '1';
-	CMmb::setViews('ViewAllBadges', '');
-}
+            MySqlQuery($sqlPoint);
 
-// ============ Никаких действий не требуется =================================
-else
-{
+            if ($Row['levelpoint_discount'] <> 0) {
+                if ($LevelDiscountValue == 0) {
+                    $LevelDiscountValue = $Row['levelpoint_discount'];
+                }
+                $LevelDiscountPoints .= ",1";
+            } else {
+                $LevelDiscountPoints .= ",0";
+            }
+
+            $LevelPoints .= "," . $Row['levelpoint_name'];
+            $LevelPenalties .= "," . $Row['levelpoint_penalty'];
+        }
+        // Конец проверки, что точка не смена карт старт или финиш
+
+    }
+    // Конец цикла
+    mysqli_free_result($Result);
+} elseif ($action === 'ViewUsersLinksPage') {
+    // ============ Впечатления  =============
+    if ($RaidId <= 0) {
+        CMmb::setErrorMessage('Id ММБ не указан');
+        return;
+    }
+
+    CMmb::setViews('ViewUsersLinks', '');
+} elseif ($action === 'ViewAllBadgesPage') {
+    // ============ Значки  =============
+
+    CMmb::setViews('ViewAllBadges', '');
 }
 
 ?>
