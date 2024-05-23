@@ -1,68 +1,70 @@
 <?php
-// +++++++++++ Показ/редактирование данных команды ++++++++++++++++++++++++++++
+
+/**
+ * +++++++++++ Показ/редактирование данных команды ++++++++++++++++++++++++++++
+ */
 
 // Выходим, если файл был запрошен напрямую, а не через include
-if (!isset($MyPHPScript)) return;
+if (!isset($MyPHPScript)) {
+    return;
+}
 
-if (!isset($viewmode)) $viewmode = "";
-if (!isset($viewsubmode)) $viewsubmode = "";
+if (!isset($viewmode)) {
+    $viewmode = "";
+}
+if (!isset($viewsubmode)) {
+    $viewsubmode = "";
+}
 
 // ================ Добавляем новую команду ===================================
-if ($viewmode == 'Add')
-{
-	if (($RaidId <= 0) || ($UserId <= 0))
-	{
-		CMmb::setErrorMessage('Для регистрации новой команды обязателен идентификатор пользователя и ММБ');
-		return;
-	}
+if ($viewmode === 'Add') {
+    if (($RaidId <= 0) || ($UserId <= 0)) {
+        CMmb::setErrorMessage('Для регистрации новой команды обязателен идентификатор пользователя и ММБ');
+        return;
+    }
 
-	// Если запрещено создавать команду - молча выходим, сообщение уже выведено в teamaction.php
-	//if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)) return;
-	if (!CRights::canCreateTeam($UserId, $RaidId))
-		return;
-
+    // Если запрещено создавать команду - молча выходим, сообщение уже выведено в teamaction.php
+    //if (!CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)) return;
+    if (!CRights::canCreateTeam($UserId, $RaidId)) {
+        return;
+    }
 
 	$Sql = "select user_email from Users where user_id = $UserId";
 	$UserEmail = CSql::singleValue($Sql, 'user_email');
 
-	// Если вернулись после ошибки переменные не нужно инициализировать
-	if ($viewsubmode == "ReturnAfterError")
-	{
-		ReverseClearArrays();
-		$TeamNum = (int) $_POST['TeamNum'];
-		$TeamName = CMmbUi::toHtml($_POST['TeamName']);
-		$DistanceId = mmb_validateInt($_POST, 'DistanceId');
-		$TeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
-		$TeamMapsCount = (int)$_POST['TeamMapsCount'];
-		$TeamRegisterDt = 0;
-		$TeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
-		$TeamDismiss = 0;
-	}
-	else
-	// Пробуем создать команду первый раз
-	{
-		$TeamNum = 'Номер';
-		$TeamName = 'Название команды';
-		$DistanceId = 0;
-		$TeamUseGPS = 0;
-		$TeamMapsCount = 0;
-		$TeamRegisterDt = 0;
-		$TeamGreenPeace = 0;
-		$TeamDismiss = 0;
-	}
+    // Если вернулись после ошибки переменные не нужно инициализировать
+    if ($viewsubmode === "ReturnAfterError") {
+        ReverseClearArrays();
+        $TeamNum = (int)$_POST['TeamNum'];
+        $TeamName = CMmbUi::toHtml($_POST['TeamName']);
+        $DistanceId = mmb_validateInt($_POST, 'DistanceId');
+        $TeamUseGPS = mmb_isOn($_POST, 'TeamUseGPS');
+        $TeamMapsCount = (int)$_POST['TeamMapsCount'];
+        $TeamRegisterDt = 0;
+        $TeamGreenPeace = mmb_isOn($_POST, 'TeamGreenPeace');
+        $TeamDismiss = 0;
+    } else {
+        // Пробуем создать команду первый раз
+        $TeamNum = 'Номер';
+        $TeamName = 'Название команды';
+        $DistanceId = 0;
+        $TeamUseGPS = 0;
+        $TeamMapsCount = 0;
+        $TeamRegisterDt = 0;
+        $TeamGreenPeace = 0;
+        $TeamDismiss = 0;
+    }
 
-	// Определяем следующее действие
-	$NextActionName = 'AddTeam';
-	// Действие на текстовом поле по клику
-	$OnClickText = ' onClick="javascript:this.value = \'\';"';
-	// Надпись на кнопке
-	$SaveButtonText = 'Создать команду';
-	$UnionButtonText = 'Добавить в объединение';
-}
+    // Определяем следующее действие
+    $NextActionName = 'AddTeam';
+    // Действие на текстовом поле по клику
+    $OnClickText = ' onClick="javascript:this.value = \'\';"';
+    // Надпись на кнопке
+    $SaveButtonText = 'Создать команду';
+    $UnionButtonText = 'Добавить в объединение';
+} else {
+    // ================ Редактируем/смотрим существующую команду =================
 
-else
-// ================ Редактируем/смотрим существующую команду =================
-{
 	// Проверка нужна только для случая регистрация новой команды
 	// Только тогда Id есть в переменной php, но нет в вызывающей форме
 	if ($TeamId <= 0)
@@ -96,7 +98,7 @@ else
 	$TeamDismiss = (int)$Row['team_dismiss'];
 
 	// Если вернулись после ошибки переменные не нужно инициализировать
-	if ($viewsubmode == "ReturnAfterError")
+	if ($viewsubmode === "ReturnAfterError")
 	{
 		ReverseClearArrays();
 		$TeamNum = (int) $_POST['TeamNum'];
@@ -127,23 +129,25 @@ else
 // ================ Конец инициализации переменных команды =================
 
 // Определяем права по редактированию команды
-if (($viewmode == "Add") || CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
-{
-	$AllowEdit = 1;
-	$DisabledText = '';
-	$OnSubmitFunction = 'return ValidateTeamDataForm();';
-}
-else
-{
-	$AllowEdit = 0;
-	$DisabledText = ' disabled';
-	$OnSubmitFunction = 'return false;';
+if (
+    $viewmode === "Add"
+    || CanEditTeam($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)
+) {
+    $AllowEdit = 1;
+    $DisabledText = '';
+    $OnSubmitFunction = 'return ValidateTeamDataForm();';
+} else {
+    $AllowEdit = 0;
+    $DisabledText = ' disabled';
+    $OnSubmitFunction = 'return false;';
 }
 
 // Определяем права по просмотру результатов
-if (($viewmode <> "Add") && CanViewResults($Administrator, $Moderator, $RaidStage))
-	$AllowViewResults = 1;
-else $AllowViewResults = 0;
+if (($viewmode !== "Add") && CanViewResults($Administrator, $Moderator, $RaidStage)) {
+    $AllowViewResults = 1;
+} else {
+    $AllowViewResults = 0;
+}
 
 // Получаем параметры марш-броска
 $sql = "select r.raid_name, r.raid_registrationenddate, raid_mapprice, raid_teamslimit,
@@ -182,8 +186,6 @@ $RaidRulesLink = CSql::raidFileLink($RaidId, 1, false);
 	{
 		document.TeamDataForm.action.value = '<?php echo $NextActionName; ?>';
 		document.TeamDataForm.submit();
-
-		//return true;
 	}
 
 	// Удалить команду
@@ -248,8 +250,6 @@ $RaidRulesLink = CSql::raidFileLink($RaidId, 1, false);
 		document.TeamDataForm.action.value = "InviteTeam";
 		document.TeamDataForm.submit();
 	}
-
-
 </script>
 
 <?php
@@ -262,71 +262,66 @@ print('<input type="hidden" name="HideTeamUserId" value="0">'."\n");
 print('<input type="hidden" name="UserOutLevelId" value="0">'."\n");
 print('<input type="hidden" name="UserNotInLevelPointId" value="0">'."\n");
 print('<input type="hidden" name="UserId" value="0">'."\n\n");
-if (($viewmode == "Add") && !$Moderator && !$Administrator)
+if (($viewmode === "Add") && !$Moderator && !$Administrator)
 	// В новой команде, которую заводит не модератор/администратор, будет единственный участник - тот, который создал команду
 	print('<input type="hidden" name="NewTeamUserEmail" size="50" value="'.$UserEmail.'" >'."\n");
 
 // ============ Показываем шапку перед таблицей о том, что можно и что нельзя
-if ($viewmode == "Add")
+if ($viewmode === "Add")
 // Создание новой команды
 {
 	print('<strong>Создание новой команды на ММБ '.$RaidName.'</strong><br/><input type="hidden" name="TeamNum" value="0"><br/>'."\n");
-	if ($RaidStage <= 1)
-	// Регистрация открыта
-	{
-		// если регистрация закончилось или мы ждем, когда админы выдадут приглашения по рейтингу/лотерее, то ничего про дедлайн для приглашений не выводим
-		if (($InvitationEnd != "REG_END") && ($InvitationEnd != "NO_RATING") && ($InvitationEnd != "NO_LOTTERY"))
-		{
-			if ($InvitationEnd == "LOT_END")
-				// лотерея проведена, смысла создавать новую команду нет
-				print('Лимит на количество команд на марш-броске исчерпан'.".<br/>\n");
-			else
-				// когда закончится срок активации выданных приглашений, то создавать команды смысла нет, их никто не сможет пригласить
-				print('Создание команд открыто до '.$InvitationEnd.".<br/>\n");
-		}
-		print('Добавление участников в команды открыто до '.$RegistrationEnd.".\n");
-		print('<br/>Если Вы хотите участвовать в ММБ в составе другой команды, то не создавайте свою, а попросите участников той команды добавить Вас в ее состав.'."\n");
-		print('<br/>Если Вы хотите добавить других участников в свою команду, то Вы сможете это сделать после создания команды.'."\n");
-	}
-	else
-	// Регистрация закрыта
-	{
-		print('Регистрация на ММБ закончилась '.$RegistrationEnd.'<br/>'."\n");
 
-	}
-}
-else
-// Редактирование / просмотр команды
-{
-	print('Команда N <b>'.$TeamNum.'</b> на ММБ '.$RaidName.' <input type="hidden" name="TeamNum" value="'.$TeamNum.'"><br/>'."\n");
-	$RegisterDtFontColor = ($TeamLate == 1) ? '#BB0000' : '#000000';
-	print('Создана <span style="color: '.$RegisterDtFontColor.';">'.$TeamRegisterDt.'</span><br/>'."\n\n");
+    // Регистрация открыта
+    if ($RaidStage <= 1) {
+        // если регистрация закончилось или мы ждем, когда админы выдадут приглашения по рейтингу/лотерее,
+        // то ничего про дедлайн для приглашений не выводим
+        if ($InvitationEnd !== "REG_END" && $InvitationEnd !== "NO_RATING" && $InvitationEnd !== "NO_LOTTERY") {
+            if ($InvitationEnd === "LOT_END") // лотерея проведена, смысла создавать новую команду нет
+            {
+                print('Лимит на количество команд на марш-броске исчерпан' . ".<br/>\n");
+            } else {
+                // когда закончится срок активации выданных приглашений, то создавать команды смысла нет, их никто не сможет пригласить
+                print('Создание команд открыто до ' . $InvitationEnd . ".<br/>\n");
+            }
+        }
+        print('Добавление участников в команды открыто до ' . $RegistrationEnd . ".\n");
+        print('<br/>Если Вы хотите участвовать в ММБ в составе другой команды, то не создавайте свою, а попросите участников той команды добавить Вас в ее состав.' . "\n");
+        print('<br/>Если Вы хотите добавить других участников в свою команду, то Вы сможете это сделать после создания команды.' . "\n");
+    } else {
+        // Регистрация закрыта
+        print('Регистрация на ММБ закончилась ' . $RegistrationEnd . '<br/>' . "\n");
+    }
+} else {
+    // Редактирование / просмотр команды
+    print('Команда N <b>' . $TeamNum . '</b> на ММБ ' . $RaidName . ' <input type="hidden" name="TeamNum" value="' . $TeamNum . '"><br/>' . "\n");
+    $RegisterDtFontColor = ($TeamLate == 1) ? '#BB0000' : '#000000';
+    print('Создана <span style="color: ' . $RegisterDtFontColor . ';">' . $TeamRegisterDt . '</span><br/>' . "\n\n");
 
-	if ($TeamUser and $TeamOutOfRange)
-	// Пользователь смотрит свою команду. Предупредим его, если команда вне зачета.
-	{
-		print('<br/>Ваша команда <b>ожидает приглашения</b>.<br/>'."\n");
-//		print('<br/>Ваша команда зарегистрирована <b>вне зачета</b>.<br/>'."\n");
-	//	print('Такая команда не отмечается судьями на дистанции, не получает места в итоговом протоколе и имеет ряд других ограничений.<br/>'."\n");
-		print('Подробнее смотрите в <a href="'.$RaidRulesLink.'">Положении</a>.'."\n");
-	}
+    if ($TeamUser and $TeamOutOfRange) // Пользователь смотрит свою команду. Предупредим его, если команда вне зачета.
+    {
+        print('<br/>Ваша команда <b>ожидает приглашения</b>.<br/>' . "\n");
+        //print('<br/>Ваша команда зарегистрирована <b>вне зачета</b>.<br/>'."\n");
+        //print('Такая команда не отмечается судьями на дистанции, не получает места в итоговом протоколе и имеет ряд других ограничений.<br/>'."\n");
+        print('Подробнее смотрите в <a href="' . $RaidRulesLink . '">Положении</a>.' . "\n");
+    }
 
-	// Ссылка на пригласившего команду участника
-	if ($TeamInvitation)
-	{
-		$sql = "SELECT Invitations.user_id,
+    // Ссылка на пригласившего команду участника
+    if ($TeamInvitation) {
+        $sql = "SELECT Invitations.user_id,
 				CASE WHEN COALESCE(Users.user_noshow, 0) = 1 THEN '$Anonimus' ELSE Users.user_name END as user_name,
 				invitationdelivery_type FROM Users, Invitations, InvitationDeliveries
 				WHERE invitation_id = $TeamInvitation
 					AND Invitations.invitationdelivery_id = InvitationDeliveries.invitationdelivery_id
 					AND Invitations.user_id = Users.user_id";
-		$Result = MySqlQuery($sql);
-		$Row = CSql::singleRow($sql);
-		if ($Row['invitationdelivery_type'] == 1)
-			echo 'Команду пригласил(а) <a href="?UserId=' . $Row['user_id'] . '">' . CMmbUI::toHtml($Row['user_name']) . '</a><br/>'."\n";
-		else if ($Row['invitationdelivery_type'] == 2)
-			echo 'Команда выиграла приглашение в лотерею<br/>'."\n";
-	}
+        $Result = MySqlQuery($sql);
+        $Row = CSql::singleRow($sql);
+        if ($Row['invitationdelivery_type'] == 1) {
+            echo 'Команду пригласил(а) <a href="?UserId=' . $Row['user_id'] . '">' . CMmbUI::toHtml($Row['user_name']) . '</a><br/>' . "\n";
+        } elseif ($Row['invitationdelivery_type'] == 2) {
+            echo 'Команда выиграла приглашение в лотерею<br/>' . "\n";
+        }
+    }
 
 /*
 	if ($TeamsLimit and ($TeamWait <> '') and ($RaidStage <= 1))
@@ -363,46 +358,37 @@ print('Дистанция '."\n");
 // при правке дистанцию можно менять только до закрытия регистрации участнику
 // и нельзя не участнику, если он не модератор  для команд в зачете
 // для команд вне зачета до закрытия проткола
-	if (
-		($viewmode == 'Add' and CSql::raidStage($RaidId) < 7)
-		or ($viewmode <> 'Add' and CRights::canEditTeam($UserId, $RaidId, $TeamId))
-	   )
-	{
-		$DisabledDistance =  0;
-	} else {
-		$DisabledDistance = 1;
-	}
-
+if (
+    ($viewmode === 'Add' && CSql::raidStage($RaidId) < 7)
+    || ($viewmode !== 'Add' && CRights::canEditTeam($UserId, $RaidId, $TeamId))
+) {
+    $DisabledDistance = 0;
+} else {
+    $DisabledDistance = 1;
+}
 
 if (!$DisabledDistance) {
-
-	// Показываем выпадающий список дистанций
-	print('<select name="DistanceId" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
-	$sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
-	$Result = MySqlQuery($sql);
-	while ($Row = mysqli_fetch_assoc($Result))
-	{
-		$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
-		print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
-	}
-	mysqli_free_result($Result);
-	print('</select>'."\n");
-
-	
-}  else {
-
-	print('<input type="hidden" name="DistanceId" size="50" value="'.$DistanceId.'" tabindex="'.(++$TabIndex).'">'."\n");
-	print('<select name="DistanceDisabledId" class="leftmargin" tabindex="'.(++$TabIndex).'" disabled>'."\n");
-	$sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
-	$Result = MySqlQuery($sql);
-	while ($Row = mysqli_fetch_assoc($Result))
-	{
-		$distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
-		print('<option value="'.$Row['distance_id'].'" '.$distanceselected.' >'.$Row['distance_name']."</option>\n");
-	}
-	mysqli_free_result($Result);
-	print('</select>'."\n");
-
+    // Показываем выпадающий список дистанций
+    print('<select name="DistanceId" class="leftmargin" tabindex="' . (++$TabIndex) . '">' . "\n");
+    $sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
+    $Result = MySqlQuery($sql);
+    while ($Row = mysqli_fetch_assoc($Result)) {
+        $distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
+        print('<option value="' . $Row['distance_id'] . '" ' . $distanceselected . ' >' . $Row['distance_name'] . "</option>\n");
+    }
+    mysqli_free_result($Result);
+    print('</select>' . "\n");
+} else {
+    print('<input type="hidden" name="DistanceId" size="50" value="' . $DistanceId . '" tabindex="' . (++$TabIndex) . '">' . "\n");
+    print('<select name="DistanceDisabledId" class="leftmargin" tabindex="' . (++$TabIndex) . '" disabled>' . "\n");
+    $sql = "select distance_id, distance_name from Distances where distance_hide = 0 and raid_id = $RaidId";
+    $Result = MySqlQuery($sql);
+    while ($Row = mysqli_fetch_assoc($Result)) {
+        $distanceselected = ($Row['distance_id'] == $DistanceId ? 'selected' : '');
+        print('<option value="' . $Row['distance_id'] . '" ' . $distanceselected . ' >' . $Row['distance_name'] . "</option>\n");
+    }
+    mysqli_free_result($Result);
+    print('</select>' . "\n");
 }
 // Конец проверки на блокировку выбора дистанции
 
@@ -416,33 +402,28 @@ print('<tr><td class="input"><input type="text" name="TeamName" size="50" value=
 print('<tr><td class="input">'."\n");
 
 
-
-
-// ============ Вне зачета
+// ============ Вне зачета =========
 
 if ($RaidId <=27) {
 	// Если регистрация команды, то атрибут "вне зачёта" не может изменить даже администратор - этот параметр рассчитывается по времени
 	// администратор может поменять флаг при правке
-	if ($viewmode <> "Add" and CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
-		$DisabledTextOutOfRange = '';
-	else
-		$DisabledTextOutOfRange = 'disabled';
+    if ($viewmode <> "Add" and CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)) {
+        $DisabledTextOutOfRange = '';
+    } else {
+        $DisabledTextOutOfRange = 'disabled';
+    }
 
 	print('Вне зачета! <input type="checkbox" name="TeamOutOfRange" value="on"'.(($TeamOutOfRange == 1) ? ' checked="checked"' : '')
 		.' tabindex="'.(++$TabIndex).'" '.$DisabledTextOutOfRange.' title="Команда вне зачета"/> &nbsp;'."\n");
 } else {
+    if ($TeamOutOfRange) {
+        print('Ожидает приглашения!&nbsp;' . "\n");
+    }
 
- 	if ($TeamOutOfRange) {
-		print('Ожидает приглашения!&nbsp;'."\n");
- 	}
-
-
-	// 09/06/2016 Покащзываем кнопку активации
-	if (CRights::canInviteTeam($UserId, $TeamId))
-	{
-		print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите перевести эту команду в зачет? \')) { InviteTeam(); }" name="InviteTeamButton" value="Пригласить команду" tabindex="'.(++$TabIndex).'">'."\r\n");
-	
-	}	
+    // 09/06/2016 Показываем кнопку активации
+    if (CRights::canInviteTeam($UserId, $TeamId)) {
+        print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите перевести эту команду в зачет? \')) { InviteTeam(); }" name="InviteTeamButton" value="Пригласить команду" tabindex="' . (++$TabIndex) . '">' . "\r\n");
+    }
 }
 
 print('</td></tr>'."\n\n");
@@ -460,15 +441,14 @@ print('&nbsp; Комплектов карт <input type="text" name="TeamMapsCou
 // ============ расчет стоимости
 // для новых команд мы еще не знаем количество заказанных карт,
 // а командам вне зачета мы ничего не обещаем и только сообщаем, почем они могут купить карты на старте при их наличии
-if (($viewmode == "Add") || $TeamOutOfRange)
-{
-	$sql = "select r.raid_mapprice from Raids r where r.raid_id = $RaidId";
-	$MapPrice = CSql::singleValue($sql, 'raid_mapprice');
-	print('(стоимость одного комплекта '.$MapPrice.' руб.)'."\n");
+if (($viewmode === "Add") || $TeamOutOfRange) {
+    $sql = "select r.raid_mapprice from Raids r where r.raid_id = $RaidId";
+    $MapPrice = CSql::singleValue($sql, 'raid_mapprice');
+    print('(стоимость одного комплекта ' . $MapPrice . ' руб.)' . "\n");
+} elseif ($TeamUser || $Administrator || $Moderator) {
+    // показываем стоимость карт только при просмотре своей команды или админам/модераторам
+    print('К оплате на старте: <b>' . CalcualteTeamPayment($TeamId) . '</b> руб. &nbsp;' . "\n");
 }
-else if ($TeamUser or $Administrator or $Moderator)
-	// показываем стоимость карт только при просмотре своей команды или админам/модераторам
-	print('К оплате на старте: <b>'.CalcualteTeamPayment($TeamId).'</b> руб. &nbsp;'."\n");
 
 print('</td></tr>'."\n\n");
 
@@ -478,19 +458,17 @@ print('<a href="https://community.livejournal.com/-mmb-/2010/09/24/">Нет сл
 	.' tabindex="'.(++$TabIndex).'"'.$DisabledText.' title="Отметьте, если команда берёт повышенные экологические обязательства"/>'."\n");
 print("</td></tr>\r\n");
 
-
-
-
 // ============ Участники
 // Их еще нет при создании команды
-if ($viewmode <> "Add")
+if ($viewmode !== "Add")
 {
 	print('<tr><td class="input" style="padding-top: 10px;">'."\n");
 
 	// Если команда в зачете и пользователь смотрит свою команду, то напомним ему о возможности удалять участников и сообщим deadline
 	// Правильность состава команд вне зачета нас не особо интересует
-	if ($TeamUser and !$TeamOutOfRange and $AllowEdit)
-		print('Если кто-то из участников не сможет участвовать в ММБ, удалите его до '.$EditEnd.".\n");
+	if ($TeamUser and !$TeamOutOfRange and $AllowEdit) {
+        print('Если кто-то из участников не сможет участвовать в ММБ, удалите его до ' . $EditEnd . ".\n");
+    }
 
 	$sql = "select tu.teamuser_id,
 			tu.teamuser_notstartraidid,
@@ -537,8 +515,9 @@ if ($viewmode <> "Add")
 		print("<a href=\"?UserId={$Row['user_id']}\">$userName</a> {$Row['user_birthyear']}\n");
 
 		// Отметка невыхода на старт в предыдущем ММБ
-		if ($Row['teamuser_notstartraidid'] > 0)
-			print(' <a title="Участник был заявлен, но не вышел на старт в прошлый раз" href="#comment">(?!)</a> ');
+		if ($Row['teamuser_notstartraidid'] > 0) {
+            print(' <a title="Участник был заявлен, но не вышел на старт в прошлый раз" href="#comment">(?!)</a> ');
+        }
 
 		print("</div>\n");
 	}
@@ -560,18 +539,21 @@ if ($viewmode <> "Add")
 // при добавлении команды можно только модераторам или администраторам
 // при правке - в зависимости от типа команды
 
-if (       ($viewmode <> 'Add' and CRights::canEditTeam($UserId, $RaidId, $TeamId))
-    	or ($viewmode == 'Add' and (CSql::userAdmin($UserId) or CSql::userModerator($UserId, $RaidId)) and CSql::raidStage($RaidId) < 7)
+if (
+    ($viewmode !== 'Add' && CRights::canEditTeam($UserId, $RaidId, $TeamId))
+    || (
+        $viewmode === 'Add'
+        && (CSql::userAdmin($UserId) || CSql::userModerator($UserId, $RaidId))
+        && CSql::raidStage($RaidId) < 7
     )
-{
-	print('<tr><td class="input" style="padding-top: 10px;">'."\n");
+) {
+    print('<tr><td class="input" style="padding-top: 10px;">' . "\n");
 
 	// Предупредим команды в зачете о том, что они могут добавлять участников только до закрытия регистрации
-	if ($TeamUser and !$TeamOutOfRange)
-	{
-		print('Добавление новых участников в команду разрешено до '.$RegistrationEnd.".<br/>\n");
-		//print('После этой даты они могут участвовать в ММБ только в виде самостоятельной команды вне зачета.<br/>'."\n");
-	}
+    if ($TeamUser and !$TeamOutOfRange) {
+        print('Добавление новых участников в команду разрешено до ' . $RegistrationEnd . ".<br/>\n");
+        //print('После этой даты они могут участвовать в ММБ только в виде самостоятельной команды вне зачета.<br/>'."\n");
+    }
 
 	print('<input type="text" name="NewTeamUserEmail" size="50" value="Email нового участника" tabindex="'.(++$TabIndex) .'"'
 		. CMmbUI::placeholder('Email нового участника') . 'title="Укажите e-mail пользователя, которого Вы хотите добавить в команду. Пользователь может запретить добавлять себя в команду в настройках своей учетной записи.">'."\n");
@@ -579,31 +561,29 @@ if (       ($viewmode <> 'Add' and CRights::canEditTeam($UserId, $RaidId, $TeamI
 }
 
 // 20/02/2014 Пользовательское соглашение
-if (($viewmode == "Add") && ($AllowEdit == 1) )
+if (($viewmode === "Add") && ($AllowEdit === 1) )
 {
 	print('<tr><td class="input" style="padding-top: 10px; font-size: 80%;">'."\n");
 	print('<b>Условия участия (выдержка из <a href="'.$RaidRulesLink.'">положения</a>):</b><br/>'."\n");
 
 	// Ищем последнее пользовательское соглашение
-	$ConfirmFile = trim($MyStoreHttpLink).CSql::raidFileName(null, 8, true); 
+	$ConfirmFile = trim($MyStoreHttpLink).CSql::raidFileName(null, 8, true);
 
-	$Fp = @fopen($ConfirmFile, "r");
-	if ($Fp === false)
-	{
-		print("Файл с положением на сайт не загружен\n");
-		CMmbLogger::e('raidFileLink', "File '$ConfirmFile' doesn't exist");
-	}
-	else
-	{
-		while ((!feof($Fp)) && (!strpos(trim(fgets($Fp, 4096)),'body')));
-		$NowStr = '';
-		while ((!feof($Fp)) && (!strpos(trim($NowStr),'/body')))
-		{
-			print(trim($NowStr)."\r\n");
-			$NowStr = fgets($Fp, 4096);
-		}
-		fclose($Fp);
-	}
+    $Fp = @fopen($ConfirmFile, "r");
+    if ($Fp === false) {
+        print("Файл с положением на сайт не загружен\n");
+        CMmbLogger::e('raidFileLink', "File '$ConfirmFile' doesn't exist");
+    } else {
+        while ((!feof($Fp)) && (!strpos(trim(fgets($Fp, 4096)), 'body'))) {
+            ;
+        }
+        $NowStr = '';
+        while ((!feof($Fp)) && (!strpos(trim($NowStr), '/body'))) {
+            print(trim($NowStr) . "\r\n");
+            $NowStr = fgets($Fp, 4096);
+        }
+        fclose($Fp);
+    }
 
 	print("</td></tr>\r\n");
 
@@ -615,29 +595,26 @@ if (($viewmode == "Add") && ($AllowEdit == 1) )
 // конец блока пользовательского соглашения
 
 // ================ Submit для формы ==========================================
-if ($AllowEdit == 1)
+if ($AllowEdit === 1)
 {
 	print('<tr><td class="input" style="padding-top: 10px;">'."\n");
 	print('<input type="button" onClick="javascript: ValidateTeamDataForm();" name="RegisterButton" value="'.$SaveButtonText.'" tabindex="'.(++$TabIndex).'">'."\n");
 	print('<select name="view" class="leftmargin" tabindex="'.(++$TabIndex).'">'."\n");
-	if ($viewmode == 'Add')
-	{
-		print('<option value="ViewTeamData" selected>и перейти к карточке команды</option>'."\n");
-		print('<option value="ViewRaidTeams">и перейти к списку команд</option>'."\n");
-		print('</select>'."\n");
-		print('<input type="button" onClick="javascript: CancelAdd();" name="CancelButton" value="Отмена" tabindex="'.(++$TabIndex).'">'."\n");
-	}
-	else
-	{
-		print('<option value="ViewTeamData">и остаться на этой странице</option>'."\n");
-		print('<option value="ViewRaidTeams" selected>и перейти к списку команд</option>'."\n");
-		print('</select>'."\n");
-		print('<input type="button" onClick="javascript: CancelEdit();" name="CancelButton" value="Отмена" tabindex="'.(++$TabIndex).'">'."\n");
-	}
+    if ($viewmode === 'Add') {
+        print('<option value="ViewTeamData" selected>и перейти к карточке команды</option>' . "\n");
+        print('<option value="ViewRaidTeams">и перейти к списку команд</option>' . "\n");
+        print('</select>' . "\n");
+        print('<input type="button" onClick="javascript: CancelAdd();" name="CancelButton" value="Отмена" tabindex="' . (++$TabIndex) . '">' . "\n");
+    } else {
+        print('<option value="ViewTeamData">и остаться на этой странице</option>' . "\n");
+        print('<option value="ViewRaidTeams" selected>и перейти к списку команд</option>' . "\n");
+        print('</select>' . "\n");
+        print('<input type="button" onClick="javascript: CancelEdit();" name="CancelButton" value="Отмена" tabindex="' . (++$TabIndex) . '">' . "\n");
+    }
 	print('</td></tr>'."\n\n");
 
 	// Кнопка удаления всей команды для тех, кто имеет право
-	if ($viewmode <> "Add")
+	if ($viewmode !== "Add")
 	{
 		print('<tr><td class="input" style="padding-top: 10px;">');
 		// Попросим членов команды в зачете удалить свою команду, если они передумали участвовать
@@ -646,19 +623,23 @@ if ($AllowEdit == 1)
 		{
 			print('Если Ваша команда не сможет участвовать в ММБ, пожалуйста, удалите ее до '.$EditEnd.".<br/>\n");
 			// Напомним о тех, кто в листе ожидания
-			if (($RaidStage <= 1) and $WaitCount)
-				print('Если Вы успеете удалить свою команду до '.$RegistrationEnd.', то первая из '.$WaitCount.' команд в листе ожидания сможет участвовать в зачете благодаря Вам.<br/>'."\n");
+			if (($RaidStage <= 1) and $WaitCount) {
+                print('Если Вы успеете удалить свою команду до ' . $RegistrationEnd . ', то первая из ' . $WaitCount . ' команд в листе ожидания сможет участвовать в зачете благодаря Вам.<br/>' . "\n");
+            }
 		}
-		print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить команду: '.trim($TeamName).'? \')) {HideTeam();}" name="HideTeamButton" value="Удалить команду" tabindex="'.(++$TabIndex).'"> </td></tr>'."\n");
+		print('<input type="button" onClick="if (confirm(\'Вы уверены, что хотите удалить команду: '.trim($TeamName).'? \')) {HideTeam();}" name="HideTeamButton" value="Удалить команду" tabindex="'.(++$TabIndex).'"> </td></tr>'."\n");
 	}
 
-	// для Администратора/Модератора добавляем кнопку "Объединить"
-	if (($Administrator or $Moderator) and $viewmode <> 'Add' and $TeamOutOfRange == 0)
-	{
-		print('<tr><td class="input" style="padding-top: 10px;">'."\r\n");
-		print('<input type="button" onClick="javascript: AddTeamInUnion();" name="UnionButton" value="'.$UnionButtonText.'" tabindex="'.(++$TabIndex).'">'."\r\n");
-		print('</td></tr>'."\r\n");
-	}
+    // для Администратора/Модератора добавляем кнопку "Объединить"
+    if (
+        ($Administrator || $Moderator)
+        && $viewmode !== 'Add'
+        && $TeamOutOfRange == 0
+    ) {
+        print('<tr><td class="input" style="padding-top: 10px;">' . "\r\n");
+        print('<input type="button" onClick="javascript: AddTeamInUnion();" name="UnionButton" value="' . $UnionButtonText . '" tabindex="' . (++$TabIndex) . '">' . "\r\n");
+        print('</td></tr>' . "\r\n");
+    }
 }
 
 print("</table></form>\n");

@@ -1,4 +1,5 @@
-<?
+<?php
+
 // Устанавливаем часовой пояс по умолчанию
 date_default_timezone_set("Europe/Moscow");
 
@@ -76,7 +77,10 @@ try {
 } catch (Exception $e) {
     logError("Ошибка записи в базу: " . $e->getMessage());
 }
-if ($sql->rowCount() != 1) logError("Данные не записались в базу: ".$post);
+
+if ($sql->rowCount() != 1) {
+    logError("Данные не записались в базу: " . $post);
+}
 $sql = null;
 
 
@@ -90,18 +94,25 @@ function logError($message)
 // Форматирование JSON-объекта в строку для записи в базу
 function fetchParam($json, $param, $type)
 {
-  if (!isset($json[$param])) return null;
-  $value = json_encode($json[$param], JSON_NUMERIC_CHECK);
-  $value = str_replace("\\/", "/", $value);
-  if ($type == "value") return trim($value, '"');
-  elseif ($type == "array") return prettyPrint($value);
-  elseif ($type == "text")
-  {
-    $value = str_replace("\\n", "\n", $value);
-    $value = str_replace("\\t", "\t", $value);
-    return trim($value, '"');
-  }
-  logError("Неизвестный тип '$type'");
+    if (!isset($json[$param])) {
+        return null;
+    }
+    $value = json_encode($json[$param], JSON_NUMERIC_CHECK);
+    $value = str_replace("\\/", "/", $value);
+    if ($type === "value") {
+        return trim($value, '"');
+    }
+
+    if ($type === "array") {
+        return prettyPrint($value);
+    }
+
+    if ($type === "text") {
+        $value = str_replace("\\n", "\n", $value);
+        $value = str_replace("\\t", "\t", $value);
+        return trim($value, '"');
+    }
+    logError("Неизвестный тип '$type'");
 }
 
 // Эмуляция JSON_PRETTY_PRINT в json_encode, так как на сервере старая версия php, которая не поддерживает этот флаг

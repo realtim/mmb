@@ -1,8 +1,13 @@
 <?php
-// +++++++++++ Левое меню +++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+/**
+ * +++++++++++ Левое меню +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ */
 
 // Выходим, если файл был запрошен напрямую, а не через include
-if (!isset($MyPHPScript)) return;
+if (!isset($MyPHPScript)) {
+    return;
+}
 
 ?>
 <script language = "JavaScript">
@@ -38,7 +43,7 @@ if (!isset($MyPHPScript)) return;
 		document.UserLoginForm.submit();
 	}
 
-	// Одинаковые действия при регистрации поьзователя и обновлении данных.
+	// Одинаковые действия при регистрации пользователя и обновлении данных.
 	// Не уверен, что правильно так
 	function NewUser()
 	{
@@ -61,10 +66,9 @@ if (!isset($MyPHPScript)) return;
 //		var template = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-\_\.]+\.[A-Za-z0-9]{2,6}$/;
 //		var template = /^[A-Za-z0-9_\.]+@[A-Za-z0-9]+\.[A-Za-z0-9]{2,6}$/;
 //		var template = /^[A-Za-z0-9](([_\.\-]?[a-zA-Z0-9]+)*)@([A-Za-z0-9]+)(([\.\-]?[a-zA-Z0-9]+)*)\.([A-Za-z])+$/;
-		if (template.test(trimBoth(email)))
-		{
-			return true;
-		}
+        if (template.test(trimBoth(email))) {
+            return true;
+        }
 		return false;
 	}
 
@@ -278,38 +282,25 @@ if (!isset($MyPHPScript)) return;
 
 	// 21/03/2016 Новая логика показа ссылки "Новая команда"
 	// интервал: от регистрации до закрытия протокола
-	//  кому: всем, у кого ещё нет команды, мрдератору, администратору.
-	// Комменатрий: реально пользователь без спец.ю пав может создать команду только "Вне зачета" - это должно проверяться уже на этапе записи данных
-	// модератор и администратор могут указать не себя, а дргугоо пользователя, пожтому им нужно датьвозможность создавать команду, даже когда они сами уже участвуют в какой-то
-	// и - опрять же - проверка при записи данных, что ользователь может быть только в одной команде
+	//  кому: всем, у кого ещё нет команды, модератору, администратору.
+	// Комментарий: реально пользователь без спец.ю пав может создать команду только "Вне зачета" - это должно проверяться уже на этапе записи данных
+	// модератор и администратор могут указать не себя, а другого пользователя, поэтому им нужно дать возможность создавать команду, даже когда они сами уже участвуют в какой-то
+	// и - опять же - проверка при записи данных, что пользователь может быть только в одной команде
 	// 19/06/2015 Пользователь должен быть авторизован и иметь права
 	// Создание новой команды возможно, пока не закрыт протокол 
 		//CanCreateTeam($Administrator, $Moderator, $OldMmb, $RaidStage, $TeamOutOfRange)
 
-/*
-echo '-1 ';
-echo $UserId;
-echo '-2 ';
-echo $RaidId;
-echo '0 ';
-echo !CSql::userTeamId($UserId, $RaidId);
-echo '1 ';
-echo CSql::userAdmin($UserId);
-echo '2 ';
-echo CSql::userModerator($UserId, $RaidId);
-echo '3 ';
-echo CSql::raidStage($RaidId);
-echo '4 ';
-*/
-	if ($UserId and $RaidId and CRights::canCreateTeam($UserId, $RaidId))
-		print('<tr><td><a href="javascript:NewTeam();" title="Регистрация новой команды на выбранный выше ММБ">Заявить команду</a></td></tr>'."\r\n");
-	// !! реализовать показ ссылки на свою команду, если она существует !!
+    if ($UserId and $RaidId and CRights::canCreateTeam($UserId, $RaidId)) {
+        print('<tr><td><a href="javascript:NewTeam();" title="Регистрация новой команды на выбранный выше ММБ">Заявить команду</a></td></tr>' . "\r\n");
+    }
+    // !! реализовать показ ссылки на свою команду, если она существует !!
 
 
-	$teamId = CSql::userTeamId($UserId, $RaidId);
-	if ($teamId)
-		print("<tr><td><a href=\"$MyPHPScript?TeamId=$teamId\" title=\"Просмотр карточки Вашей команды\">Моя команда</a></td></tr>\r\n");
-	
+    $teamId = CSql::userTeamId($UserId, $RaidId);
+    if ($teamId) {
+        print("<tr><td><a href=\"$MyPHPScript?TeamId=$teamId\" title=\"Просмотр карточки Вашей команды\">Моя команда</a></td></tr>\r\n");
+    }
+
 	// Команды
 	print('<tr><td><a href="?protocol&RaidId='.$RaidId.'" title="Список команд для выбранного выше ММБ">Команды</a></td></tr>'."\r\n");
 
@@ -366,7 +357,7 @@ echo '4 ';
 	print('</form>'."\r\n");
 	print('</br>'."\r\n");
 
-	// Внешние сылки
+	// Внешние ссылки
 	print('<table class="menu" border="0" cellpadding="0" cellspacing="0">'."\r\n");
 	print('<tr><td><a href="https://github.com/realtim/mmb/wiki/%D0%92%D0%BE%D0%BF%D1%80%D0%BE%D1%81%D1%8B-%D0%B8-%D0%BE%D1%82%D0%B2%D0%B5%D1%82%D1%8B">Вопросы и ответы</a></td></tr>'."\r\n");
 	print('<tr><td><a href="https://community.livejournal.com/-mmb-/" title="Сообщество ММБ в Живом Журнале" target = "_blank">Сообщество в ЖЖ</a></td></tr>'."\r\n");
@@ -376,8 +367,9 @@ echo '4 ';
 	print('<tr><td><a href="?badges" title="Значки со всех ММБ">Все значки</a></td></tr>'."\r\n");
 	print('<tr><td><a href="'.$MyLocation.'vp_old.html" title="Ручная подборка впечатлений за 2003-2013гг" target = "_blank">Архив впечатлений</a></td></tr>'."\r\n");
 
-	if (CRights::canViewLogs($UserId))
-		print('<tr><td><a href="?logs" title="Просмотр логов">Логи</a></td></tr>'."\r\n");
+    if (CRights::canViewLogs($UserId)) {
+        print('<tr><td><a href="?logs" title="Просмотр логов">Логи</a></td></tr>' . "\r\n");
+    }
 
 	print("</table>\r\n");
 	print("</br>\r\n");
