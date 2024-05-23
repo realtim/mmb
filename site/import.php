@@ -32,7 +32,7 @@ else
 // Устанавливаем часовой пояс по умолчанию
 date_default_timezone_set("Europe/Moscow");
 // Подключаемся к базе
-$connectionId = mysqli_connect($ServerName, $WebUserName, $WebUserPassword);
+$connectionId = mysqli_connect($ServerName, $WebUserName, $WebUserPassword, null,$ServerPort ?? null);
 if ($connectionId <= 0) die(mysqli_connection_error());
 // Устанавливаем кодировку для взаимодействия
 mysqli_query($connectionId, 'set names \'utf8\'');

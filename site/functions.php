@@ -157,7 +157,7 @@ class CSql {
 		// Данные берём из settings
 		include("settings.php");
 
-		$connection = mysqli_connect($ServerName, $WebUserName, $WebUserPassword);
+		$connection = mysqli_connect($ServerName, $WebUserName, $WebUserPassword, null, $ServerPort ?? null);
 
 		// Ошибка соединения
 		if (!$connection)
