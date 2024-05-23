@@ -1,88 +1,239 @@
+body {
+    margin: 0;
+    padding: 10px 0px 0px 0px;
+    background-color: #DFDFDF;
+}
 
-body	{margin: 0; padding: 10px 0px 0px 0px; background-color: #DFDFDF;}
-form	{margin: 0;}
-ul	{margin-top:0; margin-bottom:1em;}
-.dump	{font-size: 1px;}
-tr.spacer td	{padding:0; height:1px;}
-p       {text-align: justify;}
+form {
+    margin: 0;
+}
 
-a:link {color: #007700;}
-a:visited {color: #BB0000;}
+ul {
+    margin-top: 0;
+    margin-bottom: 1em;
+}
 
+.dump {
+    font-size: 1px;
+}
 
-input[disabled] {color: #000000;}
-select[disabled] {color: #000000;}
+tr.spacer td {
+    padding: 0;
+    height: 1px;
+}
 
-input[type="checkbox"]:disabled {color: #000000; background-color: #FFFFFF; border-color: #000000;}
-checkbox:disabled {color: #000000; background-color: #FFFFFF; border-color: #000000;}
-checkbox[disabled] {color: #000000; background-color: #FFFFFF; border-color: #000000;}
+p {
+    text-align: justify;
+}
 
+a:link {
+    color: #007700;
+}
 
-h1	{font-size: 150%; font-weight: normal; margin: 0 0 0.8em 0;}
-h2	{font-size: 120%; font-weight: bold; margin: 0 0 0.5em 0;}
-h3	{font-size: 100%; font-weight: normal; margin: 0;}
-
-tr.gray {background-color: #CCCCCC;}
-/*
-tr.yellow {background-color:#FFFF99;}
-*/
-tr.yellow {background-color:#DFDFDF;}
-/*
-tr.green {background-color: #CCFFCC;}
-*/
-tr.green {background-color: #EEEEEE;}
+a:visited {
+    color: #BB0000;
+}
 
 
-table.body  {margin: 0px 0px 0px 0px;}
+input[disabled] {
+    color: #000000;
+}
 
-table.status      {margin: 0px 0px 10px 0px; background-color: #D6D6D6;}
-table.status td   {padding: 3px 0px 3px 0px;}
+select[disabled] {
+    color: #000000;
+}
 
-table.menu        {margin: 5px 0px 0px 0px; width: 100%}
-table.menu td     {padding: 5px 0px 0px 0px;}
-table.menu td.input    {padding: 5px 0px 0px 0px; font-size: 80%;}
+input[type="checkbox"]:disabled {
+    color: #000000;
+    background-color: #FFFFFF;
+    border-color: #000000;
+}
 
-table.bottom      {margin: 20px 0px 0px 0px; background-color: #D6D6D6;}
-table.bottom td   {padding: 3px 0px 3px 0px;}
+checkbox:disabled {
+    color: #000000;
+    background-color: #FFFFFF;
+    border-color: #000000;
+}
 
-table.content td.body {padding: 0 0 0 0;}
-table.content td.label {padding: 0px 10px 0px 5px;}
-table.content td.input {padding: 1px 5px 1px 5px; font-size: 80%;}
-table.content td.header {padding: 5px 10px 5px 5px; font-weight: normal;}
+checkbox[disabled] {
+    color: #000000;
+    background-color: #FFFFFF;
+    border-color: #000000;
+}
 
-.leftmargin  {margin: 0px 0px 0px 5px;}
+h1 {
+    font-size: 150%;
+    font-weight: normal;
+    margin: 0 0 0.8em 0;
+}
 
-.hline {margin: 0; padding: 0; font-size: 1px;}
+h2 {
+    font-size: 120%;
+    font-weight: bold;
+    margin: 0 0 0.5em 0;
+}
 
-div.vline {margin: 0; padding: 0;  font-size: 1px; line-height: 1px; width: 1px;}
-div.hline {margin: 0; padding: 0; font-size: 1px; line-height: 1px;}
+h3 {
+    font-size: 100%;
+    font-weight: normal;
+    margin: 0;
+}
 
-/* color: #000088;
-*/
+tr.gray {
+    background-color: #CCCCCC;
+}
 
-div.HeadText {font-family: Arial, Sans-Serif; font-size: 150%; font-weight: bold; color: #000000; }
+tr.yellow {
+    background-color: #DFDFDF;
+}
+
+tr.green {
+    background-color: #EEEEEE;
+}
+
+table.body {
+    margin: 0px 0px 0px 0px;
+}
+
+table.status {
+    margin: 0px 0px 10px 0px;
+    background-color: #D6D6D6;
+}
+
+table.status td {
+    padding: 3px 0px 3px 0px;
+}
+
+table.menu {
+    margin: 5px 0px 0px 0px;
+    width: 100%
+}
+
+table.menu td {
+    padding: 5px 0px 0px 0px;
+}
+
+table.menu td.input {
+    padding: 5px 0px 0px 0px;
+    font-size: 80%;
+}
+
+table.bottom {
+    margin: 20px 0px 0px 0px;
+    background-color: #D6D6D6;
+}
+
+table.bottom td {
+    padding: 3px 0px 3px 0px;
+}
+
+table.content td.body {
+    padding: 0 0 0 0;
+}
+
+table.content td.label {
+    padding: 0px 10px 0px 5px;
+}
+
+table.content td.input {
+    padding: 1px 5px 1px 5px;
+    font-size: 80%;
+}
+
+table.content td.header {
+    padding: 5px 10px 5px 5px;
+    font-weight: normal;
+}
+
+.leftmargin {
+    margin: 0px 0px 0px 5px;
+}
+
+.hline {
+    margin: 0;
+    padding: 0;
+    font-size: 1px;
+}
+
+div.vline {
+    margin: 0;
+    padding: 0;
+    font-size: 1px;
+    line-height: 1px;
+    width: 1px;
+}
+
+div.hline {
+    margin: 0;
+    padding: 0;
+    font-size: 1px;
+    line-height: 1px;
+}
+
+div.HeadText {
+    font-family: Arial, Sans-Serif;
+    font-size: 150%;
+    font-weight: bold;
+    color: #000000;
+}
 
 /*
 Отступ сверху 10 px
 */
-div.StatusText  {font-family: Times New Roman, Serif; font-size: 100%; font-weight: normal; padding-top: 15px; padding-bottom: 10px; }
+div.StatusText {
+    font-family: Times New Roman, Serif;
+    font-size: 100%;
+    font-weight: normal;
+    padding-top: 15px;
+    padding-bottom: 10px;
+}
 
-div.ErrorText  {font-family: Times New Roman, Serif; font-size: 100%; font-weight: normal; color: #000000; 
-                margin-bottom: 10px; margin-top: 0px;  
-                padding-top: 5px; padding-bottom: 5px; 
-                border-top-style: dotted; border-top-width: 2px; border-top-color: #CC0000;
-                border-bottom-style: dotted; border-bottom-width: 2px; border-bottom-color: #CC0000;
-	       }
+div.ErrorText {
+    font-family: Times New Roman, Serif;
+    font-size: 100%;
+    font-weight: normal;
+    color: #000000;
+    margin-bottom: 10px;
+    margin-top: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-top-style: dotted;
+    border-top-width: 2px;
+    border-top-color: #CC0000;
+    border-bottom-style: dotted;
+    border-bottom-width: 2px;
+    border-bottom-color: #CC0000;
+}
 
-div.MenuText  {font-family: Arial, Sans-Serif; font-size: 120%; font-weight: bold; }
+div.MenuText {
+    font-family: Arial, Sans-Serif;
+    font-size: 120%;
+    font-weight: bold;
+}
 
-div.SubMenuText  {font-family: Arial, Sans-Serif; font-size: 100%; font-weight: bold; }
+div.SubMenuText {
+    font-family: Arial, Sans-Serif;
+    font-size: 100%;
+    font-weight: bold;
+}
 
-div.BottomText  {font-family: Times New Roman, Serif; font-size: 80%; font-weight: normal;}
+div.BottomText {
+    font-family: Times New Roman, Serif;
+    font-size: 80%;
+    font-weight: normal;
+}
 
-div.FormText  {font-family: Courier New, Monospace; font-size: 80%; font-weight: normal;}
+div.FormText {
+    font-family: Courier New, Monospace;
+    font-size: 80%;
+    font-weight: normal;
+}
 
-div.comment {font-family: Times New Roman, Serif; font-size: 75%; color: #000088;}
+div.comment {
+    font-family: Times New Roman, Serif;
+    font-size: 75%;
+    color: #000088;
+}
 
 table.std {
     border-collapse: separate;
@@ -97,11 +248,10 @@ table.std td {
 }
 
 table.std tr.head td {
-    padding:  2px 5px 2px 5px;
+    padding: 2px 5px 2px 5px;
     text-align: center;
     background-color: #CCCCCC;
 }
-
 
 table.control {
     border-collapse: collapse;
@@ -125,6 +275,3 @@ div.team_res > span {
     min-width: 12em;
     display: inline-block;
 }
-
-
-
