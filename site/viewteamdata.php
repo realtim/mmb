@@ -474,7 +474,7 @@ print('</td></tr>'."\n\n");
 
 // ============ Нет сломанным унитазам!
 print('<tr><td class="input">'."\n");
-print('<a href="http://community.livejournal.com/_mmb_/2010/09/24/">Нет сломанным унитазам!</a> - прочитали и поддерживаем <input type="checkbox" name="TeamGreenPeace" value="on"'.(($TeamGreenPeace >= 1) ? ' checked="checked"' : '')
+print('<a href="https://community.livejournal.com/-mmb-/2010/09/24/">Нет сломанным унитазам!</a> - прочитали и поддерживаем <input type="checkbox" name="TeamGreenPeace" value="on"'.(($TeamGreenPeace >= 1) ? ' checked="checked"' : '')
 	.' tabindex="'.(++$TabIndex).'"'.$DisabledText.' title="Отметьте, если команда берёт повышенные экологические обязательства"/>'."\n");
 print("</td></tr>\r\n");
 

@@ -3479,7 +3479,7 @@ function FindErrors($raid_id, $team_id)
 				if ($delta > 25 * 60 * 60) $errors[$finish_id] = -2;
 /*
 				// Анализируем время редактирования для всех точек, введенных на планшетах
-				$start_order = $points[$start_id]['order'];  http://mmb.progressor.ru/php/mmbscripts/
+				$start_order = $points[$start_id]['order'];  https://mmb.progressor.ru/php/mmbscripts/
 				$finish_order = $points[$finish_id]['order'];
 				$tablet_edit_time = "";
 				foreach ($points as $id => $point)
