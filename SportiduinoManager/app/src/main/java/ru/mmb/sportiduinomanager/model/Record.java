@@ -1,9 +1,11 @@
 package ru.mmb.sportiduinomanager.model;
 
+import androidx.annotation.NonNull;
+
 /**
  * A Sportiduino record (chip initialization or station punch).
  */
-final class Record implements Comparable<Record> {
+public final class Record implements Comparable<Record> {
     /**
      * Record status: new, exists only in app memory.
      */
@@ -144,6 +146,8 @@ final class Record implements Comparable<Record> {
      *
      * @return Record converted to string
      */
+    @NonNull
+    @Override
     public String toString() {
         return Long.toString(mStationMAC) + '\t' + mStationTime + '\t' + mStationDrift + '\t'
                 + mStationNumber + '\t' + mStationMode + '\t' + mInitTime + '\t' + mTeamNumber

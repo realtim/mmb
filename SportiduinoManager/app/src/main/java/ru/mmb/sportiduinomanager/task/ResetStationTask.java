@@ -167,6 +167,6 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
     private long estimateTimeToComplete(final int teamsToScan, final int teamsWithPunches,
                                         final int pointNumber) {
         final int punchesScans = pointNumber / (StationAPI.MAX_PUNCH_COUNT - 1) + 1;
-        return teamsToScan * 150 + teamsWithPunches * punchesScans * 150 + 24_000 + 500;
+        return teamsToScan * 150L + (long) teamsWithPunches * punchesScans * 150 + 24_000 + 500;
     }
 }

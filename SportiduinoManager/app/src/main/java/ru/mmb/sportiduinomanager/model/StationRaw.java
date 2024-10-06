@@ -154,7 +154,7 @@ public class StationRaw {
         // Create client socket with default Bluetooth UUID
         try {
             mSocket = mDevice.createRfcommSocketToServiceRecord(STATION_UUID);
-        } catch (IOException ignored) {
+        } catch (IOException | SecurityException ignored) {
             // Just let mSocket to stay equal to null
         }
     }
@@ -238,7 +238,11 @@ public class StationRaw {
      * @return String with Bluetooth name
      */
     public String getName() {
-        return mDevice.getName();
+        try {
+            return mDevice.getName();
+        } catch (SecurityException unused) {
+            return "";
+        }
     }
 
     /**
@@ -317,7 +321,7 @@ public class StationRaw {
         try {
             mSocket.connect();
             return true;
-        } catch (IOException connectException) {
+        } catch (IOException | SecurityException connectException) {
             disconnect();
             return false;
         }
@@ -363,7 +367,7 @@ public class StationRaw {
             byte extract = array[i];
             for (byte tempI = 8; tempI != 0; tempI--) {
                 byte sum = (byte) ((crc & 0xFF) ^ (extract & 0xFF));
-                sum = (byte) ((sum & 0xFF) & 0x01);
+                sum = (byte) (sum & 0xFF & 0x01);
                 crc = (byte) ((crc & 0xFF) >>> 1);
                 if (sum != 0) {
                     crc = (byte) ((crc & 0xFF) ^ 0x8C);
@@ -384,7 +388,7 @@ public class StationRaw {
         final int len = command.length - 1;
         if (len < 0 || (len + HEADER_SIZE + 1) > mMaxPacketSize) return false;
         // prepare output buffer
-        byte[] buffer = new byte[len + HEADER_SIZE + 1];
+        final byte[] buffer = new byte[len + HEADER_SIZE + 1];
         buffer[0] = HEADER_SIGNATURE;                   // Signature
         buffer[1] = 0;                                  // Packet Id
         buffer[2] = (byte) (mNumber & 0xFF);            // Station number
@@ -516,59 +520,60 @@ public class StationRaw {
                 switch (rawResponse[0]) {
                     case SEND_FAILED:
                         mLastError = R.string.err_bt_send_failed;
-                        return false;
+                        break;
                     case REC_TIMEOUT:
                         mLastError = R.string.err_bt_receive_timeout;
-                        return false;
+                        break;
                     case REC_BAD_RESPONSE:
                         mLastError = R.string.err_bt_receive_bad_response;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 1:
                         mLastError = R.string.err_station_wrong_number;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 2:
                         mLastError = R.string.err_station_read;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 3:
                         mLastError = R.string.err_station_write;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 4:
                         mLastError = R.string.err_station_init_chip;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 5:
                         mLastError = R.string.err_station_bad_chip;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 6:
                         mLastError = R.string.err_station_no_chip;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 7:
                         mLastError = R.string.err_station_buffer_overflow;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 8:
                         mLastError = R.string.err_station_reset_impossible;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 9:
                         mLastError = R.string.err_station_incorrect_uid;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 10:
                         mLastError = R.string.err_station_wrong_team;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 11:
                         mLastError = R.string.err_station_no_data;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 12:
                         mLastError = R.string.err_station_bad_command;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 13:
                         mLastError = R.string.err_station_erase_flash;
-                        return false;
+                        break;
                     case REC_COMMAND_ERROR + 14:
                         mLastError = R.string.err_station_bad_chip_type;
-                        return false;
+                        break;
                     default:
                         mLastError = R.string.err_station_unknown;
-                        return false;
+                        break;
                 }
+                return false;
             }
             // Check if the actual response length is equal to expected length
             if (rawResponse.length != responseContent.length + 1) {

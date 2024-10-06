@@ -14,11 +14,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * Interaction with http://mmb.progressor.ru - send request and receive response.
+ * Interaction with mmb.progressor.ru - send request and receive response.
  */
 public final class SiteRequest {
     /**
@@ -38,17 +38,13 @@ public final class SiteRequest {
      */
     public static final int TYPE_UL_DATABASE = 4;
     /**
-     * Name of UTF-8 charset.
-     */
-    private static final String UTF8 = "UTF-8";
-    /**
      * URL of test database interaction script.
      */
-    private static final String TEST_DATABASE_URL = "http://mmb.progressor.ru/php/mmbscripts_git/sportiduino.php";
+    private static final String TEST_DATABASE_URL = "https://mmb.progressor.ru/php/mmbscripts_git/sportiduino.php";
     /**
      * URL of main database interaction script.
      */
-    private static final String MAIN_DATABASE_URL = "http://mmb.progressor.ru/php/mmbscripts/sportiduino.php";
+    private static final String MAIN_DATABASE_URL = "https://mmb.progressor.ru/php/mmbscripts/sportiduino.php";
     /**
      * Website script API version supported by this application.
      */
@@ -173,18 +169,13 @@ public final class SiteRequest {
      * @return One of LOAD result constants, mCustomError can be also set
      */
     public RequestResult makeRequest() {
-        switch (mType) {
-            case TYPE_DL_DISTANCE:
-                return loadDistance();
-            case TYPE_UL_CHIPS:
-                return sendRecords();
-            case TYPE_DL_RESULTS:
-                return loadResults();
-            case TYPE_UL_DATABASE:
-                return sendDatabase();
-            default:
-                return RequestResult.FATAL_ERROR;
-        }
+        return switch (mType) {
+            case TYPE_DL_DISTANCE -> loadDistance();
+            case TYPE_UL_CHIPS -> sendRecords();
+            case TYPE_DL_RESULTS -> loadResults();
+            case TYPE_UL_DATABASE -> sendDatabase();
+            default -> RequestResult.FATAL_ERROR;
+        };
     }
 
     /**
@@ -194,7 +185,7 @@ public final class SiteRequest {
      */
     private HttpURLConnection prepareConnection() {
         // Select correct url
-        String urlString;
+        final String urlString;
         if (mTestSite == 1) {
             urlString = TEST_DATABASE_URL;
         } else {
@@ -226,7 +217,7 @@ public final class SiteRequest {
         connection.setRequestProperty("X-Sportiduino-Action", String.valueOf(mType));
         if (postData != null) {
             connection.setDoOutput(true);
-            final byte[] postDataBytes = postData.getBytes(Charset.forName(UTF8));
+            final byte[] postDataBytes = postData.getBytes(StandardCharsets.UTF_8);
             final int length = postDataBytes.length;
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             connection.setRequestProperty("Content-Length", String.valueOf(length));
@@ -351,7 +342,7 @@ public final class SiteRequest {
         if (result != RequestResult.OK) return result;
         // Start reading server response
         try (InputStream stream = connection.getInputStream()) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName(UTF8)))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
                 // check for error message from server
                 String line = reader.readLine();
                 if (line == null) {
@@ -359,7 +350,7 @@ public final class SiteRequest {
                     connection.disconnect();
                     return RequestResult.READ_ERROR;
                 }
-                if (!"".equals(line)) {
+                if (!line.isEmpty()) {
                     reader.close();
                     connection.disconnect();
                     mCustomError = line;
@@ -415,13 +406,13 @@ public final class SiteRequest {
             builder.append('\n').append(record);
         }
         final String data =
-                "data=" + mRecords.getTimeDownloaded() + '\t' + records.size() + builder.toString();
+                "data=" + mRecords.getTimeDownloaded() + '\t' + records.size() + builder;
         // Send data to site
         final RequestResult result = makeConnection(connection, data);
         if (result != RequestResult.OK) return result;
         // Read script response
         try (InputStream stream = connection.getInputStream()) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName(UTF8)))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
                 // Non-empty first line contains server error
                 final String error = reader.readLine();
                 if (!"".equals(error)) {
@@ -482,7 +473,7 @@ public final class SiteRequest {
         if (result != RequestResult.OK) return result;
         // Start reading server response
         try (InputStream stream = connection.getInputStream()) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName(UTF8)))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
                 // check for error message from server
                 final String error = reader.readLine();
                 if (!"".equals(error)) {
@@ -492,7 +483,7 @@ public final class SiteRequest {
                 // Get id of last result in site database
                 final String header = reader.readLine();
                 if (header == null) return RequestResult.READ_ERROR;
-                long lastResultId;
+                final long lastResultId;
                 try {
                     lastResultId = Integer.parseInt(header);
                 } catch (NumberFormatException e) {
@@ -542,7 +533,7 @@ public final class SiteRequest {
         if (result != RequestResult.OK) return result;
         // Read script response
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(),
-                Charset.forName(UTF8)))) {
+                StandardCharsets.UTF_8))) {
             final String error = reader.readLine();
             // Non-empty first line contains server error
             if (!"".equals(error)) {

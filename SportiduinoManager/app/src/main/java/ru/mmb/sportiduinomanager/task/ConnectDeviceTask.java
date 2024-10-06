@@ -2,14 +2,11 @@ package ru.mmb.sportiduinomanager.task;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.AsyncTask;
-import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
 import ru.mmb.sportiduinomanager.BluetoothActivity;
 import ru.mmb.sportiduinomanager.MainApp;
-import ru.mmb.sportiduinomanager.R;
-import ru.mmb.sportiduinomanager.adapter.BTDeviceListAdapter;
 import ru.mmb.sportiduinomanager.model.StationAPI;
 
 /**
@@ -20,21 +17,15 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Integer>
      * Reference to parent activity (which can cease to exist in any moment).
      */
     private final WeakReference<BluetoothActivity> mActivityRef;
-    /**
-     * RecyclerView with discovered Bluetooth devices and connect buttons.
-     */
-    private final BTDeviceListAdapter mAdapter;
 
     /**
      * Retain only a weak reference to the activity.
      *
      * @param context Context of calling activity
-     * @param adapter RecyclerView adapter with device list
      */
-    public ConnectDeviceTask(final BluetoothActivity context, final BTDeviceListAdapter adapter) {
+    public ConnectDeviceTask(final BluetoothActivity context) {
         super();
         mActivityRef = new WeakReference<>(context);
-        mAdapter = adapter;
     }
 
     /**
@@ -80,28 +71,7 @@ public class ConnectDeviceTask extends AsyncTask<BluetoothDevice, Void, Integer>
         // Get a reference to the activity if it is still there
         final BluetoothActivity activity = mActivityRef.get();
         if (activity == null || activity.isFinishing()) return;
-        // Show error message if connect attempt failed
-        if (result < 0) {
-            // Connection to BT device failed
-            Toast.makeText(activity, R.string.err_bt_cant_connect, Toast.LENGTH_LONG).show();
-        } else if (result > 0) {
-            // Station responded to getConfig/getStatus commands with an error,
-            // show this error to user
-            Toast.makeText(activity, result, Toast.LENGTH_LONG).show();
-        }
-        // Update device list in activity
-        if (result == 0) {
-            if (MainApp.mStation == null) {
-                mAdapter.setConnectedDevice(null, false);
-            } else {
-                mAdapter.setConnectedDevice(MainApp.mStation.getAddress(), false);
-            }
-        } else {
-            mAdapter.setConnectedDevice(null, false);
-        }
-        // Update activity layout
-        activity.updateLayout(false);
-        // Update menu items only after station status request
-        activity.updateMenuItems(R.id.bluetooth);
+        // Process reset result in UI activity
+        activity.onStationConnectResult(result);
     }
 }

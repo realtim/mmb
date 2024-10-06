@@ -195,16 +195,16 @@ public final class Teams {
         for (final SingleTeam team : mTeams) {
             if (team != null) {
                 // Check if all team members were loaded
-                for (int i = 0; i < team.mMembers.length; i++) {
-                    if (team.mMembers[i] == null) return true;
+                for (final Member member : team.mMembers) {
+                    if (member == null) return true;
                     // Check for bad member data
-                    if (team.mMembers[i].mId <= 0) return true;
-                    if ("".equals(team.mMembers[i].mName)) return true;
+                    if (member.mId <= 0) return true;
+                    if (member.mName.isEmpty()) return true;
                 }
                 // Check number of maps
                 if (team.mMaps <= 0) return true;
                 // Check for empty team name
-                if ("".equals(team.mName)) return true;
+                if (team.mName.isEmpty()) return true;
             }
         }
         // No errors were detected

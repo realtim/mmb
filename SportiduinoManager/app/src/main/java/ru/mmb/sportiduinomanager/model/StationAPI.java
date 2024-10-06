@@ -34,7 +34,7 @@ public final class StationAPI extends StationRaw {
     /**
      * Max number of punches that we can get in one request from station.
      */
-    public static final int MAX_PUNCH_COUNT = 61;
+    public static final int MAX_PUNCH_COUNT = 60;
     /**
      * Indicate "Low battery" status at this voltage and below.
      */
@@ -255,7 +255,7 @@ public final class StationAPI extends StationRaw {
     private long byteArray2Long(final byte[] array, final int start, final int end) {
         long result = 0;
         for (int i = start; i <= end; i++) {
-            result = result | (array[i] & 0xFF) << ((end - i) * 8);
+            result = result | (long) (array[i] & 0xFF) << ((end - i) * 8);
         }
         return result;
     }
@@ -270,7 +270,7 @@ public final class StationAPI extends StationRaw {
      */
     private void long2ByteArray(final long value, final byte[] array, final int starting,
                                 final int count) {
-        byte[] converted = new byte[count];
+        final byte[] converted = new byte[count];
         for (int i = 0; i < count; i++) {
             converted[count - 1 - i] = (byte) ((value >> 8 * i) & 0xFF);
         }
@@ -304,7 +304,7 @@ public final class StationAPI extends StationRaw {
      * @return True if we got valid response from station, check mLastError otherwise
      */
     public boolean syncTime() {
-        byte[] commandData = new byte[7];
+        final byte[] commandData = new byte[7];
         commandData[0] = CMD_SET_TIME;
         // Get current UTC time
         final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
@@ -313,7 +313,7 @@ public final class StationAPI extends StationRaw {
         commandData[3] = (byte) calendar.get(Calendar.DAY_OF_MONTH);
         commandData[4] = (byte) calendar.get(Calendar.HOUR_OF_DAY);
         commandData[5] = (byte) calendar.get(Calendar.MINUTE);
-        commandData[6] = (byte) (calendar.get(Calendar.SECOND));
+        commandData[6] = (byte) calendar.get(Calendar.SECOND);
         // Send it to station
         final byte[] response = new byte[4];
         if (!command(commandData, response)) return false;
@@ -336,7 +336,7 @@ public final class StationAPI extends StationRaw {
             return false;
         }
         // Prepare command payload
-        byte[] commandData = new byte[8];
+        final byte[] commandData = new byte[8];
         commandData[0] = CMD_RESET_STATION;
         long2ByteArray(mTeamsPunched, commandData, 1, 2);
         long2ByteArray((int) mLastPunchTime, commandData, 3, 4);
@@ -388,7 +388,7 @@ public final class StationAPI extends StationRaw {
      */
     public boolean initChip(final int teamNumber, final int teamMask) {
         // Note: last 4 byte are reserved and equal to zero now
-        byte[] commandData = new byte[5];
+        final byte[] commandData = new byte[5];
         commandData[0] = CMD_INIT_CHIP;
         // Prepare command payload
         long2ByteArray(teamNumber, commandData, 1, 2);
@@ -431,7 +431,7 @@ public final class StationAPI extends StationRaw {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean fetchTeamHeader(final int teamNumber) {
         // Prepare command payload
-        byte[] commandData = new byte[3];
+        final byte[] commandData = new byte[3];
         commandData[0] = CMD_TEAM_RECORD;
         long2ByteArray(teamNumber, commandData, 1, 2);
         // Send command to station
@@ -468,7 +468,7 @@ public final class StationAPI extends StationRaw {
      */
     public boolean readCard() {
         int pagesLeft = 0;
-        int pagesInRequest = SIZE_NTAG213;
+        byte pagesInRequest = SIZE_NTAG213;
         byte pageFrom = 3;
         int punchesOffset = 29;
         boolean cardHeader = true;
@@ -477,7 +477,7 @@ public final class StationAPI extends StationRaw {
         int teamMask = 0;
         mRecords.clear();
         // Prepare command payload
-        byte[] commandData = new byte[3];
+        final byte[] commandData = new byte[3];
         commandData[0] = CMD_READ_CARD;
         do {
             commandData[1] = pageFrom;
@@ -533,13 +533,13 @@ public final class StationAPI extends StationRaw {
                     break;
                 }
                 mRecords.addRecord(this, initTime, teamNumber, teamMask, pointNumber,
-                        pointTime + (initTime & 0xff000000));
+                        pointTime + (initTime & 0xFF000000L));
             }
             punchesOffset = 9;
             // Detect how many pages we still need to read in next cycle
             pageFrom += pagesInRequest;
             pagesLeft -= pagesInRequest;
-            pagesInRequest = Math.min(pagesLeft, MAX_READ_PAGES);
+            pagesInRequest = (byte) Math.min(pagesLeft, MAX_READ_PAGES);
         } while (pagesInRequest > 0);
         return true;
     }
@@ -555,7 +555,7 @@ public final class StationAPI extends StationRaw {
      */
     public boolean updateTeamMask(final int teamNumber, final long initTime, final int teamMask) {
         // Prepare command payload
-        byte[] commandData = new byte[9];
+        final byte[] commandData = new byte[9];
         commandData[0] = CMD_UPDATE_MASK;
         long2ByteArray(teamNumber, commandData, 1, 2);
         long2ByteArray(initTime, commandData, 3, 4);
@@ -583,7 +583,7 @@ public final class StationAPI extends StationRaw {
             return false;
         }
         // Prepare command payload
-        byte[] commandData = new byte[7];
+        final byte[] commandData = new byte[7];
         commandData[0] = CMD_READ_FLASH;
         final long punchesZone = teamNumber * 1024L + 48L;
         final long startAddress = punchesZone + fromPunch * 4L;
@@ -600,7 +600,7 @@ public final class StationAPI extends StationRaw {
             return false;
         }
         // Get first byte of current time
-        final long timeCorrection = mStationTime & 0xFF000000;
+        final long timeCorrection = mStationTime & 0xFF000000L;
         // Add new records
         for (int i = 0; i < count; i++) {
             final int pointNumber = response[4 + i * 4] & 0xFF;

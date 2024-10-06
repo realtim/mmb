@@ -10,8 +10,8 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +63,8 @@ public class StationMonitorService extends Service {
         mContext = this;
         // prepare notification that will be shown to user about service start
         final Intent notifyIntent = new Intent(this, ControlPointActivity.class);
-        final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notifyIntent, 0);
+        final PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                notifyIntent, PendingIntent.FLAG_IMMUTABLE);
         final String channelId = BuildConfig.APPLICATION_ID;
         final Notification startNotification =
                 new NotificationCompat.Builder(this, channelId)
@@ -106,10 +107,11 @@ public class StationMonitorService extends Service {
         }
         // Start new TimerTask
         mTimer = new Timer();
-        mTimer.scheduleAtFixedRate(new TimerTask() {
+        mTimer.schedule(new TimerTask() {
             /**
              * Run every 1s, get station status and get new team data (if any).
              */
+            @Override
             public void run() {
                 // Station was not connected yet
                 if (MainApp.mStation == null) return;
@@ -161,10 +163,9 @@ public class StationMonitorService extends Service {
         final long localLastPunch = MainApp.mPointPunches.getTeamTime(localTeamsCount - 1);
         if (localLastPunch == MainApp.mStation.getLastPunchTime()) return fetchTeams;
 
-        // Ok, we have some new punches, we shouldn't maje full station scan in most cases
-        boolean fullDownload = false;
+        // Ok, we have some new punches, we shouldn't make full station scan in most cases
+        boolean fullDownload = !MainApp.mStation.fetchLastTeams();
         // Ask station for new teams list
-        if (!MainApp.mStation.fetchLastTeams()) fullDownload = true;
         final List<Integer> stationLastTeams = MainApp.mStation.getLastTeams();
         // If station list is full,  then we need to make a full scan
         if (stationLastTeams.size() >= StationAPI.LAST_TEAMS_LEN) fullDownload = true;

@@ -1,18 +1,18 @@
 import com.github.spotbugs.snom.SpotBugsTask
+
 plugins {
-    id "com.github.spotbugs" version "4.5.1"
+    id "checkstyle"
+    id "pmd"
+    id "com.github.spotbugs" version "6.0.22"
 }
 apply plugin: 'com.android.application'
-apply plugin: 'checkstyle'
-apply plugin: 'pmd'
-apply plugin: 'com.github.spotbugs'
 
 android {
-    compileSdkVersion 28
+    compileSdk 35
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     signingConfigs {
@@ -26,9 +26,9 @@ android {
 
     defaultConfig {
         applicationId "ru.mmb.sportiduinomanager"
-        minSdkVersion 14
-        targetSdkVersion 28
-        resConfigs "ru", "en"
+        minSdkVersion 21
+        targetSdkVersion 35
+        resourceConfigurations += ['ru', 'en']
     }
 
     buildTypes {
@@ -43,48 +43,63 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt')
         }
     }
+    namespace 'ru.mmb.sportiduinomanager'
+    buildFeatures {
+        buildConfig true
+    }
+    lintOptions {
+        disable 'UsingOnClickInXml'
+    }
 }
 
 checkstyle {
-    toolVersion "8.36.2"
-}
-task checkstyle(type: Checkstyle) {
-    group 'verification'
+    toolVersion "10.18.1"
     configFile file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+}
+tasks.register('checkstyle', Checkstyle) {
+    group 'verification'
     source 'src'
     include '**/*.java'
     classpath = files()
 }
+check.dependsOn('checkstyle')
 
 pmd {
-    toolVersion "6.28.0"
-}
-task pmd(type: Pmd) {
-    group 'verification'
+    toolVersion "7.5.0"
     ruleSets = []
     ruleSetFiles = files("$project.rootDir/config/pmd/rules-pmd.xml")
+}
+tasks.register('pmd', Pmd) {
+    group 'verification'
     source 'src'
     include '**/*.java'
 }
+check.dependsOn('pmd')
 
-tasks.withType(SpotBugsTask) {
-    group = "verification"
-    //noinspection GrFinalVariableAccess
-    excludeFilter = file("${project.rootDir}/config/spotbugs/spotbugs-exclude.xml")
+spotbugs {
+    toolVersion = '4.8.6'
+    excludeFilter = file("$project.rootDir/config/spotbugs/spotbugs-exclude.xml")
+    reportsDir = file("$project.rootDir/app/build/reports/spotbugs/")
+}
+tasks.withType(SpotBugsTask).configureEach {
     reports {
-        xml.enabled = true
-        html.enabled = true
+        xml {
+            required.set(true)
+        }
+        html {
+            required.set(true)
+        }
     }
 }
 
 dependencies {
-    implementation "com.android.support:appcompat-v7:28.0.0"
-    implementation "com.android.support:design:28.0.0"
-    implementation 'com.android.support.constraint:constraint-layout:2.0.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.13.0-alpha06'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1'
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.13.0'
 
-    final def acraVersion = '5.4.0'
+    final def acraVersion = '5.11.4'
     implementation "ch.acra:acra-core:$acraVersion"
     implementation "ch.acra:acra-http:$acraVersion"
     implementation "ch.acra:acra-toast:$acraVersion"

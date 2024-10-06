@@ -2,9 +2,7 @@
 <FindBugsFilter>
     <Match>
        <Class name="ru.mmb.sportiduinomanager.DatabaseActivity"/>
-       <Or>
-           <Method name="md5" params="java.lang.String" returns="java.lang.String"/>
-       </Or>
+       <Method name="md5" params="java.lang.String" returns="java.lang.String"/>
        <Bug code="SECMD5"/>
     </Match>
 </FindBugsFilter>

@@ -1,5 +1,7 @@
 package ru.mmb.sportiduinomanager.model;
 
+import static ru.mmb.sportiduinomanager.model.StationAPI.MODE_INIT_CHIPS;
+
 import android.database.sqlite.SQLiteException;
 
 import java.text.DateFormat;
@@ -10,8 +12,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import static ru.mmb.sportiduinomanager.model.StationAPI.MODE_INIT_CHIPS;
 
 /**
  * Handling Sportiduino records (initialization/punches) received from stations.
@@ -72,7 +72,7 @@ public final class Records {
     /**
      * Get list of all unsent records converted to strings.
      *
-     * @return Array of strings with records
+     * @return List of strings with records
      */
     List<String> getUnsentRecords() {
         final List<String> recordsAsString = new ArrayList<>();
@@ -249,7 +249,7 @@ public final class Records {
     /**
      * Get statistic for sent/unsent chip initializations and punches.
      *
-     * @return Array of four integers
+     * @return List of four integers
      */
     public List<Integer> getStatistic() {
         // Init counters
@@ -367,6 +367,30 @@ public final class Records {
     }
 
     /**
+     * Get index of the last punch of the team at the point.
+     *
+     * @param teamNumber  Team number
+     * @param pointNumber Point number
+     * @return Index in mRecords array
+     */
+    private int getLastTeamPunch(final int teamNumber, final int pointNumber) {
+        int last = -1;
+        long pointTime = 0;
+        long stationTime = 0;
+        for (int i = 0; i < mRecords.size(); i++) {
+            final Record record = mRecords.get(i);
+            if (record.mTeamNumber == teamNumber && record.mPointNumber == pointNumber
+                    && (record.mPointTime > pointTime
+                    || record.mPointTime == pointTime && record.mStationTime > stationTime)) {
+                last = i;
+                pointTime = record.mPointTime;
+                stationTime = record.mStationTime;
+            }
+        }
+        return last;
+    }
+
+    /**
      * Replace team mask in the team punch record at the station
      * or add it as a new record with old punch time
      * and new mask and station parameters.
@@ -385,25 +409,13 @@ public final class Records {
                                   final boolean replace) {
         // Find the record for the last punch of this team at this control point
         final int pointNumber = station.getNumber();
-        int last = -1;
-        long pointTime = 0;
-        long stationTime = 0;
-        for (int i = 0; i < mRecords.size(); i++) {
-            final Record record = mRecords.get(i);
-            if (record.mTeamNumber == teamNumber && record.mPointNumber == pointNumber
-                    && (record.mPointTime > pointTime
-                    || record.mPointTime == pointTime && record.mStationTime > stationTime)) {
-                last = i;
-                pointTime = record.mPointTime;
-                stationTime = record.mStationTime;
-            }
-        }
+        final int lastPunch = getLastTeamPunch(teamNumber, pointNumber);
         // Return if the teams has not punched at the control point
-        if (last < 0) return false;
+        if (lastPunch < 0) return false;
         // Don't replace mask if it is the same
         //if (mRecords.get(last).mTeamMask == newMask) return false;
         // Create a copy of original record with new mask and new station parameters
-        final Record oldRecord = mRecords.get(last);
+        final Record oldRecord = mRecords.get(lastPunch);
         final Record newRecord = new Record(station.getMACasLong(),
                 station.getStationTime(), station.getTimeDrift(), pointNumber, station.getMode(),
                 oldRecord.mInitTime, teamNumber, newMask, pointNumber, oldRecord.mPointTime,
@@ -411,7 +423,7 @@ public final class Records {
         // Add new record or replace old one with new
         if (replace) {
             // Just replace mask in the local copy of station memory
-            mRecords.set(last, newRecord);
+            mRecords.set(lastPunch, newRecord);
             return true;
         } else {
             // Add it to global list of records and save it in local db

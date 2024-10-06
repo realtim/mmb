@@ -303,7 +303,7 @@ public final class Distance {
         final int total = list.size();
         if (total == 1) return pointFromList(list, 0);
         // Set continuous[i] flag to false for points which has skipped points before them
-        boolean[] continuous = new boolean[list.size()];
+        final boolean[] continuous = new boolean[list.size()];
         continuous[0] = true;
         for (int i = 1; i < total; i++) {
             boolean noHole = true;
@@ -360,7 +360,7 @@ public final class Distance {
         // Find all distance points between (but not including)
         // the chip init point and last punched point which are not punched
         for (int i = 1; i < maxPoint; i++) {
-            if (mPoints != null && mPoints[i] != null && !punchedPoints.contains(i)) {
+            if (mPoints[i] != null && !punchedPoints.contains(i)) {
                 skippedPoints.add(i);
             }
         }
@@ -461,12 +461,10 @@ public final class Distance {
         if (mTimeReadonly == 0 || mTimeFinish == 0) return true;
         // Get current time
         final long now = System.currentTimeMillis() / 1000L;
-        // Allow data loss if distance was not set readonly yet
-        // (we can and should reload it)
-        if (now < mTimeReadonly) return true;
-        // Allow data loss if race was finished more then 1 month ago
-        // (race was finalized anyway)
-        return now > (mTimeFinish + 3600 * 24 * 30);
+        // Allow data loss if
+        // a)distance was not set readonly yet (we can and should reload it)
+        // b)race was finished more then 1 month ago (race was finalized anyway)
+        return (now < mTimeReadonly) || (now > (mTimeFinish + 3600 * 24 * 30));
     }
 
     /**
@@ -565,7 +563,6 @@ public final class Distance {
         }
         // Check if some discounts were loaded
         if (mDiscounts == null) return true;
-        if (mDiscounts.length == 0) return false;
         // Check discounts data
         for (final Discount discount : mDiscounts) {
             // Check if all discounts were loaded

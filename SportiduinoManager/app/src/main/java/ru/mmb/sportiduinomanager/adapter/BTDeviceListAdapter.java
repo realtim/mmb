@@ -1,13 +1,13 @@
 package ru.mmb.sportiduinomanager.adapter;
 
 import android.bluetooth.BluetoothDevice;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,8 +59,14 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
         // Get BT device at this position
         final BluetoothDevice device = mBTDeviceList.get(position);
         // Update the contents of the view with that device
+        String deviceName;
+        try {
+            deviceName = device.getName();
+        } catch (SecurityException ignored) {
+            deviceName = "";
+        }
         holder.mName.setText(holder.itemView.getResources().getString(R.string.device_name,
-                device.getName(), device.getAddress()));
+                deviceName, device.getAddress()));
         if (mConnectedDevice == null || !mConnectedDevice.equals(device.getAddress())) {
             holder.mConnectButton.setImageResource(R.drawable.ic_disconnected);
         } else {
@@ -160,7 +166,7 @@ public class BTDeviceListAdapter extends RecyclerView.Adapter<BTDeviceListAdapte
     /**
      * Custom ViewHolder for device_list_item layout.
      */
-    static final class DeviceHolder extends RecyclerView.ViewHolder {
+    public static final class DeviceHolder extends RecyclerView.ViewHolder {
         /**
          * Name of the Bluetooth device.
          */

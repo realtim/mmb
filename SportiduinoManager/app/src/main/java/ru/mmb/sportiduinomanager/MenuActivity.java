@@ -5,12 +5,6 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.LayoutRes;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.MenuItem;
@@ -18,6 +12,12 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.Objects;
 
@@ -37,6 +37,7 @@ public class MenuActivity extends AppCompatActivity {
      */
     private DrawerLayout mDrawerLayout;
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public final void setContentView(@LayoutRes final int layoutResID) {
         // This is going to be our actual root layout.
@@ -167,7 +168,7 @@ public class MenuActivity extends AppCompatActivity {
                 && MainApp.mDatabase != null && MainApp.mDistance.getTimeDownloaded() != 0;
         // Update 'Database' menu item
         final MenuItem databaseItem = mNavigationView.getMenu().findItem(R.id.database);
-        int dbStatus;
+        final int dbStatus;
         if (MainApp.mDatabase == null) {
             dbStatus = Database.DB_STATE_FAILED;
         } else {
@@ -196,11 +197,7 @@ public class MenuActivity extends AppCompatActivity {
             bluetoothItem.setTitle(getResources().getString(R.string.mode_bluetooth_set,
                     MainApp.mStation.getName()));
         }
-        if (MainApp.mDatabase == null || MainApp.mDistance.getTimeDownloaded() == 0) {
-            bluetoothItem.setEnabled(false);
-        } else {
-            bluetoothItem.setEnabled(true);
-        }
+        bluetoothItem.setEnabled(MainApp.mDatabase != null && MainApp.mDistance.getTimeDownloaded() != 0);
         // Get the name of the point which is selected in connected station
         String pointName = "";
         if (MainApp.mStation != null) {
@@ -235,14 +232,11 @@ public class MenuActivity extends AppCompatActivity {
         mNavigationView.getMenu().findItem(R.id.team_list).setEnabled(false);
         // Update 'Chip Info' menu item
         final MenuItem chipInfoItem = mNavigationView.getMenu().findItem(R.id.chip_info);
-        if (readyForWork && MainApp.mStation.getMode() == StationAPI.MODE_INIT_CHIPS) {
-            chipInfoItem.setEnabled(true);
-        } else {
-            chipInfoItem.setEnabled(false);
-        }
+        chipInfoItem.setEnabled(readyForWork && MainApp.mStation.getMode() == StationAPI.MODE_INIT_CHIPS);
         // Update toolbar title
         if (activeItem != 0) {
-            final String title = mNavigationView.getMenu().findItem(activeItem).getTitle().toString();
+            final String title = Objects.requireNonNull(mNavigationView.getMenu().findItem(activeItem)
+                    .getTitle()).toString();
             Objects.requireNonNull(getSupportActionBar()).setTitle(title);
         }
         if (MainApp.mStation != null) {

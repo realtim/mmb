@@ -1,15 +1,16 @@
 package ru.mmb.sportiduinomanager;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.support.constraint.Group;
-import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.constraintlayout.widget.Group;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
@@ -50,10 +51,6 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
      * User modified team members mask (it can be saved to chip and to local db).
      */
     private int mTeamMask;
-    /**
-     * Original team members mask (with all registered members present).
-     */
-    private int mOriginalMask;
 
     /**
      * Current state of chip init.
@@ -68,7 +65,6 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
         mTeamNumber = Integer.toString(MainApp.UI_STATE.getTeamNumber());
         if ("0".equals(mTeamNumber)) mTeamNumber = "";
         mTeamMask = MainApp.UI_STATE.getTeamMask();
-        mOriginalMask = 0;
         // Prepare recycler view of members list
         final RecyclerView recyclerView = findViewById(R.id.member_list);
         // use a linear layout manager
@@ -124,6 +120,7 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
      *
      * @param view View of button clicked
      */
+    @SuppressLint("NonConstantResourceId")
     public void keyboardButtonClicked(final View view) {
         // Update team number string according to button clicked
         switch (view.getId()) {
@@ -158,7 +155,7 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
                 mTeamNumber += "9";
                 break;
             case R.id.key_del:
-                if (mTeamNumber.length() > 0) {
+                if (!mTeamNumber.isEmpty()) {
                     mTeamNumber = mTeamNumber.substring(0, mTeamNumber.length() - 1);
                 }
                 break;
@@ -181,7 +178,7 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
      */
     public void initChip(@SuppressWarnings("unused") final View view) {
         // Check team number, mask and station presence
-        if (mTeamNumber.length() == 0 || mTeamMask == 0 || MainApp.mStation == null) return;
+        if (mTeamNumber.isEmpty() || mTeamMask == 0 || MainApp.mStation == null) return;
         final int teamNumber = Integer.parseInt(mTeamNumber);
         // Change chip init state
         mChipInit = CHIP_INIT_ON;
@@ -210,7 +207,6 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
                 // Clear team number and mask to start again
                 mTeamNumber = "";
                 mTeamMask = 0;
-                mOriginalMask = 0;
                 // Update onscreen keyboard and "load" empty team
                 updateKeyboardState();
                 loadTeam(true);
@@ -255,13 +251,13 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
             changeKeyState(R.id.key_8, false);
             changeKeyState(R.id.key_9, false);
         }
-        changeKeyState(R.id.key_0, mTeamNumber.length() > 0 && mTeamNumber.length() < TEAM_MEMBER_LEN);
-        if (mTeamNumber.length() > 0) {
-            changeKeyState(R.id.key_del, true);
-            changeKeyState(R.id.key_clear, true);
-        } else {
+        changeKeyState(R.id.key_0, !mTeamNumber.isEmpty() && mTeamNumber.length() < TEAM_MEMBER_LEN);
+        if (mTeamNumber.isEmpty()) {
             changeKeyState(R.id.key_del, false);
             changeKeyState(R.id.key_clear, false);
+        } else {
+            changeKeyState(R.id.key_del, true);
+            changeKeyState(R.id.key_clear, true);
         }
     }
 
@@ -291,11 +287,11 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
      */
     private void loadTeam(final boolean isNew) {
         // Parse integer team number from string
-        int teamNumber;
-        if (mTeamNumber.length() > 0) {
-            teamNumber = Integer.parseInt(mTeamNumber);
-        } else {
+        final int teamNumber;
+        if (mTeamNumber.isEmpty()) {
             teamNumber = 0;
+        } else {
+            teamNumber = Integer.parseInt(mTeamNumber);
         }
         // Save it in main application for new team
         if (isNew) {
@@ -354,18 +350,18 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
         // Get list of team members
         final List<String> teamMembers = MainApp.mTeams.getMembersNames(teamNumber);
         // Compute original mask (where all team members are present)
-        mOriginalMask = 0;
+        int originalMask = 0;
         for (int i = 0; i < teamMembers.size(); i++) {
-            mOriginalMask = mOriginalMask | (1 << i);
+            originalMask = originalMask | (1 << i);
         }
         // Mark all members as selected for new team,
         // leave mask untouched for old team being reloaded
         if (isNew) {
-            mTeamMask = mOriginalMask;
+            mTeamMask = originalMask;
             MainApp.UI_STATE.setTeamMask(mTeamMask);
         }
         // Update team members list
-        mAdapter.updateList(teamMembers, mOriginalMask, mTeamMask);
+        mAdapter.updateList(teamMembers, originalMask, mTeamMask);
         // Update number of members in the team
         ((TextView) findViewById(R.id.init_members_count)).setText(getResources()
                 .getString(R.string.team_members_count, Teams.getMembersCount(mTeamMask)));

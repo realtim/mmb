@@ -4,11 +4,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.constraint.Group;
-import android.support.v4.content.res.ResourcesCompat;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.SwitchCompat;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -17,9 +12,14 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.constraintlayout.widget.Group;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.core.view.ViewCompat;
 
 import java.lang.ref.WeakReference;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -29,7 +29,7 @@ import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.SiteRequest;
 
 /**
- * Provides interaction with database at http://mmb.progressor.ru site.
+ * Provides interaction with database at mmb.progressor.ru.
  */
 public final class DatabaseActivity extends MenuActivity {
     /**
@@ -44,18 +44,13 @@ public final class DatabaseActivity extends MenuActivity {
      * @return Resource id with string message about the status
      */
     private static int getStatusMessage(final int status) {
-        switch (status) {
-            case Database.DB_STATE_FAILED:
-                return R.string.database_fatal_error;
-            case Database.DB_STATE_EMPTY:
-                return R.string.database_empty;
-            case Database.DB_STATE_OK:
-                return R.string.database_ok;
-            case Database.DB_STATE_DAMAGED:
-                return R.string.database_damaged;
-            default:
-                return R.string.database_status_unknown;
-        }
+        return switch (status) {
+            case Database.DB_STATE_FAILED -> R.string.database_fatal_error;
+            case Database.DB_STATE_EMPTY -> R.string.database_empty;
+            case Database.DB_STATE_OK -> R.string.database_ok;
+            case Database.DB_STATE_DAMAGED -> R.string.database_damaged;
+            default -> R.string.database_status_unknown;
+        };
     }
 
     /**
@@ -68,17 +63,12 @@ public final class DatabaseActivity extends MenuActivity {
         try {
             // Create MD5 Hash
             final MessageDigest digest = MessageDigest.getInstance("MD5");
-            digest.update(str.getBytes(Charset.forName("UTF-8")));
-            final byte[] messageDigest = digest.digest();
+            final byte[] messageDigest = digest.digest(str.getBytes(StandardCharsets.UTF_8));
 
             // Create Hex String
             final StringBuilder hexString = new StringBuilder();
             for (final byte aMessageDigest : messageDigest) {
-                final String hexNumber = Integer.toHexString(0xFF & aMessageDigest);
-                if (hexNumber.length() < 2) {
-                    hexString.append('0');
-                }
-                hexString.append(hexNumber);
+                hexString.append(String.format("%02X", aMessageDigest));
             }
             return hexString.toString();
 
@@ -177,7 +167,7 @@ public final class DatabaseActivity extends MenuActivity {
             findViewById(R.id.database_status_progress).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.database_status_progress).setVisibility(View.INVISIBLE);
-            int statusColor;
+            final int statusColor;
             if (dbStatus == Database.DB_STATE_EMPTY || dbStatus == Database.DB_STATE_OK) {
                 statusColor = R.color.text_primary;
             } else {
@@ -206,7 +196,7 @@ public final class DatabaseActivity extends MenuActivity {
                 // Update buttons state
                 updateButtons(true);
                 // Set distance description
-                String siteName;
+                final String siteName;
                 if (MainApp.mDistance.getTestSite() == 0) {
                     siteName = (String) getResources().getText(R.string.site_name_main);
                 } else {
@@ -265,7 +255,7 @@ public final class DatabaseActivity extends MenuActivity {
         }
         userPassword = md5(userPassword);
         // get download url
-        int testSite;
+        final int testSite;
         if (((SwitchCompat) findViewById(R.id.test_database)).isChecked()) {
             testSite = 1;
         } else {

@@ -1,11 +1,11 @@
 package ru.mmb.sportiduinomanager.adapter;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import ru.mmb.sportiduinomanager.R;
 import ru.mmb.sportiduinomanager.model.Records;
@@ -84,7 +84,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
         }
         // Get members count and team time
         final int teamMask = mRecords.getTeamMask(index);
-        int teamMembersCount;
+        final int teamMembersCount;
         if (teamMask < 0) {
             teamMembersCount = 0;
         } else {
@@ -144,7 +144,7 @@ public class TeamListAdapter extends RecyclerView.Adapter<TeamListAdapter.TeamHo
     /**
      * Custom ViewHolder for team_list_item layout.
      */
-    static final class TeamHolder extends RecyclerView.ViewHolder {
+    public static final class TeamHolder extends RecyclerView.ViewHolder {
         /**
          * Team number and name.
          */

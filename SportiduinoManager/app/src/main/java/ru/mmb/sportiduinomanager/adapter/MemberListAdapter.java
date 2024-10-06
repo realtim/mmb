@@ -1,11 +1,11 @@
 package ru.mmb.sportiduinomanager.adapter;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +50,7 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
      * @param originalColor Color of members which presence has not been changed.
      * @param changedColor  Color of members which presence has been changed.
      */
-    public MemberListAdapter(final OnMemberClicked onClick, final int originalColor,
-                      final int changedColor) {
+    public MemberListAdapter(final OnMemberClicked onClick, final int originalColor, final int changedColor) {
         super();
         mOnClick = onClick;
         mNamesList = new ArrayList<>();
@@ -142,7 +141,7 @@ public class MemberListAdapter extends RecyclerView.Adapter<MemberListAdapter.Me
     /**
      * Custom ViewHolder for member_list_item layout.
      */
-    final class MemberHolder extends RecyclerView.ViewHolder {
+    public final class MemberHolder extends RecyclerView.ViewHolder {
         /**
          * Checkbox with team name.
          */

@@ -7,16 +7,15 @@ import android.content.res.Resources;
 import android.database.sqlite.SQLiteException;
 import android.os.Build;
 import android.widget.Toast;
+import org.acra.ACRA;
+import org.acra.config.CoreConfigurationBuilder;
+import org.acra.config.HttpSenderConfigurationBuilder;
+import org.acra.config.ToastConfigurationBuilder;
+import org.acra.data.StringFormat;
+import org.acra.sender.HttpSender;
 
 import java.io.IOException;
 import java.util.Locale;
-
-import org.acra.ACRA;
-import org.acra.annotation.AcraCore;
-import org.acra.annotation.AcraHttpSender;
-import org.acra.annotation.AcraToast;
-import org.acra.data.StringFormat;
-import org.acra.sender.HttpSender;
 
 import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
@@ -27,44 +26,6 @@ import ru.mmb.sportiduinomanager.model.Teams;
 /**
  * Keeps all persistent activity data for application lifetime.
  */
-
-// ACRA exception reporting system
-@AcraCore(buildConfigClass = BuildConfig.class,
-        reportFormat = StringFormat.JSON,
-        reportContent = {org.acra.ReportField.REPORT_ID,
-                org.acra.ReportField.APP_VERSION_CODE,
-                org.acra.ReportField.APP_VERSION_NAME,
-                org.acra.ReportField.PACKAGE_NAME,
-                org.acra.ReportField.FILE_PATH,
-                org.acra.ReportField.PHONE_MODEL,
-                org.acra.ReportField.BRAND,
-                org.acra.ReportField.PRODUCT,
-                org.acra.ReportField.ANDROID_VERSION,
-                org.acra.ReportField.BUILD,
-                org.acra.ReportField.TOTAL_MEM_SIZE,
-                org.acra.ReportField.AVAILABLE_MEM_SIZE,
-                org.acra.ReportField.CUSTOM_DATA,
-                org.acra.ReportField.STACK_TRACE,
-                org.acra.ReportField.INITIAL_CONFIGURATION,
-                org.acra.ReportField.CRASH_CONFIGURATION,
-                org.acra.ReportField.DISPLAY,
-                org.acra.ReportField.USER_APP_START_DATE,
-                org.acra.ReportField.USER_CRASH_DATE,
-                org.acra.ReportField.LOGCAT,
-                org.acra.ReportField.EVENTSLOG,
-                org.acra.ReportField.RADIOLOG,
-                org.acra.ReportField.INSTALLATION_ID,
-                org.acra.ReportField.DEVICE_FEATURES,
-                org.acra.ReportField.ENVIRONMENT,
-                org.acra.ReportField.SETTINGS_SYSTEM,
-                org.acra.ReportField.SETTINGS_SECURE,
-                org.acra.ReportField.SETTINGS_GLOBAL,
-                org.acra.ReportField.THREAD_DETAILS,
-                org.acra.ReportField.BUILD_CONFIG})
-@AcraHttpSender(uri = "http://mmb.progressor.ru/php/mmbscripts/acra.php",
-        httpMethod = HttpSender.Method.POST)
-@AcraToast(resText = R.string.acra_toast_text)
-
 public final class MainApp extends Application {
     /**
      * Alpha for disabled buttons appearance in the application.
@@ -277,6 +238,47 @@ public final class MainApp extends Application {
             super.attachBaseContext(base);
         }
         // The following line triggers the initialization of ACRA
-        ACRA.init(this);
+        ACRA.init(this, new CoreConfigurationBuilder()
+                //core configuration:
+                .withBuildConfigClass(BuildConfig.class)
+                .withReportFormat(StringFormat.JSON)
+                .withReportContent(
+                        org.acra.ReportField.REPORT_ID,
+                        org.acra.ReportField.APP_VERSION_CODE,
+                        org.acra.ReportField.APP_VERSION_NAME,
+                        org.acra.ReportField.PACKAGE_NAME,
+                        org.acra.ReportField.FILE_PATH,
+                        org.acra.ReportField.PHONE_MODEL,
+                        org.acra.ReportField.BRAND,
+                        org.acra.ReportField.PRODUCT,
+                        org.acra.ReportField.ANDROID_VERSION,
+                        org.acra.ReportField.BUILD,
+                        org.acra.ReportField.TOTAL_MEM_SIZE,
+                        org.acra.ReportField.AVAILABLE_MEM_SIZE,
+                        org.acra.ReportField.CUSTOM_DATA,
+                        org.acra.ReportField.STACK_TRACE,
+                        org.acra.ReportField.INITIAL_CONFIGURATION,
+                        org.acra.ReportField.CRASH_CONFIGURATION,
+                        org.acra.ReportField.DISPLAY,
+                        org.acra.ReportField.USER_APP_START_DATE,
+                        org.acra.ReportField.USER_CRASH_DATE,
+                        org.acra.ReportField.LOGCAT,
+                        org.acra.ReportField.EVENTSLOG,
+                        org.acra.ReportField.RADIOLOG,
+                        org.acra.ReportField.INSTALLATION_ID,
+                        org.acra.ReportField.DEVICE_FEATURES,
+                        org.acra.ReportField.ENVIRONMENT,
+                        org.acra.ReportField.SETTINGS_SYSTEM,
+                        org.acra.ReportField.SETTINGS_SECURE,
+                        org.acra.ReportField.SETTINGS_GLOBAL,
+                        org.acra.ReportField.THREAD_DETAILS,
+                        org.acra.ReportField.BUILD_CONFIG
+                )
+                .withPluginConfigurations(
+                        new HttpSenderConfigurationBuilder()
+                                .withUri("https://mmb.progressor.ru/php/mmbscripts/acra.php")
+                                .withHttpMethod(HttpSender.Method.POST).build(),
+                        new ToastConfigurationBuilder().withText(getString(R.string.acra_toast_text)).build()
+                ));
     }
 }

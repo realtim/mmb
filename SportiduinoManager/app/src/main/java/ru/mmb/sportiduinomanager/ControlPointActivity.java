@@ -1,20 +1,24 @@
 package ru.mmb.sportiduinomanager;
 
+import static ru.mmb.sportiduinomanager.StationMonitorService.DATA_UPDATED;
+import static ru.mmb.sportiduinomanager.StationMonitorService.NO_DATA_IN_MSG;
+import static ru.mmb.sportiduinomanager.StationMonitorService.PROGRESS_UPDATED;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
@@ -23,10 +27,6 @@ import ru.mmb.sportiduinomanager.adapter.TeamListAdapter;
 import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.StationAPI;
 import ru.mmb.sportiduinomanager.model.Teams;
-
-import static ru.mmb.sportiduinomanager.StationMonitorService.DATA_UPDATED;
-import static ru.mmb.sportiduinomanager.StationMonitorService.NO_DATA_IN_MSG;
-import static ru.mmb.sportiduinomanager.StationMonitorService.PROGRESS_UPDATED;
 
 /**
  * Provides ability to get Sportiduino records from station, mark team members
@@ -94,9 +94,8 @@ public final class ControlPointActivity extends MenuActivity
         super.onResume();
         // Wake the device (if the activity was started by monitoring service)
         final PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        final PowerManager.WakeLock wakeLock =
-                powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-                        getString(R.string.app_name));
+        final PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                getString(R.string.app_name));
         wakeLock.acquire(5000);
         // Set selection in drawer menu to current mode
         getMenuItem(R.id.control_point).setChecked(true);

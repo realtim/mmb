@@ -174,7 +174,7 @@ public final class Database {
         result.close();
         // Get max point number for reservation of points array
         result = database.rawQuery("SELECT MAX(number) FROM points", null);
-        int maxPointNumber;
+        final int maxPointNumber;
         if (result.moveToFirst()) {
             maxPointNumber = result.getInt(0);
         } else {
@@ -283,7 +283,7 @@ public final class Database {
                 SQLiteDatabase.OPEN_READONLY);
         // Get distance download date
         Cursor result = database.rawQuery("SELECT unixtime_downloaded FROM distance", null);
-        long timeDownloaded;
+        final long timeDownloaded;
         if (result.moveToFirst()) {
             timeDownloaded = result.getLong(0);
         } else {

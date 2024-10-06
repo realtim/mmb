@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="ru.mmb.sportiduinomanager"
-    android:versionCode="17"
-    android:versionName="1.017">
+    android:versionCode="18"
+    android:versionName="1.018">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="true" />
 
     <application
         android:name="MainApp"
-        android:allowBackup="false"
-        android:fullBackupContent="false"
         android:icon="@drawable/ic_launcher"
         android:installLocation="auto"
         android:label="@string/app_name"
@@ -27,6 +32,7 @@
         tools:targetApi="m">
         <activity
             android:name="MenuActivity"
+            android:exported="true"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,6 +44,14 @@
         <activity android:name="ChipInitActivity" />
         <activity android:name="ChipInfoActivity" />
         <activity android:name="ControlPointActivity" />
-        <service android:name="StationMonitorService"/>
+
+        <service
+            android:name="StationMonitorService"
+            android:foregroundServiceType="connectedDevice" />
+        <provider
+            android:name="org.acra.attachment.AcraContentProvider"
+            android:authorities="ru.mmb.sportiduinomanager.acra"
+            android:exported="false"
+            tools:replace="android:authorities" />
     </application>
 </manifest>
