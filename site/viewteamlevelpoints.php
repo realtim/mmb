@@ -1,102 +1,92 @@
 <?php
-// +++++++++++ Показ/редактирование результатов команды +++++++++++++++++++++++
+/**
+ * +++++++++++ Показ/редактирование результатов команды +++++++++++++++++++++++
+ */
 
 // Выходим, если файл был запрошен напрямую, а не через include
-if (!isset($MyPHPScript)) return;
+if (!isset($MyPHPScript)) {
+    return;
+}
 
-// Считаем, что все переменные уже определны. если нет - выходим
-if ($TeamId <= 0) return;
+// Считаем, что все переменные уже определены, если нет - выходим
+if ($TeamId <= 0) {
+    return;
+}
 
-
-
-
-if (!isset($viewmode)) $viewmode = "";
-if (!isset($viewsubmode)) $viewsubmode = "";
-
-/*
-echo 'mode '.$viewmode;
-echo 'submode '.$viewsubmode;
-*/
+if (!isset($viewmode)) {
+    $viewmode = "";
+}
+if (!isset($viewsubmode)) {
+    $viewsubmode = "";
+}
 
 //  TeamLevelPoint = Tlp
 
 // Проверяем, можно ли показывать результаты в принципе
-if (!CanViewResults($Administrator, $Moderator, $RaidStage)) return;
+if (!CanViewResults($Administrator, $Moderator, $RaidStage)) {
+    return;
+}
 
 // И запоминаем на будущее, можно ли их редактировать
-if (CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
-{
-	$AllowEditResult = 1;
-	$DisabledResultText = '';
-	$OnSubmitResultFunction = 'return ValidateTlpForm();';
+if (CanEditResults($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange)) {
+    $AllowEditResult = 1;
+    $DisabledResultText = '';
+    $OnSubmitResultFunction = 'return ValidateTlpForm();';
+} else {
+    $AllowEditResult = 0;
+    $DisabledResultText = ' readonly';
+    $OnSubmitResultFunction = 'return false;';
 }
-else
-{
-	$AllowEditResult = 0;
-	$DisabledResultText = ' readonly';
-	$OnSubmitResultFunction = 'return false;';
-}
-
-
-//echo 'biewmode '.$viewmode; 
 
 // ================ Форма для добавления новой  точки ===================================
-if ($viewmode == 'AddTlp' or $viewmode == '')
+if ($viewmode === 'AddTlp' || $viewmode == '')
 {
+    // Если вернулись после ошибки переменные не нужно инициализировать
+    if ($viewsubmode === "ReturnAfterErrorTlp") {
+        ReverseClearArrays();
 
-	// Если вернулись после ошибки переменные не нужно инициализировать
-	if ($viewsubmode == "ReturnAfterErrorTlp")
-	{
-		ReverseClearArrays();
+        $LevelPointId = $_POST['LevelPointId'];
+        $TlpComment = $_POST['TlpComment'];
+        $TlpYear = $_POST['TlpYear'];
+        $TlpDate = $_POST['TlpDate'];
+        $TlpTime = $_POST['TlpTime'];
+        $PointName = '';
+        $ErrorId = $_POST['ErrorId'];
+    } else {// Инициализация переменных для новой точки
 
-		$LevelPointId = $_POST['LevelPointId'];
-                $TlpComment = $_POST['TlpComment'];
-                $TlpYear = $_POST['TlpYear'];
-                $TlpDate = $_POST['TlpDate'];
-                $TlpTime = $_POST['TlpTime'];
-		$PointName = '';
-		$ErrorId = $_POST['ErrorId'];
+        // дистанция уже должна быть инициализирована в raidactions!
+        if (empty($DistanceId)) {
+            return;
+        }
+        if (empty($TeamId)) {
+            return;
+        }
 
+        $LevelPointId = 0;
+        $TlpComment = '';
+        $TlpYear = '';
+        $TlpDate = '';
+        $TlpTime = '';
+        $PointName = '';
+        $ErrorId = 0;
+    }
 
-	}
-	else
-	// Инициализация перемнных для новой точки 
-	{
+    // Определяем следующее действие
+    $NextActionName = 'AddTlp';
+    // Действие на текстовом поле по клику
+    $OnClickText = ' onClick="javascript:this.value = \'\';"';
+    // Надпись на кнопке
+    $SaveButtonText = 'Добавить точку';
 
-                // дистанция уже должна быть инициализирована в raidactions!
-                if (empty($DistanceId)) {return;}
-                if (empty($TeamId)) {return;}
-			
-	        $LevelPointId = 0;
-                $TlpComment = '';
-                $TlpYear = '';
-                $TlpDate = '';
-                $TlpTime = '';
-		$PointName = '';
-		$ErrorId = 0;
-	}
-
-	// Определяем следующее действие
-	$NextActionName = 'AddTlp';
-	// Действие на текстовом поле по клику
-	$OnClickText = ' onClick="javascript:this.value = \'\';"';
-	// Надпись на кнопке
-	$SaveButtonText = 'Добавить точку';
-
-        $pTeamLevelPointId = 0;
-}
-
-else
+    $pTeamLevelPointId = 0;
+} else {
 // ================ Редактируем/смотрим существующую точку =================
-{
 
- 
-        $pTeamLevelPointId = mmb_validateInt($_POST, 'TeamLevelPointId');
+    $pTeamLevelPointId = mmb_validateInt($_POST, 'TeamLevelPointId');
 
-	if ($pTeamLevelPointId <= 0)
-	{
-		return;
-	}
+    if ($pTeamLevelPointId <= 0) {
+        return;
+    }
 
        // 19.06.2015 Добавил level_id чтобы проставить ввести точки по старым ММБ,
        // потом можно и нужно убрать
@@ -120,38 +110,33 @@ else
 
 	$Row = CSql::singleRow($sql);
 
-	// Если вернулись после ошибки переменные не нужно инициализировать
-	if ($viewsubmode == "ReturnAfterErrorTlp")
-	{
-		ReverseClearArrays();
-		$LevelPointId = mmb_validateInt($_POST, 'LevelPointId');
-                $TlpComment = $_POST['TlpComment'];
-                $TlpYear = $_POST['TlpYear'];
-                $TlpDate = $_POST['TlpDate'];
-                $TlpTime = $_POST['TlpTime'];
-		$PointName = '';
-		$ErrorId = mmb_validateInt($_POST, 'ErrorId');
-	}
-	else
-	{
-		$LevelPointId = $Row['levelpoint_id'];
-                $TlpComment = $Row['tlp_comment'];
-                $TlpYear = $Row['tlp_syear'];
-                $TlpDate = $Row['tlp_sdate'];
-                $TlpTime = $Row['tlp_stime'];
-		$PointName = $Row['lp_name'];
-		$ErrorId = $Row['error_id'];
-	}
+    // Если вернулись после ошибки переменные не нужно инициализировать
+    if ($viewsubmode === "ReturnAfterErrorTlp") {
+        ReverseClearArrays();
+        $LevelPointId = mmb_validateInt($_POST, 'LevelPointId');
+        $TlpComment = $_POST['TlpComment'];
+        $TlpYear = $_POST['TlpYear'];
+        $TlpDate = $_POST['TlpDate'];
+        $TlpTime = $_POST['TlpTime'];
+        $PointName = '';
+        $ErrorId = mmb_validateInt($_POST, 'ErrorId');
+    } else {
+        $LevelPointId = $Row['levelpoint_id'];
+        $TlpComment = $Row['tlp_comment'];
+        $TlpYear = $Row['tlp_syear'];
+        $TlpDate = $Row['tlp_sdate'];
+        $TlpTime = $Row['tlp_stime'];
+        $PointName = $Row['lp_name'];
+        $ErrorId = $Row['error_id'];
+    }
 
 	$NextActionName = 'ChangeTlp';
 	$OnClickText = '';
 	$SaveButtonText = 'Сохранить результат';
-
 }
 
-// В форме правки выводится только день и время, год считаем по дате регистарции ММБ и не выводим
-
-if (empty($TlpYear) or (int)$TlpYear == 0) {
+// В форме правки выводится только день и время, год считаем по дате регистрации ММБ и не выводим
+if (empty($TlpYear) || (int)$TlpYear === 0) {
 
 	$sql = "select YEAR(r.raid_registrationenddate) as raidyear
 		from Raids r
@@ -183,7 +168,6 @@ if (empty($TlpYear) or (int)$TlpYear == 0) {
 		document.TlpForm.action.value = 'HideTlp';
 		document.TlpForm.submit();
 	}
-
 	
 	// Править точку
 	function EditTlp(teamlevelpointid)
@@ -192,9 +176,6 @@ if (empty($TlpYear) or (int)$TlpYear == 0) {
 		document.TlpForm.action.value = 'TlpInfo';
 		document.TlpForm.submit();
 	}
-
-
-	// 
 </script>
 
 
@@ -202,24 +183,23 @@ if (empty($TlpYear) or (int)$TlpYear == 0) {
 
 print('<br/>'."\n");
 
-// переменная опредлена в модуле viewteamdat если нужно - можно здесь ещё один запрос сделать, как для общего результатам ниже
-if ($TeamDismiss)
-{
-	print("<b>Результаты.</b> Команда в полном составе не явилась на старт.\n");	
-	print('<br/>'."\n");
-	
+// переменная определена в модуле viewteamdat если нужно - можно здесь ещё один запрос сделать, как для общего результатам ниже
+if ($TeamDismiss) {
+    print("<b>Результаты.</b> Команда в полном составе не явилась на старт.\n");
+    print('<br/>' . "\n");
 } else {
-
-
 	// ============ Общее время команды
 	$sql = "select COALESCE(TIME_FORMAT(t.team_result, '%H:%i'), '00:00') as team_result from Teams t where t.team_id = $TeamId";
 	$TeamResult = CSql::singleValue($sql, 'team_result');
 
 	$TeamPlace = GetTeamPlace($TeamId);
 	$TeamPlaceResult = "";
-	if ($TeamResult == "00:00") $TeamResult = "-";
-	if ($TeamPlace > 0) $TeamPlaceResult = " Место <b>$TeamPlace</b>";
-
+	if ($TeamResult === "00:00") {
+        $TeamResult = "-";
+    }
+	if ($TeamPlace > 0) {
+        $TeamPlaceResult = " Место <b>$TeamPlace</b>";
+    }
 
 	print("<b>Результаты.</b> Общее время с учетом штрафов и бонусов: <b title=\"Обновляется после сохранения результатов\">$TeamResult</b>$TeamPlaceResult\n");
 }
@@ -227,11 +207,8 @@ if ($TeamDismiss)
 print("<br/>\n");
 print("<div style=\"margin-top: 10px; font-size: 80%;\">В таблице отмечаются только взятые (пройденные) точки, а совокупный штраф за пропущенные отображается в следующей (по номеру) взятой точке. Для точек с отсечкой времени в колонке 'Время' отражается разница с предыдущей (длительность прохождения этого участка). Для точек с амнистией штраф начисляется на указанную организаторами точку, обычно это следующая за 'облаком' точка с отсечкой времени.</div>\n");
 
-if ($AllowEditResult == 1)
-{
-
-        print("<br/>\n");
-
+if ($AllowEditResult === 1) {
+    print("<br/>\n");
 	// Выводим начало формы с точкой
 	print('<form name="TlpForm" action="'.$MyPHPScript.'" method="post"  onSubmit="'.$OnSubmitResultFunction.'">'."\n");
 	print('<input type="hidden" name="action" value="">'."\n");
@@ -241,12 +218,10 @@ if ($AllowEditResult == 1)
 	print('<input type="hidden" name="DistanceId" value="'.$DistanceId.'">'."\n");
 	print('<input type="hidden" name="TeamLevelPointId" value="'.$pTeamLevelPointId.'">'."\n\n");
 	print('<table style="font-size: 80%;" border="0" cellpadding="2" cellspacing="0">'."\n\n");
-
 	$DisabledText = '';
 
-     // 19.06.2015 Добавил level_id чтобы проставить ввести точки по старым ММБ,
-       // потом можно и нужно убрать
-
+    // 19.06.2015 Добавил level_id чтобы проставить ввести точки по старым ММБ,
+    // потом можно и нужно убрать
 
 	print('<tr><td class="input">'."\n");
 	print('Точка '."\n");
@@ -256,11 +231,10 @@ if ($AllowEditResult == 1)
 
 	print('<option value="0">Не указана</option>'."\n");
 
-	while ($Row = mysqli_fetch_assoc($Result))
-	{
-		$levelpointselected = ($Row['levelpoint_id'] == $LevelPointId ? 'selected' : '');
-		print('<option value="'.$Row['levelpoint_id'].'" '.$levelpointselected.' >'.$Row['levelpoint_name']."</option>\n");
-	}
+    while ($Row = mysqli_fetch_assoc($Result)) {
+        $levelpointselected = ($Row['levelpoint_id'] == $LevelPointId ? 'selected' : '');
+        print('<option value="' . $Row['levelpoint_id'] . '" ' . $levelpointselected . ' >' . $Row['levelpoint_name'] . "</option>\n");
+    }
 	mysqli_free_result($Result);
 	print('</select>'."\n");
 	print("</td></tr>\r\n");
@@ -289,10 +263,9 @@ if ($AllowEditResult == 1)
 	print('</td></tr>'."\r\n");
 	print('<tr><td class="input">'."\n");
         print(' Комментарий <input type="text" name="TlpComment" size="20" value="'.$TlpComment.'" tabindex = "'.(++$TabIndex).'"   '.$DisabledText.' '
-                 .($viewmode <> 'Add' ? '' : CMmbUI::placeholder($TlpComment))
+                 .($viewmode !== 'Add' ? '' : CMmbUI::placeholder($TlpComment))
 		 .'title="Комментарий">'."\r\n");
 	print("</td></tr>\r\n");
-
 
 	// ================ Submit для формы ==========================================
 	print('<tr><td class="input" style="padding-top: 20px;">'."\n");
@@ -301,7 +274,7 @@ if ($AllowEditResult == 1)
 	
 
 	// ============ Кнопка удаления точки
-	if (($viewmode <> "Add") && !empty($viewmode)  && ($AllowEditResult == 1))
+	if (($viewmode !== "Add") && !empty($viewmode)  && ($AllowEditResult === 1))
 	{
 	print('&nbsp; <input type="button" style="margin-left: 30px;" onClick="javascript: if (confirm(\'Вы уверены, что хотите удалить точку: '.trim($PointName).'? \')) {HideTlp();}" name="HideTlpButton" value="Удалить точку" tabindex="'.(++$TabIndex).'">'."\n");
 	}
@@ -310,6 +283,7 @@ if ($AllowEditResult == 1)
 	print("</table>\n");
 	print("</form>\r\n");
 }
+
 print("<br/>\n");
 print("<table class=\"std\">\r\n");
 print('<tr class="head">
@@ -323,9 +297,8 @@ print('<tr class="head">
 		        <td>Время на дистанции</td>
 	 '."\r\n");
 
-if ($AllowEdit == 1)
-{
-	print('<td>&nbsp;</td>'."\r\n");
+if ($AllowEdit === 1) {
+    print('<td>&nbsp;</td>' . "\r\n");
 }
 print("</tr>\r\n");
 
@@ -366,7 +339,6 @@ if ($TeamNoTimePointsNumber)
 	$sql = $sql." order by tlp.teamlevelpoint_datetime ASC ";
 }
 */
-//echo  $sql;
 
 $Result = MySqlQuery($sql);
 
@@ -429,27 +401,24 @@ print("</table>\r\n");
 			order by lp.levelpoint_order ASC
 	 ";
 $Result = MySqlQuery($sql);
-if (mysqli_num_rows($Result) > 0)
-{
-	print("<br/>\r\n");
-	print("<table class=\"std\">\r\n");
-	print('<tr class="head">
+if (mysqli_num_rows($Result) > 0) {
+    print("<br/>\r\n");
+    print("<table class=\"std\">\r\n");
+    print('<tr class="head">
                 <td>Пропуск кп с собственным штрафом</td>
                 <td>Штраф, минуты</td>
-	 '."\r\n");
-	
-	 while ($Row = mysqli_fetch_assoc($Result))
-	{
-		print("<tr>\r\n");
-		print("<td>{$Row['levelpoint_name']}</td>
+	 ' . "\r\n");
+
+    while ($Row = mysqli_fetch_assoc($Result)) {
+        print("<tr>\r\n");
+        print("<td>{$Row['levelpoint_name']}</td>
 			<td>{$Row['levelpoint_penalty']}</td>\r\n");
-		print("</tr>\r\n");
-	}
-	print("</tr>\r\n");
-	print("</table>\r\n");
+        print("</tr>\r\n");
+    }
+    print("</tr>\r\n");
+    print("</table>\r\n");
 }
 mysqli_free_result($Result);
-
 
 	$sql = "select lp.levelpoint_id, lp.levelpoint_name, 
 				lp.levelpoint_penalty,
@@ -511,9 +480,7 @@ if (mysqli_num_rows($Result) > 0)
 }
 mysqli_free_result($Result);
 
-
 print("<br/>\r\n");
- 
 
 // Закрываем форму
 print("</form>\n");
