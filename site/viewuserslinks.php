@@ -3,7 +3,8 @@
 /**
  * @var $RaidId int
  * @var $MyPHPScript non-empty-string|null
- * @var $MyPHPScript non-empty-string
+ * @var $viewmode string|null
+ * @var $Anonimus non-empty-string
  */
 
 // +++++++++++ Загрузка файла/показ списка файлов ++++++++++++++++++++++++++++
@@ -37,7 +38,7 @@ $sql = sprintf(
             ul.userlink_url,
             r.raid_name,
             r.raid_id,
-            u.user_name,
+            if(u.user_noshow = 1,'%s', u.user_name) as user_name,
             a.team_name,
             a.team_num,
             a.distance_name,
@@ -72,6 +73,7 @@ $sql = sprintf(
             CASE lt.linktype_id WHEN 6 THEN CAST(userlink_url as decimal(5, 2)) ELSE userlink_id END asc
 SQL
     ,
+    $Anonimus,
     $RaidId
 );
 
