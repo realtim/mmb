@@ -1,5 +1,11 @@
 <?php
-// +++++++++++ Показ/редактирование данных команды ++++++++++++++++++++++++++++
+
+/**
+ * +++++++++++ Показ/редактирование данных команды ++++++++++++++++++++++++++++
+ *
+ * @global $TeamOutOfRange int
+ * @global $UserId numeric-string
+ */ 
 
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
@@ -415,15 +421,11 @@ print('<tr><td class="input"><input type="text" name="TeamName" size="50" value=
 
 print('<tr><td class="input">'."\n");
 
-
-
-
 // ============ Вне зачета
-
-if ($RaidId <=27) {
+if ($RaidId <= 27) {
 	// Если регистрация команды, то атрибут "вне зачёта" не может изменить даже администратор - этот параметр рассчитывается по времени
 	// администратор может поменять флаг при правке
-	if ($viewmode <> "Add" and CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
+	if ($viewmode !== "Add" && CanEditOutOfRange($Administrator, $Moderator, $TeamUser, $OldMmb, $RaidStage, $TeamOutOfRange))
 		$DisabledTextOutOfRange = '';
 	else
 		$DisabledTextOutOfRange = 'disabled';
@@ -431,18 +433,22 @@ if ($RaidId <=27) {
 	print('Вне зачета! <input type="checkbox" name="TeamOutOfRange" value="on"'.(($TeamOutOfRange == 1) ? ' checked="checked"' : '')
 		.' tabindex="'.(++$TabIndex).'" '.$DisabledTextOutOfRange.' title="Команда вне зачета"/> &nbsp;'."\n");
 } else {
-
  	if ($TeamOutOfRange) {
-		print('Ожидает приглашения!&nbsp;'."\n");
+        print('Ожидает приглашения!&nbsp;');
  	}
 
-
-	// 09/06/2016 Покащзываем кнопку активации
-	if (CRights::canInviteTeam($UserId, $TeamId))
-	{
-		print('<input type="button" onClick="javascript: if (confirm(\'Вы уверены, что хотите перевести эту команду в зачет? \')) { InviteTeam(); }" name="InviteTeamButton" value="Пригласить команду" tabindex="'.(++$TabIndex).'">'."\r\n");
-	
-	}	
+    // Показываем кнопку активации
+    try {
+        CRights::getInviteIdAndThrow($UserId, $TeamId);
+        printf(
+                '<input type="button" onClick="if (confirm(\'Вы уверены, что хотите перевести эту команду в зачет? \')) { InviteTeam(); }" name="InviteTeamButton" value="Пригласить команду" tabindex="%s">',
+            ++$TabIndex
+        );
+    } catch (Exception $e) {
+        if ($e->getCode() === CRights::YOUR_TEAM_IS_NOT_INVITED_EXCEPTION_CODE) {
+            printf('<div class="ErrorText">%s</div>', $e->getMessage());
+        }
+    }
 }
 
 print('</td></tr>'."\n\n");

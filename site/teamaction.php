@@ -744,7 +744,7 @@ elseif ($action == 'HideTeam')
 }
 
 // ============ Перевод команды в зачет ====================================
-elseif ($action == 'InviteTeam')
+elseif ($action === 'InviteTeam')
 {
 	if ($TeamId <= 0)
 	{
@@ -762,20 +762,18 @@ elseif ($action == 'InviteTeam')
 		return;
 	}
 
-	// Проверка возможности пригласить команду
-	$inviteId = CRights::canInviteTeam($UserId, $TeamId);
-	
-	if (!$inviteId)
-	{
-		CMmb::setErrorMessage('Приглашение команды невозможно');
-		return;
-	} else {
+    // Проверка возможности пригласить команду
+    try {
+        $inviteId = CRights::getInviteIdAndThrow($UserId, $TeamId);
+    } catch (Exception $e) {
+        CMmb::setErrorMessage('Приглашение команды невозможно');
+        return;
+    }
 
-		$sql = "update Teams set team_outofrange = 0, invitation_id = $inviteId, invitation_usedt = NOW()  where team_id = $TeamId";
-		$rs = MySqlQuery($sql);
-	}
+    $sql = "update Teams set team_outofrange = 0, invitation_id = $inviteId, invitation_usedt = NOW()  where team_id = $TeamId";
+    $rs = MySqlQuery($sql);
 
-	$view = "ViewRaidTeams";
+    $view = "ViewRaidTeams";
 }
 
 

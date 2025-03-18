@@ -1,14 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Serge Titov
- * Date: 14.04.2016
- */
 
-if (!isset($MyPHPScript)) return;
+if (!isset($MyPHPScript)) {
+    return;
+}
 
 class CRights
 {
+    public const YOUR_TEAM_IS_NOT_INVITED_EXCEPTION_CODE = 100;
+
     public static function canViewLogs($userId)
     {
         global $Administrator;
@@ -119,37 +118,38 @@ class CRights
         return (false);
 
     }
-    // конец функции - проверки на возможность выдать приглашение 
-  
-  
-  
-    // проверка на возможность перевода кманды вне зачета 
-    // возвращает идентификатор приглашения
-    public static function canInviteTeam($userId, $teamId)
-    {
+    // конец функции - проверки на возможность выдать приглашение
 
+    /**
+     * Возвращает идентификатор приглашения.
+     * Проверка на возможность перевода команды вне зачета
+     *
+     * @return numeric-string
+     */
+    public static function getInviteIdAndThrow($userId, $teamId)
+    {
       // проверяем, что команда не в зачете и узнаем ключ ММБ
-        $sql = "select t.team_outofrange, d.raid_id, t.team_hide
+        $sql = 'select t.team_outofrange, d.raid_id, t.team_hide
     			from  Teams t 
-    			        inner join Distances d
-    			        on t.distance_id = d.distance_id
-	    		where  t.team_id = $teamId";
+    			inner join Distances d on t.distance_id = d.distance_id
+	    		where  t.team_id =' . $teamId;
 
         $Row = CSql::singleRow($sql);
+
         $outOfRange = $Row['team_outofrange'];
         $hideTeam = $Row['team_hide'];
         $raidId = $Row['raid_id'];
 
-	    if (!$outOfRange or $hideTeam)  {
-           return (false);
+        if (!$outOfRange || $hideTeam) {
+            throw new \RuntimeException('Приглашение команды невозможно');
         }
 
         $raidStage = CSql::raidStage($raidId);
         // по идее можно показывать и с 5, но обычно карты загружают позже
 
-        // до открытия регистрации (до задания даты окончания регистрации) нельяз выдавать
-        if ($raidStage > 2 or $raidStage < 1)  {
-           return (false);
+        // до открытия регистрации (до задания даты окончания регистрации) нельзя выдавать
+        if ($raidStage > 2 || $raidStage < 1) {
+            throw new \RuntimeException('Приглашение команды невозможно');
         }
 
         // проверяем, что пользователь включен в команду, которая не активирована
@@ -166,16 +166,18 @@ class CRights
 	    		    and t.team_hide = 0
 	    		    and d.raid_id = $raidId
 	    		    and tu.teamuser_hide = 0
-	    		    and t.team_outofrange = 1
-	    		";
+	    		    and t.team_outofrange = 1";
+
 	    $selfoutofrange = CSql::singleValue($sql, 'selfoutofrange', false);
 
-	    if ($selfoutofrange)  {
-           return (false);
+        if ((int)$selfoutofrange > 0) {
+            throw new \RuntimeException(
+                'Вы еще не пригласили свою команду, поэтому не можете пригласить чужую',
+                self::YOUR_TEAM_IS_NOT_INVITED_EXCEPTION_CODE
+            );
         }
 
-
-        // проверяем, что у пользователя есть приглашение, оо активно и не активировано
+        // проверяем, что у пользователя есть приглашение, оно активно и не активировано
         $sql = "select inv.invitation_id
     			from Invitations inv
 	    			inner join InvitationDeliveries idev
@@ -191,15 +193,18 @@ class CRights
 				order by inv.invitation_id asc
 				LIMIT 0,1
 				";
-		//	echo $sql; 
+
+        /** @var numeric-string|null $invitationId */
 		$invitationId = CSql::singleValue($sql, 'invitation_id', false);
 
-        return ($invitationId);
+        if ($invitationId === null) {
+            throw new \RuntimeException('Приглашение не найдено');
+        }
 
+        return $invitationId;
     }
-    // конец функции - проверки на возможность выдать приглашение 
   
-     // Возможность видеть приглашения  пользователя
+     // Возможность видеть приглашения пользователя
     public static function canViewUserInvitations($puserId, $raidId, $userId)
     {
         return ($puserId == $userId || CSql::userAdmin($userId) || CSql::userModerator($userId, $raidId));
