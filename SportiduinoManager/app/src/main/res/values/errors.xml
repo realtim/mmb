@@ -17,8 +17,13 @@
     <string name="err_bt_cant_connect">Connection attempt failed</string>
     <string name="err_bt_send_failed">Sending data to station failed</string>
     <string name="err_bt_receive_timeout">Station communication timeout</string>
-    <string name="err_bt_receive_bad_response">Incorrect station response</string>
-    <string name="err_bt_response_wrong_length">Station response has wrong length</string>
+    <string name="err_bt_receive_bad_signature">Station response has wrong signature</string>
+    <string name="err_bt_receive_bad_nopayload">Station response has no payload</string>
+    <string name="err_bt_receive_bad_payloadlen">Station response has wrong payload length</string>
+    <string name="err_bt_receive_bad_stationnum">Station response has wrong station number</string>
+    <string name="err_bt_receive_bad_crc">Station response has wrong CRC</string>
+    <string name="err_bt_receive_bad_commandcode">Station response has wrong command code</string>
+    <string name="err_bt_response_wrong_length">Station response has wrong length for this command</string>
     <string name="err_bt_wrong_firmware">Station firmware version is %1$d, supported version is only %2$d</string>
 
     <string name="err_init_no_such_team">No team with this number</string>

@@ -10,10 +10,10 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.constraintlayout.widget.Group;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;
@@ -110,7 +110,7 @@ public final class DatabaseActivity extends MenuActivity {
                 dlDistance.setVisibility(View.VISIBLE);
                 // set user email and test db flag from local database
                 ((EditText) findViewById(R.id.user_email)).setText(MainApp.UI_STATE.getUserEmail());
-                ((SwitchCompat) findViewById(R.id.test_database))
+                ((Switch) findViewById(R.id.test_database))
                         .setChecked(MainApp.UI_STATE.getTestSite() == 1);
             } else {
                 dlDistance.setVisibility(View.GONE);
@@ -256,7 +256,7 @@ public final class DatabaseActivity extends MenuActivity {
         userPassword = md5(userPassword);
         // get download url
         final int testSite;
-        if (((SwitchCompat) findViewById(R.id.test_database)).isChecked()) {
+        if (((Switch) findViewById(R.id.test_database)).isChecked()) {
             testSite = 1;
         } else {
             testSite = 0;

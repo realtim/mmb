@@ -47,8 +47,7 @@ public final class Teams {
      * @return True in case of valid team number value
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    boolean addTeam(final int number, final int membersCount, final int mapsCount,
-                    final String name) {
+    boolean addTeam(final int number, final int membersCount, final int mapsCount, final String name) {
         // Check if team number is valid
         if (number < 0 || number >= mTeams.length) return false;
         // Check if the point was already set
@@ -70,8 +69,7 @@ public final class Teams {
      * @return True in case of valid team and number of its members
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    boolean addTeamMember(final long memberId, final int teamN, final String memberName,
-                          final String memberPhone) {
+    boolean addTeamMember(final long memberId, final int teamN, final String memberName, final String memberPhone) {
         // Check if team number is valid
         if (teamN < 0 || teamN >= mTeams.length) return false;
         final int numberOfMembers = mTeams[teamN].mMembers.length;

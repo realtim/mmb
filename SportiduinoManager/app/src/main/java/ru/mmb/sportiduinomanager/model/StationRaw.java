@@ -2,6 +2,7 @@ package ru.mmb.sportiduinomanager.model;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,14 +92,34 @@ public class StationRaw {
      */
     private static final byte REC_TIMEOUT = 2;
     /**
-     * Result of sending command to station: response has wrong format or damaged.
+     * Result of sending command to station: wrong signature.
      */
-    private static final byte REC_BAD_RESPONSE = 3;
+    private static final byte REC_BAD_SIGNATURE = 3;
+    /**
+     * Result of sending command to station: no payload.
+     */
+    private static final byte REC_BAD_NOPAYLOAD = 4;
+    /**
+     * Result of sending command to station: wrong payload length.
+     */
+    private static final byte REC_BAD_PAYLOADLEN = 5;
+    /**
+     * Result of sending command to station: wrong station number.
+     */
+    private static final byte REC_BAD_STATIONNUM = 6;
+    /**
+     * Result of sending command to station: wrong CRC.
+     */
+    private static final byte REC_BAD_CRC = 7;
+    /**
+     * Result of sending command to station: wrong command code.
+     */
+    private static final byte REC_BAD_COMMANDCODE = 8;
     /**
      * Result of sending command to station: station sent an error.
      * of command execution
      */
-    private static final byte REC_COMMAND_ERROR = 4;
+    private static final byte REC_COMMAND_ERROR = 9;
 
     /**
      * Station Bluetooth whole object.
@@ -458,12 +479,28 @@ public class StationRaw {
     }
 
     /**
+     * Print send/receive buffer to logcat.
+     *
+     * @param tag    Buffer name for logcat
+     * @param buffer Data send to or received from the station
+     */
+    private void logBuffer(final String tag, final byte[] buffer) {
+        StringBuilder message = new StringBuilder();
+        for (byte b : buffer) {
+            message.append(String.format("%02x ", b));
+        }
+        Log.i(tag, message.toString());
+    }
+
+    /**
      * Send command to station, receive response and make response integrity checks.
      *
      * @param sendBuffer Actual command payload without starting and ending bytes
      * @return Byte array with station response, first byte contains error code
      */
     private byte[] runCommand(final byte[] sendBuffer) {
+        // print data sent to the station
+        logBuffer("Sent to station", sendBuffer);
         // reconnect (just in case and send the command
         if (!connect()) return new byte[]{SEND_FAILED};
         if (!send(sendBuffer)) return new byte[]{SEND_FAILED};
@@ -471,23 +508,25 @@ public class StationRaw {
         final byte[] receiveBuffer = receive();
         final int len = receiveBuffer.length;
         if (len == 0) return new byte[]{REC_TIMEOUT};
+        // print data received from the station
+        logBuffer("Received from station", receiveBuffer);
         // check signature
-        if (receiveBuffer[0] != HEADER_SIGNATURE) return new byte[]{REC_BAD_RESPONSE};
+        if (receiveBuffer[0] != HEADER_SIGNATURE) return new byte[]{REC_BAD_SIGNATURE};
         // check if response has at minimum 1 byte payload
-        if (len < HEADER_SIZE) return new byte[]{REC_BAD_RESPONSE};
+        if (len < HEADER_SIZE) return new byte[]{REC_BAD_NOPAYLOAD};
         // check buffer length
         final int payloadLen = ((receiveBuffer[4] & 0xFF) << 8) + (receiveBuffer[5] & 0xFF);
-        if (payloadLen != len - HEADER_SIZE - 1) return new byte[]{REC_BAD_RESPONSE};
+        if (payloadLen != len - HEADER_SIZE - 1) return new byte[]{REC_BAD_PAYLOADLEN};
         // check station number
         if (sendBuffer[0] != CMD_GET_STATUS && sendBuffer[0] != CMD_GET_CONFIG
                 && sendBuffer[0] != CMD_RESET_STATION
-                && (receiveBuffer[2] & 0xFF) != mNumber) return new byte[]{REC_BAD_RESPONSE};
+                && (receiveBuffer[2] & 0xFF) != mNumber) return new byte[]{REC_BAD_STATIONNUM};
         // update station number for getStatus command
         if (sendBuffer[0] == CMD_GET_STATUS) mNumber = receiveBuffer[2] & 0xFF;
         // check crc
-        if (receiveBuffer[len - 1] != crc8(receiveBuffer, len - 1)) return new byte[]{REC_BAD_RESPONSE};
+        if (receiveBuffer[len - 1] != crc8(receiveBuffer, len - 1)) return new byte[]{REC_BAD_CRC};
         // check if command code received is equal to command code sent
-        if (receiveBuffer[3] != sendBuffer[0] + 0x10) return new byte[]{REC_BAD_RESPONSE};
+        if (receiveBuffer[3] != sendBuffer[0] + 0x10) return new byte[]{REC_BAD_COMMANDCODE};
         // check command execution code (it should be present and equal to zero)
         if (receiveBuffer[HEADER_SIZE] != 0) return new byte[]{(byte) (REC_COMMAND_ERROR + receiveBuffer[HEADER_SIZE])};
         // copy payload to response buffer
@@ -524,8 +563,23 @@ public class StationRaw {
                     case REC_TIMEOUT:
                         mLastError = R.string.err_bt_receive_timeout;
                         break;
-                    case REC_BAD_RESPONSE:
-                        mLastError = R.string.err_bt_receive_bad_response;
+                    case REC_BAD_SIGNATURE:
+                        mLastError = R.string.err_bt_receive_bad_signature;
+                        break;
+                    case REC_BAD_NOPAYLOAD:
+                        mLastError = R.string.err_bt_receive_bad_nopayload;
+                        break;
+                    case REC_BAD_PAYLOADLEN:
+                        mLastError = R.string.err_bt_receive_bad_payloadlen;
+                        break;
+                    case REC_BAD_STATIONNUM:
+                        mLastError = R.string.err_bt_receive_bad_stationnum;
+                        break;
+                    case REC_BAD_CRC:
+                        mLastError = R.string.err_bt_receive_bad_crc;
+                        break;
+                    case REC_BAD_COMMANDCODE:
+                        mLastError = R.string.err_bt_receive_bad_commandcode;
                         break;
                     case REC_COMMAND_ERROR + 1:
                         mLastError = R.string.err_station_wrong_number;

@@ -37,6 +37,10 @@ class UIState {
      * Current position in team list at control point.
      */
     private int mTeamListPosition;
+    /**
+     * True if chip info records will be saved to database.
+     */
+    private boolean mChipInfoSaveToDB;
 
     /**
      * Set initial default values for all UI elements.
@@ -49,6 +53,7 @@ class UIState {
         mTeamNumber = 0;
         mTeamMask = 0;
         mTeamListPosition = 0;
+        mChipInfoSaveToDB = false;
     }
 
     /**
@@ -161,7 +166,24 @@ class UIState {
      * @param teamListPosition Zero-based position
      */
     void setTeamListPosition(final int teamListPosition) {
-        mTeamListPosition =
-                teamListPosition;
+        mTeamListPosition = teamListPosition;
+    }
+
+    /**
+     * Get the value of ChipInfo SaveToDB flag.
+     *
+     * @return ChipInfoSaveToDB flag value
+     */
+    boolean getChipInfoSaveToDB() {
+        return mChipInfoSaveToDB;
+    }
+
+    /**
+     * Set the value of ChipInfo SaveToDB flag.
+     *
+     * @param chipInfoSaveToDB flag value
+     */
+    void setChipInfoSaveToDB(final boolean chipInfoSaveToDB) {
+        mChipInfoSaveToDB = chipInfoSaveToDB;
     }
 }

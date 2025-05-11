@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
     <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
+    <color name="text_secondary">#616161</color>
     <color name="text_secondary_light">#BDBDBD</color>
-    <color name="text_primary_inverse">#ffffff</color>
-    <color name="bg_primary">#388e3c</color>
-    <color name="bg_primary_dark">#1b5e20</color>
-    <color name="bg_primary_light">#c8e6c9</color>
-    <color name="bg_secondary">#ff5252</color>
+    <color name="text_primary_inverse">#FFFFFF</color>
+    <color name="bg_primary">#2E7D32</color>
+    <color name="bg_primary_dark">#1B5E20</color>
+    <color name="bg_primary_light">#C8E6C9</color>
+    <color name="bg_secondary">#D50000</color>
 </resources>

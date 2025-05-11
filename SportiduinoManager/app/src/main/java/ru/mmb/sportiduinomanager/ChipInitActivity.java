@@ -199,11 +199,13 @@ public final class ChipInitActivity extends MenuActivity implements MemberListAd
         if (initResult) {
             // Create new chip init record and save it into local database
             final int teamNumber = Integer.parseInt(mTeamNumber);
-            MainApp.mAllRecords.addRecord(MainApp.mStation,
+            MainApp.mAllRecords.addRecord(MainApp.mStation, MainApp.mStation.getMode(),
                     MainApp.mStation.getLastInitTime(), teamNumber, mTeamMask,
                     MainApp.mStation.getNumber(), MainApp.mStation.getLastInitTime());
             final String result = MainApp.mAllRecords.saveNewRecords(MainApp.mDatabase);
             if ("".equals(result)) {
+                // Menu should be changed - we have new records unsent to site
+                updateMenuItems(R.id.chip_init);
                 // Clear team number and mask to start again
                 mTeamNumber = "";
                 mTeamMask = 0;

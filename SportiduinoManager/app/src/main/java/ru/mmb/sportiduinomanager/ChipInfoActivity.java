@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -51,6 +52,13 @@ public final class ChipInfoActivity extends MenuActivity {
     }
 
     @Override
+    protected void onPause() {
+        // Save SaveToDB switch state
+        MainApp.UI_STATE.setChipInfoSaveToDB(((Switch) findViewById(R.id.info_save_to_db)).isChecked());
+        super.onPause();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         // Set selection in drawer menu to current mode
@@ -73,6 +81,8 @@ public final class ChipInfoActivity extends MenuActivity {
         // specify points list adapter and initialize it
         mPointAdapter = new PointListAdapter(MainApp.mChipPunches);
         pointsList.setAdapter(mPointAdapter);
+        // Restore SaveToDB switch state
+        ((Switch) findViewById(R.id.info_save_to_db)).setChecked(MainApp.UI_STATE.getChipInfoSaveToDB());
         // Update layout
         updateLayout();
     }
@@ -92,10 +102,13 @@ public final class ChipInfoActivity extends MenuActivity {
      * @param view View of button clicked (unused)
      */
     public void readChipInfo(@SuppressWarnings("unused") final View view) {
+        // Save SaveToDB switch state
+        final boolean saveToDB = ((Switch) findViewById(R.id.info_save_to_db)).isChecked();
+        MainApp.UI_STATE.setChipInfoSaveToDB(saveToDB);
         // Check station presence
         if (MainApp.mStation == null) return;
         // Send command to station and check result
-        new ChipInfoTask(this).execute();
+        new ChipInfoTask(this).execute(saveToDB);
     }
 
     /**
@@ -140,5 +153,7 @@ public final class ChipInfoActivity extends MenuActivity {
         mPointAdapter.updateList(MainApp.mChipPunches);
         // Show updated chip info
         infoTeamData.setVisibility(View.VISIBLE);
+        // Menu should be updated as we may have new records unsent to site
+        updateMenuItems(R.id.chip_info);
     }
 }

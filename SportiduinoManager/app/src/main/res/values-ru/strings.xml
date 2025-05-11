@@ -56,13 +56,13 @@
     <string name="response_time">Время отклика %1$dмс</string>
     <string name="station_mode">Текущий режим</string>
     <string name="station_mode_value_0">Инициализация чипов на точке %1$s</string>
-    <string name="station_mode_value_1">Обычный %1$s</string>
+    <string name="station_mode_value_1">Стартовый %1$s</string>
     <string name="station_mode_value_2">Финишный %1$s</string>
     <string name="station_mode_unknown">Неизвестный режим</string>
     <string name="station_new_point">Новая точка</string>
     <string name="station_new_mode">Новый режим</string>
     <string name="station_mode_0">Инициализация</string>
-    <string name="station_mode_1">Обычный</string>
+    <string name="station_mode_1">Стартовый</string>
     <string name="station_mode_2">Финишный</string>
     <string name="station_change_mode">Сохранить</string>
     <string name="station_time_drift">Смещение часов: %1$dс</string>
@@ -110,6 +110,7 @@
     <string name="monitoring_service">Мониторинг отметок на станции</string>
 
     <string name="info_request">Считать чип</string>
+    <string name="info_save_to_db">Сохранять данные из чипа в базу</string>
     <string name="info_help">Чтобы посмотреть содержимое чипа, положите его на станцию и нажмите кнопку</string>
     <string name="info_team_name">№%1$d %2$s</string>
     <string name="list_point_name">%1$s</string>

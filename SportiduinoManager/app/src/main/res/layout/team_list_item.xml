@@ -13,7 +13,6 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_marginStart="@dimen/default_padding"
-        android:layout_marginLeft="@dimen/default_padding"
         android:gravity="start|center_vertical"
         android:text="@string/cp_team_name"
         app:layout_constraintEnd_toStartOf="@id/list_team_count"
@@ -22,9 +21,10 @@
 
     <TextView
         android:id="@+id/list_team_count"
-        android:layout_width="32dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:gravity="center"
+        android:minWidth="32dp"
         android:text="@string/list_team_count"
         app:layout_constraintEnd_toStartOf="@id/list_team_time"
         app:layout_constraintStart_toEndOf="@id/list_team_name"
@@ -35,7 +35,6 @@
         android:layout_width="112dp"
         android:layout_height="match_parent"
         android:layout_marginEnd="@dimen/default_padding"
-        android:layout_marginRight="@dimen/default_padding"
         android:gravity="center|end"
         android:text="@string/list_team_time"
         app:layout_constraintEnd_toEndOf="parent"

@@ -8,7 +8,7 @@ plugins {
 apply plugin: 'com.android.application'
 
 android {
-    compileSdk 35
+    compileSdk 36
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -27,8 +27,18 @@ android {
     defaultConfig {
         applicationId "ru.mmb.sportiduinomanager"
         minSdkVersion 21
-        targetSdkVersion 35
+        targetSdkVersion 36
         resourceConfigurations += ['ru', 'en']
+    }
+
+    bundle {
+        language {
+            // Specifies that the app bundle should not support
+            // configuration APKs for language resources. These
+            // resources are instead packaged with each base and
+            // dynamic feature APK.
+            enableSplit = false
+        }
     }
 
     buildTypes {
@@ -53,7 +63,7 @@ android {
 }
 
 checkstyle {
-    toolVersion "10.18.1"
+    toolVersion "10.23.0"
     configFile file("${project.rootDir}/config/checkstyle/checkstyle.xml")
 }
 tasks.register('checkstyle', Checkstyle) {
@@ -65,7 +75,7 @@ tasks.register('checkstyle', Checkstyle) {
 check.dependsOn('checkstyle')
 
 pmd {
-    toolVersion "7.5.0"
+    toolVersion "7.13.0"
     ruleSets = []
     ruleSetFiles = files("$project.rootDir/config/pmd/rules-pmd.xml")
 }
@@ -94,8 +104,8 @@ tasks.withType(SpotBugsTask).configureEach {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.13.0-alpha06'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.13.0-alpha13'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
 
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.13.0'
 

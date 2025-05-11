@@ -27,6 +27,7 @@
 
             <Button
                 android:id="@+id/device_search"
+                style="@style/AppTheme.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -171,6 +172,7 @@
             android:layout_height="wrap_content"
             android:dropDownWidth="wrap_content"
             android:minWidth="@dimen/min_points_list_width"
+            android:padding="@dimen/default_padding"
             app:layout_constraintEnd_toEndOf="@+id/station_center"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/station_new_point" />
@@ -181,6 +183,7 @@
             android:layout_height="wrap_content"
             android:dropDownWidth="wrap_content"
             android:minWidth="@dimen/min_points_list_width"
+            android:padding="@dimen/default_padding"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/station_center"
             app:layout_constraintTop_toBottomOf="@+id/station_new_mode" />
@@ -192,6 +195,7 @@
             android:layout_gravity="center"
             android:onClick="changeStationMode"
             android:text="@string/station_change_mode"
+            style="@style/AppTheme.Button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -216,6 +220,7 @@
             android:layout_gravity="center"
             android:onClick="syncStationClock"
             android:text="@string/station_sync_time"
+            style="@style/AppTheme.Button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"

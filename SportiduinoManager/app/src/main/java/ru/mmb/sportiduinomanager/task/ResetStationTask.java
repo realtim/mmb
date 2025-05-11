@@ -106,7 +106,7 @@ public class ResetStationTask extends AsyncTask<Integer, Long, Integer> {
             teamsRescanned++;
             int fromPunch = 0;
             do {
-                int toRead = punchesN;
+                int toRead = punchesN - fromPunch;
                 if (toRead > StationAPI.MAX_PUNCH_COUNT) {
                     toRead = StationAPI.MAX_PUNCH_COUNT;
                 }

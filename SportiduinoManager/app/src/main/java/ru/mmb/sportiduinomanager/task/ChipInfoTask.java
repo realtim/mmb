@@ -12,7 +12,7 @@ import ru.mmb.sportiduinomanager.model.Records;
 /**
  * Run long read chip info in separate thread.
  */
-public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
+public class ChipInfoTask extends AsyncTask<Boolean, Void, Boolean> {
     /**
      * Reference to parent activity (which can cease to exist in any moment).
      */
@@ -44,16 +44,30 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
     /**
      * Read data from chip at the connected station.
      *
-     * @param params No parameters are sent to this function
+     * @param saveToDBParams True if chip records should be saved to database
      * @return True if succeeded
      */
-    protected Boolean doInBackground(final Void... params) {
+    protected Boolean doInBackground(final Boolean... saveToDBParams) {
         // Send command to connected station
         if (MainApp.mStation == null) return Boolean.FALSE;
+        MainApp.mStation.fetchStatus();
         final Boolean result = MainApp.mStation.readCard();
         // Save list of punches from the chip in main app
         MainApp.mChipPunches = new Records(0);
         MainApp.mChipPunches.join(MainApp.mStation.getRecords());
+        // Save punches from chip to database
+        if (saveToDBParams[0] && result) {
+            for (int i = 1; i < MainApp.mChipPunches.size(); i++) {
+                MainApp.mAllRecords.addRecord(MainApp.mChipPunches.getRecord(i));
+            }
+            final String saveResult = MainApp.mAllRecords.saveNewRecords(MainApp.mDatabase);
+            if (!"".equals(saveResult)) {
+                final ChipInfoActivity activity = mActivityRef.get();
+                if (activity != null && !activity.isFinishing()) {
+                    Toast.makeText(activity, saveResult, Toast.LENGTH_LONG).show();
+                }
+            }
+        }
         return result;
     }
 
@@ -68,8 +82,7 @@ public class ChipInfoTask extends AsyncTask<Void, Void, Boolean> {
         if (activity == null || activity.isFinishing()) return;
         // Show error message
         if (!result) {
-            Toast.makeText(activity, MainApp.mStation.getLastError(true),
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, MainApp.mStation.getLastError(true), Toast.LENGTH_LONG).show();
         }
         // Change layout state
         activity.setInfoRequestState(ChipInfoActivity.INFO_REQUEST_OFF);

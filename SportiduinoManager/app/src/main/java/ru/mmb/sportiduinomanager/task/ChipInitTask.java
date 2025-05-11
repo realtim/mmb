@@ -29,7 +29,7 @@ public class ChipInitTask extends AsyncTask<Integer, Void, Boolean> {
     /**
      * Run initChip command at connected station.
      *
-     * @param teamParams Tam number and mask
+     * @param teamParams Team number and mask
      * @return True if succeeded
      */
     protected Boolean doInBackground(final Integer... teamParams) {

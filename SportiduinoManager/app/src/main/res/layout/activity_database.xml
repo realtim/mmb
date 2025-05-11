@@ -61,6 +61,7 @@
 
             <Button
                 android:id="@+id/get_results"
+                style="@style/AppTheme.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="false"
@@ -70,6 +71,7 @@
 
             <Button
                 android:id="@+id/send_database"
+                style="@style/AppTheme.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="false"
@@ -104,17 +106,19 @@
                     android:padding="@dimen/default_padding"
                     local:targetApi="28" />
 
-                <androidx.appcompat.widget.SwitchCompat
+                <Switch
                     android:id="@+id/test_database"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:checked="false"
                     android:padding="@dimen/default_padding"
                     android:text="@string/use_test_site"
+                    local:ignore="UseSwitchCompatOrMaterialXml"
                     local:showText="false" />
 
                 <Button
                     android:id="@+id/download_distance"
+                    style="@style/AppTheme.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:onClick="startDistanceDownload"

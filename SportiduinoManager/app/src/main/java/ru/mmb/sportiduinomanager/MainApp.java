@@ -16,12 +16,14 @@ import org.acra.sender.HttpSender;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Objects;
 
 import ru.mmb.sportiduinomanager.model.Database;
 import ru.mmb.sportiduinomanager.model.Distance;
 import ru.mmb.sportiduinomanager.model.Records;
 import ru.mmb.sportiduinomanager.model.StationAPI;
 import ru.mmb.sportiduinomanager.model.Teams;
+
 
 /**
  * Keeps all persistent activity data for application lifetime.
@@ -191,7 +193,8 @@ public final class MainApp extends Application {
         try {
             setDatabase(new Database(context));
         } catch (IOException e) {
-            startupError = context.getString(R.string.err_db_cant_create_dir).concat(e.getMessage());
+            startupError = context.getString(R.string.err_db_cant_create_dir)
+                    .concat(Objects.requireNonNull(e.getMessage()));
         } catch (SQLiteException e) {
             startupError = e.getMessage();
         }
@@ -238,47 +241,49 @@ public final class MainApp extends Application {
             super.attachBaseContext(base);
         }
         // The following line triggers the initialization of ACRA
-        ACRA.init(this, new CoreConfigurationBuilder()
-                //core configuration:
-                .withBuildConfigClass(BuildConfig.class)
-                .withReportFormat(StringFormat.JSON)
-                .withReportContent(
-                        org.acra.ReportField.REPORT_ID,
-                        org.acra.ReportField.APP_VERSION_CODE,
-                        org.acra.ReportField.APP_VERSION_NAME,
-                        org.acra.ReportField.PACKAGE_NAME,
-                        org.acra.ReportField.FILE_PATH,
-                        org.acra.ReportField.PHONE_MODEL,
-                        org.acra.ReportField.BRAND,
-                        org.acra.ReportField.PRODUCT,
-                        org.acra.ReportField.ANDROID_VERSION,
-                        org.acra.ReportField.BUILD,
-                        org.acra.ReportField.TOTAL_MEM_SIZE,
-                        org.acra.ReportField.AVAILABLE_MEM_SIZE,
-                        org.acra.ReportField.CUSTOM_DATA,
-                        org.acra.ReportField.STACK_TRACE,
-                        org.acra.ReportField.INITIAL_CONFIGURATION,
-                        org.acra.ReportField.CRASH_CONFIGURATION,
-                        org.acra.ReportField.DISPLAY,
-                        org.acra.ReportField.USER_APP_START_DATE,
-                        org.acra.ReportField.USER_CRASH_DATE,
-                        org.acra.ReportField.LOGCAT,
-                        org.acra.ReportField.EVENTSLOG,
-                        org.acra.ReportField.RADIOLOG,
-                        org.acra.ReportField.INSTALLATION_ID,
-                        org.acra.ReportField.DEVICE_FEATURES,
-                        org.acra.ReportField.ENVIRONMENT,
-                        org.acra.ReportField.SETTINGS_SYSTEM,
-                        org.acra.ReportField.SETTINGS_SECURE,
-                        org.acra.ReportField.SETTINGS_GLOBAL,
-                        org.acra.ReportField.THREAD_DETAILS,
-                        org.acra.ReportField.BUILD_CONFIG
-                )
-                .withPluginConfigurations(
-                        new HttpSenderConfigurationBuilder()
-                                .withUri("https://mmb.progressor.ru/php/mmbscripts/acra.php")
-                                .withHttpMethod(HttpSender.Method.POST).build(),
-                        new ToastConfigurationBuilder().withText(getString(R.string.acra_toast_text)).build()
-                ));
+        if (!BuildConfig.DEBUG) {
+            ACRA.init(this, new CoreConfigurationBuilder()
+                    //core configuration:
+                    .withBuildConfigClass(BuildConfig.class)
+                    .withReportFormat(StringFormat.JSON)
+                    .withReportContent(
+                            org.acra.ReportField.REPORT_ID,
+                            org.acra.ReportField.APP_VERSION_CODE,
+                            org.acra.ReportField.APP_VERSION_NAME,
+                            org.acra.ReportField.PACKAGE_NAME,
+                            org.acra.ReportField.FILE_PATH,
+                            org.acra.ReportField.PHONE_MODEL,
+                            org.acra.ReportField.BRAND,
+                            org.acra.ReportField.PRODUCT,
+                            org.acra.ReportField.ANDROID_VERSION,
+                            org.acra.ReportField.BUILD,
+                            org.acra.ReportField.TOTAL_MEM_SIZE,
+                            org.acra.ReportField.AVAILABLE_MEM_SIZE,
+                            org.acra.ReportField.CUSTOM_DATA,
+                            org.acra.ReportField.STACK_TRACE,
+                            org.acra.ReportField.INITIAL_CONFIGURATION,
+                            org.acra.ReportField.CRASH_CONFIGURATION,
+                            org.acra.ReportField.DISPLAY,
+                            org.acra.ReportField.USER_APP_START_DATE,
+                            org.acra.ReportField.USER_CRASH_DATE,
+                            org.acra.ReportField.LOGCAT,
+                            org.acra.ReportField.EVENTSLOG,
+                            org.acra.ReportField.RADIOLOG,
+                            org.acra.ReportField.INSTALLATION_ID,
+                            org.acra.ReportField.DEVICE_FEATURES,
+                            org.acra.ReportField.ENVIRONMENT,
+                            org.acra.ReportField.SETTINGS_SYSTEM,
+                            org.acra.ReportField.SETTINGS_SECURE,
+                            org.acra.ReportField.SETTINGS_GLOBAL,
+                            org.acra.ReportField.THREAD_DETAILS,
+                            org.acra.ReportField.BUILD_CONFIG
+                    )
+                    .withPluginConfigurations(
+                            new HttpSenderConfigurationBuilder()
+                                    .withUri("https://mmb.progressor.ru/php/mmbscripts/acra.php")
+                                    .withHttpMethod(HttpSender.Method.POST).build(),
+                            new ToastConfigurationBuilder().withText(getString(R.string.acra_toast_text)).build()
+                    ));
+        }
     }
 }

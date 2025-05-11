@@ -57,13 +57,13 @@
     <string name="response_time">Response time %1$dms</string>
     <string name="station_mode">Current mode</string>
     <string name="station_mode_value_0">Initialization at %1$s</string>
-    <string name="station_mode_value_1">Ordinary point %1$s</string>
+    <string name="station_mode_value_1">Start point %1$s</string>
     <string name="station_mode_value_2">Finish point %1$s</string>
     <string name="station_mode_unknown">Unknown mode</string>
     <string name="station_new_point">New point</string>
     <string name="station_new_mode">New mode</string>
     <string name="station_mode_0">Init</string>
-    <string name="station_mode_1">Ordinary</string>
+    <string name="station_mode_1">Start</string>
     <string name="station_mode_2">Finish</string>
     <string name="station_change_mode">Update</string>
     <string name="station_time_drift">Time drift: %1$ds</string>
@@ -109,6 +109,7 @@
     <string name="monitoring_service">Monitoring connected station for new punches</string>
 
     <string name="info_request">Read chip data</string>
+    <string name="info_save_to_db">Save data from chip to database</string>
     <string name="info_help">Put a chip on the station and click the button to view chip content</string>
     <string name="info_team_name">№%1$d %2$s</string>
     <string name="list_point_name">%1$s</string>

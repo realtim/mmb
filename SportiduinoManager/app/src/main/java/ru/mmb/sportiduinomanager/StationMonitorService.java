@@ -229,7 +229,7 @@ public class StationMonitorService extends Service {
                 for (int i = 0; i < teamMembers.size(); i++) {
                     originalMask = originalMask | (1 << i);
                 }
-                teamPunches.addRecord(MainApp.mStation, 0, teamNumber, originalMask,
+                teamPunches.addRecord(MainApp.mStation, MainApp.mStation.getMode(), 0, teamNumber, originalMask,
                         MainApp.mStation.getNumber(), MainApp.mStation.getLastPunchTime());
             }
             // Prepare to clone init time and mask from this record to punches from the chip
@@ -247,8 +247,8 @@ public class StationMonitorService extends Service {
                 final int marks = MainApp.mStation.getChipRecordsN();
                 int fromMark = 0;
                 do {
-                    if (marks <= 0) break;
-                    int toRead = marks;
+                    int toRead = marks - fromMark;
+                    if (toRead <= 0) break;
                     if (toRead > StationAPI.MAX_PUNCH_COUNT) {
                         toRead = StationAPI.MAX_PUNCH_COUNT;
                     }

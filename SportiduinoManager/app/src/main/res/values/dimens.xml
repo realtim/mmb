@@ -2,7 +2,6 @@
 
 <resources>
     <dimen name="default_padding">16dip</dimen>
-    <dimen name="list_padding">8dip</dimen>
     <dimen name="default_key_button_width">64dip</dimen>
     <dimen name="min_points_list_width">96dip</dimen>
 </resources>

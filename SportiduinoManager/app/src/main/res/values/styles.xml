@@ -30,6 +30,11 @@
         <item name="android:background">?colorPrimary</item>
         <item name="android:textColor">?android:textColorPrimaryInverse</item>
         <item name="android:tint">?android:textColorPrimaryInverse</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="AppTheme.NavigationView" parent="AppTheme">
+        <item name="android:textSize">18sp</item>
     </style>
 
     <style name="AppTheme.Button" parent="Widget.AppCompat.Button">
@@ -37,6 +42,7 @@
     </style>
 
     <style name="AppTheme.ButtonColored" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:textColor">?android:textColorPrimaryInverse</item>
     </style>
 
     <style name="AppTheme.ProgressBar" parent="Widget.AppCompat.ProgressBar.Horizontal">

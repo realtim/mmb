@@ -28,6 +28,10 @@ public final class StationAPI extends StationRaw {
      */
     public static final int MODE_FINISH_POINT = 2;
     /**
+     * Virtual mode for saving chip info records in database.
+     */
+    public static final int MODE_CHIP_INFO = 3;
+    /**
      * Size of last teams buffer in station.
      */
     public static final int LAST_TEAMS_LEN = 10;
@@ -42,7 +46,7 @@ public final class StationAPI extends StationRaw {
     /**
      * Supported station firmware version.
      */
-    public static final int API_FIRMWARE = 109;
+    public static final int API_FIRMWARE = 110;
     /**
      * Number of pages to read from NTAG213 chip.
      */
@@ -450,7 +454,7 @@ public final class StationAPI extends StationRaw {
         final long teamTime = byteArray2Long(response, 8, 11);
         mChipRecordsN = response[12] & 0xFF;
         // Save team punch at our station as single record in mRecords
-        mRecords.addRecord(this, initTime, teamNumber, teamMask, getNumber(), teamTime);
+        mRecords.addRecord(this, this.getMode(), initTime, teamNumber, teamMask, getNumber(), teamTime);
         // Check if we have a valid number of punches in copy of the chip in flash memory
         if (mChipRecordsN <= 8 || mChipRecordsN >= 0xFF) {
             mChipRecordsN = 0;
@@ -521,7 +525,7 @@ public final class StationAPI extends StationRaw {
                 initTime = byteArray2Long(response, 17, 20);
                 teamMask = (int) byteArray2Long(response, 21, 22);
                 // Create fake punch record  at chip init point
-                mRecords.addRecord(this, initTime, teamNumber, teamMask, 0, initTime);
+                mRecords.addRecord(this, MODE_CHIP_INFO, initTime, teamNumber, teamMask, 0, initTime);
             }
             // Get punches from fetched pages
             for (int i = punchesOffset; i < response.length; i = i + 4) {
@@ -532,7 +536,7 @@ public final class StationAPI extends StationRaw {
                     pagesLeft = 0;
                     break;
                 }
-                mRecords.addRecord(this, initTime, teamNumber, teamMask, pointNumber,
+                mRecords.addRecord(this, MODE_CHIP_INFO, initTime, teamNumber, teamMask, pointNumber,
                         pointTime + (initTime & 0xFF000000L));
             }
             punchesOffset = 9;
@@ -608,7 +612,7 @@ public final class StationAPI extends StationRaw {
                     byteArray2Long(response, 5 + i * 4, 7 + i * 4) + timeCorrection;
             // Check if the record is non-empty
             if (pointNumber == 0xFF && (pointTime - timeCorrection) == 0x00FFFFFF) break;
-            mRecords.addRecord(this, initTime, teamNumber, teamMask, pointNumber, pointTime);
+            mRecords.addRecord(this, this.getMode(), initTime, teamNumber, teamMask, pointNumber, pointTime);
         }
         // Check number of actually read punches
         if (mRecords.size() == count) {

@@ -292,16 +292,17 @@ public final class Records {
      * Modifies class instance.
      *
      * @param station     Station where the chip was initialized or punched
+     * @param stationMode Station mode (equal to station.getMode() or MODE_CHIP_INFO)
      * @param initTime    Chip initialization time
      * @param teamNumber  Team number written in the chip
      * @param teamMask    Team members mask written in the chip
      * @param pointNumber Punched point number (can differ from station number)
      * @param pointTime   Control point punch time
      */
-    public void addRecord(final StationAPI station, final long initTime, final int teamNumber,
+    public void addRecord(final StationAPI station, final int stationMode, final long initTime, final int teamNumber,
                           final int teamMask, final int pointNumber, final long pointTime) {
         mRecords.add(new Record(station.getMACasLong(), station.getStationTime(),
-                station.getTimeDrift(), station.getNumber(), station.getMode(), initTime,
+                station.getTimeDrift(), station.getNumber(), stationMode, initTime,
                 teamNumber, teamMask, pointNumber, pointTime, Record.STATUS_NEW));
     }
 

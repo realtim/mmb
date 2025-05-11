@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:local="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
@@ -14,22 +15,18 @@
         android:contentDescription="@string/menu_back"
         android:onClick="closeNavigationDrawer"
         android:paddingStart="?attr/listPreferredItemPaddingLeft"
-        android:paddingLeft="?attr/listPreferredItemPaddingLeft"
         android:paddingEnd="?attr/listPreferredItemPaddingRight"
-        android:paddingRight="?attr/listPreferredItemPaddingRight"
         local:srcCompat="?homeAsUpIndicator" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginStart="80dp"
-        android:layout_marginLeft="80dp"
+        android:layout_marginStart="72dp"
         android:layout_marginEnd="?attr/listPreferredItemPaddingRight"
-        android:layout_marginRight="?attr/listPreferredItemPaddingRight"
         android:gravity="start|center_vertical"
         android:singleLine="true"
-        android:text="@string/navigation_header" />
+        android:text="@string/navigation_header"
+        app:theme="@style/AppTheme.NavigationHeader" />
 
 </RelativeLayout>

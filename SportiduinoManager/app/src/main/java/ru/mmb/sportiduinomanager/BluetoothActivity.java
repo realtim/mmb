@@ -687,8 +687,8 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
             return switch (MainApp.mDistance.getPointType(pointNumber)) {
                 case -1 -> -1;
                 case 0 -> StationAPI.MODE_INIT_CHIPS;
-                case 2 -> StationAPI.MODE_FINISH_POINT;
-                default -> StationAPI.MODE_OTHER_POINT;
+                case 1 -> StationAPI.MODE_OTHER_POINT;
+                default -> StationAPI.MODE_FINISH_POINT;
             };
         }
 
