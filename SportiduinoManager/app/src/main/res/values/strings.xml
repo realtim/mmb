@@ -5,6 +5,7 @@
     <string name="navigation_header">Mode of Work</string>
     <string name="acra_toast_text">Application was stopped due to error, detailed report
         will be sent to mmb.progressor.ru</string>
+    <string name="app_name_version">%1$s %2$s</string>
 
     <string name="unknown">\?\?\?</string>
 

@@ -134,8 +134,10 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
                 // Get the BluetoothDevice object and its info from the Intent
                 final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if (device == null) return;
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
-                        != PackageManager.PERMISSION_GRANTED) return;
+                if ((ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
+                        != PackageManager.PERMISSION_GRANTED) && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)) {
+                    return;
+                }
                 final String name = device.getName();
                 if (name != null && !name.matches("Sport.*")) return;
                 final List<BluetoothDevice> deviceList = MainApp.UI_STATE.getBTDeviceList();
@@ -164,8 +166,10 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
     private void usePin(final BluetoothDevice device) {
         final byte[] pinBytes = MainApp.mDistance.getBluetoothPin().getBytes(StandardCharsets.UTF_8);
         if (pinBytes.length == 0 || pinBytes.length > 16) return;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
-                != PackageManager.PERMISSION_GRANTED) return;
+        if ((ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
+                != PackageManager.PERMISSION_GRANTED) && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)) {
+            return;
+        }
         device.setPin(pinBytes);
     }
 
@@ -312,8 +316,8 @@ public final class BluetoothActivity extends MenuActivity implements BTDeviceLis
     public void onItemClick(final int position) {
         final BluetoothDevice deviceClicked = mAdapter.getDevice(position);
         // Cancel Bluetooth discovery process
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
-                != PackageManager.PERMISSION_GRANTED) return;
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
+                != PackageManager.PERMISSION_GRANTED) && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)) return;
         if (mBluetoothAdapter.isDiscovering()) mBluetoothAdapter.cancelDiscovery();
         // Disconnect from previous station
         if (MainApp.mStation != null) {

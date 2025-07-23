@@ -52,6 +52,8 @@ public class MenuActivity extends AppCompatActivity {
 
         // Add Toolbar to Main screen
         final Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(getResources().getString(R.string.app_name_version,
+                getResources().getString(R.string.app_name), BuildConfig.VERSION_NAME));
         setSupportActionBar(toolbar);
 
         // Create Navigation drawer and inflate layout
