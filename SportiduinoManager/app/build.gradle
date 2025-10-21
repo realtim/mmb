@@ -3,7 +3,7 @@ import com.github.spotbugs.snom.SpotBugsTask
 plugins {
     id "checkstyle"
     id "pmd"
-    id "com.github.spotbugs" version "6.1.13"
+    id "com.github.spotbugs" version "6.4.4"
 }
 apply plugin: 'com.android.application'
 
@@ -49,13 +49,13 @@ android {
         }
         release {
             minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt')
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
         }
     }
-    namespace 'ru.mmb.sportiduinomanager'
+    namespace = 'ru.mmb.sportiduinomanager'
     buildFeatures {
-        buildConfig true
+        buildConfig = true
     }
     lint {
         disable 'UsingOnClickInXml'
@@ -63,11 +63,11 @@ android {
 }
 
 checkstyle {
-    toolVersion "10.25.0"
-    configFile file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+    toolVersion = "10.25.0"
+    configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
 }
 tasks.register('checkstyle', Checkstyle) {
-    group 'verification'
+    group = 'verification'
     source 'src'
     include '**/*.java'
     classpath = files()
@@ -75,12 +75,12 @@ tasks.register('checkstyle', Checkstyle) {
 check.dependsOn('checkstyle')
 
 pmd {
-    toolVersion "7.14.0"
+    toolVersion = "7.14.0"
     ruleSets = []
     ruleSetFiles = files("$project.rootDir/config/pmd/rules-pmd.xml")
 }
 tasks.register('pmd', Pmd) {
-    group 'verification'
+    group = 'verification'
     source 'src'
     include '**/*.java'
 }
@@ -105,12 +105,12 @@ tasks.withType(SpotBugsTask).configureEach {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
-    implementation 'com.google.android.material:material:1.13.0-beta01'
+    implementation 'com.google.android.material:material:1.13.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
 
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.14.0'
 
-    final def acraVersion = '5.12.0'
+    final def acraVersion = '5.13.1'
     implementation "ch.acra:acra-core:$acraVersion"
     implementation "ch.acra:acra-http:$acraVersion"
     implementation "ch.acra:acra-toast:$acraVersion"

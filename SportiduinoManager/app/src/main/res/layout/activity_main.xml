@@ -34,10 +34,10 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="false"
+        android:theme="@style/AppTheme.NavigationView"
         app:headerLayout="@layout/menu_header"
         app:itemIconTint="@color/menu_selector"
         app:itemTextColor="@color/menu_selector"
-        app:menu="@menu/menu_navigation"
-        app:theme="@style/AppTheme.NavigationView" />
+        app:menu="@menu/menu_navigation" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

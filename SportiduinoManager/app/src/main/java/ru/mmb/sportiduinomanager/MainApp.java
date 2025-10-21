@@ -8,10 +8,12 @@ import android.database.sqlite.SQLiteException;
 import android.os.Build;
 import android.widget.Toast;
 import org.acra.ACRA;
+import org.acra.BuildConfig;
 import org.acra.config.CoreConfigurationBuilder;
 import org.acra.config.HttpSenderConfigurationBuilder;
 import org.acra.config.ToastConfigurationBuilder;
 import org.acra.data.StringFormat;
+import org.acra.security.TLS;
 import org.acra.sender.HttpSender;
 
 import java.io.IOException;
@@ -277,10 +279,13 @@ public final class MainApp extends Application {
                         org.acra.ReportField.THREAD_DETAILS,
                         org.acra.ReportField.BUILD_CONFIG
                 )
+                .withLogcatArguments("-t", "500", "Sent:D", "Received:D", "*:S")
                 .withPluginConfigurations(
                         new HttpSenderConfigurationBuilder()
                                 .withUri("https://mmb.progressor.ru/php/mmbscripts/acra.php")
-                                .withHttpMethod(HttpSender.Method.POST).build(),
+                                .withHttpMethod(HttpSender.Method.POST)
+                                .withTlsProtocols(TLS.V1_3, TLS.V1_2)
+                                .build(),
                         new ToastConfigurationBuilder().withText(getString(R.string.acra_toast_text)).build()
                 ));
     }

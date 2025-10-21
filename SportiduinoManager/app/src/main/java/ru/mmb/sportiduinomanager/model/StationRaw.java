@@ -500,7 +500,7 @@ public class StationRaw {
      */
     private byte[] runCommand(final byte[] sendBuffer) {
         // print data sent to the station
-        logBuffer("Sent to station", sendBuffer);
+        logBuffer("Sent", sendBuffer);
         // reconnect (just in case and send the command
         if (!connect()) return new byte[]{SEND_FAILED};
         if (!send(sendBuffer)) return new byte[]{SEND_FAILED};
@@ -509,7 +509,7 @@ public class StationRaw {
         final int len = receiveBuffer.length;
         if (len == 0) return new byte[]{REC_TIMEOUT};
         // print data received from the station
-        logBuffer("Received from station", receiveBuffer);
+        logBuffer("Received", receiveBuffer);
         // check signature
         if (receiveBuffer[0] != HEADER_SIGNATURE) return new byte[]{REC_BAD_SIGNATURE};
         // check if response has at minimum 1 byte payload
