@@ -4,6 +4,10 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+if (!$Administrator && !$Moderator) {
+    return;
+}
+
 ?>
 <script language = "JavaScript">
 

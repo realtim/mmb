@@ -466,7 +466,7 @@ elseif ($action == 'HideTeamUser')
 
 
 	// Проверка на повторное удаление 
-	$sql = "select teamuser_id from TeamUsers where teamuser_hide = 0 and teamuser_id = $HideTeamUserId";
+	$sql = "select teamuser_id from TeamUsers where teamuser_hide = 0 and teamuser_id = $HideTeamUserId and team_id = $TeamId";
 	if (CSql::singleValue($sql, 'teamuser_id') <>  $HideTeamUserId)
 	{
 		CMmb::setErrorMessage('Удаляемый пользователь не найден или уже удален');
@@ -526,7 +526,7 @@ elseif ($action == 'HideTeamUser')
 	// 04.2016 вернул обратно
 	// 07.2015 Заменил на физическое удаление
  	//$sql = "delete from TeamUsers where teamuser_id = $HideTeamUserId";
-	$sql = "update TeamUsers set teamuser_hide = 1, teamuser_changedt = NOW() where teamuser_id = ".$HideTeamUserId;
+	$sql = sprintf("update TeamUsers set teamuser_hide = 1, teamuser_changedt = NOW() where teamuser_id = %s and team_id = %s", $HideTeamUserId, $TeamId);
 	$rs = MySqlQuery($sql);
 
 	// 27/01/2017 пересчет данных об участниках в команде	

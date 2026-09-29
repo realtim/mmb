@@ -5,14 +5,11 @@
 if (!isset($MyPHPScript)) return;
 
 // Выходим, если не администратор и не модератор
- if (!$Administrator and !$Moderator)
-  {
+if (!$Administrator && !$Moderator) {
     CMmb::setShortResult('Нет прав на экспорт', '');
     return;
-   }
-         
-         
- 
+}
+
 // Выводим javascrpit
 ?>
 

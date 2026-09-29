@@ -449,15 +449,20 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 	 }
 
 
-	print("Фильтровать: \r\n"); 
+	print("Фильтровать: \r\n");
 
-	$distanceId = mmb_validate($_REQUEST, 'DistanceId', '');
-	$DistanceCondition = empty($distanceId) ? 'true' : "d.distance_id = $distanceId";
+    $distanceId = mmb_validateInt($_REQUEST, 'DistanceId', 0);
 
-        $GpsFilter = (mmb_validateInt($_REQUEST, 'GPSFilter', 0)) == 1 ? 1 : 0;
-        $GpsCondition = $GpsFilter ? "t.team_usegps = 0" : "true";
+    if ($distanceId > 0) {
+        $DistanceCondition = "d.distance_id = $distanceId";
+    } else {
+        $DistanceCondition = 'true';
+    }
 
-        $SexFilter = (mmb_validateInt($_REQUEST, 'SexFilter', 0));
+    $GpsFilter = (mmb_validateInt($_REQUEST, 'GPSFilter', 0)) == 1 ? 1 : 0;
+    $GpsCondition = $GpsFilter ? "t.team_usegps = 0" : "true";
+
+    $SexFilter = (mmb_validateInt($_REQUEST, 'SexFilter', 0));
         
 	if ($SexFilter == 0)
 	{
@@ -799,9 +804,9 @@ function ShowDistanceHeader($RaidId, $DistanceId, $DistanceName, $DistanceData, 
 				order by team_num desc";
 
 	}
-	elseif ($OrderType == 'Place') {
+	elseif ($OrderType === 'Place') {
 		// Сортировка по месту требует более хитрого запроса
-		$levelPointId = mmb_validate($_REQUEST, 'LevelPointId', '');
+		$levelPointId = mmb_validateInt($_REQUEST, 'LevelPointId', '');
 
 		if (!empty($levelPointId)) {
 			$LevelCondition = "tlp.levelpoint_id = $levelPointId";

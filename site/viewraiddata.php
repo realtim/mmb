@@ -5,6 +5,10 @@
 // Выходим, если файл был запрошен напрямую, а не через include
 if (!isset($MyPHPScript)) return;
 
+if (!$Administrator && !$Moderator) {
+    return;
+}
+
 if (!isset($viewmode)) $viewmode = "";
 if (!isset($viewsubmode)) $viewsubmode = "";
 
